@@ -1,4 +1,4 @@
-﻿define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvStatementView"], 				
+define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvStatementView"], 				
 	function($, _, Backbone, CitationView, ProvStatement) {
 	'use strict';
 
@@ -17,23 +17,67 @@
 			this.pointerHeight = options.pointerHeight || 15;     //Pixel height of the pointer/arrow image
 			this.offsetTop     = options.offsetTop     || this.nodeHeight; //The top margin of the chart, in pixels
 			this.title 		   = options.title         || "";
+			this.editor 	   = options.editor        || false;
+			this.editorType    = options.editorType    || null;
 
 			//For Sources charts
 			if(!this.derivations && this.sources){
 				this.type 		    = "sources";
 				this.provEntities   = this.sources;
-				this.numSources     = this.sources.length;
+				
+				//Find the number of sources and programs
+				var sources = [], programs = [];
+				_.each(this.sources, function(model){
+					if(model.get("type") == "program")
+						programs.push(model);
+					else
+						sources.push(model);
+				});
+				
+				this.sources = sources;
+				this.programs = programs;
+				
+				this.numSources      = this.sources.length;
+				this.numPrograms     = this.programs.length;
 				this.numProvEntities = this.numSources;
+				this.numPrograms     = this.programs.length;
 				this.numDerivations = 0;
 			}
 			
 			//For Derivations charts
 			if(!this.sources && this.derivations){
 				this.type 	   	     = "derivations";
-				this.provEntities    = this.derivations;
+				this.provEntities = this.derivations;
+				
+				//Find the number of derivations and programs
+				var derivations = [], programs = [];
+				_.each(this.derivations, function(model){
+					if(model.get("type") == "program")
+						programs.push(model);
+					else
+						derivations.push(model);
+				});
+				
+				this.derivations  = derivations;
+				this.programs     = programs;
+				
 				this.numDerivations  = this.derivations.length;
 				this.numProvEntities = this.numDerivations;
+				this.numPrograms     = this.programs.length;
 				this.numSources      = 0;
+			}
+			
+			//For empty editor charts
+			if(this.editor && !this.provEntities.length){
+				this.type = options.editorType || null;
+				this.sources = [];
+				this.derivations = [];
+				this.programs = [];
+				this.provEntities = [];
+				this.numDerivations = 0;
+				this.numSources = 0;
+				this.numProvEntities = 0;
+				this.className += " editor empty";
 			}
 			
 			//Add the chart type to the class list
@@ -67,14 +111,23 @@
 		subviews: new Array(),
 		
 		render: function(){
-			if(!this.numProvEntities) return false;
+			//Nothing to do if there are no entities and it isn't an editor
+			if(!this.numProvEntities && !this.numPrograms && !this.editor) return false;
 			
 			var view = this;
 			
-			_.each(this.provEntities, function(entity, i){	
+			//Are there any programs?
+			if(this.programs.length && !this.editor){
+				this.$el.append($(document.createElement("div")).addClass(this.type + "-programs programs"));
+			}
+			
+			var position = 0,
+				programPosition = 0;
+			_.each(this.provEntities, function(entity, i){
+				
 				//Create the HTML node and line connecter
 				if(entity.type == "Package")
-					view.$el.append(view.createNode(entity, i, _.find(entity.get("members"), function(member){ return member.get("formatType") == "METADATA"; })));	
+					view.$el.append(view.createNode(entity, position, _.find(entity.get("members"), function(member){ return member.get("formatType") == "METADATA"; })));	
 				else{
 					//Find the id of the metadata that documents this object
 					var metadataID = entity.get("isDocumentedBy"),
@@ -98,27 +151,62 @@
 						});
 					}
 
-					//If we found the metadata doc that matches the ID, then draw the node using that metadata
-					if(metadata) 
-						view.$el.append(view.createNode(entity, i, metadata));						
+					//Programs will be positioned at a different point in the graph
+					if(entity.get("type") == "program"){
+						//Find the program position
+						this.$(".programs").append(this.createNode(entity, programPosition, metadata));
+					}
 					else
-						view.$el.append(view.createNode(entity, i));
+						this.$el.append(view.createNode(entity, position, metadata));						
 				}
 				
 				//Derivation charts have a pointer for each node
-				if(view.type == "derivations") view.$el.append(view.createPointer(i));
+				if(view.type == "derivations" && (this.numDerivations > 0 || this.editor))
+					view.$el.append(view.createConnecter(position));
+				
 				//Source charts have a connector for each node and one pointer
-				if(view.type == "sources")	view.$el.append(view.createConnecter(i));
-			});	
+				if(view.type == "sources" && (this.numSources > 0 || this.editor))
+					view.$el.append(view.createConnecter(position));
+				
+				//Bump the position for non-programs only
+				if(entity.get("type") == "program")
+					programPosition++;
+				else
+					position++;
+				
+			}, this);	
+			
+			//If we are drawing a blank editor
+			if(this.editor){
+				this.$el.append(this.createEditorNode());
+				
+				//Derivation charts have a pointer for each node
+				if(this.type == "derivations") this.$el.append(this.createConnecter(this.numProvEntities));
+				//Source charts have a connector for each node and one pointer
+				if(this.type == "sources")	this.$el.append(this.createConnecter(this.numProvEntities));
+			}
 			
 			//Move the last-viewed prov node to the top of the chart so it is always displayed first
 			if(this.$(".node.previous").length > 0)
 				this.switchNodes(this.$(".node.previous").first(), this.$(".node").first());
 	
+			//Add classes
 			this.$el.addClass(this.className);
+			if(this.numPrograms > 0) this.$el.addClass("has-programs");
+			if(this.numDerivations == 1 && !this.numPrograms) this.$el.addClass("one-derivation");
 			
-			if(this.type == "derivations") this.$el.append(this.createConnecter());
-			if(this.type == "sources")     this.$el.append(this.createPointer());
+			var contextClasses = this.type == "sources" ? "hasProvLeft" : "hasProvRight";
+			if(this.numPrograms > 0) contextClasses += " hasPrograms";
+			$(this.contextEl).addClass(contextClasses);
+			
+			//If it's a derivation chart, add a connector line
+			if(this.type == "derivations" && !this.numPrograms) this.$el.append(this.createPointer());
+			//If it's a sources chart, add a pointer arrow
+			if((this.type == "sources") && !this.numPrograms) this.$el.append(this.createPointer());
+			
+			//Charts with programs need an extra connecter
+			if(this.programs.length && (this.numSources || this.numDerivations)) 
+				this.$(".programs").append(this.createConnecter());
 			
 			if(this.$(".collapsed").length){
 				var expandIcon   = $(document.createElement("i")).addClass("icon icon-expand-alt"),
@@ -152,9 +240,7 @@
 			if(provEntity.type == "SolrResult"){
 				type = provEntity.getType();
 				
-				if(type == "program")
-					icon = "icon-code";
-				else if(type == "data")
+				if(type == "data")
 					icon = "icon-table";
 				else if(type == "metadata")
 					icon = "icon-file-text";
@@ -178,15 +264,54 @@
 			var id   = provEntity.get("id");
 			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
-			var top = (position * this.nodeHeight) - (this.nodeHeight/2),
-				isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";			
+			if(provEntity.get("type") == "program"){
+				var distanceFromMiddle = (position * this.nodeHeight) - (this.nodeHeight/2),
+					operator           = distanceFromMiddle > 0 ? "+" : "-",
+				    top                = "calc(50% " + operator + " " + Math.abs(distanceFromMiddle).toString() + "px)",
+					isCollapsed        = "expanded";
+			}
+			else{
+				var top = (position * this.nodeHeight) - (this.nodeHeight/2),
+					isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";					
+			}
+
+			if(provEntity.get("type") != "program"){
+				//Create a DOM element to represent the node	
+				var nodeEl = $(document.createElement("div")).css("top", top);;
+			}
+			else{
+				//Create an SVG drawing for the program arrow shape
+				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+					nodeEl = $(document.createElementNS("http://www.w3.org/2000/svg", "polygon"))
+					    		 .attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20");
+
+				//Set a viewBox, height, width, and top position
+				svg.setAttribute("viewBox", "0 0 " + this.nodeHeight + " " + this.nodeHeight);
+				svg.setAttribute("class", "popover-this");
+				$(svg).attr("width", this.nodeHeight + "px").attr("height", this.nodeHeight + "px").css("top", top);
+				
+				//Create the code icon
+				var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
+							.text("\u{F121}")
+							.attr("class", "icon icon-foo program-icon pointer");
+				
+				//Create a group element to contain the icon
+				var g = $(document.createElementNS("http://www.w3.org/2000/svg", "g"))
+						.attr("transform", "translate(18,43)")
+						.attr("class", "popover-this program-icon pointer");
+				
+				//Glue it all together
+				$(g).append(iconEl);
+				$(svg).append(nodeEl, g);
+				
+			}
 			
-			//Create a DOM element to represent the node	
-			var nodeEl = $(document.createElement("div"))
-						 .addClass(type + " node pointer popover-this " + isCollapsed)
-						 .attr("tabindex", 0)
-						 .attr("data-id", provEntity.get("id"))
-						 .css("top", top);
+			//Add classes via .attr() so it works for SVG, too
+			var currentClasses = $(nodeEl).attr("class") || "";
+			$(nodeEl).attr("class", currentClasses + " " + type + " node pointer popover-this " + isCollapsed)
+					 .attr("tabindex", 0)
+					 //Reference the id of the data object
+					 .attr("data-id", provEntity.get("id"));
 			
 			//Display images in the prov chart node
 			if(type == "image"){
@@ -252,7 +377,9 @@
 			
 			//Glue all the parts together
 			var headerContainer = $(document.createElement("div")).addClass("well header").append(citationHeader, citationEl, linkEl);
-			var popoverContent = $(document.createElement("div")).append(headerContainer, provStatementEl);
+			var popoverContent = $(document.createElement("div")).append(headerContainer, provStatementEl).attr("data-id", provEntity.get("id"));
+			
+			//Add the name of the data object to the popover
 			if(name)
 				$(headerContainer).prepend(nameEl);
 			
@@ -272,7 +399,9 @@
 			var classMap = this.parentView.classMap || null;
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
-			var view = this;
+			var view = this,
+				popoverTriggerEl = (provEntity.get("type") == "program") ? $(nodeEl).add(g) : nodeEl;
+			
 			$(nodeEl).popover({
 				html: true,
 				placement: placement,
@@ -300,15 +429,36 @@
 				}
 			}).on("show.bs.popover", function(){
 				//Close the last open node popover
-				$(".node.popover-this.active").popover("hide");
-				
+				$(".popover-this.active").popover("hide");
+								
 				//Toggle the active class
-				$(this).toggleClass("active");
+				if($(this).parent("svg").length) 
+						$(this).attr("class", $(this).attr("class") + " active");
+				else
+					$(this).toggleClass("active");
 				
-			}).on("hide.bs.popover", function(){
+			}).on("hide.bs.popover", function(){				
 				//Toggle the active class
-				$(this).toggleClass("active");
+				if($(this).parent("svg").length) 
+					$(this).attr("class", $(this).attr("class").replace(" active", " "));
+				else
+					$(this).toggleClass("active");
 			});
+			
+			/*
+			 * Set a separate event listener on the program icon since it is overlapped with the program arrow
+			 */
+			if(provEntity.get("type") == "program"){
+				$(g).on("click", function(){
+					var programNode = $(this).prev("polygon"),
+						isOpen = $(programNode).attr("class").indexOf("active") > -1;
+					
+						if(isOpen)
+							$(programNode).popover("hide");
+						else
+							$(programNode).popover("show");
+				});
+			}
 			
 			// If the prov statement views in the popover content have an expand collapse list view, then we want to delegate events 
 			//  again when the popover is done displaying. This is because the ExpandCollapseList view hides/shows DOM elements, and each time
@@ -326,6 +476,30 @@
 		 			});
 				}
 			}
+			
+			//If this node is rendered as an SVG, return that. Otherwise return the node element created.
+			return (typeof svg != "undefined")? svg : nodeEl;
+		},
+		
+		createEditorNode: function(){
+			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
+			var position = this.numProvEntities,
+				top = (position * this.nodeHeight) - (this.nodeHeight/2),
+				isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";			
+			
+			//Create a DOM element to represent the node	
+			var nodeEl = $(document.createElement("div"))
+						 .addClass(this.type + " node pointer popover-this editor " + isCollapsed)
+						 .attr("tabindex", 0)
+						 .attr("data-id", "")
+						 .css("top", top);
+			
+			//Create the plus icon
+			var iconEl = $(document.createElement("i"))
+						 .addClass("editor icon icon-plus");
+			
+			//Put the icon in the node
+			$(nodeEl).append(iconEl);
 			
 			return nodeEl;
 		},

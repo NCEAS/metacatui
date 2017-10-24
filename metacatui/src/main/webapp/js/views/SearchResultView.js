@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'], 				
 	function($, _, Backbone, SolrResult, Package, CitationView, ResultItemTemplate) {
 	

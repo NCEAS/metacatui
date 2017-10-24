@@ -1,5 +1,5 @@
 <% if(edit){ %>
-	<p class="notification error"></p>
+	<p class="notification error" data-category="description"></p>
 	<div class="row-fluid input-container">
 		<div class="span5">
 			<label class="subtle">Short geographic description</label>
@@ -9,13 +9,13 @@
 			<div class="row-fluid">
 				<div class="span6">
 					<label class="subtle">Northwest coordinates</label>
-					<input type="number" value="<%=model.north%>" data-attribute="north" class="coord north" placeholder="Lat" />
-					<input type="number" value="<%=model.west%>" data-attribute="west" class="coord west" placeholder="Long" />
+					<input type="number" value="<%=model.north%>" data-attribute="north" class="coord north" placeholder="Lat" min="-90" max="90" />
+					<input type="number" value="<%=model.west%>" data-attribute="west" class="coord west" placeholder="Long" min="-180" max="180" />
 				</div>
 				<div class="span6">
 					<label class="subtle">Southeast coordinates</label>
-					<input type="number" value="<%=model.south%>" data-attribute="south" class="coord south" placeholder="Lat" />
-					<input type="number" value="<%=model.east%>" data-attribute="east" class="coord east" placeholder="Long" />
+					<input type="number" value="<%=model.south%>" data-attribute="south" class="coord south" placeholder="Lat" min="-90" max="90" />
+					<input type="number" value="<%=model.east%>" data-attribute="east" class="coord east" placeholder="Long" min="-180" max="180" />
 				</div>
 			</div>
 		</div>

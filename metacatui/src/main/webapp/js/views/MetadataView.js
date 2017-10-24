@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery',
         'jqueryui',
 		'underscore',
@@ -8,6 +8,7 @@ define(['jquery',
 		'clipboard',
 		'models/PackageModel',
 		'models/SolrResult',
+		'views/DownloadButtonView',
 		'views/ProvChartView',
 		'views/MetadataIndexView',
 		'views/ExpandCollapseListView',
@@ -23,7 +24,6 @@ define(['jquery',
 		'text!templates/loading.html',
 		'text!templates/metadataControls.html',
 		'text!templates/usageStats.html',
-		'text!templates/downloadButton.html',
 		'text!templates/downloadContents.html',
 		'text!templates/alert.html',
 		'text!templates/editMetadata.html',
@@ -31,9 +31,9 @@ define(['jquery',
 		'text!templates/map.html'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, Package, SolrResult,
-			 ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
-			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadButtonTemplate,
+			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
 			 MapTemplate, AnnotationTemplate) {
 	'use strict';
@@ -71,7 +71,6 @@ define(['jquery',
 		loadingTemplate: _.template(LoadingTemplate),
 		controlsTemplate: _.template(ControlsTemplate),
 		dataSourceTemplate: _.template(DataSourceTemplate),
-		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
 		editMetadataTemplate: _.template(EditMetadataTemplate),
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
@@ -93,7 +92,7 @@ define(['jquery',
 			this.pid = options.pid || options.id || MetacatUI.appModel.get("pid") || null;
 
 			if(typeof options.el !== "undefined")
-				this.setElement(options.el);			
+				this.setElement(options.el);
 		},
 
 		// Render the main metadata view
@@ -130,50 +129,48 @@ define(['jquery',
 			if((typeof pid === "undefined") || !pid) var pid = this.pid;
 			if((typeof this.seriesId !== "undefined") && this.seriesId) var sid = this.seriesId;
 
-			var viewRef = this;
-
 			//Get the package ID
 			this.model.set({ id: pid, seriesId: sid });
 			var model = this.model;
 
-			this.listenToOnce(model, "change", function(model){
+			this.listenToOnce(model, "sync", function(){
 
-				if(model.get("formatType") == "METADATA"){
-					viewRef.model = model;
-					viewRef.renderMetadata();
+				if(this.model.get("formatType") == "METADATA"){
+					this.model = model;
+					this.renderMetadata();
 				}
-				else if(model.get("formatType") == "DATA"){
-					if(model.get("isDocumentedBy")){
-						viewRef.pid = _.first(model.get("isDocumentedBy"));
-						viewRef.getModel(viewRef.pid);
+				else if(this.model.get("formatType") == "DATA"){
+					if(this.model.get("isDocumentedBy")){
+						this.pid = _.first(this.model.get("isDocumentedBy"));
+						this.getModel(this.pid);
 						return;
 					}
 					else{
-						viewRef.noMetadata(model);
+						this.noMetadata(this.model);
 					}
 				}
-				else if(model.get("formatType") == "RESOURCE"){
-					var packageModel = new Package({ id: model.get("id") });
+				else if(this.model.get("formatType") == "RESOURCE"){
+					var packageModel = new Package({ id: this.model.get("id") });
 					packageModel.on("complete", function(){
 						var metadata = packageModel.getMetadata();
 
 						if(!metadata){
-							viewRef.noMetadata(packageModel);
+							this.noMetadata(packageModel);
 						}
 						else{
-							viewRef.model = metadata;
-							viewRef.pid = viewRef.model.get("id");
-							viewRef.renderMetadata();
-							if(viewRef.model.get("resourceMap"))
-								viewRef.getPackageDetails(viewRef.model.get("resourceMap"));
+							this.model = metadata;
+							this.pid = this.model.get("id");
+							this.renderMetadata();
+							if(this.model.get("resourceMap"))
+								this.getPackageDetails(this.model.get("resourceMap"));
 						}
-					});
+					}, this);
 					packageModel.getMembers();
 					return;
 				}
 
 				//Get the package information
-				viewRef.getPackageDetails(model.get("resourceMap"));
+				this.getPackageDetails(model.get("resourceMap"));
 
 			});
 			this.listenToOnce(model, "404", this.showNotFound);
@@ -181,8 +178,7 @@ define(['jquery',
 		},
 
 		renderMetadata: function(){
-			var pid = this.pid,
-				view = this;
+			var pid = this.model.get("id");
 
 			this.hideLoading();
 			//Load the template which holds the basic structure of the view
@@ -209,36 +205,46 @@ define(['jquery',
 			//Show loading icon in metadata section
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
 
-			// Check for a view service in this appModel
-			if((MetacatUI.appModel.get('viewServiceUrl') !== undefined) && (MetacatUI.appModel.get('viewServiceUrl'))) 
-				var endpoint = MetacatUI.appModel.get('viewServiceUrl') + pid;
-					
+			// Check for a view service in this MetacatUI.appModel
+			if((MetacatUI.appModel.get('viewServiceUrl') !== undefined) && (MetacatUI.appModel.get('viewServiceUrl')))
+				var endpoint = MetacatUI.appModel.get('viewServiceUrl') + encodeURIComponent(pid);
+
 			if(endpoint && (typeof endpoint !== "undefined")){
 				var viewRef = this;
 				var loadSettings = {
 						url: endpoint,
 						success: function(response, status, xhr) {
+							
+							//If the user has navigated away from the MetadataView, then don't render anything further
+							if(MetacatUI.appView.currentView != viewRef)
+								return;
+								
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error")
 								viewRef.renderMetadataFromIndex();
 							else{
 								//Check for a response that is a 200 OK status, but is an error msg
-								if((response.length < 250) && (response.indexOf("Error transforming document") > -1)){
+								if((response.length < 250) && (response.indexOf("Error transforming document") > -1) && viewRef.model.get("indexed")){
 									viewRef.renderMetadataFromIndex();
 									return;
 								}
-
 								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
-								if(response.indexOf('id="Metadata"') == -1){
+								else if((response.indexOf('id="Metadata"') == -1)){
 									viewRef.$el.addClass("container no-stylesheet");
-									viewRef.renderMetadataFromIndex();
-									return;
+									
+									if(viewRef.model.get("indexed")){
+										viewRef.renderMetadataFromIndex();
+										return;
+									}
 								}
 
 								//Now show the response from the view service
-								view.$(view.metadataContainer).html(response);
+								viewRef.$(viewRef.metadataContainer).html(response);
+								
+								//If there is no info from the index and there is no metadata doc rendered either, then display a message
+								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
+									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
 
-								//viewRef.insertDataSource();
 								viewRef.alterMarkup();
 
 								viewRef.trigger("metadataLoaded");
@@ -250,7 +256,7 @@ define(['jquery',
 							}
 						},
 						error: function(xhr, textStatus, errorThrown){
-							view.renderMetadataFromIndex();
+							viewRef.renderMetadataFromIndex();
 						}
 				}
 
@@ -330,7 +336,7 @@ define(['jquery',
 		},
 
 		insertBreadcrumbs: function(){
-
+			
 			var breadcrumbs = $(document.createElement("ol"))
 						      .addClass("breadcrumb")
 						      .append($(document.createElement("li"))
@@ -342,7 +348,8 @@ define(['jquery',
 		    				  .append($(document.createElement("li"))
 		    						  .addClass("search")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))						    				  .addClass("search")
+						    				  .attr("href", "#data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
+						    				  .addClass("search")
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
 						    		  .append($(document.createElement("a"))
@@ -352,7 +359,7 @@ define(['jquery',
 
 			if(MetacatUI.uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
-								 .attr("href", "#data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
+						         .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
 						         .attr("title", "Back")
 						         .addClass("back")
 						         .text(" Back to search")
@@ -370,14 +377,14 @@ define(['jquery',
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
-
+			
 			if(!this.model.get("notFound")) return;
 
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 					  "<ul class='indent'>" +
 					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-						  "<li>You do not have permission to view this content.</li>" +
-						  "<li>The content was removed because it was invalid or inappropriate.</li>" +
+						  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+						  "<li>The content was removed because it was invalid.</li>" +
 					  "</ul>";
 			this.hideLoading();
 			this.showError(msg);
@@ -576,6 +583,8 @@ define(['jquery',
 			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
 
+			$(tableContainer).find(".tooltip-this").tooltip();
+
 			this.subviews.push(tableView);
 		},
 
@@ -634,9 +643,10 @@ define(['jquery',
 						//Parse text for older versions of Metacat (v2.4.3 and earlier)
 						if(parseText){
 							var labelEl = $(georegion).find('label:contains("' + direction + '")');
-							if(labelEl){
+							if(labelEl.length){
 								var coordinate = $(labelEl).next().html();
-								if(coordinate.indexOf("&nbsp;") > -1) coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
+								if(typeof coordinate != "undefined" && coordinate.indexOf("&nbsp;") > -1)
+									coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
 							}
 						}
 						else{
@@ -664,7 +674,7 @@ define(['jquery',
 				var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
 				var latLngCEN = bounds.getCenter();
 
-				var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() + 
+				var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() +
 						  "&spn=0.003833,0.010568" +
 						  "&t=m" +
 						  "&z=10";
@@ -716,37 +726,82 @@ define(['jquery',
 		insertDataSource: function(){
 			if(!this.model || !MetacatUI.nodeModel || !MetacatUI.nodeModel.get("members").length || !this.$(this.dataSourceContainer).length) return;
 
-			var dataSource = MetacatUI.nodeModel.getMember(this.model);
+			var dataSource  = MetacatUI.nodeModel.getMember(this.model),
+				replicaMNs  = MetacatUI.nodeModel.getMembers(this.model.get("replicaMN"));
+			
+			//Filter out the data source from the replica nodes
+			if(Array.isArray(replicaMNs) && replicaMNs.length){
+				replicaMNs = _.without(replicaMNs, dataSource);
+			}
 
 			if(dataSource && dataSource.logo){
 				this.$("img.data-source").remove();
-
+				
 				//Insert the data source template
 				this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
 					node : dataSource
 				})).addClass("has-data-source");
+				
 				this.$(this.citationContainer).addClass("has-data-source");
-				this.$(".popover-this").popover();
 				this.$(".tooltip-this").tooltip();
+				
+				$(".popover-this.data-source.logo").popover({ 
+						trigger: "manual", 
+						html: true, 
+						title: "From the " + dataSource.name + " repository",
+						content: function(){
+							var content = "<p>" + dataSource.description + "</p>";
+							
+							if(replicaMNs.length){
+								content += '<h5>Exact copies hosted by ' + replicaMNs.length + ' repositories: </h5><ul class="unstyled">';
+							
+								_.each(replicaMNs, function(node){
+									content += '<li><a href="https://search.dataone.org/#profile/' + 
+												node.shortIdentifier + 
+												'" class="pointer">' + 
+												node.name + 
+												'</a></li>';
+								});
+								
+								content += "</ul>";
+							}
+							
+							return content;
+						},
+						animation:false
+					})
+					.on("mouseenter", function () {
+					    var _this = this;
+					    $(this).popover("show");
+					    $(".popover").on("mouseleave", function () {
+					        $(_this).popover('hide');
+					    });
+					}).on("mouseleave", function () {
+					    var _this = this;
+					    setTimeout(function () {
+					        if (!$(".popover:hover").length) {
+					            $(_this).popover("hide");
+					        }
+					    }, 300);
+					});
+
 			}
 		},
-		
+
 		/*
-		 * Checks the authority for the logged in user for this dataset 
+		 * Checks the authority for the logged in user for this dataset
 		 * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
 		 */
 		insertOwnerControls: function(){
-			//Don't display editing controls when we are pointing to a CN
-			if(MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn") > -1)
+			if( !MetacatUI.appModel.get("publishServiceUrl") )
 				return false;
-			
+
 			//Do not show user controls for older versions of data sets
 			if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
 				return false;
-			
-				
-			var container = this.$(this.ownerControlsContainer);			
-			
+
+			var container = this.$(this.ownerControlsContainer);
+
 			//Save some references
 			var pid     = this.model.get("id") || this.pid,
 				model   = this.model,
@@ -758,15 +813,15 @@ define(['jquery',
 				//Insert the controls container
 				var controlsEl = $(document.createElement("div")).addClass("authority-controls inline-buttons");
 				$(container).html(controlsEl);
-	
+
 				//Insert an Edit button
 				controlsEl.append(
 					viewRef.editMetadataTemplate({
 						identifier: pid
 					}));
-				
-				//Insert a Publish button if its not already published with a DOI	
-				if(!model.isDOI()){					
+
+				//Insert a Publish button if its not already published with a DOI
+				if(!model.isDOI()){
 					//Insert the template
 					controlsEl.append(
 						viewRef.doiTemplate({
@@ -774,24 +829,43 @@ define(['jquery',
 							identifier: pid
 						}));
 				}
+				
+				//Check the authority on the package models
+				//If there is no package, then exit now
+				if(!viewRef.packageModels || !viewRef.packageModels.length) return;
+				
+				//Check for authorization on the resource map
+				var packageModel = this.packageModels[0];
+				
+				//if there is no package, then exit now
+				if(!packageModel.get("id")) return;
+				
+				//Listen for changes to the authorization flag
+				//packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
+				//packageModel.once("sync", viewRef.createProvEditor, viewRef); 
+						
+				//Now get the RDF XML and check for the user's authority on this resource map
+				//packageModel.fetch();
+				//packageModel.checkAuthority();
 			});
 			this.model.checkAuthority();
 		},
-		
+
 		/*
 		 * Inserts elements users can use to interact with this dataset:
 		 * - A "Copy Citation" button to copy the citation text
 		 */
-		insertControls: function(){		
+		insertControls: function(){
 			//Get template
 			var controlsContainer = this.controlsTemplate({
 					citation: $(this.citationContainer).text(),
 					url: window.location,
+					mdqUrl: MetacatUI.appModel.get("mdqUrl"),
 					model: this.model.toJSON()
 				});
 
 			$(this.controlsContainer).html(controlsContainer);
-			
+
 			var view = this;
 
 			//Create clickable "Copy" buttons to copy text (e.g. citation) to the user's clipboard
@@ -802,29 +876,29 @@ define(['jquery',
 				clipboard.on("success", function(e){
 					$(e.trigger).siblings(".copy-success").show().delay(1000).fadeOut();
 				});
-				
+
 				clipboard.on("error", function(e){
-					
+
 					if(!$(e.trigger).prev("input.copy").length){
 						var textarea = $(document.createElement("input")).val($(e.trigger).attr("data-clipboard-text")).addClass("copy").css("width", "0");
 						textarea.tooltip({
 							title: "Press Ctrl+c to copy",
 							placement: "top"
-						});				
+						});
 						$(e.trigger).before(textarea);
 					}
 					else{
 						var textarea = $(e.trigger).prev("input.copy");
 					}
-					
+
 					textarea.animate({ width: "100px" }, {
-						duration: "slow", 
+						duration: "slow",
 						complete: function(){
 							textarea.trigger("focus");
 							textarea.tooltip("show");
 						}
-					});	
-					
+					});
+
 					textarea.focusout(function(){
 						textarea.animate({ width: "0px" }, function(){
 							textarea.remove();
@@ -832,17 +906,13 @@ define(['jquery',
 					});
 				});
 			});
-			
-			//Initialize the fancybox elements
-			this.$(".fancybox").fancybox({
-				transitionIn: "elastic"
-			});
+
 			this.$(".tooltip-this").tooltip();
 		},
-		
+
 		// Create, render, and insert the View for the ServiceType
 		insertServiceTable: function() {
-			if (!this.model.attributes.isService) return;
+			if (!this.model.get("isService")) return;
 
 			var serviceData = this.parseServiceInformation();
 			var serviceTable = new ServiceTable(serviceData);
@@ -863,10 +933,10 @@ define(['jquery',
 			var split_pattern = /:(?!\/\/|\d)/;
 
 			// Collect values
-			var names = this.model.get("serviceTitle").split(split_pattern);
-			var descriptions = this.model.get("serviceDescription").split(split_pattern);
-			var types = this.model.get("serviceType"); // Already comes as an Array
-			var endpoints = this.model.get("serviceEndpoint"); // Already comes as an Array
+			var names = this.model.get("serviceTitle") ? this.model.get("serviceTitle").split(split_pattern) : [],
+				descriptions = this.model.get("serviceDescription") ? this.model.get("serviceDescription").split(split_pattern) : [],
+				types = this.model.get("serviceType") || [],
+				endpoints = this.model.get("serviceEndpoint") || [];
 
 			// Create our Array of Objects, filling in defaults for each property
 			var data = _.map(_.range(endpoints.length), function(i) {
@@ -878,20 +948,23 @@ define(['jquery',
 				}
 			});
 
-			return data;
+			// Sort the informaton by Name
+			var sorted = _.sortBy(data, 'name');
+
+			return sorted;
 		},
 
 		/*
 		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
-		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations 
+		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations
 		 */
 		drawProvCharts: function(packageModel){
-			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn 
+			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn
 			if(packageModel.get("provenanceFlag") != "complete") return false;
-			
+
 			var view = this;
-			
-			//Draw two flow charts to represent the sources and derivations at a package level			
+
+			//Draw two flow charts to represent the sources and derivations at a package level
 			var packageSources     = packageModel.get("sourcePackages"),
 				packageDerivations = packageModel.get("derivationPackages");
 
@@ -902,9 +975,9 @@ define(['jquery',
 					contextEl    : this.$(this.articleContainer),
 					packageModel : packageModel,
 					parentView   : view
-				});	
+				});
 				this.subviews.push(sourceProvChart);
-				this.$(this.articleContainer).before(sourceProvChart.render().el).addClass("hasProvLeft");	
+				this.$(this.articleContainer).before(sourceProvChart.render().el);
 			}
 			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
@@ -913,31 +986,31 @@ define(['jquery',
 					contextEl    : this.$(this.articleContainer),
 					packageModel : packageModel,
 					parentView   : view
-				});		
+				});
 				this.subviews.push(derivationProvChart);
-				this.$(this.articleContainer).after(derivationProvChart.render().el).addClass("hasProvRight");			
-			}			
-			
+				this.$(this.articleContainer).after(derivationProvChart.render().el);
+			}
+
 			if(packageModel.get("sources").length || packageModel.get("derivations").length){
 				//Draw the provenance charts for each member of this package at an object level
 				_.each(packageModel.get("members"), function(member, i){
 					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
-	
+
 					//Retrieve the sources and derivations for this member
 					var memberSources 	  = member.get("provSources") || new Array(),
 						memberDerivations = member.get("provDerivations") || new Array();
-	
+
 					//Make the source chart for this member
 					if(memberSources.length){
 						var memberSourcesProvChart = new ProvChart({
-							sources      : memberSources, 
+							sources      : memberSources,
 							context      : member,
 							contextEl    : entityDetailsSection,
 							packageModel : packageModel,
 							parentView   : view
-						});	
+						});
 						view.subviews.push(memberSourcesProvChart);
-						$(entityDetailsSection).before(memberSourcesProvChart.render().el).addClass("hasProvLeft");
+						$(entityDetailsSection).before(memberSourcesProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
 					}
 					if(memberDerivations.length){
@@ -948,39 +1021,43 @@ define(['jquery',
 							contextEl    : entityDetailsSection,
 							packageModel : packageModel,
 							parentView   : view
-						});	
+						});
 						view.subviews.push(memberDerivationsProvChart);
-						$(entityDetailsSection).after(memberDerivationsProvChart.render().el).addClass("hasProvRight");				
+						$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
 					}
 				});
 			}
-			
+
 			//Make all of the prov chart nodes look different based on id
 			if(this.$(".prov-chart").length > 0){
 				var allNodes = this.$(".prov-chart .node"),
 				ids      = [],
 				view     = this,
 				i        = 1;
-			
+
 				$(allNodes).each(function(){ ids.push($(this).attr("data-id"))});
 				ids = _.uniq(ids);
-				
-				_.each(ids, function(id){					
+
+				_.each(ids, function(id){
 					var matchingNodes = view.$(".prov-chart .node[data-id='" + id + "']");
 					//var matchingEntityDetails = view.findEntityDetailsContainer(id);
-					
+
 					//Don't use the unique class on images since they will look a lot different anyway by their image
-					if(!$(matchingNodes).first().hasClass("image")){	
+					if(!$(matchingNodes).first().hasClass("image")){
 						var className = "uniqueNode" + i;
-						//Add the unique class and up the iterator
-						$(matchingNodes).addClass(className);
 						
+						//Add the unique class and up the iterator
+						if(matchingNodes.prop("tagName") != "polygon")
+							$(matchingNodes).addClass(className);
+						else
+							$(matchingNodes).attr("class", $(matchingNodes).attr("class") + " " + className);
+
 					/*	if(matchingEntityDetails)
 							$(matchingEntityDetails).addClass(className);*/
-						
+
 						//Save this id->class mapping in this view
-						view.classMap.push({ id        : id, 
+						view.classMap.push({ id        : id,
 											 className : className });
 						i++;
 					}
@@ -988,6 +1065,82 @@ define(['jquery',
 			}
 		},
 		
+		/*
+		 * Creates a provenance editor
+		 */
+		createProvEditor: function(){
+			//Get the package - just get the first one for now
+			//TODO: Make sure this is the parent resource map
+			var packageModel = this.packageModels[0];
+						
+			//If this user is not authorized to edit this resource map, then exit
+			//Or if this is package hasn't been retrieved yet, then exit
+			if(!packageModel.get("id") || !packageModel.get("isAuthorized") || !packageModel.get("objectXML")) return;
+			
+			//Render the prov charts in the gutters
+			_.each(this.$(".entitydetails"), function(entityDetailsEl){
+				//If this section doesn't have a prov chart already, create a new blank one
+				if(!$(entityDetailsEl).is(".hasProvLeft") || !$(entityDetailsEl).is(".hasProvRight")){
+
+					$(entityDetailsEl).parent().addClass("gutters");
+					
+					//Get the id of this entity
+					var entityId = $(entityDetailsEl).attr("data-id"),
+						model,
+						packageModel;
+
+					//Get the model for this entity and its package model
+					findMember: for(var i=0; i<this.packageModels.length; i++){
+						packageModel = this.packageModels[i];
+						var members = packageModel.get("members");
+						//Find the member by id
+						for(var ii=0; ii<members.length; ii++){
+							if(members[ii].get("id") == entityId){
+								model = members[ii];
+								break findMember;
+							}							
+						}
+					}
+					
+					//Create the blank prov chart editor for sources
+					if(!$(entityDetailsEl).is(".hasProvLeft")){
+						//Create the chart view
+						var sourcesProvEditor = new ProvChart({
+							context      : model,
+							contextEl    : entityDetailsEl,
+							packageModel : packageModel,
+							parentView   : this,
+							editor       : true,
+							editorType   : "sources"
+						});
+						//Add the view to the subviews list
+						this.subviews.push(sourcesProvEditor);
+						
+						//Render the chart and insert into the page
+						$(entityDetailsEl).before(sourcesProvEditor.render().el);
+					}
+					
+					//Create the blank prov chart editor for derivations
+					if(!$(entityDetailsEl).is(".hasProvRight")){	
+						//Create the chart view
+						var derivationsProvEditor = new ProvChart({
+							context      : model,
+							contextEl    : entityDetailsEl,
+							packageModel : packageModel,
+							parentView   : this,
+							editor       : true,
+							editorType   : "derivations"
+						});
+						//Add the view to the subviews list
+						this.subviews.push(derivationsProvEditor);
+						
+						//Render the chart and insert into the page
+						$(entityDetailsEl).after(derivationsProvEditor.render().el);
+					}
+				}
+			}, this);
+		},
+
 		/*
 		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is an image, false if it is other
@@ -1001,13 +1154,13 @@ define(['jquery',
 			                "image/svg xml",
 			                "image/svg+xml",
 			                "image/bmp"];
-			
+
 			//Does this data object match one of these IDs?
-			if(_.indexOf(imageIds, dataObject.get('formatId')) == -1) return false;			
+			if(_.indexOf(imageIds, dataObject.get('formatId')) == -1) return false;
 			else return true;
-			
+
 		},
-		
+
 		/*
 		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is a pdf, false if it is other
@@ -1015,37 +1168,37 @@ define(['jquery',
 		isPDF: function(dataObject){
 			//The list of formatIds that are images
 			var ids = ["application/pdf"];
-			
+
 			//Does this data object match one of these IDs?
-			if(_.indexOf(ids, dataObject.get('formatId')) == -1) return false;			
-			else return true;			
+			if(_.indexOf(ids, dataObject.get('formatId')) == -1) return false;
+			else return true;
 		},
-		
+
 		getEntityNames: function(packageModels){
 			var viewRef = this;
 
 			_.each(packageModels, function(packageModel){
-				
+
 				//Don't get entity names for larger packages - users must put the names in the system metadata
 				if(packageModel.get("members").length > 100) return;
-				
+
 				//If this package has a different metadata doc than the one we are currently viewing
 				var metadataModel = packageModel.getMetadata();
 				if(!metadataModel) return;
-				
+
 				if(metadataModel.get("id") != viewRef.pid){
-					var requestSettings = { 
-						url: MetacatUI.appModel.get("viewServiceUrl") + metadataModel.get("id"), 
+					var requestSettings = {
+						url: MetacatUI.appModel.get("viewServiceUrl") + encodeURIComponent(metadataModel.get("id")),
 						success: function(parsedMetadata, response, xhr){
 							_.each(packageModel.get("members"), function(solrResult, i){
 								var entityName = "";
-								
+
 								if(solrResult.get("formatType") == "METADATA")
 									entityName = solrResult.get("title");
-								
+
 								var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
 								if(container) entityName = viewRef.getEntityName(container);
-								
+
 								//Set the entity name
 								if(entityName){
 									solrResult.set("fileName", entityName);
@@ -1056,15 +1209,15 @@ define(['jquery',
 						}
 					}
 
-					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
+					$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
 					return;
 				}
-				
+
 				_.each(packageModel.get("members"), function(solrResult, i){
-					
+
 					var entityName = "";
-					
+
 					if(solrResult.get("fileName"))
 						entityName = solrResult.get("fileName");
 					else if(solrResult.get("formatType") == "METADATA")
@@ -1073,93 +1226,89 @@ define(['jquery',
 						return;
 					else{
 						var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
-						
+
 						if(container && container.length > 0)
 							entityName = viewRef.getEntityName(container);
 						else
 							entityName = null;
-		
+
 					}
-					
+
 					//Set the entityName, even if it's null
 					solrResult.set("fileName", entityName);
 				});
 			});
 		},
-		
+
 		getEntityName: function(containerEl){
 			if(!containerEl) return false;
-			
+
 			var entityName = $(containerEl).find(".entityName").attr("data-entity-name");
 			if((typeof entityName === "undefined") || (!entityName)){
 				entityName = $(containerEl).find(".control-label:contains('Entity Name') + .controls-well").text();
-				if((typeof entityName === "undefined") || (!entityName)) 
+				if((typeof entityName === "undefined") || (!entityName))
 					entityName = null;
 			}
-			
+
 			return entityName;
 		},
-		
-		updateEntityName: function(){
-			
-		},
-		
+
 		//Checks if the metadata has entity details sections
 		hasEntityDetails: function(){
 			return (this.$(".entitydetails").length > 0);
 		},
-		
+
 		findEntityDetailsContainer: function(id, el){
 			if(!el) var el = this.el;
-			
+
 			//If we already found it earlier, return it now
 			var container = this.$(".entitydetails[data-id='" + id + "']");
 			if(container.length) return container;
-						
+
 			//Are we looking for the main object that this MetadataView is displaying?
 			if(id == this.pid){
 				if(this.$("#Metadata").length > 0) return this.$("#Metadata");
 				else return this.el;
 			}
-						
-			//Metacat 2.4.2 and up will have the Online Distribution Link marked 
-			var link = this.$(".entitydetails a[data-id='" + id + "']");
-						
+
+			//Metacat 2.4.2 and up will have the Online Distribution Link marked
+			var link = this.$(".entitydetails a[data-pid='" + id + "']");
+
 			//Otherwise, try looking for an anchor with the id matching this object's id
 			if(!link.length)
-				link = $(document.getElementById(id));
+				link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
 
 			//Get metadata index view
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
 			if(typeof metadataFromIndex === "undefined") metadataFromIndex = null;
-			
-			//Otherwise, find the Online Distribution Link the hard way 
+
+			//Otherwise, find the Online Distribution Link the hard way
 			if((link.length < 1) && (!metadataFromIndex))
 				link = $(el).find(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
-						
+
 			if(link.length > 0){
 				//Get the container element
-				container = $(link).parents(".entitydetails"); 
-				
+				container = $(link).parents(".entitydetails");
+
 				if(container.length < 1){
 					//backup - find the parent of this link that is a direct child of the form element
 					var firstLevelContainer = _.intersection($(link).parents("form").children(), $(link).parents());
 					//Find the controls-well inside of that first level container, which is the well that contains info about this data object
 					if(firstLevelContainer.length > 0)
 						container = $(firstLevelContainer).children(".controls-well");
-							
+
 					if((container.length < 1) && (firstLevelContainer.length > 0))
 						container = firstLevelContainer;
-					
+
 					$(container).addClass("entitydetails");
 				}
-				
+
 				//Add the id so we can easily find it later
 				container.attr("data-id", id);
-				
+
 				return container;
-			}	
-			
+			}
+
 			//Find by file name rather than id
 			//Get the name of the object first
 			var name = "";
@@ -1180,40 +1329,40 @@ define(['jquery',
 						name = name.substring(0, name.lastIndexOf("."));
 						matches = entityNames.find("strong:contains('" + name + "')");
 					}
-					
+
 					//If we found more than one match, filter out the substring matches
 					if(matches.length > 1){
 						matches = _.filter(matches, function(div){
-							return (div.textContent == name); 
+							return (div.textContent == name);
 						});
 					}
-						
+
 					if(matches.length){
-						container = matches.parents(".entitydetails").first();
+						container = $(matches).parents(".entitydetails").first();
 						container.attr("data-id", id);
 						return container;
 					}
 				}
 			}
-			
+
 			//If this package has only one item, we can assume the only entity details are about that item
 			var members = this.packageModels[0].get("members"),
 				dataMembers = _.filter(members, function(m){ return (m.get("formatType") == "DATA"); });
 			if(dataMembers.length == 1){
 				if(this.$(".entitydetails").length == 1){
 					this.$(".entitydetails").attr("data-id", id);
-					return this.$(".entitydetails");	
+					return this.$(".entitydetails");
 				}
 			}
-			
+
 			return false;
 		},
-		
+
 		/*
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 */
 		insertDataDetails: function(){
-			
+
 			//If there is a metadataIndex subview, render from there.
 			var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
 			if(typeof metadataFromIndex !== "undefined"){
@@ -1222,94 +1371,104 @@ define(['jquery',
 				});
 				return;
 			}
-			
+
 			var viewRef = this;
-			
+
 			_.each(this.packageModels, function(packageModel){
-			
+
 				var dataDisplay = "",
 					images = [],
 					pdfs = [],
 					other = [],
 					packageMembers = packageModel.get("members");
-				
+
 				//Don't do this for large packages
 				if(packageMembers.length > 150) return;
-							
+
 				//==== Loop over each visual object and create a dataDisplay template for it to attach to the DOM ====
-				for(var i=0; i < packageMembers.length; i++){
-					var solrResult = packageMembers[i],
-						objID      = solrResult.get("id");
+				_.each(packageMembers, function(solrResult, i){
+					//Don't display any info about nested packages
+					if(solrResult.type == "Package") return;
 					
-					if(objID == viewRef.pid) continue;
-									
+					var objID = solrResult.get("id");
+
+					if(objID == viewRef.pid) 
+						return;
+
 					//Is this a visual object (image or PDF)?
 					var type = solrResult.type == "SolrResult" ? solrResult.getType() : "Data set";
 					if(type == "image")
 						images.push(solrResult);
 					else if(type == "PDF")
 						pdfs.push(solrResult);
-					
+
 					//Find the part of the HTML Metadata view that describes this data object
 					var anchor         = $(document.createElement("a")).attr("id", objID.replace(/[^A-Za-z0-9]/g, "-")),
 						container      = viewRef.findEntityDetailsContainer(objID);
+
+					var downloadButton = new DownloadButtonView({ model: solrResult });
+					downloadButton.render();
 					
-					if(solrResult.get("size") < MetacatUI.appModel.get("maxDownloadSize"))
-						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({href: solrResult.get("url")}).trim());
-					else
-						var downloadButton = $.parseHTML(viewRef.downloadButtonTemplate({ tooLarge: true }).trim());
-						
-					//Insert the data display HTML and the anchor tag to mark this spot on the page 
+					//Insert the data display HTML and the anchor tag to mark this spot on the page
 					if(container){
-						if((type == "image") || (type == "PDF")){							
-							if((type == "PDF") && !solrResult.get("isPublic")){
-								
-								var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
-													type : type,
-													src : solrResult.get("url"), 
-													objID : objID
-												  }).trim());
-								
-								//Send the auth token in a XHR request to get the PDF
-								//Create an XHR
-								var xhr = new XMLHttpRequest();
-								xhr.responseType = "blob";
-								xhr.withCredentials = true;
+						if((type == "image") || (type == "PDF")){
 							
-								//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
-								xhr.onload = function(){ 
-								    var iframe = $(dataDisplay).find("iframe");
-								    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
-								    var a = $(dataDisplay).find("a.zoom-in").remove();
-								    //TODO: Allow fancybox previews of private PDFs
-								    
-								};
-								
-								//Open and send the request with the user's auth token
-								xhr.open('GET', solrResult.get("url"));
-								xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
-								xhr.send();
-							}
-								
+							//Create the data display HTML
+							var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
+												type : type,
+												src : solrResult.get("url"),
+												objID : objID
+											  }).trim());
+							
 							//Insert into the page
 							if($(container).children("label").length > 0)
 								$(container).children("label").first().after(dataDisplay);
 							else
 								$(container).prepend(dataDisplay);
 							
+							//If this image or PDF is private, we need to load it via an XHR request
+							if( !solrResult.get("isPublic") ){
+								//Create an XHR
+								var xhr = new XMLHttpRequest();
+								xhr.responseType = "blob";
+								xhr.withCredentials = true;
+								
+								if(type == "PDF"){
+									//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
+									xhr.onload = function(){
+									    var iframe = $(dataDisplay).find("iframe");
+									    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
+									    var a = $(dataDisplay).find("a.zoom-in").remove();
+									    //TODO: Allow fancybox previews of private PDFs
+
+									}
+								}
+								else if(type == "image"){
+									xhr.onload = function(){
+										
+										if(xhr.response)
+											$(dataDisplay).find("img").attr("src", window.URL.createObjectURL(xhr.response));
+									}
+								}
+								
+								//Open and send the request with the user's auth token
+								xhr.open('GET', solrResult.get("url"));
+								xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
+								xhr.send();
+							}
+
 						}
-						
+
 						$(container).prepend(anchor);
-						
+
 						var nameLabel = $(container).find("label:contains('Entity Name')");
 						if(nameLabel.length){
-							$(nameLabel).parent().after(downloadButton);
-							$(downloadButton).find(".tooltip-this").tooltip();
+							$(nameLabel).parent().after(downloadButton.el);
 						}
-					}	
-				
-				}
-							
+					}
+
+				});
+
 				//==== Initialize the fancybox images =====
 				// We will be checking every half-second if all the HTML has been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
 				var numImages  = images.length,
@@ -1332,22 +1491,22 @@ define(['jquery',
 							    }
 							}
 					};
-				
+
 				if(numPDFS > 0){
 					var numPDFChecks  = 0,
 						lightboxPDFSelector = "a[class^='fancybox'][data-fancybox-iframe]";
-					
+
 					//Add additional options for PDFs
 					var pdfLightboxOptions = lightboxOptions;
 					pdfLightboxOptions.type = "iframe";
 					pdfLightboxOptions.iframe = { preload: false };
 					pdfLightboxOptions.height = "98%";
-					
+
 					var initializePDFLightboxes = function(){
 						numPDFChecks++;
-						
+
 						//Initialize what images have loaded so far after 5 seconds
-						if(numPDFChecks == 10){ 
+						if(numPDFChecks == 10){
 							$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
 						}
 						//When 15 seconds have passed, stop checking so we don't blow up the browser
@@ -1355,35 +1514,35 @@ define(['jquery',
 							window.clearInterval(pdfIntervalID);
 							return;
 						}
-						
+
 						//Are all of our pdfs loaded yet?
 						if(viewRef.$(lightboxPDFSelector).length < numPDFS) return;
-						else{					
+						else{
 							//Initialize our lightboxes
 							$(lightboxPDFSelector).fancybox(pdfLightboxOptions);
-							
+
 							//We're done - clear the interval
 							window.clearInterval(pdfIntervalID);
-						}				
+						}
 					}
-					
+
 					var pdfIntervalID = window.setInterval(initializePDFLightboxes, 500);
 				}
-				
+
 				if(numImages > 0){
 					var numImgChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load
 						lightboxImgSelector = "a[class^='fancybox'][data-fancybox-type='image']";
-						
+
 					//Add additional options for images
 					var imgLightboxOptions = lightboxOptions;
 					imgLightboxOptions.type = "image";
 					imgLightboxOptions.perload = 1;
-					
+
 					var initializeImgLightboxes = function(){
 						numImgChecks++;
-						
+
 						//Initialize what images have loaded so far after 5 seconds
-						if(numImgChecks == 10){ 
+						if(numImgChecks == 10){
 							$(lightboxImgSelector).fancybox(imgLightboxOptions);
 						}
 						//When 15 seconds have passed, stop checking so we don't blow up the browser
@@ -1392,23 +1551,23 @@ define(['jquery',
 							window.clearInterval(imgIntervalID);
 							return;
 						}
-						
+
 						//Are all of our images loaded yet?
 						if(viewRef.$(lightboxImgSelector).length < numImages) return;
-						else{					
+						else{
 							//Initialize our lightboxes
 							$(lightboxImgSelector).fancybox(imgLightboxOptions);
-							
+
 							//We're done - clear the interval
 							window.clearInterval(imgIntervalID);
-						}				
+						}
 					}
-					
+
 					var imgIntervalID = window.setInterval(initializeImgLightboxes, 500);
 				}
 			});
 		},
-		
+
 		/*
 		 * Inserts new image elements into the DOM via the image template. Use for displaying images that are part of this metadata's resource map.
 		 * param pdfs - an array of objects that represent the data objects returned from the index. Each should be a PDF
@@ -1416,13 +1575,13 @@ define(['jquery',
 		insertPDFs: function(pdfs){
 			var html = "",
 			 viewRef = this;
-		
+
 			//Loop over each image object and create a dataDisplay template for it to attach to the DOM
 			for(var i=0; i<pdfs.length; i++){
 				//Find the part of the HTML Metadata view that describes this data object
 				var container = this.$el.find("td:contains('" + pdfs[i].id + "')").parents(".controls-well");
-				
-				//Harvest the Object Name for an image caption 
+
+				//Harvest the Object Name for an image caption
 				if(container !== undefined) var title = container.find("label:contains('Object Name')").next().text();
 				else{
 					var title = "";
@@ -1431,21 +1590,21 @@ define(['jquery',
 				//Create an element using the dataDisplay template
 				html = this.dataDisplayTemplate({
 					 type : "pdf",
-					  src : MetacatUI.appModel.get('objectServiceUrl') + pdfs[i].id,
-					title : title 
+					  src : (MetacatUI.appModel.get('objectServiceUrl') || MetacatUI.appModel.get('resolveServiceUrl')) + pdfs[i].id,
+					title : title
 				});
-	
+
 				// Insert the element into the DOM
-				$(container).append(html);				
+				$(container).append(html);
 			}
-		
+
 			//==== Initialize the fancybox images =====
 			// We will be checking every half-second if all the images have been loaded into the DOM - once they are all loaded, we can initialize the lightbox functionality.
 			var numPDFs  = pdfs.length,
-				numChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load 
+				numChecks  = 0, //Keep track of how many interval checks we have so we don't wait forever for images to load
 				lightboxSelector = "a[class^='fancybox'][data-fancybox-iframe]",
 				intervalID = window.setInterval(initializeLightboxes, 500);
-			
+
 			//Set up our lightbox options
 			var lightboxOptions = {
 					prevEffect	: 'elastic',
@@ -1468,12 +1627,12 @@ define(['jquery',
 					   this.title = this.title + " <a href='" + this.href + "' class='btn' target='_blank'>Download</a> ";
 				   }
 			}
-		
+
 			function initializeLightboxes(){
 				numChecks++;
-				
+
 				//Initialize what images have loaded so far after 5 seconds
-				if(numChecks == 10){ 
+				if(numChecks == 10){
 					$(lightboxSelector).fancybox(lightboxOptions);
 				}
 				//When 15 seconds have passed, stop checking so we don't blow up the browser
@@ -1481,39 +1640,39 @@ define(['jquery',
 					window.clearInterval(intervalID);
 					return;
 				}
-				
+
 				//Are all of our pdfs loaded yet?
 				if(viewRef.$(lightboxSelector).length < numPDFs) return;
-				else{					
+				else{
 					//Initialize our lightboxes
 					$(lightboxSelector).fancybox(lightboxOptions);
-					
+
 					//We're done - clear the interval
 					window.clearInterval(intervalID);
-				}				
+				}
 			}
 		},
-		
+
 		replaceEcoGridLinks: function(){
 			var viewRef = this;
-			
+
 			//Find the element in the DOM housing the ecogrid link
 			$("a:contains('ecogrid://')").each(function(i, thisLink){
-					
+
 					//Get the link text
 					var linkText = $(thisLink).text();
-					
+
 					//Clean up the link text
 					var withoutPrefix = linkText.substring(linkText.indexOf("ecogrid://") + 10),
 						pid = withoutPrefix.substring(withoutPrefix.indexOf("/")+1),
-						baseUrl = MetacatUI.appModel.get('objectServiceUrl') || MetacatUI.appModel.get('resolveServiceUrl');
-					
-					$(thisLink).attr('href', baseUrl + encodeURIComponent(pid)).text(pid);		
+						baseUrl = MetacatUI.appModel.get('resolveServiceUrl') || MetacatUI.appModel.get('objectServiceUrl');
+
+					$(thisLink).attr('href', baseUrl + encodeURIComponent(pid)).text(pid);
 			});
 		},
-		
+
 		publish: function(event) {
-			
+
 			// target may not actually prevent click events, so double check
 			var disabled = $(event.target).closest("a").attr("disabled");
 			if (disabled) {
@@ -1522,13 +1681,13 @@ define(['jquery',
 			var publishServiceUrl = MetacatUI.appModel.get('publishServiceUrl');
 			var pid = $(event.target).closest("a").attr("pid");
 			var ret = confirm("Are you sure you want to publish " + pid + " with a DOI?");
-			
+
 			if (ret) {
-				
+
 				// show the loading icon
 				var message = "Publishing package...this may take a few moments";
 				this.showLoading(message);
-				
+
 				var identifier = null;
 				var viewRef = this;
 				var requestSettings = {
@@ -1540,7 +1699,7 @@ define(['jquery',
 						success: function(data, textStatus, xhr) {
 							// the response should have new identifier in it
 							identifier = $(data).find("d1\\:identifier, identifier").text();
-						
+
 							if (identifier) {
 								viewRef.hideLoading();
 								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='#view/" + identifier + "'>published data package here</a>";
@@ -1550,7 +1709,7 @@ define(['jquery',
 											classes: 'alert-success'
 										})
 								);
-								
+
 								// navigate to the new view after a few seconds
 								setTimeout(
 										function() {
@@ -1558,152 +1717,160 @@ define(['jquery',
 											viewRef.$el.html('');
 											viewRef.showLoading();
 											MetacatUI.uiRouter.navigate("view/" + identifier, {trigger: true})
-										}, 
+										},
 										3000);
 							}
 						},
 						error: function(xhr, textStatus, errorThrown) {
 							// show the error message, but stay on the same page
 							var msg = "Publish failed: " + $(xhr.responseText).find("description").text();
-							
+
 							viewRef.hideLoading();
 							viewRef.showError(msg);
 						}
 					}
-				
-				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
-				
+
+				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
 			}
 		},
-		
+
 		//When the given ID from the URL is a resource map that has no metadata, do the following...
 		noMetadata: function(solrResultModel){
 			this.hideLoading();
 			this.$el.html(this.template());
-			
+
 			this.pid = solrResultModel.get("resourceMap") || solrResultModel.get("id");
-			
+
 			//Insert breadcrumbs
 			this.insertBreadcrumbs();
-			
+
 			this.insertDataSource();
-			
+
 			//Insert a table of contents
 			this.insertPackageTable(solrResultModel);
-			
+
 			this.renderMetadataFromIndex();
-			
+
 			//Insert a message that this data is not described by metadata
 			MetacatUI.appView.showAlert("Additional information about this data is limited since metadata was not provided by the creator.", "alert-warning", this.$(this.metadataContainer));
 		},
-		
+
 		// this will lookup the latest version of the PID
-		showLatestVersion: function() {				
+		showLatestVersion: function() {
 			var view = this;
-			
+
 			//When the latest version is found,
 			this.listenTo(this.model, "change:newestVersion", function(){
 				//Make sure it has a newer version, and if so,
 				if(view.model.get("newestVersion") != view.model.get("id"))
-					//Put a link to the newest version in the content 
+					//Put a link to the newest version in the content
 					view.$el.prepend(view.versionTemplate({pid: view.model.get("newestVersion")}));
 			});
-			
+
 			//Find the latest version of this metadata object
 			this.model.findLatestVersion();
 		},
-		
+
 		showLoading: function(message) {
 			this.hideLoading();
-			
+
 			MetacatUI.appView.scrollToTop();
-			
+
 			var loading = this.loadingTemplate({ msg: message });
 			if(!loading) return;
-			
+
 			this.$loading = $($.parseHTML(loading));
 			this.$detached = this.$el.children().detach();
-			
+
 			this.$el.html(loading);
 		},
-		
+
 		hideLoading: function() {
 			if(this.$loading)  this.$loading.remove();
 			if(this.$detached) this.$el.html(this.$detached);
 		},
-		
+
 		showError: function(msg){
+			//Remove any existing error messages
+			this.$el.children(".alert-container").remove();
+			
 			this.$el.prepend(
 				this.alertTemplate({
 					msg: msg,
 					classes: 'alert-error',
 					containerClasses: "page",
 					includeEmail: true
-				}));	
+				}));
 		},
-		
+
 		setUpAnnotator: function() {
 			if(!MetacatUI.appModel.get("annotatorUrl")) return;
-			
-			
-			var annotator = new AnnotatorView({ 
-				parentView: this 
+
+
+			var annotator = new AnnotatorView({
+				parentView: this
 				});
 			this.subviews.push(annotator);
 			annotator.render();
 		},
-		
+
 		/**
-		 * When the "Metadata" button in the table is clicked while we are on the Metadata view, 
+		 * When the "Metadata" button in the table is clicked while we are on the Metadata view,
 		 * we want to scroll to the anchor tag of this data object within the page instead of navigating
 		 * to the metadata page again, which refreshes the page and re-renders (more loading time)
 		 **/
 		previewData: function(e){
 			//Don't go anywhere yet...
 			e.preventDefault();
-			
+
 			//Get the target and id of the click
 			var link = $(e.target);
-			if(!$(link).hasClass("preview")) 
+			if(!$(link).hasClass("preview"))
 				link = $(link).parents("a.preview");
 
 			if(link){
 				var id = $(link).attr("data-id");
-				if((typeof id === "undefined") || !id) 
+				if((typeof id === "undefined") || !id)
 					return false; //This will make the app defualt to the child view previewData function
 			}
 			else
 				return false;
-			
+
 			//If we are on the Metadata view, then let's scroll to the anchor
-			MetacatUI.appView.scrollTo(this.findEntityDetailsContainer(id));	
-			
+			MetacatUI.appView.scrollTo(this.findEntityDetailsContainer(id));
+
 			return true;
 		},
-		
+
 		closePopovers: function(e){
-			if($(e.target).hasClass("popover-this") || 
-			  ($(e.target).parents(".popover-this").length > 0)  || 
-			  ($(e.target).parents(".popover").length > 0) ||
-			  $(e.target).hasClass("popover")) return;
+			//If this is a popover element or an element that has a popover, don't close anything. 
+			//Check with the .classList attribute to account for SVG elements
+			var svg = $(e.target).parents("svg");
 			
+			if(_.contains(e.target.classList, "popover-this") ||
+			  ($(e.target).parents(".popover-this").length > 0)  ||
+			  ($(e.target).parents(".popover").length > 0) ||
+			  _.contains(e.target.classList, "popover") ||
+			  (svg.length && _.contains(svg[0].classList, "popover-this"))) return;
+
 			//Close all active popovers
 			this.$(".popover-this.active").popover("hide");
 		},
-		
+
 		highlightNode: function(e){
 			//Find the id
 			var id = $(e.target).attr("data-id");
-			
+
 			if((typeof id === "undefined") || (!id))
 				id = $(e.target).parents("[data-id]").attr("data-id");
-			
+
 			//If there is no id, return
 			if(typeof id === "undefined") return false;
-			
+
 			//Highlight its node
 			$(".prov-chart .node[data-id='" + id + "']").toggleClass("active");
-			
+
 			//Highlight its metadata section
 			if(MetacatUI.appModel.get("pid") == id)
 				this.$("#Metadata").toggleClass("active");
@@ -1713,16 +1880,15 @@ define(['jquery',
 					entityDetails.toggleClass("active");
 			}
 		},
-		
-		onClose: function () {	
+
+		onClose: function () {
 			var viewRef = this;
 
 			this.stopListening();
-			this.model.off();
 
 			_.each(this.subviews, function(subview) {
-				if(subview.el != viewRef.el)
-					subview.remove();
+				if(subview.onClose)
+					subview.onClose();
 			});
 
 			this.packageModels =  new Array();
@@ -1734,7 +1900,7 @@ define(['jquery',
 
 			//Put the document title back to the default
 			MetacatUI.appModel.set("title", MetacatUI.appModel.defaults.title);
-			
+
 			//Remove view-specific classes
 			this.$el.removeClass("container no-stylesheet");
 

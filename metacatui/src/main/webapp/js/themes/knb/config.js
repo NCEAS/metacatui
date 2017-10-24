@@ -1,13 +1,14 @@
-﻿MetacatUI.theme = MetacatUI.theme || "knb";
-MetacatUI.themeTitle = "KNB | The Knowledge Network";
+MetacatUI.theme = MetacatUI.theme || "knb";
+MetacatUI.themeTitle = "KNB";
 MetacatUI.themeMap = 
 {
 	'*': {
 		// Template overrides are provided here
 		
 		// Resources (js) omit extension
-		//'views/AboutView' : 'MetacatUI.themes/' + theme + '/views/AboutView',
+		//'views/AboutView' : 'themes/' + MetacatUI.theme + '/views/AboutView',
 		//'routers/router' : 'themes/' + MetacatUI.theme + '/routers/router',
+		'models/AppModel' : 'themes/' + MetacatUI.theme + '/models/AppModel',
 		
 		// Templates include extension
 		'templates/app.html' : 'themes/' + MetacatUI.theme + '/templates/app.html',
@@ -15,6 +16,7 @@ MetacatUI.themeMap =
 		'templates/featuredData.html' : 'themes/' + MetacatUI.theme + '/templates/featuredData.html',
 		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
 		'templates/mainContent.html' : 'themes/' + MetacatUI.theme + '/templates/mainContent.html',
+		'templates/metadataControls.html' : 'themes/' + MetacatUI.theme + '/templates/metadataControls.html',
 		'templates/altHeader.html' : 'themes/' + MetacatUI.theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : 'themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
 		'templates/tools.html' : 'themes/' + MetacatUI.theme + '/templates/tools.html',
@@ -24,7 +26,7 @@ MetacatUI.themeMap =
 
 MetacatUI.customAppConfig = function(){
 	//Only apply these settings when we are in production
-	if(! MetacatUI.appModel || (MetacatUI.appModel.get("baseUrl").indexOf("knb.ecoinformatics.org") < 0)) return;
+	if(!MetacatUI.appModel || (MetacatUI.appModel.get("baseUrl").indexOf("knb.ecoinformatics.org") < 0)) return;
 
 	//Gmaps key  AIzaSyA6-jiEs5rmEqKk70bigvnwuvhdZbt4tJs
 	

@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/UserModel'], 				
 	function($, _, Backbone, UserModel) {
 	'use strict';

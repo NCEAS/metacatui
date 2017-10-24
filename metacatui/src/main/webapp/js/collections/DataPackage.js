@@ -108,11 +108,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             // Build the DataPackage URL based on the MetacatUI.appModel.objectServiceUrl
             // and id or seriesid
-            url: function() {
-
-                return MetacatUI.appModel.get("objectServiceUrl") +
-                    (encodeURIComponent(this.packageModel.get("id")) || encodeURIComponent(this.packageModel.get("seriesid")));
-
+            url: function(options) {
+            	
+            	if(options && options.update){
+            		return MetacatUI.appModel.get("objectServiceUrl") +
+                    (encodeURIComponent(this.packageModel.get("oldPid")) || encodeURIComponent(this.packageModel.get("seriesid")));
+            	}
+            	else{
+	                return MetacatUI.appModel.get("objectServiceUrl") +
+	                    (encodeURIComponent(this.packageModel.get("id")) || encodeURIComponent(this.packageModel.get("seriesid")));
+            	}
             },
 
             /*
@@ -388,12 +393,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Get the isDocumentedBy relationships
                     documentsStatements = this.dataPackageGraph.statementsMatching(
                         undefined, CITO("documents"), undefined, undefined);
+                    
+                    var sciMetaPids = [];
 
                     _.each(documentsStatements, function(documentsStatement) {
 
                           // Extract and URI-decode the metadata pid
                           scimetaID = decodeURIComponent(
                                 _.last(documentsStatement.subject.value.split("/")));
+                          
+                          sciMetaPids.push(scimetaID);
 
                           // Extract and URI-decode the data pid
                           scidataID = decodeURIComponent(
@@ -421,6 +430,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 	                      	  dataObj.set("isDocumentedBy", isDocBy);
                           }
                     }, this);
+                    
+                    //Put the science metadata pids first
+                    memberPIDs = _.difference(memberPIDs, sciMetaPids);
+                    _.each(_.uniq(sciMetaPids), function(id){ memberPIDs.unshift(id); });
 
                     //Retrieve the model for each member
                     _.each(memberPIDs, function(pid){
@@ -447,11 +460,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                                 			//Trigger a replace event so other parts of the app know when a model has been replaced with a different type
                                 			oldModel.trigger("replace", newModel);
+                                			
+                                			if(newModel.type == "EML")
+                                				collection.trigger("add:EML");
                                 		});
                                 }
                                 else{
                                 	newModel.set("synced", true);
                                 	collection.add(newModel, { replace: true });
+                                	
+                                	if(newModel.type == "EML")
+                        				collection.trigger("add:EML");
                                 }
                         	});
 
@@ -477,7 +496,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     		 */
     		save: function(options){
     			if(!options) var options = {};
-
+    			
+    			this.packageModel.set("uploadStatus", "p");
+    			
     			//Get the system metadata first if we haven't retrieved it yet
     			if(!this.packageModel.get("sysMetaXML")){
     				var collection = this;
@@ -497,40 +518,46 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			}
 
     			//Sort the models in the collection so the metadata is saved first
-    			var metadataModels  = this.where({ type: "Metadata" });
-    			var dataModels      = _.difference(this.models, metadataModels);
-    			var sortedModels    = _.union(metadataModels, dataModels);
+    			var metadataModels   = this.where({ type: "Metadata" });
+    			var dataModels       = _.difference(this.models, metadataModels);
+    			var sortedModels     = _.union(metadataModels, dataModels);
 				var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
-    			var modelsToBeSaved = _.filter(sortedModels, function(m){ 
-										return (m.get("uploadStatus") == "q" || m.get("uploadStatus") == "e")
-										});
-
+				var modelsToBeSaved  = _.filter(sortedModels, function(m){ 
+											//Models should be saved if they are in the save queue, had an error saving earlier,
+											//or they are Science Metadata model that is NOT already in progress
+											return (m.get("uploadStatus") == "q" || 
+													//m.get("uploadStatus") == "e" || 
+													(m.get("type") == "Metadata" && 
+															m.get("uploadStatus") != "p" && 
+															m.get("uploadStatus") != "c" &&
+															m.get("uploadStatus") != "e" ))
+									    });
+				
     			//First quickly validate all the models before attempting to save any
     			var allValid = _.every(modelsToBeSaved, function(m) {
     				return m.isValid();
     			});
     			
-    			//If at least once model to be saved is invalid, cancel the save.
-    			if(!allValid){
-    				this.trigger("cancelSave");
+                // If at least once model to be saved is invalid, 
+                // or the metadata failed to save, cancel the save.
+                if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
+                         return model.get("uploadStatus");
+                    } ), "e") ) {
+                    this.packageModel.set("changed", false);
+                    this.packageModel.set("uploadStatus", "q");
+                    this.trigger("cancelSave");
     				return;
     			}
     			
-    			var failedSave = false;
-
     			//First save all the models of the collection, if needed
     			_.each(modelsToBeSaved, function(model){
-    				//Don't save any more models when one has failed
-    				if(failedSave) return;
-
-    				//If this model is in progress or in the queue
-					this.listenToOnce(model, "cancelSave", function(){
-						failedSave = true;
-						sortedModels = [];
-					});
-					
 					//If the model is saved successfully, start this save function again
+    				this.stopListening(model, "successSaving", this.save);
 					this.listenToOnce(model, "successSaving", this.save);
+					
+					//If the model fails to save, start this save function
+					this.stopListening(model, "errorSaving", this.save);
+					this.listenToOnce(model, "errorSaving", this.save);
 
 					//Save the model and watch for fails
 					model.save();
@@ -539,9 +566,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					modelsInProgress.push(model);
     				
     			}, this);
-
-    			if(failedSave)
-    				return;
 
     			//If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
     			if(modelsInProgress.length) return;
@@ -599,6 +623,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 				var checksum = md5(mapXML);
 				this.packageModel.set("checksum", checksum);
 				this.packageModel.set("checksumAlgorithm", "MD5");
+				
+				//Set the file name based on the id
+				this.packageModel.set("fileName", "resourceMap_" + this.packageModel.get("id") + ".xml");
 
     			//Create the system metadata
     			var sysMetaXML = this.packageModel.serializeSysMeta();
@@ -612,7 +639,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 				var collection = this;
 				var requestSettings = {
-						url: MetacatUI.appModel.get("objectServiceUrl"),
+						url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
 						type: requestType,
 						cache: false,
 						contentType: false,
@@ -628,12 +655,28 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             collection.packageModel.fetch({merge: true});
                             // Reset the content changes status
                             collection.packageModel.set("hasContentChanges", false);
+                            
+                            //Reset the upload status for all members
+                            _.each(collection.where({ uploadStatus: "c" }), function(m){
+                            	m.set("uploadStatus", m.defaults().uploadStatus);
+                            });
+                            
+                            //Reset the upload status for the package
+                            collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
 						},
 						error: function(data){
 							console.log("error udpating object");
 
 							//Reset the id back to its original state
 							collection.packageModel.resetID();
+							
+							//Reset the upload status for all members
+                            _.each(collection.where({ uploadStatus: "c" }), function(m){
+                            	m.set("uploadStatus", m.defaults().uploadStatus);
+                            });
+                            
+                            //Reset the upload status for the package
+                            collection.packageModel.set("uploadStatus", "e");
 
 							collection.trigger("error", data.responseText);
 						}
@@ -1397,6 +1440,28 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              */
             getQueue: function(){
             	return this.filter(function(m){ return m.get("uploadStatus") == "q" || m.get("uploadStatus") == "p" });
+            },
+            
+            handleAdd: function(dataONEObject){
+            	var metadataModel = this.find(function(m){ return m.get("type") == "Metadata" });
+            	
+            	// Append to or create a new documents list
+                if ( ! Array.isArray(metadataModel.get("documents")) ) {
+                	metadataModel.set("documents", [dataONEObject.id]);
+                    
+                } else {
+                	metadataModel.get("documents").push(dataONEObject.id);
+                }
+                
+                // Create an EML Entity for this DataONE Object
+                if(metadataModel.type == "EML"){                	
+                	metadataModel.createEntity(dataONEObject);
+	            }
+
+                metadataModel.set("uploadStatus", "q");
+                                
+                this.packageModel.set("changed", true);
+                this.packageModel.trigger("change:changed");
             },
 
             /*

@@ -3,10 +3,11 @@ define(['underscore', 'jquery', 'backbone',
         'models/DataONEObject',
         'models/metadata/eml211/EMLMeasurementScale',
         'text!templates/metadata/eml-measurement-scale.html',
+        'text!templates/metadata/codelist-row.html',
         'text!templates/metadata/nonNumericDomain.html',
         'text!templates/metadata/textDomain.html'], 
-    function(_, $, Backbone, DataONEObject, EMLMeasurementScale, 
-    		EMLMeasurementScaleTemplate, NonNumericDomainTemplate, TextDomainTemplate){
+    function(_, $, Backbone, DataONEObject, EMLMeasurementScale,
+    		EMLMeasurementScaleTemplate, CodeListRowTemplate, NonNumericDomainTemplate, TextDomainTemplate){
         
         /* 
             An EMLMeasurementScaleView displays the info about 
@@ -22,6 +23,7 @@ define(['underscore', 'jquery', 'backbone',
             
             /* The HTML template for a measurement scale */
             template: _.template(EMLMeasurementScaleTemplate),
+            codeListRowTemplate: _.template(CodeListRowTemplate),
             nonNumericDomainTemplate: _.template(NonNumericDomainTemplate),
             textDomainTemplate: _.template(TextDomainTemplate),
             
@@ -31,10 +33,15 @@ define(['underscore', 'jquery', 'backbone',
             	"change .datetime-string" : "toggleCustomDateTimeFormat",
             	"change .possible-text"   : "toggleNonNumericDomain",
             	"keyup  .new .codelist"   : "addNewCodeRow",
+            	"click .code-row .remove" : "removeCodeRow",
+            	"mouseover .code-row .remove" : "previewCodeRemove",
+            	"mouseout .code-row .remove"  : "previewCodeRemove",
             	"change .units"           : "updateModel",
             	"change .datetime" 		  : "updateModel",
             	"change .codelist"        : "updateModel",
-            	"focusout .code-row"      : "showValidation"
+            	"change .textDomain"      : "updateModel",
+            	"focusout .code-row"      : "showValidation",
+            	"focusout .units.input"   : "showValidation"
             },
             
             initialize: function(options){
@@ -84,14 +91,18 @@ define(['underscore', 'jquery', 'backbone',
         		}, this);       
         		
         		//Add the new code rows in the code list table
-    			this.addCodeRow("nominal");
-    			this.addCodeRow("ordinal");
+    			this.addNewCodeRow("nominal");
+    			this.addNewCodeRow("ordinal");
     			    			
             },
             
             postRender: function(){
+            	//Determine which category to select
+            	//Interval measurement scales will be displayed as ratio
+            	var selectedCategory = this.model.get("measurementScale") == "interval" ? "ratio" : this.model.get("measurementScale");
+            	
             	//Set the category
-    			this.$(".category[value='" + this.model.get("measurementScale") + "']").prop("checked", true);
+    			this.$(".category[value='" + selectedCategory + "']").prop("checked", true);
         		this.switchCategory();
         		
         		this.renderUnitDropdown();
@@ -110,33 +121,12 @@ define(['underscore', 'jquery', 'backbone',
             		$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
             	
             	_.each(codeList.codeDefinition, function(definition){
-            		var row = $(document.createElement("tr"))
-            					.addClass("code-row")
-            					.append(
-            					$(document.createElement("td")).addClass("span2").append( 
-            							$(document.createElement("input"))
-            								.addClass("full-width codelist code input")
-            								.attr("value", "")
-            								.attr("type", "text")
-            								.attr("data-category", "code")
-            								.attr("placeholder", "Code value allowed (e.g. \"site A\")")
-            								.val(definition.code) ),
-								$(document.createElement("td")).addClass("span10").append( 
-            							$(document.createElement("input"))
-            								.addClass("full-width codelist definition input")
-            								.attr("value", "")
-            								.attr("type", "text")
-            								.attr("data-category", "codeDefinition")
-            								.attr("placeholder", "Definition of this code")
-            								.val(definition.definition) )
-            				  );
+            		var row = this.codeListRowTemplate(definition);
             		
             		//Add the row to the table
             		$container.append(row);
-            	});
-            	
-            	this.addCodeRow();
-            	
+            	}, this);
+
             },
             
             showValidation: function(e){
@@ -146,7 +136,18 @@ define(['underscore', 'jquery', 'backbone',
 				this.$(".notification").text("");
         		
 				//If the measurement scale model is NOT valid
-            	if(!this.model.isValid()){
+				if( !this.$(".category:checked").length ){
+					this.$(".category-container")
+						.addClass("error")
+						.find(".notification")
+						.text("Choose a category")
+						.addClass("error");
+					
+					//Trigger the invalid event on the attribute model
+                	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
+    			
+				}
+				else if( !this.model.isValid() ){
             		//Get the errors
             		var errors = this.model.validationError,
             			modelType = this.model.get("measurementScale");
@@ -181,6 +182,11 @@ define(['underscore', 'jquery', 'backbone',
             			else{
                 			this.$("." + modelType + "-options [data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
                 			this.$("." + modelType + "-options .input[data-category='" + attr + "']").addClass("error");
+            			}
+            			
+            			//Highlight the border of the non numeric domain container
+            			if(attr == "nonNumericDomain"){
+            				this.$("." + modelType + "-options.non-numeric-domain").addClass("error");
             			}
             			            			
             		}, this);
@@ -235,6 +241,13 @@ define(['underscore', 'jquery', 'backbone',
             		//Set references to and from this model and the parent attribute model
             		this.model.set("parentModel", parentEMLAttrModel);
             		parentEMLAttrModel.set("measurementScale", this.model);
+            		
+            		//Update the codelist values, if needed
+            		if(newCategory == "nominal" || newCategory == "ordinal" && 
+            				this.model.get("nonNumericDomain").length &&
+            				this.model.get("nonNumericDomain")[0].enumeratedDomain){
+            			this.updateCodeList();
+            		}
             	}
             
             },
@@ -244,8 +257,8 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Create a dropdown menu
             	var select = $(document.createElement("select"))
-            					.addClass("units full-width")
-            					.attr("data-category", "standardUnit"),
+            					.addClass("units full-width input")
+            					.attr("data-category", "unit"),
             		eml    = this.model.get("parentModel"),
             		i 	   = 0;
             	
@@ -256,9 +269,8 @@ define(['underscore', 'jquery', 'backbone',
             	}
             	
             	//Get the units collection or wait until it has been fetched
-            	var units = eml.get("units");
-            	if(!units.length){
-            		this.listenTo(units, "sync", this.createUnitDropdown);
+            	if(!eml.units.length){
+            		this.listenTo(eml.units, "sync", this.createUnitDropdown);
             		return;
             	}
             	
@@ -268,7 +280,7 @@ define(['underscore', 'jquery', 'backbone',
 				select.append(defaultOption);
 				
             	//Create each unit option in the unit dropdown
-            	units.each(function(unit){
+            	eml.units.each(function(unit){
             		var option = $(document.createElement("option"))
             						.val(unit.get("_name"))
             						.text(unit.get("_name").charAt(0).toUpperCase() + 
@@ -299,6 +311,13 @@ define(['underscore', 'jquery', 'backbone',
             chooseDateTimeFormat: function(){
             	if(this.model.type == "EMLDateTimeDomain"){
                 	var formatString = this.model.get("formatString");
+                	
+                	//Go back to the default option when the model isn't set yet
+                	if(!formatString){
+                		var options = this.$("select.datetime-string option");
+                		this.$("select.datetime-string").val(options.first().val());
+                		return;
+                	}
                 	
                 	var matchingOption = this.$("select.datetime-string [value='" + formatString + "']");
                 	
@@ -352,7 +371,7 @@ define(['underscore', 'jquery', 'backbone',
             		}
             		//If the domain type is a code list, select it and show it
             		else if( domain.enumeratedDomain ){
-            			this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='enumeratedDomain']").attr("checked", "checked");
+            			this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='enumeratedDomain']").prop("checked", true);
             			this.$(".non-numeric-domain-type.enumeratedDomain").show();
             		}
             	}
@@ -375,15 +394,23 @@ define(['underscore', 'jquery', 'backbone',
             },
             
             addNewCodeRow: function(e){
-            	var $row 	   = $(e.target).parents(".code-row"),
-            		code 	   = $row.find(".code").val(),
-            		definition = $row.find(".definition").val();
+            	if(typeof e == "object"){
+	            	var $row 	   = $(e.target).parents(".code-row"),
+	            		code 	   = $row.find(".code").val(),
+	            		definition = $row.find(".definition").val();
+	            	
+	            	//Only add a row when there is a value for the code and code definition
+	            	if(!code || !definition) return false;
             	
-            	//Only add a row when there is a value for the code and code definition
-            	if(!code || !definition) return false;
+	            	$row.removeClass("new");
+
+	            	var newRow = this.addCodeRow();
+            	}
+            	else if(typeof e == "string"){
+	            	var newRow = this.addCodeRow(e);	            	
+            	}
             	
-            	$row.removeClass("new");
-            	this.addCodeRow();            	
+            	newRow.addClass("new");
             },
             
             addCodeRow: function(scaleType){
@@ -392,26 +419,23 @@ define(['underscore', 'jquery', 'backbone',
             	
         		var	$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
             	
-            	//Add an empty row at the end to add a new code
-            	var row = $(document.createElement("tr"))
-	            			.addClass("code-row new")
-	            			.append(
-	    					$(document.createElement("td")).addClass("span2").append( 
-	    							$(document.createElement("input"))
-	    								.addClass("full-width codelist code input")
-	    								.attr("value", "")
-	    								.attr("type", "text")
-	    								.attr("data-category", "code")
-	    								.attr("placeholder", "Code value allowed (e.g. \"site A\")")),
-							$(document.createElement("td")).addClass("span10").append( 
-	    							$(document.createElement("input"))
-	    								.addClass("full-width codelist definition input")
-	    								.attr("value", "")
-	    								.attr("type", "text")
-	    								.attr("data-category", "codeDefinition")
-	    								.attr("placeholder", "Definition of this code")));
+            	//Create a code list row from the template
+            	var row = $(this.codeListRowTemplate({ code: "", definition: ""}));
             	
             	$container.append(row);
+            	
+            	return row;
+            },
+            
+            removeCodeRow: function(e){
+            	var codeRow = $($(e.target).parents(".code-row")),
+            		allRows = codeRow.parents(".enumerated-domain").find(".code-row"),
+            		index   = allRows.index(codeRow);
+            	
+            	this.model.removeCode(index);
+            	
+            	codeRow.remove();
+            	
             },
             
             /*
@@ -424,7 +448,9 @@ define(['underscore', 'jquery', 'backbone',
             	//Update the standard unit
             	if(updatedInput.is(".units")){
             		var chosenUnit = updatedInput.val();
-            		this.model.set("unit", chosenUnit);
+            		this.model.set("unit", {standardUnit: chosenUnit});
+                    // Hard-code the numberType for now
+                    this.model.set("numericDomain", {numberType: "real"});
             	}
             	//Update the datetime format
             	else if(updatedInput.is(".datetime")){
@@ -439,56 +465,95 @@ define(['underscore', 'jquery', 'backbone',
             	else if(updatedInput.is(".possible-text")){
             		var possibleText = updatedInput.val();
             		
-            		if(possibleText == "enumeratedDomain" && !this.model.get("nonNumericDomain").length){
-	            		var nonNumericDomain = [{
-	        				enumeratedDomain: {
-	        					codeDefinition: [{
-	            					code: code,
-	            					definition: def
-	        					}]
-	        				}
-	        			}];
-	        			
-	        			this.model.set("nonNumericDomain", nonNumericDomain);
+            		if(possibleText == "enumeratedDomain"){
+            				
+        				//Update the code list
+        				this.updateCodeList();
+		            		
             		}
-            	}
-            	else if(updatedInput.is(".codelist")){
-            		var row   = updatedInput.parents(".code-row"),
-            			code  = row.find(".code").val(),
-            			def   = row.find(".definition").val();
-            		
-            		var	index = this.$(".code-row").index(row);
-            			currentValue = this.model.get("nonNumericDomain");
-            			
-            		if(Array.isArray(currentValue) && typeof currentValue[0] == "object"){
-            			var codes = currentValue[0].enumeratedDomain.codeDefinition;
-            			
-            			if(typeof codes[index] == "object"){
-            				codes[index].code = code;
-                			codes[index].definition = def;
+            		else if(possibleText == "pattern"){
+            			if(!this.model.get("nonNumericDomain").length || !this.model.get("nonNumericDomain")[0].textDomain){
+            				            			
+	            			var textDomain = {
+	            					definition: null,
+	            					pattern: [],
+	            					source: null
+	            			}
+	            			
+	            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
             			}
             			else{
-            				codes[index] = {
-        						code: code,
-        						definition: def
+            				var textDomain = {
+            						definition: this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='definition']").val(),
+            						pattern: [this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='pattern']").val()],
+            						source: null
             				}
+            				this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
             			}
             		}
-            		else{
-            			var nonNumericDomain = [{
-            				enumeratedDomain: {
-            					codeDefinition: [{
-                					code: code,
-                					definition: def
-            					}]
-            				}
-            			}];
+            		else if(possibleText == "anything"){
+            			var textDomain = {
+            					definition: "Any text",
+            					pattern: ["*"],
+            					source: null
+            			}
             			
-            			this.model.set("nonNumericDomain", nonNumericDomain);
+            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
             		}
-            		
-            		this.model.trigger("change:nonNumericDomain");
             	}
+            	else if(updatedInput.is(".textDomain")){
+            		if(typeof this.model.get("nonNumericDomain")[0] != "object")
+            			this.model.get("nonNumericDomain")[0] = { textDomain: { definition: null, pattern: [], source: null } };
+            		
+            		var textDomain = this.model.get("nonNumericDomain")[0].textDomain;
+            		
+            		if(updatedInput.attr("data-category") == "definition")
+            			textDomain.definition = updatedInput.val();
+            		else if(updatedInput.attr("data-category") == "pattern")
+            			textDomain.pattern[0] = updatedInput.val();
+            	}
+            	else if(updatedInput.is(".codelist")){
+            		var row = updatedInput.parents(".code-row"),
+            			index = this.$("." + this.model.get("measurementScale") + "-options .code-row").index(row);
+            			
+            		this.updateCodeList(index);
+            	}
+            },
+            
+            updateCodeList: function(rowNum){
+            	
+            	//If the model is not set as an enumerated domain yet
+    			if(!this.model.get("nonNumericDomain").length || 
+    					!this.model.get("nonNumericDomain")[0] || 
+    					!this.model.get("nonNumericDomain")[0].enumeratedDomain){
+    				
+    				//Go through each code row in this view and grab the values
+    				_.each(this.$("." + this.model.get("measurementScale") + "-options .code-row"), function(row, i){
+    					var $row = $(row),
+    						code = $row.find(".code").val(),
+    						def  = $row.find(".definition").val();
+    					
+    					if(code || def){
+        					this.model.updateEnumeratedDomain(code, def, i);    					    						
+    					}
+    					
+    				}, this);
+    			}
+    			else if(rowNum > -1){
+    				var $row = $(this.$("." + this.model.get("measurementScale") + "-options .code-row")[rowNum]),
+						code = $row.find(".code").val(),
+						def  = $row.find(".definition").val();
+					
+					if(code || def){
+						this.model.updateEnumeratedDomain(code, def, rowNum);    					    						
+					}
+    			}
+
+    			
+            },
+            
+            previewCodeRemove: function(e){
+            	$(e.target).parents(".code-row").toggleClass("remove-preview");
             }
             
         });

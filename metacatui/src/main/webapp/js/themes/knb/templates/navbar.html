@@ -1,22 +1,22 @@
-﻿<div class="navbar" >
+<div class="navbar" >
   <div class="navbar-inner">
       <ul class="nav">
 	    <li><a class="brand" href="#">knb</a></li>
         <li><a href="#about">About</a></li>
         <li class="dropdown">
-        	<a class="show-new-dataCatalogView dropdown-toggle" data-toggle="dropdown">Data</a>
+        	<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
         	<ul class="dropdown-menu">
         		<li class="dropdown-header"> Data </li>
         		<li><a href="#data" class="show-new-search">Search</a></li>
         		<li><a href="#profile">Summary</a></li>
         	</ul>
         </li>
-        <li><a href="#share">Share</a></li>
+        <li><a href="#submit" class="show-new-editor">Submit</a></li>
         <li><a href="#tools">Tools</a></li>
         <li class="input input-append">
         	<form id="direct-search" action="#">
 	        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label> 
-	        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="direct-search subtle" form="direct-search"/>
+	        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="jump-width-input direct-search subtle" form="direct-search"/>
 	        	<button class="btn direct-search" form="direct-search">Go</button>
 	        </form>
         </li>
@@ -28,7 +28,7 @@
 				</a>
 				<ul class="dropdown-menu">
 					<li class="dropdown-header"><%=formattedName%></li>
-					<li><a href="#share">Upload data</a></li>
+					<li><a href="#submit" class="show-new-editor">Upload data</a></li>
 					<% if(MetacatUI.appModel.get("userProfiles")){ %><li><a href="#profile/<%=username%>">My profile</a></li> <% } %>
 					<li><a href="#data/my-data">My data sets</a></li>
 					<li class="divider"></li>
@@ -36,7 +36,7 @@
 				</ul>
 			</li>
         <% } else { %>
-        		<li id="SignIn"><a href="#share">Sign In</a></li>
+        		<li id="SignIn"><a href="#signin">Sign In</a></li>
        <%  } %>
         	
       </ul>

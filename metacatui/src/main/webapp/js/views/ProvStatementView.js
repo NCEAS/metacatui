@@ -1,4 +1,4 @@
-﻿define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'text!templates/provStatement.html'], 				
+define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'text!templates/provStatement.html'], 				
 	function($, _, Backbone, ExpandCollapseList, ProvTemplate) {
 	'use strict';
 

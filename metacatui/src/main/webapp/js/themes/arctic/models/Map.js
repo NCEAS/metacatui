@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'gmaps'], 				
 	function($, _, Backbone, gmaps) {
 	'use strict';

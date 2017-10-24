@@ -1,12 +1,14 @@
-﻿define(['jquery', 'underscore', 'backbone', 'models/PackageModel', 'text!templates/downloadContents.html', 'text!templates/downloadButton.html'], 				
-	function($, _, Backbone, Package, Template, DownloadButtonTemplate) {
+define(['jquery', 'underscore', 'backbone', 
+        'models/PackageModel', 
+        'views/DownloadButtonView',
+        'text!templates/downloadContents.html'], 				
+	function($, _, Backbone, Package, DownloadButtonView, Template) {
 	'use strict';
 
 	
 	var PackageTable = Backbone.View.extend({
 		
 		template: _.template(Template),		
-		downloadButtonTemplate: _.template(DownloadButtonTemplate),
 		
 		type: "PackageTable",
 		
@@ -29,7 +31,7 @@
 			this.currentlyViewing = options.currentlyViewing || null;
 			this.numVisible = options.numVisible || 4;
 			this.parentView = options.parentView || null;			
-			this.title = options.title || "Files in this dataset";
+			this.title = options.title || "";
 			this.nested = (typeof options.nested === "undefined")? false : options.nested;
 			
 			//Set up the Package model
@@ -44,7 +46,7 @@
 			else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
 			
 			 this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
-			 this.hasEntityDetails = (this.onMetadataView && (this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
+			 this.hasEntityDetails = (this.onMetadataView && (this.model.get("members") && this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
 			
 			this.listenTo(this.model, "changeAll", this.render);
 		},
@@ -114,28 +116,20 @@
 				tbody.html("<tr><td colspan='100%'>This is an empty dataset.</td></tr>");
 			}
 			
-			//Draw and insert the HTML table
-			var downloadButtonHTML = "";
-			if(this.model.getURL() && this.model.get("id")){
-				if(this.model.getTotalSize() < MetacatUI.appModel.get("maxDownloadSize")){				
-					downloadButtonHTML = this.downloadButtonTemplate({ 
-						href: this.model.get("url"),
-						id: this.model.get("id"),
-						text: "Download all",
-						className: "btn btn-primary ",
-						isPublic: this.model.get("isPublic")
-					});	
-				}
-				else{
-					downloadButtonHTML = this.downloadButtonTemplate({
-						text: "Download all",
-						tooLarge: true
-					});
-				}
+			if(!this.title && metadata){
+				this.title = '<a href="#view/' + metadata.get("id") + 
+					'">Files in this dataset';
+				
+				if(this.model.get("id"))
+					this.title += '<span class="subtle"> Package: ' + this.model.get("id") + '</span>';
+					
+				this.title += '</a>';
+			}
+			else if(!this.title && !metadata){
+				this.title = "Files in this dataset";
 			}
 			
 			this.$el.html(this.template({
-				downloadButton : downloadButtonHTML,
 				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
 			          metadata : this.nested ? metadata : null,
@@ -143,6 +137,14 @@
 					 packageId : this.model.get("id"),
 					    nested : this.nested
 			}));
+			
+			//Insert the Download All button
+			if(this.model.getURL() && this.model.get("id")){
+								
+				var downloadBtn = new DownloadButtonView({ model: this.model });
+				downloadBtn.render();
+				this.$(".download-container").append(downloadBtn.el);
+			}
 			
 			//Add the table body and footer
 			this.$("thead").after(tbody);
@@ -267,7 +269,8 @@
 			}
 			//Use the metadata title instead of the ID
 			if(!entityName && (formatType == "METADATA")) entityName = memberModel.get("title");
-			if(formatType == "METADATA") entityName =  "Metadata: " + entityName;
+			if((formatType == "METADATA") && entityName) entityName =  "Metadata: " + entityName;
+			else if((formatType == "METADATA") && !entityName) entityName = "Metadata";
 	
 			//Display the id in the table if not name is present
 			if((typeof entityName === "undefined") || !entityName) entityName = id;
@@ -347,8 +350,16 @@
 			this.readsEnabled = false;
 			$(tr).append(readsCell);
 			if((typeof reads !== "undefined") && reads){ 
-				if(formatType == "METADATA") reads += " views";
-				else 						 reads += " downloads";
+				
+				if(formatType == "METADATA" && reads == 1) 
+					reads += " view";
+				else if(formatType == "METADATA")
+					reads += " views";
+				else if(reads == 1)
+					reads += " download";
+				else
+					reads += " downloads";
+								
 				$(readsCell).text(reads);
 				this.readsEnabled = true;
 			}
@@ -356,18 +367,10 @@
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");	
 			
-			var downloadButtonHTML = this.downloadButtonTemplate({ 
-				href: url, 
-				fileName: entityName,
-				id: memberModel.get("id"),
-				isPublic: memberModel.get("isPublic"),
-			});
-			var downloadButton = $.parseHTML(downloadButtonHTML.trim());
+			var downloadButton = new DownloadButtonView({ model: memberModel });
+			downloadButton.render();
 			
-			if(MetacatUI.appUserModel.get("loggedIn") && !memberModel.get("isPublic"))
-				$(downloadButton).on("click", null, this, this.download);
-			
-			$(downloadBtnCell).append(downloadButton);
+			$(downloadBtnCell).append(downloadButton.el);
 			$(tr).append(downloadBtnCell);
 			
 			if(collapsable)
@@ -376,28 +379,6 @@
 				tr.css("display", "none");
 
 			return tr;
-		},
-
-		download: function(e){				
-			if(e && $(e.target).attr("data-id") && appUserModel.get("loggedIn")){
-				e.preventDefault();
-				var id = $(e.target).attr("data-id");
-				
-				var packageModel = this.model? this.model : (e.data && e.data.model)? e.data.model : null;
-				
-				if(!packageModel) return true;
-					
-				//Find the model with this ID
-				packageModel = (packageModel.get("id") == id) ? packageModel : _.find(packageModel.get("members"), function(m){
-					return (m.get("id") == id);
-				});
-				
-				//If we found a model, fire the download event
-				if(packageModel && !packageModel.get("isPublic")) 
-					packageModel.downloadWithCredentials();
-			}
-			else
-				return true;			
 		},
 		
 		expand: function(e){
@@ -439,6 +420,17 @@
 				view.$(".expand-control").fadeIn();				
 			});			
 		}
+		
+		/*showDownloadProgress: function(e){
+			e.preventDefault();
+			
+			var button = $(e.target);
+			button.addClass("in-progress");
+			button.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
+			
+			return true;
+			
+		}*/
 	});
 	
 	return PackageTable;

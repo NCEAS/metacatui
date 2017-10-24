@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'bootstrap', 'recaptcha', 'text!templates/loading.html'], 				
 	function($, _, Backbone, BootStrap, Recaptcha, LoadingTemplate) {
 	'use strict';

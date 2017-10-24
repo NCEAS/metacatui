@@ -1,4 +1,4 @@
-﻿﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
 	function($, _, Backbone, SolrResult) {
 	'use strict';
@@ -81,7 +81,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		//Map the filter names to their index field names
 		fieldNameMap: {
 					 attribute : "attribute",
-					annotation : "sem_annotation_bioportal_sm",
+					annotation : "sem_annotation",
 					dataSource : "datasource",
 					formatType : "formatType",
 						   all : "",
@@ -94,6 +94,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				     submitter : "submitter",
 				      username : ["rightsHolder", "writePermission", "changePermission"],
 			     	     taxon : ["kingdom", "phylum", "class", "order", "family", "genus", "species"]
+		},
+		
+		facetNameMap: {
+			"creator"    : "origin",
+			"attribute"  : "attribute",
+			"annotation" : "sem_annotation",
+			"spatial"    : "site",
+    	    "taxon"      : ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
+     		"all"        : "keywords"
 		},
 		
 		currentFilters: function(){
@@ -353,7 +362,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(this.filterIsAvailable("exclude") && ((filter == "exclude") || getAll)){
 				var exclude = this.get("exclude");
 				_.each(exclude, function(excludeField, key, list){
-					query += "+-" + excludeField.field + ":" + model.escapeSpecialChar(excludeField.value);
+					
+					if(model.needsQuotes(excludeField.value)) var filterValue = "%22" + encodeURIComponent(excludeField.value) + "%22";
+					else var filterValue = encodeURIComponent(excludeField.value);
+					
+					filterValue =  model.escapeSpecialChar(filterValue);
+					
+					query += "+-" + excludeField.field + ":" + filterValue;
 				});
 			}
 			
@@ -385,7 +400,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					query += "+" + model.escapeSpecialChar(filterValue);
 				}
 			}
-						
+
 			//-----Other Filters/Basic Filters-----			
 			_.each(otherFilters, function(filterName, key, list){
 				if(model.filterIsAvailable(filterName) && ((filter == filterName) || getAll)){
@@ -467,25 +482,32 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			return query;
 		},
 		
-		getFacetQuery: function(){
+		getFacetQuery: function(fields){
 			
 			var facetQuery = "&facet=true" +
 							 "&facet.sort=count" +
 							 "&facet.mincount=1" +
-							 "&facet.limit=-1" +
-							 "&facet.field=keywords" +
-							 "&facet.field=origin" +
-							 "&facet.field=family" +
-							 "&facet.field=species" +
-							 "&facet.field=genus" +
-							 "&facet.field=kingdom" + 
-							 "&facet.field=phylum" + 
-							 "&facet.field=order" +
-							 "&facet.field=class" +
-							 "&facet.field=site";
-			if(this.filterIsAvailable("attribute")) facetQuery += "&facet.field=attributeName&facet.field=attributeLabel";
-			if(this.filterIsAvailable("annotation")) facetQuery += "&facet.field=sem_annotation_bioportal_sm";
+							 "&facet.limit=-1";
 			
+			//Get the list of fields
+			if(!fields){
+				var fields = "keywords,origin,family,species,genus,kingdom,phylum,order,class,site";
+				if(this.filterIsAvailable("annotation")) fields += "," + this.facetNameMap["annotation"];
+				if(this.filterIsAvailable("attribute"))  fields += ",attributeName,attributeLabel";
+			}
+			
+			var model = this;
+			//Add the fields to the query string
+			_.each(fields.split(","), function(f){	
+				var fieldNames = model.facetNameMap[f] || f;
+				
+				if(typeof fieldNames == "string") fieldNames = [fieldNames];
+				
+				_.each(fieldNames, function(fName){
+					facetQuery += "&facet.field=" + fName;
+				});
+			});
+						
 			return facetQuery;
 		},
 		
@@ -511,16 +533,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(value.indexOf(" ") > -1)
 				return true;
 			
-			//Check for the colon : character (and encoded colons)
-			if((value.indexOf(":") > -1) || value.indexOf("%3A") > -1)
-				return true;
-			
 			return false;
 		},
 		
 		escapeSpecialChar: function(term){
 			term = term.replace(/%7B/g, "\\%7B");
 			term = term.replace(/%7D/g, "\\%7D");
+			term = term.replace(/%3A/g, "\\%3A");
+			term = term.replace(/:/g, "\\:");
+			term = term.replace(/\(/g, "\\(");
+			term = term.replace(/\)/g, "\\)");
+			term = term.replace(/\?/g, "\\?");
+			term = term.replace(/%3F/g, "\\%3F");
 			
 			return term;
 		},
@@ -544,7 +568,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(options && (typeof options == "object")){
 				var operator = options.operator,
 					subtext = options.subtext;
-			}
+			}  
 		
 			if((typeof operator === "undefined") || !operator || ((operator != "OR") && (operator != "AND"))) var operator = "OR";
 			
@@ -554,7 +578,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				
 				if(!Array.isArray(value) && (typeof value === "object") && value.value)
 					value = value.value.trim();
-				
+								
 				if(this.needsQuotes(values[0])) queryAddition = '%22' + this.escapeSpecialChar(encodeURIComponent(value)) + '%22';
 				else if(subtext)                queryAddition = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
 				else							queryAddition = this.escapeSpecialChar(encodeURIComponent(value));
@@ -568,13 +592,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						value = value.value.trim();
 					
 					if(model.needsQuotes(value)) value = '%22' + encodeURIComponent(value) + '%22';
-					else if(subtext)             value = "*" + encodeURIComponent(value) + "*";
-					else                         value = encodeURIComponent(value);
+					else if(subtext)             value = "*" + this.escapeSpecialChar(encodeURIComponent(value)) + "*";
+					else                         value = this.escapeSpecialChar(encodeURIComponent(value));
 						
-					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + model.escapeSpecialChar(value);
-					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + model.escapeSpecialChar(value);
-					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + model.escapeSpecialChar(value) + ")";
-				});
+					if((i == 0) && (numValues > 1)) 	   query += fieldName + ":(" + value;
+					else if((i > 0) && (i < numValues-1))  query += "%20" + operator + "%20" + value;
+					else if(i == numValues-1) 		 	   query += "%20" + operator + "%20" + value + ")";
+				}, this);
 			}
 			
 			return query;
@@ -629,16 +653,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					
 					if((value.length > 1) && (i == 0)) valueString += "("
 						
-					if(model.needsQuotes(v)) valueString += '"' + encodeURIComponent(v.trim()) + '"';
-					else if(subtext)         valueString += "*" + encodeURIComponent(v.trim()) + "*";
-					else                     valueString += encodeURIComponent(v.trim());
+					if(model.needsQuotes(v)) valueString += '"' + this.escapeSpecialChar(encodeURIComponent(v.trim())) + '"';
+					else if(subtext)         valueString += "*" + this.escapeSpecialChar(encodeURIComponent(v.trim())) + "*";
+					else                     valueString += this.escapeSpecialChar(encodeURIComponent(v.trim()));
 					
 					if(i < value.length-1)
 						valueString += " OR ";
 					else if((i == value.length-1) && (value.length > 1))
 						valueString += ")";
 					
-				});
+				}, this);
 			}
 			else valueString = value;
 			
@@ -653,7 +677,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 			query += ")";
 			
-			return this.escapeSpecialChar(query);			
+			return query;			
 		},
 		
 		/**** Provenance-related functions ****/

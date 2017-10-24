@@ -35,7 +35,7 @@ define(['underscore', 'jquery', 'backbone',
             		var options = {};
             	
             	this.isNew = (options.isNew == true) ? true : options.model? false : true;
-            	this.model = options.model || new EMLAttribute();
+            	this.model = options.model || new EMLAttribute({xmlID: DataONEObject.generateId()});
             },
             
             render: function(){
@@ -70,6 +70,7 @@ define(['underscore', 'jquery', 'backbone',
             	this.$(".measurement-scale-container").append(measurementScaleView.el);
             	this.measurementScaleView = measurementScaleView;
             	
+            	this.$el.attr("data-attribute-id", this.model.cid);
             },
             
             postRender: function(){
@@ -87,7 +88,7 @@ define(['underscore', 'jquery', 'backbone',
             		var index = this.$(".input[data-category='" + category + "']").index(e.target);
             		
             		if(currentValue.length > 0)
-            			currentValue.split(index, 0, newValue);
+            			currentValue[index] = newValue;
             		else
             			currentValue.push(newValue);
             		

@@ -1,60 +1,98 @@
 ﻿<!-- Icon column -->
 <% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
     <% var indentFolder = nodeLevel * 40; %>
-    <td>
+    <td class="type-icon">
         <i class="icon icon-chevron-down open toggle-rows" style="padding-left:<%=indentFolder %>px"></i>
         <i class="icon-large icon-folder-open"></i></td>
 
 <% } else { %>
     <% var indentFile = (nodeLevel + 1) * 40; %>
-    <td><i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i></td>
+    <td class="type-icon"><i class="icon-large icon-file" style="padding-left:<%=indentFile %>px"></i></td>
 
 <% } %>
 
 <!-- Files column -->
 
-<td class="name" title="Click to rename">
-    <div contenteditable="true">
-        <% if (typeof title != "undefined" && title && title.length) { %>
-            <%= title %>
-        <% } else if ( typeof fileName != "undefined" && fileName) { %>
-            <%= fileName %>
-        <% } else if(type == "Metadata"){ %>
-            Untitled dataset: Add a descriptive title for your dataset
-        <% } else { %>
-            <%= id %>
-        <% } %>
+<td class="name" title="Click to rename" >
+    <% if(uploadStatus != "l" && uploadStatus != "p" && type != "Metadata"){ %>
+    	<div contenteditable="true">
+    <% } else { %>
+    	<div>
+    <% } %>
+	        <% if (typeof title != "undefined" && title && title.length) { %>
+	            <%= title %>
+	        <% } else if ( typeof fileName != "undefined" && fileName) { %>
+	            <%= fileName %>
+	        <% } else if(type == "Metadata"){ %>
+	            Untitled dataset
+	        <% } else { %>
+	            <%= id %>
+	        <% } %>
     </div>
 </td>
 
 <!-- Size column -->
 <% if ( typeof sizeStr != "undefined" && sizeStr ) { %>
-    <td><%= sizeStr %></td>
+    <td class="size"><%= sizeStr %></td>
 
 <% } else {%>
-    <td><%= size %></td>
+    <td class="size"><%= size %></td>
 
 <% } %>
 <!-- Type column -->
-<% if (type ) { %>
-    <td><%= type %></td>
+<% if (type && type != "Metadata") { %>
+    <td class="type"><%= type %></td>
 <% } else { %>
-    <td></td>
+    <td class="type"></td>
 
 <% } %>
 <!-- Guide or Status column -->
-<!--td></td-->
+<td class="status">		
+	<%  if( uploadStatus == "p" ){ %>
+		<div class="progress progress-striped active">
+			<div class="bar" style="width: <%=uploadProgress%>%;"></div>
+		</div>
+	<% } else if( (!uploadStatus || uploadStatus == "c") && type != "Metadata" && numAttributes == 0 ) { %>
+		<i class="icon icon-circle-blank warning icon-large"></i>
+	<% } else if( type != "Metadata" && numAttributes > 0 && hasAttributeChanges && entityIsValid ) { %>
+		<i class="icon icon-ok-circle success icon-large"></i>
+	<% } else if( type != "Metadata" && !entityIsValid ) { %>
+		<i class="icon icon-exclamation-sign danger icon-large"></i>
+	<% } else if( uploadStatus == "c" ) { %>
+		<i class="icon icon-ok-circle success icon-large"></i>
+	<% } else if( uploadStatus == "e" ) { %>
+		<i class="icon icon-exclamation-sign danger error icon-large"></i>
+	<% } else if( uploadStatus == "q" && type != "Metadata"){ %>
+		<div class="progress progress-striped queued">
+			<div class="bar" style="width: 0px;"></div>
+		</div>
+	<% } else if( uploadStatus == "l" && type != "Metadata"){ %>
+		<i class="icon icon-circle-blank icon-large"></i>
+	<% } %>
+</td>
 <!-- Button column -->
-<td>
+<td class="controls">
         <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
     		<input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
             <button type="button" class="addFiles btn btn-primary" title="Add Files">
-                <i class="icon-large icon-plus icon-on-left"></i>
+                <i class="icon icon-large icon-plus icon-on-left"></i>
                 <span>Add Files</span>
             </button>
 
         <% } else { %>
-            <i class="icon-large icon icon-pencil edit pointer" title="Edit metadata about this file"></i>
-            <i class="icon-large icon icon-remove remove removeFiles" title="Remove file"></i>
+
+            <div class="btn-group">
+            <% if( (!uploadStatus || uploadStatus == "c") && type != "Metadata" && numAttributes == 0 ){ %>
+			  <button class="btn edit warning">Describe</button>
+			 <% } else { %>
+			 	<button class="btn edit">Describe</button>
+			 <% } %>
+			  <button class="btn dropdown-toggle" data-toggle="dropdown">
+			    <span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu">
+			    <li><a href="" class="remove removeFiles" title="Remove this file">Remove</a></li>
+			  </ul>
+			</div>
         <% } %>
 </td>

@@ -1,4 +1,4 @@
-﻿/* Tablets and large screens ----------- */
+/* Tablets and large screens ----------- */
 @media only screen and (min-width : 768px){
     
     #Header {
@@ -9,11 +9,10 @@
   	.mapMode #Header{
   		opacity: 1;
   	}
-    
-    .Editor #Content {
-        max-width: 100%;
-    }
-    
+  	
+  	#Content{
+  		max-width: 1024px;
+  	}
   	.DataCatalog #Content{
   		max-width: 100%;
   	}
@@ -69,16 +68,16 @@
 	    margin-top: -1px;
 	}
 	
-	#Navbar .dropdown-menu li:hover .sub-menu {
+	.dropdown-menu li:hover .sub-menu {
 	    visibility: visible;
 	}
 	
-	#Navbar .dropdown:hover .dropdown-menu {
+	.dropdown:hover .dropdown-menu {
 	    display: block;
 	}
 	
-	#Navbar .dropdown:hover .dropdown-menu.hidden,
-	#Navbar .dropdown-menu.hidden{
+	.dropdown:hover .dropdown-menu.hidden,
+	.dropdown-menu.hidden{
 		display: none;
 	}
 	

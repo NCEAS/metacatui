@@ -22,7 +22,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 			'HTTP' : 'Standard Internet browsers can access information stored on websites.',
 			'DAP' : 'Specialized OPeNDAP clients can be used to access resources available DAP services.',
 			'THREDDS' : 'Standard Internet browsers can browse THREDDS Data Servers and specialized THREDDS software can enable more sophisticated data access and visualizations.',
-
 		},
 
 		data: null,
@@ -41,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 			// The table portion of the View
 			var table = $(document.createElement('table'));
 			$(table).addClass('table');
-			$(table).append("<thead><tr><td>Name</td><td>Description</td><td>Access Type</td><td>URL</td>");
+			$(table).append("<thead><tr><td>Name</td><td>Description</td><td>Access Type</td><td>URL</td></tr></thead>");
 
 			var tbody = $(document.createElement('tbody'));
 
@@ -50,7 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 				var row_html = '<tr><td class="service-name">' + d.name + '</td>' +
 											 '<td class="service-description"><p class="ellipsis collapse-expand-target">' + d.description + '</p></td>';
 				
-				// Replace server type with riendly names if on exists
+				// Replace server type with riendly names if one exists
 				var service_type = d.type;
 
 				if (viewRef.friendly_type_names[d.type] !== undefined) {
@@ -110,7 +109,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 				});
 			});
 			
-			//Wait for the page to load a bit and check if service descriptions are overflowing
+			//Wait for the page to load a bit and check if service descriptions are
+			//overflowing
 			setTimeout(function() {
 				viewRef.$('td.service-description .ellipsis').each(function(i) {
 					//If it is overflowing, insert a link to see more text
@@ -125,7 +125,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 			return this;
 		},
 
-		// Helper function to check whether an elemente is overflowing
+		// Helper function to check whether an element is overflowing
 		isOverflowing:  function (el) {
 			var curOverflow = el.style.overflow;
 
@@ -140,6 +140,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 			return isOverflowing;
 		},
 		
+		// Helper function for providing the more/less expand/contract links in the
+		// service descriptions
 		toggleExpand: function(e){
 			var toggleLink = e.target;
 			

@@ -1,14 +1,19 @@
 <div class="metadata-controls-container">
-	<a class="btn copy subtle" data-clipboard-text="<%=citation%>">Copy Citation</a>
+
+	<a class="btn copy" data-clipboard-text="<%=citation%>"><i class="icon icon-copy"></i> Copy Citation</a>
 	<span class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</span>
-		
-	<% if(!model.isPublic){ %>
+
+	<% if (mdqUrl){ %>
+		<a href="#quality/<%=encodeURIComponent(model.id)%>" class="btn"><i class="icon icon-dashboard"></i> Quality report</a>
+	<% } %>
+
+	<% if(model.isPublic == false){ %>
 		<div class="info-icons">
 				<div class="private icons"><i class="icon icon-lock tooltip-this private" 
-				data-toggle="tooltip" 
-				data-placement="top" 
+				data-toggle="tooltip"
+				data-placement="top"
 				data-container="#metadata-controls-container"
-				title="This is private content."></i></div>		
+				title="This is private content."></i></div>
 		</div>
 	<% } %>
 </div>

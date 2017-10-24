@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'd3'], 				
 	function($, _, Backbone, d3) {
 	'use strict';
@@ -34,6 +34,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.total		= options.total		 || 0;
 			this.formatLabel=options.formatLabel || function(d){ return d }
 			this.data	    = this.formatDonutData(options.data, options.total) || [{label: "", count: 0, perc: 0}];
+			this.keepOrder	= options.keepOrder || false;
 			this.drawLabels = (this.data)
 		},
 		
@@ -86,10 +87,22 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	         * Draw the arcs
 	         * ========================================================================
 	         */
-
+	        
+	        // sort or not
+	        var theData = donut.value(
+    				function(d) {
+    					return d.perc 
+    				});
+	        if (this.keepOrder) {
+	        	theData = donut.value(
+        				function(d) {
+        					return d.perc 
+        				}).sort(null);
+	        }
 	        //Set up a group for each arc we will create
-	        var arcs = vis.selectAll("g.arc")
-	            .data(donut.value(function(d) { return d.perc })) //connect data to this group 
+	        var arcs = 
+	        	vis.selectAll("g.arc")
+	            .data(theData) //connect data to this group 
 	            .enter().append("svg:g") 
 	            .attr("class", "donut-arc-group")
 	            .attr("transform",
@@ -337,6 +350,42 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				}
 				
 				return counts;
+			}
+			
+			//Check if the data is preformatted
+			if((typeof counts[0] == "object") && (typeof counts[0].label != "undefined") && (typeof counts[0].count != "undefined")){
+					//If there are no percentages in the formatted data, find the total and set the percentage of each arc
+					if(typeof counts[0].perc == "undefined"){
+						var countNums = _.pluck(counts, "count");
+						var sum = 0;
+			             _.each(counts, function(c){
+			        	    sum += c.count;
+			             });
+						
+						_.each(counts, function(thisCount){
+							thisCount.perc = thisCount.count/sum;
+						});
+					}
+					
+					return counts;
+			}
+			
+			//Check if the data is preformatted
+			if((typeof counts[0] == "object") && (typeof counts[0].label != "undefined") && (typeof counts[0].count != "undefined")){
+					//If there are no percentages in the formatted data, find the total and set the percentage of each arc
+					if(typeof counts[0].perc == "undefined"){
+						var countNums = _.pluck(counts, "count");
+						var sum = 0;
+			             _.each(counts, function(c){
+			        	    sum += c.count;
+			             });
+						
+						_.each(counts, function(thisCount){
+							thisCount.perc = thisCount.count/sum;
+						});
+					}
+					
+					return counts;
 			}
 			
 			var newArray = [];

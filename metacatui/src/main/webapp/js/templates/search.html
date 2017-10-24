@@ -13,7 +13,7 @@
 		    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute"></ul>
 		    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation"></ul>
 		    	<ul id="current-resourceMap-filters" class="current-filters" data-category="resourceMap">
-		    		<% if ((typeof resourceMap !== "undefined") && resourceMap){ %>
+		    		<% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ %>
 		    			<li class="current-filter"><span class="category"><%=searchModelRef.fieldLabels["resourceMap"]%></span><i class="icon-remove remove-filter"></i></li>
 		    		<% } %>
 		    	</ul>
@@ -51,7 +51,7 @@
 					</div>
 				    <div class="clear"></div>
 			    </div>
-			    
+							    
 			    <% if(searchModelRef.filterIsAvailable("annotation")){ %>
 			    <div class="filter-contain collapsable" data-category="annotation">
 					<label class="expand-collapse-control">
@@ -63,16 +63,16 @@
 						</span>
 					</label>
 					<div class="filter-input-contain input-append ">
-						<input class="filter" type="text" placeholder="tags, concepts, etc." id="annotation_input" data-category="annotation">
-						<button class="filter btn" id="annotation_btn" data-category="annotation"><i class="icon-search"></i></button>
+						<input class="filter" type="hidden" placeholder="tags, concepts, etc." id="annotation_input" data-category="annotation">
+						<!--  <button class="filter btn" id="annotation_btn" data-category="annotation"><i class="icon-search"></i></button> -->
 					</div>
 				    <div class="clear"></div>
 			    </div>
 			    
 			    <% } %>
 			    
-			    <% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
-					<div class="filter-contain collapsable" id="includes-files" data-category="resourceMap">
+			   <% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
+				   <div class="filter-contain collapsable" id="includes-files" data-category="resourceMap">
 						<label class="expand-collapse-control">
 							<i class="icon icon-caret-right expand"></i>					
 							<i class="icon icon-caret-down collapse"></i>
@@ -87,7 +87,7 @@
 								<i class="icon icon-check-empty"></i>
 								Only results with data
 							</label>
-							<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
+							<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ print("checked"); } %> />
 							<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
 						</div>
 						<div class="clear"></div>
@@ -214,6 +214,9 @@
 				
 			</div>
 		</aside>
+		
+		<div id="bioportal-tree"></div>
+		<div id="bioportal-popover" data-category="annotation"></div>
 		
 		<!--CONTENT AREA-->
 		<div id="results-container" class="auto-height">

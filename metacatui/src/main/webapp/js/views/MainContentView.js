@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'], 				
 	function($, _, Backbone, MainContentTemplate) {
 	'use strict';
@@ -31,13 +31,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/mainContent.html'],
 			var searchTerm = $("#search_txt_main").val();
 			
 			//Clear the search model to start a fresh search
-			MetacatUI.appSearchModel.clear().set(MetacatUI.appSearchModel.defaults);
+			appSearchModel.clear().set(appSearchModel.defaults);
 			
 			//Create a new array with the new search term
 			var newSearch = [searchTerm];
 			
 			//Set up the search model for this new term
-			MetacatUI.appSearchModel.set('all', newSearch);
+			appSearchModel.set('all', newSearch);
 			
 			// make sure the browser knows where we are going
 			MetacatUI.uiRouter.navigate("data", {trigger: true});

@@ -1,4 +1,4 @@
-﻿/*global Backbone */
+/*global Backbone */
 'use strict';
 
 define(['jquery',	'underscore', 'backbone'], 				
@@ -14,12 +14,14 @@ function ($, _, Backbone) {
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
-			'signin'					: "renderRegistry",
-			'account(/:stage)'          : 'renderLdap',     // use ldapweb for different stages
-			'share(/:stage/*pid)'       : 'renderRegistry'  // registry page
+			'signin'					: "renderSignIn",
+			"signinldaperror"			: "renderLdapSignInError",
+			'share(/*pid)'       		: 'renderEditor',  // registry page
+			'submit(/*pid)'       		: 'renderEditor'  // registry page
 		},
 		
 		helpPages: {
@@ -97,11 +99,13 @@ function ($, _, Backbone) {
 		renderData: function (mode, query, page) {
 			this.routeHistory.push("data");
 			
-			//Check for a page URL parameter
-			if(typeof page === "undefined")
+			///Check for a page URL parameter
+			if((typeof page === "undefined") || !page)
 				MetacatUI.appModel.set("page", 0);
+			else if(page == 0)
+				MetacatUI.appModel.set('page', 0);
 			else
-				MetacatUI.appModel.set('page', page);
+				MetacatUI.appModel.set('page', page-1);
 
 			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
@@ -172,10 +176,13 @@ function ($, _, Backbone) {
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
 			
+			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
+			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
+			
 			var seriesId;
 						
 			//Check for a seriesId
-			if(pid.indexOf("version:") > -1){
+			if(MetacatUI.appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
 				seriesId = pid.substr(0, pid.indexOf(", version:"));
 				
 				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);				
@@ -243,36 +250,87 @@ function ($, _, Backbone) {
 			}
 		},
 		
-		renderRegistry: function (stage, pid) {
-			this.routeHistory.push("registry");
-			
-			if(!MetacatUI.appView.registryView){
-				require(['views/RegistryView'], function(RegistryView){
-					MetacatUI.appView.registryView = new RegistryView();
-					MetacatUI.appView.registryView.stage = stage;
-					MetacatUI.appView.registryView.pid = pid;
-					MetacatUI.appView.showView(MetacatUI.appView.registryView);
+		renderMyProfile: function(section, subsection){
+			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
+				this.renderSignIn();
+			else if(!MetacatUI.appUserModel.get("checked")){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+					if(MetacatUI.appUserModel.get("loggedIn"))
+						this.renderProfile(MetacatUI.appUserModel.get("username"), section, subsection);
+					else
+						this.renderSignIn();
 				});
 			}
-			else{
-				MetacatUI.appView.registryView.stage = stage;
-				MetacatUI.appView.registryView.pid = pid;
-				MetacatUI.appView.showView(MetacatUI.appView.registryView);
+			else if(MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn")){
+				this.renderProfile(MetacatUI.appUserModel.get("username"), section, subsection);
 			}
 		},
 		
-		renderLdap: function (stage) {
-			this.routeHistory.push("ldap");
+		/*
+          Renders the editor view given a root package identifier,
+          or a metadata identifier.  If the latter, the corresponding
+          package identifier will be queried and then rendered.
+        */
+		renderEditor: function (pid) {
+			this.routeHistory.push("share");
 			
-			if(!MetacatUI.appView.ldapView){
-				require(["views/LdapView"], function(LdapView){
-					MetacatUI.appView.ldapView = new LdapView();
-					MetacatUI.appView.ldapView.stage = stage;
-					MetacatUI.appView.showView(MetacatUI.appView.ldapView);
+			if( ! MetacatUI.appView.editorView ){
+				require(['views/EditorView'], function(EditorView) {
+					MetacatUI.appView.editorView = new EditorView({pid: pid});
+					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.showView(MetacatUI.appView.editorView);
 				});
-			}else{
-				MetacatUI.appView.ldapView.stage = stage;
-				MetacatUI.appView.showView(MetacatUI.appView.ldapView);
+                
+			} else {
+				MetacatUI.appView.editorView.pid = pid;
+				MetacatUI.appView.showView(MetacatUI.appView.editorView);
+                
+			}
+		},
+		
+		renderSignIn: function(){
+
+			var router = this;
+
+			//If there is no SignInView yet, create one
+			if(!MetacatUI.appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
+					router.renderSignIn();
+				});
+				
+				return;
+			}
+			
+			//If the user status has been checked and they are already logged in, we will forward them to their profile
+			if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
+				this.navigate("my-profile", { trigger: true });
+				return;
+			}
+			//If the user status has been checked and they are NOT logged in, show the SignInView
+			else if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ){
+				this.routeHistory.push("signin");
+				MetacatUI.appView.showView(MetacatUI.appView.signInView);
+			}
+			//If the user status has not been checked yet, wait for it
+			else if( !MetacatUI.appUserModel.get("checked") ){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.renderSignIn);
+			}
+		},
+		
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
+			
+			if(!MetacatUI.appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
+					MetacatUI.appView.signInView.ldapError = true;
+					MetacatUI.appView.showView(MetacatUI.appView.signInView);
+				});
+			}
+			else{
+				MetacatUI.appView.signInView.ldapError = true;
+				MetacatUI.appView.showView(MetacatUI.appView.signInView);
 			}
 		},
 		
@@ -289,8 +347,9 @@ function ($, _, Backbone) {
 				});
 			}
 			else{
-				if(MetacatUI.appView.currentView.onClose)
+				if(MetacatUI.appView.currentView && MetacatUI.appView.currentView.onClose)
 					MetacatUI.appView.currentView.onClose();
+				
 				MetacatUI.appUserModel.logout();
 			}	
 		},

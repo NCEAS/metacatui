@@ -1,8 +1,9 @@
-﻿/*global define */
+/*global define */
 define(['jquery',
 				'jqueryui', 
 				'underscore', 
 				'backbone',
+				'bioportal',
 				'collections/SolrResults',
 				'models/Search',
 				'models/Stats',
@@ -16,7 +17,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -72,6 +73,7 @@ define(['jquery',
 	       			   		   'click .pagerLink' : 'navigateToPage',
 							  'click .filter.btn' : 'updateTextFilters',
 			 'keypress input[type="text"].filter' : 'triggerOnEnter',
+			    'focus input[type="text"].filter' : 'getAutocompletes',
 							  'change #sortOrder' : 'triggerSearch',
 							   'change #min_year' : 'updateYearRange',
 							   'change #max_year' : 'updateYearRange',
@@ -84,6 +86,8 @@ define(['jquery',
 				   'click .remove-addtl-criteria' : 'removeAdditionalCriteria',
 				   			 'click .collapse-me' : 'collapse',
  'click .filter-contain .expand-collapse-control' : 'toggleFilterCollapse',
+	  						  'click #jumpUp' : 'jumpUp',
+	  						  'click #resetTree' : 'resetTree',
 				   			  'click #toggle-map' : 'toggleMapMode',
 				   			  'click .toggle-map' : 'toggleMapMode',
 				   			 'click .toggle-list' : 'toggleList',
@@ -235,7 +239,7 @@ define(['jquery',
 			this.listDataSources();
 			this.listenTo(MetacatUI.nodeModel, 'change:members', this.listDataSources);
 			
-			// listen to the appModel for the search trigger			
+			// listen to the MetacatUI.appModel for the search trigger			
 			this.listenTo(MetacatUI.appModel, 'search', this.getResults);
 			
 			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.triggerSearch);
@@ -250,7 +254,172 @@ define(['jquery',
 				$(".auto-height-member").resize(this.setAutoHeight);
 			}
 
+			if (MetacatUI.appModel.get("bioportalAPIKey")) {
+				this.setUpTree();
+			}
+			
 			return this;
+		},
+		
+		setUpTree : function() {
+			this.$el.data("data-catalog-view", this);
+
+			var tree = $("#bioportal-tree").NCBOTree({
+				  apikey: MetacatUI.appModel.get("bioportalAPIKey"),
+				  ontology: "ECSO",
+				  width: "400",
+				  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
+				});
+			
+			// make a container for the tree and nav buttons
+			var contentPlus = $("<div></div>");
+			$(contentPlus).append('<button class="icon icon-level-up tooltip-this" id="jumpUp" data-trigger="hover" data-title="Go up to parent" data-placement="top"></button>');
+			$(contentPlus).append('<button class="icon icon-undo tooltip-this" id="resetTree" data-trigger="hover" data-title="Reset tree" data-placement="top"></button>');
+			$(contentPlus).append(tree);
+
+			$("[data-category='annotation'] .expand-collapse-control").popover({
+				html: true,
+				placement: "bottom",
+				trigger:"manual",
+				content: contentPlus,
+				container: "#bioportal-popover"
+			}).on("click", function(){
+				if($($(this).data().popover.options.content).is(":visible")){
+					//Detach the tree from the popover so it doesn't get removed by Bootstrap
+					$(this).data().popover.options.content.detach();
+					//Hide the popover
+					$(this).popover("hide");
+				}
+				else{
+					//Get the popover content
+					var content = $(this).data().popoverContent || $(this).data().popover.options.content.detach();
+					//Cache it
+					$(this).data({ popoverContent: content });
+					//Show the popover
+					$(this).popover("show");
+					//Insert the tree into the popover content
+					$(this).data().popover.options.content = content;
+					
+					// ensure tooltips are activated
+			    	$(".tooltip-this").tooltip();
+					
+				}
+			});
+			
+			// set up the listener to jump to search results
+			tree.on("afterSelect", this.selectConcept);
+			tree.on("afterJumpToClass", this.afterJumpToClass);
+			tree.on("afterExpand", this.afterExpand);
+
+		},
+		
+		selectConcept : function(event, classId, prefLabel, selectedNode) {
+			
+			// Get the concept info
+			var uri = classId;
+			var label = prefLabel;
+			var description = "";
+			
+			var item = {};
+			item.value = uri;
+			item.label = label;
+			item.filterLabel = label;
+			item.desc = "";
+			
+			// set the text field
+			$('#annotation_input').val(item.value);
+			
+			// add to the filter immediately
+			var view = $("#Content").data("data-catalog-view");
+			view.updateTextFilters(event, item);
+			
+			// hide the hover
+			$(selectedNode).trigger("mouseout");
+			
+			// hide the popover
+			var annotationFilterEl = $("[data-category='annotation'] .expand-collapse-control");
+			annotationFilterEl.trigger("click");
+			
+			// reset the tree for next search
+			var tree = annotationFilterEl.data().popoverContent.find("#bioportal-tree").data("NCBOTree");
+			var options = tree.options();
+			$.extend(options, {startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"});
+			tree.changeOntology("ECSO");
+
+			// prevent default action
+			return false;
+			
+		},
+		
+		afterExpand : function() {
+			// ensure tooltips are activated
+	    	$(".tooltip-this").tooltip();
+		},
+		
+		afterJumpToClass : function(event, classId) {
+			
+			// re-root the tree at this concept
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
+			var options = tree.options();
+			$.extend(options, {startingRoot: classId});
+
+			// force a re-render
+			tree.init();
+			
+			// ensure the tooltips are activated
+			$(".tooltip-this").tooltip();
+			
+		},
+		
+		jumpUp : function() {
+			
+			//console.log("Jumping UP!");
+						
+			// re-root the tree at the parent concept of the root
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
+			var options = tree.options();
+			var startingRoot = options.startingRoot;
+			//console.log("startingRoot: " + startingRoot);
+			
+			if (startingRoot == "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType") {
+				console.log("Already at top of tree");
+				return false;
+			}
+			
+			var parentId = $("a[data-id='"+ encodeURIComponent(startingRoot) + "'").attr("data-subclassof");
+			console.log("parentId: " + parentId);
+			
+			// re-root
+			$.extend(options, {startingRoot: parentId});
+
+			// force a re-render
+			tree.init();
+			
+			// ensure the tooltips are activated
+			$(".tooltip-this").tooltip();
+			
+			return false;
+			
+		},
+		
+		resetTree : function() {
+									
+			// re-root the tree at the original concept
+			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
+			var options = tree.options();
+			var startingRoot = "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType";
+			
+			// re-root
+			$.extend(options, {startingRoot: startingRoot});
+
+			// force a re-render
+			tree.init();
+			
+			// ensure the tooltips are activated
+			$(".tooltip-this").tooltip();
+			
+			return false;
+			
 		},
 		
 		/*
@@ -349,9 +518,9 @@ define(['jquery',
 			var query = this.searchModel.getQuery();
 						
 			//Specify which facets to retrieve
-			if(gmaps){ //If we have Google Maps enabled
-				var geohashes = ["geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9"]
-			    this.searchResults.facet = _.union(this.searchResults.facet, geohashes);
+			if(gmaps && this.map){ //If we have Google Maps enabled
+				var geohashLevel = "geohash_" + MetacatUI.mapModel.determineGeohashLevel(this.map.zoom); 
+				this.searchResults.facet.push(geohashLevel);
 			}
 			
 			//Run the query
@@ -386,7 +555,9 @@ define(['jquery',
 		/*
 		 * After the search results have been returned, check if any of them are derived data or have derivations
 		 */
-		checkForProv: function(){			
+		checkForProv: function(){
+			if(!MetacatUI.appModel.get("prov")) return;
+			
 			var maps = [],
 				hasSources = [],
 				hasDerivations = [],
@@ -1088,8 +1259,13 @@ define(['jquery',
 			if(MetacatUI.nodeModel.get("members").length < 1) return;
 			
 			//Get the member nodes
-			var members = _.sortBy(MetacatUI.nodeModel.get("members"), function(m){ return m.name });
-			var filteredMembers = _.reject(members, function(m){ return(_.contains(MetacatUI.nodeModel.get("hiddenMembers"), m.identifier)); });
+			var members = _.sortBy(MetacatUI.nodeModel.get("members"), function(m){ 
+					if(m.name)
+						return m.name.toLowerCase();
+					else
+						return "";
+				});
+			var filteredMembers = _.reject(members, function(m){ return m.status != "operational"  });
 			
 			//Get the current search filters for data source
 			var currentFilters = this.searchModel.get("dataSource");
@@ -1312,349 +1488,108 @@ define(['jquery',
 		},
 
 		//Get the facet counts
-		getAutoCompletes: function(){
-			if(!this.filters) return;
+		getAutocompletes: function(e){
+			if(!e) return;
+			
+			//Get the text input to determine the filter type
+			var input = $(e.target),
+				category = input.attr("data-category");
+						
+			if(!this.filters || !category) return;
 
 			var viewRef = this;
 			
 			//Create the facet query by using our current search query 
 			var facetQuery = "q=" + this.searchResults.currentquery +
 							 "&rows=0" +
-							 this.searchModel.getFacetQuery() +
-							 "&wt=json&json.wrf=?";
+							 this.searchModel.getFacetQuery(category) +
+							 "&wt=json&";
 
+			//If we've cached these filter results, then use the cache instead of sending a new request
+			if(!MetacatUI.appSearchModel.autocompleteCache) MetacatUI.appSearchModel.autocompleteCache = {}; 
+			else if(MetacatUI.appSearchModel.autocompleteCache[facetQuery]){
+				this.setupAutocomplete(MetacatUI.appSearchModel.autocompleteCache[facetQuery]);
+				return;
+			}
+
+			//Get the facet counts for the autocomplete
 			var requestSettings = {
 				url: MetacatUI.appModel.get('queryServiceUrl') + facetQuery,
 				type: "GET",
 				dataType: "json",
 				success: function(data, textStatus, xhr){
-					
-					var facetCounts = data.facet_counts.facet_fields,
+
+					var suggestions = [],
 						facetLimit  = 999;
-									
-					//***Set up the autocomplete (jQueryUI) feature for each text input****//				
-					//For the 'all' filter, use keywords
-					var allSuggestions = facetCounts.keywords;
-					var rankedSuggestions = new Array();
-					for (var i=0; i < Math.min(allSuggestions.length-1, facetLimit); i+=2) {
-						rankedSuggestions.push({value: allSuggestions[i], label: allSuggestions[i] + " (" + allSuggestions[i+1] + "+)"});
-					}
-	
-					$('#all_input').autocomplete({
-						source: function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        },
-						select: function(event, ui) {
-							// set the text field
-							$('#all_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event, ui.item);
-							// prevent default action
-							return false;
-						},
-						position: {
-							my: "left top",
-							at: "left bottom",
-							collision: "flipfit"
-						}
-					});
 					
-					// suggest attribute criteria
-					var attributeNameSuggestions = facetCounts.attributeName;
-					var attributeLabelSuggestions = facetCounts.attributeLabel;
-					// NOTE: only using attributeName for auto-complete suggestions.
-					attributeLabelSuggestions = null;
-					
-					if(attributeNameSuggestions){
-						var attributeSuggestions = [];
-						attributeSuggestions = 
-							attributeSuggestions.concat(
-								attributeNameSuggestions, 
-								attributeLabelSuggestions);
-						var rankedAttributeSuggestions = new Array();
-						for (var i=0; i < Math.min(attributeSuggestions.length-1, facetLimit); i+=2) {
-							rankedAttributeSuggestions.push({value: attributeSuggestions[i], label: attributeSuggestions[i] + " (" + attributeSuggestions[i+1] + ")"});
-						}
-						$('#attribute_input').autocomplete({
-							source: function (request, response) {
-					            var term = $.ui.autocomplete.escapeRegex(request.term)
-					                , startsWithMatcher = new RegExp("^" + term, "i")
-					                , startsWith = $.grep(rankedAttributeSuggestions, function(value) {
-					                    return startsWithMatcher.test(value.label || value.value || value);
-					                })
-					                , containsMatcher = new RegExp(term, "i")
-					                , contains = $.grep(rankedAttributeSuggestions, function (value) {
-					                    return $.inArray(value, startsWith) < 0 && 
-					                        containsMatcher.test(value.label || value.value || value);
-					                });
-					            
-					            response(startsWith.concat(contains));
-					        },
-							select: function(event, ui) {
-								// set the text field
-								$('#attribute_input').val(ui.item.value);
-								// add to the filter immediately
-								viewRef.updateTextFilters(event, ui.item);
-								// prevent default action
-								return false;
-							},
-							position: {
-								my: "left top",
-								at: "left bottom",
-								collision: "flipfit"
-							}
-						});
-					}
-					
-					// suggest annotation concepts
-					var annotationSuggestions = facetCounts.sem_annotation_bioportal_sm;
-					if(annotationSuggestions){
-						var rankedAnnotationSuggestions = new Array();
-						for (var i=0; i < Math.min(annotationSuggestions.length-1, facetLimit); i+=2) {
-							rankedAnnotationSuggestions.push({
-								value: annotationSuggestions[i], 
-								label: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")), 
-								filterLabel: annotationSuggestions[i].substring(annotationSuggestions[i].indexOf("#")),
-								desc: annotationSuggestions[i], 
-	
+					//Get all the facet counts
+					_.each(category.split(","), function(c){
+						if(typeof c == "string") c = [c];
+						_.each(c, function(thisCategory){
+							//Get the field name(s)
+							var fieldNames = MetacatUI.appSearchModel.facetNameMap[thisCategory];
+							if(typeof fieldNames == "string") fieldNames = [fieldNames];
+							
+							//Get the facet counts
+							_.each(fieldNames, function(fieldName){
+								suggestions.push(data.facet_counts.facet_fields[fieldName]);								
 							});
-						}
-						
-						//Set up the hover autocomplete for semantics pick lists
-						 $.widget( "app.semHoverAutocomplete", $.ui.autocomplete, {
-						        
-						        // Set the content attribute as the "item.desc" value.
-						        // This becomes the tooltip content.
-						        _renderItem: function( ul, item ) {
-						        	// if we have a label, use it for the title
-						        	var title = item.value;
-						        	if (item.label) {
-						        		title = item.label;
-						        	}
-						        	
-						        	// if we have a description, use it for the content
-						        	var content = '<div class="annotation-viewer-container">';
-						        	if (item.desc) {
-						        		content += '<span class="annotation tag">' + item.label + '</span>'; 
-						        		if (item.desc != item.value) {
-							        		content += '<p><strong>Definition: </strong>' + item.desc + '</p>';
-							        		content += '<p class="subtle concept">Concept URI: <a href="' + item.value + '" target="_blank">' + item.value + '</a></p>';
-						        		}
-						        	}
-						        	content += "</div>"
-						        	
-						        	//Set up the popover
-						        	var element = this._super( ul, item );
-						        	element.popover({
-				        				placement: "right",
-				        				trigger: "manual",
-				        				container: 'body',
-				        				title: title,
-				        				html: true,
-				        				content: content
-				        			})
-				        			.on("mouseenter", function () {
-				    			        var _this = this;
-				    			        $(this).popover("show");
-				    			        $(".popover").on("mouseleave", function () {
-				    			            $(_this).popover('hide');
-				    			        });
-				    			    })
-				    			    .on("mouseleave", function () {
-				    			        var _this = this;
-				    			        setTimeout(function () {
-				    			            if (!$(".popover:hover").length) {
-				    			                $(_this).popover("hide");
-				    			            }
-				    			        }, 300);
-				    			    });
-						            return element;
-						        }
-						    });
-						    
-						 
-						$('#annotation_input').semHoverAutocomplete({
-							source: 
-								function (request, response) {
-						            var term = $.ui.autocomplete.escapeRegex(request.term)
-						                , startsWithMatcher = new RegExp("^" + term, "i")
-						                , startsWith = $.grep(rankedAnnotationSuggestions, function(value) {
-						                    return startsWithMatcher.test(value.label || value.value || value);
-						                })
-						                , containsMatcher = new RegExp(term, "i")
-						                , contains = $.grep(rankedAnnotationSuggestions, function (value) {
-						                    return $.inArray(value, startsWith) < 0 && 
-						                        containsMatcher.test(value.label || value.value || value);
-						                });
-						            					            
-						            // use local values from facet
-						            var localValues = startsWith.concat(contains);
-						            
-						            // pass to bioportal search to complete the list and do the call back
-						            MetacatUI.appLookupModel.bioportalSearch(request, response, localValues, rankedAnnotationSuggestions);
-						            
-					        },
-							select: function(event, ui) {
-								// set the text field
-								$('#annotation_input').val(ui.item.value);
-								// add to the filter immediately
-								viewRef.updateTextFilters(event, ui.item);
-								// prevent default action
-								return false;
-							},
-							position: {
-								my: "left top",
-								at: "left bottom",
-								collision: "flipfit"
-							}
 						});
-					}
-					
-					
-					// suggest creator names/organizations
-					var originSuggestions = facetCounts.origin;
-					if(originSuggestions){
-						var rankedOriginSuggestions = new Array();
-						for (var i=0; i < Math.min(originSuggestions.length-1, facetLimit); i+=2) {
-							rankedOriginSuggestions.push({value: originSuggestions[i], label: originSuggestions[i] + " (" + originSuggestions[i+1] + ")"});
-						}
-						$('#creator_input').autocomplete({
-							source: function (request, response) {
-					            var term = $.ui.autocomplete.escapeRegex(request.term)
-					                , startsWithMatcher = new RegExp("^" + term, "i")
-					                , startsWith = $.grep(rankedOriginSuggestions, function(value) {
-					                    return startsWithMatcher.test(value.label || value.value || value);
-					                })
-					                , containsMatcher = new RegExp(term, "i")
-					                , contains = $.grep(rankedOriginSuggestions, function (value) {
-					                    return $.inArray(value, startsWith) < 0 && 
-					                        containsMatcher.test(value.label || value.value || value);
-					                });
-					            
-					            // use local values from facet
-					            var localValues = startsWith.concat(contains);
-					            
-					            // pass to orcid search to complete the list and do the call back
-					            MetacatUI.appLookupModel.orcidSearch(request, response, localValues);
-					        },
-							select: function(event, ui) {
-								// set the text field
-								$('#creator_input').val(ui.item.value);
-								// add to the filter immediately
-								viewRef.updateTextFilters(event, ui.item);
-								// prevent default action
-								return false;
-							},
-							position: {
-								my: "left top",
-								at: "left bottom",
-								collision: "flipfit"
-							}
-						});
-					}
-					
-					// suggest taxonomic criteria
-					var familySuggestions  = facetCounts.family;
-					var speciesSuggestions = facetCounts.species;
-					var genusSuggestions   = facetCounts.genus;
-					var kingdomSuggestions = facetCounts.kingdom;
-					var phylumSuggestions  = facetCounts.phylum;
-					var orderSuggestions   = facetCounts.order;
-					var classSuggestions   = facetCounts["class"];
-					
-					var taxonSuggestions = [];
-					taxonSuggestions = 
-						taxonSuggestions.concat(
-							familySuggestions, 
-							speciesSuggestions, 
-							genusSuggestions, 
-							kingdomSuggestions,
-							phylumSuggestions,
-							orderSuggestions,
-							classSuggestions);
-					var rankedTaxonSuggestions = new Array();
-					for (var i=0; i < Math.min(taxonSuggestions.length-1, facetLimit); i+=2) {
-						rankedTaxonSuggestions.push({value: taxonSuggestions[i], label: taxonSuggestions[i] + " (" + taxonSuggestions[i+1] + ")"});
-					}
-					$('#taxon_input').autocomplete({
-						source: function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedTaxonSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedTaxonSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        },
-						position: {
-							my: "left top",
-							at: "left bottom",
-							collision: "none"
-						},
-						select: function(event, ui) {
-							// set the text field
-							$('#taxon_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event, ui.item);
-							// prevent default action
-							return false;
-						}
-					});	
-					
-					// suggest location names
-					var spatialSuggestions = facetCounts.site;
-					var rankedSpatialSuggestions = new Array();
-					for (var i=0; i < Math.min(spatialSuggestions.length-1, facetLimit); i+=2) {
-						rankedSpatialSuggestions.push({value: spatialSuggestions[i], label: spatialSuggestions[i] + " (" + spatialSuggestions[i+1] + ")"});
-					}
-					$('#spatial_input').autocomplete({
-						source: function (request, response) {
-				            var term = $.ui.autocomplete.escapeRegex(request.term)
-				                , startsWithMatcher = new RegExp("^" + term, "i")
-				                , startsWith = $.grep(rankedSpatialSuggestions, function(value) {
-				                    return startsWithMatcher.test(value.label || value.value || value);
-				                })
-				                , containsMatcher = new RegExp(term, "i")
-				                , contains = $.grep(rankedSpatialSuggestions, function (value) {
-				                    return $.inArray(value, startsWith) < 0 && 
-				                        containsMatcher.test(value.label || value.value || value);
-				                });
-				            
-				            response(startsWith.concat(contains));
-				        },
-						select: function(event, ui) {
-							// set the text field
-							$('#spatial_input').val(ui.item.value);
-							// add to the filter immediately
-							viewRef.updateTextFilters(event, ui.item);
-							// prevent default action
-							return false;
-						},
-						position: {
-							my: "left top",
-							at: "left bottom",
-							collision: "flipfit"
-						}
 					});
+					suggestions = _.flatten(suggestions);
+					
+					//Format the suggestions 
+					var rankedSuggestions = new Array();
+					for (var i=0; i < Math.min(suggestions.length-1, facetLimit); i+=2) {
+						rankedSuggestions.push({value: suggestions[i], label: suggestions[i] + " (" + suggestions[i+1] + ")"});
+					}
+					
+					//Save these facets in the app so we don't have to send another query
+					MetacatUI.appSearchModel.autocompleteCache[facetQuery] = rankedSuggestions;
+					
+					//Now setup the actual autocomplete menu
+					viewRef.setupAutocomplete(input, rankedSuggestions);
 				}
 			}
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
+		},
+		
+		setupAutocomplete: function(input, rankedSuggestions){
+			var viewRef = this;
+			
+			input.autocomplete({
+				source: function (request, response) {
+		            var term = $.ui.autocomplete.escapeRegex(request.term)
+		                , startsWithMatcher = new RegExp("^" + term, "i")
+		                , startsWith = $.grep(rankedSuggestions, function(value) {
+		                    return startsWithMatcher.test(value.label || value.value || value);
+		                })
+		                , containsMatcher = new RegExp(term, "i")
+		                , contains = $.grep(rankedSuggestions, function (value) {
+		                    return $.inArray(value, startsWith) < 0 && 
+		                        containsMatcher.test(value.label || value.value || value);
+		                });
+		            
+		            response(startsWith.concat(contains));
+		        },
+				select: function(event, ui) {
+					// set the text field
+					input.val(ui.item.value);
+					// add to the filter immediately
+					viewRef.updateTextFilters(event, ui.item);
+					// prevent default action
+					return false;
+				},
+				position: {
+					my: "left top",
+					at: "left bottom",
+					collision: "flipfit"
+				}
+			});
+			
+			//Add a class
+			if(input.data("uiAutocomplete"))
+				$(input.data("uiAutocomplete").menu.element).addClass("filter-autocomplete");
 		},
 		
 		hideClearButton: function(){
@@ -2713,7 +2648,7 @@ define(['jquery',
 			}
 			
 			//After all the results are loaded, query for our facet counts in the background
-			this.getAutoCompletes();
+			//this.getAutocompletes();
 		},
 		
 		renderAll: function(){
@@ -2733,7 +2668,7 @@ define(['jquery',
 				this.$results.html('<p id="no-results-found">No results found.</p>');
 				if(MetacatUI.theme == "arctic"){
 					//When we get new results, check if the user is searching for their own datasets and display a message
-					if((MetacatUI.appView.dataCatalogView.searchModel.getQuery() == MetacatUI.appUserModel.get("searchModel").getQuery()) && !MetacatUI.appSearchResults.length){
+					if((MetacatUI.appView.dataCatalogView && MetacatUI.appView.dataCatalogView.searchModel.getQuery() == MetacatUI.appUserModel.get("searchModel").getQuery()) && !MetacatUI.appSearchResults.length){
 						$("#no-results-found").after("<h3>Where are my data sets?</h3><p>If you are a previous ACADIS Gateway user, " +
 						"you will need to take additional steps to access your data sets in the new NSF Arctic Data Center." +
 						"<a href='mailto:support@arcticdata.io'>Send us a message at support@arcticdata.io</a> with your old ACADIS " +
@@ -2864,7 +2799,7 @@ define(['jquery',
 				$(container).attr("data-height", $(container).css("height"));
 				
 				//Increase the height of the container to expand it
-				$(container).css("max-height", "900px");
+				$(container).css("max-height", "3000px");
 			}
 			//Collapse
 			else{

@@ -3,6 +3,7 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/EMLGeoCoverageView',
         'views/metadata/EMLPartyView',
 		'views/metadata/EMLMethodsView',
+		'views/metadata/EMLTempCoverageView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLGeoCoverage',
         'models/metadata/eml211/EMLKeywordSet',
@@ -13,15 +14,18 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLTemporalCoverage',
 		'models/metadata/eml211/EMLMethods',
         'text!templates/metadata/eml.html',
+        'text!templates/metadata/EMLPartyCopyMenu.html',
         'text!templates/metadata/metadataOverview.html',
         'text!templates/metadata/dates.html',
         'text!templates/metadata/locationsSection.html',
+        'text!templates/metadata/taxonomicCoverage.html',
 		'text!templates/metadata/taxonomicClassificationTable.html', 
 		'text!templates/metadata/taxonomicClassificationRow.html'], 
-	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView,
+	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView,
 			EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
-			EMLTemporalCoverage, EMLMethods, Template, OverviewTemplate,
-			 DatesTemplate, LocationsTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
+			EMLTemporalCoverage, EMLMethods, Template, EMLPartyCopyMenuTemplate, OverviewTemplate,
+			 DatesTemplate, LocationsTemplate, 
+			 TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
     
     var EMLView = ScienceMetadataView.extend({
     	
@@ -34,12 +38,14 @@ define(['underscore', 'jquery', 'backbone',
         events: {
         	"change .text"                 : "updateText",
 
-        	"change .basic-text"           : "updateBasicText",
-        	"keyup  .basic-text.new"       : "addBasicText",
+        	"change .basic-text"            : "updateBasicText",
+        	"keyup  .basic-text.new"        : "addBasicText",
+        	"mouseover .basic-text-row .remove" : "previewTextRemove",
+        	"mouseout .basic-text-row .remove"  : "previewTextRemove",
 			
-			"change .temporal-coverage"    : "updateTemporalCoverage",
-			"focusout .temporal-coverage"  : "showTemporalCoverageValidation",
-
+			"change .pubDate input"          : "updatePubDate",
+			"focusout .pubDate input"        : "showPubDateValidation",
+			
 			"keyup .eml-geocoverage.new"        : "updateLocations",
 			"click .eml-geocoverage.new .coord" : "updateLocations",
 			
@@ -47,22 +53,32 @@ define(['underscore', 'jquery', 'backbone',
 			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
 			"keyup .taxonomic-coverage .new select"  : "addNewTaxon",
 			"focusout .taxonomic-coverage tr"        : "showTaxonValidation",
-        	
+        	"click .taxonomic-coverage-row .remove"  : "removeTaxonRank",
+        	"mouseover .taxonomic-coverage .remove"  : "previewTaxonRemove",
+        	"mouseout .taxonomic-coverage .remove"   : "previewTaxonRemove",
+			
         	"change .keywords"               : "updateKeywords",
         	"keyup .keyword-row.new input"   : "addNewKeyword",
+        	"mouseover .keyword-row .remove" : "previewKeywordRemove",
+        	"mouseout .keyword-row .remove"  : "previewKeywordRemove",
         	
 			"change .usage"                  : "updateRadioButtons",
         	
 			"change .funding"                : "updateFunding",
         	"keyup .funding.new"             : "addFunding",
-        	
-        	"keyup .eml-party.new .required" : "handlePersonTyping",
-        	
+        	"mouseover .funding-row .remove" : "previewFundingRemove",        	
+        	"mouseout .funding-row .remove"  : "previewFundingRemove",
+        	"keyup .funding.error"           : "handleFundingTyping",
+        	        	
 			"click .side-nav-item"           : "switchSection",
-			
-        	"change #new-party-menu"         : "chooseNewPersonType",
         	
-			"click  .remove"			     : "handleRemove"
+			"keyup .eml-party.new"     : "handlePersonTyping",
+        	"change #new-party-menu"   : "chooseNewPersonType",
+        	"click .eml-party .copy"   : "showCopyPersonMenu",
+        	"click #copy-party-save"   : "copyPerson",
+        	"click .eml-party .remove" : "removePerson",
+        	
+			"click  .remove" : "handleRemove"
         },
                 
         /* A list of the subviews */
@@ -82,8 +98,10 @@ define(['underscore', 'jquery', 'backbone',
         overviewTemplate: _.template(OverviewTemplate),
         datesTemplate: _.template(DatesTemplate),
         locationsTemplate: _.template(LocationsTemplate),
+        taxonomicCoverageTemplate: _.template(TaxonomicCoverageTemplate),
 		taxonomicClassificationTableTemplate: _.template(TaxonomicClassificationTable),
         taxonomicClassificationRowTemplate: _.template(TaxonomicClassificationRow),
+        copyPersonMenuTemplate: _.template(EMLPartyCopyMenuTemplate),
         
         initialize: function(options) {
             
@@ -107,8 +125,6 @@ define(['underscore', 'jquery', 'backbone',
         render: function() {        
 			MetacatUI.appModel.set('headerType', 'default');
 			
-			console.log("rendering EML");
-
 			//Render the basic structure of the page and table of contents
 			this.$el.html(this.template({
 				activeSection: this.activeSection,
@@ -128,10 +144,7 @@ define(['underscore', 'jquery', 'backbone',
 				//When the data package has been saved, render the EML again
 				this.listenTo(dataPackage, "successSaving", this.renderAllSections);
 			}, this);
-			
-			//Create a Unit collection for the entity and attribute section
-			this.model.createUnits();
-			
+									
             return this;
         },
         
@@ -144,6 +157,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	this.renderMethods();
 	    	this.renderProject();
 	    	this.renderSharing();
+	    	
+	    	this.renderRequiredIcons();
 	    	
 	    	//Scroll to the active section
 	    	if(this.activeSection != "overview"){
@@ -170,7 +185,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Append the empty layout
 	    	var overviewEl = this.$container.find(".overview");
 	    	$(overviewEl).html(this.overviewTemplate());
-	    	
+			
+			//Title
+		    var titleEl = this.createBasicTextFields("title", "Example: Greater Yellowstone Rivers from 1:126,700 U.S. Forest Service Visitor Maps (1961-1983)", false);
+		    $(overviewEl).find(".title-container").append(titleEl);
+			
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
 		    	var abstractEl = this.createEMLText(abs, edit, "abstract");
@@ -190,13 +209,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
 	    	_.each(this.model.get("keywordSets"), function(keywordSetModel){
 	    		_.each(keywordSetModel.get("keywords"), function(keyword){
-		    		this.addKeyword(keyword, keywordSetModel);	    			
+		    		this.addKeyword(keyword, keywordSetModel.get("thesaurus"));	    			
 	    		}, this);
 	    	}, this);
 	    	
-	    	//Add an empty row for adding a new keyword
-	    	this.addKeyword();	  
-	    		    	
+	    	//Add a new keyword row
+	    	this.addKeyword();
+	    		    		    	
 	    	//Alternate Ids
 		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
 		    $(overviewEl).find(".altids").append(altIdsEls);
@@ -205,10 +224,18 @@ define(['underscore', 'jquery', 'backbone',
 		    //Find the model value that matches a radio button and check it
 			// Note the replace() call removing newlines and replacing them with a single space
 			// character. This is a temporary hack to fix https://github.com/NCEAS/metacatui/issues/128
-		    $(".checkbox .usage[value='" + this.model.get("intellectualRights").replace(/\r?\n|\r/g, ' ') + "']").attr("checked", "checked");
-	    	
+		    if(this.model.get("intellectualRights"))
+		    	this.$(".checkbox .usage[value='" + this.model.get("intellectualRights").replace(/\r?\n|\r/g, ' ') + "']").prop("checked", true);
+		    	
 		    //Funding
 		    this.renderFunding();
+		    
+			// pubDate
+			// BDM: This isn't a createBasicText call because that helper 
+			// assumes multiple values for the category
+			// TODO: Consider a re-factor of createBasicText
+			var pubDateInput = $(overviewEl).find("input.pubDate").val(this.model.get("pubDate"));
+
 			
 			//Initialize all the tooltips
 			this.$(".tooltip-this").tooltip();
@@ -230,27 +257,27 @@ define(['underscore', 'jquery', 'backbone',
 	    	var emptyTypes = [];
 	    	
 	    	this.partyTypeMap = {
-	    			"collaboratingPrincipalInvestigator" : "Collborating-Principal Investigators",
+	    			"collaboratingPrincipalInvestigator" : "Collaborating-Principal Investigators",
 	    			"coPrincipalInvestigator" : "Co-Principal Investigators",
 	    			"principalInvestigator" : "Principal Investigators",
 	    			"creator" : "Dataset Creators (Authors/Owners/Originators)",
 	    			"contact" : "Contacts",
 	    			"metadataProvider" : "Metadata Provider",
-	    			"custodianSteward" : "Custodian/Steward",
+	    			"custodianSteward" : "Custodians/Stewards",
 	    			"publisher" : "Publisher",
 	    			"user" : "Users"
 	    	}
 	    	
 	    	//Creators
-	    	this.$(".section.people").append("<h4>" + this.partyTypeMap["creator"] + "</h4>",
-					'<p>One or more creators is required. If none are entered, you will be set as the creator of this document.</p>',
+	    	this.$(".section.people").append("<h4>" + this.partyTypeMap["creator"] + "<i class='required-icon hidden' data-category='creator'></i></h4>",
+					'<p class="subtle">One or more creators is required. If none are entered, you will be set as the creator of this document.</p>',
 	    			'<div class="row-striped" data-attribute="creator"></div>');	    	
 	    	_.each(this.model.get("creator"), this.renderPerson, this);
 	    	this.renderPerson(null, "creator");
 	    		    	
 	    	//Principal Investigators
 	    	if(PIs.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["principalInvestigator"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["principalInvestigator"] + "<i class='required-icon hidden' data-category='principalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="principalInvestigator"></div>');	    	
 		    	_.each(PIs, this.renderPerson, this);
 	    	
@@ -262,7 +289,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Co-PIs
 	    	if(coPIs.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["coPrincipalInvestigator"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["coPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='coPrincipalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="coPrincipalInvestigator"></div>');
 		    	_.each(coPIs, this.renderPerson, this);
 	    	
@@ -273,7 +300,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Collab PIs
 	    	if(collbalPIs.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["collaboratingPrincipalInvestigator"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["collaboratingPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='collaboratingPrincipalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="collaboratingPrincipalInvestigator"></div>');
 		    	_.each(collbalPIs, this.renderPerson, this);
 	    	
@@ -284,7 +311,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Contact
 	    	if(this.model.get("contact").length){
-	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["contact"] + "</h4>",
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["contact"] + "<i class='required-icon hidden' data-category='contact'></i></h4>",
 					'<p>One or more contacts is required. If none are entered, you will be set as the contact for this document.</p>',
 	    			'<div class="row-striped" data-attribute="contact"></div>');
 	    		_.each(this.model.get("contact"), this.renderPerson, this);
@@ -296,7 +323,7 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//Metadata Provider
 	    	if(this.model.get("metadataProvider").length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["metadataProvider"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["metadataProvider"] + "<i class='required-icon hidden' data-category='metadataProvider'></i></h4>",
 		    			'<div class="row-striped" data-attribute="metadataProvider"></div>');
 		    	_.each(this.model.get("metadataProvider"), this.renderPerson, this);
 		    	
@@ -307,7 +334,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Custodian/Steward
 	    	if(custodian.length){
-	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["custodianSteward"] + "</h4>",
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["custodianSteward"] + "<i class='required-icon hidden' data-category='custodianSteward'></i></h4>",
 	    			'<div class="row-striped" data-attribute="custodianSteward"></div>');
 	    		
 	    		_.each(custodian, this.renderPerson, this);
@@ -319,7 +346,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//Publisher
 	    	if(this.model.get("publisher").length){
-	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["publisher"] + "</h4>",
+	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["publisher"] + "<i class='required-icon hidden' data-category='publisher'></i></h4>",
 	    			'<p class="subtle">Only one publisher can be specified.</p>',
 	    			'<div class="row-striped" data-attribute="publisher"></div>');
 	    		
@@ -330,7 +357,7 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//User
 	    	if(user.length){
-		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["user"] + "</h4>",
+		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["user"] + "<i class='required-icon hidden' data-category='user'></i></h4>",
 		    			'<div class="row-striped" data-attribute="user"></div>');
 		    	
 		    	_.each(user, this.renderPerson, this);
@@ -404,15 +431,35 @@ define(['underscore', 'jquery', 'backbone',
 		    	if(!partyType || typeof partyType != "string")
 		    		var partyType = emlParty.get("role") || emlParty.get("type");
 	    	}
+	    	    	
+    		
+	    	//Find the container section for this party type
+	    	var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
 	    	
+	    	//See if this view already exists
+	    	if( !isNew && container.length && emlParty ){
+	    		var partyView;
+	    		
+	    		_.each(container.find(".eml-party"), function(singlePartyEl){
+	    			
+	    			//If this EMLPartyView element is for the current model, then get the View
+	    			if( $(singlePartyEl).data("model") == emlParty )
+	    				partyView = $(singlePartyEl).data("view");
+	    		});
+	    		
+	    		//If a partyView was found, just rerender it and exit
+	    		if(partyView){
+	    			partyView.render();
+	    			return;
+	    		}
+	    	}
+	    	
+	    	//If there still is no partyView found, create a new one
 	    	var partyView = new EMLPartyView({
     			model: emlParty,
     			edit: this.edit,
     			isNew: isNew
-    		});	    	
-    		
-	    	//Find the container section for this party type
-	    	var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
+	    	});	
 	    	
 	    	//If this person type is not on the page yet, add it
 	    	if(!container.length){
@@ -427,9 +474,6 @@ define(['underscore', 'jquery', 'backbone',
 	    			container.find(".new").before(partyView.render().el);
 	    		else
 	    			container.append(partyView.render().el);
-				
-				// Add in a remove button
-				$(container).find("div.eml-party").first().prepend(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
 	    	}
 
 	    },
@@ -444,9 +488,6 @@ define(['underscore', 'jquery', 'backbone',
     			
     		if(this.$("[data-attribute='" + partyType + "'] .eml-party.new").length > 1) return;
     		
-			// Add in a remove button
-			$(container).prepend(this.createRemoveButton(null, partyType, "div.eml-party", "div.row-striped"));
-
 			//Render a new person
 			if(partyType != "publisher")
 				this.renderPerson(null, partyType);
@@ -506,7 +547,7 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
 	    /*
-	     * Gets the party type chosen by the user and adds that section to the view
+	     * addNewPersonType - Adds a header and container to the People section for the given party type/role,
 	     */
 	    addNewPersonType: function(partyType){	    	
 	    	if(!partyType) return;
@@ -516,16 +557,16 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	// Add a new header for the party type
 	    	var header = $(document.createElement("h4")).text(this.partyTypeMap[partyType]);
-			$(partyContainer).append(header);
+			$(partyTypeContainer).append(header);
 	    	
 	    	//Remove this type from the dropdown menu
 	    	this.$("#new-party-menu").find("[value='" + partyType + "']").remove();
 
 	    	//Add the new party container
-	    	var partyContainer = $(document.createElement("div"))
+	    	var partyRow = $(document.createElement("div"))
 									.attr("data-attribute", partyType)
 									.addClass("row-striped");
-	    	partyTypeContainer.append(partyContainer);
+	    	partyTypeContainer.append(partyRow);
 	    	
 			// Add in the new party type container just before the dropdown
 			this.$("#new-party-menu").before(partyTypeContainer);
@@ -535,18 +576,193 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 	    
 	    /*
+	     * showCopyPersonMenu: Displays a modal window to the user with a list of roles that they can
+	     * copy this person to
+	     */
+	    showCopyPersonMenu: function(e){
+	    	
+	    	//Get the EMLParty to copy
+	    	var partyToCopy = $(e.target).parents(".eml-party").data("model"),
+	    		menu = this.$("#copy-person-menu");
+	    	
+	    	//Check if the modal window menu has been created already
+	    	if( !menu.length ){
+	    		
+	    		//Create the modal window menu from the template
+	    		menu = $(this.copyPersonMenuTemplate());
+	    		
+	    		//Add to the DOM
+		    	this.$el.append(menu);	
+		    	
+		    	//Initialize the modal
+		    	menu.modal();
+	    	}
+	    	else{
+	    		//Reset all the checkboxes
+	    		menu.find("input:checked").prop("checked", false);
+	    		menu.find(".disabled")
+	    			.prop("disabled", false)
+	    			.removeClass("disabled")
+	    			.parent(".checkbox")
+	    			.attr("title", "");
+	    	}
+	    	
+	    	//Disable the roles this person is already in
+	    	var currentRole = partyToCopy.get("role") || partyToCopy.get("type") || "";
+	    	menu.find("input[value='" + currentRole + "']")
+	    		.prop("disabled", "disabled")
+	    		.addClass("disabled")
+	    		.parent(".checkbox")
+	    		.attr("title", "This person is already in the " + this.partyTypeMap[currentRole] + " list.");
+	    	
+	    	//If there is already one publisher, disable that option
+	    	if( this.model.get("publisher").length ){
+	    		var publisherName = this.model.get("publisher")[0].get("individualName") ?  
+	    							this.model.get("publisher")[0].get("individualName").givenName + " " +
+	    							this.model.get("publisher")[0].get("individualName").surName :
+	    							this.model.get("publisher")[0].get("organizationName") ||
+	    							this.model.get("publisher")[0].get("positionName") ||
+	    							"Someone";
+	    		
+	    		menu.find("input[value='publisher']")
+		    		.prop("disabled", "disabled")
+		    		.addClass("disabled")
+		    		.parent(".checkbox")
+		    		.attr("title", publisherName + " is already listed as the publisher. (There can be only one).");
+
+	    	}
+	    	
+	    	//Attach the EMLParty to the menu DOMs
+	    	menu.data({
+	    		EMLParty: partyToCopy
+	    	});
+	    	
+	    	//Show the modal window menu now
+	    	menu.modal("show");
+	    },
+	    
+	    /*
+	     * copyPerson: Gets the selected checkboxes from the copy person menu and copies the EMLParty
+	     * to those new roles
+	     */
+	    copyPerson: function(){
+	    	
+	    	//Get all the checked boxes
+	    	var checkedBoxes = this.$("#copy-person-menu input:checked"),
+	    	//Get the EMLParty to copy
+	    		partyToCopy  = this.$("#copy-person-menu").data("EMLParty");
+	    	
+	    	//For each selected role,
+	    	_.each(checkedBoxes, function(checkedBox){
+	    		
+	    		//Get the roles
+	    		var role = $(checkedBox).val(),
+	    			isAssocParty = _.contains(partyToCopy.get("roleOptions"), role);
+	    		
+	    		//If this are no associated parties yet...
+	    		if( isAssocParty ){
+	    			
+		    		//If there are no parties in this role yet, 
+	    			// then add this person type to the view	    			
+	    			if( !this.model.get("associatedParty").length )
+	    				this.addNewPersonType(role);
+	    			else if( !_.find(this.model.get("associatedParty"), function(p){
+	    				return  p.get("role") == role;
+	    			}) ){
+	    				this.addNewPersonType(role);
+	    			}
+	    			
+	    			//Create all the attributes for the new person. We're only changing the role
+	    			var options = partyToCopy.toJSON();
+	    			options.type = "associatedParty";
+	    			options.role = role;
+	    			
+	    			//Create a new EMLParty model
+    				var newPerson = new EMLParty(options);
+    				
+    				//Add this new EMLParty to the EML model
+	    			this.model.get("associatedParty").push(newPerson);
+
+	    			//Render this new person
+		    		this.renderPerson(newPerson, role);
+	    		}
+	    		//If this person type is not an associated party...
+	    		else{
+		    		//If there are no parties in this role yet, 
+	    			// then add this person type to the view	    			
+	    			if( !this.model.get(role).length )
+		    			this.addNewPersonType(role);
+	    			
+	    			//Create all the attributes for the new person. We're only changing the type
+	    			var options = partyToCopy.toJSON();
+	    			options.type = role;
+	    			
+	    			//Create a new EMLParty model
+    				var newPerson = new EMLParty(options);
+    				
+    				//Add this new EMLParty to the EML model
+	    			this.model.get(role).push(newPerson);
+
+	    			//Render this new person
+		    		this.renderPerson(newPerson, role);
+	    		}
+	    		
+	    	}, this);	    	
+	    },
+	    
+	    removePerson: function(e){
+	    	e.preventDefault();
+	    	
+	    	//Get the party view el, view, and model
+	    	var partyEl = $(e.target).parents(".eml-party"),
+	    		partyView = partyEl.data("view"),
+	    		partyToRemove = partyEl.data("model");
+	    	
+	    	//If there is no model found, we have nothing to do, so exit
+	    	if(!partyToRemove) return false;
+	    	
+	    	//Call removeParty on the EML211 model to remove this EMLParty
+	    	this.model.removeParty(partyToRemove);
+	    	
+	    	//Let the EMLPartyView remove itself
+	    	partyView.remove();
+	    	
+	    },
+	    
+	    /*
          * Renders the Dates section of the page
          */
 	    renderDates: function(){
-            var model = this.model.get('temporalCoverage') || new EMLTemporalCoverage();
-			var html = this.datesTemplate({
-				beginDate: model.get('beginDate'),
-				beginTime: model.get('beginTime'),
-				endDate: model.get('endDate'),
-				endTime: model.get('endTime')
-			});
+	    	
+	    	//Add a header
+	    	this.$(".section.dates").html( $(document.createElement("h2")).text("Dates") );
+	    	            
+            _.each(this.model.get('temporalCoverage'), function(model){
             	
-	    	this.$(".section.dates").html(html);
+            	var tempCovView = new EMLTempCoverageView({
+            		model: model,
+            		isNew: false,
+            		edit: this.edit
+            	});
+            	
+            	tempCovView.render();
+                	
+    	    	this.$(".section.dates").append(tempCovView.el);
+    	    	
+            }, this);
+            
+            if( !this.model.get('temporalCoverage').length ){
+            	var tempCovView = new EMLTempCoverageView({
+            		isNew: true,
+            		edit: this.edit,
+            		model: new EMLTemporalCoverage({ parentModel: this.model })
+            	});
+            	
+            	tempCovView.render();
+                	
+    	    	this.$(".section.dates").append(tempCovView.el);
+            }
+
 	    },
 	    
 	    /*
@@ -595,7 +811,7 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Taxa section of the page
          */
 	    renderTaxa: function(){
-	    	this.$(".section.taxa").empty().append("<h2>Taxa</h2>");
+	    	this.$(".section.taxa").html($(document.createElement("h2")).text("Taxa"));
 
 			var taxonomy = this.model.get('taxonCoverage');
 
@@ -620,11 +836,15 @@ define(['underscore', 'jquery', 'backbone',
          * Renders the Methods section of the page
          */
 	    renderMethods: function(){
-			if (!this.model.get('methods')) {
-				this.model.set('methods', new EMLMethods({ edit: this.edit }));
+	    	var methodsModel = this.model.get("methods");
+	    	
+			if (!methodsModel) {
+				methodsModel = new EMLMethods({ edit: this.edit, parentModel: this.model });
 			}
 
-			this.$(".section.methods").append(new EMLMethodsView({ model: this.model.get('methods'), edit: this.edit }).render().el);
+			this.$(".section.methods").append(new EMLMethodsView({ 
+				model: methodsModel, 
+				edit: this.edit }).render().el);
 		},
 	    
 	    /*
@@ -694,21 +914,20 @@ define(['underscore', 'jquery', 'backbone',
 		    	//Append all the elements to a container
 		    	var containerEl = $(document.createElement("div"))
 		    						.addClass("ui-autocomplete-container funding-row")
-
+		    						.append(fundingInput, 
+									  loadingSpinner, 
+									  hiddenFundingInput);
+		    	
 				if (!value){
 					$(fundingInput).addClass("new");
 					
 					if(event) {
-						$(event.target).parents("div.funding-row").first().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+						$(event.target).parents("div.funding-row").append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 						$(event.target).removeClass("new");
 					}
 				} else { // Add a remove button if this is a non-new funding element
 					$(containerEl).append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 				}
-
-		    	$(containerEl).append(fundingInput, 
-									  loadingSpinner, 
-									  hiddenFundingInput);
 		    	
 		    	var view = this;
 		    	
@@ -752,7 +971,25 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    },
 	    
-	    addKeyword: function(keyword, model){
+	    previewFundingRemove: function(e){
+	    	$(e.target).parents(".funding-row").toggleClass("remove-preview");
+	    },
+	    
+	    handleFundingTyping: function(e){
+	    	var fundingInput = $(e.target);
+	    	
+	    	//If the funding value is at least one character
+	    	if(fundingInput.val().length > 0){
+	    		//Get rid of the error styling in this row
+	    		fundingInput.parent(".funding-row").children().removeClass("error");
+	    		
+	    		//If this was the only funding input with an error, we can safely remove the error message
+	    		if( !this.$("input.funding.error").length )
+	    			this.$("[data-category='funding'] .notification").removeClass("error").text("");
+	    	}
+	    },
+	    
+	    addKeyword: function(keyword, thesaurus){
 	    	if(typeof keyword != "string" || !keyword){
 	    		var keyword = "";
 	    		
@@ -762,33 +999,33 @@ define(['underscore', 'jquery', 'backbone',
 	    		else if(this.$(".keyword.new").length > 1)
 	    			return;
 	    	}
-	    	
-	    	if(!model) var model = new EMLKeywordSet({ parentModel: this.model });
-	    	
-	    	var thesaurus    = model.get("thesaurus"),
-	    		row          = $(document.createElement("div")).addClass("row-fluid keyword-row").data({ model: model }),
-	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").val(keyword),
+	    		    	
+	    	//Create the keyword row HTML
+	    	var	row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
+	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").attr("placeholder", "Add one new keyword"),
     			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
 			    				$(document.createElement("option")).val("None").text("None")).append(
 			    				$(document.createElement("option")).val("GCMD").text("GCMD")),
 				removeButton;
 	    	
-	    	if(thesaurus && thesaurus.indexOf("GCMD") > -1)
-    			thesInput.val("GCMD");
-	    	
-	    	if(!keyword) {
-				row.addClass("new");
-				keywordInput.attr("placeholder", "Add one new keyword");
-			}
-	    		
-			// Start adding children to the row
+			// Piece together the inputs
 			row.append(keywordInput, thesInput);
-
-			// Add a remove button unless this is the .new keyword
-			if(keyword) {
-				row.prepend(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
-			}
-
+	    		
+			//Select GCMD in the select menu
+    		if(thesaurus && thesaurus.indexOf("GCMD") > -1)
+        		thesInput.val("GCMD");
+	    	
+	    	if(!keyword)
+				row.addClass("new");
+	    	else{
+    			
+    			//Set the keyword value on the text input
+    			keywordInput.val(keyword);
+    			
+    			// Add a remove button unless this is the .new keyword
+				row.append(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
+	    	}
+	    	
 	    	this.$(".keywords").append(row);
 	    },
 
@@ -798,7 +1035,7 @@ define(['underscore', 'jquery', 'backbone',
 			$(e.target).parents(".keyword-row").first().removeClass("new");
 
 			// Add in a remove button
-			$(e.target).parents(".keyword-row").first().prepend(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
+			$(e.target).parents(".keyword-row").append(this.createRemoveButton(null, 'keywordSets', 'div.keyword-row', 'div.keywords'));
 			
 			var row          = $(document.createElement("div")).addClass("row-fluid keyword-row new").data({ model: new EMLKeywordSet() }),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
@@ -809,6 +1046,10 @@ define(['underscore', 'jquery', 'backbone',
 			row.append(keywordInput, thesInput);
 
 			this.$(".keywords").append(row);
+		},
+		
+		previewKeywordRemove: function(e){
+			var row = $(e.target).parents(".keyword-row").toggleClass("remove-preview");
 		},
 	    
 	    /*
@@ -837,71 +1078,58 @@ define(['underscore', 'jquery', 'backbone',
 	    		$(row).removeClass("new");
 				
 				// Add in a remove button
-				$(e.target).parent().prepend(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+				$(e.target).parent().append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 
 	    		this.addFunding();
 	    	}
+	    	
+	    	this.model.trickleUpChange();
 	    	
 	    },
 	    
 	    //TODO: Comma and semi-colon seperate keywords
 	    updateKeywords: function(e){
-	    	if(!e) return;
 	    	
-	    	var row        = $(e.target).parent(".keyword-row"),
-	    		keyword    = row.find("input").val(),
-	    		thesaurus  = row.find("select").val(),
-	    		model      = row.data("model"),
-	    		allKeywords = [];
+	    	var keywordSets = this.model.get("keywordSets"),
+	    		newKeywordSets = [];
 	    	
-	    	if(keyword.length == 0 && thesaurus === 'None') return;
-
-	    	//If the thesaurus has changed or if there is no model
-	    	if(!model || (thesaurus != model.get("thesaurus") && model.get("keywords").length > 2)){
+	    	//Get all the keywords in the view
+	    	_.each(this.$(".keyword-row"), function(thisRow){
+	    		var thesaurus = $(thisRow).find("select").val(),
+	    			keyword   = $(thisRow).find("input").val();
 	    		
-	    		//Remove the keyword from the model that has a changed thesaurus
-	    		if(model)
-	    			model.set("keywords", _.without(model.get("keywords"), keyword));	    		
+	    		if(!keyword) return;
 	    		
-	    		//Create a new EMLKeywordSet model
-	    		model = new EMLKeywordSet({ parentModel: this.model });
+	    		var keywordSet = _.find(newKeywordSets, function(keywordSet){
+		    		return keywordSet.get("thesaurus") == thesaurus;
+		    	});
 	    		
-	    		//This is the only keyword in the new model
-	    		allKeywords = [keyword];
+	    		if(typeof keywordSet != "undefined"){
+		    		keywordSet.get("keywords").push(keyword);
+		    	}
+		    	else{
+		    		newKeywordSets.push(new EMLKeywordSet({ 
+			    			parentModel: this.model,
+			    			keywords: [keyword],
+			    			thesaurus: thesaurus
+		    			}));
+		    	}
 	    		
-	    		//Update the keywordSets array in the EML211 model
-    			this.model.get("keywordSets").push(model);
-    			
-    			//Update the model attached to the DOM
-    			row.data({ model: model });
-    			
-	    	}	    	
-	    	//If the thesaurus hasn't changed, then find all the keywords that belong in this model
-	    	else{
-		    	//Get all the keywords in the model
-		    	_.each(this.$(".keyword-row"), function(thisRow){
-		    		if($(thisRow).data("model") == model){
-			    		allKeywords.push($(thisRow).find("input").val());	    			
-		    		}
-		    	}, this);
-		    	
-		    	//Make sure this model is set on the EML211 model
-		    	if(!_.contains(this.model.get("keywordSets"), model))
-		    		this.model.get("keywordSets").push(model);
+	    	}, this);
+	    	
+	    	//Update the EML model
+	    	this.model.set("keywordSets", newKeywordSets);
+	    	
+	    	if(e){
+		    	var row = $(e.target).parent(".keyword-row");
+	
+		    	//Add a new row when the user has added a new keyword just now
+		    	if(row.is(".new")){
+		    		row.removeClass("new");
+					row.append(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
+		    		this.addKeyword();
+		    	}
 	    	}
-	    	
-	    	//Update the model with the new keywords and thesaurus
-	    	model.set("keywords",  allKeywords);
-	    	model.set("thesaurus", thesaurus);
-	    	
-	    	//Add a new row when the user has added a new keyword just now
-	    	if(row.is(".new")){
-	    		row.removeClass("new");
-				row.prepend(this.createRemoveButton(null, "keywordSets", "div.keyword-row", "div.keywords"));
-	    		this.addKeyword();
-	    	} else {
-				console.log('not new');
-			}
 	    },
 	    
 	    /*
@@ -912,9 +1140,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	e.preventDefault();
 	    	
-	    	//If we were brought here by a click but there is no value, exit.
-	    	//We only want to react to clicks on the up and down arrows of the number input
-	    	if(e.type == "click" && !$(e.target).val())
+	    	// Don't create a new EMLGeoCoverageView if the value isn't set
+	    	if(!$(e.target).val())
 	    		return;
 	    	
 	    	var viewEl = $(e.target).parents(".eml-geocoverage");
@@ -1028,11 +1255,24 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    	//If this category isn't set yet, then create a new EMLText model
 	    	if(!textModel){
-	    		this.model.set(category, 
-	    						new EMLText({ text: paragraphs, parentModel: this.model, parentAttribute: category }));
+	    		
+	    		//Get the current value for this category and create a new EMLText model
+	    		var currentValue = this.model.get(category),
+	    			newTextModel = new EMLText({ text: paragraphs, parentModel: this.model });
 	    		
 	    		// Save the new model onto the underlying DOM node
-	    		$(e.target).data({ "model" : this.model.get(category) });
+	    		$(e.target).data({ "model" : newTextModel });
+	    		
+	    		//Set the new EMLText model on the EML model
+	    		if(Array.isArray(currentValue)){
+	    			currentValue.push(newTextModel);
+	    			this.model.trigger("change:" + category);
+	    			this.model.trigger("change");
+	    		}
+	    		else{
+	    			this.model.set(category, newTextModel);
+	    		}
+
 	    	}
 	    	//Update the existing EMLText model
 	    	else{
@@ -1044,15 +1284,12 @@ define(['underscore', 'jquery', 'backbone',
 	    /*
 	     * Creates and returns an array of basic text input field for editing
 	     */
-	    createBasicTextFields: function(category, placeholder, appendNew){
+	    createBasicTextFields: function(category, placeholder){
 	    	
 	    	var textContainer = $(document.createElement("div")).addClass("text-container"),
 	    		modelValues = this.model.get(category),
 				textRow; // Holds the DOM for each field
-	    	
-	    	if(typeof appendNew == "undefined")
-	    		var appendNew = true;
-	    	
+
 	    	//Format as an array
 	    	if(!Array.isArray(modelValues) && modelValues) modelValues = [modelValues];
 	    	
@@ -1064,12 +1301,12 @@ define(['underscore', 'jquery', 'backbone',
 				    			.attr("type", "text")
 				    			.attr("data-category", category)
 				    			.addClass("basic-text");
-					textRow.append(this.createRemoveButton(null, category, 'div.basic-text-row', 'div.text-container'));
 					textRow.append(input.clone().val(value));
+					textRow.append(this.createRemoveButton(null, category, 'div.basic-text-row', 'div.text-container'));
 		    		textContainer.append(textRow);
 		    		
 		    		//At the end, append an empty input for the user to add a new one
-		    		if(i+1 == allModelValues.length && appendNew) {
+		    		if(i+1 == allModelValues.length && category != "title") {
 						var newRow = $($(document.createElement("div")).addClass("basic-text-row"));
 						newRow.append(input.clone().addClass("new").attr("placeholder", placeholder || "Add a new " + category));
 						textContainer.append(newRow);
@@ -1117,21 +1354,36 @@ define(['underscore', 'jquery', 'backbone',
 	    		var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
 	    		currentValue[position] = value;
 	    		model.set(category, currentValue);
-	    		model.trigger("change");
+	    		model.trigger("change:" + category);
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
 	    		model.set(category, [currentValue, value]);
-	    		model.trigger("change");
+	    		model.trigger("change:" + category);
 	    	}
-	    	else if(!currentValue)
-	    		model.set(category, [value]);
+	    	else if(!currentValue) {
+				model.set(category, [value]);
+				model.trigger("change:" + category);
+			}
 	    	
     		//Add another blank text input
-	    	if($(e.target).is(".new") && value != ''){
+	    	if($(e.target).is(".new") && value != '' && category != "title"){
 				$(e.target).removeClass("new");
 				this.addBasicText(e);
 	    	}
+
+			// Trigger a change on the entire package
+			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
+		},
+		
+		/* One-off handler for updating pubDate on the model when the form 
+		input changes. Fairly similar but just a pared down version of
+		updateBasicText. */
+		updatePubDate: function(e){
+	    	if(!e) return false;
+	    	
+			this.model.set('pubDate', $(e.target).val().trim());
+			this.model.trigger("change");
 
 			// Trigger a change on the entire package
 			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
@@ -1144,10 +1396,13 @@ define(['underscore', 'jquery', 'backbone',
 	    	var category = $(e.target).attr("data-category"),
 	    		allBasicTexts = $(".basic-text.new[data-category='" + category + "']");
     
-	    	//Only show one new keyword row at a time
+	    	//Only show one new row at a time
     		if((allBasicTexts.length == 1) && !allBasicTexts.val())
     			return;
     		else if(allBasicTexts.length > 1)
+    			return;
+    		//We are only supporting one title right now
+    		else if(category == "title")
     			return;
     		
 	    	//Add another blank text input
@@ -1161,55 +1416,98 @@ define(['underscore', 'jquery', 'backbone',
 			
 	    	$(e.target).parent().after(newRow);
 	    	
-			$(e.target).before(this.createRemoveButton(null, 'alternateIdentifier', '.basic-text-row', "div.text-container"));
+			$(e.target).after(this.createRemoveButton(null, category, '.basic-text-row', "div.text-container"));
 	    },
 	    
+	    previewTextRemove: function(e){
+	    	$(e.target).parents(".basic-text-row").toggleClass("remove-preview");
+	    },
 	    
+	    renderRequiredIcons: function(){
+	    	var requiredFields = MetacatUI.appModel.get("emlEditorRequiredFields");
+	    	
+	    	_.each( Object.keys(requiredFields), function(field){
+	    		
+	    		if(requiredFields[field]){
+	    			var reqEl = this.$(".required-icon[data-category='" + field + "']");
+	    			
+	    			//Show the required icon for this category/field
+	    			reqEl.show();
+	    			
+	    			//Show the required icon for the section
+	    			var sectionName = reqEl.parents(".section[data-section]").attr("data-section");	    			
+	    			this.$(".required-icon[data-section='" + sectionName + "']").show();
+	    		}
+	    		
+	    	}, this);
+	    	
+	    	
+	    },
+		
+		/* Event handler for showing validation messaging for the pubDate input
+		which has to conform to the EML yearDate type (YYYY or YYYY-MM-DD) */
+		showPubDateValidation: function(e) {
+			var container = $(e.target).parents(".pubDate").first(),
+				input = $(e.target),
+				messageEl = $(container).find('.notification'),
+				value = input.val(),
+				errors = [];
+
+			// Remove existing error borders and notifications
+			input.removeClass("error");
+			messageEl.removeClass("error");
+
+			if (value != "" && value.length > 0) {
+				if (!(/^\d{4}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value))) {
+					errors.push("The value entered for publication date, '" +
+						value +
+						"' is not a valid value for this field. Enter either a year (e.g. 2017) or a date in the format YYYY-MM-DD.");
+					
+						input.addClass("error")
+				}
+			}
+
+			if (errors.length > 0) {
+				messageEl.text(errors[0]).addClass("error");
+			}	
+		},
+
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
 		createTaxonomicCoverage: function(coverage) {
-            var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
-			$(finishedEl).data({ model: coverage });
-			$(finishedEl).attr("data-category", "taxonomic-coverage");
+            var finishedEls = $(this.taxonomicCoverageTemplate({
+            		generalTaxonomicCoverage: coverage.get('generalTaxonomicCoverage') || ""
+            	})),
+            	coverageEl = finishedEls.filter(".taxonomic-coverage");
+            
+            coverageEl.data({ model: coverage });
 
 			var classifications = coverage.get("taxonomicClassification");
 
-			// Make a textarea for the generalTaxonomicCoverage
-			var generalCoverageEl = $(document.createElement('textarea'))
-				.addClass("medium text")
-				.attr("data-category", "generalTaxonomicCoverage")
-				.text(coverage.get('generalTaxonomicCoverage') || ""	);
-
-			$(finishedEl).append($(document.createElement('h5')).text('General Taxonomic Coverage'));
-			$(finishedEl).append(generalCoverageEl);
-
-			// taxonomicClassifications
-			$(finishedEl).append($(document.createElement('h5')).text('Taxonomic Classification(s)'));
-
 			// Makes a table... for the root level
 			for (var i = 0; i < classifications.length; i++) {
-				$(finishedEl).append(this.createTaxonomicClassifcationTable(classifications[i]));
+				coverageEl.append(this.createTaxonomicClassifcationTable(classifications[i]));
 			}
 
 			// Create a new, blank table for another taxonomicClassification
 			var newTableEl = this.createTaxonomicClassifcationTable();
 
-			$(finishedEl).append(newTableEl);
+			coverageEl.append(newTableEl);
 
-			return finishedEl;
+			return finishedEls;
 		},
 		
 		createTaxonomicClassifcationTable: function(classification) {
-			var finishedEl = $('<div class="row-striped root-taxonomic-classification"></div>');
+			var finishedEl = $('<div class="row-striped root-taxonomic-classification-container"></div>');
 
 			// Add a remove button if this is not a new table
 			if (!(typeof classification === "undefined")) {
-				$(finishedEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+				$(finishedEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', '.root-taxonomic-classification-container', '.taxonomic-coverage'));
 			}
 			
 			
 			var tableEl = $(this.taxonomicClassificationTableTemplate());
-			var tableBodyEl = $("<tbody></tbody>");
+			var tableBodyEl = $(document.createElement("tbody"));
 
 			var queue = [classification],
 			 	rows = [],
@@ -1225,7 +1523,7 @@ define(['underscore', 'jquery', 'backbone',
 				}
 
 				rows.push({
-					'taxonRankName' : cur.taxonRankName,
+					'taxonRankName' : cur.taxonRankName.toLowerCase(),
 					'taxonRankValue' : cur.taxonRankValue
 				});
 
@@ -1259,130 +1557,6 @@ define(['underscore', 'jquery', 'backbone',
 			return finishedEl;
 		},
 
-        // Update an EMLTemporalCoverage instance
-        updateTemporalCoverage: function (e) {
-        	if (!e) return false;
-
-        	// Grab the values we need to update the underlying EMLTemporalCoverage
-        	// model. Notice that we use the 'data-category' attribute on the parent
-        	// div to figure out if this is the begin or end date and that use the
-        	// 'type' attribute on the input element to determine whether this is a
-        	// calendarDate or a time that's being updated
-        	var category = $(e.target).attr("data-category"),
-	        	model = this.model.get("temporalCoverage"),
-	        	value = $(e.target).val().trim();
-
-        	// We can't update anything without a category
-        	if (!category) return false;
-
-        	// If this datetime isn't paired with an existing
-        	// EMLTemporalCoverage instance, create one. Otherwise, mutate
-        	// the existing one
-        	if (!model) {
-        		model = new EMLTemporalCoverage({
-	        		parentModel: this.model
-	        	});
-
-	        	// Add the newly-created model to the array
-	        	this.model.set("temporalCoverage", model);
-			}
-
-			//If the value hasn't changed, exit
-			if (value == model.get(category)) {
-				return;
-			}
-				
-			// Set the new value
-			model.set(category, value);
-
-        	// Trigger the tricking up of this change for which part of the
-        	// temporal coverage is set by category
-        	this.model.trigger("change");
-        },
-
-		showTemporalCoverageValidation: function(e) {
-			var container = $(e.target).parents('.temporal-coverage').first(),
-			    inputs = $(container).find('input'),
-				errors = [],
-				values = {};
-
-			// Collect the values of all inputs to simplify validation
-			_.each(inputs, function(input) {
-				var category = $(input).attr('data-category');
-
-				if (!category) {
-					return {} ;
-				}
-
-				values[category] = $(input).val();
-			});
-
-			// Remove existing error borders and notifications
-			$(inputs).removeClass("error");
-			$(container).prev('.notification').remove();
-
-			if (values.beginDate == '') {
-				if (values.beginTime == '') {
-					$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-				} else {
-					$(inputs).filter('input[data-category="beginDate"]').addClass("error");
-					errors.push('You must set a Date if you set a Time.');
-				}
-			} else {
-				$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-			}
-
-			if (values.endDate == '') {
-				if (values.endTime == '') {
-					$(inputs).filter('input[data-category="endDate"]').removeClass("error");
-				} else {
-					$(inputs).filter('input[data-category="endDate"]').addClass("error");
-					errors.push('You must set a Date if you set a Time.');
-				}
-			} else {
-				$(inputs).filter('input[data-category="endDate"]').removeClass("error");
-			}
-
-			if (values.endDate != '') {
-				if (values.beginDate != '') {
-					$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-				} else {
-					$(inputs).filter('input[data-category="beginDate"]').addClass("error");
-					errors.push('You must set a Begin Date if you set an End Time.');
-				}
-			} else {
-				$(inputs).filter('input[data-category="beginDate"]').removeClass("error");
-			}
-
-			if (values.beginTime != '') {
-				if(values.beginTime.split(':').length < 3) {
-					$(inputs).filter('input[data-category="beginTime"]').addClass("error");
-					errors.push("Time must follow ISO 8601 format: e.g., HH:MM:SSZ, HH:MM:SS.SSS+08:00");
-				} else {
-					$(inputs).filter('input[data-category="beginTime"]').removeClass("error");
-				}
-			} else {
-				$(inputs).filter('input[data-category="beginTime"]').removeClass("error");
-			}
-
-			if (values.endTime != '') {
-				if(values.endTime.split(':').length < 3) {
-					$(inputs).filter('input[data-category="endTime"]').addClass("error");
-					errors.push("Time must follow ISO 8601 format: e.g., HH:MM:SSZ, HH:MM:SS.SSS+08:00");
-				} else {
-					$(inputs).filter('input[data-category="endTime"]').removeClass("error");
-				}
-			} else {
-				$(inputs).filter('input[data-category="endTime"]').removeClass("error");
-			}
-
-			if (errors.length > 0) {
-				container.before($(document.createElement("p"))
-											.addClass("error notification")
-											.text(errors[0]));
-			}			
-		},
-		
 		/* Update the underlying model and DOM for an EML TaxonomicCoverage
 		section. This method handles updating the underlying TaxonomicCoverage
 		models when the user changes form fields as well as inserting new
@@ -1395,38 +1569,45 @@ define(['underscore', 'jquery', 'backbone',
 		TODO: Finish this function
 		TODO: Link this function into the DOM
 		*/
-		updateTaxonCoverage: function(e) {
-			if (!e) return false;
+		updateTaxonCoverage: function(options) {
 			
-			/*	Getting `model` here is different than in other places because
-				the thing being updated is an `input` or `select` element which
-				is part of a `taxonomicClassification`. The model is
-				`TaxonCoverage` which has one or more
-				`taxonomicClassifications`. So we have to walk up to the
-				hierarchy from input < td < tr < tbody < table < div to get at
-				the underlying TaxonCoverage model.
-			*/
-	    	var coverage = $(e.target).parents("div.taxonomic-coverage"),
-				classificationEl = $(e.target).parents("table.root-taxonomic-classification"),
-	    		model =  $(coverage).data("model") || this.model,
-				category = $(e.target).attr("data-category"),
-				value = $(e.target).val().trim();
-	    	
-	    	//We can't update anything without a coverage, or
-	    	//classification
-			if (!coverage) return false;
-			if (!classificationEl) return false;
-
-			// Use `category` to determine if we're updating the generalTaxonomicCoverage or
-			// the taxonomicClassification
-			if (category && category === "generalTaxonomicCoverage") {
-				model.set('generalTaxonomicCoverage', value);
+			if(options.target){
+				var e = options;
 				
-				return;
+				/*	Getting `model` here is different than in other places because
+					the thing being updated is an `input` or `select` element which
+					is part of a `taxonomicClassification`. The model is
+					`TaxonCoverage` which has one or more
+					`taxonomicClassifications`. So we have to walk up to the
+					hierarchy from input < td < tr < tbody < table < div to get at
+					the underlying TaxonCoverage model.
+				*/
+		    	var coverage = $(e.target).parents(".taxonomic-coverage"),
+					classificationEl = $(e.target).parents(".root-taxonomic-classification"),
+		    		model =  $(coverage).data("model") || this.model,
+					category = $(e.target).attr("data-category"),
+					value = $(e.target).val().trim();
+		    	
+		    	//We can't update anything without a coverage, or
+		    	//classification
+				if (!coverage) return false;
+				if (!classificationEl) return false;
+	
+				// Use `category` to determine if we're updating the generalTaxonomicCoverage or
+				// the taxonomicClassification
+				if (category && category === "generalTaxonomicCoverage") {
+					model.set('generalTaxonomicCoverage', value);
+					
+					return;
+				}
+			}
+			else{
+				var coverage = options.coverage,
+					model    = $(coverage).data("model");
 			}
 			
 			// Find all of the root-level taxonomicClassifications
-			var classificationTables = $(coverage).find("table.root-taxonomic-classification");
+			var classificationTables = $(coverage).find(".root-taxonomic-classification");
 
 			if (!classificationTables) return false;
 
@@ -1482,7 +1663,7 @@ define(['underscore', 'jquery', 'backbone',
 			
 			// Handle adding new tables and rows
 			// Do nothing if the value isn't set
-			if (value !== "") {
+			if (value) {
 				// Add a new row if this is itself a new row
 				if ($(e.target).parents("tr").first().is(".new")) {
 					var newRowEl = $(this.taxonomicClassificationRowTemplate({
@@ -1497,7 +1678,7 @@ define(['underscore', 'jquery', 'backbone',
 				// Add a new classification table if this is itself a new table
 				if ($(classificationEl).is(".new")) {
 					$(classificationEl).removeClass("new");
-					$(classificationEl).prepend(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', 'div.root-taxonomic-classification', 'div.taxonomic-coverage'));
+					$(classificationEl).append(this.createRemoveButton('taxonCoverage', 'taxonomicClassification', '.root-taxonomic-classification-container', '.taxonomic-coverage'));
 					$(coverage).append(this.createTaxonomicClassifcationTable());
 				}
 			}
@@ -1521,6 +1702,18 @@ define(['underscore', 'jquery', 'backbone',
 				//Append the new row and remove the new class from the old row
 				$(e.target).parents("tr").removeClass("new").after(newRow);
 			}
+		},
+		
+		removeTaxonRank: function(e){
+			var row = $(e.target).parents(".taxonomic-coverage-row"),
+				coverageEl = $(row).parents(".taxonomic-coverage"),
+				view = this;
+			
+			//Animate the row away and then remove it
+			row.slideUp("fast", function(){
+				row.remove();
+				view.updateTaxonCoverage({ coverage: coverageEl });
+			});
 		},
 		
 		/*
@@ -1574,6 +1767,18 @@ define(['underscore', 'jquery', 'backbone',
 			}
 
 		},
+		
+		previewTaxonRemove: function(e){
+			var removeBtn = $(e.target);
+			
+			if(removeBtn.parent().is(".root-taxonomic-classification")){
+				removeBtn.parent().toggleClass("remove-preview");
+			}
+			else{
+				removeBtn.parents(".taxonomic-coverage-row").toggleClass("remove-preview");
+			}
+				
+		},
         
         updateRadioButtons: function(e){
         	//Get the element of this radio button set that is checked
@@ -1583,6 +1788,8 @@ define(['underscore', 'jquery', 'backbone',
         		this.model.set($(e.target).attr("data-category"), "");
         	else
         		this.model.set($(e.target).attr("data-category"), choice);
+        	
+        	this.model.trickleUpChange();
         },
         
         /*
@@ -1606,6 +1813,9 @@ define(['underscore', 'jquery', 'backbone',
         		
         		this.activeSection = section;
         		this.visibleSection = section;
+        		
+        		//if(this.$el.scrollTop() < $("#Navbar").height())
+        		$("body").scrollTop(this.$(".section." + section).offset().top - $("#Navbar").height());
         	}
         		
         		
@@ -1714,7 +1924,6 @@ define(['underscore', 'jquery', 'backbone',
 			$("#metadata-container input").change();
 			$("#metadata-container textarea").change();
 			$("#metadata-container select").change();
-			console.log("changes fired");
         },
         
 		/* Creates "Remove" buttons for removing non-required sections
@@ -1756,19 +1965,16 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Handle remove on a EML model / sub-model
 			if (submodel) {
-				if (!attribute) return;
 
 				model = this.model.get(submodel);
 
 				if (!model) return;
 
-				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parent());
-
 				// Get the current value of the attribute so we can remove from it
 				var currentValue,
 					submodelIndex;
 
-				if (_.isArray(this.model.get(submodel))) {
+				if (Array.isArray(this.model.get(submodel))) {
 					// Stop now if there's nothing to remove in the first place
 					if (this.model.get(submodel).length == 0) return;
 
@@ -1782,9 +1988,15 @@ define(['underscore', 'jquery', 'backbone',
 					currentValue = this.model.get(submodel).get(attribute);
 				}
 
+				//FInd the position of this field in the list of fields
+				var position = $(e.target).parents(container)
+								.first()
+								.children(selector)
+								.index($(e.target).parents(selector));
+				
 				// Remove from the EML Model
 				if (position >= 0) {
-					if (_.isArray(this.model.get(submodel))) {
+					if (Array.isArray(this.model.get(submodel))) {
 						currentValue.splice(position, 1); // Splice returns the removed members
 						this.model.get(submodel)[submodelIndex].set(attribute, currentValue);
 					} else {
@@ -1793,13 +2005,16 @@ define(['underscore', 'jquery', 'backbone',
 					}
 					
 				}
+				
 			} else if (selector) {
 				// Find the index this attribute is in the DOM
-				var position = $(e.target).parents(container).first().children(selector).index(selector);
+				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parents(selector));
 				
 				//Remove this index of the array
 				var currentValue = this.model.get(attribute);
-				currentValue.splice(position, 1);
+				
+				if( Array.isArray(currentValue) )
+					currentValue.splice(position, 1);
 
 				//Set the array on the model so the 'set' function is executed
 				this.model.set(attribute, currentValue);

@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone'],
 	function($, _, Backbone) {
 
@@ -9,6 +9,8 @@ define(['jquery', 'underscore', 'backbone'],
 		defaults: {
 			abstract: null,
 			entityName: null,
+			indexed: true,
+			archived: false,
 			origin: '',
 			title: '',
 			pubDate: '',
@@ -210,39 +212,69 @@ define(['jquery', 'underscore', 'backbone'],
 		 * This method will download this object while sending the user's auth token in the request.
 		 */
 		downloadWithCredentials: function(){
-			if(this.get("isPublic")) return;
+			//if(this.get("isPublic")) return;
 
 			//Get info about this object
-			var filename = this.get("fileName") || this.get("title") || "",
-				url = this.get("url");
-
-			//If we are accessing objects via the resolve service, we need to find the direct URL
-			if(url.indexOf("/resolve/") > -1){
-				var dataSource = MetacatUI.nodeModel.getMember(this.get("datasource")),
-					version = dataSource.readv2? "v2" : "v1";
-
-				url = dataSource.baseURL + "/" + version + "/object/" + this.get("id");
-			}
+			var url = this.get("url"),
+				model = this;
 
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
 			xhr.responseType = "blob";
-			xhr.withCredentials = true;
+			
+			if(MetacatUI.appUserModel.get("loggedIn"))
+				xhr.withCredentials = true;
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
 			    var a = document.createElement('a');
 			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+			   
+			    var filename = xhr.getResponseHeader('Content-Disposition');
+			    if(!filename){
+			    	filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+			    }
+			    else
+			    	filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
+			    
 			    a.download = filename.trim(); // Set the file name.
+			    
 			    a.style.display = 'none';
 			    document.body.appendChild(a);
 			    a.click();
 			    delete a;
+			    
+			    model.trigger("downloadComplete");
+			};
+			
+			xhr.onerror = function(e){
+				var a = document.createElement('a');
+			    a.href = url;
+
+			    var filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+				if(filename)
+					a.download = filename;
+
+			    a.style.display = 'none';
+			    document.body.appendChild(a);
+			    a.click();
+			    
+				model.trigger("downloadComplete");
+			};
+			
+			xhr.onprogress = function(e){
+			    if (e.lengthComputable){
+			        var percent = (e.loaded / e.total) * 100;
+			        model.set("downloadPercent", percent);
+			    }
 			};
 
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
-			xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
+			
+			if(MetacatUI.appUserModel.get("loggedIn"))
+				xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
+			
 			xhr.send();
 		},
 
@@ -250,21 +282,21 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 
 			if(!fields)
-				var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
+				var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
+
+			var escapeSpecialChar = MetacatUI.appSearchModel.escapeSpecialChar;
 
 			var query = "q=";
-			//Do not search for seriesId when it is not configured in this model/app
-			if(typeof this.get("seriesId") === "undefined")
-				query += 'id:"' + encodeURIComponent(this.get("id")) + '"';
+			
 			//If there is no seriesId set, then search for pid or sid
-			else if(!this.get("seriesId"))
-				query += '(id:"' + encodeURIComponent(this.get("id")) + '" OR seriesId:"' + encodeURIComponent(this.get("id")) + '")';
+			if(!this.get("seriesId"))
+				query += '(id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" OR seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '")';
 			//If a seriesId is specified, then search for that
 			else if(this.get("seriesId") && (this.get("id").length > 0))
-				query += '(seriesId:"' + encodeURIComponent(this.get("seriesId")) + '" AND id:"' + encodeURIComponent(this.get("id")) + '")';
+				query += '(seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("seriesId"))) + '" AND id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '")';
 			//If only a seriesId is specified, then just search for the most recent version
 			else if(this.get("seriesId") && !this.get("id"))
-				query += 'seriesId:"' + encodeURIComponent(this.get("id")) + '" -obsoletedBy:*';
+				query += 'seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" -obsoletedBy:*';
 
 			var requestSettings = {
 				url: MetacatUI.appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',
@@ -274,6 +306,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 					if(docs.length == 1){
 						model.set(docs[0]);
+						model.trigger("sync");
 					}
 					//If we searched by seriesId, then let's find the most recent version in the series
 					else if(docs.length > 1){
@@ -285,11 +318,17 @@ define(['jquery', 'underscore', 'backbone'],
 							model.set(mostRecent[0]);
 						else
 							model.set(docs[0]); //Just default to the first doc found
+						
+						model.trigger("sync");
 					}
-					else
-						model.notFound();
+					else{
+						model.set("indexed", false);
+						//Try getting the system metadata as a backup
+						model.getSysMeta();
+					}
 				},
 				error: function(xhr, textStatus, errorThrown){
+					model.set("indexed", false);
 					model.trigger("getInfoError");
 				}
 			}
@@ -300,6 +339,59 @@ define(['jquery', 'underscore', 'backbone'],
 		getCitationInfo: function(){
 			this.getInfo("id,seriesId,origin,pubDate,dateUploaded,title,datasource");
 		},
+		
+		/*
+		 * Get the system metadata for this object
+		 */
+		getSysMeta: function(){
+			var url = MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+				model = this;
+
+			var requestSettings = {
+				url: url,
+				type: "GET",
+				dataType: "text",
+				success: function(data, response, xhr){
+					//Check if this is archvied
+					var archived = ($(data).find("archived").text() == "true");
+					model.set("archived", archived);
+					
+					//Get the file size
+					model.set("size", ($(data).find("size").text() || ""));
+					
+					//Get the entity name
+					model.set("filename", ($(data).find("filename").text() || ""));
+					
+					//Check if this is a metadata doc
+					var formatId = $(data).find("formatid").text() || "",
+						formatType;
+					model.set("formatId", formatId);
+					if((formatId.indexOf("ecoinformatics.org") > -1) || 
+							(formatId.indexOf("FGDC") > -1) || 
+							(formatId.indexOf("INCITS") > -1) || 
+							(formatId.indexOf("namespaces/netcdf") > -1) || 
+							(formatId.indexOf("waterML") > -1) || 
+							(formatId.indexOf("darwin") > -1) || 
+							(formatId.indexOf("dryad") > -1) || 
+							(formatId.indexOf("http://www.loc.gov/METS") > -1) || 
+							(formatId.indexOf("ddi:codebook:2_5") > -1) || 
+							(formatId.indexOf("http://www.icpsr.umich.edu/DDI") > -1) || 
+							(formatId.indexOf("http://purl.org/ornl/schema/mercury/terms/v1.0") > -1) || 
+							(formatId.indexOf("datacite") > -1) || 
+							(formatId.indexOf("isotc211") > -1) || 
+							(formatId.indexOf("metadata") > -1))
+						model.set("formatType", "METADATA");
+					
+					//Trigger the sync event so the app knows we found the model info
+					model.trigger("sync");
+				},
+				error: function(){
+					model.notFound();
+				}
+			}
+			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+		},
 
 		notFound: function(){
 			this.set({"notFound": true}, {silent: true});
@@ -309,8 +401,8 @@ define(['jquery', 'underscore', 'backbone'],
 		//Transgresses the obsolence chain until it finds the newest version that this user is authorized to read
 		findLatestVersion: function(newestVersion, possiblyNewer) {
 			// Make sure we have the /meta service configured
-			if(! MetacatUI.appModel.get('metaServiceUrl')) return;	
-			
+			if(!MetacatUI.appModel.get('metaServiceUrl')) return;
+
 			//If no pid was supplied, use this model's id
 			if(!newestVersion){
 				var newestVersion = this.get("id");
@@ -327,7 +419,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Get the system metadata for the possibly newer version
 			var requestSettings = {
-				url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer), 
+				url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer),
 				type: "GET",
 				success: function(data) {
 
@@ -348,9 +440,9 @@ define(['jquery', 'underscore', 'backbone'],
 						model.set("newestVersion", newestVersion);
 				}
 			}
-			
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));		
-			
+
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
 		},
 
 		/**** Provenance-related functions ****/
@@ -359,8 +451,8 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		isSourceField: function(field){
 			if((typeof field == "undefined") || !field) return false;
-			if(!_.contains(MetacatUI.appSearchModel.getProvFields(), field)) return false;			
-			
+			if(!_.contains(MetacatUI.appSearchModel.getProvFields(), field)) return false;
+
 			if(field == "prov_generatedByExecution" ||
 			   field == "prov_generatedByProgram"   ||
 			   field == "prov_used" 		  		||
@@ -380,6 +472,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			if(field == "prov_usedByExecution" ||
 			   field == "prov_usedByProgram"   ||
+			   field == "prov_hasDerivations" ||
 			   field == "prov_generated")
 				return true;
 			else
@@ -389,7 +482,8 @@ define(['jquery', 'underscore', 'backbone'],
 		/*
 		 * Returns true if this SolrResult has a provenance trace (i.e. has either sources or derivations)
 		 */
-		hasProvTrace: function(){			
+		hasProvTrace: function(){
+
 			if(this.get("formatType") == "METADATA"){
 				if(this.get("prov_hasSources") || this.get("prov_hasDerivations"))
 					return true;
@@ -412,9 +506,11 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		getSources: function(){
 			var sources = new Array(),
-				model = this;
+				model = this,
+				//Get the prov fields but leave out references to executions which are not used in the UI yet
+				fields = _.reject(MetacatUI.appSearchModel.getProvFields(), function(f){ return f.indexOf("xecution") > -1 }); //Leave out the first e in execution so we don't have to worry about case sensitivity
 
-			_.each(MetacatUI.appSearchModel.getProvFields(), function(provField, i){
+			_.each(fields, function(provField, i){
 				if(model.isSourceField(provField) && model.has(provField))
 					sources.push(model.get(provField));
 			});
@@ -427,15 +523,26 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		getDerivations: function(){
 			var derivations = new Array(),
-				model = this;
+				model = this,
+				//Get the prov fields but leave out references to executions which are not used in the UI yet
+				fields = _.reject(MetacatUI.appSearchModel.getProvFields(), function(f){ return f.indexOf("xecution") > -1 }); //Leave out the first e in execution so we don't have to worry about case sensitivity
 
-			_.each(MetacatUI.appSearchModel.getProvFields(), function(provField, i){
-				if(model.isDerivationField(provField) && model.get(provField))
+			_.each(fields, function(provField, i){
+				if(model.isDerivationField(provField) && model.has(provField))
 					derivations.push(model.get(provField));
 			});
 
 			return _.uniq(_.flatten(derivations));
 		},
+		
+		getInputs: function(){
+			return this.get("prov_used");
+		},
+		
+		getOutputs: function(){
+			return this.get("prov_generated");
+		},
+		
 		/****************************/
 
 		/**

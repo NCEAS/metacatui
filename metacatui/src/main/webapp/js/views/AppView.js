@@ -32,17 +32,24 @@ define(['jquery',
 		
 		events: {
 											 "click" : "closePopovers",
-	 		                  'click .direct-search' : 'routeToMetadata',
-		 	               'keypress .direct-search' : 'routeToMetadata',
+	 		              'click .btn.direct-search' : 'routeToMetadata',
+		 	          'keypress input.direct-search' : 'routeToMetadataOnEnter',
 		 	                 "click .toggle-slide"   : "toggleSlide",
 				 		 	      "click input.copy" : "higlightInput", 
 					 		 	  "focus input.copy" : "higlightInput",
 					 		   "click textarea.copy" : "higlightInput", 
 					 		   "focus textarea.copy" : "higlightInput",
-					 		 	  "click .open-chat" : "openChatWithMessage"
+					 		 	  "click .open-chat" : "openChatWithMessage",
+					 		 "click .login.redirect" : "sendToLogin",
+					 	   "focus .jump-width-input" : "widenInput",
+					 	"focusout .jump-width-input" : "narrowInput"
 		},
 				
 		initialize: function () {
+			
+			if(window.location.search.indexOf("error=Unable%20to%20authenticate%20LDAP%20user") > -1){
+				window.location = window.location.origin + window.location.pathname + "#signinldaperror";
+			}
 			
 			//Is there a logged-in user?
 			MetacatUI.appUserModel.checkStatus();
@@ -80,7 +87,7 @@ define(['jquery',
 				});
 			}
 			
-			//Change the document title when the app changes the appModel title at any time
+			//Change the document title when the app changes the MetacatUI.appModel title at any time
 			this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
 			
 			this.listenForActivity();
@@ -183,6 +190,8 @@ define(['jquery',
 			// track the current view
 			this.currentView = view;
 			this.sendAnalytics();
+			
+			this.trigger("appRenderComplete");
 		},	
 		
 		sendAnalytics: function(){
@@ -195,30 +204,36 @@ define(['jquery',
 		},
 		
 		routeToMetadata: function(e){			
-			//If the user pressed a key inside a text input, we only want to proceed if it was the Enter key
-			if((e.type == "keypress") && (e.keycode != 13)) return;
-			else if((e.type == "keypress") || ((e.type == "click") && (e.target.tagName == "BUTTON"))){
-				e.preventDefault();
+			e.preventDefault();
 
-				//Get the value from the input element
-				var form = $(e.target).attr("form") || null,
-					val;
-				
-				if((e.target.tagName == "INPUT") && (e.target.type == "text")){
-					val = $(e.target).val();
-					$(e.target).val("");
-				}
-				else if(form){
-					val = this.$("#" + form).find("input[type=text]").val();
-					this.$("#" + form).find("input[type=text]").val("");
-				}
-				else
-					return false;
-				
-				if(!val) return false;
-				
-				MetacatUI.uiRouter.navigate('view/'+ encodeURIComponent(val), {trigger: true});
-			}
+			//Get the value from the input element
+			var form = $(e.target).attr("form") || null,
+				val = this.$("#" + form).find("input[type=text]").val();
+			
+			//Remove the text from the input
+			this.$("#" + form).find("input[type=text]").val("");
+			
+			if(!val) return false;
+			
+			MetacatUI.uiRouter.navigate('view/'+ val, {trigger: true});
+		},
+		
+		routeToMetadataOnEnter: function(e){
+			//If the user pressed a key inside a text input, we only want to proceed if it was the Enter key
+			if((e.type == "keypress") && (e.keycode != 13))
+				return;		
+			else
+				this.routeToMetadata(e);
+		},
+		
+		sendToLogin: function(e){
+			if(e) e.preventDefault();
+			
+			var url = $(e.target).attr("href");
+			url = url.substring(0, url.indexOf("target=")+7);
+			url += window.location.href;
+			
+			window.location.href = url;
 		},
 		
 		resetSearch: function(){
@@ -365,6 +380,8 @@ define(['jquery',
 		commaSeparateNumber: function(val){
 			if(!val) return 0;
 			
+			if(val < 1) return  Math.round(val * 100) / 100;
+			
 		    while (/(\d+)(\d{3})/.test(val.toString())){
 		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
 		    }
@@ -376,6 +393,15 @@ define(['jquery',
 			e.preventDefault();			
 			e.target.setSelectionRange(0, 9999);
 		},
+		
+		widenInput: function(e){
+			$(e.target).css("width", "200px");
+		},
+		
+		narrowInput: function(e){
+			$(e.target).delay(500).animate({"width": "60px"});
+		},
+		
 		// scroll to top of page
 		scrollToTop: function() {
 			$("body,html").stop(true,true) //stop first for it to work in FF

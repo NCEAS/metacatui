@@ -13,26 +13,28 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
         	type: "EMLOtherEntity",
 
             /* Attributes of any entity */
-            defaults: _.extend({
-
-                /* Attributes from EML */
-                entityType: null, // The type of the entity
-
-                /* Attributes not from EML */
-                nodeOrder: [ // The order of the top level XML element nodes
-                    "alternateIdentifier",
-                    "entityName",
-                    "entityDescription",
-                    "physical",
-                    "coverage",
-                    "methods",
-                    "additionalInfo",
-                    "attributeList",
-                    "constraint",
-                    "entityType"
-                ],
-
-            }, EMLEntity.prototype.defaults),
+            defaults: function(){
+	            return	_.extend({
+	
+		                /* Attributes from EML */
+		                entityType: null, // The type of the entity
+		
+		                /* Attributes not from EML */
+		                nodeOrder: [ // The order of the top level XML element nodes
+		                    "alternateIdentifier",
+		                    "entityName",
+		                    "entityDescription",
+		                    "physical",
+		                    "coverage",
+		                    "methods",
+		                    "additionalInfo",
+		                    "attributeList",
+		                    "constraint",
+		                    "entityType"
+		                ],
+	
+	            	}, EMLEntity.prototype.defaults());
+            },
 
             /*
              * The map of lower case to camel case node names
@@ -76,8 +78,8 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 var $objectDOM; // The JQuery object of the XML fragment
 
                 // Use the updated objectDOM if we have it
-                if ( this.get("objectDOM") ) {
-                    $objectDOM = $(this.get("objectDOM"));
+                if ( attributes.objectDOM ) {
+                    $objectDOM = $(attributes.objectDOM);
                 } else {
                     // Hmm, oddly not there, start from scratch =/
                     $objectDOM = $(objectXML);
@@ -85,13 +87,13 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                 // Add the entityType
                 attributes.entityType = $objectDOM.children("entitytype").text();
-                attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
             },
 
             /* Copy the original XML and update fields in a DOM object */
             updateDOM: function(objectDOM) {
+                var nodeToInsertAfter;
                 var type = this.get("type") || "otherEntity";
                 if ( ! objectDOM ) {
                     objectDOM = this.get("objectDOM");
@@ -122,9 +124,15 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                         $(objectDOM).find("entityType").text(this.get("entityType"));
 
                     } else {
-                        this.getEMLPosition(objectDOM, "entityType")
-                            .after($(document.createElement("entityType"))
-                            .text(this.get("entityType")));
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "entityType");
+                        
+                        if ( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("entitytype"))
+                                .text(this.get("entityType"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after($(document.createElement("entitytype"))
+                                .text(this.get("entityType"))[0]);
+                        }
                     }
                 }
 

@@ -1,5 +1,4 @@
 ﻿﻿/* global define */
-"use strict";
 define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats', 'md5'],
     function($, _, Backbone, uuid, ObjectFormats, md5){
   
@@ -58,9 +57,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
-                    uploadStatus: "q", //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    uploadProgress: null,
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
+                    errorMessage: null,
+                    numSaveAttempts: 0,
                     notFound: false, //Whether or not this object was found in the system
                     originalAttrs: [], // An array of original attributes in a DataONEObject
                     changed: false, // If any attributes have been changed, including attrs in nested objects
@@ -68,12 +70,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     objectXML: null, // A cached version of the object fetched from the server
                     isAuthorized: null, // If the stated permission is authorized by the user
-                    collections: [] //References to collections that this model is in
-	        	}
+                    collections: [], //References to collections that this model is in
+                    prov_generated: [],
+                    prov_generatedByExecution: [],
+                    prov_generatedByProgram: [],
+                    prov_generatedByUser: [],
+                    prov_hasDerivations: [],
+                    prov_hasSources: [],
+                    prov_instanceOfClass: [],
+                    prov_used: [],
+                    prov_usedByExecution: [],
+                    prov_usedByProgram: [],
+                    prov_usedByUser: [],
+                    prov_wasDerivedFrom: [],
+                    prov_wasExecutedByExecution: [],
+                    prov_wasExecutedByUser: [],
+                    prov_wasInformedBy: []
+                }
         	},
         	
             initialize: function(attrs, options) {
+            	if(typeof attrs == "undefined") var attrs = {};
+            	if(typeof options == "undefined") var options = {};
+            	
                 this.on("change:size", this.bytesToSize);
+                if(attrs.size)
+                    this.bytesToSize();
                 
                 // Cache an array of original attribute names to help in handleChange()
                 if(this.type == "DataONEObject")
@@ -86,7 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });
-                
+               
             },
             
             /*
@@ -154,14 +176,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     
                 }
         	},
-            
-            /* Validates the objects attributes on set() */
-            validate: function() {
-                var valid = false;
-                
-                return valid;
-                
-            },
             
             /*
              * Overload Backbone.Model.fetch, so that we can set custom options for each fetch() request
@@ -252,7 +266,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             		
             		//Parse the XML to JSON
             		var sysMetaValues = this.toJson(systemMetadata);
-            		
+            		            		
             		//Convert the JSON to a camel-cased version, which matches Solr and is easier to work with in code
             		_.each(Object.keys(sysMetaValues), function(key){
             			var camelCasedKey = this.nodeNameMap()[key];
@@ -301,7 +315,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             			}
             			//If it's a new text node, just store the text value and add as a new object attribute
             			else if((typeof(obj[nodeName]) == "undefined") && (item.nodeType == 3)){
-            				obj = item.nodeValue;
+            				obj = item.nodeValue == "false" ? false : item.nodeValue == "true" ? true : item.nodeValue;
             			}
             			//If this node name is already stored as an object attribute...
             			else if(typeof(obj[nodeName]) != "undefined"){	
@@ -402,94 +416,132 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 			return containerNode;
 		  },
 		  
-		  /*
-		   * Saves the DataONEObject System Metadata to the server
-		   */
-		  save: function(attributes, options){
+            /*
+            * Saves the DataONEObject System Metadata to the server
+            */
+            save: function(attributes, options){
 
-              // Set missing file names before saving
-              if ( ! this.get("fileName") ) {
-                  this.setMissingFileName();
-                  
-              }
-
-			 if ( !this.hasUpdates() ) {
-				 this.set("uploadStatus", null);
-				 return;
-			 }
-			 
-			 //Set the upload transfer as in progress
-			 this.set("uploadStatus", "p");
-			 
-			//Create a FormData object to send data with our XHR
-			var formData = new FormData();
-  			
-			//Create the system metadata XML
-  			var sysMetaXML = this.serializeSysMeta();
-
-  			//Send the system metadata as a Blob 
-			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
-  			//Add the system metadata XML to the XHR data
-  			formData.append("sysmeta", xmlBlob, "sysmeta.xml");
-  			
-  			//Add the identifier to the XHR data
-			formData.append("pid", this.get("id"));
-            
-            if ( this.isNew() ) {
-                // Create the new object (MN.create())
-                formData.append("object", this.get("uploadFile"), this.get("fileName"));
-                
-            } else {
-                if ( this.hasContentChanges ) {
-                    // Update the object (MN.update())
-                    console.log("TODO: enable replacement of DATA objects");
-                } else {
-                    // Don't add the object (MN.updateSystemMetadata())
-                    console.log("TODO: enable update of DATA object sysmeta");
-                    
+                // Set missing file names before saving
+                if ( ! this.get("fileName") ) {
+                    this.setMissingFileName();
                 }
-            }
 
-			//Put together the AJAX and Backbone.save() options
-			var requestSettings = {
-					url: this.url(),
-					cache: false,
-				    contentType: false,
-				    dataType: "text",
-				    processData: false,
-					data: formData,
-					parse: false,
-					success: function(model, response, xhr){
-						console.log('yay, DataONEObject has been saved');
-						
-						model.set("uploadStatus", "c");
-						model.trigger("successSaving", model);
+                if ( !this.hasUpdates() ) {
+                    this.set("uploadStatus", null);
+                    return;
+                }
+
+                //Set the upload transfer as in progress
+                this.set("uploadStatus", "p");
+                this.set("uploadProgress", 2);
+                
+                //Create a FormData object to send data with our XHR
+                var formData = new FormData();
+                
+                //Add the identifier to the XHR data
+                formData.append("pid", this.get("id"));
+            				
+				//Get the new checksum of the object 
+				var checksum = md5(this.get("uploadResult"));
+				this.set("checksum", checksum);
+				
+                //Create the system metadata XML
+                var sysMetaXML = this.serializeSysMeta();
+                				
+                //Send the system metadata as a Blob 
+                var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
+                //Add the system metadata XML to the XHR data
+                formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+				
+                if ( this.isNew() ) {
+                    // Create the new object (MN.create())
+                    formData.append("object", this.get("uploadFile"), this.get("fileName"));
+                    
+                } else {
+                    if ( this.hasContentChanges ) {
+                        // Update the object (MN.update())
+                        console.log("TODO: enable replacement of DATA objects");
+                    } else {
+                        // Don't add the object (MN.updateSystemMetadata())
+                        console.log("TODO: enable update of DATA object sysmeta");
+                        
+                    }
+                }
+                
+                var model = this;
+
+                //Put together the AJAX and Backbone.save() options
+                var requestSettings = {
+                    url: this.url(),
+                    cache: false,
+                    contentType: false,
+                    dataType: "text",
+                    processData: false,
+                    data: formData,
+                    parse: false,
+                    xhr: function(){
+                      var xhr = new window.XMLHttpRequest();
+                      
+                      //Upload progress
+                      xhr.upload.addEventListener("progress", function(evt){
+                        if (evt.lengthComputable) {
+                          var percentComplete = evt.loaded / evt.total * 100;
+                          
+                          model.set("uploadProgress", percentComplete);
+                        }
+                      }, false);
+
+                      return xhr;
+                    },
+                    success: function(model, response, xhr){
+                        console.log('yay, DataONEObject has been saved');
+                        
+                        model.set("numSaveAttempts", 0);
+                        model.set("uploadStatus", "c");
+                        model.trigger("successSaving", model);
                         model.fetch({merge: true}); // Get the newest sysmeta set by the MN
                         // Reset the content changes status
                         model.set("hasContentChanges", false);
-                        
-					},
-					error: function(model, response, xhr){
-						console.log("error updating system metadata");
-						model.set("uploadStatus", "e");
-						model.trigger("errorSaving", response.responseText);
-					}
-			}
-			
-			//Add the user settings
-			requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
-			
-			//Send the Save request
-			Backbone.Model.prototype.save.call(this, null, requestSettings);
+                    },
+                    error: function(model, response, xhr){
+
+                		model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                    	var numSaveAttempts = model.get("numSaveAttempts");
+
+                		if(numSaveAttempts < 3){
+                    		
+                    		//Try saving again in 10, 40, and 90 seconds
+                    		setTimeout(function(){ 
+                    				model.save.call(model);
+                    			}, 
+                    			(numSaveAttempts * numSaveAttempts) * 10000);
+                    	}
+                    	else{
+                    		model.set("numSaveAttempts", 0);
+                    	
+                    		var parsedResponse = $(response.responseText).not("style, title").text();                    		
+	                        model.set("errorMessage", parsedResponse);
+	                        
+	                        model.set("uploadStatus", "e");
+	                        model.trigger("errorSaving", response.responseText);
+                    	}
+                    }
+                };
+
+                //Add the user settings
+                requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+                
+                //Send the Save request
+	            Backbone.Model.prototype.save.call(this, null, requestSettings);
             
-		  },
+		    },
 		  
-		  /*
-		   * Check if the current user is authorized to perform an action on this object
-		   */
-		  checkAuthority: function(action){
-			  if(!action) var action = "changePermission";
-			  
+		    /*
+		     * Check if the current user is authorized to perform an action on this object
+		     */
+		    checkAuthority: function(action){
+		    	if(!action) var action = "changePermission";
+			
 				var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
 				if(!authServiceUrl) return false;
 
@@ -508,9 +560,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				}
 				$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
-		  },
-		  
-		  serializeSysMeta: function(options){
+		    },
+		
+		    serializeSysMeta: function(options){
 	        	//Get the system metadata XML that currently exists in the system
                 var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
                     xml, // sysmeta as DOM object
@@ -970,6 +1022,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        },
 	        
 	        /*
+	         * Updates the progress percentage when the model is getting uploaded
+	         */
+	        updateProgress: function(e){
+	        	if(e.lengthComputable){
+	                var max = e.total;
+	                var current = e.loaded;
+
+	                var Percentage = (current * 100)/max;
+	                console.log(Percentage);
+
+
+	                if(Percentage >= 100)
+	                {
+	                   // process completed  
+	                }
+	            }  
+	        },
+	        
+	        /*
 	         * Updates the relationships with other models when this model has been updated
 	         */
 	        updateRelationships: function(){
@@ -994,6 +1065,90 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		
 	        	}, this);
 	        },
+	        
+	        loadFile: function(){
+                var reader = new FileReader(),
+                	model  = this;
+                
+                //Trigger the file added event
+                MetacatUI.rootDataPackage.trigger("fileAdded", this);
+                
+                // Set up the reader event handlers and
+                // pass the event *and* the dataONEObject to the handlers
+                reader.onprogress = function(event) {
+                	model.handleFileLoadProgress(event);
+                }
+                
+                reader.onerror = function(event) {
+                	model.handleFileLoadError(event);
+                }
+                
+                reader.onload = function(event) {
+                	model.handleFileLoadSuccess(event);
+                }
+                
+                reader.onabort = function(event) {
+                	model.handleFileLoadAbort(event);
+                }
+                
+                // Now initiate the file read
+                reader.readAsArrayBuffer(this.get("uploadFile"));
+                
+                this.set("uploadReader", reader);
+	        },
+	        
+	        handleFileLoadSuccess: function(event){
+	        	// event.target.result has the file object bytes
+                
+                // Make the DataONEObject for the file, add it to the collection
+                var checksum = md5(event.target.result);
+                this.set("checksum", checksum);
+                this.set("checksumAlgorithm", "MD5");
+                
+                this.set("uploadStatus", "q"); // set status to queued
+                this.set("uploadResult", event.target.result);
+                                
+                delete event; // Let large files be garbage collected
+                                
+                this.once("successSaving", function(){ 
+                	MetacatUI.rootDataPackage.add(this);
+                	MetacatUI.rootDataPackage.handleAdd(this);
+                });
+                
+                //Upload the file
+                this.save();
+	        },
+	        
+            /* During file reading, deal with abort events */
+	        handleFileLoadAbort: function(event){
+                // When file reading is aborted, update the model upload status
+	        	
+	        },
+	        
+            /* During file reading, handle the user's cancel request */
+            handleFileCancel: function(event) {
+                // TODO: enable canceling of the file read from disk
+                // Need to get a reference to the FileReader to call abort
+                // 
+                // this.uploadReader.abort(); ?
+                
+            },
+	        
+            /* During file reading, deal with read errors */ 
+	        handleFileLoadError: function(event){
+                // On error, update the model upload status
+	        	
+	        },
+	        
+	        /* During file reading, update the import progress in the model */
+            handleFileLoadProgress: function(event) {
+                // event is a ProgressEvent - use it to update the import progress bar
+                
+                if ( event.lengthComputable ) {
+                    var percentLoaded = Math.round((event.loaded/event.total) * 100);
+                    this.set("percentLoaded", percentLoaded);
+                }
+            },
 	        
 	        /*
 	         * Finds the latest version of this object by travesing the obsolescence chain
@@ -1101,63 +1256,85 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	return xmlString;
 	        },
 		  
-          /**
-           * Convert number of bytes into human readable format
-           *
-           * @return sizeStr for the given model
-           */
-          bytesToSize: function(){  
-              var kilobyte = 1024;
-              var megabyte = kilobyte * 1024;
-              var gigabyte = megabyte * 1024;
-              var terabyte = gigabyte * 1024;
-              var precision = 0;
-          
-              var bytes = this.get("size");                        
+            /**
+             * Convert number of bytes into human readable format
+             *
+             * @return sizeStr for the given model
+             */
+            bytesToSize: function(){  
+                var kilobyte = 1024;
+                var megabyte = kilobyte * 1024;
+                var gigabyte = megabyte * 1024;
+                var terabyte = gigabyte * 1024;
+                var precision = 0;
+            
+                var bytes = this.get("size");                        
+           
+                if ((bytes >= 0) && (bytes < kilobyte)) {
+                    this.set("sizeStr", bytes + ' B');
          
-              if ((bytes >= 0) && (bytes < kilobyte)) {
-                  this.set("sizeStr", bytes + ' B');
-       
-              } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-                  this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
-       
-              } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-                  precision = 2;
-                  this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
-       
-              } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-                  precision = 2;
-                  this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
-       
-              } else if (bytes >= terabyte) {
-                  precision = 2;
-                  this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
-       
-              } else {
-                  this.set("sizeStr", bytes + ' B');
-                  
-              }
-          },
-          
-          /* Ensure we have a file name */
-          setMissingFileName: function() {
-              var objectFormats, filename, extension;
-              
-              objectFormats = MetacatUI.objectFormats.where({formatId: this.get("formatId")});
-              if ( objectFormats.length > 0 ) {
-                  extension = objectFormats[0].get("extension");
-              }
-              
-              filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
-              filename.replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
-              
-              if ( typeof extension !== "undefined" ) {
-                  filename = filename + "." + extension;
-              }
-              
-              this.set("fileName", filename);
-              
-          }
+                } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+                    this.set("sizeStr", (bytes / kilobyte).toFixed(precision) + ' KB');
+         
+                } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / megabyte).toFixed(precision) + ' MB');
+         
+                } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / gigabyte).toFixed(precision) + ' GB');
+         
+                } else if (bytes >= terabyte) {
+                    precision = 2;
+                    this.set("sizeStr", (bytes / terabyte).toFixed(precision) + ' TB');
+         
+                } else {
+                    this.set("sizeStr", bytes + ' B');
+                    
+                }
+            },
+            
+            /* Ensure we have a file name */
+            setMissingFileName: function() {
+                var objectFormats, filename, extension;
+                
+                objectFormats = MetacatUI.objectFormats.where({formatId: this.get("formatId")});
+                if ( objectFormats.length > 0 ) {
+                    extension = objectFormats[0].get("extension");
+                }
+                
+                filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
+                filename.replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
+                
+                if ( typeof extension !== "undefined" ) {
+                    filename = filename + "." + extension;
+                }
+                
+                this.set("fileName", filename);
+                
+            },
+            
+            getXMLSafeID: function(){
+            	var id = this.get("id");
+            	
+            	//Replace XML id attribute invalid characters and patterns in the identifier
+            	id = id.replace(/</g, "-").replace(/:/g, "-").replace(/&[a-zA-Z0-9]+;/g);
+            	
+            	return id;
+            }
+        },
+        {
+            /* Generate a unique identifier to be used as an XML id attribute */
+            generateId: function() {
+                var idStr = ''; // the id to return
+                var length = 30; // the length of the generated string
+                var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'.split('');
+
+                for (var i = 0; i < length; i++) {
+                    idStr += chars[Math.floor(Math.random() * chars.length)];
+                }
+                return idStr;
+            }
         }); 
         
         return DataONEObject; 

@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 
         'text!templates/alert.html',
         'text!templates/about.html',

@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone'], 				
 	function($, _, Backbone) {
 	'use strict';
@@ -18,12 +18,33 @@ define(['jquery', 'underscore', 'backbone'],
 			profileUsername: null,
 			page: 0,
 			profileQuery: null,
+			
+			/*
+			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
+			 * Any field set to true will prevent the user from saving the Editor until a value has been given
+			 */
+			emlEditorRequiredFields: {
+				abstract: true,
+				alternateIdentifier: false,
+				funding: true,
+				generalTaxonomicCoverage: false,
+				geoCoverage: true,
+				intellectualRights: true,
+				keywordSets: false,
+				methods: false,
+				samplingDescription: false,
+				studyExtentDescription: false,
+				taxonCoverage: false,
+				temporalCoverage: true,
+				title: true
+			},
+			
 			baseUrl: "https://knb.ecoinformatics.org",
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
-			d1Service: '/d1/mn/v2',
+			d1Service: '/d1/mn/v1',
 			d1CNBaseUrl: "https://cn.dataone.org/",
-			d1CNService: "cn/v2",
+			d1CNService: "cn/v1",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
 			publishServiceUrl: null,
@@ -33,14 +54,20 @@ define(['jquery', 'underscore', 'backbone'],
 			ldapwebServiceUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
-			bioportalSearchUrl: null,
+			formatsServiceUrl: null,
+            formatsUrl: "/formats",
+            bioportalSearchUrl: null,
 			orcidSearchUrl: null,
-			//tokenUrl: null,
-			annotatorUrl: null,
+			signInUrl: null,
+			signOutUrl: null,
+			signInUrlOrcid: null,
+			signInUrlLdap: null,
+			tokenUrl: null,
+			//annotatorUrl: null,
 			accountsUrl: null
 		},
 				
-		defaultView: "share",
+		defaultView: "submit",
 		
 		initialize: function() {
 
@@ -52,9 +79,37 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
-			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+			
+			// Object format list
+            if ( typeof this.get("formatsUrl") != "undefined" ) {
+                this.set("formatsServiceUrl", 
+                    this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+            }
+            
+			//Token URLs
+			if(typeof this.get("tokenUrl") != "undefined"){
+				this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
+				this.set("tokenUrl",  this.get("portalUrl") + "token");
+								
+				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
+				if(typeof this.get("signInUrl") !== "undefined")
+					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
+				if(typeof this.get("signInUrlOrcid") !== "undefined")
+					this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
+				if(typeof this.get("signInUrlLdap") !== "undefined")
+					this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+				if(this.get('orcidBaseUrl'))
+					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
+				
+				if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
+					this.set("signOutUrl", this.get('portalUrl') + "logout");
+				
+				if(typeof this.get("d1LogServiceUrl") != "undefined")
+					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
+
+			}
 		
 			this.on("change:pid", this.changePid);
 		},

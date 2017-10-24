@@ -1,4 +1,4 @@
-﻿<% if(memberNode && memberNode.logo){ %>
+<% if(memberNode && memberNode.logo){ %>
 	<a href="#profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" /></a>
 <% } %>	     
 <div class="citation">
@@ -28,7 +28,7 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" title="Click to Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download stop-route tooltip-this" download title="Click to Download" href="', MetacatUI.appModel.get('objectServiceUrl'), URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right"><i class="icon icon-cloud-download stop-route"></i></a>');
 			}			
           	%>          
       </div>

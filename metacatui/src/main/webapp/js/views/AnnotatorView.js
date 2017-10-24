@@ -1,7 +1,8 @@
-﻿/*global define */
+/*global define */
 define(['jquery',
         'jqueryui',
         'annotator',
+        'bioportal',
 		'underscore', 
 		'backbone',
 		'models/AnnotationModel',
@@ -11,6 +12,7 @@ define(['jquery',
 	function($, 
 			$ui, 
 			Annotator, 
+			Bioportal,
 			_, 
 			Backbone, 
 			AnnotationModel,
@@ -27,9 +29,11 @@ define(['jquery',
 		template: null,
 		
 		annotationTemplate: _.template(AnnotationTemplate),
+		
 		annotationPopoverTemplate: _.template(AnnotationPopoverTemplate),
 		
 		rendered: false,
+		
 		annotations: [],
 						
 		// Delegated events for creating new items, and clearing completed ones.
@@ -47,12 +51,17 @@ define(['jquery',
 
 			this.$el.data("annotator-view", this);
 			
-			this.setUpAnnotator();			
+			this.setUpTree();
+			
+			this.setUpAnnotator();
+			
 			return this;
 		},
 		
 		onClose: function () {	
 			if(this.disabled) return;
+			
+			$("#bioportal-tree").remove();
 						
 			// destroy the annotator
 			if ($("body").data('annotator')) {
@@ -60,6 +69,48 @@ define(['jquery',
 			}
 			
 			this.annotations = [];
+		},
+		
+		setUpTree : function() {
+			this.$el.append('<div id="bioportal-tree"></div>');
+			var tree = $("#bioportal-tree").NCBOTree({
+				  apikey: MetacatUI.appModel.get("bioportalAPIKey"),
+				  ontology: "ECSO"
+				});
+			
+			// set up the listener to jump to search results
+			tree.on("afterSelect", this.drillDownAnnotation);
+			tree.on("afterExpand", this.afterExpand);
+			tree.on("afterJumpToClass", this.afterExpand);
+
+		},
+		
+		afterExpand : function() {
+			// ensure tooltips are activated
+	    	$(".tooltip-this").tooltip();
+		},
+		
+		moveTree: function(event) {
+			
+			// take it away from it's original home
+			var treeDiv = $("#bioportal-tree").detach();
+			
+			// find the new home
+			var group = $(event.target).closest(".btn-group");
+			var container = $(group).find(".tree-container");
+			
+			// put it where we need it
+			$(container).append(treeDiv);
+			
+			// root at the branch for this concept
+			var classId = $(container).attr("data-concept-uri");
+			
+			var tree = $(treeDiv).data("NCBOTree");
+			var options = tree.options();
+			$.extend(options, {startingRoot: classId});
+
+			tree.jumpToClass(classId);
+			
 		},
 		
 		setUpAnnotator: function() {
@@ -138,6 +189,15 @@ define(['jquery',
 		        	var content = '<div class="annotation-viewer-container">';
 		        	if (item.desc) {
 		        		content += '<span class="annotation tag">' + item.label + '</span>'; 
+		        		if (item.synonyms) {
+			        		content += '<p><strong>Synonyms: </strong>';
+			        		_.each(item.synonyms, function(synonym) {
+				        		content += synonym + "<br/>";
+							});
+			        		
+			        		content += '</p>';
+
+		        		}
 		        		if (item.desc != item.value) {
 			        		content += '<p><strong>Definition: </strong>' + item.desc + '</p>';
 			        		content += '<p class="subtle concept">Concept URI: <a href="' + item.value + '" target="_blank">' + item.value + '</a></p>';
@@ -184,11 +244,15 @@ define(['jquery',
 				}
 			});
 			
-			//Change the palceholder text
+			//Change the placeholder text
+			$(this.$el.data('annotator').plugins.Tags.input).attr("style", "display: none;");
 			$(this.$el.data('annotator').plugins.Tags.input).attr("placeholder", "Search for tag terms...");
 			$(this.$el.data("annotator").plugins.Tags.field).prepend("<p>Add an annotation to this attribute</p>" +
 				"<p><strong>Help others find and understand this dataset better by adding semantic annotations</strong></p>")
 				.addClass("annotator-field");
+						
+			$(this.$el).find(".annotator-controls").before("<div id='bioportal-tree-label'></div>");
+			$(this.$el).find(".annotator-controls").before("<div id='bioportal-tree-annotator'></div>");
 			
 			// set up rejection field
 			this.$el.data('annotator').editor.addField({
@@ -210,6 +274,21 @@ define(['jquery',
 		      });
 			
 			var view = this;
+			
+			this.$el.annotator('subscribe', 'annotationEditorShown', function() {
+				// reroot tree at starting class
+				var tree = $("#bioportal-tree-annotator").data("NCBOTree");
+				if (tree) {
+					var options = tree.options();
+					$.extend(options, {startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"});
+					tree.init();
+				}
+				// clear any values that are lingering
+				var view = $('#metadata-container').data("annotator-view");
+				$(view.$el.data('annotator').plugins.Tags.input).val("");	
+				$("#bioportal-tree-label").html("");
+				
+			});
 			
 			// subscribe to annotation events, to get the exact resource being annotated
 			this.$el.annotator('subscribe', 'beforeAnnotationCreated', function(annotation, arg0, arg1) {
@@ -238,8 +317,21 @@ define(['jquery',
 							//focus: focus
 						});
 						$.extend(annotation, {"oa:Motivation": "oa:tagging"});
-						$.extend(annotation, {"field": "sem_annotation_bioportal_sm"});
+						$.extend(annotation, {"field": "sem_annotation"});
 					}
+					
+					// set up the tree
+					var tree = $("#bioportal-tree-annotator").NCBOTree({
+						  apikey: MetacatUI.appModel.get("bioportalAPIKey"),
+						  ontology: "ECSO",
+						  startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType"
+						});
+					
+					tree.on("afterSelect", view.selectConcept);	
+					tree.on("afterJumpToClass", view.jumpToClass);	
+					tree.on("afterExpand", view.afterExpand); // for the tool tips
+
+
 					
 					//alert('Augmented annotation with additional properties, annotation: ' + annotation);
 				}
@@ -293,15 +385,76 @@ define(['jquery',
 				
 			});
 						
-			this.$el.annotator('subscribe', 'annotationCreated', this.reindexPid);
-			this.$el.annotator('subscribe', 'annotationUpdated', this.reindexPid);
+			this.$el.annotator('subscribe', 'annotationStored', this.annotationStored);
+			this.$el.annotator('subscribe', 'annotationUpdated', this.annotationUpdated);
 			this.$el.annotator('subscribe', 'annotationDeleted', this.handleDelete);
-			this.$el.annotator('subscribe', 'annotationsLoaded', this.renderAnnotations);
+			this.$el.annotator('subscribe', 'annotationsLoaded', this.preRenderAnnotations);
 
 
 		},
 		
+		selectConcept : function(event, classId, prefLabel, selectedNode) {
+			
+			// set in the editor
+			var view = $('#metadata-container').data("annotator-view");
+			$(view.$el.data('annotator').plugins.Tags.input).val(classId);	
+
+			// make it pretty
+			$("#bioportal-tree-label").html("<a class='annotation tag btn'>" + prefLabel + "</a>");
+
+			// prevent default action
+			return false;
+			
+		},
+		
+		jumpToClass : function(event, classId) {
+			
+			var reroot = true; // for easier changing of our minds :)
+			if (reroot) {
+				// reroot tree at new class
+				var tree = $("#bioportal-tree-annotator").data("NCBOTree");
+				var options = tree.options();
+				$.extend(options, {startingRoot: classId});
+				tree.init();
+				
+				// ensure tooltips are activated
+		    	$(".tooltip-this").tooltip();
+			} else {
+				// scroll to selected part
+		    	var node = $("#bioportal-tree-annotator").find("a[data-id='" + encodeURIComponent(classId) + "']");
+		    	var position = $(node).position().top - 200;
+		    	$("#bioportal-tree-annotator").scrollTop(position)
+			}
+
+		},
+		
+		preRenderAnnotations : function(annotations) {
+			
+			console.log("preRenderAnnotations");
+			
+			var uris = [];
+			
+			//look up the concept details in a batch
+			_.each(annotations, function(annotation) {
+				if (annotation.tags[0]) {					
+					// look up concepts where we can
+					var conceptUri = annotation.tags[0];
+					uris.push(conceptUri);
+				}
+			});
+			
+			// now look them up and render when finished
+			var annotatorEl = (typeof this.$el != "undefined")? this.$el : this,
+					view = $(annotatorEl).data("annotator-view");
+			MetacatUI.appLookupModel.bioportalGetConceptsBatch(
+					uris, 
+					function() {view.renderAnnotations(annotations);});
+			
+		},
+		
 		renderAnnotations : function(annotations) {
+			
+			console.log("renderAnnotations");
 			
 			// keep from duplicating 
 			if (this.rendered) {
@@ -309,6 +462,30 @@ define(['jquery',
 				return;
 			}
 			this.rendered = true;
+
+			// sort the annotations by xpath
+			annotations = _.sortBy(annotations, function(ann) {
+				return ann.resource;
+			});
+			
+			// only want to show the manual annotations
+			console.log("All annotation count: " + annotations.length);
+			annotations = _.filter(annotations, function(ann){
+				return (ann.field == "sem_annotation");
+			});
+			console.log("Filtered for sem_annotation: " + annotations.length);
+			
+			//Now extract the rejeced annotations
+			var rejectedAnnotations = _.filter(annotations, function(ann){
+				return ann.reject;
+			});
+			annotations = _.filter(annotations, function(ann){
+				return !ann.reject;
+			});
+			
+			// we want to display rejected last
+			annotations = annotations.concat(rejectedAnnotations);
+			annotations.reverse();
 			
 			var view = this;
 			
@@ -320,19 +497,6 @@ define(['jquery',
 				else
 					view.annotations = [annModel];
 			});
-
-			// sort the annotations by xpath
-			annotations = _.sortBy(annotations, function(ann) {
-				return ann.resource;
-			});
-			
-			//Now extract the rejeced annotations
-			var rejectedAnnotations = _.filter(annotations, function(ann){
-				return ann.reject;
-			});
-			
-			//Add the rejected annotations to the end of the list (we want to display them last)
-			annotations = annotations.concat(rejectedAnnotations);
 			
 			// clear them out!
 			$(".hover-proxy").remove();
@@ -341,12 +505,17 @@ define(['jquery',
 			// make a spot for them
 			$(".annotation-target").after("<div class='annotation-container'></div>");
 			
-			// add a button to select text and launch the new editor				
+			// add a button to select text and launch the new editor, only when logged in
 			var addBtn = $(document.createElement("a"))
 							.text("Add annotation")
 							.addClass("btn btn-info add-tag")
 							.prepend($(document.createElement("i"))
 										.addClass("icon-on-left icon-plus"));
+			
+			if (!MetacatUI.appUserModel.get("loggedIn")) {
+				addBtn.addClass("disabled");
+			}
+			
 			$('.annotation-container').append(addBtn);//.on("click", ".add-tag", launchEditor);
 			
 			// summarize annotation count in citation block
@@ -402,10 +571,10 @@ define(['jquery',
 					// for comments, just render it in the document
 					var highlight = $("[data-annotation-id='" + annotation.id + "']");
 					var section = $(highlight).closest(".tab-pane").children(".annotation-container");
-					section.append(viewRef.annotationTemplate({
+					section.append(view.annotationTemplate({
 						annotation: annotation,
 						concept: null,
-						appUserModel: appUserModel
+						appUserModel: MetacatUI.appUserModel
 					}));	
 				
 				}
@@ -414,6 +583,8 @@ define(['jquery',
 		},
 		
 		renderAnnotation: function(annotationModel) {	
+			
+			console.log("renderAnnotation");
 			
 			var canEdit = 
 				_.contains(annotationModel.get("permissions").admin, MetacatUI.appUserModel.get("username"))
@@ -425,10 +596,25 @@ define(['jquery',
 			// render it in the document
 			var highlight = $("[data-annotation-id='" + annotationModel.get("id") + "']");
 			var section = $(highlight).closest(".tab-pane").children(".annotation-container");
+			var tab = $(highlight).closest(".tab-pane");
+			//console.log("tab: " + tab);
+			var tabControl = $("a[href='#" + $(tab).attr("id") + "'");
+			//console.log("tabControl: " + tabControl);
+			var icons = $(tabControl).find(".icon-tag");
+			if ($(icons).size() == 0) {
+				tabControl.prepend("<i class='icon-tag'></i>")
+			}
+			
+			
 			if (!section.html()) {
+				//console.log("Highlights not completed yet - cannot render annotation: " +  annotationModel.get("id"));
 				console.log("Highlights not completed yet - cannot render annotation");
 				return;
 			}
+			
+			//console.log("Rendering annotation: " + annotationModel.get("id"));
+			//console.log("Rendering annotation");
+
 						
 			//Render the annotation tag itself
 			var annotationTag = $.parseHTML(this.annotationTemplate({
@@ -438,62 +624,95 @@ define(['jquery',
 			}).trim());
 			section.prepend(annotationTag);
 			
+			// this is what we really want to attach to
+			var target = $(annotationTag).find(".hover-proxy");
+
 			//Attach the annotation object for later
-			$(annotationTag).data("annotation", annotationModel);
+			$(target).data("annotation", annotationModel);
 			
 			var view = this;
 			
 			//Create the popover for this element
-			$(annotationTag).on("mouseover", { view: this }, this.showDetails);
+			$(target).on("mouseover", { view: this }, this.showDetails);
+			
+			// subscribe to event
+			var viewRef = this;
+			$(annotationTag).find(".annotation-dropdown").on("click", viewRef.moveTree);
+			$(annotationTag).find(".dropdown-menu").on("click", function (e) {
+				  e.stopPropagation();
+				});
 			
 			// bind after rendering
-			var target = $(annotationTag).filter(".hover-proxy");
-			target = $(annotationTag).filter(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
-			//$(target).bind("click", this.flagAnnotation);
+			target = $(annotationTag).find(".annotation-flag[data-id='" + annotationModel.get("id") + "']");
+			$(target).bind("click", this.flagAnnotation);
 			
-			var deleteBtn = $(annotationTag).filter(".annotation-delete");
+			var deleteBtn = $(annotationTag).find(".annotation-delete");
 			$(deleteBtn).tooltip({
 				trigger: "hover",
 				title: "Delete"
 			});
 			
-			$(annotationTag).filter(".tooltip-this").tooltip();
+			$(annotationTag).find(".tooltip-this").tooltip();
 			
-			target = $(annotationTag).filter(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
-			//$(target).bind("click", this.deleteAnnotation);
+			target = $(annotationTag).find(".annotation-delete[data-id='" + annotationModel.get("id") + "']");
+			$(target).bind("click", this.deleteAnnotation);
 
+		},
+		
+		drillDownAnnotation : function(event, classId, prefLabel, selectedNode) {
+			
+			// Get the concept info
+			var uri = classId;
+			var label = prefLabel;
+			var description = "";
+			
+			// Clear the search and map model to start a fresh search
+			appSearchModel.clear();
+			appSearchModel.set(appSearchModel.defaults);
+			mapModel.clear();
+			mapModel.set(mapModel.defaults);
+			
+			// construct the filter
+			var filter = { 
+					value: uri,  
+					filterLabel: label, 
+					label: label, 
+					description: description 
+					};
+			
+			// set the search model
+			appSearchModel.set("annotation", [filter]);
+			
+			// navigate to search results
+			uiRouter.navigate('data', {trigger: true});
 		},
 		
 		flagAnnotation : function(e) {
 			
-			//Get the flag button
-			var flagButton = e.target;
-			if(!$(flagButton).is(".annotation-flag")){
-				flagButton = $(flagButton).parents(".annotation-flag");
-			}
-
-			//Get the annotation
-			var annotation = $(flagButton).data("annotation");
-
-			//If there is no annotation, exit.
-			if(!annotation) return;
-									
-			//Get the annotation object
-			var anns = this.$el.data("annotator").plugins.Store.annotations;
-			var annObj = _.findWhere(anns, {id: annotation.get("id")});
+			var annotationId = $(e.target).attr("data-id");
+			console.log("deleting annotation id: " +  annotationId);
+			var view = $('#metadata-container').data("annotator-view");
+			var annotations = view.$el.data('annotator').plugins.Store.annotations;
+			var annotation = _.findWhere(annotations, {id: annotationId});
 			
 			//Reject it!
-			annObj.reject = !annObj.reject;
+			annotation.reject = !annotation.reject;
 	
 			//Update it
-			this.$el.data('annotator').updateAnnotation(annObj);					
+			view.$el.data('annotator').updateAnnotation(annotation);					
 		},
 		
 		deleteAnnotation : function(e) {
 			var annotationId = $(e.target).attr("data-id");
 			console.log("deleting annotation id: " +  annotationId);
+			var view = $('#metadata-container').data("annotator-view");
 			var annotations = view.$el.data('annotator').plugins.Store.annotations;
 			var annotation = _.findWhere(annotations, {id: annotationId});
+			
+			// make sure to stash the tree since the popover will never be shown again
+			var treeDiv = $("#bioportal-tree").detach();
+			view.$el.append(treeDiv);
+			
 			view.$el.data('annotator').deleteAnnotation(annotation);					
 
 		},
@@ -523,6 +742,7 @@ define(['jquery',
 				html: true,
 				title: annotation.get("concept").label,
 				content: annotationPopover,
+				container: 'body',
 				placement: "top"
 			}).on("mouseenter", function () {
 		        var _this = this;
@@ -563,24 +783,50 @@ define(['jquery',
 		handleDelete: function(annotation) {
 			// only handle this if it is a saved annotation
 			if (annotation.id) {
-				this.reindexPid(annotation, true);
+				var view = $('#metadata-container').data("annotator-view");
+				view.reindexPid(annotation, true);
 			}
+			
+		},
+		
+		annotationStored : function(annotation) {
+			
+			console.log("annotationStored");
+			var view = $('#metadata-container').data("annotator-view");
+			
+			// add the data id to this
+		    $(annotation.highlights).attr('data-annotation-id', annotation.id);
+			
+			// refresh annotation
+			view.reindexPid(annotation, false);
+			
+		},
+		
+		annotationUpdated : function(annotation) {
+			
+			console.log("annotationUpdated");
+			var view = $('#metadata-container').data("annotator-view");
+			view.reindexPid(annotation, false);
 			
 		},
 		
 		// reindex when an annotation is updated
 		reindexPid : function(annotation, isDelete) {
 			
-			// reset view
-			this.rendered = false;
+			console.log("reindexPid");
+			
+			var view = $('#metadata-container').data("annotator-view");
 			
 			// re load the annotations
-			var annotations = $(this).data('annotator').plugins.Store.annotations;
+			var annotations = view.$el.data('annotator').plugins.Store.annotations;
+			console.log("annotations length: " + annotations.length);
 			if (isDelete) {
-				annotations.splice(annotations.indexOf(annotation), 1);
+				annotations = _.reject(annotations, function(a) {
+					return annotation.id == a.id;
+				});
 			}
 			
-			var view = $(this).data("annotator-view");
+			view.rendered = false;
 			view.renderAnnotations(annotations);
 
 		},

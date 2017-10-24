@@ -85,21 +85,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 	            geohash_7: [],
 	            geohash_8: [],
 	            geohash_9: [],
-	            prov_generated: [],
-	            prov_generatedByExecution: [],
-	            prov_generatedByProgram: [],
-	            prov_generatedByUser: [],
-	            prov_hasDerivations: [],
-	            prov_hasSources: [],
-	            prov_instanceOfClass: [],
-	            prov_used: [],
-	            prov_usedByExecution: [],
-	            prov_usedByProgram: [],
-	            prov_usedByUser: [],
-	            prov_wasDerivedFrom: [],
-	            prov_wasExecutedByExecution: [],
-	            prov_wasExecutedByUser: [],
-	            prov_wasInformedBy: [],
 	            sem_annotated_by: [],
 	            sem_annotates: [],
 	            sem_annotation: [],
@@ -117,7 +102,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             	
                 
                 // ScienceMetadata-specific init goes here
-                
+                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", function(){
+                 	if(MetacatUI.rootDataPackage.packageModel.get("changed"))
+                 		this.set("uploadStatus", "q");
+                 })
             },
             
             /* Construct the Solr query URL to be called */

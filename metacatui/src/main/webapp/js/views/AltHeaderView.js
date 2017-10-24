@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'text!templates/altHeader.html', 'text!templates/defaultHeader.html'], 				
 	function($, _, Backbone, AltHeaderTemplate, DefaultHeaderTemplate) {
 	'use strict';

@@ -130,21 +130,6 @@
         geohash_7 : String [*]
         geohash_8 : String [*]
         geohash_9 : String [*]
-        prov_generated : String [*]
-        prov_generatedByExecution : String [*]
-        prov_generatedByProgram : String [*]
-        prov_generatedByUser : String [*]
-        prov_hasDerivations : String [*]
-        prov_hasSources : String [*]
-        prov_instanceOfClass : String [*]
-        prov_used : String [*]
-        prov_usedByExecution : String [*]
-        prov_usedByProgram : String [*]
-        prov_usedByUser : String [*]
-        prov_wasDerivedFrom : String [*]
-        prov_wasExecutedByExecution : String [*]
-        prov_wasExecutedByUser : String [*]
-        prov_wasInformedBy : String [*]
         sem_annotated_by : String [*]
         sem_annotates : String [*]
         sem_annotation : String [*]
@@ -177,6 +162,21 @@
         + nodeLevel : String
         + uploadStatus : String
         + uploadFile : File
+        + prov_generated : String [*]
+        + prov_generatedByExecution : String [*]
+        + prov_generatedByProgram : String [*]
+        + prov_generatedByUser : String [*]
+        + prov_hasDerivations : String [*]
+        + prov_hasSources : String [*]
+        + prov_instanceOfClass : String [*]
+        + prov_used : String [*]
+        + prov_usedByExecution : String [*]
+        + prov_usedByProgram : String [*]
+        + prov_usedByUser : String [*]
+        + prov_wasDerivedFrom : String [*]
+        + prov_wasExecutedByExecution : String [*]
+        + prov_wasExecutedByUser : String [*]
+        + prov_wasInformedBy : String [*]
         + getSystemMetadata() : String
         + validate() : Boolean
         + parse() : DataONEObject

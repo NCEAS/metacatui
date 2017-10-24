@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
 	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
@@ -30,19 +30,28 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
-				this.listenTo(MetacatUI.statsModel, 'change:dataUploadDates',       this.drawUploadChart);
+				//this.listenTo(MetacatUI.statsModel, 'change:dataUploadDates',       this.drawUploadChart);
 				this.listenTo(MetacatUI.statsModel, 'change:temporalCoverage',      this.drawCoverageChart);				
 				this.listenTo(MetacatUI.statsModel, 'change:metadataDownloadDates', this.drawDownloadsChart);
 				this.listenTo(MetacatUI.statsModel, 'change:dataDownloadDates',     this.drawDownloadsChart);
 				this.listenTo(MetacatUI.statsModel, 'change:downloadDates',     this.drawDownloadsChart);
+				this.listenTo(MetacatUI.statsModel, "change:dataUpdateDates",       this.drawUpdatesChart);
+				this.listenTo(MetacatUI.statsModel, "change:totalSize",             this.drawTotalSize);	
+				this.listenTo(MetacatUI.statsModel, 'change:metadataCount', 	    this.drawTotalCount);			
+				this.listenTo(MetacatUI.statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
+				this.listenTo(MetacatUI.statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+
+				//this.listenTo(MetacatUI.statsModel, 'change:dataUploads', 	  this.drawUploadTitle);
 			}
 			
-			this.listenTo(MetacatUI.statsModel, 'change:dataUploads', 	  this.drawUploadTitle);
 			this.listenTo(MetacatUI.statsModel, 'change:downloads', 	  this.drawDownloadTitle);
-			this.listenTo(MetacatUI.statsModel, 'change:dataFormatIDs', 	  this.drawDataCountChart);
-			this.listenTo(MetacatUI.statsModel, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			this.listenTo(MetacatUI.statsModel, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
 			
+			// mdq
+			this.listenTo(MetacatUI.statsModel, 'change:mdqStats',	  	  this.drawMdqStats);
+			
+			this.listenTo(MetacatUI.statsModel, "change:totalCount", this.showNoActivity);
+
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
 			
@@ -129,7 +138,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(metadataCount){
 				var svgClass = "metadata";
 			}
-			else if(!statsModel.get('metadataCount') && MetacatUI.statsModel.get('dataCount')){	//Are we drawing a blank chart (i.e. 0 data objects found)?
+			else if(!MetacatUI.statsModel.get('metadataCount') && MetacatUI.statsModel.get('dataCount')){	//Are we drawing a blank chart (i.e. 0 data objects found)?
 				var svgClass = "metadata default";
 			}
 			else if(!MetacatUI.statsModel.get('metadataCount') && !MetacatUI.statsModel.get('dataCount'))
@@ -174,6 +183,41 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.$('.format-charts-metadata').html(donut.render().el); 
 		},
 		
+		drawFirstUpload: function(){
+			
+			var className = "";
+			
+			if( !MetacatUI.statsModel.get("firstUpload") ){
+				var chartData = [{ 
+				              	  count: "N/A", 
+				              	  className: "packages no-activity"
+	                			}];
+			}
+			else{
+				var firstUpload = new Date(MetacatUI.statsModel.get("firstUpload")),
+					readableDate = firstUpload.toDateString();
+			
+				readableDate = readableDate.substring(readableDate.indexOf(" ") + 1);
+			
+				var chartData = [{ 
+				              	  count: readableDate, 
+				              	  className: "packages"
+	                			}];	
+			}
+			
+			//Create the circle badge
+			var dateBadge = new CircleBadge({
+				id: "first-upload-badge",
+				data: chartData,
+				title: "first upload",
+				titlePlacement: "inside",
+				useGlobalR: true,
+				globalR: 100
+			});			
+			
+			this.$("#first-upload").html(dateBadge.render().el);
+		},
+			
 		//drawUploadChart will get the upload stats from the stats model and draw a time series cumulative chart
 		drawUploadChart: function(){
 			//Get the width of the chart by using the parent container width
@@ -308,6 +352,151 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 		
 		/*
+		 * drawTotalCount - draws a simple count of total metadata files/datasets
+		 */
+		drawTotalCount: function(){
+			
+			var className = "";
+			
+			if( !MetacatUI.statsModel.get("metadataCount") && !MetacatUI.statsModel.get("dataCount") )
+				className += " no-activity";
+			
+			var chartData = [{ 
+	                    	  count: MetacatUI.statsModel.get("metadataCount"), 
+	                    	  className: "packages" + className
+			                }];
+			
+			//Create the circle badge
+			var countBadge = new CircleBadge({
+				id: "total-datasets-title",
+				data: chartData,
+				title: "datasets",
+				titlePlacement: "inside",
+				useGlobalR: true,
+				globalR: 100,
+				height: 220
+			});
+			
+			this.$('#total-datasets').html(countBadge.render().el);
+		},
+		
+		/*
+		 * drawTotalSize draws a CircleBadgeView with the total file size of 
+		 * all current metadata and data files
+		 */
+		drawTotalSize: function(){
+			
+			if( !MetacatUI.statsModel.get("totalSize") ){
+				var chartData = [{ 
+              	  				  count: "0 bytes", 
+				              	  className: "packages no-activity"
+	                			}];
+	
+			}
+			else{				
+				var chartData = [{ 
+		                    	  count: this.bytesToSize( MetacatUI.statsModel.get("totalSize") ), 
+		                    	  className: "packages"
+				                }];				
+			}
+			
+			//Create the circle badge
+			var sizeBadge = new CircleBadge({
+				id: "total-size-title",
+				data: chartData,
+				title: "of content",
+				titlePlacement: "inside",
+				useGlobalR: true,
+				globalR: 100,
+				height: 220
+			});
+			
+			this.$('#total-size').html(sizeBadge.render().el);
+		},
+		
+		/*
+		 * drawUpdatesChart - draws a line chart representing the latest updates over time
+		 */
+		drawUpdatesChart: function(){
+			
+			//If there was no first upload, draw a blank chart and exit
+			if(!MetacatUI.statsModel.get('firstUpdate')){
+				
+				var lineChartView = new LineChart(
+						{	  id: "updates-chart",
+						 	yLabel: "files updated",
+						 frequency: 0,
+						 cumulative: false,
+						 	 width: this.$('.metadata-updates-chart').width()
+						});
+				
+				this.$('.metadata-updates-chart').html(lineChartView.render().el);
+					
+				return;
+			}
+				
+			//Set the frequency of our points
+			var frequency = 12;
+													
+			//If there isn't a lot of points to graph, draw points more frequently on the line
+			if(MetacatUI.statsModel.get("metadataUpdateDates").length < 40) frequency = 1;
+			
+			//Create the line chart for metadata updates
+			var metadataLineChart = new LineChart(
+					{	  data: MetacatUI.statsModel.get('metadataUpdateDates'),
+		  formatFromSolrFacets: true,
+					cumulative: false,
+							id: "updates-chart",
+					 className: "metadata",
+					 	yLabel: "metadata files updated",
+					// frequency: frequency, 
+						radius: 2,
+						width: this.$('.metadata-updates-chart').width(),
+					    labelDate: "M-y"
+					});
+			
+			this.$('.metadata-updates-chart').html(metadataLineChart.render().el);
+
+			//Only draw the data updates chart if there was at least one uploaded
+			if(MetacatUI.statsModel.get("dataCount")){
+				//Create the line chart for data updates
+				var dataLineChart = new LineChart(
+						{	  data: MetacatUI.statsModel.get('dataUpdateDates'),
+			  formatFromSolrFacets: true,
+						cumulative: false,
+								id: "updates-chart",
+						 className: "data",
+						 	yLabel: "data files updated",
+						// frequency: frequency, 
+							radius: 2,
+							width: this.$('.data-updates-chart').width(),
+						    labelDate: "M-y"
+						});
+				
+				this.$('.data-updates-chart').html(dataLineChart.render().el);
+
+			}
+			else{
+				//Create the line chart for data updates
+				var dataLineChart = new LineChart(
+						{	  data: null,
+			  formatFromSolrFacets: true,
+						cumulative: false,
+								id: "updates-chart",
+						 className: "data no-activity",
+						 	yLabel: "data files updated",
+						// frequency: frequency, 
+							radius: 2,
+							width: this.$('.data-updates-chart').width(),
+						    labelDate: "M-y"
+						});
+				
+				this.$('.data-updates-chart').html(dataLineChart.render().el);
+			}
+			
+		},
+		
+		/*
 		 * drawDownloadsChart - draws a line chart representing the downloads over time
 		 */
 		drawDownloadsChart: function(){
@@ -356,7 +545,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('#downloads-title').html("<h2 class='packages fallback'>" + MetacatUI.vappView.commaSeparateNumber(MetacatUI.statsModel.get('downloads')) + "</h2>");
+				this.$('#downloads-title').html("<h2 class='packages fallback'>" + MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get('downloads')) + "</h2>");
 				
 				return;
 			}
@@ -446,6 +635,162 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Find the year range element
 			this.$('#data-coverage-year-range').text(yearRange);
+		},
+		
+		drawMdqStats: function() {
+			if (!MetacatUI.statsModel.get("mdqStats")) {
+				return;
+			}
+			if (!MetacatUI.statsModel.get("mdqStatsTotal")) {
+				return;
+			}
+			var mdqCompositeStats= MetacatUI.statsModel.get("mdqStats").mdq_composite_d;
+			
+			var mdqTotalStats = MetacatUI.statsModel.get("mdqStatsTotal").mdq_composite_d;
+			
+			if (mdqTotalStats && mdqTotalStats.mean && mdqCompositeStats && mdqCompositeStats.mean) {
+				var diff = mdqCompositeStats.mean - mdqTotalStats.mean;
+				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
+				
+				if (diff < 0) {
+					$("#mdq-percentile-container").text("Below repository average");
+					$("#mdq-percentile-icon").addClass("icon-thumbs-down");
+				}
+				if (diff > 0) {
+					$("#mdq-percentile-container").text("Above repository average");
+					$("#mdq-percentile-icon").addClass("icon-thumbs-up");
+				}
+				if (diff == 0) {
+					$("#mdq-percentile-container").text("At repository average");
+					$("#mdq-percentile-icon").addClass("icon-star");
+				}
+				
+				// for the box plot
+				// top arrow for this view
+				$("#mdq-score-num").text((mdqCompositeStats.mean*100).toFixed(0) + "%");
+				$("#mdq-score").css(
+				{
+					  "margin-left": (mdqCompositeStats.mean*100).toFixed(0) + "%"
+				});
+				// the range
+				$("#mdq-box").css(
+				{
+					"width": ((mdqCompositeStats.max - mdqCompositeStats.min) * 100).toFixed(0) + "%",
+					"margin-left": (mdqCompositeStats.min*100).toFixed(0) + "%"
+				});
+				$("#mdq-box").attr("data-content", mdqCompositeStats.count + " scores range from " + (mdqCompositeStats.min*100).toFixed(0) + "%" + " to " + (mdqCompositeStats.max*100).toFixed(0) + "%");
+				// the bottom arrow for repo
+				$("#mdq-repo-score-num").text((mdqTotalStats.mean*100).toFixed(0) + "%");
+				$("#mdq-repo-score").css(
+				{
+					  "margin-left": (mdqTotalStats.mean*100).toFixed(0) + "%"
+				});
+	
+			}
+			
+			// now draw the chart
+			this.drawMdqFacets();
+
+		},
+		
+		drawMdqFacets: function() {
+			
+			var mdqCompositeStats= MetacatUI.statsModel.get("mdqStats").mdq_composite_d;
+			
+			if (mdqCompositeStats) {
+				// keys are the facet values, values are the stats (min, max, mean, etc...)
+				var datasourceFacets = mdqCompositeStats.facets.mdq_metadata_datasource_s || {};
+				var formatIdFacets = mdqCompositeStats.facets.mdq_metadata_formatId_s || {};
+				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s || {};
+				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s || {};
+				var funderFacets = mdqCompositeStats.facets.mdq_metadata_funder_sm || {};
+				var groupFacets = mdqCompositeStats.facets.mdq_metadata_group_sm || {};
+							
+				if(!Object.keys(datasourceFacets).length && 
+						!Object.keys(formatIdFacets).length &&
+						!Object.keys(rightsHolderFacets).length &&
+						!Object.keys(suiteIdFacets).length &&
+						!Object.keys(funderFacets).length &&
+						!Object.keys(groupFacets).length)
+					return;
+					
+				//this.drawMdqChart(datasourceFacets);
+				//this.drawMdqChart(rightsHolderFacets);
+				this.drawMdqChart(_.extend(formatIdFacets, datasourceFacets, suiteIdFacets, funderFacets, groupFacets));
+
+				//Unhide the quality chart
+				$("#quality-chart").show();
+			}
+		},
+		
+		//Draw a bar chart for the slice
+		drawMdqChart: function(data){
+			
+			//Get the width of the chart by using the parent container width
+			var parentEl = this.$('.mdq-chart');
+			var width = parentEl.width() || null;			
+			
+			var options = {
+					data: data,
+					formatFromSolrFacets: true,
+					solrFacetField: "mean",
+					id: "mdq-slice-chart",
+					yLabel: "mean score",
+					yFormat: d3.format(",%"),
+					barClass: "packages",
+					roundedRect: true,
+					roundedRadius: 10,
+					barLabelClass: "packages",
+					width: width
+				};
+			
+			var barChart = new BarChart(options);
+			parentEl.html(barChart.render().el);
+			
+		},
+		
+		/*
+		 * Shows that this person/group/node has no activity
+		 */
+		showNoActivity: function(){
+			this.$(".show-loading .loading").remove();
+			
+			this.$el.addClass("no-activity");
+		},
+		
+				/**
+		 * Convert number of bytes into human readable format
+		 *
+		 * @param integer bytes     Number of bytes to convert
+		 * @param integer precision Number of digits after the decimal separator
+		 * @return string
+		 */
+		bytesToSize: function(bytes, precision){
+		    var kilobyte = 1024;
+		    var megabyte = kilobyte * 1024;
+		    var gigabyte = megabyte * 1024;
+		    var terabyte = gigabyte * 1024;
+
+		    if(typeof bytes === "undefined") var bytes = this.get("size");
+
+		    if ((bytes >= 0) && (bytes < kilobyte)) {
+		        return bytes + ' B';
+
+		    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+		        return (bytes / kilobyte).toFixed(precision) + ' KB';
+
+		    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+		        return (bytes / megabyte).toFixed(precision) + ' MB';
+
+		    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+		        return (bytes / gigabyte).toFixed(precision) + ' GB';
+
+		    } else if (bytes >= terabyte) {
+		        return (bytes / terabyte).toFixed(precision) + ' TB';
+
+		    } else {
+		        return bytes + ' B';
+		    }
 		},
 		
 		onClose: function () {			

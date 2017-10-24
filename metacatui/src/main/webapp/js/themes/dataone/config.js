@@ -1,6 +1,6 @@
-﻿MetacatUI.theme = MetacatUI.theme || "default";
+MetacatUI.theme = MetacatUI.theme || "default";
 MetacatUI.themeTitle = "DataONE Data Catalog"; 
-MetacatUI.themeMap = 
+MetacatUI.themeMap =
 {
 	'*': {
 		// example overrides are provided here
@@ -10,9 +10,9 @@ MetacatUI.themeMap =
 		'templates/about.html' : 'themes/' + MetacatUI.theme + '/templates/about.html',
 		'templates/alert.html' : 'themes/' + MetacatUI.theme + '/templates/alert.html',
 		'templates/dataSource.html' : 'themes/' + MetacatUI.theme + '/templates/dataSource.html',
+		'templates/login.html' : 'themes/' + MetacatUI.theme + '/templates/login.html',
 		'templates/resultsItem.html' : 'themes/' + MetacatUI.theme + '/templates/resultsItem.html',
 		'templates/noResults.html' : 'themes/' + MetacatUI.theme + '/templates/noResults.html',
-		'templates/userProfileMenu.html' : 'themes/' + MetacatUI.theme + '/templates/userProfileMenu.html',
 		'models/AppModel' : 'js/themes/' + MetacatUI.theme + '/models/AppModel.js',
 		'models/Search' : 'js/themes/' + MetacatUI.theme + '/models/Search.js',
 		'routers/router' : 'js/themes/' + MetacatUI.theme + '/routers/router.js'

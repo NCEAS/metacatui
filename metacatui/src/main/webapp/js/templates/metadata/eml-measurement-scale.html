@@ -1,33 +1,33 @@
-<div class="row-fluid" data-category="measurementScale">
-	<h5>Category <span class="required-icon">*</span></h5>
-	<p class="notification"></p>
+<div class="row-fluid category-container" data-category="measurementScale">
+	<h5>Category <span class="required-icon"></span></h5>
+	<p class="notification" data-category="measurementScale"></p>
 	<label class="radio">
 		  <input type="radio" name="measurementScale" data-category="measurementScale" 
 		  value="nominal" class="category"
 		  />
-		  Unordered (statistically nominal) - unordered categories or text 
+		  Categorical (unordered) - unordered categories or text 
 		  <span class="subtle"> e.g. male, female </span>
 	</label>
 	<label class="radio">
 		  <input type="radio" name="measurementScale" data-category="measurementScale" 
 		  value="ordinal" class="category" 
 		  />
-		  Ordered (statistically ordinal) - ordered categories
-		  <span class="subtle"> e.g. low, high </span>
+		  Categorical (ordered) - ordered categories
+		  <span class="subtle"> e.g. low, medium, high </span>
 	</label>
-	<label class="radio">
+	<!-- <label class="radio">
 		  <input type="radio" name="measurementScale" data-category="measurementScale" 
 		  value="interval" class="category" 
 		  />
 		  Relative (statistically interval) - Values from a scale with equidistant points
 		  <span class="subtle"> e.g. 12.2 degrees Celsius </span>
-	</label>
+	</label> -->
 	<label class="radio">
 		  <input type="radio" name="measurementScale" data-category="measurementScale" 
 		  value="ratio" class="category" 
 		  />
-		  Absolute (statistically ratio) - Measurement scale with a meaningful zero point
-		  <span class="subtle"> e.g. 273 Kelvin </span>
+		  Numeric
+		  <span class="subtle"> e.g. 12.2 degrees Celsius </span>
 	</label>
 	<label class="radio">
 		  <input type="radio" name="measurementScale" data-category="measurementScale" 
@@ -45,20 +45,27 @@
 </div>
 
 <div class="row-fluid interval-options options well hidden">
-	<h5>Standard Unit <span class="required-icon">*</span></h5>
-	<p class="subtle">The name of a standard unit used to make this measurement</p>
-	<div class="units-container"></div>
+	<div data-category="unit">
+		<h5>Standard Unit <span class="required-icon"></span></h5>
+		<p class="subtle">The name of a standard unit used to make this measurement</p>
+		<p class="notification" data-category="unit"></p>
+		<div class="units-container"></div>
+	</div>
 </div>
 
-<div class="row-fluid ratio-options options well hidden">
-	<h5>Standard Unit <span class="required-icon">*</span></h5>
-	<p class="subtle">The name of a standard unit used to make this measurement</p>
-	<div class="units-container"></div>
+<div class="row-fluid ratio-options options well hidden" data-category="unit">
+	<div data-category="unit">
+		<h5>Standard Unit <span class="required-icon"></span></h5>
+		<p class="subtle">The name of a standard unit used to make this measurement</p>
+		<p class="notification" data-category="unit"></p>
+		<div class="units-container"></div>
+	</div>
 </div>
 
 <div class="row-fluid datetime-options options well hidden" data-category="formatString">
-	<h5>Date-Time Format <span class="required-icon">*</span></h5>
-	<p class="notification"></p>
+	<h5>Date-Time Format <span class="required-icon"></span></h5>
+	<p class="subtle">Specify the format that should be used to decode the date or time value.</p>
+	<p class="notification" data-category="formatString"></p>
 	<select data-category="formatString" class="datetime-string datetime full-width input">
 		<option value="">Choose a date-time format</option>
 		<option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2008-09-15)</option>
@@ -75,7 +82,7 @@
 	</select>
 	
 	<div class="hidden datetime-string-custom-container">
-		<h6>Custom Date-Time Format <span class="required-icon">*</span></h6>
+		<h6>Custom Date-Time Format <span class="required-icon"></span></h6>
 		<input type="text" class="datetime-string-custom datetime full-width input" data-category="formatString" placeholder="Specify a custom date-time format" /> 
 	</div>
 </div>

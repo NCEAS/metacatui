@@ -1,16 +1,17 @@
-﻿/*global define */
+/*global define */
 define(['jquery',
 		'underscore', 
 		'backbone',
 		'gmaps',
 		'models/SolrResult',
+		'views/DownloadButtonView',
 		'text!templates/loading.html',
 		'text!templates/alert.html',
 		'text!templates/attribute.html',
-		'text!templates/downloadButton.html',
 		'text!templates/dataDisplay.html',
 	 ], 				
-	function($, _, Backbone, gmaps, SolrResult, LoadingTemplate, alertTemplate, AttributeTemplate, DownloadButtonTemplate, DataDisplayTemplate) {
+	function($, _, Backbone, gmaps, SolrResult, DownloadButtonView,
+	LoadingTemplate, alertTemplate, AttributeTemplate, DataDisplayTemplate) {
 		
 	var MetadataIndexView = Backbone.View.extend({
 		
@@ -27,9 +28,7 @@ define(['jquery',
 		loadingTemplate: _.template(LoadingTemplate),
 		
 		attributeTemplate: _.template(AttributeTemplate),
-		
-		downloadButtonTemplate: _.template(DownloadButtonTemplate),
-		
+
 		alertTemplate: _.template(alertTemplate),
 				
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
@@ -46,11 +45,11 @@ define(['jquery',
 			
 			// use these to tailor the annotation ui widget
 			this.semanticFields = {
-					attribute: "sem_annotation_bioportal_sm",
-					attributeName: "sem_annotation_bioportal_sm",
-					attributeLabel: "sem_annotation_bioportal_sm",
-					attributeDescription: "sem_annotation_bioportal_sm",
-					attributeUnit: "sem_annotation_bioportal_sm",
+					attribute: "sem_annotation",
+					attributeName: "sem_annotation",
+					attributeLabel: "sem_annotation",
+					attributeDescription: "sem_annotation",
+					attributeUnit: "sem_annotation",
 					origin: "orcid_sm",
 					investigator: "orcid_sm"
 			}
@@ -62,19 +61,17 @@ define(['jquery',
 			var view = this;
 						
 			//Get all the fields from the Solr index
-			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json&json.wrf=?';
+			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json';
 			var requestSettings = {
 				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
-				jsonp: "json.wrf",
-				dataType: "jsonp",
 				success: function(data, textStatus, xhr){ 
 
 					if(data.response.numFound == 0){
 						var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 								  "<ul class='indent'>" +
-									  "<li>The content was removed because it was invalid or inappropriate.</li>" +
-									  "<li>You do not have permission to view this content.</li>" +
-									  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
+								  	  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
+									  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+									  "<li>The content was removed because it was invalid.</li>" +
 								  "</ul>";
 						view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));
 						view.flagComplete();
@@ -87,7 +84,7 @@ define(['jquery',
 							//If this is a data object and there is a science metadata doc that describes it, then navigate to that Metadata View.
 							if((doc.formatType == "DATA") && (doc.isDocumentedBy && doc.isDocumentedBy.length)){
 								view.onClose();
-								uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
+								MetacatUI.uiRouter.navigate("view/" + doc.isDocumentedBy[0], true);
 								return;
 							}
 							
@@ -152,7 +149,7 @@ define(['jquery',
 			if(this.parentView && this.parentView.model){
 				var formatId = this.parentView.model.get("formatId");
 				if(formatId.indexOf("eml://") >= 0){
-					var url = MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
+					var url = MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get("context") + MetacatUI.appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
 					
 					var requestSettings = {
 						url: url, 
@@ -261,7 +258,7 @@ define(['jquery',
 			var html = "",
 				view = this,
 				embeddedAttributes = "",
-				type = "sem_annotation_bioportal_sm";
+				type = "sem_annotation";
 			
 			// see if there is special handling for this field
 			if (this.semanticFields[attribute]) {
@@ -340,9 +337,9 @@ define(['jquery',
 				
 				var icon   = $(document.createElement("i")).addClass(icon),
 					title  = $(document.createElement("span")).text(solrResult.get("id")).addClass("title"),
-					downloadBtn = view.downloadButtonTemplate({ href: MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(solrResult.get("id")), className: "btn btn-primary" }),
+					downloadBtn = new DownloadButtonView({ model: solrResult }),
 					anchor = $(document.createElement("a")).attr("name", encodeURIComponent(solrResult.get("id"))),
-					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn);
+					header = $(document.createElement("h4")).append(anchor).append(icon).append(title).append(downloadBtn.render().el);
 				
 				//Create the section
 				var entityDetailsSection = view.formatAttributeSection(solrResult, keys, header, "entitydetails")

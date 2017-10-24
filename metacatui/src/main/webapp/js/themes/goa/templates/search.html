@@ -8,31 +8,42 @@
     	    	<div class="row-fluid">
 		    		<h2 class="nav-header span4">Filters</h2>
 		    		<a class="span7" id="clear-all">Clear all <i class="icon-remove icon"></i></a>
+			    	<ul id="current-all-filters" class="current-filters" data-category="all"></ul>
+			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute"></ul>
+			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator"></ul>
+					<ul id="current-id-filters" class="current-filters" data-category="id"></ul>
+					<ul id="current-taxon-filters" class="current-filters" data-category="taxon"></ul>
+					<ul id="current-spatial-filters" class="current-filters" data-category="spatial"></ul>
 				</div>
 				<div class="input-append filter-contain">
 					<input class="span10 filter" type="text" placeholder="Filter by anything" id="all_input" data-category="all">
 					<button class="filter btn" id="all_btn" data-category="all"><i class="icon icon-search"></i></button>
-			    	<ul id="current-all-filters" class="current-filters" data-category="all">
-			    	</ul>
 			    </div>
 			    
 			    <div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon icon-table"></i><label>Data Attributes</label></h3>
 					<input class="span10 filter" type="text" placeholder="Variable or column name" id="attribute_input" data-category="attribute">
 					<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon icon-search"></i></button>
-			    	<ul id="current-attribute-filters" class="current-filters span12" data-category="attribute">
-			    	</ul>
 			    </div>
 				
 				<% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
-					<div class="filter-contain">
-						<h3 class="nav-header">
+				   <div class="filter-contain" id="includes-files" data-category="resourceMap">
+						<label>
 							<img src="img/data-table.png" class="icon" />
-							<input class="span1 filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (resourceMap){ print("checked"); } %> />
-							<label for="includes_data" class="popover-this" data-trigger="hover" data-content="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top">
-							Only results with data
+							<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
+								Data files
+							</span>
+						</label>
+						<div class="filter-input-contain clear" id="includes-files-buttonset">
+							<label for="includes_data">
+								<i class="icon icon-check"></i>
+								<i class="icon icon-check-empty"></i>
+								Only results with data
 							</label>
-						</h3>
+							<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ print("checked"); } %> />
+							<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
+						</div>
+						<div class="clear"></div>
 					</div>
 				<% } %>
 				
@@ -40,8 +51,6 @@
 					<h3 class="nav-header"><i class="icon icon-user"></i><label>Created by</label></h3>
 					<input class="span10 filter" type="text" placeholder="First or last name" id="creator_input" data-category="creator">
 					<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon icon-search"></i></button>
-			    	<ul id="current-creator-filters" class="current-filters span12" data-category="creator">
-			    	</ul>
 			    </div>
 	
 				
@@ -72,62 +81,21 @@
 					<h3 class="nav-header"><i class="icon icon-bullseye"></i><label>Identifier</label></h3>
 					<input class="span10 filter" type="text" placeholder="Find datasets by DOI or ID" id="id_input" data-category="id">
 					<button class="filter btn" id="id_btn" data-category="id"><i class="icon icon-search"></i></button>
-					<ul id="current-id-filters" class="current-filters" data-category="id">
-					</ul>
 				</div>
 				
 				<div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon icon-sitemap"></i><label>Taxon</label></h3>
 					<input class="span10 filter" type="text" placeholder="Phylum, class, order..." id="taxon_input" data-category="taxon">
 					<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon icon-search"></i></button>
-					<ul id="current-taxon-filters" class="current-filters" data-category="taxon">
-					</ul>
 				</div>
 				
 				<div class="input-append filter-contain">
 					<h3 class="nav-header"><i class="icon icon-map-marker span1"></i><label>Location</label></h3>
 					<input class="filter span10" type="text" placeholder="Location" id="spatial_input" data-category="spatial">
 					<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon icon-search"></i></button>
-					<ul id="current-spatial-filters" class="current-filters" data-category="spatial">
-					</ul>
 				</div>
 				
 			</div>
-			<ul class="category-nav nav-list nav">
-				<li><h2 class="nav-header span12">Data Categories</h2><div class="clear"></div></li>
-			<% if(username){
-	    		print('<li class="nav-item my-packages" data-category="additionalCriteria" data-term="rightsHolder:'+ username +'"><i class="icon icon-remove span1 remove-addtl-criteria"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="+rightsHolder:'+ username +'">My packages</a><div class="clear"></div></li>');
-	    		}
-	    	%>
-			<%
-				var keywords = [{link: "+keywords:EVOSTC", display: "EVOSTC"}, 
-								{link: "+keywords:%22Exxon%20Valdez%20Oil%20Spill%20Trustee%20Council%22", display: "Exxon Valdez Oil Spill Trustee Council"},
-								{link: "+keywords:%22Exxon%20Valdez%22", display: "Exxon Valdez"},
-								{link: "+keywords:%22Oil%20Spill%22", display: "Oil spill"},
-								{link: "+keywords:%22EVOS%20Gulf%20Watch%20Projects%22", display: "EVOS Gulf Watch Projects"},
-								{link: "+keywords:Benthic", display: "Benthic"},
-								{link: "+keywords:Pelagic", display: "Pelagic"},
-								{link: "+keywords:%22Environmental%20Drivers%22", display: "Environmental Drivers"},
-								{link: "+keywords:Birds", display: "Birds"},
-								{link: "+keywords:Fish", display: "Fish"},
-								{link: "+keywords:Imagery", display: "Imagery"},
-								{link: "+keywords:%22Invertebrates%20and%20Algae%22", display: "Invertebrates & Algae"},
-								{link: "+keywords:Mammals", display: "Mammals"},
-								{link: "+keywords:Management", display: "Management"},
-								{link: "+keywords:Modeling", display: "Modeling"},
-								{link: "+keywords:%22Ocean%20and%20Atmosphere%22", display: "Ocean and Atmosphere"},
-								{link: "+keywords:%22Oil%20and%20Contaminants%22", display: "Oil/Contaminants"},
-								{link: "+keywords:%22Satellites%20and%20Sensors%22", display: "Satellites and Sensors"},
-								{link: "+keywords:%22Shorelines%20Habitat%20and%20Sensitivity%22", display: "Shorelines (Habitat and Sensitivity)"},
-								{link: "+keywords:%22Study%20Catalogs%22", display: "Study Catalogs"},
-								{link: "+keywords:Watershed", display: "Watershed"}
-				];
-				
-				_.each(keywords, function(element, index){
-					print('<li class="nav-item" data-category="additionalCriteria" data-term="' + keywords[index].link + '"><i class="icon icon-remove span1 remove-addtl-criteria" data-category="additionalCriteria" data-term="' + keywords[index].link + '"></i><a class="keyword-search-link span11" href="" data-category="additionalCriteria" data-term="' + keywords[index].link + '">' + keywords[index].display + '</a><div class="clear"></div></li>');
-				});
-			%>
-			</ul>
 			
 		</aside>
 		

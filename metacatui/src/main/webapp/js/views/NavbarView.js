@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 
 define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/navbar.html'], 				
 	function($, _, Backbone, SignInView, NavbarTemplate) {
@@ -15,6 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',
 			         'click .show-new-search' : 'resetSearch',
+			         'click .show-new-editor' : 'resetEditor',
 			 		 'click .dropdown-menu a' : 'hideDropdown',
 			 		 	    'click .dropdown' : 'hideDropdown',
 			 		 	'mouseover .dropdown' : 'showDropdown',
@@ -24,7 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		},
 		
 		initialize: function () {
-			// listen to the appModel for changes in username
+			// listen to the MetacatUI.appModel for changes in username
 			this.listenTo(MetacatUI.appUserModel, 'change:username', this.render);
 			this.listenTo(MetacatUI.appUserModel, 'change:fullName', this.render);
 			this.listenTo(MetacatUI.appUserModel, 'change:loggedIn', this.render);
@@ -66,7 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			$("#search_txt").val('');
 			
 			//Clear the search model to start a fresh search
-			MetacatUI.appSearchModel.clear().set(appSearchModel.defaults);
+			appSearchModel.clear().set(MetacatUI.appSearchModel.defaults);
 			
 			//Create a new array with the new search term
 			var newSearch = [searchTerm];
@@ -85,6 +86,17 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		resetSearch: function(e){ 
 			e.preventDefault();
 			MetacatUI.appView.resetSearch(); 
+		},
+		
+		resetEditor: function(e){
+			e.preventDefault();
+			
+			//If we're currently on the editor view then refresh
+			if(MetacatUI.appView.currentView.type == "Editor")
+				MetacatUI.appView.showView(MetacatUI.appView.registryView);
+			//Otherwise, just navigate to it
+			else
+				MetacatUI.uiRouter.navigate("submit", { trigger: true });
 		},
 		
 		hideDropdown: function(){

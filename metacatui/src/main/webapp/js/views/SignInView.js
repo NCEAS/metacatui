@@ -1,23 +1,35 @@
-﻿/*global define */
+/*global define */
 
-define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html', 'text!templates/ldapLogin.html'], 				
-	function($, _, Backbone, fancybox, LoginTemplate, LoginButtonsTemplate, LoginOptionsTemplate, LdapLoginTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!templates/alert.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html'], 				
+	function($, _, Backbone, LoginTemplate, AlertTemplate, LoginButtonsTemplate, LoginOptionsTemplate) {
 	'use strict';
 	
 	var SignInView = Backbone.View.extend({
 		
 		template: _.template(LoginTemplate),
+		alertTemplate: _.template(AlertTemplate),
 		buttonsTemplate: _.template(LoginButtonsTemplate),
 		loginOptionsTemplate: _.template(LoginOptionsTemplate),
-		ldapLoginTemplate: _.template(LdapLoginTemplate),
 		
 		tagName: "div",
 		className: "inline-buttons sign-in-btns",
+		
+		ldapError: false,
+		
+		/* Set to true if this SignInView is the only thing on the page */
+		fullPage: false,
+		
+		/* Set to true if this SignInView is in a modal window */
+		inPlace: false,
+		
+		/*A message to display at the top of the view */
+		topMessage: "",
 		
 		initialize: function(options){
 			if(typeof options !== "undefined"){
 				this.inPlace = options.inPlace;
 				this.topMessage = options.topMessage;
+				this.fullPage = options.fullPage;
 			}
 		},
 		
@@ -83,7 +95,19 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 					view.$el.modal("hide");
 				});
 			}
-			else{			
+			else{	
+				
+				//If it's a full-page sign-in view, then empty it first
+				if(this.el == MetacatUI.appView.el || this.fullPage){
+					this.$el.empty();
+					var container = document.createElement("div");
+					container.className = "container login";
+					$(container).append(this.buttonsTemplate());
+					this.$el.append(container);					
+				}
+				else
+					this.$el.append(this.buttonsTemplate());
+				
 				//Insert the sign in popup screen once
 				if(!$("#signinPopup").length){
 					var target = encodeURIComponent(window.location.href);
@@ -96,59 +120,64 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 						signInUrlOrcid:  signInUrlOrcid,
 						signInUrlLdap:  signInUrlLdap,
 						currentUrl: window.location.href,
-						loginOptions: this.loginOptionsTemplate({ signInUrl: signInUrl }).trim()
+						loginOptions: this.loginOptionsTemplate({ signInUrl: signInUrl }).trim(),
+						collapseLdap: !MetacatUI.appUserModel.get("errorLogin"),
+						redirectUrl: (window.location.href.indexOf("#signinldaperror") > -1) ? 
+								window.location.href.replace("#signinldaperror", "") : window.location.href
 					}));
+					
+					this.setUpPopup();
 				}
-				
-				this.$el.append(this.buttonsTemplate());
+
+				//Open the Sign In modal window
+				if(this.fullPage)
+					$("#signinPopup").modal("show");
+								
+				//If there is an error message in the URL, it means authentication has failed
+				if(this.ldapError){
+					MetacatUI.appUserModel.failedLdapLogin();
+					this.failedLdapLogin();					
+				};
 			}
 			
 			return this;
 		},
 		
+		/*
+		 * This function is executed when LDAP authentication fails in the DataONE portal
+		 */
+		failedLdapLogin: function(){
+			//Insert an error message
+			$("#signinPopup form").before(this.alertTemplate({
+				classes: "alert-error",
+				msg: "Incorrect username or password. Please try again."
+			}));
+			
+			//If this is a full-page sign-in view, then take the from and insert it into the page
+			if(this.$el.attr("id") == "Content")
+				$("#Content").html( $("#ldap-login").html() );
+			//Else, just show the login in the modal window
+			else{
+				$("#signinPopup").modal("show");
+			}
+			
+			//Show the LDAP login form
+			$('#ldap-login').removeClass("collapse").css("height", "auto");
+		},
+		
 		setUpPopup: function(){
 			var view = this;
 			
-			//Initialize the fancybox elements
-			this.$(".fancybox").fancybox({
-				transitionIn: "elastic",
-				afterShow: function(){
-					$("#signinPopup a.ldap").on("click", null, view, view.showLDAPLogin);
+			//Initialize the modal elements
+			$("#signupPopup, #signinPopup").modal({
+				show: false,
+				shown: function(){
 					
 					//Update the sign-in URLs so we are redirected back to the previous page after authentication
 					$("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
 					$("a.update-orcid-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
-					$("a.update-ldap-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlLdap") + encodeURIComponent(window.location.href));
+					
 				}
-			});
-		},	
-		
-		showLDAPLogin: function(e, a){
-			e.preventDefault();
-			
-			if($(e.target).hasClass("ldap")){
-				var org = $(e.target).attr("data-value"),
-					accountType = $(e.target).attr("data-name"),
-					view = e.data;
-				
-				this.loginPopup = $("#signinPopup").children().detach();
-				
-				var ldapLogin = view.ldapLoginTemplate({
-					signInUrlLdap: MetacatUI.appModel.get("signInUrlLdap"),
-					accountType: accountType,
-					org: org				
-				});
-			}
-			else
-				window.location = MetacatUI.appModel.get("signInUrl") + window.location;
-			
-			$("#signinPopup").append(ldapLogin);
-			
-			var view = this;
-			$("#SignInLdap .back").on("click", function(e){
-				e.preventDefault();
-				
-				 $("#signinPopup").html(view.loginPopup);
 			});
 		},
 		

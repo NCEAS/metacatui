@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult', 'models/LogsSearch'], 				
 	function($, _, Backbone, SolrHeader, SolrResult, LogsSearch) {
 	'use strict';

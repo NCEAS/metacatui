@@ -1,4 +1,4 @@
-﻿MetacatUI Themes
+MetacatUI Themes
 -----------------
 All the default models, collections, views, routers, and templates required to run a default 
 Metacat UI are in the 'js/' directory.

@@ -1,4 +1,4 @@
-﻿<div class="citation">
+<div class="citation">
 </div>
 <div class="clear"></div>
 <div class="info-icons  stop-route"> 
@@ -25,7 +25,7 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" data-id="' + URLid + '" title="Click to Download" href="', package_service, URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right" data-container="#results"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download stop-route tooltip-this" download data-id="' + URLid + '" title="Click to Download" href="', MetacatUI.appModel.get('objectServiceUrl'), URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right" data-container="#results"><i class="icon icon-cloud-download stop-route"></i></a>');
 			}			
           	%>          
       </div>

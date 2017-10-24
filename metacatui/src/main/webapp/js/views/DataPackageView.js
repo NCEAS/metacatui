@@ -8,9 +8,9 @@ define([
     'models/metadata/ScienceMetadata',
     'models/metadata/eml211/EML211', 'views/DataItemView',
     'text!templates/dataPackage.html',
-    'text!templates/loading.html'], 
+    'text!templates/dataPackageStart.html'], 
     function($, _, Backbone, DataPackage, DataONEObject, ScienceMetadata, EML211, DataItemView, 
-    		DataPackageTemplate) {
+    		DataPackageTemplate, DataPackageStartTemplate) {
         'use strict';
         
         /*
@@ -26,13 +26,14 @@ define([
             id: "data-package-table",
             
             events: {
-                "click .toggle-rows" : "toggleRows" // Show/hide rows associated with event's metadata row
-                
+                "click .toggle-rows" 		   : "toggleRows", // Show/hide rows associated with event's metadata row
+                "click .message-row .addFiles" : "handleAddFiles"
             },
             
             subviews: {},
             
             template: _.template(DataPackageTemplate),
+            startMessageTemplate: _.template(DataPackageStartTemplate),
             
             // Models waiting for their parent folder to be rendered, hashed by parent id:
             // {'parentid': [model1, model2, ...]}
@@ -70,9 +71,22 @@ define([
 
                 // Listen for  add events because models are being merged
                 this.listenTo(this.dataPackage, 'add', this.addOne);
+                this.listenTo(this.dataPackage, "fileAdded", this.addOne);
 
                 // Render the current set of models in the DataPackage
                 this.addAll();
+                
+                //If this is a new data package, then display a message and button
+                if((this.dataPackage.length == 1 && this.dataPackage.models[0].isNew()) || !this.dataPackage.length){
+                	
+                	var messageRow = this.startMessageTemplate();
+                	
+                	this.$("tbody").append(messageRow);
+                	
+                	this.listenTo(this.dataPackage, "add", function(){
+                		this.$(".message-row").remove();
+                	});
+                }
 
                 return this;
             },
@@ -84,6 +98,10 @@ define([
             	if(!item) return false;
             	
                 console.log("DataPackageView.addOne called for " + item.id);
+                
+                //Don't add duplicate rows
+                if(this.$(".data-package-item[data-id='" + item.id + "']").length) 
+                	return;
                 
                 var dataItemView, scimetaParent, parentRow, delayed_models;                
                 
@@ -173,6 +191,11 @@ define([
                 this.dataPackage.sort();
                 this.dataPackage.each(this.addOne, this);
                 
+            },
+            
+            handleAddFiles: function(e){
+            	//Pass this on to the DataItemView for the root data package
+            	this.$(".data-package-item.folder").first().data("view").handleAddFiles(e);            	
             },
             
             /*

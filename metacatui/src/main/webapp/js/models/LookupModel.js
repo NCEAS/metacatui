@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'jqueryui', 'underscore', 'backbone'], 				
 	function($, $ui, _, Backbone) {
 	'use strict';
@@ -45,55 +45,12 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 						choice.desc = obj['definition'][0];
 					}
 					
-					// process the children - just one level
-					var childrenUrl = obj['links']['children'];
-					if (childrenUrl) {
-						
-						$.get(childrenUrl + "?apikey=" + appModel.get("bioportalAPIKey"), function(data, textStatus, xhr) {
-							
-							_.each(data.collection, function(obj) {
-								var choice = {};
-								choice.label = obj['prefLabel'];
-								var synonyms = obj['synonym'];
-								if (synonyms) {
-									choice.synonyms = [];
-									_.each(synonyms, function(synonym) {
-										choice.synonyms.push(synonym);
-									});
-								}
-								choice.filterLabel = obj['prefLabel'];
-								choice.value = obj['@id'];
-								if (obj['definition']) {
-									choice.desc = obj['definition'][0];
-								}
-								
-								// mark items that we know we have matches for
-								if (allValues) {
-									var matchingChoice = _.findWhere(allValues, {value: choice.value});
-									if (matchingChoice) {
-										choice.label = "*" + choice.label;
-										
-										// remove it from the local value - why have two?
-										if (localValues) {
-											localValues = _.reject(localValues, function(obj) {
-												return obj.value == matchingChoice.value;
-											});
-										}
-									}
-								}
-								
-								availableTags.push(choice);
-
-							})
-						});
-						
-					}
-					
 					// mark items that we know we have matches for
 					if (allValues) {
 						var matchingChoice = _.findWhere(allValues, {value: choice.value});
 						if (matchingChoice) {
-							choice.label = "*" + choice.label;
+							//choice.label = "*" + choice.label;
+							choice.match = true;
 							
 							// remove it from the local value - why have two?
 							if (localValues) {
@@ -101,6 +58,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 									return obj.value == matchingChoice.value;
 								});
 							}
+							//availableTags.push(choice);
 						}
 					}
 					
@@ -118,7 +76,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			});
 		},
 		
-		bioportalExpand: function(term, response) {
+		bioportalExpand: function(term) {
 			
 			// make sure we have something to lookup
 			if (!appModel.get('bioportalSearchUrl')) {
@@ -127,9 +85,15 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			}
 			
 			var terms = [];
+			var countdown = 0;
 
 			var query = appModel.get('bioportalSearchUrl') + term;
-			$.get(query, function(data, textStatus, xhr) {
+			$.ajax(
+			{
+				url: query, 
+				method: "GET",
+				async: false, // we want to wait for the response!
+				success: function(data, textStatus, xhr) {
 			
 				_.each(data.collection, function(obj) {
 					// use the preferred label
@@ -142,13 +106,36 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 						_.each(synonyms, function(synonym) {
 							terms.push(synonym);
 						});
-					}	
-
+					}
+					// process the descendants
+					var descendantsUrl = obj['links']['descendants'];
+					//if (false) {
+					if (descendantsUrl && countdown > 0) {
+						
+						countdown--;
+						
+						$.ajax(
+						{
+						url: descendantsUrl + "?apikey=" + appModel.get("bioportalAPIKey"),
+						method: "GET",
+						async: false,
+						success: function(data, textStatus, xhr) {
+							_.each(data.collection, function(obj) {
+								var prefLabel = obj['prefLabel'];
+								var synonyms = obj['synonym'];
+								if (synonyms) {
+									_.each(synonyms, function(synonym) {
+										terms.push(synonym);
+									});
+								}
+							});
+						}
+							});
+					}
 				});
-				
-				response(terms);
-				
+			}
 			});
+			return terms;
 		},
 		
 		bioportalGetConcepts: function(uri, callback) {
@@ -163,11 +150,11 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			}
 
 			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
+			if (!appModel.get('bioportalSearchUrl')) {
 				return;
 			}
 			
-			var query = MetacatUI.appModel.get('bioportalSearchUrl') + encodeURIComponent(uri);
+			var query = appModel.get('bioportalSearchUrl') + encodeURIComponent(uri);
 			var availableTags = [];
 			var model = this;
 			$.get(query, function(data, textStatus, xhr) {
@@ -179,6 +166,14 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					if (obj['definition']) {
 						concept.desc = obj['definition'][0];
 					}
+					// add the synonyms
+					var synonyms = obj['synonym'];
+					if (synonyms) {
+						concept.synonyms = [];
+						_.each(synonyms, function(synonym) {
+							concept.synonyms.push(synonym);
+						});
+					}
 					
 					concepts.push(concept);
 
@@ -187,6 +182,68 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 
 				callback(concepts);
 			});
+		},
+
+		bioportalGetConceptsBatch: function(uris, callback) {
+			
+			// make sure we have something to lookup
+			if (!appModel.get('bioportalBatchUrl')) {
+				return;
+			}
+			// prepare the request JSON
+			var batchData = {};
+			batchData["http://www.w3.org/2002/07/owl#Class"] = {};
+			batchData["http://www.w3.org/2002/07/owl#Class"]["display"] = "prefLabel,synonym,definition";
+			batchData["http://www.w3.org/2002/07/owl#Class"]["collection"] = [];
+			_.each(uris, function(uri) {
+				var item = {};
+				item["class"] = uri;
+				item["ontology"] = "http://data.bioontology.org/ontologies/ECSO";
+				batchData["http://www.w3.org/2002/07/owl#Class"]["collection"].push(item);
+			});
+			
+			var url = appModel.get('bioportalBatchUrl');
+			var model = this;
+			$.ajax(url,
+					{
+					method: "POST",	
+					//url: url, 
+					data: JSON.stringify(batchData),
+					contentType: "application/json",
+					headers: {
+						"Authorization": "apikey token="+ appModel.get("bioportalAPIKey")
+					},
+					error: function(e) {
+						console.log(e);
+					},
+					success: function(data, textStatus, xhr) {
+			
+						_.each(data["http://www.w3.org/2002/07/owl#Class"], function(obj) {
+							var concept = {};
+							concept.label = obj['prefLabel'];
+							concept.value = obj['@id'];
+							if (obj['definition']) {
+								concept.desc = obj['definition'][0];
+							}
+							// add the synonyms
+							var synonyms = obj['synonym'];
+							if (synonyms) {
+								concept.synonyms = [];
+								_.each(synonyms, function(synonym) {
+									concept.synonyms.push(synonym);
+								});
+							}
+							
+							var conceptList = [];
+							conceptList.push(concept);
+							model.get('concepts')[concept.value] = conceptList;
+		
+						});
+
+						callback.apply();
+					}
+				});
+			
 		},
 		
 		orcidGetConcepts: function(uri, callback) {
@@ -201,11 +258,11 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			}
 			
 			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
+			if (!appModel.get('bioportalSearchUrl')) {
 				return;
 			}
 			
-			var query = MetacatUI.appModel.get('orcidBaseUrl')  + uri.substring(uri.lastIndexOf("/"));
+			var query = appModel.get('orcidBaseUrl')  + uri.substring(uri.lastIndexOf("/"));
 			var model = this;
 			$.get(query, function(data, status, xhr) {
 				// get the orcid info
@@ -232,7 +289,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		orcidSearch: function(request, response, more, ignore) {
 			
 			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
+			if (!appModel.get('bioportalSearchUrl')) {
 				response(more);
 				return;
 			}
@@ -241,7 +298,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			
 			if(!ignore) var ignore = [];
 			
-			var query = MetacatUI.appModel.get('orcidSearchUrl') + request.term;
+			var query = appModel.get('orcidSearchUrl') + request.term;
 			$.get(query, function(data, status, xhr) {
 				// get the orcid info
 				var profile = $(data).find("orcid-profile");
@@ -279,7 +336,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				onError   = options.error   || function(){};
 			
 			$.ajax({
-				url: MetacatUI.appModel.get("orcidSearchUrl") + orcid,
+				url: appModel.get("orcidSearchUrl") + orcid,
 				type: "GET",
 				//accepts: "application/orcid+json",
 				success: function(data, textStatus, xhr){					
@@ -300,7 +357,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			});
 		},
 		
-		getGrantAutocomplete: function(request, response, beforeRequest, afterRequest){
+		getGrantAutocomplete: function(request, response){
             var term = $.ui.autocomplete.escapeRegex(request.term),
             	filterBy = "";
             
@@ -308,8 +365,6 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
             if(term.length < 3) return;
             else if(term.match(/\d/)) return; //Don't search for digit only since it's most likely a user just entering the grant number directy
             else filterBy = "keyword";
-            
-            if(beforeRequest) beforeRequest();
      
             var url = MetacatUI.appModel.get("grantsUrl") + "?" + filterBy + "=" + term + "&printFields=title,id";					
 			var requestSettings = {
@@ -323,7 +378,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					_.each(data.response.award, function(award, i){
 						list.push({ 
 							value: award.id,
-							label: award.title + " (NSF #" + award.id + ")"
+							label: award.title
 						});
 					});
 					
@@ -339,8 +394,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 	                });
 	            
 	            	response(startsWith.concat(contains));			        					
-				},
-				complete: afterRequest || null
+				}
 			}
 			
 			//Send the query
@@ -348,10 +402,10 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		},
 		
 		getGrant: function(id, onSuccess, onError){
-			if(!id || !onSuccess || !MetacatUI.appModel.get("grantsUrl")) return;
+			if(!id || !onSuccess || !appModel.get("grantsUrl")) return;
 						
 			var requestSettings = {
-					url: MetacatUI.appModel.get("grantsUrl") + "?id=" + id, 
+					url: appModel.get("grantsUrl") + "?id=" + id, 
 					success: function(data, textStatus, xhr){
 						if(!data || !data.response || !data.response.award || !data.response.award.length){
 							if(onError) onError();

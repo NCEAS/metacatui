@@ -341,8 +341,7 @@ footer{
   box-shadow: none;
 
 }
-.btn,
-.annotator-editor a{
+.btn {
 	border: 1px solid #1C6E84;
     background-image: none;
     color: #1C6E84;
@@ -446,10 +445,10 @@ i.glyphicons-icon.white {
 .icon-circle-badge{
 	background-color: #1C6E84;
 }
-.annotator-widget::after,
+/*.annotator-widget::after,
 .annotator-widget a::after{
 	background-image: url('../img/annotator-icons.png');
-}
+}*/
    
 
 /* TABLES 
@@ -466,6 +465,9 @@ tr.table-header{
 }
 tr.table-header th{
 	text-align: center;
+}
+.table-header a {
+    color: #FFF;
 }
 .table-header .subtle {
     color: #D9E4EC;
@@ -678,48 +680,36 @@ table th.btn-container .btn{
     visibility: hidden;
     margin-top: -1px;
 }	
-#Navbar .dropdown-menu li:hover .sub-menu {
+.dropdown-menu li:hover .sub-menu {
     visibility: visible;
 }
-
-#Navbar .dropdown:hover .dropdown-menu {
+.dropdown:hover .dropdown-menu{
     display: block;
-}
-	
-#Navbar.dropdown:hover .dropdown-menu.hidden,
-#Navbar .dropdown-menu.hidden {
+}	
+.dropdown:hover .dropdown-menu.hidden,
+.dropdown-menu.hidden{
 	display: none;
-}
-
+}	
 .nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
     margin-top: 0;
 }
-
-.dropdown-header {
+   .dropdown-header{
 	margin-left: 20px;
 	font-size: 12px;
 	text-transform: uppercase;
 }
-
 .navbar .nav>li>.dropdown-menu:before,
 .navbar .nav>li>.dropdown-menu:after{
 	display: none;
 }
+
 /** The login form from the navbar **/
-.fancybox-inline{
-	width: 315px;
+.sign-in .divider-text {
+    margin-top: 30px;
+    font-weight: bold;
 }
-.fancybox-inline > a{
-	color: rgb(102, 0, 51);
-}
-.fancybox-inline .alert{
-	width: auto;
-	width: calc(100% - 73px);
-	margin-left: auto;
-	margin-right: auto;
-	margin-bottom: 10px;
-	font-size: .9em;
-}
+
+
 .list-group > .divider {
   list-style: none;
   border-bottom: 1px solid #DDD;
@@ -794,9 +784,6 @@ ul.tb-megamenu-subnav{
     
 /* OTHER NAVIGATION
 -------------------------------------------------- */
-.breadcrumb{
-	width: 93%;
-}
 .breadcrumb > .home,
 .breadcrumb > li.home + li:before{ /*Hide the "Home" breadcrumb link and its divider */
 	display: none;
@@ -854,6 +841,10 @@ label.control-label{
 
 #Metadata .nav > li > a:hover{
 	text-shadow: none;
+}
+
+.service-table td.service-endpoint input{
+	border-color: #146660;
 }
 
 .search-results a.btn{
@@ -970,6 +961,12 @@ label.control-label{
 .annotation.tag {
 	background-color: #1C6E84;
 	color: #FFF;
+}
+
+.annotator-adder {
+	opacity: 0.0;
+	pointer-events: none;
+	
 }
     
 /* Registry CSS
@@ -1361,11 +1358,14 @@ label.control-label{
     	overflow: hidden;
     	white-space: nowrap;
     	text-overflow: ellipsis;
+    }
+    
+    li.ui-menu-item > a {
     	color: #555555;
     	width: 245px;
     }
 	
-    li.ui-menu-item div:hover,
+    li.ui-menu-item > a:hover,
     .ui-state-focus {
     	cursor: pointer;
     	text-decoration: none;
@@ -1503,7 +1503,6 @@ label.control-label{
     
     .popover{
     	font-size: 13px;
-    	z-index: 9999;
     }
     
     .popover-title {
@@ -1684,14 +1683,11 @@ label.control-label{
   .profile .chart-title{
 	width: 280px;
   }
-  .profile .chart{
-	width: 735px;
-  }
   .profile-title:empty{
   	display: none;
   }
   
-.profile .charts > svg{
+  .profile .charts > svg{
   	margin-left: auto;
   	margin-right: auto;
   	display: block;
@@ -1725,6 +1721,7 @@ svg .packages,
 .profile .packages{
 	color: #FF6633;
 	fill: #FF6633;
+	stroke: #FF6633;
 }
 
 .profile .bar-label.packages{
@@ -2333,6 +2330,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  
  pre{
 	 padding: 10px;
+	 background-color: #1C6E84; /*IE 8 fallback*/ 
+	background: rgba(22,97,148,0.7);
+	color: #FFFFFF;
 	font-size: 15px;
 	border-radius: 5px;
 	-moz-border-radius: 5px;

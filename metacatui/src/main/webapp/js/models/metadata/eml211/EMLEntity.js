@@ -16,40 +16,43 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
         	type: "EMLEntity",
 
             /* Attributes of any entity */
-            defaults: {
-
-                /* Attributes from EML */
-                xmlID: null, // The XML id of the entity
-                alternateIdentifier: [], // Zero or more alt ids
-                entityName: null, // Required, the name of the entity
-                entityDescription: null, // Description of the entity
-                physical: [], // Zero to many EMLPhysical objects
-                coverage: [], // Zero to many EML{Geo|Taxon|Temporal}Coverage objects
-                methods: null, // Zero or one EMLMethod object
-                additionalInfo: [], // Zero to many EMLText objects
-                attributeList: [], // Zero to many EMLAttribute objects
-                constraint: [], // Zero to many EMLConstraint objects
-                references: null, // A reference to another EMLEntity by id (needs work)
-                
-                //Temporary attribute until we implement the eml-physical module
-                downloadID: null,
-                formatName: null,
-                
-                /* Attributes not from EML */
-                nodeOrder: [ // The order of the top level XML element nodes
-                    "alternateIdentifier",
-                    "entityName",
-                    "entityDescription",
-                    "physical",
-                    "coverage",
-                    "methods",
-                    "additionalInfo",
-                    "attributeList",
-                    "constraint"
-                ],
-                parentModel: null, // The parent model this entity belongs to
-                objectXML: null, // The serialized XML of this EML entity
-                objectDOM: null  // The DOM of this EML entity
+            defaults: function(){
+            	return {
+	                /* Attributes from EML */
+	                xmlID: null, // The XML id of the entity
+	                alternateIdentifier: [], // Zero or more alt ids
+	                entityName: null, // Required, the name of the entity
+	                entityDescription: null, // Description of the entity
+	                physical: [], // Zero to many EMLPhysical objects
+	                physicalMD5Checksum: null,
+	                physicalSize: null,
+	                coverage: [], // Zero to many EML{Geo|Taxon|Temporal}Coverage objects
+	                methods: null, // Zero or one EMLMethod object
+	                additionalInfo: [], // Zero to many EMLText objects
+	                attributeList: [], // Zero to many EMLAttribute objects
+	                constraint: [], // Zero to many EMLConstraint objects
+	                references: null, // A reference to another EMLEntity by id (needs work)
+	                
+	                //Temporary attribute until we implement the eml-physical module
+	                downloadID: null,
+	                formatName: null,
+	                
+	                /* Attributes not from EML */
+	                nodeOrder: [ // The order of the top level XML element nodes
+	                    "alternateIdentifier",
+	                    "entityName",
+	                    "entityDescription",
+	                    "physical",
+	                    "coverage",
+	                    "methods",
+	                    "additionalInfo",
+	                    "attributeList",
+	                    "constraint"
+	                ],
+	                parentModel: null, // The parent model this entity belongs to
+	                objectXML: null, // The serialized XML of this EML entity
+	                objectDOM: null  // The DOM of this EML entity
+            	}
             },
 
             /*
@@ -83,6 +86,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     "change:constraint " +
                     "change:references",
                     EMLEntity.trickleUpChange);
+                
             },
 
             /*
@@ -97,23 +101,15 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
              */
             parse: function(attributes, options) {
                 var $objectDOM;
+                var objectDOM = attributes.objectDOM;
                 var objectXML = attributes.objectXML;
 
                 // Use the cached object if we have it
-                if ( ! objectXML ) {
-                    if ( this.get("objectXML") ) {
-                        objectXML = this.get("objectXML");
-
-                    } 
-                    else if(attributes.objectDOM){
-                    	objectXML = attributes.objectDOM.outerHTML;
-                    }
-                    else {
-                        return {};
-                    }
+                if ( objectDOM ) {
+                    $objectDOM = $(objectDOM);
+                } else if ( objectXML ) {
+                    $objectDOM = $(objectXML);
                 }
-
-                $objectDOM = $(objectXML);
 
                 // Add the XML id
                 attributes.xmlID = $objectDOM.attr("id");
@@ -131,6 +127,16 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // Add the entityDescription
                 attributes.entityDescription = $objectDOM.children("entitydescription").text();
 
+                //Get some physical attributes from the EMLPhysical module
+                var physical = $objectDOM.find("physical");
+                if(physical){
+                	attributes.physicalSize = physical.find("size").text();
+                	
+                	var checksumType = physical.find("authentication").attr("method");
+                	if(checksumType == "MD5")
+                		attributes.physicalMD5Checksum = physical.find("authentication").text();
+                }
+                
                 attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM[0];
                 
@@ -159,11 +165,10 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     _.each(attributeList[0].children, function(attr) {
                         attribute = new EMLAttribute(
                             {
-                            	objectXML: attr.outerHTML,
-                            	parentModel: this
-                            },
-                            options
-                        );
+                                objectDOM: attr,
+                                objectXML: attr.outerHTML,
+                                parentModel: this
+                            }, options);
                         // Can't use this.addAttribute() here (no this yet)
                         attributes.attributeList.push(attribute);
                     }, this);
@@ -182,14 +187,18 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 } else {
                     this.get("attributeList").splice(index, attribute);
                 }
+                
+                this.trigger("change:attributeList");
             },
 
             /*
              * Remove an attribute from the attributeList
              */
-            removeAttribute: function(attribute) {
-                var attrIndex = this.get("attributeList").indexOf(attribute);
-                this.get("attributeList").splice(attrIndex, 1);
+            removeAttribute: function(attribute, index) {
+            	if(!index)
+            		var attrIndex = this.get("attributeList").indexOf(attribute);
+                
+            	this.get("attributeList").splice(attrIndex, 1);
             },
 
             /* Validate the top level EMLEntity fields */
@@ -205,6 +214,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
             /* Copy the original XML and update fields in a DOM object */
             updateDOM: function(objectDOM) {
+                var nodeToInsertAfter;
                 var type = this.get("type") || "otherEntity";
                 if ( ! objectDOM ) {
                     objectDOM = this.get("objectDOM");
@@ -222,7 +232,6 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // This is new, create it
                 } else {
                     objectDOM = document.createElement(type);
-
                 }
 
                 // update the id attribute
@@ -254,12 +263,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         $(objectDOM).find("entityName").text(this.get("entityName"));
 
                     } else {
-                        var insertAfter = this.getEMLPosition(objectDOM, "entityName");
-                        
-                        if(!insertAfter)
-                        	objectDOM.append($(document.createElement("entityName")).text(this.get("entityName")));
-                        else	
-                            insertAfter.after($(document.createElement("entityName")).text(this.get("entityName")));
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "entityName");
+                        if ( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("entityName"))
+                                .text(this.get("entityName"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after($(document.createElement("entityName"))
+                                .text(this.get("entityName"))[0]);
+                        }
                     }
                 }
 
@@ -269,12 +280,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         $(objectDOM).find("entityDescription").text(this.get("entityDescription"));
 
                     } else {
-                        var insertAfter = this.getEMLPosition(objectDOM, "entityDescription");
-                        
-                        if(!insertAfter)
-                        	objectDOM.append($(document.createElement("entityDescription")).text(this.get("entityName")));
-                        else
-                            insertAfter.after($(document.createElement("entityDescription")).text(this.get("entityName")));
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "entityDescription");
+                        if ( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("entityDescription"))
+                                .text(this.get("entityDescription"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after($(document.createElement("entityDescription"))
+                                .text(this.get("entityDescription"))[0]);
+                        }
                     }
                 }
 
@@ -302,13 +315,32 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     }
                 }
 
-                // TODO: Update the attributeList section
+                // Update the attributeList section
                 var attributeList = this.get("attributeList");
+                var attributeListInDOM = $(objectDOM).children("attributelist");
+                if ( attributeListInDOM.length ) {
+                    attributeListNode = attributeListInDOM[0];
+                    $(attributeListNode).children().remove(); // Each attr will be replaced
+                } else {
+                    attributeListNode = document.createElement("attributeList");
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeList");
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(attributeListNode);
+                    } else {
+                        $(nodeToInsertAfter).after(attributeListNode);
+                    }
+                }
 
+                var updatedAttrDOM;
                 if ( attributeList.length ) {
+                    // Add each attribute
                     _.each(attributeList, function(attribute) {
-                        objectDOM = attribute.updateDOM();
-                    });
+                            updatedAttrDOM = attribute.updateDOM();
+                            $(attributeListNode).append(updatedAttrDOM);
+                    }, this);
+                } else {
+                    // Attributes are not defined, remove them from the DOM
+                    attributeListNode.remove();
                 }
 
                 // TODO: Update the constraint section
@@ -328,14 +360,14 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
                 // Append to the bottom if not found
                 if ( position == -1 ) {
-                    return $(objectDOM).children().last();
+                    return $(objectDOM).children().last()[0];
                 }
 
                 // Otherwise, go through each node in the node list and find the
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
                     if ( $(objectDOM).find( nodeOrder[i].toLowerCase() ).length ) {
-                        return $(objectDOM).find(nodeOrder[i].toLowerCase()).last();
+                        return $(objectDOM).find(nodeOrder[i].toLowerCase()).last()[0];
                     }
                 }
             },
@@ -348,15 +380,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 	        /* Let the top level package know of attribute changes from this object */
 	        trickleUpChange: function(){
 	            MetacatUI.rootDataPackage.packageModel.set("changed", true);
-	        },
-	
-	        /* Create a random id for entities */
-	        createID: function(){
-	            this.set("xmlID",
-	             Math.ceil(Math.random() *
-	             (9999999999999999 - 1000000000000000) + 1000000000000000));
 	        }
-
         });
 
         return EMLEntity;

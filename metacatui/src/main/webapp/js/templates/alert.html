@@ -1,4 +1,4 @@
-﻿<%
+<%
 if(classes === undefined){
 	var classes = "";
 }
@@ -25,10 +25,10 @@ if(includeEmail && MetacatUI.appModel.get("emailContact")){
 
 <div class="alert-container <%=containerClasses%>">
 	<div class="alert <%=classes%>">
-		<%=msg%>
-		<%=email%>
-		<% if(typeof remove != "undefined" && remove){ %>
+	<%=msg%>
+	<%=email%>
+	<% if(typeof remove != "undefined" && remove){ %>
 			<a href="#" class="close" data-dismiss="alert">&times;</a>
-		<% } %>
+	<% } %>
 	</div>
 </div>

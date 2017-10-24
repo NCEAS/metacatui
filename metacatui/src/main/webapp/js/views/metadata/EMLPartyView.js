@@ -31,7 +31,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	events: {
         		"change" 		: "updateModel",
         		"keyup .phone"  : "formatPhone",
-        		"focusout .row-fluid"      : "showRequired"
+        		"mouseover .remove" : "previewRemove",
+        		"mouseout .remove"  : "previewRemove"
         	},
         	
         	render: function(){
@@ -43,7 +44,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		//Take multiple given names and combine into one given name.
         		//TODO: Support multiple given names as an array
         		if (Array.isArray(name.givenName)) {
-					fullGivenName = _.map(name.givenName, function(name) { return name.trim(); }).join(' ');
+					fullGivenName = _.map(name.givenName, function(name) {
+							if(typeof name != "undefined" && name)
+								return name.trim();
+							else
+								return "";
+						}).join(' ');
 				}
         		
         		//Get the address object
@@ -70,16 +76,14 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	        			fax        : this.model.get("fax").length? this.model.get("fax")[0] : "",
 	        			email      : this.model.get("email").length? this.model.get("email")[0] : "",
 	        			website    : this.model.get("onlineUrl").length? this.model.get("onlineUrl")[0] : "",
-	        			userId     : Array.isArray(this.model.get("userId"))? this.model.get("userId")[0] : this.model.get("userId") || ""
-	        		}));
+	        			userId     : Array.isArray(this.model.get("userId"))? this.model.get("userId")[0] : this.model.get("userId") || "",
+	        			uniqueId   : this.model.cid
+	        		}));	        		
         		}
         		
         		//If this EML Party is new/empty, then add the new class
         		if(this.isNew){
         			this.$el.addClass("new");
-    				
-        			//When the model has all the required fields (valid), unmark this view as new
-        			this.listenTo(this.model, "valid", this.notNew);
         		}
         		
         		//Save the view and model on the element
@@ -87,12 +91,22 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         			model: this.model,
         			view: this
         		});
+        		
+        		this.$el.attr("data-category", this.model.get("type"));
+        		
+        		this.listenTo(this.model, "change", this.showValidation);
 
         		return this;
         	},
         	
         	updateModel: function(e){
         		if(!e) return false;
+        		
+        		//If this is a new EML Party, add it to the parent EML211 model
+        		if(this.isNew){
+        			this.model.mergeIntoParent();
+        			this.notNew();
+        		}
         		
         		//Get the attribute that was changed
         		var changedAttr = $(e.target).attr("data-attribute");
@@ -138,15 +152,14 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         			currentValue[position] = $(e.target).val();
         			this.model.set(changedAttr, currentValue);     
         			
-        			this.trigger("change:" + changedAttr);
+        			this.model.trigger("change:" + changedAttr);
+        			this.model.trigger("change");
         		}
         		else
         			this.model.set(changedAttr, $(e.target).val());
         		
-        		//Is this a new EML Party?
-        		if(this.isNew && this.model.isValid())
-        			this.model.mergeIntoParent();
-        		        			
+        		this.model.trickleUpChange();
+        		    		        			
         	},
         	
         	updateAddress: function(e){
@@ -182,6 +195,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 
     			//Manually trigger the change event since it's an object
         		this.model.trigger("change:address");
+        		this.model.trigger("change");
+        		
+        		this.model.trickleUpChange();
         	},
         	
         	updateName: function(e){
@@ -213,28 +229,26 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		//Update the value on the model
         		this.model.set("individualName", name);
         		
-        		//Is this a new EML Party?
-        		if(this.isNew && this.model.isValid())
-        			this.model.mergeIntoParent();
-        		
         		//Manually trigger a change on the name attribute
         		this.model.trigger("change:individualName");
+        		this.model.trigger("change");
+        		
+        		this.model.trickleUpChange();
         	},
         	
-        	showRequired: function(){
+        	showValidation: function(){
         		if(this.model.isValid()){
         			this.$(".notification").empty();
         			this.$(".error").removeClass("error");
         			return;
         		}
-        		
-        		if(this.$(".error").length) return;
-        		
+        		        		
         		if(!this.model.get("positionName")) this.$("[data-attribute='positionName']").addClass("error");
         		if(!this.model.get("organizationName")) this.$("[data-attribute='organizationName']").addClass("error");
         		if(!this.model.get("individualName") || !this.model.get("individualName").surName) this.$("[data-attribute='surName']").addClass("error");
         		
-        		this.$(".notification").html('<span class="error">Either a last name, position name, or organization name is required.</span>');
+        		this.$(".notification").text(this.model.validationError.name).addClass("error");
+        		
         	},
         	
         	// A function to format text to look like a phone number
@@ -258,6 +272,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	        }
         	        
         	        $(e.target).val(input);
+        	},
+        	
+        	previewRemove: function(){
+        		this.$("input, img, label").toggleClass("remove-preview");
         	},
 
         	/*

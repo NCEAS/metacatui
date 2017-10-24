@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections/SolrResults"], 				
 	function($, _, Backbone, JWS, SearchModel, SearchResults) {
 	'use strict';
@@ -24,6 +24,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				searchModel: null,
 				searchResults: null,
 				loggedIn: false,
+				ldapError: false, //Was there an error logging in to LDAP
 				registered: false,
 				isMemberOf: [],
 				isOwnerOf: [],
@@ -132,6 +133,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					fullName += firstName? firstName : "";
 					fullName += lastName? (" " + lastName) : "";
 					
+				if(!fullName)
+					fullName = this.getNameFromSubject(username);
+					
 				//Don't get this detailed info about basic users
 				if(!this.get("basicUser")){
 					//Get all the equivalent identities for this user
@@ -196,7 +200,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			
 			//If the accounts service is not on, flag this user as checked/completed
 			if(!MetacatUI.appModel.get("accountsUrl")){
-				this.getNameFromSubject();
+				this.set("fullName", this.getNameFromSubject());
 				this.set("checked", true);
 				return;
 			}
@@ -208,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			//Check if this is an ORCID
 			if(this.isOrcid()){
 				//Get the person's info from their ORCID bio
-				MetacatUI.appLookupModel.orcidGetBio({ 
+				appLookupModel.orcidGetBio({ 
 					userModel: this,
 					success: function(){
 						model.set("checked", true);
@@ -229,7 +233,14 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				url: url, 
 				success: function(data, textStatus, xhr) {	
 					//Parse the XML response to get user info
-					model.set(model.parseXML(data));
+					var userProperties = model.parseXML(data);
+					//Filter out all the falsey values
+					_.each(userProperties, function(v, k) {
+				      if(!v) {
+				        delete userProperties[k];
+				      }
+				    });
+					model.set(userProperties);
 					
 					 //Trigger the change events
 					model.trigger("change:isMemberOf");
@@ -246,13 +257,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 						return;
 					
 					if((xhr.status == 404) && MetacatUI.nodeModel.get("checked")){
-						model.getNameFromSubject();
+						model.set("fullName", model.getNameFromSubject());
 						model.set("checked", true);
 					}
 					else if((xhr.status == 404) && !MetacatUI.nodeModel.get("checked")){
 						model.listenToOnce(MetacatUI.nodeModel, "change:checked", function(){
 							if(!model.isNode()){
-								model.getNameFromSubject();
+								model.set("fullName", model.getNameFromSubject());
 								model.set("checked", true);
 							}
 						});
@@ -334,9 +345,11 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
 		},
 				
-		getNameFromSubject: function(){
-			var username  = this.get("username"),
+		getNameFromSubject: function(username){
+			var username  = username || this.get("username"),
 				fullName = "";
+			
+			if(!username) return;
 			
 			if((username.indexOf("uid=") > -1) && (username.indexOf(",") > -1))
 				fullName = username.substring(username.indexOf("uid=") + 4, username.indexOf(","));
@@ -352,8 +365,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			
 			//Default to the username
 			if(!fullName) fullName = this.get("fullname") || username;
-			
-			this.set("fullName", fullName);
+						
+			return fullName;
 		},
 		
 		isOrcid: function(orcid){
@@ -418,7 +431,41 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			this.set("checked", true);
 		},
 		
+		loginLdap: function(formData, success, error){
+			if(!formData || !appModel.get("signInUrlLdap")) return false;
+			
+			var model = this;
+			
+			var requestSettings = {
+				type: "POST",
+				url: MetacatUI.appModel.get("signInUrlLdap") + window.location.href, 
+				data: formData, 
+				success: function(data, textStatus, xhr){
+					if(success)
+						success(this);
+					
+					model.getToken();
+					
+					//Direct to the Ldap sign in
+					//window.location = appModel.get("signInUrlLdap") + window.location.href;
+				},
+				error: function(){
+					/*if(error)
+						error(this);
+					*/
+					model.getToken();
+				}
+			}
+			
+			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
+		},
+		
 		logout: function(){			
+			//Logout via the registry script if we are not using tokens
+			if((typeof MetacatUI.appModel.get("tokenUrl") == "undefined") || !MetacatUI.appModel.get("tokenUrl")){
+				MetacatUI.appView.registryView.logout();
+				return;
+			}
 			
 			//Construct the sign out url and redirect
 			var signOutUrl = MetacatUI.appModel.get('signOutUrl'),
@@ -484,7 +531,6 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		getToken: function(customCallback) {
-
 			var tokenUrl = MetacatUI.appModel.get('tokenUrl');
 			var model = this;
 			
@@ -496,7 +542,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				// the response should have the token
 				var payload = model.parseToken(data),
 					username = payload ? payload.userId : null,
-					fullName = payload ? payload.fullName : null,
+					fullName = payload ? payload.fullName : model.getNameFromSubject(username) || null,
 					token    = payload ? data : null,
 					loggedIn = payload ? true : false;
 
@@ -776,6 +822,12 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				}
 			}
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));			
+		},
+		
+		failedLdapLogin: function(){
+			this.set("loggedIn", false);
+			this.set("checked", true);
+			this.set("ldapError", true);
 		},
 		
 		pluckIdentityUsernames: function(){

@@ -1,4 +1,4 @@
-﻿MetacatUI.theme = MetacatUI.theme || "goa";
+MetacatUI.theme = MetacatUI.theme || "goa";
 MetacatUI.themeTitle = "Gulf of Alaska Data Portal";
 MetacatUI.themeMap = 
 {

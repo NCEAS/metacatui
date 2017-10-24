@@ -173,7 +173,24 @@
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
+
     
+/* Editor 
+-------------------------------------------------- */  
+.Editor #Content {
+    padding-top: 0px;
+}   
+    
+/* MDQ 
+-------------------------------------------------- */ 
+#mdqResult {
+	min-height: 800px;
+    margin: auto;
+    padding-bottom: 40px;
+    width: 90%;
+    max-width: 1024px;
+}    
+
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */ 
 	.controls-well {
@@ -1124,6 +1141,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-left: 20px;
 	margin-top: 30px;
 }
+.member-list .group {
+    min-width: 100px;
+}
  
   /* The universal color for data */
 svg .data,
@@ -1146,6 +1166,9 @@ svg .packages,
 .profile .packages{
 	color: #0E69A1;
 	fill: #0E69A1;
+}
+.profile .quick-stats circle{
+	stroke: #0E69A1;
 }
 .profile .bar-label.packages{
 	fill: inherit;
@@ -1425,7 +1448,7 @@ svg .no-activity,
 	}	
 	
 	.prov-chart,
-	.prov-chart .node
+	.prov-chart .node,
 	.prov-chart .connecter{
 		border-color: #006699;
 	}
@@ -1633,16 +1656,6 @@ svg .no-activity,
     	height: 0px;
     	margin: 0px;
     	padding:0px;
-    }
-    
-    input.filter{
-    	border-radius: 5px 0px 0px 5px;
-    	-webkit-border-radius: 5px 0px 0px 5px;
-    	-moz-border-radius: 5px 0px 0px 5px;
-    	border: 1px solid #AAAAAA;
-    	border-right: 0px;
-    	height: 20px;
-    	width: 75%;
     }
     
     /* Filter checkboxes */
@@ -1899,11 +1912,14 @@ svg .no-activity,
     	white-space: nowrap;
     	text-overflow: ellipsis;
     	background-color:#FFFFFF;
+    }
+    
+    li.ui-menu-item > a{
     	color: #555555;
     	width: 100%;
     }
     
-    li.ui-menu-item div:hover,
+    li.ui-menu-item > a:hover,
     .ui-state-focus
      {
         color: #006699;
@@ -2003,7 +2019,6 @@ svg .no-activity,
     /*-- Popovers --*/
     .popover{
     	font-size: 13px;
-    	z-index: 9999;
     }
     
     .popover-title {
@@ -2319,6 +2334,8 @@ svg .no-activity,
  
  pre{
 	 padding: 10px;
+	background: rgba(22,97,148,0.7);
+	color: #FFFFFF;
 	font-size: 15px;
 	border-radius: 5px;
 	-moz-border-radius: 5px;

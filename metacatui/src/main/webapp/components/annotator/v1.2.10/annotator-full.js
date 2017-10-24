@@ -490,7 +490,7 @@
       }
       return _results;
     })();
-    return "blur focus focusin focusout load resize scroll unload click dblclick\nmousedown mouseup mousemove mouseover mouseout mouseenter mouseleave\nchange select submit keydown keypress keyup error".split(/[^a-z]+/).concat(specials);
+    return "blur focus focusin focusout load resize scroll unload click dblclick mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave change select submit keydown keypress keyup error".split(/[^a-z]+/).concat(specials);
   })();
 
   Delegator._isCustomEvent = function(event) {
@@ -929,7 +929,7 @@
 
     Annotator.prototype._setupEditor = function() {
       this.editor = new Annotator.Editor();
-      this.editor.hide().on('hide', this.onEditorHide).on('save', this.onEditorSubmit).addField({
+      this.editor.hide().on('save', this.onEditorSubmit).addField({
         type: 'textarea',
         label: _t('Comments') + '\u2026',
         load: function(field, annotation) {
@@ -1249,7 +1249,7 @@
       if (event && this.selectedRanges.length) {
         return this.adder.css(Util.mousePosition(event, this.wrapper[0])).show();
       } else {
-        return this.adder.hide();
+        return this.adder.css("opacity", "0");
       }
     };
 
@@ -1286,7 +1286,7 @@
         event.preventDefault();
       }
       position = this.adder.position();
-      this.adder.hide();
+      this.adder.css("opacity", "0");
       annotation = this.setupAnnotation(this.createAnnotation());
       $(annotation.highlights).addClass('annotator-hl-temporary');
       save = function() {
@@ -1508,7 +1508,7 @@
       focus: 'annotator-focus'
     };
 
-    Editor.prototype.html = "<div class=\"annotator-outer annotator-editor\">\n  <form class=\"annotator-widget\">\n    <ul class=\"annotator-listing\"></ul>\n    <div class=\"annotator-controls\">\n      <a href=\"#cancel\" class=\"annotator-cancel\">" + _t('Cancel') + "</a>\n<a href=\"#save\" class=\"annotator-save annotator-focus\">" + _t('Save') + "</a>\n    </div>\n  </form>\n</div>";
+    Editor.prototype.html = "<div class=\"annotator-outer annotator-editor\">\n  <form class=\"annotator-widget\">\n    <ul class=\"annotator-listing\"></ul>\n    <div class=\"annotator-controls\">\n      <a href=\"#cancel\" class=\"annotator-cancel btn\">" + _t('Cancel') + "</a>\n<a href=\"#save\" class=\"annotator-save annotator-focus btn\">" + _t('Save') + "</a>\n    </div>\n  </form>\n</div>";
 
     Editor.prototype.options = {};
 
@@ -1608,7 +1608,7 @@
     Editor.prototype.checkOrientation = function() {
       var controls, list;
       Editor.__super__.checkOrientation.apply(this, arguments);
-      list = this.element.find('ul');
+      list = this.element.find('ul.annotator-listing');
       controls = this.element.find('.annotator-controls');
       if (this.element.hasClass(this.classes.invert.y)) {
         controls.insertBefore(list);
@@ -2281,7 +2281,9 @@
       } else {
         $.extend(annotation, data);
       }
-      return $(annotation.highlights).data('annotation', annotation);
+      var retAnn = $(annotation.highlights).data('annotation', annotation);
+      this.annotator.publish('annotationStored', annotation);
+      return retAnn;
     };
 
     Store.prototype.loadAnnotations = function() {

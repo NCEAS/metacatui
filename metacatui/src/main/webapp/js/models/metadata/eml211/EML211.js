@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLTemporalCoverage', 
         'models/metadata/eml211/EMLDistribution', 
         'models/metadata/eml211/EMLEntity',
+        'models/metadata/eml211/EMLDataTable',
         'models/metadata/eml211/EMLOtherEntity',
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject',
@@ -16,7 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		'models/metadata/eml211/EMLMethods'], 
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject, 
     		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, 
-    		EMLDistribution, EMLEntity, EMLOtherEntity, EMLParty, EMLProject, EMLText, EMLMethods) {
+    		EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty, 
+            EMLProject, EMLText, EMLMethods) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -46,11 +48,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            abstract: [], //array of EMLText objects
 		            keywordSets: [], //array of EMLKeywordSet objects
 		            additionalInfo: [],
-		            intellectualRights: "",
+		            intellectualRights: "This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/.",
 		            onlineDist: [], // array of EMLOnlineDist objects
 		            offlineDist: [], // array of EMLOfflineDist objects
 		            geoCoverage : [], //an array for EMLGeoCoverages
-		            temporalCoverage : null, //One EMLTempCoverage model
+		            temporalCoverage : [], //an array of EMLTempCoverage models
 		            taxonCoverage : [], //an array of EMLTaxonCoverages
 		            purpose: [],
 		            entities: [], //An array of EMLEntities
@@ -59,6 +61,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            project: null // An EMLProject object
         		});
         	},
+        	
+        	units: new Units(),
 
             initialize: function(attributes) {
                 // Call initialize for the super class
@@ -71,10 +75,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });
+                
+    			//Create a Unit collection
+                if(!this.units.length)
+                	this.createUnits();               
             },
             
-            url: function(){
-            	return MetacatUI.appModel.get("objectServiceUrl") + (this.get("id") || this.get("seriesid"));
+            url: function(options) {
+                var identifier;
+                if ( options && options.update ) {
+                    identifier = this.get("oldPid") || this.get("seriesid");
+                } else {
+                    identifier = this.get("id") || this.get("seriesid");
+                }
+                return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(identifier);
             },
             
             /*
@@ -277,10 +291,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				taxon    = $(thisNode).children("taxonomiccoverage");
             			
             			if(temporal.length){
-            				modelJSON.temporalCoverage = new EMLTemporalCoverage({ 
-        						objectDOM: temporal[0],
-        						parentModel: model
-                			});
+            				modelJSON.temporalCoverage = [];
+            				
+            				_.each(temporal, function(t){
+            					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ 
+            						objectDOM: t,
+            						parentModel: model
+                    			}));
+            				});
             			}
             						
             			if(geo.length){
@@ -370,17 +388,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 			}, {
                 				parse: true
                 			});
-            			}
-            			else{
-            				entityModel = new EMLEntity({
+                        } else if ( thisNode.localName == "datatable") {
+                            entityModel = new EMLDataTable({
+                                objectDOM: thisNode,
+                                parentModel: model
+                            }, {
+                                parse: true
+                            });
+            			} else {
+            				entityModel = new EMLOtherEntity({
                 				objectDOM: thisNode,
-                				parentModel: model
+                				parentModel: model,
+                                entityType: "application/octet-stream"
                 			}, {
                 				parse: true
                 			});
             			}
             			
-            			modelJSON["entities"].push(entityModel);            			
+            			modelJSON["entities"].push(entityModel);
             		}
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
@@ -445,7 +470,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						}
 					}
 	           	}, this);
-	           	
+				   
+				// Serialize pubDate
+				// This one is special because it has a default behavior, unlike 
+				// the others: When no pubDate is set, it should be set to
+				// the current year
+				var pubDate 	= this.get('pubDate'),
+					pubDateEl 	= document.createElement('pubdate');
+
+				datasetNode.find('pubdate').remove();
+
+				if (pubDate != null && pubDate.length > 0) {
+					$(pubDateEl).text(pubDate);
+				} else {
+					$(pubDateEl).text((new Date).getFullYear());
+				}
+
+				this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
+
 	           	// Serialize the parts of EML that are eml-text modules
 	           	var textFields = ["abstract"];
 	           	_.each(textFields, function(field){
@@ -539,8 +581,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					});
 
 					if (nonEmptyCoverages.length > 0) {
+						
+						//Create the <coverage> node if there isn't one already
 						if (datasetNode.find('coverage').length === 0) {
-							this.getEMLPosition(eml, 'coverage').after(document.createElement('coverage'));
+							var insertAfter = this.getEMLPosition(eml, 'coverage');
+							
+							if(insertAfter)
+								insertAfter.after(document.createElement('coverage'));
+							else
+								datasetNode.append(document.createElement("coverage"));
 						}
 						
 						//Get the existing taxon coverage nodes from the EML
@@ -566,11 +615,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				}
 				
 	        	//Serialize the temporal coverage
-                if ( typeof this.get("temporalCoverage") !== "undefined" && this.get("temporalCoverage") !== null ) {
-                	datasetNode.find("temporalcoverage").replaceWith(this.get("temporalCoverage").updateDOM());
-                    
-                }
-                
+				var existingTemporalCoverages = datasetNode.find("temporalcoverage");
+            		
+            	//Update the DOM of each model
+				_.each(this.get("temporalCoverage"), function(temporalCoverage, position){
+					
+					//Update the existing temporalCoverage node if it exists
+					if(existingTemporalCoverages.length-1 >= position){
+						$(existingTemporalCoverages[position]).replaceWith(temporalCoverage.updateDOM());
+					}
+					//Or, append new nodes
+					else{
+						datasetNode.find('coverage').append(temporalCoverage.updateDOM());	
+					}
+				});	 
+				
+				//Remove existing taxon coverage nodes that don't have an accompanying model
+				this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
+            
                 if(datasetNode.find("coverage").children().length == 0)
                 	datasetNode.find("coverage").remove();
                 
@@ -600,14 +662,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	
 				// Serialize methods
 				if (this.get('methods')) {
-					if(datasetNode.find('methods').length > 0) {
-						datasetNode.find('methods').remove();
-					}
 					
+					//Serialize the methods model
 					var methodsEl = this.get('methods').updateDOM();
 
-					if ($(methodsEl).children().length > 0) {
-						this.getEMLPosition(eml, "methods").after(methodsEl);
+					//Add the <methods> node to the EML
+					if (datasetNode.find('methods').length === 0){
+						var insertAfter = this.getEMLPosition(eml, "methods");
+						
+						if(insertAfter)
+							insertAfter.after(methodsEl);
+						else
+							datasetNode.append(methodsEl);
 					}
 					
 				}
@@ -633,17 +699,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());	  
 	        	
 	        	//Get the existing taxon coverage nodes from the EML
-				var existingEntities = datasetNode.find("otherEntity");
+				var existingEntities = datasetNode.find("otherEntity, dataTable");
 				
 	        	//Serialize the entities
-	        	_.each(this.get("entities"), function(entity, position){					
+	        	_.each(this.get("entities"), function(entity, position) {
 
 					//Update the existing node if it exists
-					if(existingEntities.length-1 >= position){
+					if(existingEntities.length - 1 >= position) {
 						$(existingEntities[position]).replaceWith(entity.updateDOM());
 					}
 					//Or, append new nodes
-					else{
+					else {
 						this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());	
 					}
 	        		
@@ -663,34 +729,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              */
             serializeParties: function(eml, type){
             	
+            	//Remove the nodes from the EML for this party type
+            	$(eml).find(type.toLowerCase()).remove();
+            	
+            	//Serialize each party of this type
 	           	_.each(this.get(type), function(party, i){
-	           		//Get the existing nodes in the EML
-	           		var existingNode = $(eml).find(type.toLowerCase() + "#" + party.get("xmlID"));
 	           		
-	           		if(!existingNode.length){
-	           			existingNode = $(eml).find(type.toLowerCase());
-	           			if( existingNode.length )
-	           				existingNode = existingNode.eq(i);
-	           		}
-	           			
-	           		//Update the EMLParty DOM and insert into the EML
-	           		if ( existingNode.length ) {
-	           			existingNode.replaceWith(party.updateDOM());
-                        
-	           		} else {
-	           			var insertAfter = $(eml).find(type.toLowerCase()).last();
-	           			if( !insertAfter.length ) {
-	           				insertAfter = this.getEMLPosition(eml, type);
-	           			    
-	           			}
-	           			
-                        if ( insertAfter.length ) {
-    	           			insertAfter.after(party.updateDOM());
-                            
-                        } else {
-                            
-                        }
-	           		}
+	           		//Get the last node of this type to insert after
+           			var insertAfter = $(eml).find(type.toLowerCase()).last();
+           			
+           			//If there isn't a node found, find the EML position to insert after
+           			if( !insertAfter.length ) {
+           				insertAfter = this.getEMLPosition(eml, type);           			    
+           			}
+           			
+           			//Insert the party DOM at the insert position
+                    if ( insertAfter && insertAfter.length ) {
+	           			insertAfter.after(party.updateDOM());                        
+                    }
+           			//If an insert position still hasn't been found, then just append to the dataset node
+                    else{
+                    	$(eml).find("dataset").append(party.updateDOM());
+                    }
+                    
 	           	}, this);
 	           	
 	        	//Create a certain parties from the current app user if none is given
@@ -859,11 +920,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				    dataType: "text",
 				    processData: false,
 					parse: false,
-					//Use the URL function to determine the URL, unless this is an update - then make sure the URL uses the old pid
-					url: this.isNew()? this.url() : MetacatUI.appModel.get("objectServiceUrl") + this.get("oldPid"),
+					//Use the URL function to determine the URL
+					url: this.isNew() ? this.url() : this.url({update: true}),
+					xhr: function(){
+	                      var xhr = new window.XMLHttpRequest();
+	                      
+	                      //Upload progress
+	                      xhr.upload.addEventListener("progress", function(evt){
+	                        if (evt.lengthComputable) {
+	                          var percentComplete = evt.loaded / evt.total * 100;
+	                          
+	                          model.set("uploadProgress", percentComplete);
+	                        }
+	                      }, false);
+
+	                      return xhr;
+	                },
 					success: function(model, response, xhr){
 						console.log('yay, EML has been saved');
 						
+						model.set("numSaveAttempts", 0);
 						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
                         model.fetch({merge: true, sysMeta: true});
@@ -871,15 +947,35 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					},
 					error: function(model, response, xhr){
 						console.log("error updating EML: ", response.responseText);
-						model.set("uploadStatus", "e");
-						model.resetID();
 						
-						var errorDOM       = $($.parseHTML(response.responseText)),
-							errorContainer = errorDOM.filter("error"),
-							msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM,
-							errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
-						
-						model.trigger("errorSaving", errorMsg);
+						model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                    	var numSaveAttempts = model.get("numSaveAttempts");
+
+                    	//Reset the identifier changes
+                    	model.resetID();
+                    	
+                		if(numSaveAttempts < 3){
+                    		
+                    		//Try saving again in 10, 40, and 90 seconds
+                    		setTimeout(function(){ 
+                    				model.save.call(model);
+                    			}, 
+                    			(numSaveAttempts * numSaveAttempts) * 10000);
+                    	}
+                		else{
+                			model.set("numSaveAttempts", 0);
+                										
+							var errorDOM       = $($.parseHTML(response.responseText)),
+								errorContainer = errorDOM.filter("error"),
+								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM.not("style, title"),
+								errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
+							
+		                    model.set("errorMessage", errorMsg);
+
+		                    model.set("uploadStatus", "e");
+		                        
+							model.trigger("errorSaving", errorMsg);
+                		}
 					}
 	   			}, MetacatUI.appUserModel.createAjaxSettings());
 	   			
@@ -891,21 +987,151 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Checks if this EML model has all the required values necessary to save to the server
              */
             validate: function() {
-            	if(!this.get("title").length){
-            		this.trigger("required", ["title"]);
-            		
-            		var error = "Title is required";
-            		
-            		//Set the validation error message
-            		this.set("validationError", error);
-            		
-            		return error;
+            	var errors = {};
+            	
+            	//A title is always required by EML
+            	if(!this.get("title").length){           		
+            		errors.title = "A title is required";            		
             	}
+				
+				// Validate the publication date
+				if (this.get("pubDate") != null) {
+					if (!this.isValidYearDate(this.get("pubDate"))) {
+						errors["pubDate"] = ["The value entered for publication date, '"
+							+ this.get("pubDate") + 
+							"' is not a valid value for this field. Enter with a year (e.g. 2017) or a date in the format YYYY-MM-DD."]
+					}
+				}
+				
+				// Validate the temporal coverage
+				if ( this.get("temporalCoverage").length ) {
+					_.each(this.get("temporalCoverage"), function(temporalCoverage){
+						if( !temporalCoverage.isValid() ){
+							if( !errors.temporalCoverage )
+								errors.temporalCoverage = [temporalCoverage.validationError];
+							else
+								errors.temporalCoverage.push(temporalCoverage.validationError);
+						}
+					});
+				}
+
+            	//Validate the EMLParty models
+            	var partyTypes = ["associatedParty", "contact", "creator", "metadataProvider", "publisher"];
+            	_.each(partyTypes, function(type){
+            		
+            		var people = this.get(type);
+            		_.each(people, function(person, i){
+            			
+            			if( !person.isValid() ){
+            				if( !errors[type] )
+            					errors[type] = [person.validationError];
+            				else
+            					errors[type].push(person.validationError);
+            			}
+            			
+            		}, this);
+            		
+            	}, this);
+            	
+            	//Validate the EMLGeoCoverage models
+            	_.each(this.get("geoCoverage"), function(geoCoverageModel, i){
+            		
+            		if( !geoCoverageModel.isValid() ){
+            			if( !errors.geoCoverage )
+            				errors.geoCoverage = [geoCoverageModel.validationError];
+            			else
+            				errors.geoCoverage.push(geoCoverageModel.validationError);
+            		}
+            		
+            	}, this);
+            	
+            	//Validate the EMLTaxonCoverage model
+            	var taxonModel = this.get("taxonCoverage")[0];
+            		
+        		if( !taxonModel.isEmpty() && !taxonModel.isValid() ){
+        			errors = _.extend(errors, taxonModel.validationError);
+        		}
+            	
+            	//Check the required fields for this MetacatUI configuration
+            	if(MetacatUI.appModel.get("emlEditorRequiredFields")){
+                	_.each(Object.keys(MetacatUI.appModel.get("emlEditorRequiredFields")), function(key){
+                		var isRequired = MetacatUI.appModel.get("emlEditorRequiredFields")[key];
+                		
+                		//If it's not required, then exit
+                		if(!isRequired) return;
+                		
+                		if(key == "alternateIdentifier"){
+                			if( !this.get("alternateIdentifier").length )
+                				errors.alternateIdentifier = "At least one alternate identifier is required."
+                		}
+                		else if(key == "generalTaxonomicCoverage"){
+                			if( !this.get("taxonCoverage").length || !this.get("taxonCoverage")[0].get("generalTaxonomicCoverage") )
+                				errors.generalTaxonomicCoverage = "Provide a description of the general taxonomic coverage of this data set.";
+                		}
+                		else if(key == "geoCoverage"){
+                			if(!this.get("geoCoverage").length)
+                				errors.geoCoverage = "At least one location is required.";
+                		}
+                		else if(key == "intellectualRights"){
+                			if( !this.get("intellectualRights") )
+                				errors.intellectualRights = "Select usage rights for this data set.";
+                		}
+                		else if(key == "studyExtentDescription"){
+                			if( !this.get("methods") || !this.get("methods").get("studyExtentDescription") )
+                				errors.studyExtentDescription = "Provide a study extent description.";
+                		}
+                		else if(key == "samplingDescription"){
+                			if( !this.get("methods") || !this.get("methods").get("samplingDescription") )
+                				errors.samplingDescription = "Provide a sampling description.";
+                		}
+                		else if(key == "temporalCoverage"){
+                			if(!this.get("temporalCoverage").length)
+                				errors.temporalCoverage = "Provide the date(s) for this data set.";
+                		}
+                		else if(key == "taxonCoverage"){
+                			if(!this.get("taxonCoverage").length)
+                				errors.taxonCoverage = "At least one taxa rank and value is required.";
+                		}
+                		else if(key == "keywordSets"){
+                			if( !this.get("keywordSets").length )
+                				errors.keywordSets = "Provide at least one keyword.";
+                		}
+                		else if(key == "methods"){
+                			if(!this.get("methods"))
+                				errors.methods = "At least one method step is required.";
+                		}
+                		else if(key == "funding"){
+                			if(!this.get("project") || !this.get("project").get("funding").length)
+                				errors.funding = "Provide at least one project funding number or name.";
+                		}
+                		else if(key == "abstract"){
+                			if(!this.get("abstract").length)
+                				errors["abstract"] = "Provide an abstract.";
+                		}
+                		else if( !this.get(key) || (Array.isArray(this.get(key)) && !this.get(key).length) ){
+                			errors[key] = "Provide a " + key + ".";
+                		}
+                	}, this);
+            		
+            	}
+            	
+            	if( Object.keys(errors).length )
+            		return errors;
             	else{
-            		this.set("validationError", null);
+            		this.trigger("valid");
             		return;
             	}
-            },
+			},
+			
+			/* Returns a boolean for whether the argument 'value' is a valid
+			value for EML's yearDate type which is used in a few places.
+			
+			Note that this method considers a zero-length String to be valid 
+			because the EML211.serialize() method will properly handle a null 
+			or zero-length String by serializing out the current year. */
+			isValidYearDate: function(value) {
+				return (value === "" || /^\d{4}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value));
+			},
             
             /*
              * Sends an AJAX request to fetch the system metadata for this EML object.
@@ -924,13 +1150,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	            			model.set(DataONEObject.prototype.parse.call(model, response));
 	            		},
 	            		error: function(){
-	            			console.log("error!")
 	            			model.trigger('error');
 	            		}
             		}, options);
             	
             	//Add the authorization header and other AJAX settings
-           	   _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings(), {dataType: "text"});
+           	   _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
             	
             	$.ajax(fetchOptions);
             },
@@ -938,20 +1163,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             /*
              * Returns the node in the given EML document that the given node type should be inserted after
              */
-            getEMLPosition: function(eml, nodeName){
+            getEMLPosition: function(eml, nodeName) {
             	var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
 	           		             "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights", 
 	           		             "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace", 
 	           		             "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-            	
-            	var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
-            	if(position == -1)
-            		return false;
+                var entityNodes = ["datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
+                var isEntityNode = _.contains(entityNodes, nodeName);
+                var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
+                if ( position == -1 ) {
+                    return false;
+                }
             	
             	//Go through each node in the node list and find the position where this node will be inserted after
-            	for(var i=position-1; i>=0; i--){
-            		if($(eml).find(nodeOrder[i]).length)
-            			return $(eml).find(nodeOrder[i]).last();
+                for (var i = position - 1; i >= 0; i--) {
+                    if ( $(eml).find(nodeOrder[i]).length ) {
+                        // Handle non-entity nodes
+                        if ( ! isEntityNode ) {
+                            return $(eml).find(nodeOrder[i]).last();
+                        } else {
+                            // Handle entity nodes by returning the 
+                            // last child of the parent <dataset> since
+                            // entities have a {0..n}+ model 
+                            // (i.e optional, repeatable, no specific order)
+                            return $(eml).find("dataset").children().last();
+                        }
+                    }
             	}
             	
             	return false;
@@ -978,7 +1215,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					currentEntities.push(emlEntity);
 				else
 					//Add the entity model to the entity array
-					currentEntities.splice(position, 0, entityModel);
+					currentEntities.splice(position, 0, emlEntity);
 				
 				this.trigger("change:entities");
 				
@@ -989,8 +1226,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             /*
              Remove an entity from the EML 2.1.1 object
             */
-            removeEntity: function(emlEntityId) {
+            removeEntity: function(emlEntity) {
+                if(!emlEntity || typeof emlEntity != "object")
+                	return;
                 
+            	//Get the current list of entities
+            	var entities = this.get("entities");
+            	
+            	entities = _.without(entities, emlEntity);
+            	
+            	this.set("entities", entities);
             },
             
             /*
@@ -999,32 +1244,89 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             getEntity: function(dataONEObj){
 
             	var entity = _.find(this.get("entities"), function(e){
-            		if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
+            		
+            		//Matches of the checksum or identifier are definite matches
+            		if( e.get("xmlID") == dataONEObj.getXMLSafeID() )
             			return true;
-            		else if( e.get("entityName") == dataONEObj.get("fileName") )
+            		else if( e.get("physicalMD5Checksum") && (e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObj.get("checksumAlgorithm").toUpperCase() == "MD5"))
             			return true;
-            		else if( e.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName") )
+            		else if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;
-            	});
+            		
+            		//If this entity name matches the dataone object file name, AND no other dataone object file name
+            		if( (e.get("entityName") == dataONEObj.get("fileName")) || (e.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName")) ){
+            			var otherEntities = _.without(this.get("entities"), e);
+            			
+            			var otherMatchingEntity = _.find(otherEntities, function(otherE){
+            				if( (otherE.get("entityName") == dataONEObj.get("fileName")) || (otherE.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName")) )
+            					return true;
+            			});
+            			
+            			if( !otherMatchingEntity )
+            				return true;
+            		}
+            		
+            	}, this);
             	
-            	if(entity)
+            	//If we found an entity, give it an ID and return it
+            	if(entity){
+                	
+                	//Create an XML-safe ID and set it on the Entity model
+                	entity.set("xmlID", dataONEObj.getXMLSafeID());
+                	
             		return entity;
+            	}
             	
+            	//See if one data object is of this type in the package
             	var matchingTypes = _.filter(this.get("entities"), function(e){
             		return (e.get("formatName") == (dataONEObj.get("formatId") || dataONEObj.get("mediaType")));
             	});
             	
-            	if(matchingTypes.length == 1)
+            	if(matchingTypes.length == 1){
+                	//Create an XML-safe ID and set it on the Entity model
+            		matchingTypes[0].set("xmlID", dataONEObj.getXMLSafeID());
+                	
             		return matchingTypes[0];
+            	}
             	
             	return false;
             		
             },
             
+            createEntity: function(dataONEObject){
+            	// Add or append an entity to the parent's entity list
+                var entityModel = new EMLOtherEntity({
+                    entityName : dataONEObject.get("fileName"),
+                    entityType : dataONEObject.get("formatId") || 
+                                 dataONEObject.get("mediaType") || 
+                                 "application/octet-stream",
+                    parentModel: this,
+                    xmlID: dataONEObject.getXMLSafeID()
+                });
+                
+                this.addEntity(entityModel);
+                
+            },
+            
+            /*
+             * removeParty - removes the given EMLParty model from this EML211 model's attributes
+             */
+            removeParty: function(partyModel){
+            	//The list of attributes this EMLParty might be stored in
+            	var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+            	
+            	// Iterate over each possible attribute
+            	_.each(possibleAttr, function(attr){
+            	
+            		if( _.contains(this.get(attr), partyModel) ){
+            			this.set( attr, _.without(this.get(attr), partyModel) );
+            		}
+            			
+            	}, this);
+            },
+            
             createUnits: function(){
-            	var units = new Units();
-            	units.fetch();
-            	this.set("units", units);
+            	this.units.fetch();
             },
             
             /* Initialize the object XML for brand spankin' new EML objects */

@@ -129,8 +129,8 @@
     }
     
     h1{
-    	font-weight: normal;
-    	font-family: "Aller";
+    	font-weight: bold;
+    	
     }
     
     .bold-header{
@@ -224,8 +224,8 @@
  
 
 .header #inner-header{
+	max-width: 1024px;
 	margin: 0 auto;
-	padding: 0px 30px;
 }
 .header nav{	
 	display: none;
@@ -549,13 +549,13 @@ footer .logos a:hover, a:focus{
     
 /* EDITOR 
 ----------------------- */
-.Editor .dropdown-menu li {
+.Editor #data-package-table .dropdown-menu li {
     float: left;
     position: relative;
     width: 100%;
 }
    
-.Editor .dropdown-menu li a {
+.Editor #data-package-table .dropdown-menu li a {
     background-color: #1F254F;
     background-image: none;
     color: #FFF;
@@ -565,19 +565,40 @@ footer .logos a:hover, a:focus{
     box-sizing: border-box;
     text-align: center;
 }
-
-.Editor .dropdown-menu li a:hover {
-    background-color: #19B36A;
+.data-package-item .btn.edit:hover,
+.data-package-item .btn.edit:focus{
+	background-color: white;
+    border-color: #CCC;
 }
-   
-.data-package-item .edit{
-	color: #19B36A;
+.data-package-item .btn-group .btn:hover,
+.data-package-item .btn-group .dropdown-toggle:hover{
+	background-color: white;
+	border-color: #CCC;
+	color: #146660;
 }
-.data-package-item .edit:hover{
-	color: #22ea8b;
+.data-package-item .dropdown-menu a{
+	color: #146660;
+}
+#data-package-table td:last-of-type ul li{
+	background-color: #FFF;	
+}
+.data-package-item .dropdown-menu li a {
+    background-color: #FFF;
+    color: #19B36A;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: normal;
+}
+.data-package-item .bar{
+	background-color: #1E254F;
 }
 .eml-entity .nav-tabs li.active a {
     border-top: 2px solid #1E254F;
+}
+.attribute-menu-item .remove{
+	background-color: rgba(49, 61, 129, .6);
+}
+.eml-party .party-menu .dropdown-menu>li>a:hover {
+    color: #12238e;
 }
     
 /* MAPS 
@@ -718,7 +739,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     #Navbar{
     	position: fixed;
-    	top: 0px;
     	width: 100%;
     	z-index: 1;
     	background-color: #FFF;
@@ -923,13 +943,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	min-height: 350px;
   }
   
-  .profile .header{
+  .profile h1{
 	width: 900px;
 	line-height: 90px;
-	margin-left: auto;
-    margin-right: auto;
-    text-align: left;
-    padding: 0px 20px;
   }
 
     .profile-title:empty{
@@ -987,6 +1003,7 @@ svg .packages,
 .profile .packages{
 	color: #146660;
 	fill: #146660;
+	stroke: #146660;
 }
 .profile .bar-label.packages{
 	fill: inherit;
@@ -1234,6 +1251,13 @@ svg .no-activity,
     color: #1f254f;
 }
 
+/**
+MDQ items
+**/
+#suites {
+	display: none;
+}
+
   /* Metadata rendering CSS
   -------------------------------------------------- */
     #Metadata {
@@ -1265,6 +1289,10 @@ svg .no-activity,
 	}	
 	.nav-list>.active>a, .nav-list>.active>a:hover, .nav-list>.active>a:focus{
 		background-color: #1f254f;
+	}
+	
+	.service-table td.service-endpoint input{
+		border-color: #146660;
 	}
 	
 	.prov-chart,
@@ -1359,13 +1387,21 @@ svg .no-activity,
     	margin-bottom: 20px;
     }
    
-    /**----------------------------------------**/
+/* MDQ CSS
+-------------------------------------------------- */
 
-	.metadata-index {
-		padding: 2%;
-		width: 96%;
-	}
-	
+#mdqTypeSummary #suites{
+	display: none;
+}
+
+/* Metadata Index CSS
+-------------------------------------------------- */
+
+.metadata-index {
+	padding: 2%;
+	width: 96%;
+}
+
 	/* Registry CSS
 	-------------------------------------------------- */
     
@@ -1772,12 +1808,12 @@ svg .no-activity,
     	background-color:#FFFFFF;
     }
     
-    li.ui-menu-item{
+    li.ui-menu-item > a{
     	color: #555555;
     	width: 100%;
     }
     
-    li.ui-menu-item:hover,
+    li.ui-menu-item > a:hover,
     .ui-state-focus
      {
         color: #1f254f;
@@ -1877,7 +1913,6 @@ svg .no-activity,
     /*-- Popovers --*/
     .popover{
     	font-size: 13px;
-    	z-index: 9999;
     }
     
     .popover-title {
@@ -1944,13 +1979,6 @@ svg .no-activity,
 		color: #FFF;
 		background-color: #00AAFF;
 	}
-	
-	
-#signinPopup{
-	width: auto;
-	min-width: 210px;
-	max-width: 210px;
-}
   
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */

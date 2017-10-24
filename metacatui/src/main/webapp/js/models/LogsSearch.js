@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'models/Search'], 				
 	function($, _, Backbone, SearchModel) {
 	'use strict';
@@ -45,8 +45,15 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 				}],
 				facets: [],
 				facetRanges: [],
-				facetRangeStart: "NOW-20YEARS",
-				facetRangeEnd: "NOW",
+				facetRangeStart: function(){
+					var twentyYrsAgo = new Date();
+					twentyYrsAgo.setFullYear( twentyYrsAgo.getFullYear() - 20 );
+					return twentyYrsAgo.toISOString();
+				}(),
+				facetRangeEnd: function(){
+					var now = new Date();
+					return now.toISOString();
+				}(),
 				facetRangeGap: "%2B1MONTH",
 				facetMinCount: "1"
 			}
@@ -113,7 +120,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 					else if(value && value.length){
 						// Does this need to be wrapped in quotes?
 						if(model.needsQuotes(value)) value = "%22" + encodeURIComponent(value) + "%22";
-						else value = encodeURIComponent(value);
+						else value = model.escapeSpecialChar(encodeURIComponent(value));
 						
 						query += "+" + model.fieldNameMap["nodeId"] + ":" + value;
 					}
@@ -139,7 +146,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search'],
 					else if(filterValues && filterValues.length){
 						// Does this need to be wrapped in quotes?
 						if(model.needsQuotes(filterValues)) filterValues = "%22" + encodeURIComponent(filterValues) + "%22";
-						else filterValues = encodeURIComponent(filterValues);
+						else filterValues = model.escapeSpecialChar(encodeURIComponent(filterValues));
 						
 						query += "+" + model.fieldNameMap[filterName] + ":" + filterValues;
 					}

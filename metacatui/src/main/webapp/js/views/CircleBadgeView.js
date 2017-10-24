@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 define(['jquery', 'underscore', 'backbone', 'd3'], 				
 	function($, _, Backbone, d3) {
 	'use strict';
@@ -32,6 +32,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.useGlobalR = options.useGlobalR   || false;
 			this.className  = options.className    || "";
 			this.margin	    = options.margin	   || 20;
+			this.titlePlacement = options.titlePlacement || null;
+			this.height     = options.height       || null;
 		},
 		
 		// http://stackoverflow.com/questions/9651167/svg-not-rendering-properly-as-a-backbone-view
@@ -123,6 +125,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			var svg = d3.select(this.el)
 						.attr("class", "circle-badge " + this.className); 
 			
+			if(this.height)
+				svg.attr("height", this.height);
+			
 			//Draw the circles
 			var circle = svg.selectAll("circle")
 							.data(this.data)
@@ -166,20 +171,39 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				.selectAll("text")
 				.data(this.data)
 				.enter().append("svg:text")
-				.text(function(d){ return MetacatUI.appView.commaSeparateNumber(d.count) || 0; })
+				.text(function(d){ return typeof d.count == "string" ? d.count : MetacatUI.appView.commaSeparateNumber(d.count) || 0; })
 				.attr("transform", function(d, i){
-					return "translate(" + d.x + "," + (d.r+12) + ")";
+
+					var y = (viewRef.titlePlacement == "inside")? d.r-12 : d.r+12;
+
+					return "translate(" + d.x + "," + y + ")";
 				})
 				.attr("class", function(d){ return d.className + " count"; })
 				.attr("text-anchor", "middle");
 					
 			if(this.title){
-				//Draw the title next to the circles at the end
-				svg.append("text")
-					.text(this.title)
-					.attr("class", "title") 
-					.attr("transform", function(d, i){ return "translate(" + (viewRef.data[viewRef.data.length-1].x + viewRef.data[viewRef.data.length-1].r + viewRef.margin) + "," + (viewRef.data[viewRef.data.length-1].r + 5) + ")"; })
-					.attr("text-anchor", "left");	
+				
+				if(this.titlePlacement == "inside"){
+
+					//Draw the title next to the circles at the end
+					var title = svg.append("text")
+								.data(this.data)
+								.text(this.title)
+								.attr("class", "title") 
+								.attr("text-anchor", "middle")
+								.attr("transform", function(d, i){
+									return "translate(" + d.x + "," + (d.r + 30) + ")";
+								});
+
+				}
+				else{
+					//Draw the title next to the circles at the end
+					svg.append("text")
+						.text(this.title)
+						.attr("class", "title") 
+						.attr("transform", function(d, i){ return "translate(" + (viewRef.data[viewRef.data.length-1].x + viewRef.data[viewRef.data.length-1].r + viewRef.margin) + "," + (viewRef.data[viewRef.data.length-1].r + 5) + ")"; })
+						.attr("text-anchor", "left");	
+				}
 			}
 	        
 			return this;

@@ -16,11 +16,10 @@ define(["jquery", "underscore", "backbone",
             /* Attributes of an EMLNonNumericDomain object */
             defaults: {
                 /* Attributes from EML, extends attributes from EMLMeasurementScale */
-                xmlID: null, // the id of the nonNumericDomain element
                 measurementScale: null, // the required name of this measurement scale
                 unit: null, // the required standard or custom unit definition
                 precision: null, // the precision of the observed number
-                numericDomain: [] // a required numeric domain object or its reference
+                numericDomain: {} // a required numeric domain object or its reference
             },
 
             /**
@@ -170,16 +169,161 @@ define(["jquery", "underscore", "backbone",
             },
 
             /* Copy the original XML DOM and update it with new values from the model */
-            updateDOM: function() {
-                var objectDOM;
+            updateDOM: function(objectDOM) {
+                var nodeToInsertAfter;
+                var type = this.get("measurementScale");
+                if ( typeof type === "undefined") {
+                    console.warn("Defaulting to an interval measurementScale.");
+                    type = "interval";
+                }
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
+                var objectXML = this.get("objectXML");
 
-                if ( this.get("objectDOM") ) {
-                    objectDOM = this.get("objectDOM").cloneNode(true);
+                // If present, use the cached DOM
+                if ( objectDOM ) {
+                    objectDOM = objectDOM.cloneNode(true);
+
+                // otherwise, use the cached XML
+                } else if ( objectXML ){
+                    objectDOM = $(objectXML)[0].cloneNode(true);
+
+                // This is new, create it
                 } else {
-                    objectDOM = document.createElement(/*this.el*/);
+                    objectDOM = document.createElement(type);
+
                 }
 
-                // TODO: Populate the DOM with model values
+                // Update the unit
+                var unit = this.get("unit");
+                var unitNode;
+                var unitTypeNode;
+                if ( unit ) {
+                    // Remove any existing unit
+                    if ( $(objectDOM).find("unit").length ) {
+                        $(objectDOM).find("unit").remove();
+                    }
+                    // Build a unit element, and populate a standard or custom child
+                    unitNode = document.createElement("unit");
+                    if ( typeof unit.standardUnit !== "undefined") {
+                        unitTypeNode = document.createElement("standardUnit");
+                        $(unitTypeNode).text(unit.standardUnit);
+                    } else if ( typeof unit.customUnit !== "undefined" ) {
+                        unitTypeNode = document.createElement("customUnit");
+                        $(unitTypeNode).text(unit.customUnit);
+                    } else {
+                        // Hmm, unit isn't an object?
+                        // Default to a standard unit
+                        unitTypeNode = document.createElement("standardUnit");
+                        if ( typeof unit === "string") {
+                            $(unitTypeNode).text(unit);
+                            console.warn("EMLNumericDomain.unit should be an object.");
+                        } else {
+                            // We're really striking out. Default to dimensionless.
+                            $(unitTypeNode).text("dimensionless");
+                            console.warn("Defaulting EMLNumericDomain.unit to dimensionless.");
+                        }
+                    }
+                    $(unitNode).append(unitTypeNode);
+                    
+                    // Add the unit to the DOM
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "unit");
+                    
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(unitNode);
+                    } else {
+                        $(nodeToInsertAfter).after(unitNode);
+                    }
+                }
+                
+                // Update the precision
+                if ( this.get("precision") ) {
+                    if ( $(objectDOM).find("precision").length ) {
+                        $(objectDOM).find("precision").text(this.get("precision"));
+                    } else {
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "precision");
+                        
+                        if( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("precision"))
+                                .text(this.get("precision"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after(
+                                $(document.createElement("precision"))
+                                    .text(this.get("precision"))[0]
+                            );
+                        }
+                    }
+                }
+                
+                // Update the numericDomain
+                var numericDomain = this.get("numericDomain");
+                var numericDomainNode = $(objectDOM).find("numericdomain")[0];
+                var numberType;
+                var numberTypeNode;
+                var minBound;
+                var maxBound;
+                var boundsNode;
+                var minBoundNode;
+                var maxBoundNode;
+                if ( numericDomain ) {
+                    
+                    // Remove the existing numericDomainNode node
+                    if ( typeof numericDomainNode !== "undefined" ) {
+                        numericDomainNode.remove();
+                    } 
+                    // Build the new numericDomain node
+                    numericDomainNode = document.createElement("numericdomain");
+                    
+                    // Do we have numberType?
+                    if ( typeof numericDomain.numberType !== "undefined" ) {
+                        numberTypeNode = document.createElement("numbertype");
+                        $(numberTypeNode).text(numericDomain.numberType);
+                        $(numericDomainNode).append(numberTypeNode);
+                    }
+                    
+                    // Do we have bounds?
+                    if ( typeof numericDomain.bounds !== "undefined" &&
+                         numericDomain.bounds.length ) {
+                        
+                        _.each(numericDomain.bounds, function(bound) {
+                            minBound = bound.minimum;
+                            maxBound = bound.maximum;
+                            boundsNode = document.createElement("bounds");
+                            var hasBounds = typeof minBound !== "undefined" || typeof maxBound !== "undefined";
+                            if ( hasBounds ) {
+                                // Populate the minimum element
+                                if ( typeof minBound !== "undefined" ) {
+                                    minBoundNode = document.createElement("minimum");
+                                    minBoundNode.text(minBound);
+                                }
+
+                                // Populate the maximum element
+                                if ( typeof maxBound !== "undefined" ) {
+                                    maxBoundNode = document.createElement("maximum");
+                                    maxBoundNode.text(maxBound);
+                                }
+                                $(boundsNode).append(minBoundNode);
+                                $(boundsNode).append(maxBoundNode);
+                                $(numericDomainNode).append(boundsNode);
+                            } else {
+                                // Do nothing. Content is missing, don't append the node
+                            }
+                        });
+                    } else {
+                        // Basically do nothing. Don't append the numericDomain element
+                        // TODO: handle numericDomain.references
+                        
+                    }
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "numericDomain");
+                    
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(numericDomainNode);
+                    } else {
+                        $(nodeToInsertAfter).after(numericDomainNode);
+                    }
+                }
+                return objectDOM;
             },
 
             formatXML: function(xmlString){
@@ -195,16 +339,27 @@ define(["jquery", "underscore", "backbone",
 
                 // Append to the bottom if not found
                 if ( position == -1 ) {
-                    return $(objectDOM).children().last();
+                    return $(objectDOM).children().last()[0];
                 }
 
                 // Otherwise, go through each node in the node list and find the
                 // position where this node will be inserted after
                 for ( var i = position - 1; i >= 0; i-- ) {
                     if ( $(objectDOM).find(nodeOrder[i]).length ) {
-                        return $(objectDOM).find(nodeOrder[i].last());
+                        return $(objectDOM).find(nodeOrder[i]).last()[0];
                     }
                 }
+            },
+            
+            validate: function(){
+            	var errors = {};
+            	
+            	if(!this.get("unit"))
+            		errors.unit = "Choose a unit.";
+            	
+            	if( Object.keys(errors).length )
+            		return errors;
+
             },
 
             /* Let the top level package know of attribute changes from this object */

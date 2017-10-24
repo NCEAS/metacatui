@@ -193,7 +193,7 @@ define(['underscore',
 
                 // Set the listeners
                 this.setListeners();
-
+                
                 //Render the data package
                 this.renderDataPackage();
 
@@ -275,9 +275,14 @@ define(['underscore',
             $packageTableContainer.resizable({
 	            	handles: { "s" : handle },
 	            	minHeight: 100,
-	            	maxHeight: 900
+	            	maxHeight: 900,
+	            	resize: function(){
+	            		view.emlView.resizeTOC();
+	            	}
             	});
-            $packageTableContainer.css("height", "200px");
+            
+            var tableHeight = ($(window).height() - $("#Navbar").height()) * .75;          
+            $packageTableContainer.css("height", tableHeight + "px");
 
             var table = this.dataPackageView.$el;
             this.listenTo(this.dataPackageView, "addOne", function(){
@@ -346,8 +351,20 @@ define(['underscore',
             	console.log("Rendering EML Model ", model.get("id"));
 
             	//Create an EML model
-                if(model.type != "EML")
-                	model = new EML(model.toJSON());
+                if(model.type != "EML"){
+                	//Create a new EML model from the ScienceMetadata model
+                	var EMLmodel = new EML(model.toJSON());
+                	//Replace the old ScienceMetadata model in the collection
+                	MetacatUI.rootDataPackage.remove(model);
+                	MetacatUI.rootDataPackage.add(EMLmodel, { silent: true });
+                	model.trigger("replace", EMLmodel);
+                	
+                	//Fetch the EML and render it
+                	this.listenToOnce(EMLmodel, "sync", this.renderMetadata);                	
+                	EMLmodel.fetch();
+                	
+                	return;
+                }
 
             	//Create an EML211 View and render it
             	emlView = new EMLView({
@@ -417,6 +434,11 @@ define(['underscore',
             if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
                 this.stopListening(MetacatUI.rootDataPackage.packageModel, "change:changed");
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
+                this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", function(event) {
+                    if (MetacatUI.rootDataPackage.packageModel.get("changed") ) {
+                        this.model.set("uploadStatus", "q"); // Clears the error status
+                    }
+                });
 
             }
 
@@ -431,7 +453,8 @@ define(['underscore',
         	this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.handleSaveCancel);
 
         	//When the model is invalid, show the required fields
-        	this.listenTo(this.model, "required", this.showRequired);
+        	this.listenTo(this.model, "invalid", this.showValidation);
+        	this.listenTo(this.model, "valid",   this.showValidation);
         },
 
         /*
@@ -443,14 +466,8 @@ define(['underscore',
         	//If the save button is disabled, then we don't want to save right now
         	if(btn.is(".btn-disabled")) return;
 
-        	var btn = this.$("#save-editor");
-
-        	//Change the style of the save button
-        	btn.html('<i class="icon icon-spinner icon-spin"></i> Saving ...').addClass("btn-disabled");
-
-	       	//Disable the form
-        	$("body").prepend($(document.createElement("div")).addClass("disable-layer"));
-
+	       	this.showSaving();
+	       	
         	//Save the package!
         	MetacatUI.rootDataPackage.save();
         },
@@ -464,12 +481,23 @@ define(['underscore',
         	if(savedObject.type != "DataPackage") return;
 
         	//Change the URL to the new id
-        	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
+        	MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
 
             this.toggleControls();
 
-        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000);
-
+            var message = $(document.createElement("div")).append(
+            		$(document.createElement("span")).text("Your changes have been saved. "),
+            		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+        	
+            MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
+            
+            //Rerender the CitationView
+            var citationView = _.where(this.subviews, { type: "Citation" });
+            if(citationView.length){
+	            citationView[0].createTitleLink = true;
+	            citationView[0].render();
+            }
+            
             // Reset the state to clean
             MetacatUI.rootDataPackage.packageModel.set("changed", false);
             this.model.set("hasContentChanges", false);
@@ -483,9 +511,6 @@ define(['underscore',
         saveError: function(errorMsg){
         	var errorId = "error" + Math.round(Math.random()*100),
         		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
-
-        	//Remove the disabler layer
-        	$(".disable-layer").remove();
 
         	message.append($(document.createElement("a"))
         						.text("See details")
@@ -501,6 +526,9 @@ define(['underscore',
         		emailBody: "Error message: Data Package save error: " + errorMsg,
         		remove: true
         		});
+        	
+        	//Reset the Saving styling
+        	this.hideSaving();
         },
 
         /*
@@ -527,7 +555,7 @@ define(['underscore',
 				  "<li>The content was removed because it was invalid.</li>" +
 			  "</ul>";
 			this.hideLoading();
-			MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
+			MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
 
 		},
 
@@ -546,14 +574,14 @@ define(['underscore',
 					view.model = null;
 
 					//Update the URL
-					MetacatUI.uiRouter.navigate("#share/" + view.pid, { trigger: false, replace: true });
+					MetacatUI.uiRouter.navigate("#submit/" + view.pid, { trigger: false, replace: true });
 
 					//Render the new model
 					view.render();
 
 					//Show a warning that the user was trying to edit old content
 					MetacatUI.appView.showAlert("You've been forwarded to the newest version of your dataset for editing.",
-							"alert-warning", this.$el, 12000);
+							"alert-warning", this.$el, 12000, { remove: true });
 				}
 				else
 					view.getDataPackage();
@@ -577,6 +605,9 @@ define(['underscore',
 	        		clickedEl = $(e.target),
 	        		row = clickedEl.parents(".data-package-item"),
 	        		dataONEObject = row.data("model");
+	        	
+	        	if(dataONEObject.get("uploadStatus") == "p" || dataONEObject.get("uploadStatus") == "l" || dataONEObject.get("uploadStatus") == "e")
+	        		return;
 
 	        	//If there isn't a view yet, create one
 	        	if(!entityView){
@@ -589,7 +620,8 @@ define(['underscore',
 	        			entityModel = new EMLOtherEntity({
 	        				entityName : dataONEObject.get("fileName"),
 	        				entityType : dataONEObject.get("formatId") || dataONEObject.get("mediaType"),
-	        				parentModel: this.model
+	        				parentModel: this.model,
+	        				xmlID: dataONEObject.getXMLSafeID()
 	        			});
 
 	        			if(!dataONEObject.get("fileName")){
@@ -687,13 +719,24 @@ define(['underscore',
 
 	    	this.$(".editor-controls").slideUp();
 	    },
+	    
+	    showSaving: function(){
+
+        	//Change the style of the save button
+        	this.$("#save-editor")
+        		.html('<i class="icon icon-spinner icon-spin"></i> Saving ...')
+        		.addClass("btn-disabled");
+
+	    	this.$("input, textarea, select, button").prop("disabled", true);	    	
+	    	
+	    },
 
 	    hideSaving: function(){
-	    	//Remove the disabler layer
-        	$(".disable-layer").remove();
+	    	this.$("input, textarea, select, button").prop("disabled", false);
 
         	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Save").removeClass("btn-disabled");
+        	this.$("#save-editor").html("Submit").removeClass("btn-disabled");	    
+	    
 	    },
 
         /* Toggle the editor footer controls (Save bar) */
@@ -723,27 +766,74 @@ define(['underscore',
 	    	$(container).find(".loading").remove();
 	    },
 
-		showRequired: function(attr){
-			var reqEl = $("[data-attribute='" + attr + "']");
-			if(!reqEl) return;
+		showValidation: function(){
+			
+			//First clear all the error messaging
+			this.$(".notification.error").empty();
+			this.$(".side-nav-item .icon").hide();
+			this.$(".error").removeClass("error");
+			$(".alert-container").remove();
+			
+			
+			var errors = this.model.validationError;
+			
+			_.each(errors, function(errorMsg, category){
+				
+				var categoryEls = this.$("[data-category='" + category + "']"),
+					dataItemRow = categoryEls.parents(".data-package-item");
 
-			//Style the field as required
-			reqEl.addClass("error");
-
-			//If this field is in a DataItemView, then delegate to that view
-			var dataItemRow = reqEl.parents(".data-package-item");
-
-			if(dataItemRow.length && dataItemRow.data("view") && (typeof dataItemRow.data("view").showRequired == "function")){
-				dataItemRow.data("view").showRequired(attr);
+				//If this field is in a DataItemView, then delegate to that view
+				if(dataItemRow.length && dataItemRow.data("view")){
+					dataItemRow.data("view").showValidation(category, errorMsg);
+					return;
+				}
+				else{
+					var elsWithViews = _.filter(categoryEls, function(el){
+							return ( $(el).data("view") && $(el).data("view").showValidation );
+						});
+					
+					if(elsWithViews.length){
+						_.each(elsWithViews, function(el){
+							$(el).data("view").showValidation();
+						});
+					}
+					else{
+						//Show the error message
+						categoryEls.filter(".notification").addClass("error").text(errorMsg);
+						
+						//Add the error message to inputs
+						categoryEls.filter("textarea, input").addClass("error");
+					}
+				}
+				
+				//Get the link in the table of contents navigation
+				var navigationLink = this.$(".side-nav-item[data-category='" + category + "']");
+				
+				if(!navigationLink.length){
+					var section = categoryEls.parents("[data-section]");
+					navigationLink = this.$(".side-nav-item." + $(section).attr("data-section"));
+				}
+				
+				//Show the error icon in the table of contents				
+				navigationLink.addClass("error")
+					.find(".icon")
+					.addClass("error")
+					.show();
+				
+				this.model.once("change:" + category, this.model.isValid);
+				
+			}, this);
+			
+			if(errors){
+				MetacatUI.appView.showAlert("Provide the missing information flagged below.", 
+						"alert-error", 
+						this.$el, 
+						null, 
+						{
+	        				remove: true
+						});
 			}
-			else{
-				reqEl.parent().prepend( $(document.createElement("div"))
-												.addClass("error notification")
-												.text("A" + attr + " is required.") );
-			}
 
-			//Scroll to the element
-			MetacatUI.appView.scrollTo(reqEl, $("#Navbar").outerHeight() + 100);
 		},
 
 	    /*

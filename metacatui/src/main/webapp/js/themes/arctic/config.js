@@ -1,4 +1,4 @@
-﻿MetacatUI.theme = MetacatUI.theme || "arctic";
+MetacatUI.theme = MetacatUI.theme || "arctic";
 MetacatUI.themeTitle = "NSF Arctic Data Center";
 MetacatUI.themeMap = 
 {
@@ -53,7 +53,7 @@ MetacatUI.customAppConfig = function(){
 }
 
 /*
-MetacatUI.customInitApp = function(){
+var customInitApp = function(){
 	var slaaskScript = document.createElement("script");
 	slaaskScript.setAttribute("type", "text/javascript");
 	slaaskScript.setAttribute("src",  "https://cdn.slaask.com/chat.js");
@@ -61,7 +61,7 @@ MetacatUI.customInitApp = function(){
 	
 	//Give the slaask script 3 seconds to load or move on without it!
 	var slaaskTimeout = window.setTimeout(function(){
-		MetacatUI.initApp();	
+		initApp();	
 		
 		//Don't check again
 		window.clearTimeout(slaaskTimeout);
