@@ -15,7 +15,7 @@ if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
 MetacatUI.useD3 = true; 
 
 //This version of Metacat UI - used for cache busting
-MetacatUI.metacatUIVersion = "2.0.0RC1";
+MetacatUI.metacatUIVersion = "2.0.0RC2";
 
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");
