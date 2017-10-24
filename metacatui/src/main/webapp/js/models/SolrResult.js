@@ -287,11 +287,9 @@ define(['jquery', 'underscore', 'backbone'],
 			var escapeSpecialChar = MetacatUI.appSearchModel.escapeSpecialChar;
 
 			var query = "q=";
-			//Do not search for seriesId when it is not configured in this model/app
-			if(typeof this.get("seriesId") === "undefined")
-				query += 'id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '"';
+			
 			//If there is no seriesId set, then search for pid or sid
-			else if(!this.get("seriesId"))
+			if(!this.get("seriesId"))
 				query += '(id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" OR seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '")';
 			//If a seriesId is specified, then search for that
 			else if(this.get("seriesId") && (this.get("id").length > 0))
