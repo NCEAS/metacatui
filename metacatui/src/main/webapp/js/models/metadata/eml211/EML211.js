@@ -58,10 +58,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            entities: [], //An array of EMLEntities
 		            pubplace: null,
 		            methods: null, // An EMLMethods objects
-		            project: null, // An EMLProject object
-		            units: []
+		            project: null // An EMLProject object
         		});
         	},
+        	
+        	units: new Units(),
 
             initialize: function(attributes) {
                 // Call initialize for the super class
@@ -75,6 +76,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 	this.set("synced", true);
                 });
                 
+    			//Create a Unit collection
+                if(!this.units.length)
+                	this.createUnits();               
             },
             
             url: function(options) {
@@ -1322,9 +1326,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             },
             
             createUnits: function(){
-            	var units = new Units();
-            	units.fetch();
-            	this.set("units", units);
+            	this.units.fetch();
             },
             
             /* Initialize the object XML for brand spankin' new EML objects */

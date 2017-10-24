@@ -144,9 +144,6 @@ define(['underscore', 'jquery', 'backbone',
 				//When the data package has been saved, render the EML again
 				this.listenTo(dataPackage, "successSaving", this.renderAllSections);
 			}, this);
-			
-			//Create a Unit collection for the entity and attribute section
-			this.model.createUnits();
 									
             return this;
         },
