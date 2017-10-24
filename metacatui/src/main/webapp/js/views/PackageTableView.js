@@ -46,7 +46,7 @@ define(['jquery', 'underscore', 'backbone',
 			else if(this.memberId) this.model.getMembersByMemberID(this.memberId);
 			
 			 this.onMetadataView = (this.parentView && this.parentView.type == "Metadata");
-			 this.hasEntityDetails = (this.onMetadataView && (this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
+			 this.hasEntityDetails = (this.onMetadataView && (this.model.get("members") && this.model.get("members").length < 150))? this.parentView.hasEntityDetails() : false;
 			
 			this.listenTo(this.model, "changeAll", this.render);
 		},

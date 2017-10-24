@@ -178,7 +178,7 @@ define(['jquery',
 		},
 
 		renderMetadata: function(){
-			var pid = this.pid;
+			var pid = this.model.get("id");
 
 			this.hideLoading();
 			//Load the template which holds the basic structure of the view

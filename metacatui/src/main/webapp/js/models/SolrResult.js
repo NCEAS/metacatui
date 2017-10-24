@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'backbone'],
 			title: '',
 			pubDate: '',
 			id: '',
-			seriesId: appModel.get("useSeriesId")? null : undefined,
+			seriesId: null,
 			resourceMap: null,
 			downloads: null,
 			citations: 0,
@@ -288,7 +288,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			var query = "q=";
 			//Do not search for seriesId when it is not configured in this model/app
-			if(typeof this.get("seriesId") === "undefined")
+			if(!appModel.get("useSeriesId"))
 				query += 'id:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '"';
 			//If there is no seriesId set, then search for pid or sid
 			else if(!this.get("seriesId"))
