@@ -3321,7 +3321,7 @@ ul.side-nav-items {
 	opacity: .3;
 }
 .data-package-item.message-row td{
-	padding-top: 150px;
+	padding-top: 5%;
 }
 .data-package-item.message-row:hover td{
 	background-color: #FFF;

@@ -280,7 +280,9 @@ define(['underscore',
 	            		view.emlView.resizeTOC();
 	            	}
             	});
-            $packageTableContainer.css("height", "500px");
+            
+            var tableHeight = ($(window).height() - $("#Navbar").height()) * .75;          
+            $packageTableContainer.css("height", tableHeight + "px");
 
             var table = this.dataPackageView.$el;
             this.listenTo(this.dataPackageView, "addOne", function(){
