@@ -1,9 +1,9 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'], 
+define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     function($, _, Backbone, DataONEObject) {
 
 	var EMLGeoCoverage = Backbone.Model.extend({
-		
+
 		defaults: {
 			objectXML: null,
 			objectDOM: null,
@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         	south: null,
         	west: null
 		},
-		
+
 		initialize: function(attributes){
 			if(attributes && attributes.objectDOM) this.set(this.parse(attributes.objectDOM));
 
@@ -23,12 +23,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					"change:east " +
 					"change:west " +
 					"change:south" +
-					"change:north", 
+					"change:north",
 					this.trickleUpChange);
 		},
-		
+
 		/*
-         * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML). 
+         * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML).
          * Used during parse() and serialize()
          */
         nodeNameMap: function(){
@@ -46,7 +46,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             	"westboundingcoordinate" : "westBoundingCoordinate"
             }
         },
-		
+
         /** Based on this example serialization
 		<geographicCoverage scope="document">
 			<geographicDescription>Rhine-Main-Observatory</geographicDescription>
@@ -59,7 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		</geographicCoverage>
 		 **/
 		parse: function(objectDOM) {
-			
+
 			var modelJSON = {};
 
 			if (!objectDOM){
@@ -68,13 +68,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				else
 					return {};
 			}
-							
+
 			//Create a jQuery object of the DOM
 			var $objectDOM = $(objectDOM);
-			
+
 			//Get the geographic description
 			modelJSON.description = $objectDOM.children('geographicdescription').text();
-			
+
 			//Get the bounding coordinates
 			var boundingCoordinates = $objectDOM.children('boundingcoordinates');
 			if (boundingCoordinates) {
@@ -83,36 +83,36 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				modelJSON.south = boundingCoordinates.children('southboundingcoordinate').text().replace("+", "");
 				modelJSON.west  = boundingCoordinates.children('westboundingcoordinate').text().replace("+", "");
 			}
-			
+
 			return modelJSON;
 		},
-		
+
 		serialize: function(){
 			var objectDOM = this.updateDOM(),
 				xmlString = objectDOM.outerHTML;
-			
+
 			//Camel-case the XML
 	    	xmlString = this.formatXML(xmlString);
-        	
+
         	return xmlString;
 		},
-		
+
 		/*
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
 			var objectDOM;
-			
+
 			if(!this.isValid()){
 				return "";
 			}
-			
+
 			if (this.get("objectDOM")) {
 				objectDOM = $(this.get("objectDOM").cloneNode(true));
 			} else {
 				objectDOM = $(document.createElement("geographiccoverage"));
 			}
-			
+
 			//If only one point is given, make sure both points are the same
 			if((this.get("north") && this.get("west")) && (!this.get("south") && !this.get("east"))){
 				this.set("south", this.get("north"));
@@ -122,38 +122,38 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				this.set("north", this.get("south"));
 				this.set("west", this.get("east"));
 			}
-			
+
 			// Description
-			if(!objectDOM.children("geographicdescription").length)			
+			if(!objectDOM.children("geographicdescription").length)
 				objectDOM.append( $(document.createElement("geographicdescription")).text(this.get("description")) );
 			else
 				objectDOM.children("geographicdescription").text(this.get("description"));
-			
+
 			// Create the bounding coordinates element
 			var boundingCoordinates = objectDOM.find("boundingcoordinates");
 			if (!boundingCoordinates.length){
 				boundingCoordinates = document.createElement("boundingcoordinates");
 				objectDOM.append(boundingCoordinates);
 			}
-			
+
 			//Empty out the coordinates first
 			$(boundingCoordinates).empty();
-			
+
 			//Add the four coordinate values
 			$(boundingCoordinates).append( $(document.createElement("westboundingcoordinate")).text(this.get("west")),
 											$(document.createElement("eastboundingcoordinate")).text(this.get("east")),
 											$(document.createElement("northboundingcoordinate")).text(this.get("north")),
 											$(document.createElement("southboundingcoordinate")).text(this.get("south")) );
-			 
+
 			 return objectDOM;
 		},
-		
+
 		validate: function(){
 			var north = this.get("north"),
 				east = this.get("east"),
 				south = this.get("south"),
 				west = this.get("west");
-			 	
+
 			if(!this.get("description"))
 				return "Each location must have a description";
 
@@ -175,7 +175,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					isValid: this.validateCoordinate(west, -180, 180)
 				},
 			}
-			
+
 			// Check that either 2 or 4 are set
 			var isSet = _.filter(status, function(coord) { return coord.isSet == true; });
 
@@ -185,10 +185,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				return "Each coordinate must include a latitude AND longitude.";
 			}
 
-			if ((status.north.isSet && !status.west.isSet) || 
+			if ((status.north.isSet && !status.west.isSet) ||
 				(!status.north.isSet && status.west.isSet)) {
 				return "Each coordinate must include a latitude AND longitude.";
-			} else if ((status.south.isSet && !status.east.isSet) || 
+			} else if ((status.south.isSet && !status.east.isSet) ||
 					   (!status.south.isSet && status.east.isSet)) {
 				return "Each coordinate must include a latitude AND longitude.";
 			}
@@ -204,21 +204,19 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				return "The West bounding coordinate must be between -180 and 180.";
 			}
 		},
-		
+
 		// Validate a coordinate String by making sure it can be coerced into a number and
 		// is within the given bounds.
 		// Note: Min and max are inclusive
-		validateCoordinate: function(value) {
-			
-			var min = -180, max = 180;
-			
+		validateCoordinate: function(value, min, max) {
+
 			if (typeof value === "undefined" || value === null || value === "" && isNaN(value)) {
 				return false;
 			}
 
 			var parsed = Number(value);
 
-			if (isNaN(parsed)) { 
+			if (isNaN(parsed)) {
 				return false;
 			}
 
@@ -232,11 +230,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		trickleUpChange: function(){
 			this.get("parentModel").trigger("change");
 		},
-		
+
 		formatXML: function(xmlString){
 			return DataONEObject.prototype.formatXML.call(this, xmlString);
 		}
 	});
-	
+
 	return EMLGeoCoverage;
 });
