@@ -24,7 +24,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             /* Events this view listens to */
             events: {
                 "focusout .name"       : "updateName",
-                //"click    .name"       : "emptyName",
+                "click    .name"       : "emptyName",
                 /* "click .rename"     : "rename", */
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
@@ -632,8 +632,18 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             },
             
             emptyName: function(e){
-            	if(this.$(".name .required-icon").length)
-            		this.$(".name").children().empty();
+            	
+            	var editableCell = this.$(".name [contenteditable]");
+            	
+            	if(editableCell.text().indexOf("Untitled") > -1){
+            		editableCell.attr("data-original-text", editableCell.text().trim())
+            					.text("")
+            					.addClass("empty")
+            					.on("focusout", function(){ 
+            						if(!editableCell.text())
+            							editableCell.text(editableCell.attr("data-original-text")).removeClass("empty");
+            					});
+            	}
             },
             
             showValidation: function(attr, errorMsg){
