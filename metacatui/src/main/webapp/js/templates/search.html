@@ -12,9 +12,9 @@
 		    	<ul id="current-all-filters" class="current-filters" data-category="all"></ul>
 		    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute"></ul>
 		    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation"></ul>
-		    	<ul id="current-resourceMap-filters" class="current-filters" data-category="resourceMap">
-		    		<% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ %>
-		    			<li class="current-filter"><span class="category"><%=searchModelRef.fieldLabels["resourceMap"]%></span><i class="icon-remove remove-filter"></i></li>
+		    	<ul id="current-documents-filters" class="current-filters" data-category="documents">
+		    		<% if (searchModelRef.filterIsAvailable("documents") && documents){ %>
+		    			<li class="current-filter"><span class="category"><%=searchModelRef.fieldLabels["documents"]%></span><i class="icon-remove remove-filter"></i></li>
 		    		<% } %>
 		    	</ul>
 		    	<ul id="current-dataSource-filters" class="current-filters" data-category="dataSource"></ul>
@@ -71,8 +71,8 @@
 			    
 			    <% } %>
 			    
-			   <% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
-				   <div class="filter-contain collapsable" id="includes-files" data-category="resourceMap">
+			   <% if(searchModelRef.filterIsAvailable("documents")){ %>
+				   <div class="filter-contain collapsable" id="includes-files" data-category="documents">
 						<label class="expand-collapse-control">
 							<i class="icon icon-caret-right expand"></i>					
 							<i class="icon icon-caret-down collapse"></i>
@@ -87,7 +87,7 @@
 								<i class="icon icon-check-empty"></i>
 								Only results with data
 							</label>
-							<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ print("checked"); } %> />
+							<input class="filter" type="checkbox" id="includes_data" data-category="documents" name="includes_data" <% if (searchModelRef.filterIsAvailable("documents") && documents){ print("checked"); } %> />
 							<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
 						</div>
 						<div class="clear"></div>
