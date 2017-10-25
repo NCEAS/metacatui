@@ -187,8 +187,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(overviewEl).html(this.overviewTemplate());
 			
 			//Title
-		    var titleEl = this.createBasicTextFields("title", "Example: Greater Yellowstone Rivers from 1:126,700 U.S. Forest Service Visitor Maps (1961-1983)", false);
-		    $(overviewEl).find(".title-container").append(titleEl);
+		    this.renderTitle();
+		    this.listenTo(this.model, "change:title", this.renderTitle);
 			
 	    	//Abstract
 	    	_.each(this.model.get("abstract"), function(abs){
@@ -240,6 +240,11 @@ define(['underscore', 'jquery', 'backbone',
 			//Initialize all the tooltips
 			this.$(".tooltip-this").tooltip();
 		    
+	    },
+	    
+	    renderTitle: function(){
+	    	var titleEl = this.createBasicTextFields("title", "Example: Greater Yellowstone Rivers from 1:126,700 U.S. Forest Service Visitor Maps (1961-1983)", false);
+	    	this.$container.find(".overview").find(".title-container").html(titleEl);
 	    },
 	    
 	    /*
@@ -1302,8 +1307,11 @@ define(['underscore', 'jquery', 'backbone',
 				    			.attr("data-category", category)
 				    			.addClass("basic-text");
 					textRow.append(input.clone().val(value));
-					textRow.append(this.createRemoveButton(null, category, 'div.basic-text-row', 'div.text-container'));
-		    		textContainer.append(textRow);
+					
+					if(category != "title")
+						textRow.append(this.createRemoveButton(null, category, 'div.basic-text-row', 'div.text-container'));
+		    		
+					textContainer.append(textRow);
 		    		
 		    		//At the end, append an empty input for the user to add a new one
 		    		if(i+1 == allModelValues.length && category != "title") {
