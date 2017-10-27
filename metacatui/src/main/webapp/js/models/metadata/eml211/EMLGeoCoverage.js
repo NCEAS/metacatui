@@ -208,10 +208,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		// Validate a coordinate String by making sure it can be coerced into a number and
 		// is within the given bounds.
 		// Note: Min and max are inclusive
-		validateCoordinate: function(value) {
-			
-			var min = -180, max = 180;
-			
+		validateCoordinate: function(value, min, max) {
+
 			if (typeof value === "undefined" || value === null || value === "" && isNaN(value)) {
 				return false;
 			}

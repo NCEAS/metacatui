@@ -1,4 +1,4 @@
-﻿<!-- Icon column -->
+﻿﻿<!-- Icon column -->
 <% if ( typeof type !== "undefined" && type !== null && type == "Metadata" ) { %>
     <% var indentFolder = nodeLevel * 40; %>
     <td class="type-icon">
@@ -14,7 +14,7 @@
 <!-- Files column -->
 
 <td class="name" title="Click to rename" >
-    <% if(uploadStatus != "l" && uploadStatus != "p" && type != "Metadata"){ %>
+    <% if(uploadStatus != "l" && uploadStatus != "p"){ %>
     	<div contenteditable="true">
     <% } else { %>
     	<div>

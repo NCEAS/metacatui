@@ -1114,7 +1114,7 @@ define(['jquery',
 			$("#max_year").val(this.searchModel.get('yearMax'));
 
 			//Reset the checkboxes
-			$("#includes_data").prop("checked", this.searchModel.get("resourceMap"));
+			$("#includes_data").prop("checked", this.searchModel.get("documents"));
 			$("#data_year").prop("checked",     this.searchModel.get("dataYear"));
 			$("#publish_year").prop("checked",  this.searchModel.get("pubYear"));
 			this.listDataSources();

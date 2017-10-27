@@ -19,7 +19,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				all: [],
 				creator: [],
 				taxon: [],
-				//resourceMap: false,
+				//documents: false,
+				resourceMap: false,
 				yearMin: 1900, //The user-selected minimum year
 				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
 				pubYear: false,
@@ -43,7 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//annotation: [],
 				additionalCriteria: [],
 				id: [],
-				seriesId: MetacatUI.appModel.get("useSeriesId")? [] : undefined,
+				seriesId: [],
 				formatType: [{
 					value: "METADATA",
 					label: "science metadata",
@@ -65,7 +66,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		
 		fieldLabels: {
 			attribute : "Data attribute",
-		  resourceMap : "Only results with data", 
+			documents : "Only results with data", 
 		   annotation : "Annotation",
 		   dataSource : "Data source",
 		      creator : "Creator",
@@ -83,11 +84,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					 attribute : "attribute",
 					annotation : "sem_annotation",
 					dataSource : "datasource",
+					documents  : "documents",
 					formatType : "formatType",
 						   all : "",
 					   creator : "originText",
 					   spatial : "siteText",
-				   resourceMap : "documents",
+				   resourceMap : "resourceMap",
 				   	   pubYear : ["datePublished", "dateUploaded"],
 			   	   		    id : ["id", "documents", "resourceMap"],
 				  rightsHolder : "rightsHolder",
@@ -288,6 +290,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//Otherwise, treat it as a binary setting
 				else if(resourceMap) 
 					query += "+" + this.fieldNameMap["resourceMap"] + ':*';
+			}
+			
+			//---documents---
+			if(this.filterIsAvailable("documents") && ((filter == "documents") || getAll)){
+				var documents = this.get('documents');
+				
+				//If the documents search setting is a list ofdocuments IDs
+				if(Array.isArray(documents))
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["documents"], documents,  { operator: "OR" });				
+				//Otherwise, treat it as a binary setting
+				else if(documents) 
+					query += "+" + this.fieldNameMap["documents"] + ':*';
 			}
 			
 			//---Username: search for this username in rightsHolder and submitter ---
