@@ -195,13 +195,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			// Check that the set values are valid
 			if (status.north.isSet && !status.north.isValid) {
-				return "The North bounding coordinate must be between -90 and 90.";
+				return "The Northwest latitude must be between -90 and 90.";
 			} else if (status.east.isSet && !status.east.isValid) {
-				return "The East bounding coordinate must be between -180 and 180.";
+				return "The Southeast longitude must be between -180 and 180.";
 			} else if (status.south.isSet && !status.south.isValid) {
-				return "The South bounding coordinate must be between -90 and 90.";
+				return "The Southeast latitude must be between -90 and 90.";
 			} else if (status.west.isSet && !status.west.isValid) {
-				return "The West bounding coordinate must be between -180 and 180.";
+				return "The Northwest longitude must be between -180 and 180.";
 			}
 		},
 
