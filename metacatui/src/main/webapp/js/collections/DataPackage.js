@@ -1113,14 +1113,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     _.each(aggByStatements, function(statement) {
                         if( !_.contains(allMemberIds, statement.subject.value) ) {
                             this.removeFromAggregation(statement.subject.value);
-
-                        } else if ( _.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) }) ) {
-                            try {
-                                this.dataPackageGraph.remove(statement);
-                            } catch (error) {
-                                console.log(error);
-                            }
-                        }
+                        } 
                     }, this);
 
                 	// Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
@@ -1150,6 +1143,23 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     if(aggregationObjStatements.length) {
                         this.dataPackageGraph.removeMany(undefined, undefined, aggregationNode);
                     }
+                    
+                    // Get a fresh copy of the 'isAggregatedBy' statements (as some may have been
+                    // removed above), and check for any that contain an object that is not the
+                    // aggregation.
+                    aggByStatements =  $.extend(true, [],
+                        this.dataPackageGraph.statementsMatching(undefined, ORE("isAggregatedBy")));
+
+                    // Remove any other isAggregatedBy statements for the old pid.
+                    _.each(aggByStatements, function(statement) {
+                        if ( _.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) }) ) {
+                            try {
+                                this.dataPackageGraph.remove(statement);
+                            } catch (error) {
+                                console.log(error);
+                            }
+                        }
+                    }, this)
     	            
     			    //Change all the resource map identifier literal node in the RDF graph
     				if ( typeof idStatement != "undefined" ) {
