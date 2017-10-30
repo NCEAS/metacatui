@@ -26,8 +26,8 @@
 					<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon icon-search"></i></button>
 			    </div>
 				
-				<% if(searchModelRef.filterIsAvailable("resourceMap")){ %>
-				   <div class="filter-contain" id="includes-files" data-category="resourceMap">
+				<% if(searchModelRef.filterIsAvailable("documents")){ %>
+				   <div class="filter-contain" id="includes-files" data-category="documents">
 						<label>
 							<img src="img/data-table.png" class="icon" />
 							<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
@@ -40,7 +40,7 @@
 								<i class="icon icon-check-empty"></i>
 								Only results with data
 							</label>
-							<input class="filter" type="checkbox" id="includes_data" data-category="resourceMap" name="includes_data" <% if (searchModelRef.filterIsAvailable("resourceMap") && resourceMap){ print("checked"); } %> />
+							<input class="filter" type="checkbox" id="includes_data" data-category="documents" name="includes_data" <% if (searchModelRef.filterIsAvailable("documents") && documents){ print("checked"); } %> />
 							<i class="icon icon-question-sign more-info tooltip-this" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata." data-placement="top"></i>	
 						</div>
 						<div class="clear"></div>

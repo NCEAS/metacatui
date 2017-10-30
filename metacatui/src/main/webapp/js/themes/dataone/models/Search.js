@@ -19,6 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				all: [],
 				creator: [],
 				taxon: [],
+				documents: false,
 				resourceMap: false,
 				yearMin: 1900, //The user-selected minimum year
 				yearMax: new Date().getUTCFullYear(), //The user-selected maximum year
@@ -66,7 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		
 		fieldLabels: {
 			attribute : "Data attribute",
-		  resourceMap : "Only results with data", 
+		    documents : "Only results with data", 
 		   annotation : "Annotation",
 		   dataSource : "Data source",
 		      creator : "Creator",
@@ -85,8 +86,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					formatType : "formatType",
 						   all : "",
 					   creator : "originText",
+					 documents : "documents",
 					   spatial : "siteText",
-				   resourceMap : "documents",
+				   resourceMap : "resourceMap",
 				   	   pubYear : ["dateUploaded", "datePublished"],
 				   	dataSource : "datasource",
 		   	   				id : ["id", "documents", "resourceMap"],
@@ -306,6 +308,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				//Otherwise, treat it as a binary setting
 				else if(resourceMap) 
 					query += "+" + this.fieldNameMap["resourceMap"] + ':*';
+			}
+			
+			//---documents---
+			if(this.filterIsAvailable("documents") && ((filter == "documents") || getAll)){
+				var documents = this.get('documents');
+				
+				//If the documents search setting is a list ofdocuments IDs
+				if(Array.isArray(documents))
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["documents"], documents,  { operator: "OR" });				
+				//Otherwise, treat it as a binary setting
+				else if(documents) 
+					query += "+" + this.fieldNameMap["documents"] + ':*';
 			}
 			
 			//---Username: search for this username in rightsHolder and submitter ---

@@ -1366,7 +1366,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
-	    		model.set(category, [currentValue, value]);
+	    		model.set(category, [value]);
 	    		model.trigger("change:" + category);
 	    	}
 	    	else if(!currentValue) {
@@ -1506,7 +1506,20 @@ define(['underscore', 'jquery', 'backbone',
 		},
 		
 		createTaxonomicClassifcationTable: function(classification) {
-			var finishedEl = $('<div class="row-striped root-taxonomic-classification-container"></div>');
+            
+            // Issue 255 : Rushiraj Nenuji
+            // Creating a taxoSpeciesCounter variable for displaying the tables number.
+            // Initializing it zero everytime the page is loaded
+            // And incrementing it everytime.
+            if (typeof taxoSpeciesCounter === "undefined") { taxoSpeciesCounter = 0; }
+            taxoSpeciesCounter++;
+
+
+            // Issue 255: Rushiraj Nenuji
+            // Adding the taxoSpeciesCounter to the table header for enhancement of the view
+            var finishedEl = $('<div class="row-striped root-taxonomic-classification-container"></div>');
+            $(finishedEl).append('<p class="subtle">Species '+taxoSpeciesCounter+'</p>');
+
 
 			// Add a remove button if this is not a new table
 			if (!(typeof classification === "undefined")) {
