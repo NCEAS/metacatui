@@ -1366,7 +1366,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
-	    		model.set(category, [currentValue, value]);
+	    		model.set(category, [value]);
 	    		model.trigger("change:" + category);
 	    	}
 	    	else if(!currentValue) {
