@@ -180,9 +180,14 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		isClassificationValid: function(taxonomicClassification){
+
+
 			if( ! Object.keys(taxonomicClassification).length )
 				return true;
-			else if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
+			if(Array.isArray(taxonomicClassification)){
+				if(!taxonomicClassification[0].taxonRankName || !taxonomicClassification[0].taxonRankValue)
+					return false;
+			}else if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
 				return false;
 			
 			if(taxonomicClassification.taxonomicClassification)
