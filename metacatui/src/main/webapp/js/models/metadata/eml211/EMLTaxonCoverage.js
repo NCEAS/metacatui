@@ -181,14 +181,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		isClassificationValid: function(taxonomicClassification){
 
-
 			if( ! Object.keys(taxonomicClassification).length )
 				return true;
-			if(Array.isArray(taxonomicClassification)){
-				if(!taxonomicClassification[0].taxonRankName || !taxonomicClassification[0].taxonRankValue)
+			if(Array.isArray(taxonomicClassification)) {
+				if(!taxonomicClassification[0].taxonRankName || !taxonomicClassification[0].taxonRankValue) {
 					return false;
-			}else if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue)
+				}
+			} else if(!taxonomicClassification.taxonRankName || !taxonomicClassification.taxonRankValue) {
 				return false;
+			}
 			
 			if(taxonomicClassification.taxonomicClassification)
 				return this.isClassificationValid(taxonomicClassification.taxonomicClassification);
