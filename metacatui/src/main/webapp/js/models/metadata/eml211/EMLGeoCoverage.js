@@ -148,16 +148,53 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 return objectDOM;
 		},
 
-		validate: function(){
+		/*
+		* Sometimes we'll need to add a space between error messages, but only if an 
+		* error has already been triggered. Use addSpace to accomplish this.
+		*/
+		addSpace: function(msg) {
+			if(!msg.empty){
+			    return msg+=" ";
+			}
+			return msg;
+		},
+
+		/*
+		* Because the same error messages are used in a couple of different places, we centralize the strings 
+		* and access here	
+		*/
+		getErrorMessage: function(direction) {
+			switch(direction) {
+			    case "north":
+				    return "The Northwest latitude must be between -90 and 90.";
+				    break;
+			    case "east":
+				    return "The Southeast longitude must be between -180 and 180.";
+				    break;
+			    case "south":
+				    return "The Southeast latitude must be between -90 and 90.";
+			        break;
+			    case "west":
+				    return "The Northwest longitude must be between -180 and 180.";
+				    break;
+			    default:
+				    return "";
+				    break;
+			}
+		},
+
+		/*
+		* Generates an object that describes the current state of each latitude
+		* and longitude box. The status includes whether there is a value and
+		* if the value is valid. 
+		*/
+		getCoordinateStatus: function() {
 			var north = this.get("north"),
-				east = this.get("east"),
-				south = this.get("south"),
-				west = this.get("west");
+			east = this.get("east"),
+			south = this.get("south"),
+			west = this.get("west");
 
-			if(!this.get("description"))
-				return "Each location must have a description";
-
-			var status = {
+			return {
 				'north': {
 					isSet: typeof north !== "undefined" && north != null && north !== "",
 					isValid: this.validateCoordinate(north, -90, 90)
@@ -175,34 +212,72 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					isValid: this.validateCoordinate(west, -180, 180)
 				},
 			}
+		},
+
+		/*
+		* Checks the status object for conditions that warrant an error message to the user. This is called
+		* during the validation processes (validate() and updateModel()) after the status object has been
+		* created by getCoordinateStatus().
+ 		*/
+		generateStatusErrors: function(status) {
+			var errorMsg = "";
+
+			// Northwest Latitude
+			if(status.north.isSet && !status.north.isValid) {
+				errorMsg = this.addSpace(errorMsg);
+				errorMsg += "The Northwest latitude must be between -90 and 90.";
+			}
+			// Northwest Longitude	
+			if(status.west.isSet && !status.west.isValid) {
+				errorMsg = this.addSpace(errorMsg);
+				errorMsg += "The Northwest longitude must be between -180 and 180.";
+			}
+			// Southeast Latitude
+			if(status.south.isSet && !status.south.isValid) {
+				errorMsg = this.addSpace(errorMsg);
+				errorMsg += "The Southeast latitude must be between -90 and 90.";
+			}
+			// Southeast Longitude
+			if(status.east.isSet && !status.east.isValid) {
+				errorMsg = this.addSpace(errorMsg);
+				errorMsg += "The Southeast longitude must be between -180 and 180.";
+			}
+			return errorMsg;
+
+		},
+
+		/* This grabs the various location elements and validates the user input. In the case of an error,
+		* we append an error string (errMsg) so that we display all of the messages at the same time.
+		*/
+		validate: function(){
+            var errorMsg = "";
+            
+			if(!this.get("description")) {
+				errorMsg += "Each location must have a description.";
+            }
+
+			var status = this.getCoordinateStatus();
 
 			// Check that either 2 or 4 are set
 			var isSet = _.filter(status, function(coord) { return coord.isSet == true; });
 
 			if (isSet.length == 0) {
-				return "Each location description must have at least one coordinate pair.";
-			} else if (isSet.length == 1 || isSet.length == 3) {
-				return "Each coordinate must include a latitude AND longitude.";
+				errorMsg = this.addSpace(errorMsg);
+				errorMsg += "Each location description must have at least one coordinate pair.";
 			}
 
 			if ((status.north.isSet && !status.west.isSet) ||
 				(!status.north.isSet && status.west.isSet)) {
-				return "Each coordinate must include a latitude AND longitude.";
+				errorMsg = this.addSpace(errorMsg);
+				errorMsg +=  "Each coordinate must include a latitude AND longitude.";
 			} else if ((status.south.isSet && !status.east.isSet) ||
 					   (!status.south.isSet && status.east.isSet)) {
-				return "Each coordinate must include a latitude AND longitude.";
+				errorMsg = this.addSpace(errorMsg);
+				errorMsg +=  "Each coordinate must include a latitude AND longitude.";
 			}
 
-			// Check that the set values are valid
-			if (status.north.isSet && !status.north.isValid) {
-				return "The Northwest latitude must be between -90 and 90.";
-			} else if (status.east.isSet && !status.east.isValid) {
-				return "The Southeast longitude must be between -180 and 180.";
-			} else if (status.south.isSet && !status.south.isValid) {
-				return "The Southeast latitude must be between -90 and 90.";
-			} else if (status.west.isSet && !status.west.isValid) {
-				return "The Northwest longitude must be between -180 and 180.";
-			}
+			errorMsg += this.generateStatusErrors(status);
+			return errorMsg;
 		},
 
 		// Validate a coordinate String by making sure it can be coerced into a number and

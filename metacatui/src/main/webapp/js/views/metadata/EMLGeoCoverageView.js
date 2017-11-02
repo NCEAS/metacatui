@@ -57,10 +57,29 @@ define(['underscore', 'jquery', 'backbone',
         		}
         		
         		return this;
-        	},
-        	
+			},
+			
+			/* 
+			* This is where we add validation error messages to the notification container
+			*/
+			showValidationError: function(errorMsg) {
+								this.$(".notification").text(errorMsg).addClass("error");
+								this.$el.addClass("error");
+							},
+
+			/* 
+			* This is where we remove old error messages from the error notification container
+			*/
+			removeValidationError: function() {
+				this.$("input.error, textarea.error").removeClass("error");
+				this.$(".notification.error").text("");
+				this.$el.removeClass("error");
+			},
+
         	/*
-        	 * Updates the model 
+        	 * Updates the model. 
+			 * If this is called from the user switching between latitude and longitude boxes,
+			 * we check to see if the input was valid and display any errors if we need to.
         	 */
         	updateModel: function(e){
         		if(!e) return false;
@@ -76,18 +95,30 @@ define(['underscore', 'jquery', 'backbone',
         		if(!attribute) return false;
         		
         		this.model.set(attribute, value);
-        		
+				
         		//this.model.isValid();
-        		
-        		if(this.model.get("parentModel")){
+				
+				// Find and display any errors that the user needs to know about
+				var status = this.model.getCoordinateStatus();
+				var errorMsg = this.model.generateStatusErrors(status);
+
+				if(errorMsg) {
+					this.showValidationError(errorMsg);
+				}
+				else {
+					this.removeValidationError();
+				}
+        		if(this.model.get("parentModel")) {
         			if(this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel"))){
         				MetacatUI.rootDataPackage.packageModel.set("changed", true);        		    	
         			}
         		}
         	},
-        	
+
         	/*
-        	 * If the model isn't valid, show verification messages
+        	 * Checks to see if any error messages need to be removed. If not, then it performs validation 
+			 * across the row and displays any errors. This id called when the user clicks out of an edit box 
+			 * on to the page.
         	 */
         	showValidation: function(e, options){
         		
@@ -208,14 +239,11 @@ define(['underscore', 'jquery', 'backbone',
 	        		}
 	        		
 	        		if(hasError){
-	        			var errorMsg = view.model.validationError;
-	        			view.$(".notification").text(errorMsg).addClass("error");
-	        			view.$el.addClass("error");
+						view.removeValidationError();
+						view.showValidationError(view.model.validationError);
 	        		}
 	        		else{
-	        			view.$("input.error, textarea.error").removeClass("error");
-	        			view.$(".notification.error").text("");
-	        			view.$el.removeClass("error");
+						view.removeValidationError();
 	        		}
         		}, 1);
         	},
