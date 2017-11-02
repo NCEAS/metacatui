@@ -1507,17 +1507,15 @@ define(['underscore', 'jquery', 'backbone',
 		
 		createTaxonomicClassifcationTable: function(classification) {
             
-            // updating the taxaTableIndex before adding a new table to the page.
-            // re-indexing all the taxaIndex numbers.
-            var taxaNums = this.$(".taxaIndex");
-            for(var i=0; i < taxaNums.length; i++){
-                $(taxaNums[i]).text(i+1);
+            // updating the taxonomic table indexes before adding a new table to the page.
+            var taxaNums = this.$(".editor-header-index");
+            for (var i = 0; i < taxaNums.length; i++) {
+                $(taxaNums[i]).text(i + 1);
             }
 
-            // Issue 255: Rushiraj Nenuji
             // Adding the taxoSpeciesCounter to the table header for enhancement of the view
             var finishedEl = $('<div class="row-striped root-taxonomic-classification-container"></div>');
-            $(finishedEl).append('<p class="subtle taxaTitles">Species <span class="taxaIndex">' + (taxaNums.length + 1) + '</span> </p>');
+            $(finishedEl).append('<h6>Species <span class="editor-header-index">' + (taxaNums.length + 1) + '</span> </h6>');
 
 
 			// Add a remove button if this is not a new table
@@ -2058,10 +2056,10 @@ define(['underscore', 'jquery', 'backbone',
 			// Remove the DOM
 			$(parentEl).remove();
             
-            //updating the taxaTablesIndex once the element has been removed
-            var taxaNums = this.$(".taxaIndex");
-            for(var i=0; i < taxaNums.length; i++){
-                $(taxaNums[i]).text(i+1);
+            //updating the tablesIndex once the element has been removed
+            var tableNums = this.$(".editor-header-index");
+            for (var i = 0; i < tableNums.length; i++) {
+                $(tableNums[i]).text(i + 1);
             }
 		},
 

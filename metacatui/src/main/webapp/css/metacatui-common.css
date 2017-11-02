@@ -3781,6 +3781,12 @@ textarea.xlarge{
 	margin-top: 20px;
 	position: relative; 
 }
+.row-striped,
+.root-taxonomic-classification-container h6{
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
 .root-taxonomic-classification-container:first-child,
 .taxonomic-coverage > .notification + .row-striped:nth-child(2){
 	margin-top: 0px;
