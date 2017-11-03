@@ -52,7 +52,7 @@
 		<div class="progress progress-striped active">
 			<div class="bar" style="width: <%=uploadProgress%>%;"></div>
 		</div>
-	<% } else if( (!uploadStatus || uploadStatus == "c") && type != "Metadata" && numAttributes == 0 ) { %>
+	<% } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ) { %>
 		<i class="icon icon-circle-blank warning icon-large"></i>
 	<% } else if( type != "Metadata" && numAttributes > 0 && hasAttributeChanges && entityIsValid ) { %>
 		<i class="icon icon-ok-circle success icon-large"></i>
@@ -62,10 +62,6 @@
 		<i class="icon icon-ok-circle success icon-large"></i>
 	<% } else if( uploadStatus == "e" ) { %>
 		<i class="icon icon-exclamation-sign danger error icon-large"></i>
-	<% } else if( uploadStatus == "q" && type != "Metadata"){ %>
-		<div class="progress progress-striped queued">
-			<div class="bar" style="width: 0px;"></div>
-		</div>
 	<% } else if( uploadStatus == "l" && type != "Metadata"){ %>
 		<i class="icon icon-circle-blank icon-large"></i>
 	<% } %>
@@ -82,7 +78,7 @@
         <% } else { %>
 
             <div class="btn-group">
-            <% if( (!uploadStatus || uploadStatus == "c") && type != "Metadata" && numAttributes == 0 ){ %>
+            <% if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ){ %>
 			  <button class="btn edit warning">Describe</button>
 			 <% } else { %>
 			 	<button class="btn edit">Describe</button>

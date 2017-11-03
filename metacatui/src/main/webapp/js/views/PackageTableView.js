@@ -62,10 +62,6 @@ define(['jquery', 'underscore', 'backbone',
 			//If the model isn't complete, we may be still waiting on a response from the index so don't render anything yet
 			if(!this.model.complete) return false;
 
-			// Grab all of our URLs
-			var queryServiceUrl   = MetacatUI.appModel.get('queryServiceUrl');
-			var packageServiceUrl = MetacatUI.appModel.get('packageServiceUrl');
-			
 			//Start the HTML for the rows
 			var	tbody = $(document.createElement("tbody"));
 							
