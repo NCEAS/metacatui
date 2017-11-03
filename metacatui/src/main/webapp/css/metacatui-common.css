@@ -3773,9 +3773,9 @@ textarea.xlarge{
 
 /* ---- Taxon Coverage ---- */
 .root-taxonomic-classification-container .notification{
-	padding-left: 0px;
+	padding-left: 68px;
 	position: absolute;
-	margin-top: -25px;
+	margin-top: -31px;
 }
 .root-taxonomic-classification-container{
 	margin-top: 20px;
