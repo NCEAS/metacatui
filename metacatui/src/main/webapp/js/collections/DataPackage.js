@@ -1948,9 +1948,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	            		idsFromXML.push(statementID);
 
     	            		//Add variations of the ID so we make sure we account for all the ways they exist in the RDF XML
-    	            		if(statementID.indexOf(cnResolveUrl) > -1)
+    	            		if(statementID.indexOf(cnResolveUrl) > -1) {
     	            			idsFromXML.push(statementID.substring(statementID.lastIndexOf("/") + 1));
-    		            	else
+                                // Allow for ids that are simple URIs, e.g. "urn:uuid:1234..."
+    	            			idsFromXML.push(decodeURIComponent(statementID.substring(statementID.lastIndexOf("/") + 1)));
+                      } else
     		            		idsFromXML.push(cnResolveUrl + encodeURIComponent(statementID));
     	            	}
 
