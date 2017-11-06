@@ -853,7 +853,7 @@ define(['underscore', 'jquery', 'backbone',
 				methodsModel = new EMLMethods({ edit: this.edit, parentModel: this.model });
 			}
 
-			this.$(".section.methods").append(new EMLMethodsView({ 
+			this.$(".section.methods").html(new EMLMethodsView({ 
 				model: methodsModel, 
 				edit: this.edit }).render().el);
 		},
