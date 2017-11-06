@@ -2,7 +2,7 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 	function($, _, Backbone, provEntitySelectTemplate) {
 	'use strict';
 
-	// Obtain a list of provenance entities from the packageModel and display to the
+	// Obtain a list of provenance entities from the DataPackage and display to the
 	// user for selection. The selected package members will be added to the provenance
 	// of the package member being edited.
 	var ProvEntitySelectView = Backbone.View.extend({
@@ -12,7 +12,7 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			this.title 		   = options.title         || "Add provenance";
 			this.selectLabel   = options.selectLabel   || "Choose from the files in this dataset";
 			this.selectEntityType  = options.selectEntityType || "data";
-			this.packageModel  = options.packageModel  || null;
+			this.dataPackage   = options.dataPackage  || null;
 			this.context       = options.context       || null;
 			this.displayRows   = options.displayRows   || 0;
 			
@@ -29,8 +29,7 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 		},
 		
 		render: function(){
-			var members = this.packageModel.get("members")
-			console.log("rendering selection modal!");
+			var members = this.dataPackage.toArray();
 			// Reset the rendered view
 			this.$el.html('');
 			
@@ -44,31 +43,54 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			
 		    // Don't include metadata package members	
 			members = _.filter(members, function(item) {
-					return item.get("formatType") != "METADATA";
+					return item.get("type").toLowerCase() != "metadata";
 			});	
+            
+            // A package member that is of type program can only be selected once, 
+            // otherwise we could have loops created in the provenance graph. Data
+            // members can be selected multiple times (as one program could created
+            // the item and another read it, so just highlight them if they have
+            // been used before.
+            members = _.reject(members, function(item) {
+                if (item.selectedInEditor == true && item.getType() == "program") return true;
+            });
 			
 			if(this.selectEntityType == "program") {
 				// If a program is being selected, display in the list if
 				// first it is a program type, or if the type isn't defined, or
 				// if it is not data.
 				members = _.filter(members, function(item) {
-					if(view.parentView.isSoftware(item)) return true;
-					if(typeof item.get("formatId") === "undefined") return true;
-					if(item.get("formatId") === null) return true;
-					if(!view.parentView.isData(item)) return true;
+					if(item.getType() == "program") return true;
+					if(typeof item.getType() === "undefined") return true;
+					if(item.getType() === null) return true;
+					if(!item.isData()) return true;
 					return false;
 				});	
 			} else if (this.selectEntityType == "data") {
 			// Don't display metadata in the selection view
 				members = _.filter(members, function(item) {
-					if(view.parentView.isData(item)) return true;
-					if(typeof item.get("formatId") === "undefined") return true;
-					if(item.get("formatId") === null) return true;
-					if(!view.parentView.isSoftware(item)) return true;
+					if(item.getType() == "data") return true;
+					if(typeof item.getType() === "undefined") return true;
+					if(item.getType() === null) return true;
+					if(!item.isSoftware()) return true;
 					return false;
 				});	
 			}
 			
+            // Create a list of styles to apply to the selection box options. Currently
+            // this includes gray background for previously selected items, white for new
+            // ones.
+            // The selection list should at this point contain unused program items
+            // or data items that are new or used (previously selected).
+            var optionStyles = {};
+            _.each(members, function(item){ 
+                if (item.selectedInEditor == true) {
+                    optionStyles[item.get("id")] = "background-color: lightgray";
+                } else {
+                    optionStyles[item.get("id")] = "background-color: white";
+                }
+            });
+            
 			// Set the number of items to display in the select list
 			if(this.displayRows == 0) this.displayRows == Math.min(10, members.length);
 			
@@ -77,7 +99,8 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 				selectLabel   : this.selectLabel,
 				selectMode    : this.selectMode,
 				members       : members,
-				displayRows   : this.displayRows
+				displayRows   : this.displayRows,
+                optionStyles  : optionStyles
 			}));
 			
 			return this;
@@ -87,20 +110,16 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 			// First see if a pid value was entered in the text box.
 			// If yes then this value will be used instead of the
 			// select list.
-			console.log("reading selected entities");
 			var values = $('#pidValue').val();
 			if(typeof values !== undefined && values != "") {
-			    console.log("returning text: " + values);
 				return values;
 			} else {
 				values = $('#select-prov-entity').val();
 			}
-            console.log("pes: selected entities: " + values);
 			return values;
 		},
 		
 		onClose: function() {			
-			console.log("ProvEntitySelectView: closing ProvEntitySelectionView");
 			this.remove();			
 			this.unbind();
 		}

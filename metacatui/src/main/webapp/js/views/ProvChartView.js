@@ -10,9 +10,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.parentView    = options.parentView    || null;
 			this.sources 	   = options.sources       || null;
 			this.derivations   = options.derivations   || null;
-			this.context 	   = options.context       || null;
-			this.contextEl     = options.contextEl     || $("body");
-			this.packageModel  = options.packageModel  || null;
+			this.context 	   = options.context       || null;     // The package member
+			this.contextEl     = options.contextEl     || $("body"); // The parent view DOM element for the package member
+			this.dataPackage   = options.dataPackage   || null;
 			this.nodeHeight    = options.nodeHeight    || 67; 	  //Pixel height of the node including padding and margins
 			this.pointerHeight = options.pointerHeight || 15;     //Pixel height of the pointer/arrow image
 			this.offsetTop     = options.offsetTop     || this.nodeHeight; //The top margin of the chart, in pixels
@@ -133,13 +133,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					
 					if(metadataID){
 						//The metadata doc for this object may be in the same package as the context of this prov chart
-						metadata = _.find(view.packageModel.get("members"), function(member){ return member.get("id") == metadataID });
+						metadata = view.dataPackage.find(function(member){ return member.get("id") == metadataID });
 					}
 					
 					if(!metadata){
 					//Or it may be in any of the other packages related to that package
 						var potentialMatch;
-						_.each(view.packageModel.get("relatedModels"), function(model){
+						_.each(view.dataPackage.get("relatedModels"), function(model){
 							potentialMatch = _.find(model.get("members"), function(member){ return member.get("id") == metadataID });
 							if(potentialMatch)
 								metadata = potentialMatch;
@@ -460,7 +460,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 
 			//The View link
 			var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
-			if(_.contains(this.packageModel.get("memberIds"), provEntity.get("id")))
+			if(_.contains(this.dataPackage.get("memberIds"), provEntity.get("id")))
 				var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn preview").attr("data-id", provEntity.get("id")).text("View").append(arrowIcon);
 			else
 				var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
@@ -500,7 +500,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//Add a popover to the node that will show the citation for this dataset and a provenance statement
 			var view = this,
-				popoverTriggerEl = (provEntity.get("type") == "program") ? $(nodeEl).add(g) : nodeEl;
+				popoverTriggerEl = (provEntity.getType() == "program") ? $(nodeEl).add(g) : nodeEl;
 			
 			$(nodeEl).popover({
 				html: true,
@@ -548,7 +548,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			/*
 			 * Set a separate event listener on the program icon since it is overlapped with the program arrow
 			 */
-			if(provEntity.get("type") == "program"){
+			if(provEntity.getType() == "program"){
 				$(g).on("click", function(){
 					var programNode = $(this).prev("polygon"),
 						isOpen = $(programNode).attr("class").indexOf("active") > -1;
@@ -782,8 +782,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		},
 		
 		// Display a modal dialog that will be used to select a list of package
-		// members that will be associated with the current member (that belongs to this)
-		// metadata detail section), by a provenance relationship.
+		// members that will be associated with the current member (that belongs to the
+		// current metadata detail section), by a provenance relationship.
 		selectProvEntities: function(e) {
 			// TODO: determine if this select was called from a program edit icon or a
 			// data edit icon.
@@ -837,10 +837,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				title 		  : title,
 				selectLabel   : label,
 				selectEntityType : selectEntityType , // Can be either "data" or "program"
-				packageModel  : this.packageModel,
+				dataPackage   : this.dataPackage,
 				context       : this.context,
 				// Number of ows in the select list
-				displayRows   : Math.min(10, this.packageModel.get("members").length)
+				displayRows   : Math.min(10, this.dataPackage.length)
 			});
 			this.$el.append(this.selectProvEntityView.render().el);
 			this.subviews.push(this.selectProvEntityView);
