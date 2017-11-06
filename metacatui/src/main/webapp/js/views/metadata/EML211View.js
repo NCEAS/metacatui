@@ -835,6 +835,12 @@ define(['underscore', 'jquery', 'backbone',
 
 				this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonCov));
 			}
+            
+            // updating the indexes of taxa-tables before rendering the information on page(view).
+            var taxaNums = this.$(".editor-header-index");
+            for (var i = 0; i < taxaNums.length; i++) {
+                $(taxaNums[i]).text(i + 1);
+            }
 	    },
 	    
 	    /*
