@@ -105,8 +105,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });
-               
             },
+            
+            selectedInEditor: false, // Has this package member been selected and displayed in the provenance editor?  
             
             /*
              * Maps the lower-case sys meta node names (valid in HTML DOM) to the 

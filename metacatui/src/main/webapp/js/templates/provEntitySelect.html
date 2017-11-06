@@ -12,7 +12,7 @@
 	<label for="select-prov-entity"><%= selectLabel %></label>
     <select id="select-prov-entity" size="<%= displayRows %>" <%= selectMode %> >
 		<% _.each(members, function(member) { %>
-			<option value="<%= member.get('id') %>"><%= member.get('fileName') %></option>
+			<option value="<%= member.get('id') %>" style="<%= optionStyles[member.get('id')] %>"><%= member.get('fileName') %></option>
 		<% }); %>
 	</select>
     <label for="pidValue">Add by indentifier:</label>
