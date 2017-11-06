@@ -1,4 +1,4 @@
-﻿﻿/* global define */
+/* global define */
 define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats', 'md5'],
     function($, _, Backbone, uuid, ObjectFormats, md5){
   
@@ -71,6 +71,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     objectXML: null, // A cached version of the object fetched from the server
                     isAuthorized: null, // If the stated permission is authorized by the user
                     collections: [], //References to collections that this model is in
+                    provSources: [],
+                    provDerivations: [],
                     prov_generated: [],
                     prov_generatedByExecution: [],
                     prov_generatedByProgram: [],
