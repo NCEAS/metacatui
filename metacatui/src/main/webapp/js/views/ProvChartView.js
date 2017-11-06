@@ -913,41 +913,73 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			} else {
 				values = selectedValues;
 			}
-				
+            
+            // Add the selected values to this prov graph.
+			this.addProv(values, entityType);	
+        },
+        
+        // Add provenance relationships for the package members that were selected
+        // by the selection modal. ProvChartView 'provSources' and 'provDerivations' are
+        // updated so that the items will appear in the affected prov charts (may be more that one),
+        // and provenance relationships for the selected items are added to the RDF graph stored
+        // in the DataPackage collection.
+        // Note that the provenance relationships that are added depend on the position of the 
+        // add icon that was click in the prov graph and whether it is on the left (sources) or
+        // right (derivations) side, and if any icons are already in the prov chart that need 
+        // to be connected to the new item.
+        addProv: function(values, entityType) {
+            var view = this;
 			var memberPid = this.context.get("id");
 			// Loop through selected values, adding the proper relationships between the selected
 			// value and the current package member.
 			for (var i = 0; i < values.length; i++) { 
-    			var thisPid = values[i];
-				console.log("searching for pid: " + thisPid);
+    			var pidToAdd = values[i];
+                // Is this pid for a package member? It could be a link to another package
+                // If it is a package member, mark it as selected, so it is not selected again.
+                var addMember = null;
+                if (_.contains(this.dataPackage.pluck("id"), pidToAdd)) {
+                    addMember = this.dataPackage.get(pidToAdd);
+                    addMember.selectedInEditor = true;
+                };
 				if(this.editorType == "sources") {
 					// This is a sources chart
 					if(entityType == "program") {
-						// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
-						// prov_wasDerivedFrom, prov_wasInformedBy
-						this.addProvRel(this.packageModel, memberPid, "prov_generatedByProgram", thisPid);
-						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
-						this.addProvRel(this.packageModel, thisPid,   "prov_generated", memberPid);
-						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+						// Programmer's note: source fields for prov charts: prov_generatedByExecution, prov_generatedByProgram, 
+                        // prov_used, prov_wasDerivedFrom, prov_wasInformedBy
+						this.addProvRel(this.dataPackage, memberPid, "prov_generatedByProgram", pidToAdd);
+						this.setMemberAttr(this.dataPackage, pidToAdd, "type", "program")
 						// If data nodes already exist in this prov chart, then add them to the program.
 						_.each(view.sources, function(model){
-							if(model.get("type") == "data") {
+							if(model.getType() == "data") {
 								var dataPid = model.get("id");
-								view.addProvRel(view.packageModel, dataPid, "prov_usedByProgram", thisPid);
-								view.addProvRel(view.packageModel, thisPid,   "prov_used", dataPid);
+								view.addProvRel(view.dataPackage, dataPid, "prov_usedByProgram", pidToAdd);
+                                // Update the package member for the data item so that it's metadataview 
+                                // detail section will show the program as using the data item.
+                                if(addMember != null) {
+                                    model.set("provDerivations", _.union(model.get("provDerivations"), [addMember]));
+                                    addMember.set("provSources", _.union(addMember.get("provSources"), [model]));
+                                }
 							}
 						});
+                            
+                        // Update the program's package member so that it's metadataview detail section will show
+                        // the current member (provchart) as generated data there.
+                        if(addMember != null) {
+                            addMember.set("provDerivations", _.union(addMember.get("provDerivations"), [this.context]));
+                        }
 					} else {
 						// Prov for a data node is being added
-						this.addProvRel(this.packageModel, memberPid, "prov_wasDerivedFrom", thisPid);
-						this.setMemberAttr(this.packageModel, thisPid, "type", "data");
-						this.addProvRel(this.packageModel, thisPid, "prov_hasDerivations", memberPid);
+						this.addProvRel(this.dataPackage, memberPid, "prov_wasDerivedFrom", pidToAdd);
+						this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data");
+						this.addProvRel(this.dataPackage, pidToAdd, "prov_hasDerivations", memberPid);
 						// If a program already exists in this prov chart, then connect this data node to
 						// the program as input.
 						_.each(view.programs, function(thisProgram) {
 							var programPid = thisProgram.get("id");
-							view.addProvRel(view.packageModel, thisPid, "prov_usedByProgram", programPid);
-							view.addProvRel(view.packageModel, programPid,   "prov_used", thisPid);
+							view.addProvRel(view.dataPackage, pidToAdd, "prov_usedByProgram", programPid);
+                            // Update the program's package member so that it's metadataview detail section will show
+                            // the current member (provchart) as a used data item there.
+                            thisProgram.set("provSources", _.union(thisProgram.get("provSources"), [addMember]));
 						});
 					}
 				} else {
@@ -955,36 +987,46 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations,
 					// prov_generated
 					if(entityType == "program") {
-			    		//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == thisPid});
-						this.addProvRel(this.packageModel, memberPid, "prov_usedByProgram", thisPid);
-						this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
-						this.addProvRel(this.packageModel, thisPid,   "prov_used", memberPid);
-						this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+			    	//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == pidToAdd});
+						this.addProvRel(this.dataPackage, memberPid, "prov_usedByProgram", pidToAdd);
+						this.setMemberAttr(this.dataPackage, pidToAdd, "type", "program")
 						// If data nodes already exist in this prov chart, then add them to the program.
 						_.each(view.derivations, function(model){
-							if(model.get("type") == "data") {
+							if(model.getType() == "data") {
 								var dataPid = model.get("id");
-								view.addProvRel(view.packageModel, dataPid, "prov_generatedByProgram", thisPid);
-								view.addProvRel(view.packageModel, thisPid,   "prov_generated", dataPid);
+								view.addProvRel(view.dataPackage, dataPid, "prov_generatedByProgram", pidToAdd);
+                                // Update the package member for the data item so that it's metadataview 
+                                // detail section will show the program as generating the data item.
+                                if(addMember != null) {
+                                    model.set("provSources", _.union(model.get("provSources"), [addMember]));
+                                    addMember.set("provDerivations", _.union(addMember.get("provDerivations"), [model]));
+                                }
 							}
 						});
+                        // Update the program's package member so that it's metadataview detail section will show
+                        // the current member (provchart) as generated data there.
+                        if(addMember != null) {
+                            addMember.set("provSources", _.union(addMember.get("provSources"), [this.context]));
+                        }
 					} else {
 						// Prov for a data node is being added
-						this.addProvRel(this.packageModel, thisPid, "prov_wasDerivedFrom", memberPid);
-						this.setMemberAttr(this.packageModel, thisPid, "type", "data")
-						this.addProvRel(this.packageModel, memberPid, "prov_hasDerivations", thisPid);
+						this.addProvRel(this.dataPackage, pidToAdd, "prov_wasDerivedFrom", memberPid);
+						this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data")
+						this.addProvRel(this.dataPackage, memberPid, "prov_hasDerivations", pidToAdd);
 						// If a program already exists in this prov chart, then connect this data node to
 						// the program as output.
 						_.each(view.programs, function(thisProgram) {
 							var programPid = thisProgram.get("id");
-							view.addProvRel(view.packageModel, thisPid, "prov_generatedByProgram", programPid);
-							view.addProvRel(view.packageModel, programPid,   "prov_generated", thisPid);
+							view.addProvRel(view.dataPackage, pidToAdd, "prov_generatedByProgram", programPid);
+                            // Update the program's package member so that it's metadataview detail section will show
+                            // the current member (provchart) as a used data item there.
+                            thisProgram.set("provDerivations", _.union(thisProgram.get("provDerivations"), [addMember]))
 						});
 					}
 				}
 			}
 			
-			this.packageModel.trigger("redrawProvCharts");
+			this.dataPackage.trigger("redrawProvCharts");
 		},
 			
 		onClose: function() {			
@@ -1000,65 +1042,69 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
   			return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 		}, 
 		
-		// Add provenance relationships to a package member. Most of the provenance relationships store arrays of package
-		// members and not pids (prov_used, prov_generatedByProgram, etc), however, some of them store just strings (prov_instanceOfClass)
-		// Set the predicate attribute of the 'subject' package member to the 'object' package member, thereby establishing a 
-		// provenance relationship between the two.
-		addProvRel: function(packageModel, subjectId, predicate, object) {
-			var subjectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == subjectId});
-			var objectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == object});
-			
-			// Is the predicate a source or destination field
-			var isSource = subjectMember.isSourceField(predicate)
-			var isDerivation = subjectMember.isDerivationField(predicate)
-			// If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
-			// such as the field 'prov_instanceOfClass'
-			if (!isSource && !isDerivation) {
-				subjectMember.set(predicate, object);
-			} else if (isSource) {
-				// Also populate the 'sources' accumulated attribute
-				subjectMember.set("provSources", _.union(subjectMember.get("provSources"), [objectMember]));
-				subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
-			} else {
-				// Its a derivation field
-				// Also populate the 'derivations' accumulator field
-				subjectMember.set("provDerivations", _.union(subjectMember.get("provDerivations"), [objectMember]));
-				subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
-			}
-		},
-		
 		// A delete icon has been clicked for a prov node, so remove the prov relationships that this node represents.
 		// The pid and the type ("program" or "data") are needed in order to remove the appropriate prov relationships.
-		removeProv: function(pid, classNames) {
+		removeProv: function(pidToRemove, classNames) {
+            console.log("removing prov for: " + classNames)
+            var view = this;
 			var memberPid = this.context.get("id");
+            
+            var removeMember = null;
+            if (_.contains(this.dataPackage.pluck("id"), pidToRemove)) {
+                removeMember = this.dataPackage.get(pidToRemove);
+                removeMember.selectedInEditor = false;
+            };
 
 			var entityType = null;
 			// Is this a program node or a data node?
-			(_.contains(classNames, "program")) ? entityType = "program" : entityType = "data"
+            if(typeof classNames == "string") {
+                entityType = (_.contains(classNames.split(" "), "program")) ? "program" : "data";
+            } else {
+                entityType = (_.contains(classNames, "program")) ? "program" : "data";
+            }
 			// Is this a source prov chart or derivations
 			if(this.editorType == "sources") {
 				// This is a sources chart
 				if(entityType == "program") {
 					// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
 					// prov_wasDerivedFrom, prov_wasInformedBy
-					this.removeProvRel(this.packageModel, memberPid, "prov_generatedByProgram", pid);
-					// Remove 'prov_instanceOfClass' if no relations from this pid any longer
-					//this.addProvRel(this.packageModel, thisPid,   "prov_instanceOfClass", "http://purl.dataone.org/provone/2015/01/15/ontology#Program");
-					this.removeProvRel(this.packageModel, pid, "prov_generated", memberPid);
-					// Remove 'type: program' if no more prov relations from this pid
-					//this.setMemberAttr(this.packageModel, thisPid, "type", "program")
+					this.removeProvRel(this.dataPackage, memberPid, "prov_generatedByProgram", pidToRemove);
+                    _.each(view.sources, function(model){
+                        if(model.getType() == "data") {
+                            var dataPid = model.get("id");
+                            view.removeProvRel(view.dataPackage, dataPid, "prov_usedByProgram", pidToRemove);
+                            // Update the package member for the data item so that it's prov chart
+                            // will show the program as using the data item. If pidToRemove
+                            // is not a package member (it was a link to another package), then don't need to do this.
+                            if(removeMember != null) {
+                                model.set("provDerivations", _.reject(model.get("provDerivations"), 
+                                    function(item) {return item.get("id") == pidToRemove}));
+                                removeMember.set("provSources", _.reject(removeMember.get("provSources"),
+                                    function(item) {return item.get("id") == dataPid}));
+                            }
+                        }
+                    });
+                    // Update the program's package member so that it's metadataview detail section will not show
+                    // the current member (that has this provchart) as generated data there.
+                    if(removeMember != null) {
+                        removeMember.set("provDerivations", _.reject(removeMember.get("provDerivations"), 
+                            function(item) {return item.get("id") == memberPid}));
+                    }
 				} else {
-					this.removeProvRel(this.packageModel, memberPid, "prov_wasDerivedFrom", pid);
+                    // entityType must be data
+					this.removeProvRel(this.dataPackage, memberPid, "prov_wasDerivedFrom", pidToRemove);
 					//this.setMemberAttr(this.packageModel, thisPid, "type", "data");
-					this.removeProvRel(this.packageModel, pid, "prov_hasDerivations", memberPid);
+					this.removeProvRel(this.dataPackage, pidToRemove, "prov_hasDerivations", memberPid);
 					// If there is a program present in this chart, then remove the prov relationship between
-					// the node and the current package member and the relationship between the node and the program
+					// the node to be removed and the current package member and the relationship between the 
+                    // node to be removed and the program.
 					// (Currently only one program per prov chart).
-					var view = this;
 					_.each(view.programs, function(thisProgram) {
 						var progPid = thisProgram.get("id");
-						view.removeProvRel(view.packageModel, pid, "prov_usedByProgram", progPid);
-						view.removeProvRel(view.packageModel, progPid, "prov_used", pid);
+						view.removeProvRel(view.dataPackage, pidToRemove, "prov_usedByProgram", progPid);
+                        // Remove pidToRemove from the source chart of the program.
+                        thisProgram.set("provSources", _.reject(thisProgram.get("provSources"),
+                            function(item) {return item.get("id") == pidToRemove}));
 					});
 				}
 			} else {
@@ -1067,49 +1113,99 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				// prov_generated
 				if(entityType == "program") {
 					//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == thisPid});
-					this.removeProvRel(this.packageModel, memberPid, "prov_usedByProgram", pid);
-					this.removeProvRel(this.packageModel, pid, "prov_used", memberPid);
+					this.removeProvRel(this.dataPackage, memberPid, "prov_usedByProgram", pidToRemove);
+					//this.removeProvRel(this.dataPackage, pid, "prov_used", memberPid);
+                    _.each(view.derivations, function(model){
+                        if(model.getType() == "data") {
+                            var dataPid = model.get("id");
+                            view.removeProvRel(view.dataPackage, dataPid, "prov_generatedByProgram", pidToRemove);
+                            // Update the package member for the data item so that it's metadataview 
+                            // detail section will not show the program as generating the data item.
+                            if(removeMember != null) {
+                                model.set("provSources", _.reject(model.get("provSources"), 
+                                    function(item) {return item.get("id") == pidToRemove}));
+                                removeMember.set("provDerivations", _.reject(removeMember.get("provDerivations"),
+                                    function(item) {return item.get("id") == dataPid}));
+                            }
+                        }
+                    });
+                    // Remove the package member as a source of the program that is being removed.
+                    if(removeMember != null) {
+                        removeMember.set("provSources", _.reject(removeMember.get("provSources"),
+                            function(item) {return item.get("id") == memberPid}));
+                    }
 				} else {
-					this.removeProvRel(this.packageModel, pid, "prov_wasDerivedFrom", memberPid);
-					this.removeProvRel(this.packageModel, memberPid, "prov_hasDerivations", pid);
+                    // Removing data node from prov
+					this.removeProvRel(this.dataPackage, pidToRemove, "prov_wasDerivedFrom", memberPid);
+					this.removeProvRel(this.dataPackage, memberPid, "prov_hasDerivations", pidToRemove);
 					var view = this;
 					_.each(view.programs, function(thisProgram) {
 						var progPid = thisProgram.get("id");
-						view.removeProvRel(view.packageModel, pid, "prov_generatedByProgram", progPid);
-						view.removeProvRel(view.packageModel, progPid, "prov_generated", pid);
+						view.removeProvRel(view.dataPackage, pidToRemove, "prov_generatedByProgram", progPid);
+                        thisProgram.set("provDerivations", _.reject(thisProgram.get("provDerivations"),
+                            function(item) {return item.get("id") == pidToRemove}));
 					});
 				}
 			}
-			this.packageModel.trigger("redrawProvCharts");
+			this.dataPackage.trigger("redrawProvCharts");
 		},
-		
-		// Remove a provenance relationship from a package member and rerender the prov charts.
-		removeProvRel: function(packageModel, subjectId, predicate, object) {
-			var subjectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == subjectId});
-			var objectMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == object});
-			
-			// Is the predicate a source or destination field
-			var isSource = subjectMember.isSourceField(predicate)
-			var isDerivation = subjectMember.isDerivationField(predicate)
-			// If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
-			// such as the field 'prov_instanceOfClass'
-			if (!isSource && !isDerivation) {
-				subjectMember.set(predicate, null);
-			} else if (isSource) {
-				// Also populate the 'sources' accumulated attribute
-				subjectMember.set("provSources", _.reject(subjectMember.get("provSources"), objectMember));
-				subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
-			} else {
-				// Its a derivation field
-				// Also populate the 'derivations' accumulator field
-				subjectMember.set("provDerivations", _.reject(subjectMember.get("provDerivations"), objectMember));
-				subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
-			}
-		},
+        
+        // Add provenance relationships to a package member. Most of the provenance relationships store arrays of package
+        // members and not pids (prov_used, prov_generatedByProgram, etc), however, some of them store just strings (prov_instanceOfClass)
+        // Set the predicate attribute of the 'subject' package member to the 'object' package member, thereby establishing a 
+        // provenance relationship between the two.
+        addProvRel: function(dataPackage, subjectId, predicate, object) {
+          var subjectMember = _.find(dataPackage.toArray(), function(member) { return member.get("id") == subjectId});
+          var objectMember = _.find(dataPackage.toArray(), function(member) { return member.get("id") == object});
+          
+          // Record this provenance edit. This will be used during serialization of provenance relationships.
+          dataPackage.recordProvEdit('add', subjectId, predicate, object);
+          // Is the predicate a source or destination field
+          var isSource = subjectMember.isSourceField(predicate);
+          var isDerivation = subjectMember.isDerivationField(predicate);
+          // If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
+          // such as the field 'prov_instanceOfClass'
+          if (!isSource && !isDerivation) {
+            subjectMember.set(predicate, object);
+          } else if (isSource) {
+            // Also populate the 'sources' accumulated attribute
+            subjectMember.set("provSources", _.union(subjectMember.get("provSources"), [objectMember]));
+            subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
+          } else {
+            // Its a derivation field
+            // Also populate the 'derivations' accumulator field
+            subjectMember.set("provDerivations", _.union(subjectMember.get("provDerivations"), [objectMember]));
+            subjectMember.set(predicate, _.union(subjectMember.get(predicate), [objectMember]));
+          }
+        },
+        // Remove a provenance relationship from a package member
+        removeProvRel: function(dataPackage, subjectId, predicate, object) {
+          var subjectMember = _.find(dataPackage.toArray(), function(member){ return member.get("id") == subjectId});
+          var objectMember = _.find(dataPackage.toArray(), function(member){ return member.get("id") == object});
+          
+          dataPackage.recordProvEdit('delete', subjectId, predicate, object)
+          // Is the predicate a source or destination field
+          var isSource = subjectMember.isSourceField(predicate)
+          var isDerivation = subjectMember.isDerivationField(predicate)
+          // If not a source or derivation prov field, then assume this is a single value, i.e. not an array of sources or derivations,
+          // such as the field 'prov_instanceOfClass'
+          if (!isSource && !isDerivation) {
+            subjectMember.set(predicate, null);
+          } else if (isSource) {
+            // Also populate the 'sources' accumulated attribute
+            subjectMember.set("provSources", _.reject(subjectMember.get("provSources"), objectMember));
+            subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
+          } else {
+            // Its a derivation field
+            // Also populate the 'derivations' accumulator field
+            subjectMember.set("provDerivations", _.reject(subjectMember.get("provDerivations"), objectMember));
+            subjectMember.set(predicate, _.reject(subjectMember.get(predicate), objectMember));
+          }
+      }, 
 			
 		// Locate a package member give a pid, and set the supplied attribute with the value;
-		setMemberAttr: function(packageModel, pid, attr, value) {
-			var thisMember = _.find(packageModel.get("members"), function(member){ return member.get("id") == pid});
+		setMemberAttr: function(dataPackage, pid, attr, value) {
+			var thisMember = dataPackage.find(function(member){ return member.get("id") == pid});
 			thisMember.set(attr, value);
 		}
 	});
