@@ -1913,10 +1913,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     this.dataPackageGraph.removeMany(undefined, ORE("describes"), undefined, undefined, undefined);
                     this.dataPackageGraph.removeMany(undefined, ORE("isDescribedBy"), undefined, undefined, undefined);
 
-                    // Remove all documents and isDocumentedBy statements (they're rebuilt from the collection)
-                    this.dataPackageGraph.removeMany(undefined, CITO("documents"), undefined, undefined, undefined);
-                    this.dataPackageGraph.removeMany(undefined, CITO("isDocumentedBy"), undefined, undefined, undefined);
-
     				//Get the CN Resolve Service base URL from the resource map
                     // (mostly important in dev environments where it will not always be cn.dataone.org)
                     if ( typeof this.dataPackageGraph.cnResolveUrl !== "undefined" ) {
@@ -1966,6 +1962,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	            var addedIds  = _.without(_.difference(idsFromModel, idsFromXML), oldPidVariations);
     	            //Create variations of all these ids too
     	            var allMemberIds = idsFromModel;
+                    // Don't remove documents/documentedBy statements if this is a resource map update only
+                    // (because of provenance relationship edits), i.e. no new package members are being added.
+                    // Remove all documents and isDocumentedBy statements (they're rebuilt from the collection)
+                    if(!this.provEdits.length) {
+                        this.dataPackageGraph.removeMany(undefined, CITO("documents"), undefined, undefined, undefined);
+                        this.dataPackageGraph.removeMany(undefined, CITO("isDocumentedBy"), undefined, undefined, undefined);
+                    }
+
     	            _.each(idsFromModel, function(id){
     	            	allMemberIds.push(cnResolveUrl + encodeURIComponent(id));
     	           	});
