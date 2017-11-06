@@ -105,7 +105,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		
 		render: function(){
 			//Nothing to do if there are no entities and it isn't an editor
-			if(!this.numProvEntities && !this.numPrograms && !this.editor) return false;
+			//if(!this.numProvEntities && !this.numPrograms && !this.editor) return false;
+			if(!this.numProvEntities && !this.editModeOn) return false;
 			
 			var view = this;
 			
