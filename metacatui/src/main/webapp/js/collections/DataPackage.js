@@ -2289,6 +2289,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	if(this.originalMembers.length != ids.length || _.intersection(this.originalMembers, ids).length != ids.length)
             		return true;
 
+              // If the provenance relationships have been updated, then the resource map
+              // needs to be updated.
+              if(this.provEdits.length) return true;
             	//Check for changes to the isDocumentedBy relationships
             	var isDifferent = false,
             		i = 0;
