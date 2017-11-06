@@ -1003,9 +1003,8 @@ define(['jquery',
 			//var isAuthorized = true;
 			var editModeOn = false; 
 			dataPackage.isAuthorized ? editModeOn = true : editModeOn = false;
-			editModeOn = true; 
+			//editModeOn = true; 
 			console.log("prov edit mode on: " + editModeOn);
-			
 			var view = this;
 			//Draw two flow charts to represent the sources and derivations at a package level
 			var packageSources     = dataPackage.sourcePackages;
