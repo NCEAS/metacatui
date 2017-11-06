@@ -1121,14 +1121,23 @@ define(['jquery',
 		redrawProvCharts: function() {
 			var view = this;
 			
-			console.log("redrawProvCharts called.");
-
+            // Check if prov edits are active and turn on the prov save bar if so.
+            // Alternatively, turn off save bar if there are no prov edits, which
+            // could occur if a user undoes a previous which could result in 
+            // an empty edit list.
+            if(this.dataPackage.provEditsPending()) {
+                this.$("#metadata-footer").css("visibility", "visible")    
+            } else {
+                this.$("#metadata-footer").css("visibility", "hidden")    
+                // Reset the edited flag for each package member
+                _.each(this.dataPackage.toArray(), function(item) {
+                    item.selectedInEditor == false;
+                });
+            }
 			_.each(this.subviews, function(thisView, i) {
 				
-				console.log("checking view: " + thisView.className);
 				// Check if this is a ProvChartView
 				if(thisView.className.indexOf("prov-chart") !== -1) {
-					console.log("found prov chart " + thisView.cid);
 					// Check if this ProvChartView is marked for re-rendering
 					// Erase the current ProvChartView
 					thisView.onClose();
