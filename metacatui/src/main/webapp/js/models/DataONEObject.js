@@ -1318,22 +1318,189 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             	id = id.replace(/</g, "-").replace(/:/g, "-").replace(/&[a-zA-Z0-9]+;/g);
             	
             	return id;
-            }
-        },
-        {
-            /* Generate a unique identifier to be used as an XML id attribute */
-            generateId: function() {
-                var idStr = ''; // the id to return
-                var length = 30; // the length of the generated string
-                var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'.split('');
+            },
+				/**** Provenance-related functions ****/
+				/*
+				 * Returns true if this provenance field points to a source of this data or metadata object
+				 */
+				isSourceField: function(field){
+					if((typeof field == "undefined") || !field) return false;
+					// Is the field we are checking a prov field?
+					if(!_.contains(MetacatUI.appSearchModel.getProvFields(), field)) return false;
 
-                for (var i = 0; i < length; i++) {
-                    idStr += chars[Math.floor(Math.random() * chars.length)];
-                }
-                return idStr;
-            }
-        }); 
-        
-        return DataONEObject; 
-    }
-);
+					if(field == "prov_generatedByExecution" ||
+					   field == "prov_generatedByProgram"   ||
+					   field == "prov_used" 		  		||
+					   field == "prov_wasDerivedFrom" 		||
+					   field == "prov_wasInformedBy")
+						return true;
+					else
+						return false;
+				},
+				/*
+				 * Returns true if this provenance field points to a derivation of this data or metadata object
+				 */
+				isDerivationField: function(field){
+					if((typeof field == "undefined") || !field) return false;
+					if(!_.contains(MetacatUI.appSearchModel.getProvFields(), field)) return false;
+
+					if(field == "prov_usedByExecution" ||
+					   field == "prov_usedByProgram"   ||
+					   field == "prov_hasDerivations" ||
+					   field == "prov_generated")
+						return true;
+					else
+						return false;
+				},
+				//Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
+				getType: function(){
+					//The list of formatIds that are images
+					var imageIds = ["image/gif",
+									"image/jp2",
+									"image/jpeg",
+									"image/png",
+									"image/svg xml",
+									"image/svg+xml",
+									"image/bmp"];
+					//The list of formatIds that are images
+					var pdfIds = ["application/pdf"];
+					var annotationIds = ["http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html"];
+
+					// Type has already been set, use that.
+					if(this.get("type").toLowerCase() == "metadata") return "metadata";
+					
+					//Determine the type via provONE
+					var instanceOfClass = this.get("prov_instanceOfClass");
+					if(typeof instanceOfClass !== "undefined" && instanceOfClass.length){
+						var programClass = _.filter(instanceOfClass, function(className){
+							return (className.indexOf("#Program") > -1);
+						});
+						if((typeof programClass !== "undefined") && programClass.length)
+							return "program";
+					}
+					else{
+						if(this.get("prov_generated").length || this.get("prov_used").length)
+							return "program";
+					}
+
+					//Determine the type via file format
+					if(this.isSoftware()) return "program";
+					if(this.isData()) return "data";
+					
+					if(this.get("type").toLowerCase() == "metadata") return "metadata";
+					if(_.contains(imageIds, this.get("formatId"))) return "image";
+					if(_.contains(pdfIds, this.get("formatId")))   return "PDF";
+					if(_.contains(annotationIds, this.get("formatId")))   return "annotation";
+
+					else return "data";
+				},
+			/*
+			 * param dataObject - a SolrResult representing the data object returned from the index
+			 * returns - true if this data object is an image, false if it is other
+			 */
+				isImage: function(){
+					//The list of formatIds that are images
+					var imageIds = ["image/gif",
+					                "image/jp2",
+					                "image/jpeg",
+					                "image/png",
+					                "image/svg xml",
+					                "image/svg+xml",
+					                "image/bmp"];
+
+					//Does this data object match one of these IDs?
+					if(_.indexOf(imageIds, this.get('formatId')) == -1) return false;
+					else return true;
+
+				},
+				isData: function() {
+					var dataIds =  ["application/atom+xml",
+								"application/mathematica",
+								"application/msword",
+								"application/netcdf",
+								"application/octet-stream",
+								"application/pdf",
+								"application/postscript",
+								"application/rdf+xml",
+								"application/rtf",
+								"application/vnd.google-earth.kml+xml",
+								"application/vnd.ms-excel",
+								"application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+								"application/vnd.ms-powerpoint",
+								"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+								"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+								"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+								"application/x-bzip2",
+								"application/x-fasta",
+								"application/x-gzip",
+								"application/x-rar-compressed",
+								"application/x-tar",
+								"application/xhtml+xml",
+								"application/xml",
+								"application/zip",
+								"audio/mpeg",
+								"audio/x-ms-wma",
+								"audio/x-wav",
+								"image/bmp",
+								"image/jp2",
+								"image/jpeg",
+								"image/png",
+								"image/svg+xml",
+								"image/tiff",
+								"text/anvl",
+								"text/csv",
+								"text/html",
+								"text/n3",
+								"text/plain",
+								"text/tab-separated-values",
+								"text/turtle",
+								"text/xml",
+								"video/avi",
+								"video/mp4",
+								"video/mpeg",
+								"video/quicktime",
+								"video/x-ms-wmv"];
+				//Does this data object match one of these IDs?
+				if(_.indexOf(dataIds, this.get('formatId')) == -1) return false;
+				else return true;
+			},
+			isSoftware: function(){
+				//The list of formatIds that are images
+				var softwareIds =  ["text/x-python",
+									"text/x-rsrc",
+									"text/x-matlab",
+									"text/x-sas",
+									"application/R"];
+				//Does this data object match one of these IDs?
+				if(_.indexOf(softwareIds, this.get('formatId')) == -1) return false;
+				else return true;
+			},
+			/*
+			 * param dataObject - a SolrResult representing the data object returned from the index
+			 * returns - true if this data object is a pdf, false if it is other
+			 */
+			isPDF: function(){
+				//The list of formatIds that are images
+				var ids = ["application/pdf"];
+
+				//Does this data object match one of these IDs?
+				if(_.indexOf(ids, this.get('formatId')) == -1) return false;
+				else return true;
+			},
+ 
+		},
+    {
+			/* Generate a unique identifier to be used as an XML id attribute */
+			generateId: function() {
+				var idStr = ''; // the id to return
+				var length = 30; // the length of the generated string
+				var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'.split('');
+
+				for (var i = 0; i < length; i++) {
+					idStr += chars[Math.floor(Math.random() * chars.length)];
+				}
+				return idStr;
+			}
+		});
+		return DataONEObject; 
+});
