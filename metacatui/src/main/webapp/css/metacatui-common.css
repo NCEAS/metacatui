@@ -597,7 +597,7 @@ img.icon{
 	-webkit-box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
 .prov-chart .node.previous{
-	border-width: 3px;
+	border-width: 1px;
 }
 .prov-chart .icon-remove-sign.hide{
 	display: none;
