@@ -3288,7 +3288,7 @@ ul.side-nav-items {
 	margin-left: 0%;
 	width: 100%;
 }
-#editor-footer{
+#editor-footer, #metadata-footer{
 	background-color: #333;
     position: fixed;
     width: 100%;
@@ -3296,6 +3296,12 @@ ul.side-nav-items {
     bottom: 0px;
     padding: 20px;
     z-index:3;
+}
+#metadata-footer{
+    visibility: hidden;
+}
+#cancel-metadata-prov{
+    margin-left: 30px;
 }
 
 /* Editor package table container */
