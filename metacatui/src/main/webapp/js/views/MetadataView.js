@@ -84,6 +84,7 @@ define(['jquery',
 			"mouseover .highlight-node"  : "highlightNode",
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData"
+			"click     #save-metadata-prov" : "saveProv"
 		},
 
 		initialize: function (options) {
@@ -1151,7 +1152,23 @@ define(['jquery',
 			});
 		},
 		
-		/*
+        /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
+        update the ORE Resource Map and save it to the server.
+        */
+        saveProv: function() {
+            console.log("Saving provenance edits...");
+            var view = this;
+            if(this.dataPackage.provEditsPending()) {
+                this.dataPackage.saveProv();
+            } else {
+                console.log("No prov edits have been entered.");
+                //TODO: should a dialog be displayed saying that no prov edits were made?
+            }
+            // Turn off "save" footer
+            this.$("#metadata-footer").css("visibility", "hidden")    
+        },
+        
+        /*
 		 * param dataObject - a SolrResult representing the data object returned from the index
 		 * returns - true if this data object is an image, false if it is other
 		 */
