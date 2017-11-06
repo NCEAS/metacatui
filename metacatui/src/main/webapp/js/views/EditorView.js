@@ -253,7 +253,7 @@ define(['underscore',
             		view.renderMember(model);
 
             	//Listen for changes on this member
-            	//this.listenTo(model, "change:uploadStatus", view.showControls);
+                model.on("change:fileName", model.updateUploadStatus);
             });
 
         	//Render the Data Package view
@@ -735,7 +735,7 @@ define(['underscore',
 	    	this.$("input, textarea, select, button").prop("disabled", false);
 
         	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Submit").removeClass("btn-disabled");	    
+        	this.$("#save-editor").html("Submit dataset").removeClass("btn-disabled");	    
 	    
 	    },
 

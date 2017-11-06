@@ -1113,49 +1113,53 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     _.each(aggByStatements, function(statement) {
                         if( !_.contains(allMemberIds, statement.subject.value) ) {
                             this.removeFromAggregation(statement.subject.value);
+                        } 
+                    }, this);
 
-                        } else if ( _.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) }) ) {
+                	// Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
+                    var aggregationSubjStatements = this.dataPackageGraph.statementsMatching(aggregationNode);
+                    _.each(aggregationSubjStatements, function(statement){
+                        subjectClone = this.cloneNode(statement.subject);
+                        subjectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
+                        predicateClone = this.cloneNode(statement.predicate);
+                        objectClone = this.cloneNode(statement.object);
+                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
+                    }, this);
+                    
+                    if(aggregationSubjStatements.length) {
+                        this.dataPackageGraph.removeMany(aggregationNode);
+                    }
+
+                    // Change all the statements in the RDF where the aggregation is the object, to reflect the new resource map ID
+        	        var aggregationObjStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, aggregationNode);
+        	        _.each(aggregationObjStatements, function(statement) {
+                        subjectClone = this.cloneNode(statement.subject);
+                        predicateClone = this.cloneNode(statement.predicate);
+                        objectClone = this.cloneNode(statement.object);
+                        objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
+                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
+        	        }, this);
+                        
+                    if(aggregationObjStatements.length) {
+                        this.dataPackageGraph.removeMany(undefined, undefined, aggregationNode);
+                    }
+                    
+                    // Get a fresh copy of the 'isAggregatedBy' statements (as some may have been
+                    // removed above), and check for any that contain an object that is not the
+                    // aggregation.
+                    aggByStatements =  $.extend(true, [],
+                        this.dataPackageGraph.statementsMatching(undefined, ORE("isAggregatedBy")));
+
+                    // Remove any other isAggregatedBy statements for the old pid.
+                    _.each(aggByStatements, function(statement) {
+                        if ( _.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) }) ) {
                             try {
                                 this.dataPackageGraph.remove(statement);
                             } catch (error) {
                                 console.log(error);
                             }
                         }
-                    }, this);
-
-                	// Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
-                    var aggregationSubjStatements = // iterate over cloned statements, not the underlying statements
-                        $.extend(true, [], this.dataPackageGraph.statementsMatching(aggregationNode));
-                    _.each(aggregationSubjStatements, function(statement){
-                        try {
-                            this.dataPackageGraph.remove(statement);
-                        } catch (error) {
-                            console.log(error);
-                        }
-                        subjectClone = this.rdf.Node.fromValue(statement.subject);
-                        predicateClone = this.rdf.Node.fromValue(statement.predicate);
-                        objectClone = this.rdf.Node.fromValue(statement.object);
-
-                        subjectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
-                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
-                    }, this);
-
-                	// Change all the statements in the RDF where the aggregation is the object, to reflect the new resource map ID
-    	            var aggregationObjStatements = // iterate over cloned statements, not the underlying statements
-                        $.extend(true, [], this.dataPackageGraph.statementsMatching(undefined, undefined, aggregationNode));
-    	            _.each(aggregationObjStatements, function(statement) {
-                        try {
-                            this.dataPackageGraph.remove(statement);
-                        } catch (error) {
-                            console.log(error);
-                        }
-                        subjectClone = this.rdf.Node.fromValue(statement.subject);
-                        predicateClone = this.rdf.Node.fromValue(statement.predicate);
-                        objectClone = this.rdf.Node.fromValue(statement.object);
-
-                        objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
-                        this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
-    	            }, this);
+                    }, this)
     	            
     			    //Change all the resource map identifier literal node in the RDF graph
     				if ( typeof idStatement != "undefined" ) {
@@ -1255,6 +1259,33 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 var xmlString = serializer.statementsToXML(this.dataPackageGraph.statements);
 
             	return xmlString;
+            },
+            
+            // Clone an rdflib.js Node by creaing a new node based on the 
+            // original node RDF term type and data type.
+            cloneNode: function(nodeToClone) {
+                switch(nodeToClone.termType) {
+                    case "NamedNode":
+                        return(this.rdf.sym(nodeToClone.value));
+                        break;
+                    case "Literal":
+                        // Check for the datatype for this literal value, e.g. http://www.w3.org/2001/XMLSchema#string"
+                        if(typeof nodeToClone.datatype !== "undefined") {
+                            return(this.rdf.literal(nodeToClone.value, undefined, nodeToClone.datatype));
+                        } else {
+                            return(this.rdf.literal(nodeToClone.value));
+                        }
+                        break;
+                    case "BlankNode":
+                        return(this.rdf.bnode(nodeToClone.value));
+                        break;
+                    case "Collection":
+                        // TODO: construct a list of nodes for this term type.
+                        return(this.rdf.list(nodeToClone.value));
+                        break;
+                    default:
+                        console.log("ERROR: unknown node type to clone: " + nodeToClone.termType);
+                }
             },
 
             // Adds a new object to the resource map RDF graph

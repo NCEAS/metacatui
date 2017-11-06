@@ -547,7 +547,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		this.renderPerson(null, partyType);
 	    	}
 	    	else{
-	    		partyForm.find(".eml-party").data("view").showRequired();
+	    		partyForm.find(".eml-party").data("view").showValidation();
 	    	}
 	    },
 	    
@@ -835,6 +835,12 @@ define(['underscore', 'jquery', 'backbone',
 
 				this.$(".section.taxa").append(this.createTaxonomicCoverage(taxonCov));
 			}
+            
+            // updating the indexes of taxa-tables before rendering the information on page(view).
+            var taxaNums = this.$(".editor-header-index");
+            for (var i = 0; i < taxaNums.length; i++) {
+                $(taxaNums[i]).text(i + 1);
+            }
 	    },
 	    
 	    /*
@@ -847,7 +853,7 @@ define(['underscore', 'jquery', 'backbone',
 				methodsModel = new EMLMethods({ edit: this.edit, parentModel: this.model });
 			}
 
-			this.$(".section.methods").append(new EMLMethodsView({ 
+			this.$(".section.methods").html(new EMLMethodsView({ 
 				model: methodsModel, 
 				edit: this.edit }).render().el);
 		},
@@ -1506,7 +1512,17 @@ define(['underscore', 'jquery', 'backbone',
 		},
 		
 		createTaxonomicClassifcationTable: function(classification) {
-			var finishedEl = $('<div class="row-striped root-taxonomic-classification-container"></div>');
+            
+            // updating the taxonomic table indexes before adding a new table to the page.
+            var taxaNums = this.$(".editor-header-index");
+            for (var i = 0; i < taxaNums.length; i++) {
+                $(taxaNums[i]).text(i + 1);
+            }
+
+            // Adding the taxoSpeciesCounter to the table header for enhancement of the view
+            var finishedEl = $('<div class="row-striped root-taxonomic-classification-container"></div>');
+            $(finishedEl).append('<h6>Species <span class="editor-header-index">' + (taxaNums.length + 1) + '</span> </h6>');
+
 
 			// Add a remove button if this is not a new table
 			if (!(typeof classification === "undefined")) {
@@ -2045,6 +2061,12 @@ define(['underscore', 'jquery', 'backbone',
 
 			// Remove the DOM
 			$(parentEl).remove();
+            
+            //updating the tablesIndex once the element has been removed
+            var tableNums = this.$(".editor-header-index");
+            for (var i = 0; i < tableNums.length; i++) {
+                $(tableNums[i]).text(i + 1);
+            }
 		},
 
         /* Close the view and its sub views */

@@ -140,17 +140,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	});
                 	this.$el.removeClass("loading");
                 }
-                else if(this.model.get("uploadStatus") == "q"){
-                	this.$(".status .progress").tooltip({
-                		placement: "top",
-                		trigger: "hover",
-                		html: true,
-                		title: "<div class='status-tooltip'>Starting Upload</div>",
-                		container: "body"
-                	});
-                	this.$el.removeClass("loading");
-                }
-                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" ) && attributes.numAttributes == 0){
+                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" || this.model.get("uploadStatus") == "q") && attributes.numAttributes == 0){
             		
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
@@ -293,6 +283,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     }
                 } else {
                     this.model.set("fileName", enteredText);
+                    this.model.set("hasContentChanges")
                 }
             },
                                     

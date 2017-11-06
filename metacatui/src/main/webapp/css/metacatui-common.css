@@ -3773,13 +3773,19 @@ textarea.xlarge{
 
 /* ---- Taxon Coverage ---- */
 .root-taxonomic-classification-container .notification{
-	padding-left: 0px;
+	padding-left: 68px;
 	position: absolute;
-	margin-top: -25px;
+	margin-top: -31px;
 }
 .root-taxonomic-classification-container{
 	margin-top: 20px;
 	position: relative; 
+}
+.row-striped,
+.root-taxonomic-classification-container h6{
+    border-top: none;
+    border-left: none;
+    border-right: none;
 }
 .root-taxonomic-classification-container:first-child,
 .taxonomic-coverage > .notification + .row-striped:nth-child(2){
