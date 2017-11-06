@@ -302,12 +302,12 @@ select{
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
-  .notification {
+  /*.notification {
     position: relative;
     top: 95px;
     margin: 50px auto;
     font-size: 40px;
-  }
+  }*/
   
   .notification i{
   	font-size: 40px;
@@ -1472,7 +1472,7 @@ li.ui-menu-item > a:hover,
 	}
    .mapMode #results-container {
 	  width: 40%;
-	  width: calc(100% - 33% - 229px);
+	  width: calc(66.66% - 227px);
 	  overflow-x: hidden;
 	  overflow-y: scroll;
 	  -webkit-transform: translate3d(0,0,1);
@@ -1863,6 +1863,13 @@ svg .title{
 .donut.data > g:first-child .donut-arc,
 .donut.data > g:first-child .donut-arc-label{
 	fill: #445200;
+}
+
+.no-activity .donut > g:first-child .donut-arc,
+.no-activity .donut > g .donut-arc-label,
+.no-activity .donut > g .donut-title-text,
+.no-activity .donut > g .donut-title-count{
+	fill: #CCC;
 }
 
 

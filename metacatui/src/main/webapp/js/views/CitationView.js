@@ -5,6 +5,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 	
 	var CitationView = Backbone.View.extend({
 		
+		type: "Citation",
+		
 		initialize: function(options){
 			if((options === undefined) || (!options)) var options = {};
 			
@@ -15,6 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			this.metadata   = options.metadata	 || null;
 			this.title      = options.title      || null;
 			this.createLink = (options.createLink == false) ? false : true;
+			this.createTitleLink = (options.createLink == false) ? false : true;
 			
 			//If a metadata doc was passed but no data or package model, then save the metadata as our model, too
 			if(!this.model && this.metadata) this.model = this.metadata;			
@@ -208,12 +211,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				$(idEl).text("" + id + ". ");
 			}
 
-			//Create a link
-			if (this.createLink)
-				var linkEl = $(document.createElement("a")).addClass("route-to-metadata").attr("data-id", id).attr("href", "#view/" + id);
-			else
-				var linkEl = document.createElement("span");
-
 			if ((typeof title !== "undefined") && title){
 				if(title.trim().charAt(title.length-1) != ".")
 					title = title.trim() + ". ";
@@ -224,10 +221,27 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 			else
 				var titleEl = document.createElement("span");
-
-			//Put together all the citation parts
-			$(linkEl).append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
-			this.$el.append(linkEl);
+			
+			//Create a link and put all the citation parts together
+			if (this.createLink){
+				var linkEl = $(document.createElement("a"))
+								.addClass("route-to-metadata")
+								.attr("data-id", id)
+								.attr("href", "#view/" + id)
+								.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+				this.$el.append(linkEl);
+			}
+			else if(this.createTitleLink){
+				var linkEl = $(document.createElement("a"))
+								.addClass("route-to-metadata")
+								.attr("data-id", id)
+								.attr("href", "#view/" + id)
+								.append(titleEl);
+				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
+			}
+			else{
+				this.$el.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+			}
 		
 			this.setUpListeners();
 			

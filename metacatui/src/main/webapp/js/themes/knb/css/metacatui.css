@@ -173,7 +173,13 @@
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
+
     
+/* Editor 
+-------------------------------------------------- */  
+.Editor #Content {
+    padding-top: 0px;
+}   
     
 /* MDQ 
 -------------------------------------------------- */ 
@@ -883,11 +889,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       float: right;
     }
     
-    #signupPopup {
-    	max-width: 350px;
-	    min-width: 350px;
-	}
-    
     .dropdown-header {
 		display: block;
 		padding: 3px 20px;
@@ -1140,6 +1141,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-left: 20px;
 	margin-top: 30px;
 }
+.member-list .group {
+    min-width: 100px;
+}
  
   /* The universal color for data */
 svg .data,
@@ -1162,6 +1166,9 @@ svg .packages,
 .profile .packages{
 	color: #0E69A1;
 	fill: #0E69A1;
+}
+.profile .quick-stats circle{
+	stroke: #0E69A1;
 }
 .profile .bar-label.packages{
 	fill: inherit;

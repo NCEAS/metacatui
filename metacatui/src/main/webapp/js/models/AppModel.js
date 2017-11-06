@@ -48,7 +48,8 @@ define(['jquery', 'underscore', 'backbone'],
 				samplingDescription: false,
 				studyExtentDescription: false,
 				taxonCoverage: false,
-				temporalCoverage: true
+				temporalCoverage: true,
+				title: true
 			},
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
@@ -130,7 +131,7 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
-					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
+					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
 				
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');

@@ -518,9 +518,9 @@ define(['jquery',
 			var query = this.searchModel.getQuery();
 						
 			//Specify which facets to retrieve
-			if(gmaps){ //If we have Google Maps enabled
-				var geohashes = ["geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9"]
-			    this.searchResults.facet = _.union(this.searchResults.facet, geohashes);
+			if(gmaps && this.map){ //If we have Google Maps enabled
+				var geohashLevel = "geohash_" + MetacatUI.mapModel.determineGeohashLevel(this.map.zoom); 
+				this.searchResults.facet.push(geohashLevel);
 			}
 			
 			//Run the query
@@ -1114,7 +1114,7 @@ define(['jquery',
 			$("#max_year").val(this.searchModel.get('yearMax'));
 
 			//Reset the checkboxes
-			$("#includes_data").prop("checked", this.searchModel.get("resourceMap"));
+			$("#includes_data").prop("checked", this.searchModel.get("documents"));
 			$("#data_year").prop("checked",     this.searchModel.get("dataYear"));
 			$("#publish_year").prop("checked",  this.searchModel.get("pubYear"));
 			this.listDataSources();
@@ -2668,7 +2668,7 @@ define(['jquery',
 				this.$results.html('<p id="no-results-found">No results found.</p>');
 				if(MetacatUI.theme == "arctic"){
 					//When we get new results, check if the user is searching for their own datasets and display a message
-					if((MetacatUI.appView.dataCatalogView.searchModel.getQuery() == MetacatUI.appUserModel.get("searchModel").getQuery()) && !MetacatUI.appSearchResults.length){
+					if((MetacatUI.appView.dataCatalogView && MetacatUI.appView.dataCatalogView.searchModel.getQuery() == MetacatUI.appUserModel.get("searchModel").getQuery()) && !MetacatUI.appSearchResults.length){
 						$("#no-results-found").after("<h3>Where are my data sets?</h3><p>If you are a previous ACADIS Gateway user, " +
 						"you will need to take additional steps to access your data sets in the new NSF Arctic Data Center." +
 						"<a href='mailto:support@arcticdata.io'>Send us a message at support@arcticdata.io</a> with your old ACADIS " +

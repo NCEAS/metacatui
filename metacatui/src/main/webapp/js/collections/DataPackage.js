@@ -404,12 +404,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Get the isDocumentedBy relationships
                     documentsStatements = this.dataPackageGraph.statementsMatching(
                         undefined, CITO("documents"), undefined, undefined);
+                    
+                    var sciMetaPids = [];
 
                     _.each(documentsStatements, function(documentsStatement) {
 
                           // Extract and URI-decode the metadata pid
                           scimetaID = decodeURIComponent(
                                 _.last(documentsStatement.subject.value.split("/")));
+                          
+                          sciMetaPids.push(scimetaID);
 
                           // Extract and URI-decode the data pid
                           scidataID = decodeURIComponent(
@@ -437,6 +441,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 	                      	  dataObj.set("isDocumentedBy", isDocBy);
                           }
                     }, this);
+                    
+                    //Put the science metadata pids first
+                    memberPIDs = _.difference(memberPIDs, sciMetaPids);
+                    _.each(_.uniq(sciMetaPids), function(id){ memberPIDs.unshift(id); });
 
                     //Retrieve the model for each member
                     _.each(memberPIDs, function(pid){
@@ -463,11 +471,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                                 			//Trigger a replace event so other parts of the app know when a model has been replaced with a different type
                                 			oldModel.trigger("replace", newModel);
+                                			
+                                			if(newModel.type == "EML")
+                                				collection.trigger("add:EML");
                                 		});
                                 }
                                 else{
                                 	newModel.set("synced", true);
                                 	collection.add(newModel, { replace: true });
+                                	
+                                	if(newModel.type == "EML")
+                        				collection.trigger("add:EML");
                                 }
                         	});
 
@@ -959,6 +973,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                          return model.get("uploadStatus");
                     } ), "e") ) {
                     this.packageModel.set("changed", false);
+                    this.packageModel.set("uploadStatus", "q");
                     this.trigger("cancelSave");
     				return;
     			}
@@ -1978,7 +1993,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     _.each(aggByStatements, function(statement) {
                         if( !_.contains(allMemberIds, statement.subject.value) ) {
                             this.removeFromAggregation(statement.subject.value);
-                        }
+                        } 
                     }, this);
                     
                 	// Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
@@ -2025,7 +2040,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             }
                         }
                     }, this)
-                    
+    	            
     			    //Change all the resource map identifier literal node in the RDF graph
     				if ( typeof idStatement != "undefined" ) {
                         try {
@@ -2146,7 +2161,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         return(this.rdf.bnode(nodeToClone.value));
                         break;
                     case "Collection":
-                        // TODO: construct a list of nodes
+                        // TODO: construct a list of nodes for this term type.
                         return(this.rdf.list(nodeToClone.value));
                         break;
                     default:

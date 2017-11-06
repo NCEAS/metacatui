@@ -187,42 +187,104 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 		
 		trickleUpChange: function(){
-			MetacatUI.rootDataPackage.packageModel.set("changed", true);
+			if(_.contains(MetacatUI.rootDataPackage.models, this.get("parentModel")))
+				MetacatUI.rootDataPackage.packageModel.set("changed", true);
+		},
+		
+		mergeIntoParent: function(){
+			if(this.get("parentModel") && this.get("parentModel").type == "EML" && !_.contains(this.get("parentModel").get("temporalCoverage"), this))
+				this.get("parentModel").get("temporalCoverage").push(this);
 		},
 		
 		formatXML: function(xmlString){
 			return DataONEObject.prototype.formatXML.call(this, xmlString);
 		},
 
-		// Returns true or false depending on whether the information stored in the model,
-		// when serialized, should make an EML valid temporalCoverage
-		isValid: function() {
+		// Checks the values of this model and determines whether they are valid according the the EML 2.1.1 schema.
+		// Returns a hash of error messages
+		validate: function() {
 			var beginDate = this.get('beginDate'),
 			    beginTime = this.get('beginTime'),
 				endDate = this.get('endDate'),
-				endTime = this.get('endTime');
-
-			// If endDate is set, beginDate must also be set
-			if (endDate && endDate.length > 0 && (!beginDate || beginDate.length == 0)) {
-				return false;
-			}
-
-			// beginTime is set when beginDate is not
-			if (beginTime && beginTime.length > 0 && (!beginDate || beginDate.length == 0)) {
-				return false;
-			}
-
-			// endTime is set when endDate is not
-			if (endTime && endTime.length > 0 && (!endDate || endDate.length == 0)) {
-				return false;
-			}
+				endTime = this.get('endTime'),
+				errors  = {};
 
 			// A valid temporal coverage at least needs a start date
 			if (!beginDate) {
-				return false;
+				errors.beginDate = "Provide a begin date.";
 			}
+			// endTime is set but endDate is not
+			else if (endTime && endTime.length > 0 && (!endDate || endDate.length == 0)) {
+				errors.endDate = "Provide an end date."
+			}
+			
+			//Check the validity of the date format
+			if(beginDate && !this.isDateFormatValid(beginDate)){
+				errors.beginDate = "The begin date must be formatted as YYYY-MM-DD or YYYY.";
+			}
+			
+			//Check the validity of the date format			
+			if(endDate && !this.isDateFormatValid(endDate)){
+				errors.endDate = "The end date must be formatted as YYYY-MM-DD or YYYY.";				
+			}
+			
+			//Check the validity of the time formats
+			if(beginTime && !this.isTimeFormatValid(beginTime))
+				errors.beginTime = "The begin time must be formatted as HH:MM:SS";
+			if(endTime && !this.isTimeFormatValid(endTime))
+				errors.endTime = "The end time must be formatted as HH:MM:SS";
+			
+			console.log(errors);
 
-			return true;
+			if(Object.keys(errors).length)
+				return errors;
+			else
+				return;
+		},
+		
+		isDateFormatValid: function(dateString){
+			
+			//Date strings that are four characters should be a full year. Make sure all characters are numbers
+			if(dateString.length == 4){
+				var digits = dateString.match( /[0-9]/g );
+				return (digits.length == 4)
+			}
+			//Date strings that are 10 characters long should be a valid date
+			else{
+				var dateParts = dateString.split("-");
+				
+				if(dateParts.length != 3 || dateParts[0].length != 4 || dateParts[1].length != 2 || dateParts[2].length != 2)
+					return false;
+				
+				var digits = _.filter(dateParts, function(part){
+					return (part.match( /[0-9]/g ).length == part.length);
+				});
+				
+				return (digits.length == 3);
+			}
+		},
+		
+		isTimeFormatValid: function(timeString){
+			
+			//If the last character is a "Z", then remove it for now
+			if( timeString.substring(timeString.length-1, timeString.length) == "Z"){
+				timeString = timeString.replace("Z", "", "g");
+			}
+				
+			if(timeString.length == 8){
+				var timeParts = timeString.split(":");
+				
+				if(timeParts.length != 3)
+					return false;
+				else{
+					//Make sure the hours, minutes, and seconds are two digits long
+					return _.every(timeParts, function(t){ 
+							   return ( t.match( /[0-9]/g ) && t.length == 2 ); 
+						   });
+				}
+			}
+			else
+				return false;
 		}
 	});
 	

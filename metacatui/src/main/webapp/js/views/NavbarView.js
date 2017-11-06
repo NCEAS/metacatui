@@ -96,7 +96,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 				MetacatUI.appView.showView(MetacatUI.appView.registryView);
 			//Otherwise, just navigate to it
 			else
-				MetacatUI.uiRouter.navigate("share", { trigger: true });
+				MetacatUI.uiRouter.navigate("submit", { trigger: true });
 		},
 		
 		hideDropdown: function(){

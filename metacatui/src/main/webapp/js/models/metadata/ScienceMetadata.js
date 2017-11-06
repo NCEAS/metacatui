@@ -105,7 +105,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                  this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", function(){
                  	if(MetacatUI.rootDataPackage.packageModel.get("changed"))
                  		this.set("uploadStatus", "q");
-                 })
+                 });
+                 
             },
             
             /* Construct the Solr query URL to be called */

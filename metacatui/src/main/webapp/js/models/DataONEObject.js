@@ -92,6 +92,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
         	},
         	
             initialize: function(attrs, options) {
+            	if(typeof attrs == "undefined") var attrs = {};
+            	if(typeof options == "undefined") var options = {};
+            	
                 this.on("change:size", this.bytesToSize);
                 if(attrs.size)
                     this.bytesToSize();
@@ -107,6 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });
+                               
             },
             
             selectedInEditor: false, // Has this package member been selected and displayed in the provenance editor?  
@@ -432,8 +436,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 }
 
                 //Set the upload transfer as in progress
-                this.set("uploadStatus", "p");
                 this.set("uploadProgress", 2);
+                this.set("uploadStatus", "p");
                 
                 //Create a FormData object to send data with our XHR
                 var formData = new FormData();
@@ -441,10 +445,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 //Add the identifier to the XHR data
                 formData.append("pid", this.get("id"));
             				
-				//Get the new checksum of the object 
-				var checksum = md5(this.get("uploadResult"));
-				this.set("checksum", checksum);
-				
+				//If there's been a new uploaded file, get the new checksum of the object 
+                if(this.get("uploadResult")){
+					var checksum = md5(this.get("uploadResult"));
+					this.set("checksum", checksum);
+                }
+                
                 //Create the system metadata XML
                 var sysMetaXML = this.serializeSysMeta();
                 				
@@ -457,15 +463,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     // Create the new object (MN.create())
                     formData.append("object", this.get("uploadFile"), this.get("fileName"));
                     
-                } else {
-                    if ( this.hasContentChanges ) {
-                        // Update the object (MN.update())
-                        console.log("TODO: enable replacement of DATA objects");
-                    } else {
-                        // Don't add the object (MN.updateSystemMetadata())
-                        console.log("TODO: enable update of DATA object sysmeta");
-                        
-                    }
+                } else if(this.get("uploadResult") || this.hasContentChanges) {
+                    // Update the object (MN.update())
+                    //TODO: enable replacement of DATA objects
                 }
                 
                 var model = this;
@@ -1012,13 +1012,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        },
 	        
 	        /*
-	         * Listens to attributes on the model for changes that will require an update
+	         * Updates the upload status attribute on this model and marks the collection as changed
 	         */
-	        updateUploadStatus: function(model, options){
+	        updateUploadStatus: function(){
 	        			
 	        		//Add this item to the queue
-	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus"))
+	        		if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus")){
 	        			this.set("uploadStatus", "q");
+	        			
+	        			//Mark each DataPackage collection this model is in as changed
+	        			_.each(this.get("collections"), function(collection){
+	        				if(collection.packageModel)
+	        					collection.packageModel.set("changed", true);
+	        			}, this);
+	        		}
 	        },
 	        
 	        /*

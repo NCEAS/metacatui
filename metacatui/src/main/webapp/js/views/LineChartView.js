@@ -44,11 +44,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			this.frequency = options.frequency || 1; 	//Use 0 to not add any points
 			if(!options.data) this.frequency = 0; //If no data is provided, do not draw any points (otherwise, one point at 0,0 will be drawn)
 			this.yLabel	   = options.yLabel	   || "";
-			this.labelValue	 = options.labelValue  || "Value: ";
-			this.labelWidth  = options.labelWidth  || 130;
+			this.labelValue	 = options.labelValue  || "";
+			this.labelWidth  = options.labelWidth  || (this.labelValue.length * 7) + (this.yLabel.length * 7) + 60;
 			this.radius	   = options.radius    || 6;
 			this.width 	   = options.width 	   || 650;
-			this.height    = options.height    || 250;
+			this.height    = options.height    || 300;
 			this.formatFromSolrFacets = options.formatFromSolrFacets || false;
 			this.cumulative = options.cumulative || false;
 
@@ -112,7 +112,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			
 			if(!this.data) return this;
 			
-			var margin = {top: 20, right: 50, bottom: 30, left: 80};
+			var margin = {top: 20, right: 50, bottom: 50, left: 80};
 			this.margin = margin;
 			this.width  = this.width - margin.left - margin.right;
 			this.height = this.height - margin.top - margin.bottom;
@@ -120,27 +120,42 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			var min = d3.min(this.data, function(d) {  return d.count; }),
 				max = d3.max(this.data, function(d) {  return d.count; }),
 				difference = max - min;
+			
+			//Format the data
+			this.data.forEach(function(d) {
+			    d.date = viewRef.parseDate(d.date);
+			    d.count = +d.count;
+			 });
 	
+			//Set the y scale
 			/*if((difference > 30000) || ((min < 10) && (difference > 10000))){
 				this.y = d3.scale.log()
-			    		  .range([this.height, 0]);
+			    		  .range([this.height, 0])
+			    		  .domain([1, max]);
+				
 				var log = true;
 				this.className += " log-scale";
 			}
 			else{*/
 				this.y = d3.scale.linear()
-			    		  .range([this.height, 0]);
+			    		  .range([this.height, 0])
+			    		  .domain([0, max]);
 				var log = false;
 			//}
 			
-			this.x = d3.time.scale().range([0, this.width]);
-						
+			//Set the x scale
+			this.x = d3.time.scale()
+					.range([0, this.width])
+					.domain(d3.extent(this.data, function(d) { return d.date; }));
+				
+			//Set up the x axis
 			var xAxis = d3.svg.axis()
 			    .scale(this.x)
 			    .orient("bottom")
 			    .ticks(this.xTicks)
 			    .tickFormat(this.xTickFormat);
 
+			//Set up the y axis
 			var yAxis = d3.svg.axis()
 			    .scale(this.y)
 			    .orient("left")
@@ -155,15 +170,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 					    .attr("height", this.height + margin.top + margin.bottom)
 					    .append("g")
 					    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-		  this.data.forEach(function(d) {
-		    d.date = viewRef.parseDate(d.date);
-		    d.count = +d.count;
-		  });
-		  		  		
-		  this.x = this.x.domain(d3.extent(this.data, function(d) { return d.date; }));
-		  if(log) this.y = this.y.domain([1, max]); //y axis is always 1 - max y value
-		  else this.y = this.y.domain([0, max]);
 		  
 		  /*
 			* ========================================================================
@@ -178,6 +184,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  svg.append("g")
 		      .attr("class", "y axis")
 		      .call(yAxis);
+		  
+		  svg.selectAll(".x.axis .tick text")
+		     .style("text-anchor", 'end')
+		     .attr("dx", "-.8em")
+		     .attr("dy", ".15em")
+		     .attr("transform", "rotate(-65)");
 		  
 		  /*
 			* ========================================================================
@@ -202,7 +214,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 		  var line = d3.svg.line()
 						.x(function(d) { return viewRef.x(d.date); })
 						.y(function(d) { return viewRef.y(d.count); });
-						//.interpolate("linear");
 
 
 		  svg.append("path")
@@ -382,7 +393,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  			//Don't let our label bleed off the edge
 					  		if(xPos < 0) xPos = xPos + labelWidth;
 					  		
-					  		return  xPos + labelXPadding;; })
+					  		return  xPos + labelXPadding; })
 					  	.attr("y", function(d, i){
 					  		var yPos = viewRef.y(d.count) + viewRef.radius;	
 					  		//Don't let our label bleed off the edge
@@ -397,7 +408,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 				  
 				  labels.append("text")
 				  		.text(function(d, i){
-				  			return viewRef.labelValue + MetacatUI.appView.commaSeparateNumber(d.count);
+				  			return viewRef.labelValue + MetacatUI.appView.commaSeparateNumber(d.count) + " " + viewRef.yLabel;
 				  		})
 				  		.attr("x", function(d, i){
 				  			var xPos = viewRef.x(d.date) - (labelWidth/2);
@@ -443,15 +454,23 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			//Format the data for a cumulative time series chart
 			//We will take only the first 10 characters of the date
 			//To make it a cumulative chart, we will keep adding to the count
-			var uploadData = [];
-			var lastCount = 0;
+			var newData = [];
+			var totalCount = 0;
+			
 			for(var i=0; i < counts.length; i+=2){
-				uploadData.push({date: counts[i].substr(0, 10), count: lastCount + counts[i+1]});
 				
-				if(this.cumulative) lastCount += counts[i+1];
+				if(this.cumulative) 
+					totalCount += counts[i+1];
+				else
+					totalCount = counts[i+1];
+				
+				newData.push({ 
+							   date: counts[i].substr(0, 10), 
+							   count: totalCount
+							 });				
 			}
 			
-			return uploadData;
+			return newData;
 		} 
 		
 	});

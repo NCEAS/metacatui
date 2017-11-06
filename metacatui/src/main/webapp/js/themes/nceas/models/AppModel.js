@@ -35,7 +35,8 @@ define(['jquery', 'underscore', 'backbone'],
 				samplingDescription: false,
 				studyExtentDescription: false,
 				taxonCoverage: false,
-				temporalCoverage: true
+				temporalCoverage: true,
+				title: true
 			},
 			
 			baseUrl: "https://knb.ecoinformatics.org",
@@ -66,7 +67,7 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsUrl: null
 		},
 				
-		defaultView: "share",
+		defaultView: "submit",
 		
 		initialize: function() {
 

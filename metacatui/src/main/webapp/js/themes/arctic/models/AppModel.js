@@ -48,7 +48,8 @@ define(['jquery', 'underscore', 'backbone'],
 				samplingDescription: false,
 				studyExtentDescription: false,
 				taxonCoverage: false,
-				temporalCoverage: true
+				temporalCoverage: true,
+				title: true
 			},
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
@@ -57,7 +58,7 @@ define(['jquery', 'underscore', 'backbone'],
 			d1Service: '/d1/mn/v2',
 			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
-			//d1LogServiceUrl: null,
+			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -106,7 +107,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
 			this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
 			this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
-			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/');
+			this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
 			this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
@@ -135,8 +136,8 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
-					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/');
-
+					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
+				
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 				

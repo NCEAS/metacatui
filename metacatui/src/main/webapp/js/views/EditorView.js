@@ -253,7 +253,7 @@ define(['underscore',
             		view.renderMember(model);
 
             	//Listen for changes on this member
-            	//this.listenTo(model, "change:uploadStatus", view.showControls);
+                model.on("change:fileName", model.updateUploadStatus);
             });
 
         	//Render the Data Package view
@@ -280,7 +280,9 @@ define(['underscore',
 	            		view.emlView.resizeTOC();
 	            	}
             	});
-            $packageTableContainer.css("height", "200px");
+            
+            var tableHeight = ($(window).height() - $("#Navbar").height()) * .75;          
+            $packageTableContainer.css("height", tableHeight + "px");
 
             var table = this.dataPackageView.$el;
             this.listenTo(this.dataPackageView, "addOne", function(){
@@ -479,12 +481,23 @@ define(['underscore',
         	if(savedObject.type != "DataPackage") return;
 
         	//Change the URL to the new id
-        	MetacatUI.uiRouter.navigate("#share/" + this.model.get("id"), { trigger: false, replace: true });
+        	MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
 
             this.toggleControls();
 
-        	MetacatUI.appView.showAlert("Your changes have been saved", "alert-success", this.$el, 4000, {remove: true});
-
+            var message = $(document.createElement("div")).append(
+            		$(document.createElement("span")).text("Your changes have been saved. "),
+            		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+        	
+            MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
+            
+            //Rerender the CitationView
+            var citationView = _.where(this.subviews, { type: "Citation" });
+            if(citationView.length){
+	            citationView[0].createTitleLink = true;
+	            citationView[0].render();
+            }
+            
             // Reset the state to clean
             MetacatUI.rootDataPackage.packageModel.set("changed", false);
             this.model.set("hasContentChanges", false);
@@ -542,7 +555,7 @@ define(['underscore',
 				  "<li>The content was removed because it was invalid.</li>" +
 			  "</ul>";
 			this.hideLoading();
-			MetacatUI.appView.showAlert(msg, "alert-error", this.$el, null, {remove: true});
+			MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
 
 		},
 
@@ -561,7 +574,7 @@ define(['underscore',
 					view.model = null;
 
 					//Update the URL
-					MetacatUI.uiRouter.navigate("#share/" + view.pid, { trigger: false, replace: true });
+					MetacatUI.uiRouter.navigate("#submit/" + view.pid, { trigger: false, replace: true });
 
 					//Render the new model
 					view.render();
@@ -722,7 +735,7 @@ define(['underscore',
 	    	this.$("input, textarea, select, button").prop("disabled", false);
 
         	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Submit").removeClass("btn-disabled");	    
+        	this.$("#save-editor").html("Submit dataset").removeClass("btn-disabled");	    
 	    
 	    },
 
@@ -760,6 +773,7 @@ define(['underscore',
 			this.$(".side-nav-item .icon").hide();
 			this.$(".error").removeClass("error");
 			$(".alert-container").remove();
+			
 			
 			var errors = this.model.validationError;
 			

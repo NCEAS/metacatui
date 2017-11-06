@@ -355,8 +355,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		insertStats: function(){
 			if(this.model.noActivity && this.statsView){
 				this.statsView.$el.addClass("no-activity");
-				this.$("#total-upload-container").text("0");
-				this.$("#total-download-container").text("0");
+				this.$("#total-download-wrapper, section.downloads").hide();
 				return;
 			}
 			
@@ -365,11 +364,16 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			//Insert a couple stats into the profile
 			this.listenToOnce(MetacatUI.statsModel, "change:firstUpload", this.insertFirstUpload);
+			
 			this.listenToOnce(MetacatUI.statsModel, "change:totalUploads", function(){
 				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalUploads")));
 			});
+			
 			MetacatUI.statsModel.once("change:downloads", function(){
-				view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
+				if( !this.get("downloads") )
+					view.$("#total-download-wrapper, section.downloads").hide();
+				else
+					view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
 			});
 			
 			//Create a base query for the statistics
@@ -470,8 +474,19 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			
 			// Get the first upload or first operational date
 			if(this.model.get("type") == "node"){
-				var node = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("username") }),
-					firstUpload = node.memberSince? new Date(node.memberSince.substring(0, node.memberSince.indexOf("T"))) : new Date();				
+			
+				//Get the member node object
+				var node = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("username") });
+				
+				//If there is no memberSince date, then hide this statistic and exit
+				if( !node.memberSince ){
+					this.$("#first-upload-container, #first-upload-year-container").hide();
+					return;
+				}
+				else{
+					var firstUpload = node.memberSince? new Date(node.memberSince.substring(0, node.memberSince.indexOf("T"))) : new Date();
+				}
+				
 			}
 			else{
 				var	firstUpload = new Date(MetacatUI.statsModel.get("firstUpload"));

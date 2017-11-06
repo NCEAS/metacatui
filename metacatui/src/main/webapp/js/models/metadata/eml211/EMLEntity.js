@@ -187,6 +187,8 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 } else {
                     this.get("attributeList").splice(index, attribute);
                 }
+                
+                this.trigger("change:attributeList");
             },
 
             /*

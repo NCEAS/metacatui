@@ -12,10 +12,11 @@ function ($, _, Backbone) {
 			'view/*pid'                 : 'renderMetadata', // metadata page
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
-			'signup'          			: 'renderLdap',     // use ldapweb for registration
+			'signup'          			: 'renderTokenSignIn',     // use ldapweb for registration
 			"signinldaperror"			: "renderLdapSignInError",
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'share(/*pid)'       		: 'renderEditor'  // metadata Editor
+			'share(/*pid)'       		: 'renderEditor',  // metadata Editor
+			'submit(/*pid)'       		: 'renderEditor'  // metadata Editor
 		},
 		
 		initialize: function(){
@@ -140,6 +141,20 @@ function ($, _, Backbone) {
 			}
 			else{
 				MetacatUI.appView.signInView.ldapError = true;
+				MetacatUI.appView.showView(MetacatUI.appView.signInView);
+			}
+		},
+		
+		renderTokenSignIn: function(){
+			this.routeHistory.push("signin");
+
+			if(!MetacatUI.appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
+					MetacatUI.appView.showView(MetacatUI.appView.signInView);
+				});
+			}
+			else{
 				MetacatUI.appView.showView(MetacatUI.appView.signInView);
 			}
 		},

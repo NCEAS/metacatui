@@ -271,6 +271,9 @@ header .citation {
 .btn.download.complete.btn-primary{
 	color: white;
 }
+.downloading.icon-spin.hidden{
+	display: none;
+}
 
 /****************************************** 
 ** Notifications and Alerts ***
@@ -499,6 +502,7 @@ img.icon{
 }
 .result-row .tooltip{
 	z-index: 99999;
+	min-width: 100px;
 }
 .result-row .info-icons .label {
   background-color: #FFF;
@@ -513,6 +517,10 @@ img.icon{
 }
 .result-row .tooltip-inner{
 	font-size: 1.2em;
+}
+.result-row .download-icon-placeholder{
+	width: 16px;
+	display: inline-block;
 }
 /****************************************** 
 ** Provenance flow-charts ***
@@ -998,6 +1006,13 @@ img.icon{
 }
 .entitydetails.hasProvLeft{
 	margin-left: 0px;
+	width: calc(100% - 305px);
+    display: inline-block;
+}
+.entitydetails.hasProvRight{
+	margin-right: 0px;
+    width: calc(100% - 305px);
+    display: inline-block;
 }
 .entitydetails.hasProvLeft .thumbnail.pdf{
 	margin-left: 60px;
@@ -1312,132 +1327,11 @@ img.icon{
 /****************************************** 
 ************ Popup Login **************
 ******************************************/	
-.fancybox-inline{
-	background-color: #FFF;
-	padding: 20px;
-	display: none;
-}
-.fancybox-inline h2 {
-    font-size: 1.2em;
-    text-align: center;
-}
-.fancybox-inline h3.subtitle{
-	font-size: 1em;
-    font-weight: lighter;
-    line-height: 1.5em;
-    font-style: italic;
-}
-.fancybox-inline h4{
-    font-size: 1em;
-}
-.fancybox-inline > form .input-group, .fancybox-inline form .btn {
-    max-width: 296px;
-    left: 22%;
-    position: relative;
-}
-.fancybox-inline > form input{
-	width: 90%;
-	width: calc(100% - 20px);
-	margin-bottom: 5px;
-}
-.fancybox-inline > form select{
-	width: calc(100% - 6px);
-	margin-bottom: 5px;
-}
-.fancybox-inline > form input.btn{
-	width: 95%;
-	width: calc(100% - 5px);
-	margin-top: 20px;
-}
-.fancybox-inline .divider-text{
-	position: absolute;
-    top: 50%;
-    left: 40%;
-    background-color: white;
-    padding: 5px;
-    color: #AAA;
-}
+
 .nav.list-group > .list-group-item img.icon{
 	width: 32px;
 	height: auto;
 	padding: 16px;
-}
-.fancybox-inline .notification {
-  min-height: 150px;
-}
-.fancybox-inline {
-    min-width: 550px;
-    padding: 5px;
-}
-.fancybox-inline h3{
-	font-size: .9em;
-	font-weight: normal;
-	margin-top: 0px;
-    line-height: 1.1em;
-}
-.fancybox-inline .well ul{
-	font-size: .9em;
-	list-style: none;
-	margin-left: 0px;
-}
-.fancybox-inline .well ul li{
-    border-bottom: 1px solid #DDD;
-    padding: 3px;
-    font-size: .9em;
-}
-.fancybox-inline > .row-fluid > .span7{
-	border-left: 1px solid #DDD;
-    padding-left: 20px;
-}
-.fancybox-inline .btn.ldap{
-	width: 220px;
-    left: 0;
-}
-.orcid-signin a > span{
-    padding: 11px;
-    display: inline-block;
-    height: 1.5em;
-    color: #8FAF10;
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-    border-left-width: 0px;
-    border: 1px solid #aacf14;
-    border-left-width: 0px;
-}
-.orcid-signin a {
-    padding: 0px;
-    border-radius: 4px;
-    padding-left: 0px;
-}
-.fancybox-inline .signin{
-	display: inline-block;
-	width: auto;
-	padding: 0px;
-	margin-bottom: 10px;
-}
-.fancybox-inline .orcid-signin a:hover,
-.fancybox-inline .orcid-signin a:hover > img{
-	background-color: #aacf14;
-	    cursor: pointer;
-	  transition: all 500ms;
-	
-}
-.fancybox-inline .orcid-signin a:hover > span{
-	color: white;
-}
-.fancybox-inline .well{
-	border-color: #CCC;
-}
-.fancybox-inline .span12 .well .btn{
-	width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-    display: block;
-    margin-bottom: 20px;
-}
-.fancybox-inline .remember{
-	height: 1.2em;
-	overflow: hidden;
 }
 .scroll-y{
 	overflow-y: scroll;
@@ -1453,25 +1347,8 @@ img.icon{
 	margin-right: 10px;
 	margin-left: 30%;
 }
-.orcid-signin img {
-    height: 1.5em;
-    background-color: #FFF;
-    padding: 11px;
-    border-radius: 4px;
-    border: 1px solid #aacf14;
-    display: inline-block;
-    margin-right: -4px;
-    margin-top: -1px;
-    border-bottom-right-radius: 0px;
-    border-top-right-radius: 0px;
-    border-right-width: 0px;
-}
 #signInPopup .orcid-signin {
     margin-top: 10%;
-}
-.fancybox-inline > .row-fluid > .span6:first-child {
-    border-right: 1px solid #CCC;
-    min-height: 265px;
 }
 .modal.container{
 	padding: 20px 20px 40px 20px;
@@ -1479,6 +1356,37 @@ img.icon{
 .modal .container{
 	width: auto;
 	margin-bottom: 20px;
+}
+.sign-in.modal .close {
+    font-size: 2em;
+}
+/** The ORCID Sign In button **/
+.orcid-btn{
+	border: 1px solid #aacf14;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	background-color: #FFF;
+	padding: 15px 20px;
+	color: #aacf14;
+	text-decoration: none;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	display: inline-block;
+	font-weight: bold;
+}
+.orcid-btn img {
+    height: 1.5em;
+    margin-right: 5px;
+}
+.orcid-btn:hover{
+	background-color: #aacf14;
+	transition: all 500ms;
+	text-decoration: none;	
+}
+.orcid-btn:hover > span{
+	color: #FFF;
+	text-decoration: none;
 }
 /****************************************** 
 ** The Metadata and MetadataIndex View **
@@ -2113,7 +2021,7 @@ table.download-contents .name{
 }
 table.download-contents .btn-container,
 table.download-contents .btn-container .btn{
-	width: 115px;
+	width: 140px;
 } 
 .download-contents.service .btn-container .btn{
 	width: 135px;
@@ -2450,6 +2358,13 @@ address.email-container:before{
     stroke: #CCC;
     fill: #CCC;
 }
+.profile .circle-badge circle.no-activity{
+	stroke: #CCC;
+	fill: transparent;
+}
+.profile .circle-badge text.no-activity{
+	fill: #CCC;
+}
 .profile .chart-title{
 	float: left;
 }
@@ -2460,14 +2375,22 @@ address.email-container:before{
 }
 .profile .stripe{
 	clear: both;
+	min-height: 200px;
+}
+.profile .chart-title{
+	height: 100%;
 }
 .profile .chart-title.uploads{
 	width: 100%;
 }
+.profile .quick-stats,
+.profile .quick-stats .badge-container{
+	height: 280px;
+}s
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
 	width: 100%;
-	min-width: 300px;
+	min-width: 250px;
 }
 .profile #downloads-title,
 .profile #uploads-title{
@@ -2485,9 +2408,25 @@ address.email-container:before{
     padding-bottom: 20px;
     padding-top: 20px;
 }
+.profile .packages p {
+    color: #333;
+}
+.no-activity .profile .packages p{
+	color: inherit;
+}
 .temporal-coverage-chart{
 	width: calc(100% - 300px);
 }
+.profile .circle-badge circle{
+	fill: transparent;
+}
+.profile .quick-stats .circle-badge .count{
+	font-size: 27px;
+}
+.profile .quick-stats .circle-badge .title{
+	font-size: 18px;
+}
+
 /**** Bar Charts ******/
 .bar-chart .bar-label.bg{
 	fill: rgba(0,0,0,0.8);
@@ -2621,6 +2560,7 @@ svg .no-activity,
 }
 .list-group-header.list-group-item{
 	background-color: #ECF1F5;
+	min-width: auto;
 }
 .panel>.list-group .list-group-item.active{
 	border-left-width: 5px;
@@ -3161,6 +3101,7 @@ input.subtle:focus
 .jump-width-input{
 	transition: width 1000s;
 }
+.nav
 .input-submit{
 	margin-left: 10px;
     height: 1em;
@@ -3228,6 +3169,11 @@ Editor View
 .Editor .header .border-image{
 	height: 15px;
 	margin-bottom: 5px;
+}
+.editor-view {
+    margin: 0px;
+    width: 100%;
+    max-width: 100%;
 }
 .Editor #Content {
     padding-top: 70px;
@@ -3379,15 +3325,58 @@ ul.side-nav-items {
     margin-right: 10px;
     width: 1.4em;
 }
-.data-package-item.loading .edit.icon,
-.data-package-item.loading .edit.icon:hover{
-	cursor: default;
-	color: #999;
+.data-package-item .btn.edit{
+	width: 85px;
+	color: #19B36A;
+}
+.data-package-item .btn-group .btn{
+	background-color: white;
+}
+.data-package-item .btn.warning {
+    background-color: #FFF;
+    color: #ffbc00;
+}
+.data-package-item .dropdown-menu{
+	border-color: #CCC;
+    border-width: 1px;
+    border-style: solid;
+    margin-top: 6px;
 }
 .data-package-item.error-saving .disable-layer{
 	width: 70px;
 }
-
+.data-package-item .btn-group .dropdown-toggle {
+    border-bottom-left-radius: 0px;
+    border-top-left-radius: 0px;
+    width: 25px;
+}
+.data-package-item button{
+	border-color: #CCC;
+}
+.data-package-item.remove-preview {
+	opacity: 1;
+}
+.data-package-item.remove-preview .name,
+.data-package-item.remove-preview .status,
+.data-package-item.remove-preview .size,
+.data-package-item.remove-preview .type,
+.data-package-item.remove-preview .type-icon{
+	opacity: .3;
+}
+.data-package-item.message-row td{
+	padding-top: 5%;
+}
+.data-package-item.message-row:hover td{
+	background-color: #FFF;
+}
+.data-package-item.message-row h2{
+	font-size: 2.1em;
+}
+.data-package-item.message-row button{
+	font-size: 1.2em;
+	margin-top: 10px;
+	display: block;
+}
 /* Editor package table status column */
 .data-package-item .status{
 	width: 60px;
@@ -3427,29 +3416,14 @@ ul.side-nav-items {
 	opacity: .6;
 }
 
-.Editor #data-package-table ul li a span {
-    margin-left: .3em;
-    margin-right: .3em;
-    text-align: right;
-}
-
-.Editor #data-package-table ul li i {
-    margin-left: .3em;
-    margin-right: .3em;
-}
-
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
-    margin-right: 20px;
-    background-color: #1F254F;
     border-radius: 4px;
+    left: 0px;
+    width: 107px;
+    min-width: 85px;
 }  
 
-/* Editor package table button dropdown list items */
-.Editor #data-package-table td:last-of-type ul li {
-    margin-right: 20px;
-    background-color: #1F254F;
-}  
 
 #data-package-container + .ui-resizable-handle{
 	border: 1px solid #D5D5D5;
@@ -3502,6 +3476,9 @@ textarea.xlarge{
 .Editor .dropdown-menu li a i {
     vertical-align: middle;
 }
+#editor-body .alert {
+    position: relative;
+}
 .Editor #Content > .alert-container{
 	position: fixed;
     left: 0px;
@@ -3536,6 +3513,10 @@ textarea.xlarge{
 .Editor .checkbox input{
 	padding: 0px;
 	height: auto;
+}
+.checkbox .disabled,
+.checkbox .disabled + .text{
+	opacity: .5;
 }
 .Editor input.error,
 .Editor select.error,
@@ -3756,6 +3737,59 @@ textarea.xlarge{
     padding: 5px;
     height: 3em;
 }
+.subtle-btn-group button,
+.subtle-btn-group button:hover {
+    border-width: 0px;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    background-color: transparent;
+}
+.subtle-btn-group .icon-ellipsis-vertical {
+    font-size: 1.2em;
+}
+.subtle-btn-group .dropdown-toggle:hover,
+.subtle-btn-group .dropdown-toggle:focus {
+    background-color: #DDD;
+    border-width: 0px;
+}
+.eml-party .party-menu {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
+.eml-party.new .party-menu{
+	display: none;
+}
+.eml-party .party-menu .dropdown-menu {
+    margin-left: -142px;
+    width: 160px;
+    background-color: #FFF;
+    border: 1px solid #CCC;
+    box-shadow: 8px 6px 24px -1px #ccc;
+    -moz-box-shadow: 8px 6px 24px -1px #ccc;
+    -webkit-box-shadow: 8px 6px 24px -1px #ccc;
+}
+.eml-party .party-menu .dropdown-menu li {
+    border-bottom: 1px solid #ccc;
+}
+.eml-party .party-menu .dropdown-menu li:hover{
+	background-color: rgba(255, 255, 255, 0.57);
+}
+.eml-party .party-menu .dropdown-menu>li>a:hover {
+    background-color: transparent;
+    background-image: none;
+}
+.eml-party .party-menu .remove,
+.eml-party .party-menu .remove:hover,
+.eml-party .party-menu .remove a,
+.eml-party .party-menu .remove a:hover {
+    font-size: inherit;
+    position: relative;
+    margin: 0px;
+    color: red;
+    max-width: 100%;
+}
 
 /* ---- Keywords ---- */
 .metadata-container .keywords .span2{
@@ -3782,13 +3816,19 @@ textarea.xlarge{
 
 /* ---- Taxon Coverage ---- */
 .root-taxonomic-classification-container .notification{
-	padding-left: 0px;
+	padding-left: 68px;
 	position: absolute;
-	margin-top: -25px;
+	margin-top: -31px;
 }
 .root-taxonomic-classification-container{
 	margin-top: 20px;
 	position: relative; 
+}
+.row-striped,
+.root-taxonomic-classification-container h6{
+    border-top: none;
+    border-left: none;
+    border-right: none;
 }
 .root-taxonomic-classification-container:first-child,
 .taxonomic-coverage > .notification + .row-striped:nth-child(2){
@@ -3811,7 +3851,6 @@ textarea.xlarge{
 }
 
 /* ---- Remove icons in the Editor ---- */
-.data-package-item .remove,
 .metadata-container .remove{
 	color: #cecece;
 }
@@ -3826,10 +3865,6 @@ textarea.xlarge{
 .Editor .remove:hover{
 	cursor: pointer;
 	color: #FF0000;
-}
-.metadata-container .eml-party .remove{
-	right: 10px;
-    top: 5px;
 }
 
 .taxonomic-coverage-row .remove{

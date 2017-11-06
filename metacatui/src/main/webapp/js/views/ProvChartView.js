@@ -105,7 +105,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		
 		render: function(){
 			//Nothing to do if there are no entities and it isn't an editor
-			if(!this.numProvEntities && !this.editModeOn) return false;
+			if(!this.numProvEntities && !this.numPrograms && !this.editor) return false;
 			
 			var view = this;
 			
@@ -158,6 +158,14 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					}
 				}
 				
+				//Derivation charts have a pointer for each node
+				if(view.type == "derivations" && (this.numDerivations > 0 || this.editor))
+					view.$el.append(view.createConnecter(position));
+				
+				//Source charts have a connector for each node and one pointer
+				if(view.type == "sources" && (this.numSources > 0 || this.editor))
+					view.$el.append(view.createConnecter(position));
+				
 				//Bump the position for non-programs only
 				if(entity.getType() == "program")
 					programPosition++;
@@ -207,7 +215,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if((this.type == "sources") && !this.numPrograms) this.$el.append(this.createPointer());
 			
 			//Charts with programs need an extra connecter
-			if(this.numPrograms) 
+			if(this.programs.length && (this.numSources || this.numDerivations)) 
 				this.$(".programs").append(this.createConnecter());
 			
 			if(this.$(".collapsed").length){

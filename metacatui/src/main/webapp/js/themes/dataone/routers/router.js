@@ -316,7 +316,7 @@ function ($, _, Backbone) {
 
 			if(!MetacatUI.appView.signInView){
 				require(["views/SignInView"], function(SignInView){
-					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
 					MetacatUI.appView.showView(MetacatUI.appView.signInView);
 				});
 			}

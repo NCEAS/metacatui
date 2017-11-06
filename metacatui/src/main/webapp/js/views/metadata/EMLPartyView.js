@@ -44,7 +44,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		//Take multiple given names and combine into one given name.
         		//TODO: Support multiple given names as an array
         		if (Array.isArray(name.givenName)) {
-					fullGivenName = _.map(name.givenName, function(name) { return name.trim(); }).join(' ');
+					fullGivenName = _.map(name.givenName, function(name) {
+							if(typeof name != "undefined" && name)
+								return name.trim();
+							else
+								return "";
+						}).join(' ');
 				}
         		
         		//Get the address object
@@ -71,8 +76,9 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	        			fax        : this.model.get("fax").length? this.model.get("fax")[0] : "",
 	        			email      : this.model.get("email").length? this.model.get("email")[0] : "",
 	        			website    : this.model.get("onlineUrl").length? this.model.get("onlineUrl")[0] : "",
-	        			userId     : Array.isArray(this.model.get("userId"))? this.model.get("userId")[0] : this.model.get("userId") || ""
-	        		}));
+	        			userId     : Array.isArray(this.model.get("userId"))? this.model.get("userId")[0] : this.model.get("userId") || "",
+	        			uniqueId   : this.model.cid
+	        		}));	        		
         		}
         		
         		//If this EML Party is new/empty, then add the new class
@@ -269,7 +275,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	},
         	
         	previewRemove: function(){
-        		this.$el.toggleClass("remove-preview");
+        		this.$("input, img, label").toggleClass("remove-preview");
         	},
 
         	/*

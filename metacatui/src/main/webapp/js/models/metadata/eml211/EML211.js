@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         'models/metadata/eml211/EMLTemporalCoverage', 
         'models/metadata/eml211/EMLDistribution', 
         'models/metadata/eml211/EMLEntity',
+        'models/metadata/eml211/EMLDataTable',
         'models/metadata/eml211/EMLOtherEntity',
         'models/metadata/eml211/EMLParty', 
         'models/metadata/eml211/EMLProject',
@@ -16,7 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		'models/metadata/eml211/EMLMethods'], 
     function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject, 
     		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, 
-    		EMLDistribution, EMLEntity, EMLOtherEntity, EMLParty, EMLProject, EMLText, EMLMethods) {
+    		EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty, 
+            EMLProject, EMLText, EMLMethods) {
         
         /*
         An EML211 object represents an Ecological Metadata Language
@@ -50,7 +52,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            onlineDist: [], // array of EMLOnlineDist objects
 		            offlineDist: [], // array of EMLOfflineDist objects
 		            geoCoverage : [], //an array for EMLGeoCoverages
-		            temporalCoverage : null, //One EMLTempCoverage model
+		            temporalCoverage : [], //an array of EMLTempCoverage models
 		            taxonCoverage : [], //an array of EMLTaxonCoverages
 		            purpose: [],
 		            entities: [], //An array of EMLEntities
@@ -59,6 +61,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		            project: null // An EMLProject object
         		});
         	},
+        	
+        	units: new Units(),
 
             initialize: function(attributes) {
                 // Call initialize for the super class
@@ -72,6 +76,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 	this.set("synced", true);
                 });
                 
+    			//Create a Unit collection
+                if(!this.units.length)
+                	this.createUnits();               
             },
             
             url: function(options) {
@@ -284,10 +291,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             				taxon    = $(thisNode).children("taxonomiccoverage");
             			
             			if(temporal.length){
-            				modelJSON.temporalCoverage = new EMLTemporalCoverage({ 
-        						objectDOM: temporal[0],
-        						parentModel: model
-                			});
+            				modelJSON.temporalCoverage = [];
+            				
+            				_.each(temporal, function(t){
+            					modelJSON.temporalCoverage.push(new EMLTemporalCoverage({ 
+            						objectDOM: t,
+            						parentModel: model
+                    			}));
+            				});
             			}
             						
             			if(geo.length){
@@ -377,17 +388,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 			}, {
                 				parse: true
                 			});
-            			}
-            			else{
-            				entityModel = new EMLEntity({
+                        } else if ( thisNode.localName == "datatable") {
+                            entityModel = new EMLDataTable({
+                                objectDOM: thisNode,
+                                parentModel: model
+                            }, {
+                                parse: true
+                            });
+            			} else {
+            				entityModel = new EMLOtherEntity({
                 				objectDOM: thisNode,
-                				parentModel: model
+                				parentModel: model,
+                                entityType: "application/octet-stream"
                 			}, {
                 				parse: true
                 			});
             			}
             			
-            			modelJSON["entities"].push(entityModel);            			
+            			modelJSON["entities"].push(entityModel);
             		}
             		else{
             			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
@@ -452,7 +470,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						}
 					}
 	           	}, this);
-	           	
+				   
+				// Serialize pubDate
+				// This one is special because it has a default behavior, unlike 
+				// the others: When no pubDate is set, it should be set to
+				// the current year
+				var pubDate 	= this.get('pubDate'),
+					pubDateEl 	= document.createElement('pubdate');
+
+				datasetNode.find('pubdate').remove();
+
+				if (pubDate != null && pubDate.length > 0) {
+					$(pubDateEl).text(pubDate);
+				} else {
+					$(pubDateEl).text((new Date).getFullYear());
+				}
+
+				this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
+
 	           	// Serialize the parts of EML that are eml-text modules
 	           	var textFields = ["abstract"];
 	           	_.each(textFields, function(field){
@@ -580,22 +615,24 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				}
 				
 	        	//Serialize the temporal coverage
-				var existingTemporalCoverage = datasetNode.find("temporalcoverage");
-                if ( this.get("temporalCoverage") ) {
-                	if(existingTemporalCoverage.length)
-                		existingTemporalCoverage.replaceWith(this.get("temporalCoverage").updateDOM());
-                	else{
-                		var insertAfter = this.getEMLPosition(eml, "temporalCoverage");
-                		
-                		if(!insertAfter)
-                			datasetNode.find("coverage").append(this.get("temporalCoverage").updateDOM());
-                		else
-                			insertAfter.after(this.get("temporalCoverage").updateDOM());
-                	}
-                }
-                else
-                	existingTemporalCoverage.remove();
-                
+				var existingTemporalCoverages = datasetNode.find("temporalcoverage");
+            		
+            	//Update the DOM of each model
+				_.each(this.get("temporalCoverage"), function(temporalCoverage, position){
+					
+					//Update the existing temporalCoverage node if it exists
+					if(existingTemporalCoverages.length-1 >= position){
+						$(existingTemporalCoverages[position]).replaceWith(temporalCoverage.updateDOM());
+					}
+					//Or, append new nodes
+					else{
+						datasetNode.find('coverage').append(temporalCoverage.updateDOM());	
+					}
+				});	 
+				
+				//Remove existing taxon coverage nodes that don't have an accompanying model
+				this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
+            
                 if(datasetNode.find("coverage").children().length == 0)
                 	datasetNode.find("coverage").remove();
                 
@@ -662,17 +699,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	        		this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());	  
 	        	
 	        	//Get the existing taxon coverage nodes from the EML
-				var existingEntities = datasetNode.find("otherEntity");
+				var existingEntities = datasetNode.find("otherEntity, dataTable");
 				
 	        	//Serialize the entities
-	        	_.each(this.get("entities"), function(entity, position){					
+	        	_.each(this.get("entities"), function(entity, position) {
 
 					//Update the existing node if it exists
-					if(existingEntities.length-1 >= position){
+					if(existingEntities.length - 1 >= position) {
 						$(existingEntities[position]).replaceWith(entity.updateDOM());
 					}
 					//Or, append new nodes
-					else{
+					else {
 						this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());	
 					}
 	        		
@@ -956,7 +993,28 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if(!this.get("title").length){           		
             		errors.title = "A title is required";            		
             	}
-            	
+				
+				// Validate the publication date
+				if (this.get("pubDate") != null) {
+					if (!this.isValidYearDate(this.get("pubDate"))) {
+						errors["pubDate"] = ["The value entered for publication date, '"
+							+ this.get("pubDate") + 
+							"' is not a valid value for this field. Enter with a year (e.g. 2017) or a date in the format YYYY-MM-DD."]
+					}
+				}
+				
+				// Validate the temporal coverage
+				if ( this.get("temporalCoverage").length ) {
+					_.each(this.get("temporalCoverage"), function(temporalCoverage){
+						if( !temporalCoverage.isValid() ){
+							if( !errors.temporalCoverage )
+								errors.temporalCoverage = [temporalCoverage.validationError];
+							else
+								errors.temporalCoverage.push(temporalCoverage.validationError);
+						}
+					});
+				}
+
             	//Validate the EMLParty models
             	var partyTypes = ["associatedParty", "contact", "creator", "metadataProvider", "publisher"];
             	_.each(partyTypes, function(type){
@@ -1027,7 +1085,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 				errors.samplingDescription = "Provide a sampling description.";
                 		}
                 		else if(key == "temporalCoverage"){
-                			if(!this.get("temporalCoverage"))
+                			if(!this.get("temporalCoverage").length)
                 				errors.temporalCoverage = "Provide the date(s) for this data set.";
                 		}
                 		else if(key == "taxonCoverage"){
@@ -1063,7 +1121,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		this.trigger("valid");
             		return;
             	}
-            },
+			},
+			
+			/* Returns a boolean for whether the argument 'value' is a valid
+			value for EML's yearDate type which is used in a few places.
+			
+			Note that this method considers a zero-length String to be valid 
+			because the EML211.serialize() method will properly handle a null 
+			or zero-length String by serializing out the current year. */
+			isValidYearDate: function(value) {
+				return (value === "" || /^\d{4}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value));
+			},
             
             /*
              * Sends an AJAX request to fetch the system metadata for this EML object.
@@ -1180,7 +1248,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		//Matches of the checksum or identifier are definite matches
             		if( e.get("xmlID") == dataONEObj.getXMLSafeID() )
             			return true;
-            		else if( e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObj.get("checksumAlgorithm").toUpperCase() == "MD5")
+            		else if( e.get("physicalMD5Checksum") && (e.get("physicalMD5Checksum") == dataONEObj.get("checksum") && dataONEObj.get("checksumAlgorithm").toUpperCase() == "MD5"))
             			return true;
             		else if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;
@@ -1240,10 +1308,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
             },
             
+            /*
+             * removeParty - removes the given EMLParty model from this EML211 model's attributes
+             */
+            removeParty: function(partyModel){
+            	//The list of attributes this EMLParty might be stored in
+            	var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+            	
+            	// Iterate over each possible attribute
+            	_.each(possibleAttr, function(attr){
+            	
+            		if( _.contains(this.get(attr), partyModel) ){
+            			this.set( attr, _.without(this.get(attr), partyModel) );
+            		}
+            			
+            	}, this);
+            },
+            
             createUnits: function(){
-            	var units = new Units();
-            	units.fetch();
-            	this.set("units", units);
+            	this.units.fetch();
             },
             
             /* Initialize the object XML for brand spankin' new EML objects */

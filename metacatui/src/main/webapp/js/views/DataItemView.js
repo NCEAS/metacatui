@@ -43,12 +43,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Initialize the object - post constructor */
             initialize: function(options) {
+            	if(typeof options == "undefined") var options = {};
+            	
+                this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
-                
+
             },
             
             /* Render the template into the DOM */
             render: function(model) {
+            	
             	//Prevent duplicate listeners
             	this.stopListening();
             	
@@ -63,6 +67,50 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Format the title
                 if(Array.isArray(attributes.title))
                 	attributes.title  = attributes.title[0];
+                
+                //Set some defaults
+                attributes.numAttributes = 0;
+                attributes.hasAttributeChanges = false;
+                attributes.entityIsValid = false;
+                		
+                //Get the number of attributes for this item
+                if(this.model.type != "EML"){
+                		                
+	                //Get the parent EML model
+	                var parentEML = MetacatUI.rootDataPackage.where({
+	                    	id: this.model.get("isDocumentedBy")[0]
+	                	});
+	                
+	                if( Array.isArray(parentEML) )
+	                	parentEML = parentEML[0];
+	                
+	                //If we found a parent EML model
+	                if(parentEML && parentEML.type == "EML"){
+	                	//Find the EMLEntity model for this data item
+	                	var entity = parentEML.getEntity(this.model);
+	                	
+	                	//If we found an EMLEntity model
+	                	if(entity){
+	                		//Get the number of attributes for this entity
+	                		attributes.numAttributes = entity.get("attributeList").length;
+	                		attributes.hasAttributeChanges = this.hasAttributeChanges;
+	                		attributes.entityIsValid = entity.isValid();
+	                		
+	                		//If there are no attributes now, rerender when one is added
+	                		if(attributes.numAttributes == 0){
+	                			this.listenTo(entity, "change:attributeList", this.handleAttributeChanges);
+	                		}
+	                	}
+	                	else{
+	                		//Rerender when an entity is added
+	                		this.listenTo(this.model, "change:entities", this.render);
+	                	}
+	                }
+	                else{
+	                	//When the package is complete, rerender
+	                	this.listenTo(MetacatUI.rootDataPackage, "add:EML", this.render);
+	                }
+                }
                 
                 this.$el.html( this.template(attributes) );
                 this.$el.find(".dropdown-toggle").dropdown();
@@ -92,24 +140,29 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	});
                 	this.$el.removeClass("loading");
                 }
-                else if(this.model.get("uploadStatus") == "q"){
+                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" || this.model.get("uploadStatus") == "q") && attributes.numAttributes == 0){
+            		
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
-                		title: "<div class='status-tooltip'>Ready to Submit</div>",
+                		title: "<div class='status-tooltip'>This file needs to be described - Click 'Describe'</div>",
                 		container: "body"
                 	});
-                	this.$el.removeClass("loading");
-                }
+            		
+            		this.$el.removeClass("loading");
+            		
+            	}
                 else if(this.model.get("uploadStatus") == "c"){
-                	this.$(".status .icon").tooltip({
+
+            		this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
-                		title: "<div class='status-tooltip'>Upload complete</div>",
+                		title: "<div class='status-tooltip'>Complete</div>",
                 		container: "body"
                 	});
+
                 	this.$el.removeClass("loading");
                 }
                 else if(this.model.get("uploadStatus") == "l"){
@@ -180,7 +233,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Close the view and remove it from the DOM */
             onClose: function(){
-                console.log('DataItemView: onClose()');
                 this.remove(); // remove for the DOM, stop listening           
                 this.off();    // remove callbacks, prevent zombies         
                                 
@@ -204,7 +256,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Update the folder name based on the scimeta title */
             updateName: function(e) {
-                var enteredText = $(e.target).text().trim();
+                
+                var enteredText = this.cleanInput($(e.target).text().trim());
             	
                 // Set the title if this item is metadata or set the file name
                 // if its not
@@ -219,7 +272,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     // Don't set the title if it hasn't changed or is empty
                     if (enteredText !== "" && 
                         currentTitle !== enteredText &&
-                        enteredText !== "Untitled dataset: Add a descriptive title for your dataset") {
+                        enteredText !== "Untitled dataset") {
                         // Set the new title, upgrading any title attributes
                         // that aren't Arrays into Arrays
                         if ((Array.isArray(title) && title.length < 2) || typeof title == "string") {
@@ -230,6 +283,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     }
                 } else {
                     this.model.set("fileName", enteredText);
+                    this.model.set("hasContentChanges")
                 }
             },
                                     
@@ -422,6 +476,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 
             },
             
+            /*
+             * When the attributes for this 
+             */
+            handleAttributeChanges: function(){
+            	this.hasAttributeChanges = true;
+            	
+            	
+            	this.render();
+            },
+            
             /* 
              * Return the parent science metadata model associated with the
              * data or metadata row of the UI event
@@ -520,6 +584,37 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
             },
             
+            cleanInput: function(input){
+            	// 1. remove line breaks / Mso classes
+				var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g; 
+				var output = input.replace(stringStripper, ' ');
+				
+				// 2. strip Word generated HTML comments
+				var commentSripper = new RegExp('<!--(.*?)-->','g');
+				var output = output.replace(commentSripper, '');
+				var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
+				
+				// 3. remove tags leave content if any
+				output = output.replace(tagStripper, '');
+				
+				// 4. Remove everything in between and including tags '<style(.)style(.)>'
+				var badTags = ['style', 'script','applet','embed','noframes','noscript'];
+				
+				for (var i=0; i< badTags.length; i++) {
+				  tagStripper = new RegExp('<'+badTags[i]+'.*?'+badTags[i]+'(.*?)>', 'gi');
+				  output = output.replace(tagStripper, '');
+				}
+				
+				// 5. remove attributes ' style="..."'
+				var badAttributes = ['style', 'start'];
+				for (var i=0; i< badAttributes.length; i++) {
+				  var attributeStripper = new RegExp(' ' + badAttributes[i] + '="(.*?)"','gi');
+				  output = output.replace(attributeStripper, '');
+				}
+				
+				return output;
+            },
+            
             /*
              * Style this table row to indicate it will be removed
              */
@@ -528,8 +623,18 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             },
             
             emptyName: function(e){
-            	if(this.$(".name .required-icon").length)
-            		this.$(".name").children().empty();
+            	
+            	var editableCell = this.$(".name [contenteditable]");
+            	
+            	if(editableCell.text().indexOf("Untitled") > -1){
+            		editableCell.attr("data-original-text", editableCell.text().trim())
+            					.text("")
+            					.addClass("empty")
+            					.on("focusout", function(){ 
+            						if(!editableCell.text())
+            							editableCell.text(editableCell.attr("data-original-text")).removeClass("empty");
+            					});
+            	}
             },
             
             showValidation: function(attr, errorMsg){
@@ -562,7 +667,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             hideSaving: function(){
             	this.$("button").prop("disabled", false);
             	this.$(".disable-layer").remove();
-            	this.$(".name > div").prop("contenteditable", true);
+            	
+            	//Make the name cell editable again
+            	if(this.model.get("type") != "Metadata")
+            		this.$(".name > div").prop("contenteditable", true);
+            	
             	this.$el.removeClass("error-saving");
             },
             

@@ -152,18 +152,34 @@ define(['jquery', 'underscore', 'backbone'],
 				thisModel.set('coordinators', coordList);
 				thisModel.trigger('change:coordinators');
 				
-				//Find the node we are currently querying, if there is one
+				//If we don't have a current member node yet, find it
 				if(!thisModel.get("currentMemberNode")){
+					
+					// Find the current member node by matching the current DataONE MN API base URL
+					// with the DataONE MN API base URLs in the member list
 					var thisMember = _.findWhere(thisModel.get("members"), { baseURL:  (MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get('context') + MetacatUI.appModel.get("d1Service")).replace("/v2", "").replace("/v1", "") });
-					if(thisMember !== undefined)
+					
+					if(thisMember !== undefined){
+						//If a matching member node is found, set the node ID
 						thisModel.set("currentMemberNode", thisMember.identifier);
+						
+						//If the node ID is not set in the appModel user the matching MN we found
+						if(!MetacatUI.appModel.get("nodeId"))
+							MetacatUI.appModel.set("nodeId", thisMember.identifier);
+					}
 					
+					//Trigger a change so the rest of the app knows we at least looked for the current MN
 					thisModel.trigger("change:currentMemberNode");
-					
-					if(!MetacatUI.appModel.get("nodeId"))
-						MetacatUI.appModel.set("nodeId", thisMember.identifier);	
+						
 				}
 			});
+		},
+		
+		/*
+		 * Returns true if the given nodeId is a Coordinating Node
+		 */
+		isCN: function(nodeId){
+			return _.findWhere(this.get("coordinators"), { identifier: nodeId });
 		}
 				
 	});

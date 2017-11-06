@@ -549,13 +549,13 @@ footer .logos a:hover, a:focus{
     
 /* EDITOR 
 ----------------------- */
-.Editor .dropdown-menu li {
+.Editor #data-package-table .dropdown-menu li {
     float: left;
     position: relative;
     width: 100%;
 }
    
-.Editor .dropdown-menu li a {
+.Editor #data-package-table .dropdown-menu li a {
     background-color: #1F254F;
     background-image: none;
     color: #FFF;
@@ -565,16 +565,28 @@ footer .logos a:hover, a:focus{
     box-sizing: border-box;
     text-align: center;
 }
-
-.Editor .dropdown-menu li a:hover {
-    background-color: #19B36A;
+.data-package-item .btn.edit:hover,
+.data-package-item .btn.edit:focus{
+	background-color: white;
+    border-color: #CCC;
 }
-   
-.data-package-item .edit{
-	color: #19B36A;
+.data-package-item .btn-group .btn:hover,
+.data-package-item .btn-group .dropdown-toggle:hover{
+	background-color: white;
+	border-color: #CCC;
+	color: #146660;
 }
-.data-package-item .edit:hover{
-	color: #22ea8b;
+.data-package-item .dropdown-menu a{
+	color: #146660;
+}
+#data-package-table td:last-of-type ul li{
+	background-color: #FFF;	
+}
+.data-package-item .dropdown-menu li a {
+    background-color: #FFF;
+    color: #19B36A;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-weight: normal;
 }
 .data-package-item .bar{
 	background-color: #1E254F;
@@ -584,6 +596,9 @@ footer .logos a:hover, a:focus{
 }
 .attribute-menu-item .remove{
 	background-color: rgba(49, 61, 129, .6);
+}
+.eml-party .party-menu .dropdown-menu>li>a:hover {
+    color: #12238e;
 }
     
 /* MAPS 
@@ -988,6 +1003,7 @@ svg .packages,
 .profile .packages{
 	color: #146660;
 	fill: #146660;
+	stroke: #146660;
 }
 .profile .bar-label.packages{
 	fill: inherit;
@@ -1964,13 +1980,6 @@ MDQ items
 		color: #FFF;
 		background-color: #00AAFF;
 	}
-	
-	
-#signinPopup{
-	width: auto;
-	min-width: 210px;
-	max-width: 210px;
-}
   
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */

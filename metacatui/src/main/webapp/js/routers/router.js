@@ -22,10 +22,11 @@ function ($, _, Backbone) {
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
-			'signin'                    : 'renderTokenSignIn',    		// logout the user
+			'signin'                    : 'renderSignIn',    		// logout the user
 			"signinsuccess"             : "renderSignInSuccess",
 			"signinldaperror"			: "renderLdapSignInError",
 			'share(/*pid)'              : 'renderEditor', // registry page
+			'submit(/*pid)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)'           : 'renderAPI'       // API page
 		},
@@ -139,7 +140,7 @@ function ($, _, Backbone) {
           package identifier will be queried and then rendered.
         */
 		renderEditor: function (pid) {
-			this.routeHistory.push("share");
+			this.routeHistory.push("submit");
 			
 			if( ! MetacatUI.appView.editorView ){
 				require(['views/EditorView'], function(EditorView) {
@@ -340,13 +341,13 @@ function ($, _, Backbone) {
 		
 		renderMyProfile: function(section, subsection){
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
-				this.renderTokenSignIn();
+				this.renderSignIn();
 			else if(!MetacatUI.appUserModel.get("checked")){
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 					if(MetacatUI.appUserModel.get("loggedIn"))
 						this.renderProfile(MetacatUI.appUserModel.get("username"), section, subsection);
 					else
-						this.renderTokenSignIn();
+						this.renderSignIn();
 				});
 			}
 			else if(MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn")){
@@ -373,17 +374,33 @@ function ($, _, Backbone) {
 			}
 		},
 		
-		renderTokenSignIn: function(){
-			this.routeHistory.push("signin");
+		renderSignIn: function(){
 
+			var router = this;
+
+			//If there is no SignInView yet, create one
 			if(!MetacatUI.appView.signInView){
 				require(['views/SignInView'], function(SignInView){
-					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
-					MetacatUI.appView.showView(MetacatUI.appView.signInView);
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
+					router.renderSignIn();
 				});
+				
+				return;
 			}
-			else{
+			
+			//If the user status has been checked and they are already logged in, we will forward them to their profile
+			if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
+				this.navigate("my-profile", { trigger: true });
+				return;
+			}
+			//If the user status has been checked and they are NOT logged in, show the SignInView
+			else if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ){
+				this.routeHistory.push("signin");
 				MetacatUI.appView.showView(MetacatUI.appView.signInView);
+			}
+			//If the user status has not been checked yet, wait for it
+			else if( !MetacatUI.appUserModel.get("checked") ){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.renderSignIn);
 			}
 		},
 

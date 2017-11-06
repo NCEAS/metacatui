@@ -531,7 +531,6 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 		
 		getToken: function(customCallback) {
-
 			var tokenUrl = MetacatUI.appModel.get('tokenUrl');
 			var model = this;
 			

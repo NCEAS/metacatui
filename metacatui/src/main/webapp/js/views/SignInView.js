@@ -1,7 +1,7 @@
 /*global define */
 
-define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.html', 'text!templates/alert.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html'], 				
-	function($, _, Backbone, fancybox, LoginTemplate, AlertTemplate, LoginButtonsTemplate, LoginOptionsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/login.html', 'text!templates/alert.html', 'text!templates/loginButtons.html', 'text!templates/loginOptions.html'], 				
+	function($, _, Backbone, LoginTemplate, AlertTemplate, LoginButtonsTemplate, LoginOptionsTemplate) {
 	'use strict';
 	
 	var SignInView = Backbone.View.extend({
@@ -16,10 +16,20 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 		
 		ldapError: false,
 		
+		/* Set to true if this SignInView is the only thing on the page */
+		fullPage: false,
+		
+		/* Set to true if this SignInView is in a modal window */
+		inPlace: false,
+		
+		/*A message to display at the top of the view */
+		topMessage: "",
+		
 		initialize: function(options){
 			if(typeof options !== "undefined"){
 				this.inPlace = options.inPlace;
 				this.topMessage = options.topMessage;
+				this.fullPage = options.fullPage;
 			}
 		},
 		
@@ -88,7 +98,7 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 			else{	
 				
 				//If it's a full-page sign-in view, then empty it first
-				if(this.el == MetacatUI.appView.el){
+				if(this.el == MetacatUI.appView.el || this.fullPage){
 					this.$el.empty();
 					var container = document.createElement("div");
 					container.className = "container login";
@@ -116,7 +126,12 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 								window.location.href.replace("#signinldaperror", "") : window.location.href
 					}));
 					
+					this.setUpPopup();
 				}
+
+				//Open the Sign In modal window
+				if(this.fullPage)
+					$("#signinPopup").modal("show");
 								
 				//If there is an error message in the URL, it means authentication has failed
 				if(this.ldapError){
@@ -141,9 +156,9 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 			//If this is a full-page sign-in view, then take the from and insert it into the page
 			if(this.$el.attr("id") == "Content")
 				$("#Content").html( $("#ldap-login").html() );
-			//Else, just show the login in the fancybox modal window
+			//Else, just show the login in the modal window
 			else{
-				$.fancybox.open("#SignIn");
+				$("#signinPopup").modal("show");
 			}
 			
 			//Show the LDAP login form
@@ -153,15 +168,15 @@ define(['jquery', 'underscore', 'backbone', 'fancybox', 'text!templates/login.ht
 		setUpPopup: function(){
 			var view = this;
 			
-			//Initialize the fancybox elements
-			this.$(".fancybox").fancybox({
-				transitionIn: "elastic",
-				afterShow: function(){
+			//Initialize the modal elements
+			$("#signupPopup, #signinPopup").modal({
+				show: false,
+				shown: function(){
 					
 					//Update the sign-in URLs so we are redirected back to the previous page after authentication
 					$("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
 					$("a.update-orcid-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
-					$("a.update-ldap-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlLdap") + encodeURIComponent(window.location.href));
+					
 				}
 			});
 		},

@@ -702,21 +702,14 @@ table th.btn-container .btn{
 .navbar .nav>li>.dropdown-menu:after{
 	display: none;
 }
+
 /** The login form from the navbar **/
-.fancybox-inline{
-	width: 315px;
+.sign-in .divider-text {
+    margin-top: 30px;
+    font-weight: bold;
 }
-.fancybox-inline > a{
-	color: rgb(102, 0, 51);
-}
-.fancybox-inline .alert{
-	width: auto;
-	width: calc(100% - 73px);
-	margin-left: auto;
-	margin-right: auto;
-	margin-bottom: 10px;
-	font-size: .9em;
-}
+
+
 .list-group > .divider {
   list-style: none;
   border-bottom: 1px solid #DDD;
@@ -1728,6 +1721,7 @@ svg .packages,
 .profile .packages{
 	color: #FF6633;
 	fill: #FF6633;
+	stroke: #FF6633;
 }
 
 .profile .bar-label.packages{

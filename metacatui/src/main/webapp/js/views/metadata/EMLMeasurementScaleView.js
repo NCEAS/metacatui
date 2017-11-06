@@ -97,8 +97,12 @@ define(['underscore', 'jquery', 'backbone',
             },
             
             postRender: function(){
+            	//Determine which category to select
+            	//Interval measurement scales will be displayed as ratio
+            	var selectedCategory = this.model.get("measurementScale") == "interval" ? "ratio" : this.model.get("measurementScale");
+            	
             	//Set the category
-    			this.$(".category[value='" + this.model.get("measurementScale") + "']").prop("checked", true);
+    			this.$(".category[value='" + selectedCategory + "']").prop("checked", true);
         		this.switchCategory();
         		
         		this.renderUnitDropdown();
@@ -265,9 +269,8 @@ define(['underscore', 'jquery', 'backbone',
             	}
             	
             	//Get the units collection or wait until it has been fetched
-            	var units = eml.get("units");
-            	if(!units.length){
-            		this.listenTo(units, "sync", this.createUnitDropdown);
+            	if(!eml.units.length){
+            		this.listenTo(eml.units, "sync", this.createUnitDropdown);
             		return;
             	}
             	
@@ -277,7 +280,7 @@ define(['underscore', 'jquery', 'backbone',
 				select.append(defaultOption);
 				
             	//Create each unit option in the unit dropdown
-            	units.each(function(unit){
+            	eml.units.each(function(unit){
             		var option = $(document.createElement("option"))
             						.val(unit.get("_name"))
             						.text(unit.get("_name").charAt(0).toUpperCase() + 

@@ -198,7 +198,7 @@ define(['jquery',
 		},
 
 		renderMetadata: function(){
-			var pid = this.pid;
+			var pid = this.model.get("id");
 
 			this.hideLoading();
 			//Load the template which holds the basic structure of the view
@@ -227,7 +227,7 @@ define(['jquery',
 
 			// Check for a view service in this MetacatUI.appModel
 			if((MetacatUI.appModel.get('viewServiceUrl') !== undefined) && (MetacatUI.appModel.get('viewServiceUrl')))
-				var endpoint = MetacatUI.appModel.get('viewServiceUrl') + pid;
+				var endpoint = MetacatUI.appModel.get('viewServiceUrl') + encodeURIComponent(pid);
 
 			if(endpoint && (typeof endpoint !== "undefined")){
 				var viewRef = this;
@@ -660,9 +660,10 @@ define(['jquery',
 						//Parse text for older versions of Metacat (v2.4.3 and earlier)
 						if(parseText){
 							var labelEl = $(georegion).find('label:contains("' + direction + '")');
-							if(labelEl){
+							if(labelEl.length){
 								var coordinate = $(labelEl).next().html();
-								if(coordinate.indexOf("&nbsp;") > -1) coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
+								if(typeof coordinate != "undefined" && coordinate.indexOf("&nbsp;") > -1)
+									coordinate = coordinate.substring(0, coordinate.indexOf("&nbsp;"));
 							}
 						}
 						else{
@@ -1295,7 +1296,7 @@ define(['jquery',
 
 				if(metadataModel.get("id") != viewRef.pid){
 					var requestSettings = {
-						url: MetacatUI.appModel.get("viewServiceUrl") + metadataModel.get("id"),
+						url: MetacatUI.appModel.get("viewServiceUrl") + encodeURIComponent(metadataModel.get("id")),
 						success: function(parsedMetadata, response, xhr){
 							_.each(packageModel.get("members"), function(solrResult, i){
 								var entityName = "";
