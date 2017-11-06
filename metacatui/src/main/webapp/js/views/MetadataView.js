@@ -48,7 +48,7 @@ define(['jquery',
 
 		model: new SolrResult(),
 		packageModels: new Array(),
-
+		dataPackage: null,
 		el: '#Content',
 		metadataContainer: "#metadata-container",
 		citationContainer: "#citation-container",
@@ -114,12 +114,27 @@ define(['jquery',
 				this.pid = MetacatUI.appModel.get("pid");
 
 			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
-
 			this.getModel();
-
+            
 			return this;
 		},
 
+		getDataPackage: function(pid) {
+            // Get the metadata model that is associated with this DataPackage collection
+            //var metadataModel = new ScienceMetadata({ id: this.pid });
+            // Once the ScienceMetadata is populated, populate the associated package
+            //this.metadataModel = metadataModel;
+			// Create a new data package with this id
+            console.log("called getDataPackage with pid: " + pid);
+			this.dataPackage = new DataPackage([], {id: pid});
+			//Fetch the data package. DataPackage.parse() triggers 'complete'
+			this.dataPackage.fetch();
+			this.listenTo(this.dataPackage, "complete", function() {
+				// parseProv triggers "queryComplete"
+				this.dataPackage.parseProv();
+                this.checkForProv();
+			});
+		},
 		/*
 		 * Retrieves information from the index about this object, given the id (passed from the URL)
 		 * When the object info is retrieved from the index, we set up models depending on the type of object this is
@@ -460,8 +475,12 @@ define(['jquery',
 			}
 
 			var viewRef = this;
+			//var dataPackage = this.dataPackage;
 
 			if(!packages) var packages = this.packageModels;
+            
+            // Get datapackage info in order to render prov
+            this.getDataPackage(packages[0].get("id"));
 
 			//Get the entity names from this page/metadata
 			this.getEntityNames(packages);
@@ -492,45 +511,6 @@ define(['jquery',
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
 				$("#downloadPackage").remove();
 
-			    //Show the provenance trace for this package
-				if(packageModel.get("provenanceFlag") == "complete") {
-					viewRef.drawProvCharts(packageModel);
-					// Check each prov chart to see if it has been marked for re-rendering and
-					// redraw it if it has been.
-					viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
-					packageModel.once("change:isAuthorized", viewRef.redrawProvCharts, viewRef);
-					// Create a provenance editor for just the topmost package, if the user is authorized.
-					// It was necessary to wait until the package details were available, as the provenance
-					// editor requires them. We need :
-					//if(viewRef.model.get("resourceMap") == packageModel.get("id")) {
-					//	if(packageModel.get("isAuthorized")) {
-					//		viewRef.createProvEditor(packageModel);
-					//	} else {
-					//	    packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-					//	}
-					//}
-				}
-				else {
-					console.log("Setting listener on change:provenanceFlag");
-					viewRef.listenToOnce(packageModel, "change:provenanceFlag", function() {
-						console.log("Prov status changed, defering drawing prov charts.");
-						viewRef.drawProvCharts(packageModel);
-						viewRef.listenToOnce(packageModel, "redrawProvCharts", viewRef.redrawProvCharts);
-						packageModel.once("change:isAuthorized", viewRef.redrawProvCharts, viewRef);
-
-						// Create a provenance editor for just the topmost package, if the user is authorized.
-						// It was necessary to wait until the package details were available, as the provenance
-						// editor requires them. We need :
-						//if(viewRef.model.get("resourceMap") == packageModel.get("id")) {
-						//	if(packageModel.get("isAuthorized")) {
-						//		viewRef.createProvEditor(packageModel);
-						//	} else {
-						//	    packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-						//	}
-						//}
-					});
-					packageModel.getProvTrace();
-				}
 			});
 
 			//Collapse the table list after the first table
@@ -985,41 +965,53 @@ define(['jquery',
 			return sorted;
 		},
 
+        checkForProv: function() {
+            // Show the provenance trace for this package
+            console.log("called checkForProv");
+            if(this.dataPackage.provenanceFlag == "complete") {
+                console.log("checkForProv complete!");
+                this.drawProvCharts(this.dataPackage);
+                // Check each prov chart to see if it has been marked for re-rendering and
+                // redraw it if it has been.
+                this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
+                this.dataPackage.once("change:isAuthorized", this.redrawProvCharts, this);
+            } else {
+                this.listenToOnce(this.dataPackage, "queryComplete", function() {
+                    this.drawProvCharts(this.dataPackage);
+                    // Check each prov chart to see if it has been marked for re-rendering and
+                    // redraw it if it has been.
+                    this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
+                    this.dataPackage.once("change:isAuthorized", this.redrawProvCharts, this);
+                });
+            }
+        },
 		/*
 		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
 		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations
 		 */
-		drawProvCharts: function(packageModel){
+		drawProvCharts: function(dataPackage){
 			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn
-			if(packageModel.get("provenanceFlag") != "complete") return false;
-			console.log("drawProvCharts called.");
+			if(dataPackage.provenanceFlag != "complete") return false;
 			
-			// Only render prov edit icons for the parent package, skip this iteration for other packages.
-			if(this.model.get("resourceMap") != packageModel.get("id")) {
-				console.log("Skipping rendering of prov icons for package with id: " + packageModel.getId("id"));
-				return;
-			}
-			// If the user is authorized to edit the provenance for this package and 
-			// the top most package is being rendered, then turn on editing, so that
-			// edit icons are displayed.
+			// If the user is authorized to edit the provenance for this package 
+			// then turn on editing, so that // edit icons are displayed.
 			//var isAuthorized = true;
 			var editModeOn = false; 
-			packageModel.get("isAuthorized") ? editModeOn = true : editModeOn = false;
-			//TODO: turn off authorized
-			//editModeOn = true; 
+			dataPackage.isAuthorized ? editModeOn = true : editModeOn = false;
+			editModeOn = true; 
 			console.log("prov edit mode on: " + editModeOn);
 			
 			var view = this;
 			//Draw two flow charts to represent the sources and derivations at a package level
-			var packageSources     = packageModel.get("sourcePackages"),
-				packageDerivations = packageModel.get("derivationPackages");
+			var packageSources     = dataPackage.sourcePackages;
+			var packageDerivations = dataPackage.derivationPackages;
 
 			if(Object.keys(packageSources).length){
 				var sourceProvChart = new ProvChart({
 					sources      : packageSources,
-					context      : packageModel,
+					context      : dataPackage,
 					contextEl    : this.$(this.articleContainer),
-					packageModel : packageModel,
+					dataPackage  : dataPackage,
 					parentView   : view
 				});
 				this.subviews.push(sourceProvChart);
