@@ -1932,7 +1932,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
 
     				//Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
-    	            oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl+ encodeURIComponent(oldPid)];
+    	            oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl + oldPid, cnResolveUrl+ encodeURIComponent(oldPid)];
 
                 	//Get all the isAggregatedBy statements
     	            aggregationNode =  this.rdf.sym(cnResolveUrl + encodeURIComponent(oldPid) + "#aggregation");
