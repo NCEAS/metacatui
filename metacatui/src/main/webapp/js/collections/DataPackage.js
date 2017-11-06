@@ -944,7 +944,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 													(m.get("type") == "Metadata" && 
 															m.get("uploadStatus") != "p" && 
 															m.get("uploadStatus") != "c" &&
-															m.get("uploadStatus") != "e" ))
+															m.get("uploadStatus") != "e" &&
+															m.get("uploadStatus") !== null))
 									    });
 				
     			//First quickly validate all the models before attempting to save any
