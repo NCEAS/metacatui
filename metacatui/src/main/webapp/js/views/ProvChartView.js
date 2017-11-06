@@ -27,14 +27,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.rerender = false;
 			//For Sources charts
 			if((!this.derivations && this.sources) || (this.editModeOn && this.editorType == "sources")) {
-				console.log("***** provchart: configuring sources for member " + this.context.get("id") + ", type: " + this.context.get("type"));
 				this.type 		    = "sources";
 				this.provEntities   = this.sources;
 				
 				//Find the number of sources and programs
 				var sources = [], programs = [];
 				_.each(this.sources, function(model){
-					if(model.get("type") == "program")
+					if(model.getType() == "program")
 						programs.push(model);
 					else
 						sources.push(model);
@@ -51,14 +50,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//For Derivations charts
 			if((!this.sources && this.derivations) || (this.editModeOn && this.editorType == "derivations")) {
-				console.log("***** provchart: configuring derivations for member " + this.context.get("id") + ", type: " + this.context.get("type"));
 				this.type 	   	     = "derivations";
 				this.provEntities = this.derivations;
 				
 				//Find the number of derivations and programs
 				var derivations = [], programs = [];
 				_.each(this.derivations, function(model){
-					if(model.get("type") == "program")
+					if(model.getType() == "program")
 						programs.push(model);
 					else
 						derivations.push(model);
@@ -77,10 +75,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.className = this.className + " " + this.type	;
 			
 			//Create a title
-			if((this.context.get("type") == "program") && (this.type == "derivations")){
+			if((this.context.getType() == "program") && (this.type == "derivations")){
 				this.title = this.numProvEntities + " outputs";				
 			}
-			else if((this.context.get("type") == "program") && (this.type == "sources")){
+			else if((this.context.getType() == "program") && (this.type == "sources")){
 				this.title = this.numProvEntities + " inputs";				
 			}
 			else
@@ -110,13 +108,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if(!this.numProvEntities && !this.editModeOn) return false;
 			
 			var view = this;
-			console.log("*** rendering " + this.type + " prov chart for package member: " + this.context.get("id"));
 			
 			//Are there any programs? If no programs are present in this package member and edit mode is on,
 			// then we need to draw an edit icon in the program position, unless this member is a program (programs
 		    // aren't connected directly to programs).
-			if(this.programs.length || (this.editModeOn && (this.context.get("type") != "program"))) {
-				console.log("render: setting programs for id: " + this.context.get("id") + ", type: " + this.type);
+			if(this.programs.length || (this.editModeOn && (this.context.getType() != "program"))) {
 				this.$el.append($(document.createElement("div")).addClass(this.type + "-programs programs"));
 			}
 			
@@ -125,7 +121,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			_.each(this.provEntities, function(entity, i){
 				
 				//Create the HTML node and line connecter
-				if(entity.type == "Package")
+				if(entity.getType() == "Package")
 					view.$el.append(view.createNode(entity, position, _.find(entity.get("members"), function(member){ return member.get("formatType") == "METADATA"; })));	
 				else{
 					//Find the id of the metadata that documents this object
@@ -151,7 +147,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					}
 
 					//Programs will be positioned at a different point in the graph
-					if(entity.get("type") == "program"){
+					if(entity.getType() == "program"){
 						//Find the program position
 						view.$(".programs").append(view.createNode(entity, programPosition, metadata));
 					}
@@ -163,7 +159,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				}
 				
 				//Bump the position for non-programs only
-				if(entity.get("type") == "program")
+				if(entity.getType() == "program")
 					programPosition++;
 				else
 					position++;
@@ -173,12 +169,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			// If edit mode is on, then draw an editor node. 
 			//if(this.context.type != "Package" && this.editModeOn){
 			if(this.editModeOn) {
-				console.log("render: drawing editor icons");
 				var nodeType;
 				// If a program prov icon has already been
 				// displayed, then don't display a program edit icon, as currently only one program is
-				// supported per ProvCharView.
-				if((this.context.get("type") != "program") && this.numPrograms == 0) {
+				// supported per ProvCharView. Also, don't display a program icon if the package members
+				// we are annotating is a program (cuurently don't support programs as inputs/outputs of programs).
+				if((this.context.getType() != "program") && this.numPrograms == 0) {
 					this.$(".programs").append(this.createEditorNode("program", this.context.get("id"), programPosition));
 					programPosition++;
 					this.numPrograms++;
@@ -198,7 +194,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 	
 			//Add classes
 			this.$el.addClass(this.className);
-			console.log("adding class to this.$el: " + this.className);
 			if(this.numPrograms > 0) this.$el.addClass("has-programs");
 			if(this.numDerivations == 1 && !this.numPrograms) this.$el.addClass("one-derivation");
 			
@@ -267,11 +262,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 
 		createNode: function(provEntity, position, metadata){
 			//What kind of icon will visually represent this object type?
-			console.log("creatNode: drawing " + provEntity.get("type") + " node for id " + provEntity.get("id"));
 			var icon = "",
 				type = null;
 			
-			if(provEntity.type == "SolrResult"){
+			if(provEntity.type == "DataONEObject"){
 				type = provEntity.getType();
 				
 				if(type == "data")
@@ -283,7 +277,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				else if (type == "pdf")
 					icon = "icon-file pdf";
 			}
-			else if(provEntity.type == "Package"){
+			else if(provEntity.type == "DataPackage"){
 				icon = "icon-folder-open",
 				type = "package";
 			}
@@ -298,7 +292,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			var id   = provEntity.get("id");
 			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
-			if(provEntity.get("type") == "program"){
+			if(provEntity.getType() == "program"){
 				var distanceFromMiddle = (position * this.nodeHeight) - (this.nodeHeight/2),
 					operator           = distanceFromMiddle > 0 ? "+" : "-",
 				    top                = "calc(50% " + operator + " " + Math.abs(distanceFromMiddle).toString() + "px)",
@@ -309,7 +303,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					isCollapsed = ((top + this.nodeHeight + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";					
 			}
 
-			if(provEntity.get("type") != "program"){
+			if(provEntity.getType() != "program"){
 				//Create a DOM element to represent the node	
 				var nodeEl = $(document.createElement("div")).css("top", top);;
 				// Add a delete icon to the node if editing is on
@@ -444,7 +438,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if(metadata) var citationModel = metadata;
 			else var citationModel = provEntity;
 			
-			var relatedModels = this.packageModel.get("relatedModels");
+			var relatedModels = this.dataPackage.get("relatedModels");
 			
 			//The citation
 			var createLink = true;
@@ -588,7 +582,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		},
 		
 		createEditorNode: function(type, id, position){
-			console.log("createEditorNode:	 drawing " + type + " editor node for id " + id);
 			
 			//Get the top CSS style of this node based on its position in the chart and determine if it vertically overflows past its context element
 			if(type == "program"){
@@ -666,10 +659,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			}
 			
 			if(svg != null) {
-				console.log("returning svg");
 				return (svg);
 			} else {
-				console.log("returning nodeEl");
 				return(nodeEl);
 			}
 			
@@ -806,7 +797,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				isProgram = true; 
 				selectEntityType = "program";
 			}
-			console.log("selecting entities");
 			
 			// Set the selection box labels according to the edit icon that was clicked,
 			// and the ProvChart that it was clicked in.
@@ -832,11 +822,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			_.each(this.subviews, function(thisView, i) {
 				// Check if this is a ProvChartView
 				if(thisView.className.indexOf("prov-entity-select") !== -1) {
-					console.log("found orphaned ProvEntitySelectView" + thisView.cid);
 					thisView.onClose();
 				}
 			});
 			
+			// Remove the prov entity selection modal dialog view from the list
+			// of subviews, as this has been deleted after use.
 			this.subviews = _.filter(this.subviews, function(item) {
  				return item.className !== "prov-entity-select";
 			});
@@ -869,7 +860,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 
 			// Read values from the selection list modal dialog
 			selectedValues  = this.selectProvEntityView.readSelected();
-			console.log("entities selected: " + selectedValues);
 			// Return if no values were selected.
 			if(selectedValues == null || selectedValues.length == 0) {
 			    $('#selectModal').modal('hide');
@@ -891,7 +881,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			_.each(this.subviews, function(thisView, i) {
 				// Check if this is a ProvChartView
 				if(thisView.className.indexOf("prov-entity-select") !== -1) {
-					console.log("closing ProvEntitySelectView" + thisView.cid);
 					thisView.onClose();
 				}
 			});
