@@ -1418,12 +1418,457 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                 console.log("DataPackage is complete. All " + this.length + " models have been synced and added.");
             },
+            
+            /* Accumulate edits that are made to the provenance relationships via the ProvChartView. these
+               edits are accumulated here so that they are available to any package member or view.
+            */
+            recordProvEdit: function(operation, subject, predicate, object) {
+                
+                if (!this.provEdits.length) {
+                    this.provEdits = [[operation, subject, predicate, object]];
+                    console.log("add prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                } else {
+                    // First check if the edit already exists in the list. If yes, then
+                    // don't add it again! This could occur if an edit icon was clicked rapidly
+                    // before it is dismissed.
+                    var editFound = _.find(this.provEdits, function(edit) {
+                        return(edit[0] == operation &&
+                            edit[1] == subject &&
+                            edit[2] == predicate &&
+                            edit[3] == object);
+                    });
+                    
+                    if(typeof editFound != "undefined") {
+                        console.log("pruning duplicate prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                        return;
+                    }
 
+                    // If this is a delete operation, then check if a matching operation
+                    // is in the edit list (i.e. the user may have changed their mind, and
+                    // they just want to cancel an edit). If yes, then just delete the 
+                    // matching add edit request
+                    var editListSize = this.provEdits.length;
+                    var oppositeOp = (operation == "delete") ? "add" : "delete";
+                    
+                    this.provEdits = _.reject(this.provEdits, function(edit) {
+                        var editOperation = edit[0];
+                        var editSubjectId = edit[1];
+                        var editPredicate = edit[2];
+                        var editObject = edit[3];
+                        if (editOperation == oppositeOp
+                            && editSubjectId == subject
+                            && editPredicate == predicate
+                            && editObject == object) {
+                                
+                            console.log("removing prov edit: " + editOperation + ", " 
+                                + editSubjectId + ", " + editPredicate + ", " + editObject);
+                            return true; 
+                        }
+                    });
+                    
+                    // If we cancelled out the inverse of the current edit, don't save the
+                    // current edit either, as they cancel each other out.
+                    if(this.provEdits.length < editListSize) {
+                        console.log("cancel prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                    } else {
+                        console.log("add prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                        this.provEdits.push([operation, subject, predicate, object]);
+                    }
+                }
+            },
+            
+            // Return true if the prov edits list is not empty
+            provEditsPending: function() {
+                if(this.provEdits.length) return true;
+                return false;
+            },
+            
+            /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
+            update the ORE Resource Map and save it to the server.
+            */
+            saveProv: function() {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                console.log("Saving provenance edits...");
+                var provEdits = this.provEdits;
+                if(!provEdits.length) {
+                    // TODO: display dialog indicating prov has not changed
+                    console.log("Provenance relationships have not been edited.")
+                    return;
+                }
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                PROV =    rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                CITO =    rdf.Namespace(this.namespaces.CITO),
+                XSD =     rdf.Namespace(this.namespaces.XSD);
+                
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                /* Check if this package member had provenance relationships added 
+                    or deleted by the provenance editor functionality of the ProvChartView
+                */
+                _.each(provEdits, function(edit) {
+                    var operation, subject, predicate, object;
+                    var provStatements;
+                    operation = edit[0];
+                    subject = edit[1];
+                    predicate = edit[2];
+                    object = edit[3];
+                    console.log("Prov edit: " + operation + ": "+ subject + ", " + predicate + ", " + object);
+                    // The predicates of the provenance edits recorded by the ProvChartView 
+                    // indicate which W3C PROV relationship has been recorded. 
+                    // First check if this relationship alread exists in the RDF graph.
+                    // See DataPackage.parseProv for a description of how relationships from an ORE resource map
+                    // are parsed and stored in DataONEObjects. Here we are reversing the process, so may need
+                    // The representation of the PROVONE data model is simplified in the ProvChartView, to aid 
+                    // legibility for users not familiar with the details of the PROVONE model. In this simplification,
+                    // a provone:Program has direct inputs and outputs. In the actual model, a prov:Execution has
+                    // inputs and outputs and is connected to a program via a prov:association. We must 'expand' the
+                    // simplified provenance updates recorded by the editor into the fully detailed representation
+                    // of the actual model.
+                    var executionId, executionURI, executionNode;
+                    var programId, programURI, programNode;
+                    var dataId, dataURI, dataNode;
+                    var derivedDataURI, derivedDataNode;
+                    var lastRef = false;
+                    //var graph = this.dataPackageGraph;
+            
+                    switch (predicate) {
+                        case "prov_wasDerivedFrom": 
+                            derivedDataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(object));
+                            if(operation == "add") {
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
+                            } else {
+                                graph.removeMatches(dataNode, PROV("wasDerivedFrom"), derivedDataNode);
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
+                                this.removeIfLastProvRef(derivedDataNode, RDF("type"), PROVONE("Data"));
+                            }
+                            break;
+                        case "prov_generatedByProgram":
+                            programId = object;
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            var removed = false;
+                            if(operation == "add") {
+                                // 'subject' is the program id, which is a simplification of the PROVONE model for display.
+                                // In the PROVONE model, execution 'uses' and input, and is associated with a program.
+                                executionId = this.addProgramToGraph(programId);
+                                //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                                executionNode = this.getExecutionNode(executionId);
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(dataNode, PROV("wasGeneratedBy"), executionNode);
+                            } else {
+                                graph.removeMatches(dataNode, PROV("wasGeneratedBy"), executionNode);
+                                this.removeIfLastProvRef(graph, dataNode, RDF("type"), PROVONE("Data"));
+                                removed = this.removeProgramFromGraph(programId);   
+                            }
+                            break;
+                        case "prov_usedByProgram":	
+                            programId = object;
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            if(operation == "add") {
+                                // 'subject' is the program id, which is a simplification of the PROVONE model for display.
+                                // In the PROVONE model, execution 'uses' and input, and is associated with a program.
+                                executionId = this.addProgramToGraph(programId)
+                                //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                                executionNode = this.getExecutionNode(executionId);
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(executionNode, PROV("used"), dataNode);
+                            } else {
+                                graph.removeMatches(executionNode, PROV("used"), dataNode)
+                                this.removeIfLastProvRef(graph, dataNode, RDF("type"), PROVONE("Data"));
+                                removed = this.removeProgramFromGraph(programId);
+                            }
+                            break;
+                        case "prov_hasDerivations":
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            derivedDataNode = rdf.sym(cnResolveUrl + encodeURIComponent(object));
+                            if(operation == "add") {
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
+                            } else {
+                                graph.removeMatches(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
+                                this.removeIfLastProvRef(derivedDataNode, RDF("type"), PROVONE("Data"));
+                            }
+                            break;
+                        case "prov_instanceOfClass":
+                            var entityNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            var classNode = PROVONE(object);
+                            if(operation == "add") {
+                                this.addToGraph(entityNode, RDF("type"), classNode);
+                            } else {
+                                // Make sure there are no other references to this 
+                                this.removeIfLastProvRef(entityNode, RDF("type"), classNode);
+                            }
+                            break;
+                        default:
+                            // Print error if predicate for prov edit not found.
+                    }
+                }, this);
+          
+                // Since the provenance editor is run from the MetadataView, only 
+                // the resource map will have to be updated (with the new prov rels),
+                // as no other editing is possible. Therefor we have to manually set
+                // the resource maps' new id so that the serialize() function will treat
+                // this as an update, not a new resource map.
+                //var oldId = this.dataPackage.packageModel.get("id");
+                //var newId = "resource_map_" + "urn:uuid:" + uuid.v4();
+                //this.dataPackage.packageModel.set("oldPid", oldId);
+                //this.dataPackage.packageModel.set("id", newId);
+                this.save();
+                console.log("resmap save has been called");
+                
+                // If provenance relationships were updated, then reset the edit list now.
+                if(this.provEdits.length) this.provEdits = [];  
+            },
+    				
+            /* Add the specified relationship to the RDF graph only if it
+            has not already been added. */
+            addToGraph: function(subject, predicate, object) {
+                var graph = this.dataPackageGraph;
+                var statements = graph.statementsMatching(subject, predicate, object);
+                if(!statements.length) {
+                    console.log("add to graph: " + subject.value + ", " + predicate.value + ", " + object.value);
+                    graph.add(subject, predicate, object);
+                }
+            },
+    		
+    		/* Remove the statement fromn the RDF graph only if the subject of this
+               relationship is not referenced by any other provenance relationship, i.e.
+               for example, the prov relationship "id rdf:type provone:data" is only 
+               needed if the subject ('id') is referenced in another relationship. */
+            removeIfLastProvRef: function(subjectNode, predicateNode, objectNode) {
+                var graph = this.dataPackageGraph;
+                var stillUsed = false;
+                // Get the statements from the RDF where the removed object is the subject or object
+                var statements = graph.statementsMatching(undefined, undefined, subjectNode);
+                        
+                var found = _.find(statements, function(statement) {
+                    var pVal = statement.predicate.value;
+                    var provStr = this.get("PROV");
+                    var provoneStr = this.get("PROVONE");
+              
+                    // Now check if the subject is referenced in a prov statement
+                    if(pVal.indexOf(provStr) != -1) return true;
+                    if(pVal.indexOf(provoneStr) != -1) return true;
+                }, this);
+          
+                // The specified statement term isn't being used for prov, so remove it.
+                if(typeof found == "undefined" || !found.length) {
+                    console.log("no refs to stmt, removed: " + subjectNode.value + ", " 
+                        + predicateNode.value + ", " + objectNode.value);
+                    graph.removeMatches(subjectNode, predicateNode, objectNode, undefined);
+                }
+            },
+        
+            /* Get the value of the prov_wasExecutedByExecution for the specified 
+            package member */
+            getExecutionId: function(programId) {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                var stmts = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                PROV    = rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE);
+                
+                var member = this.get(programId);
+                var executionId = member.get("prov_wasExecutedByExecution");
+                if(executionId.length > 0) {
+                    return(executionId[0]);
+                } else {
+                    var programNode = rdf.sym(cnResolveUrl + encodeURIComponent(programId));
+                    // Get the executionId from the RDF graph
+                    // There can be only one plan for an association
+                    stmts = graph.statementsMatching(undefined, PROV("hadPlan"), programNode);
+                    if(typeof stmts == "undefined") return null;
+                    var associationNode = stmts[0].subject;
+                    // There should be only one execution for this assocation.
+                    stmts = graph.statementsMatching(undefined, PROV("qualifiedAssociation"), associationNode);
+                    if(typeof stmts == "undefined") return null;
+                    return(stmts[0].subject)
+                }
+            },
+            
+            /* Get the RDF node for an execution that is associated with the execution identifier.
+               The execution may have been created in the resource map as a 'bare' urn:uuid 
+               (no resolveURI), or as a resolve URL, so check for both until the id is 
+               found.
+            */
+            getExecutionNode: function(executionId) {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                var stmts = null;
+                var testNode = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                
+                // First see if the execution exists in the RDF graph as a 'bare' idenfier, i.e.
+                // a 'urn:uuid'.
+                stmts = graph.statementsMatching(rdf.sym(executionId), undefined, undefined);
+                if(typeof stmts == "undefined" || !stmts.length) {
+                    // The execution node as urn was not found, look for fully qualified version.
+                    testNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                    stmts = graph.statementsMatching(rdf.sym(executionId), undefined, undefined);
+                    if(typeof stmts == "undefined") {
+                        // Couldn't find the execution, return the standard RDF node value
+                        executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                        console.log("Execution Node: " + executionNode.value);
+                        return executionNode;
+                    } else {
+                        console.log("Execution Node: " + testNode.value);
+                        return testNode;
+                    }
+                } else {
+                    // The executionNode was found in the RDF graph as a urn
+                    executionNode = stmts[0].subject;
+                    console.log("Execution Node: " + executionNode.value);
+                    return executionNode;
+                }
+            },
+
+            addProgramToGraph: function(programId) {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                PROV    = rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE),
+                XSD     = rdf.Namespace(this.namespaces.XSD);
+                var member = this.get(programId);
+                var executionId = member.get("prov_wasExecutedByExecution");
+                var executionNode = null;
+                var programNode = null;
+                var associationId = null;
+                var associationNode = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                
+                console.log("adding program: " + programId);
+                if(!executionId.length) {
+                    // This is a new execution, so create new execution and association ids
+                    executionId = "urn:uuid:" + uuid.v4();
+                    console.log("new execution: " + executionId);
+                    member.set("prov_wasExecutedByExecution", [executionId]);
+                    // Blank node id. RDF validator doesn't like ':' so don't use in the id
+                    //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                    executionNode = this.getExecutionNode(executionId);
+                    //associationId = "_" + uuid.v4();
+                    associationNode = graph.bnode();
+                } else {
+                    executionId = executionId[0];
+                    console.log("reusing execution id: " + executionId);
+                    // Check if an association exists in the RDF graph for this execution id
+                    //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                    executionNode = this.getExecutionNode(executionId);
+                    // Check if there is an association id for this execution.
+                    // If this execution is newly created (via the editor (existing would
+                    // be parsed from the resmap), then create a new association id.
+                    var stmts = graph.statementsMatching(executionNode, 
+                        PROV("qualifiedAssociation"), undefined);
+                    // IF an associati on was found, then use it, else geneate a new one
+                    // (Associations aren't stored in the )
+                    if(stmts.length) {
+                        console.log("found association id: ", + stmts[0].object.value)
+                        associationNode = stmts[0].object;
+                        //associationId = stmts[0].object.value;
+                    } else {
+                        //associationId = "_" + uuid.v4();
+                        associationNode = graph.bnode();
+                        console.log("did not find association using new id: ", + associationId);
+                    }
+                }
+                //associationNode = graph.bnode(associationId);
+                //associationNode = graph.bnode();
+                programNode = rdf.sym(cnResolveUrl + encodeURIComponent(programId));
+                try {
+                    this.addToGraph(executionNode, PROV("qualifiedAssociation"), associationNode);
+                    this.addToGraph(executionNode, RDF("type"), PROVONE("Execution"));
+                    this.addToGraph(executionNode, DCTERMS("identifier"), rdf.literal(executionId, undefined, XSD("String")));
+                    this.addToGraph(associationNode, PROV("hadPlan"), programNode);
+                    this.addToGraph(programNode, RDF("type"), PROVONE("Program"));
+                } catch (error) {
+                    console.log(error);
+                }
+                return executionId;
+            },
+        
+            // Remove a program identifier from the RDF graph and remove associated
+            // linkage between the program id and the exection, if the execution is not
+            // being used by any other statements.
+            removeProgramFromGraph: function(programId) {
+                var graph = this.dataPackageGraph;
+                var rdf = this.rdf;
+                var stmts = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                PROV    = rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE)
+                var associationNode = null;
+                
+                console.log("checking program " + programId + " for removal...");
+                var executionId = this.getExecutionId(programId);
+                if(executionId == null) return false;
+                
+                //var executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                var executionNode = this.getExecutionNode(executionId);
+                var programNode = rdf.sym(cnResolveUrl + encodeURIComponent(programId));
+                
+                // In order to remove this program from the graph, we have to first determine that 
+                // nothing else is using the execution that is associated with the program (the plan). 
+                // There may be additional 'used', 'geneated', 'qualifiedGeneration', etc. items that
+                // may be pointing to the execution. If yes, then don't delete the execution or the 
+                // program (the execution's plan).
+                try {
+                    // Is the program in the graph? If the program is not in the graph, then
+                    // we don't know how to remove the proper execution and assocation.
+                    stmts = graph.statementsMatching(undefined, undefined, programNode);
+                    if(typeof(stmts) == "undefined" || !stmts.length) return(false);
+                    
+                    // Is anything else linked to this execution?
+                    stmts = graph.statementsMatching(executionNode, PROV("used"));
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(undefined, PROV("wasGeneratedBy"), executionNode);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(executionNode, PROV("qualifiedGeneration"), undefined);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(undefined, PROV("wasInformedBy"), executionNode);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(undefined, PROV("wasPartOf"), executionNode);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    
+                    // get association
+                    stmts = graph.statementsMatching(undefined, PROV("hadPlan"), programNode);
+                    associationNode = stmts[0].subject;
+                } catch (error) {
+                    console.log(error);
+                }
+                    
+                // The execution isn't needed any longer, so remove it and the program.
+                try {
+                    graph.removeMatches(programNode, RDF("type"), PROVONE("program"));
+                    graph.removeMatches(associationNode, PROV("hadPlan"), programNode);
+                    graph.removeMatches(associationNode, RDF("type"), PROV("association"));
+                    graph.removeMatches(associationNode, PROV("agent"), undefined);
+                    graph.removeMatches(executionNode, RDF("type"), PROVONE("execution"));
+                    graph.removeMatches(executionNode, PROV("qualifiedAssociation"), associationNode);
+                    console.log("removed program: " + programId + " and execution: " + executionId);
+                } catch (error) {
+                    console.log(error);
+                }
+                return(true)
+            },
+            
             /*
              * Serialize the DataPackage to OAI-ORE RDF XML
              */
             serialize: function() {
             	//Create an RDF serializer
+              console.log("called serialize()");
             	var serializer = this.rdf.Serializer(),
                     cnResolveUrl,
                     idNode,
