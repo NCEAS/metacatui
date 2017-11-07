@@ -3777,8 +3777,7 @@ textarea.xlarge{
 	background-color: rgba(255, 255, 255, 0.57);
 }
 .eml-party .party-menu .dropdown-menu>li>a:hover {
-    background-color: transparent;
-    background-image: none;
+    color: white;
 }
 .eml-party .party-menu .remove,
 .eml-party .party-menu .remove:hover,
