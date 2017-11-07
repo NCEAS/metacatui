@@ -971,26 +971,29 @@ define(['jquery',
 			return sorted;
 		},
 
+        // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {
             // Show the provenance trace for this package
             console.log("called checkForProv");
+            var model = this.model;
             if(this.dataPackage.provenanceFlag == "complete") {
                 console.log("checkForProv complete!");
                 this.drawProvCharts(this.dataPackage);
                 // Check each prov chart to see if it has been marked for re-rendering and
                 // redraw it if it has been.
                 this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
-                this.dataPackage.once("change:isAuthorized", this.redrawProvCharts, this);
+                this.model.once("change:isAuthorized", this.redrawProvCharts, this);
             } else {
                 this.listenToOnce(this.dataPackage, "queryComplete", function() {
                     this.drawProvCharts(this.dataPackage);
                     // Check each prov chart to see if it has been marked for re-rendering and
                     // redraw it if it has been.
                     this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
-                    this.dataPackage.once("change:isAuthorized", this.redrawProvCharts, this);
+                    model.once("change:isAuthorized", this.redrawProvCharts, this);
                 });
             }
         },
+        
 		/*
 		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
 		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations
@@ -1003,7 +1006,8 @@ define(['jquery',
 			// then turn on editing, so that // edit icons are displayed.
 			//var isAuthorized = true;
 			var editModeOn = false; 
-			dataPackage.isAuthorized ? editModeOn = true : editModeOn = false;
+            
+			this.model.get("isAuthorized") ? editModeOn = true : editModeOn = false;
 			//editModeOn = true; 
 			console.log("prov edit mode on: " + editModeOn);
 			var view = this;
