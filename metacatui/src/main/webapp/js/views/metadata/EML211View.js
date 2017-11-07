@@ -547,7 +547,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		this.renderPerson(null, partyType);
 	    	}
 	    	else{
-	    		partyForm.find(".eml-party").data("view").showRequired();
+	    		partyForm.find(".eml-party").data("view").showValidation();
 	    	}
 	    },
 	    

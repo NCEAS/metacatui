@@ -743,13 +743,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
            				insertAfter = this.getEMLPosition(eml, type);           			    
            			}
            			
-           			//Insert the party DOM at the insert position
-                    if ( insertAfter && insertAfter.length ) {
-	           			insertAfter.after(party.updateDOM());                        
-                    }
-           			//If an insert position still hasn't been found, then just append to the dataset node
-                    else{
-                    	$(eml).find("dataset").append(party.updateDOM());
+           			//Update the DOM of the EMLParty
+           			var emlPartyDOM = party.updateDOM();
+           			
+           			//Make sure we don't insert empty EMLParty nodes into the EML
+           			if( $(emlPartyDOM).children().length ){
+           				//Insert the party DOM at the insert position
+                        if ( insertAfter && insertAfter.length )    			
+                        	insertAfter.after(emlPartyDOM); 
+                        //If an insert position still hasn't been found, then just append to the dataset node
+                        else
+                        	$(eml).find("dataset").append(emlPartyDOM);
                     }
                     
 	           	}, this);
