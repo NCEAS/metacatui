@@ -1468,7 +1468,8 @@ define(['underscore', 'jquery', 'backbone',
 				errors = [];
 
 			// Remove existing error borders and notifications
-			input.removeClass("error");
+            input.removeClass("error");
+            messageEl.text("");
 			messageEl.removeClass("error");
 
 			if (value != "" && value.length > 0) {
@@ -1483,7 +1484,7 @@ define(['underscore', 'jquery', 'backbone',
 
 			if (errors.length > 0) {
 				messageEl.text(errors[0]).addClass("error");
-			}	
+            }
 		},
 
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
