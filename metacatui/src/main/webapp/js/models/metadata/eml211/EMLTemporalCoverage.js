@@ -256,6 +256,24 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				if(dateParts.length != 3 || dateParts[0].length != 4 || dateParts[1].length != 2 || dateParts[2].length != 2)
 					return false;
 				
+				dateYear = dateParts[0];
+				dateMonth = dateParts[1];
+				dateDay = dateParts[2];
+				
+				// Validating the values for the date and month if in YYYY-MM-DD format.
+				if (dateMonth < 1 || dateMonth > 12) 
+					return false;
+				else if (dateDay < 1 || dateDay > 31) 
+					return false;
+				else if ((dateMonth == 4 || dateMonth == 6 || dateMonth == 9 || dateMonth == 11) && dateDay == 31) 
+					return false;
+				else if (dateMonth == 2) {
+				// Validation for leap year dates.
+					var isleap = (dateYear % 4 == 0 && (dateYear % 100 != 0 || dateYear % 400 == 0));
+					if ((dateDay > 29) || (dateDay == 29 && !isleap)) 
+						return false;
+				}
+				
 				var digits = _.filter(dateParts, function(part){
 					return (part.match( /[0-9]/g ).length == part.length);
 				});
@@ -277,13 +295,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				if(timeParts.length != 3)
 					return false;
 				
-                // Validation pattern for HH:MM:SS values.
-                // Range for HH validation : 00-23
-                // Range for MM validation : 00-59
-                // Range for SS validation : 00-59
-                // Leading 0's are must in case of single digit values.
-                var timePattern = /^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/;
-                return (timeString.match(timePattern));
+				// Validation pattern for HH:MM:SS values.
+				// Range for HH validation : 00-23
+				// Range for MM validation : 00-59
+				// Range for SS validation : 00-59
+				// Leading 0's are must in case of single digit values.
+				var timePattern = /^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/;
+				return (timeString.match(timePattern));
 			}
 			else
 				return false;
