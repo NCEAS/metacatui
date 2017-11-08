@@ -1118,7 +1118,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
             }
 			// Is this a source prov chart or derivations
 			if(this.editorType == "sources") {
-				// This is a sources chart
+                // This is a sources chart and the entity to remove is a program
 				if(entityType == "program") {
 					// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
 					// prov_wasDerivedFrom, prov_wasInformedBy
@@ -1144,25 +1144,62 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                         removeMember.set("provDerivations", _.reject(removeMember.get("provDerivations"), 
                             function(item) {return item.get("id") == memberPid}));
                     }
-				} else {
-                    // entityType must be data
-					this.removeProvRel(this.dataPackage, memberPid, "prov_wasDerivedFrom", pidToRemove);
-					//this.setMemberAttr(this.packageModel, thisPid, "type", "data");
-					this.removeProvRel(this.dataPackage, pidToRemove, "prov_hasDerivations", memberPid);
-					// If there is a program present in this chart, then remove the prov relationship between
-					// the node to be removed and the current package member and the relationship between the 
-                    // node to be removed and the program.
-					// (Currently only one program per prov chart).
-					_.each(view.programs, function(thisProgram) {
-						var progPid = thisProgram.get("id");
-						view.removeProvRel(view.dataPackage, pidToRemove, "prov_usedByProgram", progPid);
-                        // Remove pidToRemove from the source chart of the program.
-                        thisProgram.set("provSources", _.reject(thisProgram.get("provSources"),
+                } else {
+                    // source chart
+                    // The item to remove is data.
+                    // The prov chart is for a program.
+                    if(this.context.getType() == "program") {
+                        var programPid = this.context.get("id");
+                        var progMember = this.context;
+                        view.removeProvRel(view.dataPackage, pidToRemove, "prov_usedByProgram", programPid);
+                        //this.setMemberAttr(this.dataPackage, programPid, "type", "program");
+                        //this.setMemberAttr(this.dataPackage, pidToRemove, "type", "data");
+                        // Update the package member for the data item so that it's metadataview 
+                        // detail section will show the program as using the data item.
+                        progMember.set("provSources", _.reject(progMember.get("provSources"),
                             function(item) {return item.get("id") == pidToRemove}));
-					});
-				}
+                        removeMember.set("provDerivations",  _.reject(removeMember.get("provDerivations"), 
+                            function(item) {return item.get("id") == programPid}));
+                        // Also remove this data item from each output of the program. 
+                        _.each(progMember.get("provDerivations"), function(model){
+                            if(model.getType() == "data") {
+                                var dataPid = model.get("id");
+                                view.removeProvRel(view.dataPackage, dataPid, "prov_wasDerivedFrom", pidToRemove);
+                                model.set("provDerivations",  _.reject(model.get("provDerivations"), 
+                                    function(item) {return item.get("id") == pidToRemove}));
+                                // Each program output is no longer derived from the input data being removed.
+                                removeMember.set("provDerivations", _.reject(removeMember.get("provDerivations"),
+                                    function(item) {return item.get("id") == dataPid}));
+                            }
+                        });
+                    } else {
+                        // source chart
+                        // item to remove is data
+                        // prov chart is for data
+                        this.removeProvRel(this.dataPackage, memberPid, "prov_wasDerivedFrom", pidToRemove);
+                        //this.setMemberAttr(this.packageModel, thisPid, "type", "data");
+                        //this.removeProvRel(this.dataPackage, pidToRemove, "prov_hasDerivations", memberPid);
+                        this.context.set("provSources", _.reject(this.context.get("provSources"),
+                            function(item) {return item.get("id") == pidToRemove}));
+                        removeMember.set("provDerivations", _.reject(removeMember.get("provDerivations"), 
+                            function(item) {return item.get("id") == memberPid}));
+                        // If there is a program present in this chart, then remove the prov relationship between
+                        // the node to be removed and the current package member and the relationship between the 
+                        // node to be removed and the program.
+                        // (Currently only one program per prov chart).
+                        _.each(view.programs, function(thisProgram) {
+                            var progPid = thisProgram.get("id");
+                            view.removeProvRel(view.dataPackage, pidToRemove, "prov_usedByProgram", progPid);
+                            // Remove pidToRemove from the source chart of the program.
+                            thisProgram.set("provSources", _.reject(thisProgram.get("provSources"),
+                            function(item) {return item.get("id") == pidToRemove}));
+                        });
+                    }
+                }
 			} else {
 				// This is a derivations chart
+                // item to remove is data
+                // the prov char is for a program
 				// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations,
 				// prov_generated
 				if(entityType == "program") {
@@ -1189,18 +1226,47 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                             function(item) {return item.get("id") == memberPid}));
                     }
 				} else {
-                    // Removing data node from prov
-					this.removeProvRel(this.dataPackage, pidToRemove, "prov_wasDerivedFrom", memberPid);
-					this.removeProvRel(this.dataPackage, memberPid, "prov_hasDerivations", pidToRemove);
-					var view = this;
-					_.each(view.programs, function(thisProgram) {
-						var progPid = thisProgram.get("id");
-						view.removeProvRel(view.dataPackage, pidToRemove, "prov_generatedByProgram", progPid);
-                        thisProgram.set("provDerivations", _.reject(thisProgram.get("provDerivations"),
+                    // derivations chart
+                    // The item to remove is data.
+                    // The prov chart is for a program.
+                    if(this.context.getType() == "program") {
+                        var programPid = memberPid
+                        var progMember = this.context;
+                        view.removeProvRel(view.dataPackage, pidToRemove, "prov_generatedByProgram", programPid);
+                        //this.setMemberAttr(this.dataPackage, pidToRemove, "type", "data");
+                        //this.setMemberAttr(this.dataPackage, programPid, "type", "program");
+                        // Update the package member for the data item so that it's metadataview 
+                        // detail section will show the program as derived from the data item.
+                        progMember.set("provDerivations", _.reject(progMember.get("provDerivations"), 
                             function(item) {return item.get("id") == pidToRemove}));
-					});
-				}
-			}
+                        // Also add the derived data item to each input of the program. 
+                        _.each(progMember.get("provSources"), function(model){
+                            if(model.getType() == "data") {
+                                var dataPid = model.get("id");
+                                view.addProvRel(view.dataPackage, pidToRemove, "prov_wasDerivedFrom", dataPid);
+                                model.set("provDerivations", _.reject(model.get("provDerivations"), 
+                                    function(item) {return item.get("id") == pidToRemove}));
+                            }
+                        });
+                    } else {
+                        // derivations chart
+                        // The item to remove is data
+                        // The prov chart is for data
+                        this.removeProvRel(this.dataPackage, pidToRemove, "prov_wasDerivedFrom", memberPid);
+                        //this.removeProvRel(this.dataPackage, memberPid, "prov_hasDerivations", pidToRemove);
+                        this.context.set("provDerivations", _.reject(this.context.get("provDerivations"), 
+                            function(item) {return item.get("id") == pidToRemove}));
+
+                        var view = this;
+                        _.each(view.programs, function(thisProgram) {
+                            var progPid = thisProgram.get("id");
+                            view.removeProvRel(view.dataPackage, pidToRemove, "prov_generatedByProgram", progPid);
+                            thisProgram.set("provDerivations", _.reject(thisProgram.get("provDerivations"),
+                                function(item) {return item.get("id") == pidToRemove}));
+                        });
+                    }
+                }
+            }
 			this.dataPackage.trigger("redrawProvCharts");
 		},
         
