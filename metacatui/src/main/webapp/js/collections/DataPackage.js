@@ -1558,7 +1558,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 this.addToGraph(derivedDataNode, RDF("type"), PROVONE("Data"));
                                 this.addToGraph(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
                             } else {
-                                graph.removeMatches(dataNode, PROV("wasDerivedFrom"), derivedDataNode);
+                                graph.removeMatches(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
                                 this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
                                 this.removeIfLastProvRef(derivedDataNode, RDF("type"), PROVONE("Data"));
                             }
