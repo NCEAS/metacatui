@@ -940,7 +940,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                     addMember.selectedInEditor = true;
                 };
 				if(this.editorType == "sources") {
-					// This is a sources chart
+                    // source chart
+					// This is a sources chart and the entity to add is a program
 					if(entityType == "program") {
 						// Programmer's note: source fields for prov charts: prov_generatedByExecution, prov_generatedByProgram, 
                         // prov_used, prov_wasDerivedFrom, prov_wasInformedBy
@@ -966,63 +967,118 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                             addMember.set("provDerivations", _.union(addMember.get("provDerivations"), [this.context]));
                         }
 					} else {
-						// Prov for a data node is being added
-						this.addProvRel(this.dataPackage, memberPid, "prov_wasDerivedFrom", pidToAdd);
-						this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data");
-						this.addProvRel(this.dataPackage, pidToAdd, "prov_hasDerivations", memberPid);
-						// If a program already exists in this prov chart, then connect this data node to
-						// the program as input.
-						_.each(view.programs, function(thisProgram) {
-							var programPid = thisProgram.get("id");
-							view.addProvRel(view.dataPackage, pidToAdd, "prov_usedByProgram", programPid);
-                            // Update the program's package member so that it's metadataview detail section will show
-                            // the current member (provchart) as a used data item there.
-                            thisProgram.set("provSources", _.union(thisProgram.get("provSources"), [addMember]));
-						});
+                        // source chart
+                        // The item to add is data.
+                        // The prov chart is for a program.
+                        if(this.context.getType() == "program") {
+                            var programPid = this.context.get("id");
+                            var progMember = this.context;
+                            view.addProvRel(view.dataPackage, pidToAdd, "prov_usedByProgram", programPid);
+                            this.setMemberAttr(this.dataPackage, programPid, "type", "program");
+                            this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data");
+                            // Update the package member for the data item so that it's metadataview 
+                            // detail section will show the program as using the data item.
+                            progMember.set("provSources", _.union(progMember.get("provSources"), [addMember]));
+                            addMember.set("provDerivations",  _.union(addMember.get("provDerivations"), [progMember]));
+                            // Also add this data item to each output of the program. 
+                            _.each(progMember.get("provDerivations"), function(model){
+                                if(model.getType() == "data") {
+                                    var dataPid = model.get("id");
+                                    view.addProvRel(view.dataPackage, dataPid, "prov_wasDerivedFrom", pidToAdd);
+                                }
+                            });
+                        } else {
+                            // source chart
+                            // The item to add is data.
+						    // The prov chart is for data.
+                            this.addProvRel(this.dataPackage, memberPid, "prov_wasDerivedFrom", pidToAdd);
+                            this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data");
+                            this.setMemberAttr(this.dataPackage, memberPid, "type", "data");
+                            this.context.set("provSources", _.union(this.context.get("provSources"), [addMember]));
+                            // Add this prov chart data as derived from the data item being added as a source
+                            addMember.set("provDerivations", _.union(addMember.get("provDerivations"), [this.context]))
+                            //this.addProvRel(this.dataPackage, pidToAdd, "prov_hasDerivations", memberPid);
+                            // If a program already exists in this prov chart, then connect this data node to
+                            // the program as input.
+                            _.each(view.programs, function(thisProgram) {
+                                var programPid = thisProgram.get("id");
+                                view.addProvRel(view.dataPackage, pidToAdd, "prov_usedByProgram", programPid);
+                                // Update the program's package member so that it's metadataview detail section will show
+                                // the current member (provchart) as a used data item there.
+                                thisProgram.set("provSources", _.union(thisProgram.get("provSources"), [addMember]));
+                            });
+                        }
 					}
 				} else {
 					// This is a derivations chart
-					// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations,
-					// prov_generated
+					// derivation fields: prov_usedByExecution, prov_usedByProgram, prov_hasDerivations, prov_generated
+                    // The item to add is a program.
+                    // The prov chart will always be for data, as it is not allowed to add a program to a program chart.
 					if(entityType == "program") {
-			    	//var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == pidToAdd});
-						this.addProvRel(this.dataPackage, memberPid, "prov_usedByProgram", pidToAdd);
-						this.setMemberAttr(this.dataPackage, pidToAdd, "type", "program")
-						// If data nodes already exist in this prov chart, then add them to the program.
-						_.each(view.derivations, function(model){
-							if(model.getType() == "data") {
-								var dataPid = model.get("id");
-								view.addProvRel(view.dataPackage, dataPid, "prov_generatedByProgram", pidToAdd);
+			    	    //var selectedMember = _.find(this.packageModel.get("members"), function(member){ return member.get("id") == pidToAdd});
+                        this.addProvRel(this.dataPackage, memberPid, "prov_usedByProgram", pidToAdd);
+                        this.setMemberAttr(this.dataPackage, pidToAdd, "type", "program")
+                        // If derived data items already exist this program prov chart, then add them to the program.
+                        _.each(view.derivations, function(model){
+                            if(model.getType() == "data") {
+                                var dataPid = model.get("id");
+                                view.addProvRel(view.dataPackage, dataPid, "prov_generatedByProgram", pidToAdd);
                                 // Update the package member for the data item so that it's metadataview 
                                 // detail section will show the program as generating the data item.
                                 if(addMember != null) {
                                     model.set("provSources", _.union(model.get("provSources"), [addMember]));
                                     addMember.set("provDerivations", _.union(addMember.get("provDerivations"), [model]));
                                 }
-							}
-						});
+                            }
+                        });
                         // Update the program's package member so that it's metadataview detail section will show
-                        // the current member (provchart) as generated data there.
+                        // the current member (provchart) as source data there.
                         if(addMember != null) {
                             addMember.set("provSources", _.union(addMember.get("provSources"), [this.context]));
                         }
 					} else {
-						// Prov for a data node is being added
-						this.addProvRel(this.dataPackage, pidToAdd, "prov_wasDerivedFrom", memberPid);
-						this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data")
-						this.addProvRel(this.dataPackage, memberPid, "prov_hasDerivations", pidToAdd);
-						// If a program already exists in this prov chart, then connect this data node to
-						// the program as output.
-						_.each(view.programs, function(thisProgram) {
-							var programPid = thisProgram.get("id");
-							view.addProvRel(view.dataPackage, pidToAdd, "prov_generatedByProgram", programPid);
-                            // Update the program's package member so that it's metadataview detail section will show
-                            // the current member (provchart) as a used data item there.
-                            thisProgram.set("provDerivations", _.union(thisProgram.get("provDerivations"), [addMember]))
-						});
-					}
-				}
-			}
+                        // derivations chart
+                        // The item to add is data.
+                        // The prov chart is for a program.
+                        if(this.context.getType() == "program") {
+                            var programPid = memberPid
+                            var progMember = this.context;
+                            view.addProvRel(view.dataPackage, pidToAdd, "prov_generatedByProgram", programPid);
+                            this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data");
+                            this.setMemberAttr(this.dataPackage, programPid, "type", "program");
+                            // Update the package member for the data item so that it's metadataview 
+                            // detail section will show the program as derived from the data item.
+                            progMember.set("provDerivations", _.union(progMember.get("provDerivations"), [addMember]));
+                            // Also add the derived data item to each input of the program. 
+                            _.each(progMember.get("provSources"), function(model){
+                                if(model.getType() == "data") {
+                                    var dataPid = model.get("id");
+                                    view.addProvRel(view.dataPackage, pidToAdd, "prov_wasDerivedFrom", dataPid);
+                                    model.set("provDerivations", _.union(model.get("provDerivations"), [addMember]));
+                                }
+                            });
+                        } else {
+                            // derivations chart
+                            // The item to add is data.
+                            // The prov chart is for a data item.
+                            this.addProvRel(this.dataPackage, pidToAdd, "prov_wasDerivedFrom", memberPid);
+                            this.setMemberAttr(this.dataPackage, pidToAdd, "type", "data")
+                            this.setMemberAttr(this.dataPackage, memberPid, "type", "data")
+                            this.context.set("provDerivations", _.union(this.context.get("provDerivations"), [addMember]))
+                            //this.addProvRel(this.dataPackage, memberPid, "prov_hasDerivations", pidToAdd);
+                            // If a program already exists in this prov chart, then connect this data node to
+                            // the program as output.
+                            _.each(view.programs, function(thisProgram) {
+                                var programPid = thisProgram.get("id");
+                                view.addProvRel(view.dataPackage, pidToAdd, "prov_generatedByProgram", programPid);
+                                // Update the program's package member so that it's metadataview detail section will show
+                                // the current member (provchart) as a used data item there.
+                                thisProgram.set("provDerivations", _.union(thisProgram.get("provDerivations"), [addMember]))
+                            });
+                        }
+                    }
+                }
+            }
 			
 			this.dataPackage.trigger("redrawProvCharts");
 		},
