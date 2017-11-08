@@ -1866,11 +1866,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     
                 // The execution isn't needed any longer, so remove it and the program.
                 try {
-                    graph.removeMatches(programNode, RDF("type"), PROVONE("program"));
+                    graph.removeMatches(programNode, RDF("type"), PROVONE("Program"));
                     graph.removeMatches(associationNode, PROV("hadPlan"), programNode);
-                    graph.removeMatches(associationNode, RDF("type"), PROV("association"));
-                    graph.removeMatches(associationNode, PROV("agent"), undefined);
-                    graph.removeMatches(executionNode, RDF("type"), PROVONE("execution"));
+                    graph.removeMatches(associationNode, RDF("type"), PROV("Association"));
+                    graph.removeMatches(associationNode, PROV("Agent"), undefined);
+                    graph.removeMatches(executionNode, RDF("type"), PROVONE("Execution"));
                     graph.removeMatches(executionNode, PROV("qualifiedAssociation"), associationNode);
                     console.log("removed program: " + programId + " and execution: " + executionId);
                 } catch (error) {
