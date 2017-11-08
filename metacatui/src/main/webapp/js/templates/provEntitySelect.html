@@ -15,8 +15,9 @@
 			<option value="<%= member.get('id') %>" style="<%= optionStyles[member.get('id')] %>"><%= member.get('fileName') %></option>
 		<% }); %>
 	</select>
-    <label for="pidValue">Add by indentifier:</label>
-    <input class="form-control" type="text" id="pidValue" label="Add by identifier:"></button> 
+    <!-- hide the identifier text box until it is implemented -->
+    <label for="pidValue" style="display:none">Add by indentifier:</label>
+    <input class="form-control" type="text" id="pidValue" label="Add by identifier:" style="display:none"></button> 
   </div>
   <div class="modal-footer">
     <!-- <button class="btn btn-primary" data-dismiss="modal" onclick="readValues()">Done</button> -->
