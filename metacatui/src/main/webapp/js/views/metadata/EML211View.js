@@ -1458,6 +1458,47 @@ define(['underscore', 'jquery', 'backbone',
 	    	
 	    },
 		
+		// publication date validation.
+		isDateFormatValid: function(dateString){
+			
+			//Date strings that are four characters should be a full year. Make sure all characters are numbers
+			if(dateString.length == 4){
+				var digits = dateString.match( /[0-9]/g );
+				return (digits.length == 4)
+			}
+			//Date strings that are 10 characters long should be a valid date
+			else{
+				var dateParts = dateString.split("-");
+				
+				if(dateParts.length != 3 || dateParts[0].length != 4 || dateParts[1].length != 2 || dateParts[2].length != 2)
+					return false;
+				
+				dateYear = dateParts[0];
+				dateMonth = dateParts[1];
+				dateDay = dateParts[2];
+				
+				// Validating the values for the date and month if in YYYY-MM-DD format.
+				if (dateMonth < 1 || dateMonth > 12) 
+					return false;
+				else if (dateDay < 1 || dateDay > 31) 
+					return false;
+				else if ((dateMonth == 4 || dateMonth == 6 || dateMonth == 9 || dateMonth == 11) && dateDay == 31) 
+					return false;
+				else if (dateMonth == 2) {
+				// Validation for leap year dates.
+					var isleap = (dateYear % 4 == 0 && (dateYear % 100 != 0 || dateYear % 400 == 0));
+					if ((dateDay > 29) || (dateDay == 29 && !isleap)) 
+						return false;
+				}
+				
+				var digits = _.filter(dateParts, function(part){
+					return (part.match( /[0-9]/g ).length == part.length);
+				});
+				
+				return (digits.length == 3);
+			}
+		},
+		
 		/* Event handler for showing validation messaging for the pubDate input
 		which has to conform to the EML yearDate type (YYYY or YYYY-MM-DD) */
 		showPubDateValidation: function(e) {
@@ -1468,12 +1509,12 @@ define(['underscore', 'jquery', 'backbone',
 				errors = [];
 
 			// Remove existing error borders and notifications
-            input.removeClass("error");
-            messageEl.text("");
+			input.removeClass("error");
+			messageEl.text("");
 			messageEl.removeClass("error");
 
 			if (value != "" && value.length > 0) {
-				if (!(/^\d{4}$/.test(value) || /^\d{4}-\d{2}-\d{2}$/.test(value))) {
+				if (!this.isDateFormatValid(value)) {
 					errors.push("The value entered for publication date, '" +
 						value +
 						"' is not a valid value for this field. Enter either a year (e.g. 2017) or a date in the format YYYY-MM-DD.");
@@ -1484,7 +1525,7 @@ define(['underscore', 'jquery', 'backbone',
 
 			if (errors.length > 0) {
 				messageEl.text(errors[0]).addClass("error");
-            }
+			}
 		},
 
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
