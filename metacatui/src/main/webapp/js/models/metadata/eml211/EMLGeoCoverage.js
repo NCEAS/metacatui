@@ -148,9 +148,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 return objectDOM;
             },
 
-            /*
+            /**
             * Sometimes we'll need to add a space between error messages, but only if an 
             * error has already been triggered. Use addSpace to accomplish this.
+            *
+            * @function addSpace
             * @param {string} msg The string that will be appended
             * @param {bool} front A flag that when set will append the whitespace to the front of 'msg'
             * @return {string} The string that was passed in, 'msg', with whitespace appended
@@ -165,10 +167,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 return msg;
             },
 
-            /*
+            /**
             * Because the same error messages are used in a couple of different places, we centralize the strings 
             * and access here.
             *
+            * @function getErrorMessage
             * @param {string} area Specifies the area that the error message belongs to.
             * Browse through the switch statement to find the one you need.
             * @return {string} The error message	
@@ -202,12 +205,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 }
             },
 
-            /*
+            /**
             * Generates an object that describes the current state of each latitude
             * and longitude box. The status includes whether there is a value and
             * if the value is valid. 
             *
-            * @return {vector} A vector containing the current state of each coordinate box
+            * @function getCoordinateStatus
+            * @return {array} An array containing the current state of each coordinate box
             */
             getCoordinateStatus: function () {
                 var north = this.get("north"),
@@ -235,11 +239,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 }
             },
 
-            /*
+            /**
             * Checks the status object for conditions that warrant an error message to the user. This is called
             * during the validation processes (validate() and updateModel()) after the status object has been
             * created by getCoordinateStatus().
             *
+            * @function generateStatusErrors
             * @param status The status object, holding the state of the coordinates
             * @return {string} Any errors that need to be displayed to the user
                 */
@@ -270,10 +275,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
             },
 
-            /* This grabs the various location elements and validates the user input. In the case of an error,
+            /** 
+            * This grabs the various location elements and validates the user input. In the case of an error,
             * we append an error string (errMsg) so that we display all of the messages at the same time. This
             * validates the entire location row by adding extra checks for a description and for coordinate pairs
             *
+            * @function validate
             * @return {string} The error messages that the user will see
             */
             validate: function () {
@@ -300,9 +307,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 return errorMsg;
             },
 
-            /* 
+            /**
              * Checks for any coordinates with missing counterparts.
              * 
+             * @function checkForMissing
              * @param status The status of the coordinates
              * @return {bool} True if there are missing coordinates, false otherwise
              */
@@ -319,10 +327,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
             },
 
-            /* 
+            /**
              * Checks that there are either two or four coordinate values. If there aren't,
              * it means that the user still needs to enter coordinates.
              * 
+             * @function checkForPairs
              * @param status The current state of the coordinates
              * @return {bool} True if there are pairs, false otherwise
              */
@@ -335,11 +344,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 return true;
             },
 
-            /*
+            /**
              * Validate a coordinate String by making sure it can be coerced into a number and
              * is within the given bounds.
              * Note: Min and max are inclusive 
              *
+             * @function validateCoordinate
              * @param value {string} The value of the edit area that will be validated
              * @param min The minimum value that 'value' can be
              * @param max The maximum value that 'value' can be

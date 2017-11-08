@@ -58,9 +58,10 @@ define(['underscore', 'jquery', 'backbone',
                 return this;
             },
 
-            /* 
+            /**
             * This is where we add validation error messages to the notification container.
             *
+            * @function showVaidationError
             * @param {string} errorMsg The error message that will be displayed to the user
             */
             showValidationError: function (errorMsg) {
@@ -68,9 +69,10 @@ define(['underscore', 'jquery', 'backbone',
                 this.$el.addClass("error");
             },
 
-            /* 
+            /**
             * This is where we remove old error messages from the error notification container
             * 
+            * @function removeValidationError
             * @param status The status object holding the state of the coordinate boxes
             */
             removeValidationError: function (status) {
@@ -79,11 +81,12 @@ define(['underscore', 'jquery', 'backbone',
                 this.$el.removeClass("error");
             },
 
-            /*
+            /**
             * If we have an invalid edit box, we display a red border around it. This function
             * iterates through the status object and modifies the css to display a red border.
             * We also want to remove the border when the value is correct.
             *
+            * @function setErrorBorderState
             * @param status The current state of the coordinate boxes 
             */
             setErrorBorderState: function (status) {
@@ -97,7 +100,7 @@ define(['underscore', 'jquery', 'backbone',
                 }
             },
 
-            /* 
+            /**
             * We need to display errors based on rules that are more complex
             * than single coordinate input. For example, if the user sets
             * the north coordinate, we'll want to display an error if they
@@ -106,6 +109,7 @@ define(['underscore', 'jquery', 'backbone',
             * a chance to fill out coordinate pairs before displaying errors about
             * missing coordinates.
             * 
+            * @function getBorderStatus
             * @param status
             * @return needsErrorBorder A flag denoting which coordinate boxes need error borders
             */
@@ -167,11 +171,12 @@ define(['underscore', 'jquery', 'backbone',
                 return needsErrorBorder;
             },
 
-            /*
+            /**
              * Updates the model. 
              * If this is called from the user switching between latitude and longitude boxes,
              * we check to see if the input was valid and display any errors if we need to.
              * 
+             * @function updateModel
              * @param e The event
              */
             updateModel: function (e) {
@@ -277,13 +282,14 @@ define(['underscore', 'jquery', 'backbone',
                 }
             },
 
-            /* 
+            /**
             * When we validate across lat/long boxes, we still want to display any
             * errors that don't pertain to the lat/long (like a missing description).
             * We do the check here and get the error messages because they will
             * end up being wiped away when we generate the new error string in
             * this.model.generateStatusErrors().
             *
+            * @function checkPreviousErrors
             * @param status The current state of the coordinate inputs
             * @return {string} The error message that will be displayed
             */
@@ -327,13 +333,15 @@ define(['underscore', 'jquery', 'backbone',
                 return errors;
             },
 
-            /* 
-            * We perform validation two ways:
-            *   1. By validating the entire row
-            *   2. By validating only the coordinates
-            *
-            *  This function handles the validation, addition, and removal of any errors
-            *  associated with invalid latitude and longitude values (#2).
+            /** 
+             * We perform validation two ways:
+             *   1. By validating the entire row
+             *   2. By validating only the coordinates
+             *
+             *  This function handles the validation, addition, and removal of any errors
+             *  associated with invalid latitude and longitude values (#2).
+             *
+             * @function validateCoordinates
             */
             validateCoordinates: function () {
                 var status = this.model.getCoordinateStatus();
@@ -365,11 +373,12 @@ define(['underscore', 'jquery', 'backbone',
                 this.setErrorBorderState(status);
             },
 
-            /*
+            /**
              * Checks to see if any error messages need to be removed. If not, then it performs validation 
              * across the row and displays any errors. This id called when the user clicks out of an edit box 
              * on to the page.
              * 
+             * @function validateRow
              * @param e The event
              * @param options
              */
@@ -440,13 +449,14 @@ define(['underscore', 'jquery', 'backbone',
                 }, 1);
             },
 
-            /* 
+            /**
             * Run though a check of different conditions that may happen. For example,
             * this is where we check if a latitude was set, but not the longitude. For
             * any errors that are set in this section, we handle the cases where they need
             * to be removed. In the previous case we'll want to make the longitude box have
             * a red border
             *
+            * @function addErrorClasses
             * @param status The status object holding the state of each coordinate box
             * @param view this
             * @param {bool} hasError The error flag. set to true when there is invalid input
@@ -476,10 +486,11 @@ define(['underscore', 'jquery', 'backbone',
                 return hasError;
             },
 
-            /*
+            /**
              * When the user is typing in an input with an error, check if they've fixed the error
              * and remove any error messages. This includes turning the red border off.
              * 
+             * @function updateError
              * @param e The event
              */
             updateError: function (e) {
@@ -496,15 +507,19 @@ define(['underscore', 'jquery', 'backbone',
                 }
             },
 
-            /*
+            /**
              * Highlight what will be removed when the remove icon is hovered over
+             * 
+             * @function toggleRemoveClass
              */
             toggleRemoveClass: function () {
                 this.$el.toggleClass("remove-preview");
             },
 
-            /*
+            /**
              * Unmarks this view as new
+             * 
+             * @function notNew
              */
             notNew: function () {
                 this.$el.removeClass("new");
