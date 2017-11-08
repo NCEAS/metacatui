@@ -276,12 +276,14 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				
 				if(timeParts.length != 3)
 					return false;
-				else{
-					//Make sure the hours, minutes, and seconds are two digits long
-					return _.every(timeParts, function(t){ 
-							   return ( t.match( /[0-9]/g ) && t.length == 2 ); 
-						   });
-				}
+				
+                // Validation pattern for HH:MM:SS values.
+                // Range for HH validation : 00-23
+                // Range for MM validation : 00-59
+                // Range for SS validation : 00-59
+                // Leading 0's are must in case of single digit values.
+                var timePattern = /^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/;
+                return (timeString.match(timePattern));
 			}
 			else
 				return false;
