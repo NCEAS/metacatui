@@ -483,9 +483,6 @@ define(['jquery',
 			//var dataPackage = this.dataPackage;
 
 			if(!packages) var packages = this.packageModels;
-            
-            // Get datapackage info in order to render prov
-            this.getDataPackage(packages[0].get("id"));
 
 			//Get the entity names from this page/metadata
 			this.getEntityNames(packages);
@@ -517,7 +514,7 @@ define(['jquery',
 				$("#downloadPackage").remove();
 
 			});
-
+            
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length,
@@ -556,6 +553,9 @@ define(['jquery',
 
 			//Initialize tooltips in the package table(s)
 			this.$(".tooltip-this").tooltip();
+
+            // Get datapackage info in order to render prov
+            if(packages.length) this.getDataPackage(packages[0].get("id"));
 
 		    return this;
 		},
