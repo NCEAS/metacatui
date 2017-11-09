@@ -1775,7 +1775,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     }
                 } else {
                     // The executionNode was found in the RDF graph as a urn
-                    executionNode = stmts[0].subject;
+                    var executionNode = stmts[0].subject;
                     console.log("Execution Node: " + executionNode.value);
                     return executionNode;
                 }
