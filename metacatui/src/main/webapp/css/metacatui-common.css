@@ -3245,6 +3245,7 @@ ul.side-nav-items {
 }
 #metadata-footer{
     visibility: hidden;
+    width: 1025px;
 }
 #cancel-metadata-prov{
     margin-left: 30px;
