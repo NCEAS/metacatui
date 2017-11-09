@@ -917,11 +917,15 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.addProv(values, entityType);	
         },
         
-        // Add provenance relationships for the package members that were selected
-        // by the selection modal. ProvChartView 'provSources' and 'provDerivations' are
-        // updated so that the items will appear in the affected prov charts (may be more that one),
-        // and provenance relationships for the selected items are added to the RDF graph stored
-        // in the DataPackage collection.
+        // For each identifier that has been selected by the user, after clicking an editor
+        // icon, determine the position of the selected item in the prov chart and the
+        // prov relationships that need to be added to the adjacent items in the chart.
+        // Update the related prov charts so that the newly added item will appear in any
+        // related prov chart. The ProvChartView 'provSources' and 'provDerivations' are
+        // updated to accomplish this.
+        // Also, add the necessary prov relationships to the DataPackage edit queue
+        // so that these will be added to the RDF graph (before resmap save) when the prov editor 
+        // 'save' button is clicked
         // Note that the provenance relationships that are added depend on the position of the 
         // add icon that was click in the prov graph and whether it is on the left (sources) or
         // right (derivations) side, and if any icons are already in the prov chart that need 
