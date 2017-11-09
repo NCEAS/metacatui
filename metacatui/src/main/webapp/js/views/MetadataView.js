@@ -138,7 +138,7 @@ define(['jquery',
 			this.listenTo(this.dataPackage, "complete", function() {
 				// parseProv triggers "queryComplete"
 				this.dataPackage.parseProv();
-                this.checkForProv();
+                //this.checkForProv();
 			});
 		},
 		/*
@@ -483,6 +483,9 @@ define(['jquery',
 			//var dataPackage = this.dataPackage;
 
 			if(!packages) var packages = this.packageModels;
+            
+            // Get DataPackge info in order to render prov extraced from the resmap.
+            if(packages.length) this.getDataPackage(packages[0].get("id"));
 
 			//Get the entity names from this page/metadata
 			this.getEntityNames(packages);
@@ -554,8 +557,12 @@ define(['jquery',
 			//Initialize tooltips in the package table(s)
 			this.$(".tooltip-this").tooltip();
 
-            // Get datapackage info in order to render prov
-            if(packages.length) this.getDataPackage(packages[0].get("id"));
+            
+            // Get datapackage info in order to render prov;
+            // This could be moved earlier, when the resmap id is known,
+            // and checkForProv called independently to see if the metadata
+            // detail sections have been rendered.
+            //if(packages.length) this.getDataPackage(packages[0].get("id"));
 
 		    return this;
 		},
@@ -599,6 +606,12 @@ define(['jquery',
 			//Insert the package table HTML
 			$(tableContainer).append(tableView.render().el);
 			$(this.tableContainer).children(".loading").remove();
+            
+            var allTableEls = this.$(this.tableContainer).children();
+            var tableElsLoaded = this.$(this.tableContainer).children().not(".loading");
+            if (allTableEls.length == tableElsLoaded.length) {
+                this.checkForProv();
+            }
 
 			$(tableContainer).find(".tooltip-this").tooltip();
 
