@@ -597,8 +597,8 @@ define(['jquery',
 				var tableContainer = tablesContainer;
 
 			//Insert the package table HTML
-			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
+			$(this.tableContainer).children(".loading").remove();
 
 			$(tableContainer).find(".tooltip-this").tooltip();
 
