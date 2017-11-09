@@ -276,6 +276,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			if(provEntity.type == "DataONEObject"){
 				type = provEntity.getType();
+                provEntity.selectedInEditor = true;
 				
 				if(type == "data")
 					icon = "icon-table";
