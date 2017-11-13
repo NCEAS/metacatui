@@ -233,6 +233,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				errors.beginTime = "The begin time must be formatted as HH:MM:SS";
 			if(endTime && !this.isTimeFormatValid(endTime))
 				errors.endTime = "The end time must be formatted as HH:MM:SS";
+				
+			// Check if begin date greater than end date for the temporalCoverage
+			if (this.isGreaterDate(beginDate, endDate, beginTime, endTime))
+				errors.beginDate = "The begin date (including time if applicable) must be smaller than the end date."
 			
 			console.log(errors);
 
@@ -305,6 +309,82 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 			else
 				return false;
+		},
+		
+		/**
+		 * This function checks whether the begin date is greater than the end date.
+		 * If both the date values are equal it check for corresponding time, to make sure
+		 * that the temporal coverage date and time values are valid.
+		 * 
+		 * @function isGreaterDate
+		 * @param {string} beginDate the begin date string
+		 * @param {string} endDate the end date string
+		 * @param {string} beginTime the begin time string
+		 * @param {string} endTime the end time string
+		 * @return {boolean} 
+		 */
+		isGreaterDate (beginDate, endDate, beginTime, endTime) {
+			var equalDates = false;
+			
+			//Making sure that beginDate year is smaller than endDate year
+			if (beginDate.length == 4 && endDate.length == 4) {
+				if (beginDate > endDate) {
+					return true;
+				}
+				else if (beginDate == endDate){
+					equalDates = true;
+				}
+			}
+			
+			//Checking equality for either dateStrings that are greater than 4 characters
+			else {
+				beginDateParts = beginDate.split("-");
+				endDateParts = endDate.split("-");
+				
+				if (beginDateParts.length == endDateParts.length) {
+					if (beginDateParts[0] > endDateParts[0]) {
+						return true;
+					}
+					else if (beginDateParts[0] == endDateParts[0]) {
+						if (beginDateParts[1] > endDateParts[1]) {
+							return true;
+						}
+						else if (beginDateParts[1] == endDateParts[1]) {
+							if (beginDateParts[2] > endDateParts[2]) {
+								return true;
+							}
+							else if (beginDateParts[2] == endDateParts[2]) {
+								equalDates = true;
+							}
+						}
+					}
+				}
+				else {
+					if (beginDateParts[0] > endDateParts[0]) {
+						return true;
+					}
+				}
+			}
+			
+			// If the dates are equal, check for validity of time frame.
+			if (equalDates) {
+				beginTimeParts = beginTime.split(":");
+				endTimeParts = endTime.split(":");
+				if (beginTimeParts[0] > endTimeParts[0]) {
+					return true;
+				}
+				else if (beginTimeParts[0] == endTimeParts[0]) {
+					if (beginTimeParts[1] > endTimeParts[1]) {
+						return true;
+					}
+					else if (beginTimeParts[1] == endTimeParts[1]) {
+						if (beginTimeParts[2] > endTimeParts[2]) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
 		}
 	});
 	
