@@ -25,7 +25,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             events: {
                 "focusout .name"       : "updateName",
                 "click    .name"       : "emptyName",
-                /* "click .rename"     : "rename", */
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
                 "click .addFiles"      : "handleAddFiles",    // Edit dropdown, open file picker dialog
@@ -254,7 +253,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 return idStr;
             },
             
-            /* Update the folder name based on the scimeta title */
+            /**
+             * Update the folder name based on the scimeta title
+             * 
+             * @function updateName
+             * @param e The event triggering this method
+             */
             updateName: function(e) {
                 
                 var enteredText = this.cleanInput($(e.target).text().trim());
@@ -283,14 +287,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     }
                 } else {
                     this.model.set("fileName", enteredText);
-                    this.model.set("hasContentChanges")
+                    this.model.set("hasContentChanges");
                 }
-            },
-                                    
-            /* rename a file or folder TODO: decide if we need this */ 
-            rename: function(event) {
-                console.log("DataItemView.rename() called.");
-                
             },
             
             /* Duplicate a file or folder */
@@ -591,7 +589,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 				
 				// 2. strip Word generated HTML comments
 				var commentSripper = new RegExp('<!--(.*?)-->','g');
-				var output = output.replace(commentSripper, '');
+				output = output.replace(commentSripper, '');
 				var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
 				
 				// 3. remove tags leave content if any
@@ -621,7 +619,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             previewRemove: function(){
             	this.$el.toggleClass("remove-preview");
             },
-            
+            /**
+             * Clears the text in the cell if the text was the default. We add
+             * an 'empty' class, and remove it when the user focuses back out.
+             * 
+             * @function emptyName
+             */
             emptyName: function(e){
             	
             	var editableCell = this.$(".name [contenteditable]");
@@ -669,8 +672,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             	this.$(".disable-layer").remove();
             	
             	//Make the name cell editable again
-            	if(this.model.get("type") != "Metadata")
-            		this.$(".name > div").prop("contenteditable", true);
+            	this.$(".name > div").prop("contenteditable", true);
             	
             	this.$el.removeClass("error-saving");
             },
