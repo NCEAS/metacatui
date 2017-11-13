@@ -235,8 +235,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				errors.endTime = "The end time must be formatted as HH:MM:SS";
 				
 			// Check if begin date greater than end date for the temporalCoverage
-			if (this.isGreaterDate(beginDate, endDate, beginTime, endTime))
-				errors.beginDate = "The begin date (including time if applicable) must be smaller than the end date."
+			if (this.isGreaterDate(beginDate, endDate))
+				errors.beginDate = "The begin date must be before the end date."
+			
+			// Check if begin time greater than end time for the temporalCoverage in case of equal dates.
+			if (this.isGreaterTime(beginDate, endDate, beginTime, endTime))
+				errors.beginTime = "The begin time must be before the end time."
 			
 			console.log(errors);
 
@@ -313,26 +317,18 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		
 		/**
 		 * This function checks whether the begin date is greater than the end date.
-		 * If both the date values are equal it check for corresponding time, to make sure
-		 * that the temporal coverage date and time values are valid.
 		 * 
 		 * @function isGreaterDate
 		 * @param {string} beginDate the begin date string
 		 * @param {string} endDate the end date string
-		 * @param {string} beginTime the begin time string
-		 * @param {string} endTime the end time string
 		 * @return {boolean} 
 		 */
-		isGreaterDate (beginDate, endDate, beginTime, endTime) {
-			var equalDates = false;
+		isGreaterDate (beginDate, endDate) {
 			
 			//Making sure that beginDate year is smaller than endDate year
 			if (beginDate.length == 4 && endDate.length == 4) {
 				if (beginDate > endDate) {
 					return true;
-				}
-				else if (beginDate == endDate){
-					equalDates = true;
 				}
 			}
 			
@@ -353,15 +349,49 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 							if (beginDateParts[2] > endDateParts[2]) {
 								return true;
 							}
-							else if (beginDateParts[2] == endDateParts[2]) {
-								equalDates = true;
-							}
 						}
 					}
 				}
 				else {
 					if (beginDateParts[0] > endDateParts[0]) {
 						return true;
+					}
+				}
+			}
+			return false;
+		},
+        
+        /**
+		 * This function checks whether the begin time is greater than the end time.
+		 * 
+		 * @function isGreaterTime
+		 * @param {string} beginDate the begin date string
+		 * @param {string} endDate the end date string
+		 * @param {string} beginTime the begin time string
+		 * @param {string} endTime the end time string
+		 * @return {boolean} 
+		 */
+		isGreaterTime (beginDate, endDate, beginTime, endTime) {
+			var equalDates = false;
+			
+			//Making sure that beginDate year is smaller than endDate year
+			if (beginDate.length == 4 && endDate.length == 4) {
+				if (beginDate == endDate) {
+					equalDates = true;
+				}
+			}
+			
+			else {
+				beginDateParts = beginDate.split("-");
+				endDateParts = endDate.split("-");
+				
+				if (beginDateParts.length == endDateParts.length) {
+					if (beginDateParts[0] == endDateParts[0]) {
+						if (beginDateParts[1] == endDateParts[1]) {
+							if (beginDateParts[2] == endDateParts[2]) {
+								equalDates = true;
+							}
+						}
 					}
 				}
 			}
