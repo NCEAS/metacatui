@@ -209,7 +209,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         		//TODO: Allow multiple given names - right now we only support editing the first given name
         		var name = this.model.get("individualName") || {},
-        			currentValue = name[changedAttr];
+        			currentValue = String.prototype.trim(name[changedAttr]);
         		
         		//Update the name
         		if(Array.isArray(currentValue)){
@@ -221,10 +221,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	    			
         		}
         		else if(changedAttr == "givenName"){
-        			name.givenName = [$(e.target).val()];
+        			name.givenName = String.prototype.trim([$(e.target).val()]);
         		}
         		else
-        			name[changedAttr] = $(e.target).val();
+        			name[changedAttr] = String.prototype.trim($(e.target).val());
         		
         		//Update the value on the model
         		this.model.set("individualName", name);
