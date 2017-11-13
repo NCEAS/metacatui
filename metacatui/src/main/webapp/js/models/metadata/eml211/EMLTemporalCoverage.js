@@ -325,6 +325,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 */
 		isGreaterDate (beginDate, endDate) {
 			
+			if(typeof beginDate == "undefined" || !beginDate)
+				return false;
+			
+			if(typeof endDate == "undefined" || !endDate)
+				return false;
+			
 			//Making sure that beginDate year is smaller than endDate year
 			if (beginDate.length == 4 && endDate.length == 4) {
 				if (beginDate > endDate) {
@@ -372,6 +378,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * @return {boolean} 
 		 */
 		isGreaterTime (beginDate, endDate, beginTime, endTime) {
+			if(!beginTime || !endTime)
+				return false;
+			
 			var equalDates = false;
 			
 			//Making sure that beginDate year is smaller than endDate year
