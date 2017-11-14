@@ -267,9 +267,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
             		this.$(".notification").text(this.model.validationError.name).addClass("error");
                }
-
-
-        	},
+            },
+            
             /**
              * Checks if the user has entered any data in the fields.
              * 
@@ -286,11 +285,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
                     if(this.$(attribute).val() != "") 
                         return true;
                  }
-
                  return false;
             },
-
-            
 
         	// A function to format text to look like a phone number
         	formatPhone: function(e){
