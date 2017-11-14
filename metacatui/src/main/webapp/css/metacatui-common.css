@@ -3502,6 +3502,16 @@ textarea.xlarge{
 	box-sizing: border-box;
 	font-size: 1em;
 }
+.Editor > #Navbar .navbar .navbar-inner .nav .input form input[type="text"]{
+	display:        inline-block;
+	position:       relative;
+	width:          75px;
+	height:         30px;
+	margin:         0px 0px 0px 0px;
+	padding:        0px 0px 0px 7px;
+	border-radius:  4px 0 0 4px;
+	font-size:      14px;
+}
 .Editor textarea{
 	padding: .5em 1em;
 	box-sizing: border-box;
