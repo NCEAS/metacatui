@@ -724,7 +724,7 @@ define(['underscore',
 
         	//Change the style of the save button
         	this.$("#save-editor")
-        		.html('<i class="icon icon-spinner icon-spin"></i> Saving ...')
+        		.html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
         		.addClass("btn-disabled");
 
 	    	this.$("input, textarea, select, button").prop("disabled", true);	    	
