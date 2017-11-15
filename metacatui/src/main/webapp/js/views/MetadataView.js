@@ -1197,7 +1197,7 @@ define(['jquery',
             if(savedObject.type != "DataPackage") return;
 
             //Change the URL to the new id
-            MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
+            MetacatUI.uiRouter.navigate("#view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
             
             var message = $(document.createElement("div")).append($(document.createElement("span")).text("Your changes have been saved. "));
             
