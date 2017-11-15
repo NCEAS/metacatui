@@ -86,6 +86,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//The default height of the chart when all nodes are visible/expanded
 			this.height = (this.numProvEntities * this.nodeHeight);
+            // Add height for one more node if edit mode is on. The node height affects portion of
+            // the left or right border that is visible, which is what is used to display the vertical 
+            // portion of the connectors between data nodes and programs or the package member 
+            // (that owns the metadata detail section).
+            if(this.editModeOn) this.height = this.height + this.nodeHeight;
 			
 		},
 		
@@ -160,11 +165,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				}
 				
 				//Derivation charts have a pointer for each node
-				if(view.type == "derivations" && (this.numDerivations > 0 || this.editor))
+				if(view.type == "derivations" && (this.numDerivations > 0 || this.editModeOn))
 					view.$el.append(view.createConnecter(position));
 				
 				//Source charts have a connector for each node and one pointer
-				if(view.type == "sources" && (this.numSources > 0 || this.editor))
+				if(view.type == "sources" && (this.numSources > 0 || this.editModeOn))
 					view.$el.append(view.createConnecter(position));
 				
 				//Bump the position for non-programs only
@@ -185,6 +190,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				// we are annotating is a program (cuurently don't support programs as inputs/outputs of programs).
 				if((this.context.getType() != "program") && this.numPrograms == 0) {
 					this.$(".programs").append(this.createEditorNode("program", this.context.get("id"), programPosition));
+                    this.$(".programs").append(this.createConnecter());
 					programPosition++;
 					this.numPrograms++;
 				}
@@ -195,6 +201,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				
 				if(this.editorType == "sources") this.numSources++;
 				if(this.editorType == "derivations") this.numDerivations++;
+                
+                // Add a connector for this edit icon.
+                this.$el.append(this.createConnecter(position-1));
 			}
 			
 			//Move the last-viewed prov node to the top of the chart so it is always displayed first
@@ -660,7 +669,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 										.text("Add");
 				var gAdd = document.createElementNS("http://www.w3.org/2000/svg", "g");
 				$(gAdd).attr("transform", "translate(18,45)")
-				$(gAdd).attr("class", " program editor pointer ");
+				$(gAdd).attr("class", " program node editor pointer ");
 				$(gAdd).append(addEl);
 				
 				//Glue it all together
