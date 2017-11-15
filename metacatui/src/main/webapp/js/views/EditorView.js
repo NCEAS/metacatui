@@ -486,7 +486,7 @@ define(['underscore',
             this.toggleControls();
 
             var message = $(document.createElement("div")).append(
-            		$(document.createElement("span")).text("Your changes have been saved. "),
+            		$(document.createElement("span")).text("Your changes have been submitted. "),
             		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
         	
             MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
@@ -510,7 +510,7 @@ define(['underscore',
          */
         saveError: function(errorMsg){
         	var errorId = "error" + Math.round(Math.random()*100),
-        		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
+        		message = $(document.createElement("div")).append("<p>Not all of your changes could be submitted.</p>");
 
         	message.append($(document.createElement("a"))
         						.text("See details")
@@ -704,7 +704,7 @@ define(['underscore',
 
         handleSaveCancel: function(){
         	if(this.model.get("uploadStatus") == "e"){
-        		this.saveError("There was a caught exception during save, so the save was cancelled.");
+        		this.saveError("There was a caught exception during your submission, so the submission was cancelled.");
         	}
         },
 
