@@ -283,6 +283,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			var icon = "",
 				type = null;
 			
+            var view = this;
 			if(provEntity.type == "DataONEObject"){
 				type = provEntity.getType();
                 provEntity.selectedInEditor = true;
@@ -343,13 +344,18 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 								// Stop propagation of of the click event so that parent elements don't receive it.
 								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
 								evt.stopPropagation();
+                                // Remove the provenance icon and the associated relationships from the DataPackage.
 								view.removeProv(evt.target.parentNode.getAttribute("data-id"), evt.target.parentNode.getAttribute("class"));
 							});
 						},
 						// mouseleave action
+                        // If the mouse passes over the delete icon as it is exiting the prov icon, then the event target
+                        // becomes the delete icon itself, and not the div containing the prov icon. So, to be save, just
+                        // turn off all delete icons in this prov chart, which works every time and doesn't require us
+                        // to test the event target that was fired.
 						function(e) {
-							$(e.target).find("i.icon-remove-sign").removeClass("show");
-							$(e.target).find("i.icon-remove-sign").addClass("hide");
+                            view.$('*').find("i.icon-remove-sign").removeClass("show");
+                            view.$('*').find("i.icon-remove-sign").addClass("hide");
 						}
 					);	
 				}
