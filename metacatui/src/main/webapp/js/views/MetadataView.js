@@ -1187,6 +1187,59 @@ define(['jquery',
 			*/
 		},
 		
+        /*
+         * When the data package collection saves successfully, tell the user
+         */
+        saveSuccess: function(savedObject){
+            console.log("saveSuccess called");
+
+            //We only want to perform these actions after the package saves
+            if(savedObject.type != "DataPackage") return;
+
+            //Change the URL to the new id
+            MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
+            
+            var message = $(document.createElement("div")).append($(document.createElement("span")).text("Your changes have been saved. "));
+            
+            MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
+            
+            // Reset the state to clean
+            this.dataPackage.packageModel.set("changed", false);
+
+            // If provenance relationships were updated, then reset the edit list now.
+            if(this.dataPackage.provEdits.length) this.dataPackage.provEdits = [];  
+
+            // Turn off "save" footer
+            this.$("#metadata-footer").css("visibility", "hidden")   
+        },
+
+        /*
+         * When the data package collection fails to save, tell the user
+         */
+        saveError: function(errorMsg){
+            console.log("saveError called");
+            var errorId = "error" + Math.round(Math.random()*100),
+                message = $(document.createElement("div")).append("<p>Your changes could be saved.</p>");
+
+            message.append($(document.createElement("a"))
+                                .text("See details")
+                                .attr("data-toggle", "collapse")
+                                .attr("data-target", "#" + errorId)
+                                .addClass("pointer"),
+                            $(document.createElement("div"))
+                                .addClass("collapse")
+                                .attr("id", errorId)
+                                .append($(document.createElement("pre")).text(errorMsg)));
+
+            MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, {
+                emailBody: "Error message: Data Package save error: " + errorMsg,
+                remove: true
+                });
+            
+            // Turn off "save" footer
+            this.$("#metadata-footer").css("visibility", "hidden")   
+        },
+
         /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
         update the ORE Resource Map and save it to the server.
         */
@@ -1194,13 +1247,15 @@ define(['jquery',
             console.log("Saving provenance edits...");
             var view = this;
             if(this.dataPackage.provEditsPending()) {
+                // If the Data Package failed saving, display an error message
+                this.listenTo(this.dataPackage, "errorSaving", this.saveError);
+                // Listen for when the package has been successfully saved
+                this.listenTo(this.dataPackage, "successSaving", this.saveSuccess);
                 this.dataPackage.saveProv();
             } else {
                 console.log("No prov edits have been entered.");
                 //TODO: should a dialog be displayed saying that no prov edits were made?
             }
-            // Turn off "save" footer
-            this.$("#metadata-footer").css("visibility", "hidden")    
         },
         
 		getEntityNames: function(packageModels){

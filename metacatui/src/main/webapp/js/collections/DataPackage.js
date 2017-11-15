@@ -1638,8 +1638,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 this.save();
                 console.log("resmap save has been called");
                 
-                // If provenance relationships were updated, then reset the edit list now.
-                if(this.provEdits.length) this.provEdits = [];  
             },
     				
             /* Add the specified relationship to the RDF graph only if it
