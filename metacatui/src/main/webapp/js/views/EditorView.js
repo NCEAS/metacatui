@@ -487,7 +487,7 @@ define(['underscore',
 
             // TODO : Remove conditions if you want to review datasets for every theme
             // Review message for "arctic" theme.
-            if (MetacatUI.theme == "arctic") {
+            if (MetacatUI.appModel.get("contentIsModerated")) {
                 var message = $(document.createElement("div")).append(
                 		$(document.createElement("span")).text("Your changes have been submitted and are under review."));
             }

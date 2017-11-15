@@ -32,6 +32,8 @@ define(['jquery', 'underscore', 'backbone'],
 						
 			maxDownloadSize: 3000000000,
 			
+			contentIsModerated: false,
+			
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
 			 * Any field set to true will prevent the user from saving the Editor until a value has been given
