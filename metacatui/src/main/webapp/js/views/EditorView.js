@@ -485,9 +485,18 @@ define(['underscore',
 
             this.toggleControls();
 
-            var message = $(document.createElement("div")).append(
-            		$(document.createElement("span")).text("Your changes have been submitted. "),
-            		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+            // TODO : Remove conditions if you want to review datasets for every theme
+            // Review message for "arctic" theme.
+            if (MetacatUI.theme == "arctic") {
+                var message = $(document.createElement("div")).append(
+                		$(document.createElement("span")).text("Your changes have been submitted and are under review."));
+            }
+            else {
+                var message = $(document.createElement("div")).append(
+                		$(document.createElement("span")).text("Your changes have been submitted. "),
+                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+            }
+            
         	
             MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
             
