@@ -420,13 +420,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						},
 						// mouseleave action
 						function(e) {
-							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
-							
-							if(gNode.length){
-								var classStr = $(gNode).attr("class");
-								$(gNode).attr("class", classStr.replace("show", "hide"));
-							}
-						}
+                            // Hide all remove icons for program nodes. See comments for
+                            // hiding data icons above (mouseleave for data icons).
+                            var gNodes = view.$('*').find("g[class*='icon-remove-sign']");
+                            for (var i = 0; i < gNodes.length; i++) { 
+                                var gNode = gNodes[i]
+                                console.log("hiding element:" + gNode);
+                                var classStr = $(gNode).attr("class");
+                                $(gNode).attr("class", classStr.replace("show", "hide"));
+                            }
+                        }
 					);
 				}
 			}
