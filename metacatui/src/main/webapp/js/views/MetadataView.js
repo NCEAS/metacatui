@@ -1214,6 +1214,22 @@ define(['jquery',
             this.hideSaving();
             // Turn off "save" footer
             this.$("#metadata-footer").css("visibility", "hidden")   
+            // Update the metadata table header with the new resource map id.
+            // First find the PackageTableView for the top level package, and
+            // then re-render it with the update resmap id.
+            var view = this;
+            var metadataId = this.packageModels[0].getMetadata().get("id")
+            _.each(this.subviews, function(thisView, i) {
+                // Check if this is a ProvChartView
+                if(thisView.type.indexOf("PackageTable") !== -1) {
+                    if(thisView.currentlyViewing == metadataId) {
+                        var packageId = view.dataPackage.packageModel.get("id");
+                        var title = packageId ? '<span class="subtle">Package: ' + packageId + '</span>' : "";
+                        thisView.title = "Files in this dataset " + title;
+                        thisView.render();
+                    }
+                }
+            });
         },
 
         /*
