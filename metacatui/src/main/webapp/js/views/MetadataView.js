@@ -1209,6 +1209,8 @@ define(['jquery',
             // If provenance relationships were updated, then reset the edit list now.
             if(this.dataPackage.provEdits.length) this.dataPackage.provEdits = [];  
 
+            this.saveProvPending = false;
+            this.hideSaving();
             // Turn off "save" footer
             this.$("#metadata-footer").css("visibility", "hidden")   
         },
@@ -1236,6 +1238,9 @@ define(['jquery',
                 remove: true
                 });
             
+            this.saveProvPending = false;
+            this.hideSaving(); 
+
             // Turn off "save" footer
             this.$("#metadata-footer").css("visibility", "hidden")   
         },
@@ -1244,6 +1249,8 @@ define(['jquery',
         update the ORE Resource Map and save it to the server.
         */
         saveProv: function() {
+            // Only call this function once per save operation.
+            if(this.saveProvPending) return;
             console.log("Saving provenance edits...");
             var view = this;
             if(this.dataPackage.provEditsPending()) {
@@ -1256,6 +1263,24 @@ define(['jquery',
                 console.log("No prov edits have been entered.");
                 //TODO: should a dialog be displayed saying that no prov edits were made?
             }
+        },
+        
+        showSaving: function(){
+
+            //Change the style of the save button
+            this.$("#save-metadata-prov")
+                .html('<i class="icon icon-spinner icon-spin"></i> Saving...')
+                .addClass("btn-disabled");
+
+            this.$("input, textarea, select, button").prop("disabled", true);	    	
+        },
+
+        hideSaving: function(){
+            this.$("input, textarea, select, button").prop("disabled", false);
+
+            //When prov is saved, revert the Save button back to normal
+            this.$("#save-metadata-prov").html("Save").removeClass("btn-disabled");	    
+        
         },
         
 		getEntityNames: function(packageModels){
