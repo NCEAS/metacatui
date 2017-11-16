@@ -1202,7 +1202,7 @@ define(['jquery',
             
             var message = $(document.createElement("div")).append($(document.createElement("span")).text("Your changes have been saved. "));
             
-            MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
+            MetacatUI.appView.showAlert(message, "alert-success", "body", 4000, {remove: false});
             
             // Reset the state to clean
             this.dataPackage.packageModel.set("changed", false);

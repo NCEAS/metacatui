@@ -1478,8 +1478,13 @@ img.icon{
 	margin-bottom: 0px;
 	
 }
-#metadata-container > .alert-container{
-	margin-top: 40px;
+body > .alert-container {
+    position: fixed;
+    top: 115px;
+    left: 50%;
+    min-width: 75%;
+    z-index: 1;
+    transform: translateX(-50%);
 }
 /* Hide the elements from the view service that we don't need to display */
 #metadata-container .citation,
