@@ -373,7 +373,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				
 				//Create the code icon
 				var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
-							.text("\u{F121}")
+							.text("\uF121")
 							.attr("class", "icon icon-foo program-icon pointer");
 				
 				//Create a group element to contain the icon
@@ -391,7 +391,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 							.attr("transform", "translate(35,25)")
 							.attr("class", "program icon-remove-sign pointer hide");
 					var deleteIcon = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
-							.text("\u{F057}")
+							.text("\uF057")
 							.attr("fill", "#FF0000") // put this in the css file 
 							.attr("class", "icon icon-foo pointer");
 					$(gdel).append(deleteIcon);
@@ -656,7 +656,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				
 				//Create the plus icon
 				var iconEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
-							.text("\u{f067}")
+							.text("\uF067")
 							//.attr("class", "icon icon-foo program-icon pointer");
 							.attr("class", "icon icon-foo pointer");
 
