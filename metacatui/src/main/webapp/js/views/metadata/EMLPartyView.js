@@ -52,6 +52,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 								return "";
 						}).join(' ');
 				}
+        		else
+        			fullGivenName = name.givenName;
         		
         		//Get the address object
         		var address = Array.isArray(this.model.get("address"))? 
