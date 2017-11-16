@@ -157,7 +157,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             * @param {bool} front A flag that when set will append the whitespace to the front of 'msg'
             * @return {string} The string that was passed in, 'msg', with whitespace appended
             */
-            addSpace: function (msg, front = false) {
+            addSpace: function (msg, front) {
+                if (typeof front === "undefined") {
+                    front = false;
+                }
                 if (msg) {
                     if (front) {
                         return (" " + msg);
