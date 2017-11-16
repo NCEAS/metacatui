@@ -487,12 +487,17 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				var nameEl = $(document.createElement("h5")).addClass("name").text(name);
 
 			//The View link
-			var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
-			if(_.contains(this.dataPackage.get("memberIds"), provEntity.get("id")))
+            var arrowIcon = $(document.createElement("i")).addClass("icon-double-angle-right icon-on-right");
+            var packageIds = this.dataPackage.toArray().map(function(singlePackage) { 
+                return singlePackage.id;
+              });
+
+			if(_.contains(packageIds, provEntity.get("id"))) {
 				var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn preview").attr("data-id", provEntity.get("id")).text("View").append(arrowIcon);
-			else
+            } else {
 				var linkEl = $(document.createElement("a")).attr("href", "#view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
-			
+            }
+            
 			//The provenance statements
 			var provStatementView = new ProvStatement({
 				model            : provEntity, 
