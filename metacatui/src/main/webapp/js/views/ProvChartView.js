@@ -825,8 +825,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			var selectEntityType = "data";
 			var isProgram = false;
 			var thisClass = null;
-			var myClasses = Array.from(e.currentTarget.classList.values());
-			if(myClasses.includes("program")) {
+			if (e.currentTarget.classList.contains("program")) {
 				isProgram = true; 
 				selectEntityType = "program";
 			}
@@ -887,7 +886,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		getSelectedProvEntities: function(e) {
 			var selectedValues = null;
 			var values = [];
-			var myClasses = null;
 			var isProgram = false;
 			var view = this;
 
