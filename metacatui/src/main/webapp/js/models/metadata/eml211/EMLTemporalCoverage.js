@@ -377,7 +377,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * @param {string} endTime the end time string
 		 * @return {boolean} 
 		 */
-		isGreaterTime (beginDate, endDate, beginTime, endTime) {
+		isGreaterTime: function (beginDate, endDate, beginTime, endTime) {
 			if(!beginTime || !endTime)
 				return false;
 			
