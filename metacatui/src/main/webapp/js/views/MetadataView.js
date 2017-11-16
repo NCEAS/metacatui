@@ -50,6 +50,7 @@ define(['jquery',
 
 		pid: null,
 		seriesId: null,
+        saveProvPending: false,
 
 		model: new SolrResult(),
 		packageModels: new Array(),
@@ -1192,9 +1193,9 @@ define(['jquery',
          */
         saveSuccess: function(savedObject){
             console.log("saveSuccess called");
-
             //We only want to perform these actions after the package saves
             if(savedObject.type != "DataPackage") return;
+            console.log("saveSuccess executing");
 
             //Change the URL to the new id
             MetacatUI.uiRouter.navigate("#view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
@@ -1251,13 +1252,16 @@ define(['jquery',
         saveProv: function() {
             // Only call this function once per save operation.
             if(this.saveProvPending) return;
+            
             console.log("Saving provenance edits...");
             var view = this;
             if(this.dataPackage.provEditsPending()) {
+                this.saveProvPending = true;
                 // If the Data Package failed saving, display an error message
-                this.listenTo(this.dataPackage, "errorSaving", this.saveError);
+                this.listenToOnce(this.dataPackage, "errorSaving", this.saveError);
                 // Listen for when the package has been successfully saved
-                this.listenTo(this.dataPackage, "successSaving", this.saveSuccess);
+                this.listenToOnce(this.dataPackage, "successSaving", this.saveSuccess);
+                this.showSaving(); 
                 this.dataPackage.saveProv();
             } else {
                 console.log("No prov edits have been entered.");
