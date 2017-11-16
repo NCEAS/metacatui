@@ -812,7 +812,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					var resval;
 					var provFieldResult;
 					var provFieldValues;
-                    console.log("processing prov relationship for current pid: " + currentPid);
 					// If there is a solution for this query, assign the value
 					// to the prov field attribute (e.g. "prov_generated") of the package member (a DataONEObject) 
 					// with id = '?pid'
@@ -841,7 +840,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 							// getValue returns a string value. 
 							provFieldResult = this.getValue(result, resval);
 							if(provFieldResult != " ") {
-								console.log("pid: " + currentPid + ", " + fieldName + ": " + provFieldResult);
 								// Find the Datapacakge member for the result 'pid' and add the result
 								// prov_* value to it. This is the package member that is the 'subject' of the
 								// prov relationship.
@@ -1577,8 +1575,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 this.addToGraph(dataNode, PROV("wasGeneratedBy"), executionNode);
                             } else {
                                 graph.removeMatches(dataNode, PROV("wasGeneratedBy"), executionNode);
-                                this.removeIfLastProvRef(graph, dataNode, RDF("type"), PROVONE("Data"));
                                 removed = this.removeProgramFromGraph(programId);   
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
                             }
                             break;
                         case "prov_usedByProgram":	
@@ -1594,8 +1592,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 this.addToGraph(executionNode, PROV("used"), dataNode);
                             } else {
                                 graph.removeMatches(executionNode, PROV("used"), dataNode)
-                                this.removeIfLastProvRef(graph, dataNode, RDF("type"), PROVONE("Data"));
                                 removed = this.removeProgramFromGraph(programId);
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
                             }
                             break;
                         case "prov_hasDerivations":
@@ -1661,6 +1659,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             removeIfLastProvRef: function(subjectNode, predicateNode, objectNode) {
                 var graph = this.dataPackageGraph;
                 var stillUsed = false;
+                var PROV    = rdf.Namespace(this.namespaces.PROV);
+                var PROVONE = rdf.Namespace(this.namespaces.PROVONE);
+                // PROV namespace value, used to identify PROV statements
+                var provStr    = PROV("").value;
+                // PROVONE namespace value, used to identify PROVONE statements
+                var provoneStr = PROVONE("").value;
                 // Get the statements from the RDF graph that reference the subject of the 
                 // statement to remove. 
                 var statements = graph.statementsMatching(undefined, undefined, subjectNode);
@@ -1670,30 +1674,26 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         statement.predicate == predicateNode &&
                         statement.object == objectNode) return false;
                     var pVal = statement.predicate.value;
-                    var provStr = this.get("PROV");
-                    var provoneStr = this.get("PROVONE");
               
                     // Now check if the subject is referenced in a prov statement
-                    if(pVal.indexOf(provStr) != -1) return true;
-                    if(pVal.indexOf(provoneStr) != -1) return true;
                     // There is another statement that references the subject of the
                     // statement to remove, so it is still being used and don't
                     // remove it.
-                    return true
+                    if(pVal.indexOf(provStr) != -1) return true;
+                    if(pVal.indexOf(provoneStr) != -1) return true;
+                    return false; 
                 }, this);
                 
                 // IF not found in the first test, keep looking.
-                if(!found) {
+                if(typeof found == "undefined") {
                     // Get the statements from the RDF where 
                     var statements = graph.statementsMatching(subjectNode, undefined, undefined);
                         
-                    var found = _.find(statements, function(statement) {
+                    found = _.find(statements, function(statement) {
                         if(statement.subject == subjectNode &&
                             statement.predicate == predicateNode &&
                             statement.object == objectNode) return false;
                         var pVal = statement.predicate.value;
-                        var provStr = this.get("PROV");
-                        var provoneStr = this.get("PROVONE");
                   
                         // Now check if the subject is referenced in a prov statement
                         if(pVal.indexOf(provStr) != -1) return true;
@@ -1701,20 +1701,23 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         // There is another statement that references the subject of the
                         // statement to remove, so it is still being used and don't
                         // remove it.
-                        return true
+                        return false 
                     }, this);
                 }
 
                 // The specified statement term isn't being used for prov, so remove it.
-                if(typeof found == "undefined" || !found.length) {
-                    console.log("no refs to stmt, removed: " + subjectNode.value + ", " 
-                        + predicateNode.value + ", " + objectNode.value);
+                if(typeof found == "undefined") {
+                    //console.log("no refs to stmt, removed: " + subjectNode.value + ", " 
+                    //   + predicateNode.value + ", " + objectNode.value);
                     graph.removeMatches(subjectNode, predicateNode, objectNode, undefined);
                 }
             },
         
-            /* Get the value of the prov_wasExecutedByExecution for the specified 
-            package member */
+            /* Get the execution identifier that is associated with a program id.
+               This will either be in the 'prov_wasExecutedByExecution' of the package member
+               for the program script, or available by tracing backward in the RDF graph from
+               the program node, through the assocation to the related execution.
+               */
             getExecutionId: function(programId) {
                 var rdf = this.rdf;
                 var graph = this.dataPackageGraph;
