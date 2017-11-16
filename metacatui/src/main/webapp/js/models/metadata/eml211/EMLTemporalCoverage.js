@@ -323,7 +323,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * @param {string} endDate the end date string
 		 * @return {boolean} 
 		 */
-		isGreaterDate (beginDate, endDate) {
+		isGreaterDate: function(beginDate, endDate) {
 			
 			if(typeof beginDate == "undefined" || !beginDate)
 				return false;
