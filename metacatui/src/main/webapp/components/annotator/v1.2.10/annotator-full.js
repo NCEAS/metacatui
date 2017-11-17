@@ -1350,15 +1350,15 @@
   g = Util.getGlobal();
 
   if (((_ref1 = g.document) != null ? _ref1.evaluate : void 0) == null) {
-    $.getScript('http://assets.annotateit.org/vendor/xpath.min.js');
+    $.getScript('../components/annotator/v1.2.10/xpath.min.js');
   }
 
   if (g.getSelection == null) {
-    $.getScript('http://assets.annotateit.org/vendor/ierange.min.js');
+    $.getScript('../components/annotator/v1.2.10/ierange.min.js');
   }
 
   if (g.JSON == null) {
-    $.getScript('http://assets.annotateit.org/vendor/json2.min.js');
+    $.getScript('../components/annotator/v1.2.10/json2.min.js');
   }
 
   if (g.Node == null) {
