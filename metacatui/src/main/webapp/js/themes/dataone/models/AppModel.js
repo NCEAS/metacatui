@@ -32,6 +32,9 @@ define(['jquery', 'underscore', 'backbone'],
 
 			maxDownloadSize: 3000000000,
 
+			// set this variable to true, if the content being published is moderated by the data team.
+			contentIsModerated: false,
+			
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',

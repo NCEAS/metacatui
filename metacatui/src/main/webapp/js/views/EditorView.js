@@ -12,11 +12,12 @@ define(['underscore',
         'views/metadata/EMLEntityView',
         'views/SignInView',
         'text!templates/editor.html',
-        'collections/ObjectFormats'],
+        'collections/ObjectFormats',
+        'text!templates/editorSubmitMessage.html'],
         function(_, $, Backbone,
         		DataPackage, EML, EMLOtherEntity, ScienceMetadata,
         		CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
-        		EditorTemplate, ObjectFormats){
+        		EditorTemplate, ObjectFormats, EditorSubmitMessageTemplate){
 
     var EditorView = Backbone.View.extend({
 
@@ -24,6 +25,7 @@ define(['underscore',
 
         /* The initial editor layout */
         template: _.template(EditorTemplate),
+        editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
 
         /* Events that apply to the entire editor */
         events: {
@@ -485,9 +487,19 @@ define(['underscore',
 
             this.toggleControls();
 
-            var message = $(document.createElement("div")).append(
-            		$(document.createElement("span")).text("Your changes have been saved. "),
-            		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+            // TODO : Remove conditions if you want to review datasets for every theme
+            // Review message for "arctic" theme.
+            if (MetacatUI.appModel.get("contentIsModerated")) {
+                var message = this.editorSubmitMessageTemplate({
+                    themeTitle: MetacatUI.themeTitle
+                });
+            }
+            else {
+                var message = $(document.createElement("div")).append(
+                		$(document.createElement("span")).text("Your changes have been submitted. "),
+                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+            }
+            
         	
             MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
             
@@ -510,7 +522,7 @@ define(['underscore',
          */
         saveError: function(errorMsg){
         	var errorId = "error" + Math.round(Math.random()*100),
-        		message = $(document.createElement("div")).append("<p>Not all of your changes could be saved.</p>");
+        		message = $(document.createElement("div")).append("<p>Not all of your changes could be submitted.</p>");
 
         	message.append($(document.createElement("a"))
         						.text("See details")
@@ -704,7 +716,7 @@ define(['underscore',
 
         handleSaveCancel: function(){
         	if(this.model.get("uploadStatus") == "e"){
-        		this.saveError("There was a caught exception during save, so the save was cancelled.");
+        		this.saveError("There was a caught exception during your submission, so the submission was cancelled.");
         	}
         },
 
@@ -724,7 +736,7 @@ define(['underscore',
 
         	//Change the style of the save button
         	this.$("#save-editor")
-        		.html('<i class="icon icon-spinner icon-spin"></i> Saving ...')
+        		.html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
         		.addClass("btn-disabled");
 
 	    	this.$("input, textarea, select, button").prop("disabled", true);	    	

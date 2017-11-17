@@ -295,13 +295,13 @@ define(["jquery", "underscore", "backbone",
                                 // Populate the minimum element
                                 if ( typeof minBound !== "undefined" ) {
                                     minBoundNode = document.createElement("minimum");
-                                    minBoundNode.text(minBound);
+                                    $(minBoundNode).text(minBound);
                                 }
 
                                 // Populate the maximum element
                                 if ( typeof maxBound !== "undefined" ) {
                                     maxBoundNode = document.createElement("maximum");
-                                    maxBoundNode.text(maxBound);
+                                    $(maxBoundNode).text(maxBound);
                                 }
                                 $(boundsNode).append(minBoundNode);
                                 $(boundsNode).append(maxBoundNode);

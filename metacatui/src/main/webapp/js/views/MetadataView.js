@@ -6,8 +6,11 @@ define(['jquery',
 		'gmaps',
 		'fancybox',
 		'clipboard',
+		'collections/DataPackage',
+		'models/DataONEObject',
 		'models/PackageModel',
 		'models/SolrResult',
+		'models/metadata/ScienceMetadata',
 		'views/DownloadButtonView',
 		'views/ProvChartView',
 		'views/MetadataIndexView',
@@ -28,14 +31,16 @@ define(['jquery',
 		'text!templates/alert.html',
 		'text!templates/editMetadata.html',
 		'text!templates/dataDisplay.html',
-		'text!templates/map.html'
+		'text!templates/map.html',
+    'text!templates/annotation.html',
+    'uuid'
 		],
-	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, Package, SolrResult,
+	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate) {
+			 MapTemplate, AnnotationTemplate, uuid) {
 	'use strict';
 
 
@@ -45,10 +50,11 @@ define(['jquery',
 
 		pid: null,
 		seriesId: null,
+        saveProvPending: false,
 
 		model: new SolrResult(),
 		packageModels: new Array(),
-
+		dataPackage: null,
 		el: '#Content',
 		metadataContainer: "#metadata-container",
 		citationContainer: "#citation-container",
@@ -83,7 +89,8 @@ define(['jquery',
 			"click #publish"             : "publish",
 			"mouseover .highlight-node"  : "highlightNode",
 			"mouseout  .highlight-node"  : "highlightNode",
-			"click     .preview" 	     : "previewData"
+			"click     .preview" 	     : "previewData",
+			"click     #save-metadata-prov" : "saveProv"
 		},
 
 		initialize: function (options) {
@@ -114,12 +121,27 @@ define(['jquery',
 				this.pid = MetacatUI.appModel.get("pid");
 
 			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
-
 			this.getModel();
-
+            
 			return this;
 		},
 
+		getDataPackage: function(pid) {
+            // Get the metadata model that is associated with this DataPackage collection
+            //var metadataModel = new ScienceMetadata({ id: this.pid });
+            // Once the ScienceMetadata is populated, populate the associated package
+            //this.metadataModel = metadataModel;
+			// Create a new data package with this id
+            console.log("called getDataPackage with pid: " + pid);
+			this.dataPackage = new DataPackage([], {id: pid});
+			//Fetch the data package. DataPackage.parse() triggers 'complete'
+			this.dataPackage.fetch();
+			this.listenTo(this.dataPackage, "complete", function() {
+				// parseProv triggers "queryComplete"
+				this.dataPackage.parseProv();
+                this.checkForProv();
+			});
+		},
 		/*
 		 * Retrieves information from the index about this object, given the id (passed from the URL)
 		 * When the object info is retrieved from the index, we set up models depending on the type of object this is
@@ -168,7 +190,6 @@ define(['jquery',
 					packageModel.getMembers();
 					return;
 				}
-
 				//Get the package information
 				this.getPackageDetails(model.get("resourceMap"));
 
@@ -460,8 +481,10 @@ define(['jquery',
 			}
 
 			var viewRef = this;
+			//var dataPackage = this.dataPackage;
 
 			if(!packages) var packages = this.packageModels;
+            
 
 			//Get the entity names from this page/metadata
 			this.getEntityNames(packages);
@@ -492,15 +515,8 @@ define(['jquery',
 				//Remove the extra download button returned from the XSLT since the package table will have all the download links
 				$("#downloadPackage").remove();
 
-			    //Show the provenance trace for this package
-				if(packageModel.get("provenanceFlag") == "complete")
-					viewRef.drawProvCharts(packageModel);
-				else{
-					viewRef.listenToOnce(packageModel, "change:provenanceFlag", viewRef.drawProvCharts);
-					packageModel.getProvTrace();
-				}
 			});
-
+            
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length,
@@ -536,6 +552,9 @@ define(['jquery',
 
 			//Insert the data details sections
 			this.insertDataDetails();
+
+            // Get DataPackge info in order to render prov extraced from the resmap.
+            if(packages.length) this.getDataPackage(packages[0].get("id"));
 
 			//Initialize tooltips in the package table(s)
 			this.$(".tooltip-this").tooltip();
@@ -580,9 +599,9 @@ define(['jquery',
 				var tableContainer = tablesContainer;
 
 			//Insert the package table HTML
-			$(this.tableContainer).children(".loading").remove();
 			$(tableContainer).append(tableView.render().el);
-
+			$(this.tableContainer).children(".loading").remove();
+            
 			$(tableContainer).find(".tooltip-this").tooltip();
 
 			this.subviews.push(tableView);
@@ -845,8 +864,8 @@ define(['jquery',
 				//packageModel.once("sync", viewRef.createProvEditor, viewRef); 
 						
 				//Now get the RDF XML and check for the user's authority on this resource map
-				//packageModel.fetch();
-				//packageModel.checkAuthority();
+				packageModel.fetch();
+				packageModel.checkAuthority();
 			});
 			this.model.checkAuthority();
 		},
@@ -954,26 +973,56 @@ define(['jquery',
 			return sorted;
 		},
 
+        // Check if the DataPackage provenance parsing has completed.
+        checkForProv: function() {
+            // Show the provenance trace for this package
+            console.log("called checkForProv");
+            var model = this.model;
+            if(this.dataPackage.provenanceFlag == "complete") {
+                console.log("checkForProv complete!");
+                this.drawProvCharts(this.dataPackage);
+                // Check each prov chart to see if it has been marked for re-rendering and
+                // redraw it if it has been.
+                this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
+                this.model.once("change:isAuthorized", this.redrawProvCharts, this);
+            } else {
+                this.listenToOnce(this.dataPackage, "queryComplete", function() {
+                    this.drawProvCharts(this.dataPackage);
+                    // Check each prov chart to see if it has been marked for re-rendering and
+                    // redraw it if it has been.
+                    this.listenToOnce(this.dataPackage, "redrawProvCharts", this.redrawProvCharts);
+                    model.once("change:isAuthorized", this.redrawProvCharts, this);
+                });
+            }
+        },
+        
 		/*
 		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
 		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations
 		 */
-		drawProvCharts: function(packageModel){
+		drawProvCharts: function(dataPackage){
 			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn
-			if(packageModel.get("provenanceFlag") != "complete") return false;
-
+			if(dataPackage.provenanceFlag != "complete") return false;
+			
+			// If the user is authorized to edit the provenance for this package 
+			// then turn on editing, so that // edit icons are displayed.
+			//var isAuthorized = true;
+			var editModeOn = false; 
+            
+			this.model.get("isAuthorized") ? editModeOn = true : editModeOn = false;
+			//editModeOn = true; 
+			console.log("prov edit mode on: " + editModeOn);
 			var view = this;
-
 			//Draw two flow charts to represent the sources and derivations at a package level
-			var packageSources     = packageModel.get("sourcePackages"),
-				packageDerivations = packageModel.get("derivationPackages");
+			var packageSources     = dataPackage.sourcePackages;
+			var packageDerivations = dataPackage.derivationPackages;
 
 			if(Object.keys(packageSources).length){
 				var sourceProvChart = new ProvChart({
 					sources      : packageSources,
-					context      : packageModel,
+					context      : dataPackage,
 					contextEl    : this.$(this.articleContainer),
-					packageModel : packageModel,
+					dataPackage  : dataPackage,
 					parentView   : view
 				});
 				this.subviews.push(sourceProvChart);
@@ -982,55 +1031,66 @@ define(['jquery',
 			if(Object.keys(packageDerivations).length){
 				var derivationProvChart = new ProvChart({
 					derivations  : packageDerivations,
-					context      : packageModel,
+					context      : dataPackage,
 					contextEl    : this.$(this.articleContainer),
-					packageModel : packageModel,
+					dataPackage  : dataPackage,
 					parentView   : view
 				});
 				this.subviews.push(derivationProvChart);
 				this.$(this.articleContainer).after(derivationProvChart.render().el);
 			}
 
-			if(packageModel.get("sources").length || packageModel.get("derivations").length){
+			if(dataPackage.sources.length || dataPackage.derivations.length || editModeOn) {
 				//Draw the provenance charts for each member of this package at an object level
-				_.each(packageModel.get("members"), function(member, i){
+				_.each(dataPackage.toArray(), function(member, i){
+					// Don't draw prov charts for metadata objects.
+					if(member.get("type").toLowerCase() == "metadata") return;
 					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
-
+					
 					//Retrieve the sources and derivations for this member
 					var memberSources 	  = member.get("provSources") || new Array(),
 						memberDerivations = member.get("provDerivations") || new Array();
 
-					//Make the source chart for this member
-					if(memberSources.length){
+					//Make the source chart for this member.
+					// If edit is on, then either a 'blank' sources ProvChart will be displayed if there
+					// are no sources for this member, or edit icons will be displayed with prov icons.
+					if(memberSources.length || editModeOn){
 						var memberSourcesProvChart = new ProvChart({
 							sources      : memberSources,
 							context      : member,
 							contextEl    : entityDetailsSection,
-							packageModel : packageModel,
-							parentView   : view
+							dataPackage  : dataPackage,
+							parentView   : view,
+							editModeOn   : editModeOn,
+							editorType   : "sources"
 						});
 						view.subviews.push(memberSourcesProvChart);
 						$(entityDetailsSection).before(memberSourcesProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
-					}
-					if(memberDerivations.length){
-						//Make the derivation chart for this member
+					} 
+
+					//Make the derivation chart for this member
+					// If edit is on, then either a 'blank' derivations ProvChart will be displayed if there, 
+					// are no derivations for this member or edit icons will be displayed with prov icons.
+					if(memberDerivations.length || editModeOn){
 						var memberDerivationsProvChart = new ProvChart({
 							derivations  : memberDerivations,
 							context      : member,
 							contextEl    : entityDetailsSection,
-							packageModel : packageModel,
-							parentView   : view
+							dataPackage  : dataPackage,
+							parentView   : view,
+							editModeOn   : editModeOn,
+							editorType   : "derivations"
 						});
 						view.subviews.push(memberDerivationsProvChart);
 						$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
-					}
+					} 
 				});
 			}
 
 			//Make all of the prov chart nodes look different based on id
-			if(this.$(".prov-chart").length > 0){
+			if(this.$(".prov-chart").length > 10000){
 				var allNodes = this.$(".prov-chart .node"),
 				ids      = [],
 				view     = this,
@@ -1040,7 +1100,7 @@ define(['jquery',
 				ids = _.uniq(ids);
 
 				_.each(ids, function(id){
-					var matchingNodes = view.$(".prov-chart .node[data-id='" + id + "']");
+					var matchingNodes = view.$(".prov-chart .node[data-id='" + id + "']").not(".editorNode");
 					//var matchingEntityDetails = view.findEntityDetailsContainer(id);
 
 					//Don't use the unique class on images since they will look a lot different anyway by their image
@@ -1065,115 +1125,175 @@ define(['jquery',
 			}
 		},
 		
-		/*
-		 * Creates a provenance editor
-		 */
-		createProvEditor: function(){
-			//Get the package - just get the first one for now
-			//TODO: Make sure this is the parent resource map
-			var packageModel = this.packageModels[0];
-						
-			//If this user is not authorized to edit this resource map, then exit
-			//Or if this is package hasn't been retrieved yet, then exit
-			if(!packageModel.get("id") || !packageModel.get("isAuthorized") || !packageModel.get("objectXML")) return;
+		/* Step through all prov charts and re-render each one that has been
+		   marked for re-rendering.
+		*/
+		redrawProvCharts: function() {
+			var view = this;
 			
-			//Render the prov charts in the gutters
-			_.each(this.$(".entitydetails"), function(entityDetailsEl){
-				//If this section doesn't have a prov chart already, create a new blank one
-				if(!$(entityDetailsEl).is(".hasProvLeft") || !$(entityDetailsEl).is(".hasProvRight")){
-
-					$(entityDetailsEl).parent().addClass("gutters");
-					
-					//Get the id of this entity
-					var entityId = $(entityDetailsEl).attr("data-id"),
-						model,
-						packageModel;
-
-					//Get the model for this entity and its package model
-					findMember: for(var i=0; i<this.packageModels.length; i++){
-						packageModel = this.packageModels[i];
-						var members = packageModel.get("members");
-						//Find the member by id
-						for(var ii=0; ii<members.length; ii++){
-							if(members[ii].get("id") == entityId){
-								model = members[ii];
-								break findMember;
-							}							
-						}
-					}
-					
-					//Create the blank prov chart editor for sources
-					if(!$(entityDetailsEl).is(".hasProvLeft")){
-						//Create the chart view
-						var sourcesProvEditor = new ProvChart({
-							context      : model,
-							contextEl    : entityDetailsEl,
-							packageModel : packageModel,
-							parentView   : this,
-							editor       : true,
-							editorType   : "sources"
-						});
-						//Add the view to the subviews list
-						this.subviews.push(sourcesProvEditor);
-						
-						//Render the chart and insert into the page
-						$(entityDetailsEl).before(sourcesProvEditor.render().el);
-					}
-					
-					//Create the blank prov chart editor for derivations
-					if(!$(entityDetailsEl).is(".hasProvRight")){	
-						//Create the chart view
-						var derivationsProvEditor = new ProvChart({
-							context      : model,
-							contextEl    : entityDetailsEl,
-							packageModel : packageModel,
-							parentView   : this,
-							editor       : true,
-							editorType   : "derivations"
-						});
-						//Add the view to the subviews list
-						this.subviews.push(derivationsProvEditor);
-						
-						//Render the chart and insert into the page
-						$(entityDetailsEl).after(derivationsProvEditor.render().el);
-					}
+            // Check if prov edits are active and turn on the prov save bar if so.
+            // Alternatively, turn off save bar if there are no prov edits, which
+            // could occur if a user undoes a previous which could result in 
+            // an empty edit list.
+            if(this.dataPackage.provEditsPending()) {
+                this.$("#metadata-footer").css("visibility", "visible")    
+            } else {
+                this.$("#metadata-footer").css("visibility", "hidden")    
+                // Reset the edited flag for each package member
+                _.each(this.dataPackage.toArray(), function(item) {
+                    item.selectedInEditor == false;
+                });
+            }
+			_.each(this.subviews, function(thisView, i) {
+				
+				// Check if this is a ProvChartView
+				if(thisView.className.indexOf("prov-chart") !== -1) {
+					// Check if this ProvChartView is marked for re-rendering
+					// Erase the current ProvChartView
+					thisView.onClose();
 				}
-			}, this);
+			});
+			
+			// Remove prov charts from the array of subviews.
+			this.subviews = _.filter(this.subviews, function(item) {
+	  			return item.className.indexOf("prov-chart") == -1; 
+ 			});
+			
+			view.drawProvCharts(this.dataPackage);
+			view.listenToOnce(this.dataPackage, "redrawProvCharts", view.redrawProvCharts);
+			
+			/*
+			_.each(this.dataPackageList, function(dataPackage){
+				console.log("Checking dataPackage: " + dataPackage.get("id"));
+				if(dataPackage.provenanceFlag == "complete") {
+					console.log("redrawing prov chart for dataPackage: ", dataPackage.get("id"));
+					view.drawProvCharts(dataPackage);
+					// Check each prov chart to see if it has been marked for re-rendering and
+					// redraw it if it has been.
+					view.listenToOnce(dataPackage, "redrawProvCharts", view.redrawProvCharts);
+				}
+			});
+			*/
 		},
+		
+        /*
+         * When the data package collection saves successfully, tell the user
+         */
+        saveSuccess: function(savedObject){
+            console.log("saveSuccess called");
+            //We only want to perform these actions after the package saves
+            if(savedObject.type != "DataPackage") return;
+            console.log("saveSuccess executing");
 
-		/*
-		 * param dataObject - a SolrResult representing the data object returned from the index
-		 * returns - true if this data object is an image, false if it is other
-		 */
-		isImage: function(dataObject){
-			//The list of formatIds that are images
-			var imageIds = ["image/gif",
-			                "image/jp2",
-			                "image/jpeg",
-			                "image/png",
-			                "image/svg xml",
-			                "image/svg+xml",
-			                "image/bmp"];
+            //Change the URL to the new id
+            MetacatUI.uiRouter.navigate("#view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
+            
+            var message = $(document.createElement("div")).append($(document.createElement("span")).text("Your changes have been saved. "));
+            
+            MetacatUI.appView.showAlert(message, "alert-success", "body", 4000, {remove: false});
+            
+            // Reset the state to clean
+            this.dataPackage.packageModel.set("changed", false);
 
-			//Does this data object match one of these IDs?
-			if(_.indexOf(imageIds, dataObject.get('formatId')) == -1) return false;
-			else return true;
+            // If provenance relationships were updated, then reset the edit list now.
+            if(this.dataPackage.provEdits.length) this.dataPackage.provEdits = [];  
 
-		},
+            this.saveProvPending = false;
+            this.hideSaving();
+            this.stopListening(this.dataPackage, "error", this.saveError);
+    
+            // Turn off "save" footer
+            this.$("#metadata-footer").css("visibility", "hidden")   
+            // Update the metadata table header with the new resource map id.
+            // First find the PackageTableView for the top level package, and
+            // then re-render it with the update resmap id.
+            var view = this;
+            var metadataId = this.packageModels[0].getMetadata().get("id")
+            _.each(this.subviews, function(thisView, i) {
+                // Check if this is a ProvChartView
+                if(thisView.type.indexOf("PackageTable") !== -1) {
+                    if(thisView.currentlyViewing == metadataId) {
+                        var packageId = view.dataPackage.packageModel.get("id");
+                        var title = packageId ? '<span class="subtle">Package: ' + packageId + '</span>' : "";
+                        thisView.title = "Files in this dataset " + title;
+                        thisView.render();
+                    }
+                }
+            });
+        },
 
-		/*
-		 * param dataObject - a SolrResult representing the data object returned from the index
-		 * returns - true if this data object is a pdf, false if it is other
-		 */
-		isPDF: function(dataObject){
-			//The list of formatIds that are images
-			var ids = ["application/pdf"];
+        /*
+         * When the data package collection fails to save, tell the user
+         */
+        saveError: function(errorMsg){
+            console.log("saveError called");
+            var errorId = "error" + Math.round(Math.random()*100),
+                message = $(document.createElement("div")).append("<p>Your changes could not be saved.</p>");
 
-			//Does this data object match one of these IDs?
-			if(_.indexOf(ids, dataObject.get('formatId')) == -1) return false;
-			else return true;
-		},
+            message.append($(document.createElement("a"))
+                                .text("See details")
+                                .attr("data-toggle", "collapse")
+                                .attr("data-target", "#" + errorId)
+                                .addClass("pointer"),
+                            $(document.createElement("div"))
+                                .addClass("collapse")
+                                .attr("id", errorId)
+                                .append($(document.createElement("pre")).text(errorMsg)));
 
+            MetacatUI.appView.showAlert(message, "alert-error", "body", null, {
+                emailBody: "Error message: Data Package save error: " + errorMsg,
+                remove: true 
+                });
+            
+            this.saveProvPending = false;
+            this.hideSaving(); 
+            this.stopListening(this.dataPackage, "successSaving", this.saveSuccess);
+
+            // Turn off "save" footer
+            this.$("#metadata-footer").css("visibility", "hidden")   
+        },
+
+        /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
+        update the ORE Resource Map and save it to the server.
+        */
+        saveProv: function() {
+            // Only call this function once per save operation.
+            if(this.saveProvPending) return;
+            
+            console.log("Saving provenance edits...");
+            var view = this;
+            if(this.dataPackage.provEditsPending()) {
+                this.saveProvPending = true;
+                // If the Data Package failed saving, display an error message
+                this.listenToOnce(this.dataPackage, "error", this.saveError);
+                // Listen for when the package has been successfully saved
+                this.listenToOnce(this.dataPackage, "successSaving", this.saveSuccess);
+                this.showSaving(); 
+                this.dataPackage.saveProv();
+            } else {
+                console.log("No prov edits have been entered.");
+                //TODO: should a dialog be displayed saying that no prov edits were made?
+            }
+        },
+        
+        showSaving: function(){
+
+            //Change the style of the save button
+            this.$("#save-metadata-prov")
+                .html('<i class="icon icon-spinner icon-spin"></i> Saving...')
+                .addClass("btn-disabled");
+
+            this.$("input, textarea, select, button").prop("disabled", true);	    	
+        },
+
+        hideSaving: function(){
+            this.$("input, textarea, select, button").prop("disabled", false);
+
+            //When prov is saved, revert the Save button back to normal
+            this.$("#save-metadata-prov").html("Save").removeClass("btn-disabled");	    
+        
+        },
+        
 		getEntityNames: function(packageModels){
 			var viewRef = this;
 

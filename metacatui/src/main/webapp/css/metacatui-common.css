@@ -570,6 +570,11 @@ img.icon{
 .prov-chart .node.program{
 	fill: #FFFFFF;
 }
+.prov-chart polygon.program.editor.node{
+	stroke: grey;
+	stroke-width: 1px;
+	stroke-dasharray: 2px,2px;
+}
 .prov-chart .programs svg{
 	position: absolute;
 }
@@ -587,7 +592,7 @@ img.icon{
 	margin-bottom: 10px;
 	color: #666;
 	position: absolute;
-	z-index: 2;
+	z-index: 0;
 	cursor: pointer;
 }
 .prov-chart .node:focus{
@@ -600,8 +605,27 @@ img.icon{
 	-webkit-box-shadow: 0 0 5px rgb(50, 161, 19),0 0 12px rgb(0, 255, 213);
 }
 .prov-chart .node.previous{
-	border-width: 3px;
+	border-width: 1px;
 }
+.prov-chart .icon-remove-sign.hide{
+	display: none;
+}
+.prov-chart .data.icon-remove-sign.show{
+	position:absolute;
+	display: block;
+	top: 5px;
+	height: 5px;
+	width: 5px;
+	right: 5px;
+	color: #ff0000;
+}
+.prov-chart .program.icon-remove-sign.show{
+	position:absolute;
+	display: block;
+	font-size:25px;
+	color: #ff0000;
+}
+
 .prov-chart .connecter{
 	border-top-width: 1px;
 	border-top-style: solid;
@@ -690,21 +714,34 @@ img.icon{
 .prov-chart .node.editor{
 	border-color: #333;
     border-style: dashed;
+	text-align: center;
+	line-height: 16px;
+	font-size: 14px;
+	color:#C0C0C0;
+}
+.prov-chart i.icon.icon-plus{
+	color:#C0C0C0;
 }
 .prov-chart.editor.empty .prov-pointer{
 	-webkit-filter: saturate(0);
     filter: saturate(0);
 }
+/*
 .node .editor.icon {
     margin-left: 3px;
 }
+*/
 .prov-chart .program.node.active{
 	stroke: #00eb89;
 	stroke-width: 2px;
 	transition: stroke 200ms; 
 }
-.program-icon{
+.prov-chart .program-icon{
 	font-size: 25px;
+}
+/* Program editor node text */
+.prov-chart .editor text {
+    fill: #C0C0C0;
 }
 /********* The Prov Chart colors *******/		
 .prov-chart .node.uniqueNode1,
@@ -962,7 +999,7 @@ img.icon{
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
-	width: calc(100% - 219px); /* 100% - prov-chart width - (padding + borders)*/
+	width: calc(100% - 220px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;	
 	margin-left: 105px;
 	box-sizing: border-box;
@@ -1441,8 +1478,13 @@ img.icon{
 	margin-bottom: 0px;
 	
 }
-#metadata-container > .alert-container{
-	margin-top: 40px;
+body > .alert-container {
+    position: fixed;
+    top: 115px;
+    left: 50%;
+    min-width: 75%;
+    z-index: 1;
+    transform: translateX(-50%);
 }
 /* Hide the elements from the view service that we don't need to display */
 #metadata-container .citation,
@@ -3197,7 +3239,7 @@ ul.side-nav-items {
 	margin-left: 0%;
 	width: 100%;
 }
-#editor-footer{
+#editor-footer, #metadata-footer{
 	background-color: #333;
     position: fixed;
     width: 100%;
@@ -3205,6 +3247,13 @@ ul.side-nav-items {
     bottom: 0px;
     padding: 20px;
     z-index:3;
+}
+#metadata-footer{
+    visibility: hidden;
+    width: 1025px;
+}
+#cancel-metadata-prov{
+    margin-left: 30px;
 }
 
 /* Editor package table container */
@@ -3457,6 +3506,16 @@ textarea.xlarge{
 	height: 2.4em;
 	box-sizing: border-box;
 	font-size: 1em;
+}
+.Editor > #Navbar .navbar .navbar-inner .nav .input form input[type="text"]{
+	display:        inline-block;
+	position:       relative;
+	width:          75px;
+	height:         30px;
+	margin:         0px 0px 0px 0px;
+	padding:        0px 0px 0px 7px;
+	border-radius:  4px 0 0 4px;
+	font-size:      14px;
 }
 .Editor textarea{
 	padding: .5em 1em;
@@ -3734,8 +3793,7 @@ textarea.xlarge{
 	background-color: rgba(255, 255, 255, 0.57);
 }
 .eml-party .party-menu .dropdown-menu>li>a:hover {
-    background-color: transparent;
-    background-image: none;
+    color: white;
 }
 .eml-party .party-menu .remove,
 .eml-party .party-menu .remove:hover,

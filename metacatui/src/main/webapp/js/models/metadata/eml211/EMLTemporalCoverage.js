@@ -233,6 +233,14 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				errors.beginTime = "The begin time must be formatted as HH:MM:SS";
 			if(endTime && !this.isTimeFormatValid(endTime))
 				errors.endTime = "The end time must be formatted as HH:MM:SS";
+				
+			// Check if begin date greater than end date for the temporalCoverage
+			if (this.isGreaterDate(beginDate, endDate))
+				errors.beginDate = "The begin date must be before the end date."
+			
+			// Check if begin time greater than end time for the temporalCoverage in case of equal dates.
+			if (this.isGreaterTime(beginDate, endDate, beginTime, endTime))
+				errors.beginTime = "The begin time must be before the end time."
 			
 			console.log(errors);
 
@@ -256,6 +264,24 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				if(dateParts.length != 3 || dateParts[0].length != 4 || dateParts[1].length != 2 || dateParts[2].length != 2)
 					return false;
 				
+				dateYear = dateParts[0];
+				dateMonth = dateParts[1];
+				dateDay = dateParts[2];
+				
+				// Validating the values for the date and month if in YYYY-MM-DD format.
+				if (dateMonth < 1 || dateMonth > 12) 
+					return false;
+				else if (dateDay < 1 || dateDay > 31) 
+					return false;
+				else if ((dateMonth == 4 || dateMonth == 6 || dateMonth == 9 || dateMonth == 11) && dateDay == 31) 
+					return false;
+				else if (dateMonth == 2) {
+				// Validation for leap year dates.
+					var isleap = (dateYear % 4 == 0 && (dateYear % 100 != 0 || dateYear % 400 == 0));
+					if ((dateDay > 29) || (dateDay == 29 && !isleap)) 
+						return false;
+				}
+				
 				var digits = _.filter(dateParts, function(part){
 					return (part.match( /[0-9]/g ).length == part.length);
 				});
@@ -276,15 +302,128 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				
 				if(timeParts.length != 3)
 					return false;
-				else{
-					//Make sure the hours, minutes, and seconds are two digits long
-					return _.every(timeParts, function(t){ 
-							   return ( t.match( /[0-9]/g ) && t.length == 2 ); 
-						   });
-				}
+				
+				// Validation pattern for HH:MM:SS values.
+				// Range for HH validation : 00-23
+				// Range for MM validation : 00-59
+				// Range for SS validation : 00-59
+				// Leading 0's are must in case of single digit values.
+				var timePattern = /^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/;
+				return (timeString.match(timePattern));
 			}
 			else
 				return false;
+		},
+		
+		/**
+		 * This function checks whether the begin date is greater than the end date.
+		 * 
+		 * @function isGreaterDate
+		 * @param {string} beginDate the begin date string
+		 * @param {string} endDate the end date string
+		 * @return {boolean} 
+		 */
+		isGreaterDate: function(beginDate, endDate) {
+			
+			if(typeof beginDate == "undefined" || !beginDate)
+				return false;
+			
+			if(typeof endDate == "undefined" || !endDate)
+				return false;
+			
+			//Making sure that beginDate year is smaller than endDate year
+			if (beginDate.length == 4 && endDate.length == 4) {
+				if (beginDate > endDate) {
+					return true;
+				}
+			}
+			
+			//Checking equality for either dateStrings that are greater than 4 characters
+			else {
+				beginDateParts = beginDate.split("-");
+				endDateParts = endDate.split("-");
+				
+				if (beginDateParts.length == endDateParts.length) {
+					if (beginDateParts[0] > endDateParts[0]) {
+						return true;
+					}
+					else if (beginDateParts[0] == endDateParts[0]) {
+						if (beginDateParts[1] > endDateParts[1]) {
+							return true;
+						}
+						else if (beginDateParts[1] == endDateParts[1]) {
+							if (beginDateParts[2] > endDateParts[2]) {
+								return true;
+							}
+						}
+					}
+				}
+				else {
+					if (beginDateParts[0] > endDateParts[0]) {
+						return true;
+					}
+				}
+			}
+			return false;
+		},
+        
+        /**
+		 * This function checks whether the begin time is greater than the end time.
+		 * 
+		 * @function isGreaterTime
+		 * @param {string} beginDate the begin date string
+		 * @param {string} endDate the end date string
+		 * @param {string} beginTime the begin time string
+		 * @param {string} endTime the end time string
+		 * @return {boolean} 
+		 */
+		isGreaterTime: function (beginDate, endDate, beginTime, endTime) {
+			if(!beginTime || !endTime)
+				return false;
+			
+			var equalDates = false;
+			
+			//Making sure that beginDate year is smaller than endDate year
+			if (beginDate.length == 4 && endDate.length == 4) {
+				if (beginDate == endDate) {
+					equalDates = true;
+				}
+			}
+			
+			else {
+				beginDateParts = beginDate.split("-");
+				endDateParts = endDate.split("-");
+				
+				if (beginDateParts.length == endDateParts.length) {
+					if (beginDateParts[0] == endDateParts[0]) {
+						if (beginDateParts[1] == endDateParts[1]) {
+							if (beginDateParts[2] == endDateParts[2]) {
+								equalDates = true;
+							}
+						}
+					}
+				}
+			}
+			
+			// If the dates are equal, check for validity of time frame.
+			if (equalDates) {
+				beginTimeParts = beginTime.split(":");
+				endTimeParts = endTime.split(":");
+				if (beginTimeParts[0] > endTimeParts[0]) {
+					return true;
+				}
+				else if (beginTimeParts[0] == endTimeParts[0]) {
+					if (beginTimeParts[1] > endTimeParts[1]) {
+						return true;
+					}
+					else if (beginTimeParts[1] == endTimeParts[1]) {
+						if (beginTimeParts[2] > endTimeParts[2]) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
 		}
 	});
 	

@@ -29,7 +29,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	},
         	
         	events: {
-        		"change" 		: "updateModel",
+                "change" 		: "updateModel",
+                "focusout"      : "showValidation",
         		"keyup .phone"  : "formatPhone",
         		"mouseover .remove" : "previewRemove",
         		"mouseout .remove"  : "previewRemove"
@@ -51,6 +52,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 								return "";
 						}).join(' ');
 				}
+        		else
+        			fullGivenName = name.givenName;
         		
         		//Get the address object
         		var address = Array.isArray(this.model.get("address"))? 
@@ -93,8 +96,6 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		});
         		
         		this.$el.attr("data-category", this.model.get("type"));
-        		
-        		this.listenTo(this.model, "change", this.showValidation);
 
         		return this;
         	},
@@ -209,7 +210,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         		//TODO: Allow multiple given names - right now we only support editing the first given name
         		var name = this.model.get("individualName") || {},
-        			currentValue = name[changedAttr];
+        			currentValue = String.prototype.trim(name[changedAttr]);
         		
         		//Update the name
         		if(Array.isArray(currentValue)){
@@ -221,10 +222,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 	    			
         		}
         		else if(changedAttr == "givenName"){
-        			name.givenName = [$(e.target).val()];
+        			name.givenName =$(e.target).val().trim();
         		}
         		else
-        			name[changedAttr] = $(e.target).val();
+        			name[changedAttr] = $(e.target).val().trim();
         		
         		//Update the value on the model
         		this.model.set("individualName", name);
@@ -235,22 +236,60 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		
         		this.model.trickleUpChange();
         	},
-        	
-        	showValidation: function(){
-        		if(this.model.isValid()){
-        			this.$(".notification").empty();
-        			this.$(".error").removeClass("error");
-        			return;
-        		}
-        		        		
-        		if(!this.model.get("positionName")) this.$("[data-attribute='positionName']").addClass("error");
-        		if(!this.model.get("organizationName")) this.$("[data-attribute='organizationName']").addClass("error");
-        		if(!this.model.get("individualName") || !this.model.get("individualName").surName) this.$("[data-attribute='surName']").addClass("error");
+            
+            /**
+             * Validates and displays error messages for the persons' name, position
+             * and organization name.
+             * 
+             * @function showValidation
+             */
+        	showValidation: function() {
+
+                if (this.model.isValid()) {
+                    this.$(".notification").empty();
+                    this.$(".error").removeClass("error");
+                    return;
+                }                
+                
+                // Check if we need to validate the person
+                if(this.needsValidation()) {
+                    hasPosition = this.model.get("positionName");
+                    hasOrganization = this.model.get("organizationName");
+                    hasLastName = this.model.get("individualName") &&
+                     this.model.get("individualName").surName;
+
+                     // If the user has supplied 1/3 required fields, skip validation.
+                    if(hasPosition || hasLastName || hasOrganization) {
+                        return;
+                    }
+
+                    this.$("[data-attribute='positionName']").addClass("error");
+                    this.$("[data-attribute='organizationName']").addClass("error");
+        		    this.$("[data-attribute='surName']").addClass("error");
         		
-        		this.$(".notification").text(this.model.validationError.name).addClass("error");
-        		
-        	},
-        	
+            		this.$(".notification").text(this.model.validationError.name).addClass("error");
+               }
+            },
+            
+            /**
+             * Checks if the user has entered any data in the fields.
+             * 
+             * @return {bool} True if the user has entered data, false otherwise
+             */
+            needsValidation: function() {
+
+                // If we add any new fields, be sure to add the data-attribute here.
+                attributes = ["country", "city", "administrativeArea", "postalCode", "deliveryPoint","userId",
+                 "fax", "phone", "onlineUrl", "email", "givenName", "surName", "positionName", "organizationName"];
+
+                 for(var i in attributes) {
+                    var attribute = "[data-attribute='"+attributes[i]+"']";
+                    if(this.$(attribute).val() != "") 
+                        return true;
+                 }
+                 return false;
+            },
+
         	// A function to format text to look like a phone number
         	formatPhone: function(e){
         	        // Strip all characters from the input except digits

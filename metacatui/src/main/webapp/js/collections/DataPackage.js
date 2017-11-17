@@ -65,8 +65,19 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			ORE:     "http://www.openarchives.org/ore/terms/",
     			DCTERMS: "http://purl.org/dc/terms/",
     			CITO:    "http://purl.org/spar/cito/",
-    			XSD:     "http://www.w3.org/2001/XMLSchema#"
+    			XSD:     "http://www.w3.org/2001/XMLSchema#",
+					PROV:    "http://www.w3.org/ns/prov#",
+					PROVONE: "http://purl.dataone.org/provone/2015/01/15/ontology#"
     		},
+			
+				sources: [],
+				derivations: [],
+				provenanceFlag: null,
+				sourcePackages: [],
+				derivationPackages: [],
+				relatedModels: [], 
+                provEdits: [],		// Contains provenance relationships added or deleted to this DataONEObject.
+                        // Each entry is [<operation ('add' or 'delete'), <prov field name>, <object id>], i.e. ['add', 'prov_used', 'urn:uuid:5678']
 
             // Constructor: Initialize a new DataPackage
             initialize: function(models, options) {
@@ -475,13 +486,427 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         	});
 
                     }, this);
+					
+									} catch (error) {
+										console.log(error);
+									}
+									return models;
+							},
+			
+							/* Parse the provenance relationships from the RDF graph, after all DataPackage members
+			   			have been fetched, as the prov info will be stored in them.
+			   			*/
+                parseProv: function() {
+                console.log("DataPackage: parseProv() called.");
 
+                try {
+                    /* Now run the SPARQL queries for the provenance relationships */
+                    var provQueries = [];
+                    /* result: pidValue, wasDerivedFromValue (prov_wasDerivedFrom) */
+                    provQueries["prov_wasDerivedFrom"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_wasDerivedFrom \n"+
+                                    "WHERE { \n"+
+                                        "?derived_data       prov:wasDerivedFrom ?primary_data . \n"+
+                                        "?derived_data       dcterms:identifier  ?pid . \n"+
+                                        "?primary_data       dcterms:identifier  ?prov_wasDerivedFrom . \n"+
+                                        "} \n"+
+                                     "]]>";
+
+                    /* result: pidValue, generatedValue (prov_generated) */
+                    provQueries["prov_generated"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_generated \n"+
+                                    "WHERE { \n"+
+                                        "?result         prov:wasGeneratedBy       ?activity . \n"+
+                                        "?activity       prov:qualifiedAssociation ?association . \n"+
+                                        "?association    prov:hadPlan              ?program . \n"+
+                                        "?result         dcterms:identifier        ?prov_generated . \n"+
+                                        "?program        dcterms:identifier        ?pid . \n"+
+                                        "} \n"+
+                                     "]]>";
+
+                    /* result: pidValue, wasInformedByValue (prov_wasInformedBy) */
+                    provQueries["prov_wasInformedBy"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_wasInformedBy \n"+
+                                    "WHERE { \n"+
+                                        "?activity               prov:wasInformedBy  ?previousActivity . \n"+
+                                        "?activity               dcterms:identifier  ?pid . \n"+
+                                        "?previousActivity       dcterms:identifier  ?prov_wasInformedBy . \n"+
+                                        "} \n"+
+                                     "]]> \n"
+
+                    /* result: pidValue, usedValue (prov_used) */
+                    provQueries["prov_used"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_used \n"+
+                                    "WHERE { \n"+
+                                        "?activity       prov:used                 ?data . \n"+
+                                        "?activity       prov:qualifiedAssociation ?association . \n"+
+                                        "?association    prov:hadPlan              ?program . \n"+
+                                        "?program        dcterms:identifier        ?pid . \n"+
+                                        "?data           dcterms:identifier        ?prov_used . \n"+
+                                        "} \n"+
+                                     "]]> \n"
+
+                    /* result: pidValue, programPidValue (prov_generatesByProgram) */
+                    provQueries["prov_generatedByProgram"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_generatedByProgram \n"+
+                                    "WHERE { \n"+
+                                        "?derived_data prov:wasGeneratedBy ?execution . \n"+
+                                        "?execution prov:qualifiedAssociation ?association . \n"+
+                                        "?association prov:hadPlan ?program . \n"+
+                                        "?program dcterms:identifier ?prov_generatedByProgram . \n"+
+                                        "?derived_data dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+
+                    /* result: pidValue, executionPidValue */
+                    provQueries["prov_generatedByExecution"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_generatedByExecution \n"+
+                                    "WHERE { \n"+
+                                        "?derived_data prov:wasGeneratedBy ?execution . \n"+
+                                        "?execution dcterms:identifier ?prov_generatedByExecution . \n"+
+                                        "?derived_data dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+
+                    /* result: pidValue, pid (prov_generatedByProgram) */
+                    provQueries["prov_generatedByUser"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_generatedByUser \n"+
+                                    "WHERE { \n"+
+                                        "?derived_data prov:wasGeneratedBy ?execution . \n"+
+                                        "?execution prov:qualifiedAssociation ?association . \n"+
+                                        "?association prov:agent ?prov_generatedByUser . \n"+
+                                        "?derived_data dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+                    /* results: pidValue, programPidValue (prov_usedByProgram) */
+                    provQueries["prov_usedByProgram"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_usedByProgram \n"+
+                                    "WHERE { \n"+
+                                        "?execution prov:used ?primary_data . \n"+
+                                        "?execution prov:qualifiedAssociation ?association . \n"+
+                                        "?association prov:hadPlan ?program . \n"+
+                                        "?program dcterms:identifier ?prov_usedByProgram . \n"+
+                                        "?primary_data dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+                    /* results: pidValue, executionIdValue (prov_usedByExecution) */
+                    provQueries["prov_usedByExecution"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_usedByExecution \n"+
+                                    "WHERE { \n"+
+                                        "?execution prov:used ?primary_data . \n"+
+                                        "?primary_data dcterms:identifier ?pid . \n"+
+                                        "?execution dcterms:identifier ?prov_usedByExecution . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+
+                    /* results: pidValue, pid (prov_usedByUser) */
+                    provQueries["prov_usedByUser"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_usedByUser \n"+
+                                    "WHERE { \n"+
+                                        "?execution prov:used ?primary_data . \n"+
+                                        "?execution prov:qualifiedAssociation ?association . \n"+
+                                        "?association prov:agent ?prov_usedByUser . \n"+
+                                        "?primary_data dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+                    /* results: pidValue, executionIdValue (prov_wasExecutedByExecution) */
+                    provQueries["prov_wasExecutedByExecution"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_wasExecutedByExecution \n"+
+                                    "WHERE { \n"+
+                                        "?execution prov:qualifiedAssociation ?association . \n"+
+                                        "?association prov:hadPlan ?program . \n"+
+                                        "?execution dcterms:identifier ?prov_wasExecutedByExecution . \n"+
+                                        "?program dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+
+                    /* results: pidValue, pid (prov_wasExecutedByUser) */
+                    provQueries["prov_wasExecutedByUser"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_wasExecutedByUser \n"+
+                                    "WHERE { \n"+
+                                        "?execution prov:qualifiedAssociation ?association . \n"+
+                                        "?association prov:hadPlan ?program . \n"+
+                                        "?association prov:agent ?prov_wasExecutedByUser . \n"+
+                                        "?program dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+
+                    /* results: pidValue, derivedDataPidValue (prov_hasDerivations) */
+                    provQueries["prov_hasDerivations"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "PREFIX cito:    <http://purl.org/spar/cito/> \n"+
+                                    "SELECT ?pid ?prov_hasDerivations \n"+
+                                    "WHERE { \n"+
+                                        "?derived_data prov:wasDerivedFrom ?source_data . \n"+
+                                        "?source_data dcterms:identifier ?pid . \n"+
+                                        "?derived_data dcterms:identifier ?prov_hasDerivations . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+
+                    /* results: pidValue, pid (prov_instanceOfClass) */
+                    provQueries["prov_instanceOfClass"] = "<![CDATA[ \n"+
+                                    "PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"+
+                                    "PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#> \n"+
+                                    "PREFIX owl:     <http://www.w3.org/2002/07/owl#> \n"+
+                                    "PREFIX prov:    <http://www.w3.org/ns/prov#> \n"+
+                                    "PREFIX provone: <http://purl.dataone.org/provone/2015/01/15/ontology#> \n"+
+                                    "PREFIX ore:     <http://www.openarchives.org/ore/terms/> \n"+
+                                    "PREFIX dcterms: <http://purl.org/dc/terms/> \n"+
+                                    "SELECT ?pid ?prov_instanceOfClass \n"+
+                                    "WHERE { \n"+
+                                        "?subject rdf:type ?prov_instanceOfClass . \n"+
+                                        "?subject dcterms:identifier ?pid . \n"+
+                                    "} \n"+
+                                  "]]> \n"
+
+										// These are the provenance fields that are currently searched for in the provenance queries, but
+										// not all of these fields are displayed by any view.
+										// Note: this list is different than the prov list returned by MetacatUI.appSearchModel.getProvFields()
+                    this.provFields = ["prov_wasDerivedFrom", "prov_generated", "prov_wasInformedBy", "prov_used",
+                                      "prov_generatedByProgram", "prov_generatedByExecution", "prov_generatedByUser",
+                                      "prov_usedByProgram", "prov_usedByExecution", "prov_usedByUser", "prov_wasExecutedByExecution",
+                                      "prov_wasExecutedByUser", "prov_hasDerivations", "prov_instanceOfClass" ];
+
+                    // Process each SPARQL query
+                    var keys = Object.keys(provQueries);
+                    this.queriesToRun = keys.length;
+                    /* Run queries for all provenance fields.
+                       Each query may have multiple solutions and  each solution will trigger a callback
+                       to the 'onResult' function. When each query has completed, the 'onDone' function
+                       is called for that query.
+                    */
+					
+										//var myDataPackageGraph = rdf.graph();
+										//this.rdf.parse(this.objectXML, myDataPackageGraph, this.url(), 'application/rdf+xml');
+                    //var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, myDataPackageGraph);
+                    var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, this.dataPackageGraph);
+					
+										this.onResult = _.bind(this.onResult, this);
+										this.onDone   = _.bind(this.onDone, this);
+					
+                    for (var iquery = 0; iquery < keys.length; iquery++) {
+                      var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, this.dataPackageGraph);
+                      //var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, myDataPackageGraph);
+                      this.dataPackageGraph.query(eq, this.onResult, this.url(), this.onDone)
+                    }
                 } catch (error) {
                     console.log(error);
-
                 }
+            },
+            
+            // The return values have to be extracted from the result. 
+            getValue: function(result, name) {
+                var res = result[name];
+                // The result is of type 'NamedNode', just return the string value
+                if (res) {
+                    return res.value;
+                } else 
+                return " ";
+            },
 
-                return models;
+            /* This callback is called for every query solution of the SPARQL queries. One
+           query may result in multple queries solutions and calls to this function. 
+	   			Each query result returns two pids, i.e. pid: 1234 prov_generated: 5678,
+	   			which corresponds to the RDF triple '5678 wasGeneratedBy 1234', or the
+	   			DataONE solr document for pid '1234', with the field prov_generated: 5678. */
+				/* The result can look like this:
+	   			[?pid: t, ?prov_wasDerivedFrom: t, ?primary_data: t, ?derived_data: t]
+	   	  			?derived_data : t {termType: "NamedNode", value: "https://cn-stage.test.dataone.org/cn/v2/resolve/urn%3Auuid%3Adbbb9a2e-af64-452a-b7b9-122861a5dbb2"}
+		  			?pid : t {termType: "Literal", value: "urn:uuid:dbbb9a2e-af64-452a-b7b9-122861a5dbb2", datatype: t}
+		  			?primary_data : t {termType: "NamedNode", value: "https://cn-stage.test.dataone.org/cn/v2/resolve/urn%3Auuid%3Aaae9d025-a331-4c3a-b399-a8ca0a2826ef"}
+		  			?prov_wasDerivedFrom : t {termType: "Literal", value: "urn:uuid:aae9d025-a331-4c3a-b399-a8ca0a2826ef", datatype: t}]
+				*/
+				onResult: function(result) {
+					/* console.log(result); */
+					var currentPid = this.getValue(result, "?pid");
+					var resval;
+					var provFieldResult;
+					var provFieldValues;
+					// If there is a solution for this query, assign the value
+					// to the prov field attribute (e.g. "prov_generated") of the package member (a DataONEObject) 
+					// with id = '?pid'
+					if(typeof currentPid !== 'undefined' && currentPid !== " ") {
+						var currentMember = null;
+						var provFieldValues;
+						var fieldName = null;
+						var vals = [];
+						var resultMember = null;
+						currentMember = this.find(function(model) { return model.get('id') === currentPid});
+						if(typeof currentMember === 'undefined') {
+							console.log("Package member undefined for pid: " + currentPid);
+							return;
+						}
+						// Search for a provenenace field value (i.e. 'prov_wasDerivedFrom') that was
+						// returned from the query. The current prov queries all return one prov field each
+						// (see this.provFields).
+						// Note: dataPackage.provSources and dataPackage.provDerivations are accumulators for
+						// the entire DataPackage. member.sources and member.derivations are accumulators for
+						// each package member, and are used by functions such as ProvChartView().
+						for (var iFld = 0; iFld < this.provFields.length; iFld++) {
+							fieldName = this.provFields[iFld];
+							resval = "?" + fieldName;
+							// The pid corresponding to the object of the RDF triple, with the predicate
+							// of 'prov_generated', 'prov_used', etc.
+							// getValue returns a string value. 
+							provFieldResult = this.getValue(result, resval);
+							if(provFieldResult != " ") {
+								// Find the Datapacakge member for the result 'pid' and add the result
+								// prov_* value to it. This is the package member that is the 'subject' of the
+								// prov relationship.
+								// The 'resultMember' could be in the current package, or could be in another 'related' package.
+								resultMember = this.find(function(model) { return model.get('id') === provFieldResult});
+								if (typeof resultMember !== 'undefined') { // If this prov field is a 'source' field, add it to 'sources'
+									if(currentMember.isSourceField(fieldName)) {
+										// Get the package member that the id of the prov field is associated with
+										if (_.findWhere(this.sources, {id: provFieldResult}) == null) {
+											this.sources.push(resultMember);
+										}
+										// Only add the result member if it has not already been added.
+										if (_.findWhere(currentMember.get("provSources"), {id: provFieldResult}) == null) {
+											vals = currentMember.get("provSources");
+											vals.push(resultMember);
+											currentMember.set("provSources", vals);
+										}
+									} else if (currentMember.isDerivationField(fieldName)) {
+										// If this prov field is a 'derivation' field, add it to 'derivations'
+										if (_.findWhere(this.derivations, {id: provFieldResult}) == null) {
+											this.derivations.push(resultMember);
+										}
+										if (_.findWhere(currentMember.get("provDerivations"), {id: provFieldResult}) == null) {
+											vals = currentMember.get("provDerivations");
+											vals.push(resultMember);
+											currentMember.set("provDerivations", vals);
+										}
+									} 
+									// Get the existing values for this prov field in the package member
+									vals = currentMember.get(fieldName);
+									// Push this result onto the prov file list if it is not there, i.e.
+									if(!_.contains(vals, resultMember)) {
+										vals.push(resultMember);
+										currentMember.set(fieldName, vals);
+										console.log("Added " + currentMember.get("id") + ": " + fieldName + " = " + resultMember.get("id"));
+									}
+									//provFieldValues = _.uniq(provFieldValues);
+									// Add the current prov valid (a pid) to the current value in the member
+									//currentMember.set(fieldName, provFieldValues);
+									//this.add(currentMember, { merge: true });
+								} else {
+									// The query result field is not the identifier of a packge member, so it may be the identifier
+									// of another 'related' package, or it may be a string value that is the object of a prov relationship,
+									// i.e. for 'prov_instanceOfClass' == 'http://purl.dataone.org/provone/2015/01/15/ontology#Data',
+									// so add the value to the current member.
+									vals = currentMember.get(fieldName);
+									if(!_.contains(vals, provFieldResult)) {
+										vals.push(provFieldResult);
+										currentMember.set(fieldName, vals);
+										console.log("Added " + currentMember.get("id") + ": " + fieldName + " = " + provFieldResult);
+									}
+								}
+			 				}
+						}
+					}
+				},
+			
+            /* This callback is called when all queries have finished. */
+            onDone: function() {
+              if(this.queriesToRun > 1) {
+                this.queriesToRun--;
+              } else {
+                console.log("All prov queries have completed.");
+                // Signal that all prov queries have finished
+				this.provenanceFlag = "complete";
+                this.trigger("queryComplete");
+              }
             },
 
             /*
@@ -495,6 +920,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     		 * Overwrite the Backbone.Collection.sync() function to set custom options
     		 */
     		save: function(options){
+                console.log("DataPackage.save() called");
     			if(!options) var options = {};
     			
     			this.packageModel.set("uploadStatus", "p");
@@ -530,7 +956,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 													(m.get("type") == "Metadata" && 
 															m.get("uploadStatus") != "p" && 
 															m.get("uploadStatus") != "c" &&
-															m.get("uploadStatus") != "e" ))
+															m.get("uploadStatus") != "e" &&
+															m.get("uploadStatus") !== null))
 									    });
 				
     			//First quickly validate all the models before attempting to save any
@@ -1005,12 +1432,496 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                 console.log("DataPackage is complete. All " + this.length + " models have been synced and added.");
             },
+            
+            /* Accumulate edits that are made to the provenance relationships via the ProvChartView. these
+               edits are accumulated here so that they are available to any package member or view.
+            */
+            recordProvEdit: function(operation, subject, predicate, object) {
+                
+                if (!this.provEdits.length) {
+                    this.provEdits = [[operation, subject, predicate, object]];
+                    console.log("add prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                } else {
+                    // First check if the edit already exists in the list. If yes, then
+                    // don't add it again! This could occur if an edit icon was clicked rapidly
+                    // before it is dismissed.
+                    var editFound = _.find(this.provEdits, function(edit) {
+                        return(edit[0] == operation &&
+                            edit[1] == subject &&
+                            edit[2] == predicate &&
+                            edit[3] == object);
+                    });
+                    
+                    if(typeof editFound != "undefined") {
+                        console.log("pruning duplicate prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                        return;
+                    }
 
+                    // If this is a delete operation, then check if a matching operation
+                    // is in the edit list (i.e. the user may have changed their mind, and
+                    // they just want to cancel an edit). If yes, then just delete the 
+                    // matching add edit request
+                    var editListSize = this.provEdits.length;
+                    var oppositeOp = (operation == "delete") ? "add" : "delete";
+                    
+                    this.provEdits = _.reject(this.provEdits, function(edit) {
+                        var editOperation = edit[0];
+                        var editSubjectId = edit[1];
+                        var editPredicate = edit[2];
+                        var editObject = edit[3];
+                        if (editOperation == oppositeOp
+                            && editSubjectId == subject
+                            && editPredicate == predicate
+                            && editObject == object) {
+                                
+                            console.log("removing prov edit: " + editOperation + ", " 
+                                + editSubjectId + ", " + editPredicate + ", " + editObject);
+                            return true; 
+                        }
+                    });
+                    
+                    // If we cancelled out the inverse of the current edit, don't save the
+                    // current edit either, as they cancel each other out.
+                    if(this.provEdits.length < editListSize) {
+                        console.log("cancel prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                    } else {
+                        console.log("add prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                        this.provEdits.push([operation, subject, predicate, object]);
+                    }
+                }
+            },
+            
+            // Return true if the prov edits list is not empty
+            provEditsPending: function() {
+                if(this.provEdits.length) return true;
+                return false;
+            },
+            
+            /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
+            update the ORE Resource Map and save it to the server.
+            */
+            saveProv: function() {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                console.log("Saving provenance edits...");
+                var provEdits = this.provEdits;
+                if(!provEdits.length) {
+                    // TODO: display dialog indicating prov has not changed
+                    console.log("Provenance relationships have not been edited.")
+                    return;
+                }
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                PROV =    rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                CITO =    rdf.Namespace(this.namespaces.CITO),
+                XSD =     rdf.Namespace(this.namespaces.XSD);
+                
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                /* Check if this package member had provenance relationships added 
+                    or deleted by the provenance editor functionality of the ProvChartView
+                */
+                _.each(provEdits, function(edit) {
+                    var operation, subject, predicate, object;
+                    var provStatements;
+                    operation = edit[0];
+                    subject = edit[1];
+                    predicate = edit[2];
+                    object = edit[3];
+                    console.log("Prov edit: " + operation + ": "+ subject + ", " + predicate + ", " + object);
+                    // The predicates of the provenance edits recorded by the ProvChartView 
+                    // indicate which W3C PROV relationship has been recorded. 
+                    // First check if this relationship alread exists in the RDF graph.
+                    // See DataPackage.parseProv for a description of how relationships from an ORE resource map
+                    // are parsed and stored in DataONEObjects. Here we are reversing the process, so may need
+                    // The representation of the PROVONE data model is simplified in the ProvChartView, to aid 
+                    // legibility for users not familiar with the details of the PROVONE model. In this simplification,
+                    // a provone:Program has direct inputs and outputs. In the actual model, a prov:Execution has
+                    // inputs and outputs and is connected to a program via a prov:association. We must 'expand' the
+                    // simplified provenance updates recorded by the editor into the fully detailed representation
+                    // of the actual model.
+                    var executionId, executionURI, executionNode;
+                    var programId, programURI, programNode;
+                    var dataId, dataURI, dataNode;
+                    var derivedDataURI, derivedDataNode;
+                    var lastRef = false;
+                    //var graph = this.dataPackageGraph;
+            
+                    switch (predicate) {
+                        case "prov_wasDerivedFrom": 
+                            derivedDataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(object));
+                            if(operation == "add") {
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
+                            } else {
+                                graph.removeMatches(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
+                                this.removeIfLastProvRef(derivedDataNode, RDF("type"), PROVONE("Data"));
+                            }
+                            break;
+                        case "prov_generatedByProgram":
+                            programId = object;
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            var removed = false;
+                            if(operation == "add") {
+                                // 'subject' is the program id, which is a simplification of the PROVONE model for display.
+                                // In the PROVONE model, execution 'uses' and input, and is associated with a program.
+                                executionId = this.addProgramToGraph(programId);
+                                //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                                executionNode = this.getExecutionNode(executionId);
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(dataNode, PROV("wasGeneratedBy"), executionNode);
+                            } else {
+                                graph.removeMatches(dataNode, PROV("wasGeneratedBy"), executionNode);
+                                removed = this.removeProgramFromGraph(programId);   
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
+                            }
+                            break;
+                        case "prov_usedByProgram":	
+                            programId = object;
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            if(operation == "add") {
+                                // 'subject' is the program id, which is a simplification of the PROVONE model for display.
+                                // In the PROVONE model, execution 'uses' and input, and is associated with a program.
+                                executionId = this.addProgramToGraph(programId)
+                                //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                                executionNode = this.getExecutionNode(executionId);
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(executionNode, PROV("used"), dataNode);
+                            } else {
+                                graph.removeMatches(executionNode, PROV("used"), dataNode)
+                                removed = this.removeProgramFromGraph(programId);
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
+                            }
+                            break;
+                        case "prov_hasDerivations":
+                            dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            derivedDataNode = rdf.sym(cnResolveUrl + encodeURIComponent(object));
+                            if(operation == "add") {
+                                this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, RDF("type"), PROVONE("Data"));
+                                this.addToGraph(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
+                            } else {
+                                graph.removeMatches(derivedDataNode, PROV("wasDerivedFrom"), dataNode);
+                                this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
+                                this.removeIfLastProvRef(derivedDataNode, RDF("type"), PROVONE("Data"));
+                            }
+                            break;
+                        case "prov_instanceOfClass":
+                            var entityNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
+                            var classNode = PROVONE(object);
+                            if(operation == "add") {
+                                this.addToGraph(entityNode, RDF("type"), classNode);
+                            } else {
+                                // Make sure there are no other references to this 
+                                this.removeIfLastProvRef(entityNode, RDF("type"), classNode);
+                            }
+                            break;
+                        default:
+                            // Print error if predicate for prov edit not found.
+                    }
+                }, this);
+          
+                // Since the provenance editor is run from the MetadataView, only 
+                // the resource map will have to be updated (with the new prov rels),
+                // as no other editing is possible. Therefor we have to manually set
+                // the resource maps' new id so that the serialize() function will treat
+                // this as an update, not a new resource map.
+                //var oldId = this.dataPackage.packageModel.get("id");
+                //var newId = "resource_map_" + "urn:uuid:" + uuid.v4();
+                //this.dataPackage.packageModel.set("oldPid", oldId);
+                //this.dataPackage.packageModel.set("id", newId);
+                this.save();
+                console.log("resmap save has been called");
+                
+            },
+    				
+            /* Add the specified relationship to the RDF graph only if it
+            has not already been added. */
+            addToGraph: function(subject, predicate, object) {
+                var graph = this.dataPackageGraph;
+                var statements = graph.statementsMatching(subject, predicate, object);
+                if(!statements.length) {
+                    console.log("add to graph: " + subject.value + ", " + predicate.value + ", " + object.value);
+                    graph.add(subject, predicate, object);
+                }
+            },
+    		
+    		/* Remove the statement fromn the RDF graph only if the subject of this
+               relationship is not referenced by any other provenance relationship, i.e.
+               for example, the prov relationship "id rdf:type provone:data" is only 
+               needed if the subject ('id') is referenced in another relationship. 
+               Also don't remove it if the subject is in any other prov statement,
+               meaning it still references another prov object.
+            */
+            removeIfLastProvRef: function(subjectNode, predicateNode, objectNode) {
+                var graph = this.dataPackageGraph;
+                var stillUsed = false;
+                var PROV    = rdf.Namespace(this.namespaces.PROV);
+                var PROVONE = rdf.Namespace(this.namespaces.PROVONE);
+                // PROV namespace value, used to identify PROV statements
+                var provStr    = PROV("").value;
+                // PROVONE namespace value, used to identify PROVONE statements
+                var provoneStr = PROVONE("").value;
+                // Get the statements from the RDF graph that reference the subject of the 
+                // statement to remove. 
+                var statements = graph.statementsMatching(undefined, undefined, subjectNode);
+                        
+                var found = _.find(statements, function(statement) {
+                    if(statement.subject == subjectNode &&
+                        statement.predicate == predicateNode &&
+                        statement.object == objectNode) return false;
+                    var pVal = statement.predicate.value;
+              
+                    // Now check if the subject is referenced in a prov statement
+                    // There is another statement that references the subject of the
+                    // statement to remove, so it is still being used and don't
+                    // remove it.
+                    if(pVal.indexOf(provStr) != -1) return true;
+                    if(pVal.indexOf(provoneStr) != -1) return true;
+                    return false; 
+                }, this);
+                
+                // IF not found in the first test, keep looking.
+                if(typeof found == "undefined") {
+                    // Get the statements from the RDF where 
+                    var statements = graph.statementsMatching(subjectNode, undefined, undefined);
+                        
+                    found = _.find(statements, function(statement) {
+                        if(statement.subject == subjectNode &&
+                            statement.predicate == predicateNode &&
+                            statement.object == objectNode) return false;
+                        var pVal = statement.predicate.value;
+                  
+                        // Now check if the subject is referenced in a prov statement
+                        if(pVal.indexOf(provStr) != -1) return true;
+                        if(pVal.indexOf(provoneStr) != -1) return true;
+                        // There is another statement that references the subject of the
+                        // statement to remove, so it is still being used and don't
+                        // remove it.
+                        return false 
+                    }, this);
+                }
+
+                // The specified statement term isn't being used for prov, so remove it.
+                if(typeof found == "undefined") {
+                    //console.log("no refs to stmt, removed: " + subjectNode.value + ", " 
+                    //   + predicateNode.value + ", " + objectNode.value);
+                    graph.removeMatches(subjectNode, predicateNode, objectNode, undefined);
+                }
+            },
+        
+            /* Get the execution identifier that is associated with a program id.
+               This will either be in the 'prov_wasExecutedByExecution' of the package member
+               for the program script, or available by tracing backward in the RDF graph from
+               the program node, through the assocation to the related execution.
+               */
+            getExecutionId: function(programId) {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                var stmts = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                PROV    = rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE);
+                
+                var member = this.get(programId);
+                var executionId = member.get("prov_wasExecutedByExecution");
+                if(executionId.length > 0) {
+                    return(executionId[0]);
+                } else {
+                    var programNode = rdf.sym(cnResolveUrl + encodeURIComponent(programId));
+                    // Get the executionId from the RDF graph
+                    // There can be only one plan for an association
+                    stmts = graph.statementsMatching(undefined, PROV("hadPlan"), programNode);
+                    if(typeof stmts == "undefined") return null;
+                    var associationNode = stmts[0].subject;
+                    // There should be only one execution for this assocation.
+                    stmts = graph.statementsMatching(undefined, PROV("qualifiedAssociation"), associationNode);
+                    if(typeof stmts == "undefined") return null;
+                    return(stmts[0].subject)
+                }
+            },
+            
+            /* Get the RDF node for an execution that is associated with the execution identifier.
+               The execution may have been created in the resource map as a 'bare' urn:uuid 
+               (no resolveURI), or as a resolve URL, so check for both until the id is 
+               found.
+            */
+            getExecutionNode: function(executionId) {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                var stmts = null;
+                var testNode = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                
+                // First see if the execution exists in the RDF graph as a 'bare' idenfier, i.e.
+                // a 'urn:uuid'.
+                stmts = graph.statementsMatching(rdf.sym(executionId), undefined, undefined);
+                if(typeof stmts == "undefined" || !stmts.length) {
+                    // The execution node as urn was not found, look for fully qualified version.
+                    testNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                    stmts = graph.statementsMatching(rdf.sym(executionId), undefined, undefined);
+                    if(typeof stmts == "undefined") {
+                        // Couldn't find the execution, return the standard RDF node value
+                        executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                        console.log("Execution Node: " + executionNode.value);
+                        return executionNode;
+                    } else {
+                        console.log("Execution Node: " + testNode.value);
+                        return testNode;
+                    }
+                } else {
+                    // The executionNode was found in the RDF graph as a urn
+                    var executionNode = stmts[0].subject;
+                    console.log("Execution Node: " + executionNode.value);
+                    return executionNode;
+                }
+            },
+
+            addProgramToGraph: function(programId) {
+                var rdf = this.rdf;
+                var graph = this.dataPackageGraph;
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                PROV    = rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE),
+                XSD     = rdf.Namespace(this.namespaces.XSD);
+                var member = this.get(programId);
+                var executionId = member.get("prov_wasExecutedByExecution");
+                var executionNode = null;
+                var programNode = null;
+                var associationId = null;
+                var associationNode = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                
+                console.log("adding program: " + programId);
+                if(!executionId.length) {
+                    // This is a new execution, so create new execution and association ids
+                    executionId = "urn:uuid:" + uuid.v4();
+                    console.log("new execution: " + executionId);
+                    member.set("prov_wasExecutedByExecution", [executionId]);
+                    // Blank node id. RDF validator doesn't like ':' so don't use in the id
+                    //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                    executionNode = this.getExecutionNode(executionId);
+                    //associationId = "_" + uuid.v4();
+                    associationNode = graph.bnode();
+                } else {
+                    executionId = executionId[0];
+                    console.log("reusing execution id: " + executionId);
+                    // Check if an association exists in the RDF graph for this execution id
+                    //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                    executionNode = this.getExecutionNode(executionId);
+                    // Check if there is an association id for this execution.
+                    // If this execution is newly created (via the editor (existing would
+                    // be parsed from the resmap), then create a new association id.
+                    var stmts = graph.statementsMatching(executionNode, 
+                        PROV("qualifiedAssociation"), undefined);
+                    // IF an associati on was found, then use it, else geneate a new one
+                    // (Associations aren't stored in the )
+                    if(stmts.length) {
+                        console.log("found association id: ", + stmts[0].object.value)
+                        associationNode = stmts[0].object;
+                        //associationId = stmts[0].object.value;
+                    } else {
+                        //associationId = "_" + uuid.v4();
+                        associationNode = graph.bnode();
+                        console.log("did not find association using new id: ", + associationId);
+                    }
+                }
+                //associationNode = graph.bnode(associationId);
+                //associationNode = graph.bnode();
+                programNode = rdf.sym(cnResolveUrl + encodeURIComponent(programId));
+                try {
+                    this.addToGraph(executionNode, PROV("qualifiedAssociation"), associationNode);
+                    this.addToGraph(executionNode, RDF("type"), PROVONE("Execution"));
+                    this.addToGraph(executionNode, DCTERMS("identifier"), rdf.literal(executionId, undefined, XSD("string")));
+                    this.addToGraph(associationNode, PROV("hadPlan"), programNode);
+                    this.addToGraph(programNode, RDF("type"), PROVONE("Program"));
+                } catch (error) {
+                    console.log(error);
+                }
+                return executionId;
+            },
+        
+            // Remove a program identifier from the RDF graph and remove associated
+            // linkage between the program id and the exection, if the execution is not
+            // being used by any other statements.
+            removeProgramFromGraph: function(programId) {
+                var graph = this.dataPackageGraph;
+                var rdf = this.rdf;
+                var stmts = null;
+                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                var RDF = rdf.Namespace(this.namespaces.RDF),
+                DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
+                PROV    = rdf.Namespace(this.namespaces.PROV),
+                PROVONE = rdf.Namespace(this.namespaces.PROVONE),
+                XSD     = rdf.Namespace(this.namespaces.XSD);
+                var associationNode = null;
+                
+                console.log("checking program " + programId + " for removal...");
+                var executionId = this.getExecutionId(programId);
+                if(executionId == null) return false;
+                
+                //var executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
+                var executionNode = this.getExecutionNode(executionId);
+                var programNode = rdf.sym(cnResolveUrl + encodeURIComponent(programId));
+                
+                // In order to remove this program from the graph, we have to first determine that 
+                // nothing else is using the execution that is associated with the program (the plan). 
+                // There may be additional 'used', 'geneated', 'qualifiedGeneration', etc. items that
+                // may be pointing to the execution. If yes, then don't delete the execution or the 
+                // program (the execution's plan).
+                try {
+                    // Is the program in the graph? If the program is not in the graph, then
+                    // we don't know how to remove the proper execution and assocation.
+                    stmts = graph.statementsMatching(undefined, undefined, programNode);
+                    if(typeof(stmts) == "undefined" || !stmts.length) return(false);
+                    
+                    // Is anything else linked to this execution?
+                    stmts = graph.statementsMatching(executionNode, PROV("used"));
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(undefined, PROV("wasGeneratedBy"), executionNode);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(executionNode, PROV("qualifiedGeneration"), undefined);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(undefined, PROV("wasInformedBy"), executionNode);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    stmts = graph.statementsMatching(undefined, PROV("wasPartOf"), executionNode);
+                    if(!typeof(stmts) == "undefined" || stmts.length) return(false);
+                    
+                    // get association
+                    stmts = graph.statementsMatching(undefined, PROV("hadPlan"), programNode);
+                    associationNode = stmts[0].subject;
+                } catch (error) {
+                    console.log(error);
+                }
+                    
+                // The execution isn't needed any longer, so remove it and the program.
+                try {
+                    graph.removeMatches(programNode, RDF("type"), PROVONE("Program"));
+                    graph.removeMatches(associationNode, PROV("hadPlan"), programNode);
+                    graph.removeMatches(associationNode, RDF("type"), PROV("Association"));
+                    graph.removeMatches(associationNode, PROV("Agent"), undefined);
+                    graph.removeMatches(executionNode, RDF("type"), PROVONE("Execution"));
+                    graph.removeMatches(executionNode, DCTERMS("identifier"), rdf.literal(executionId, undefined, XSD("string")));
+                    graph.removeMatches(executionNode, PROV("qualifiedAssociation"), associationNode);
+                    console.log("removed program: " + programId + " and execution: " + executionId);
+                } catch (error) {
+                    console.log(error);
+                }
+                return(true)
+            },
+            
             /*
              * Serialize the DataPackage to OAI-ORE RDF XML
              */
             serialize: function() {
             	//Create an RDF serializer
+              console.log("called serialize()");
             	var serializer = this.rdf.Serializer(),
                     cnResolveUrl,
                     idNode,
@@ -1054,10 +1965,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     this.dataPackageGraph.removeMany(undefined, ORE("describes"), undefined, undefined, undefined);
                     this.dataPackageGraph.removeMany(undefined, ORE("isDescribedBy"), undefined, undefined, undefined);
 
-                    // Remove all documents and isDocumentedBy statements (they're rebuilt from the collection)
-                    this.dataPackageGraph.removeMany(undefined, CITO("documents"), undefined, undefined, undefined);
-                    this.dataPackageGraph.removeMany(undefined, CITO("isDocumentedBy"), undefined, undefined, undefined);
-
     				//Get the CN Resolve Service base URL from the resource map
                     // (mostly important in dev environments where it will not always be cn.dataone.org)
                     if ( typeof this.dataPackageGraph.cnResolveUrl !== "undefined" ) {
@@ -1073,7 +1980,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
 
     				//Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
-    	            oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl+ encodeURIComponent(oldPid)];
+    	            oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl + oldPid, cnResolveUrl+ encodeURIComponent(oldPid)];
 
                 	//Get all the isAggregatedBy statements
     	            aggregationNode =  this.rdf.sym(cnResolveUrl + encodeURIComponent(oldPid) + "#aggregation");
@@ -1090,9 +1997,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	            		idsFromXML.push(statementID);
 
     	            		//Add variations of the ID so we make sure we account for all the ways they exist in the RDF XML
-    	            		if(statementID.indexOf(cnResolveUrl) > -1)
+    	            		if(statementID.indexOf(cnResolveUrl) > -1) {
     	            			idsFromXML.push(statementID.substring(statementID.lastIndexOf("/") + 1));
-    		            	else
+                                // Allow for ids that are simple URIs, e.g. "urn:uuid:1234..."
+    	            			idsFromXML.push(decodeURIComponent(statementID.substring(statementID.lastIndexOf("/") + 1)));
+                      } else
     		            		idsFromXML.push(cnResolveUrl + encodeURIComponent(statementID));
     	            	}
 
@@ -1105,17 +2014,25 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     	            var addedIds  = _.without(_.difference(idsFromModel, idsFromXML), oldPidVariations);
     	            //Create variations of all these ids too
     	            var allMemberIds = idsFromModel;
+                    // Don't remove documents/documentedBy statements if this is a resource map update only
+                    // (because of provenance relationship edits), i.e. no new package members are being added.
+                    // Remove all documents and isDocumentedBy statements (they're rebuilt from the collection)
+                    if(!this.provEdits.length) {
+                        this.dataPackageGraph.removeMany(undefined, CITO("documents"), undefined, undefined, undefined);
+                        this.dataPackageGraph.removeMany(undefined, CITO("isDocumentedBy"), undefined, undefined, undefined);
+                    }
+
     	            _.each(idsFromModel, function(id){
     	            	allMemberIds.push(cnResolveUrl + encodeURIComponent(id));
     	           	});
 
-                	// Remove any other isAggregatedBy statements that are not listed as members of this model
+                    // Remove any other isAggregatedBy statements that are not listed as members of this model
                     _.each(aggByStatements, function(statement) {
                         if( !_.contains(allMemberIds, statement.subject.value) ) {
                             this.removeFromAggregation(statement.subject.value);
                         } 
                     }, this);
-
+                    
                 	// Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
                     var aggregationSubjStatements = this.dataPackageGraph.statementsMatching(aggregationNode);
                     _.each(aggregationSubjStatements, function(statement){
@@ -1130,16 +2047,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         this.dataPackageGraph.removeMany(aggregationNode);
                     }
 
-                    // Change all the statements in the RDF where the aggregation is the object, to reflect the new resource map ID
-        	        var aggregationObjStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, aggregationNode);
-        	        _.each(aggregationObjStatements, function(statement) {
+                	// Change all the statements in the RDF where the aggregation is the object, to reflect the new resource map ID
+    	            var aggregationObjStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, aggregationNode);
+    	            _.each(aggregationObjStatements, function(statement) {
                         subjectClone = this.cloneNode(statement.subject);
                         predicateClone = this.cloneNode(statement.predicate);
                         objectClone = this.cloneNode(statement.object);
                         objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
                         this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
-        	        }, this);
-                        
+    	            }, this);
+                    
                     if(aggregationObjStatements.length) {
                         this.dataPackageGraph.removeMany(undefined, undefined, aggregationNode);
                     }
@@ -1217,6 +2134,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 
                 } else {
+                  console.log("creating new resource map");
                     // Create the OAI-ORE graph from scratch
                     this.dataPackageGraph = this.rdf.graph();
                     cnResolveUrl = MetacatUI.appModel.get("resolveServiceUrl") || "https://cn.dataone.org/cn/v2/resolve/";
@@ -1257,7 +2175,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 }
 
                 var xmlString = serializer.statementsToXML(this.dataPackageGraph.statements);
-
+  
             	return xmlString;
             },
             
@@ -1430,6 +2348,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             	if(this.originalMembers.length != ids.length || _.intersection(this.originalMembers, ids).length != ids.length)
             		return true;
 
+              // If the provenance relationships have been updated, then the resource map
+              // needs to be updated.
+              if(this.provEdits.length) return true;
             	//Check for changes to the isDocumentedBy relationships
             	var isDifferent = false,
             		i = 0;

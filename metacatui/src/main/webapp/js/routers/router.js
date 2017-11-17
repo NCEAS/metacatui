@@ -368,7 +368,7 @@ function ($, _, Backbone) {
 				});
 			}
 			else{
-				if(MetacatUI.appView.currentView.onClose)
+				if(MetacatUI.appView.currentView && MetacatUI.appView.currentView.onClose)
 					MetacatUI.appView.currentView.onClose();
 				MetacatUI.appUserModel.logout();
 			}

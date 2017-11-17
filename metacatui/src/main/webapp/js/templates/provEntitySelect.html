@@ -1,0 +1,28 @@
+
+
+<!-- Modal -->
+<div id="selectModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="selectModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="false">×</button>
+    <!-- <h3 id="provEntityTitle">title ></h3> -->
+    <h3 id="selectModalLabel"><%= title %></h3>
+  </div>
+  <div class="modal-body">
+	  <!-- label for selection box, i.e. "Select a single source", "Select one or more derivations", etc. -->
+	<label for="select-prov-entity"><%= selectLabel %></label>
+    <select id="select-prov-entity" size="<%= displayRows %>" <%= selectMode %> >
+		<% _.each(members, function(member) { %>
+			<option value="<%= member.get('id') %>" style="<%= optionStyles[member.get('id')] %>"><%= member.get('fileName') %></option>
+		<% }); %>
+	</select>
+    <!-- hide the identifier text box until it is implemented -->
+    <label for="pidValue" style="display:none">Add by indentifier:</label>
+    <input class="form-control" type="text" id="pidValue" label="Add by identifier:" style="display:none"></button> 
+  </div>
+  <div class="modal-footer">
+    <!-- <button class="btn btn-primary" data-dismiss="modal" onclick="readValues()">Done</button> -->
+    <!-- <button class="btn btn-primary" id="#readSelected" data-dismiss="modal">Done</button> -->
+    <button class="btn btn-primary" id="selectDone">Done</button>
+  </div>
+</div>
+
