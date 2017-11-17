@@ -18,6 +18,9 @@ define(['jquery', 'underscore', 'backbone'],
 			profileUsername: null,
 			page: 0,
 			profileQuery: null,
+
+			// set this variable to true, if the content being published is moderated by the data team.
+			contentIsModerated: false,
 			
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.

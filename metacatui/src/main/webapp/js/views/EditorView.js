@@ -12,11 +12,12 @@ define(['underscore',
         'views/metadata/EMLEntityView',
         'views/SignInView',
         'text!templates/editor.html',
-        'collections/ObjectFormats'],
+        'collections/ObjectFormats',
+        'text!templates/editorSubmitMessage.html'],
         function(_, $, Backbone,
         		DataPackage, EML, EMLOtherEntity, ScienceMetadata,
         		CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
-        		EditorTemplate, ObjectFormats){
+        		EditorTemplate, ObjectFormats, EditorSubmitMessageTemplate){
 
     var EditorView = Backbone.View.extend({
 
@@ -24,6 +25,7 @@ define(['underscore',
 
         /* The initial editor layout */
         template: _.template(EditorTemplate),
+        editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
 
         /* Events that apply to the entire editor */
         events: {
@@ -488,8 +490,9 @@ define(['underscore',
             // TODO : Remove conditions if you want to review datasets for every theme
             // Review message for "arctic" theme.
             if (MetacatUI.appModel.get("contentIsModerated")) {
-                var message = $(document.createElement("div")).append(
-                		$(document.createElement("span")).text("Your changes have been submitted and are under review."));
+                var message = this.editorSubmitMessageTemplate({
+                    themeTitle: MetacatUI.themeTitle
+                });
             }
             else {
                 var message = $(document.createElement("div")).append(
