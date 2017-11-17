@@ -664,7 +664,7 @@ define(['underscore', 'jquery', 'backbone',
 	    		var role = $(checkedBox).val(),
 	    			isAssocParty = _.contains(partyToCopy.get("roleOptions"), role);
 	    		
-	    		//If this are no associated parties yet...
+	    		//If the new role is an associated party ...
 	    		if( isAssocParty ){
 	    			
 		    		//If there are no parties in this role yet, 
@@ -677,42 +677,49 @@ define(['underscore', 'jquery', 'backbone',
 	    				this.addNewPersonType(role);
 	    			}
 	    			
-	    			//Create all the attributes for the new person. We're only changing the role
-	    			var options = partyToCopy.toJSON();
-	    			options.type = "associatedParty";
-	    			options.role = role;
-	    			
 	    			//Create a new EMLParty model
-    				var newPerson = new EMLParty(options);
+    				var newPerson = new EMLParty();
     				
     				//Add this new EMLParty to the EML model
 	    			this.model.get("associatedParty").push(newPerson);
+	    			
+	    			//Create all the attributes for the new person. We're only changing the role
+	    			newPerson.set( partyToCopy.toJSON() );
+	    			newPerson.set("type", "associatedParty");
+	    			newPerson.set("role", role);
 
 	    			//Render this new person
 		    		this.renderPerson(newPerson, role);
 	    		}
-	    		//If this person type is not an associated party...
+	    		//If the new role is not an associated party...
 	    		else{
 		    		//If there are no parties in this role yet, 
 	    			// then add this person type to the view	    			
 	    			if( !this.model.get(role).length )
 		    			this.addNewPersonType(role);
 	    			
-	    			//Create all the attributes for the new person. We're only changing the type
-	    			var options = partyToCopy.toJSON();
-	    			options.type = role;
-	    			
 	    			//Create a new EMLParty model
-    				var newPerson = new EMLParty(options);
+    				var newPerson = new EMLParty();
     				
     				//Add this new EMLParty to the EML model
 	    			this.model.get(role).push(newPerson);
+	    			
+    				// Copy the attributes from the original person 
+    				// and set it on the new person
+    				newPerson.set(partyToCopy.toJSON());
+    				newPerson.set("type", role);
+    				newPerson.set("role", newPerson.defaults().role);
 
 	    			//Render this new person
 		    		this.renderPerson(newPerson, role);
 	    		}
 	    		
-	    	}, this);	    	
+	    	}, this);
+	    	
+	    	//If there was at least one copy created, then trigger the change event
+	    	if(checkedBoxes.length){
+	    		this.model.trickleUpChange();
+	    	}
 	    },
 	    
 	    removePerson: function(e){

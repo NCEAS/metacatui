@@ -206,9 +206,24 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Makes a copy of the original XML DOM and updates it with the new values from the model.
 		 */
 		updateDOM: function(){
-			var type = this.get("type") || "associatedParty", 
-				objectDOM = this.get("objectDOM")? this.get("objectDOM").cloneNode(true) : document.createElement(type);
- 				
+			var type = this.get("type") || "associatedParty",
+				objectDOM = this.get("objectDOM");
+			
+			// If there is already an XML node for this model and it is the wrong type,
+			//   then replace the XML node contents
+			if(objectDOM && objectDOM.nodeName != type.toUpperCase()){
+				objectDOM = $(document.createElement(type)).html( objectDOM.innerHTML );
+			}
+			// If there is already an XML node for this model and it is the correct type,
+			//   then simply clone the XML node
+			else if(objectDOM){
+				objectDOM = objectDOM.cloneNode(true);
+			}
+			// Otherwise, create a new XML node
+			else{
+				objectDOM = document.createElement(type);
+			}
+				
 			//There needs to be at least one individual name, organization name, or position name
 			if(!this.get("individualName") && !this.get("organizationName") && !this.get("positionName"))
 				return "";
@@ -456,12 +471,25 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 }, this);
 			 
 			// role
-			if(this.get("role")){
-				if($(objectDOM).find("role").length)
-					$(objectDOM).find("role").text(this.get("role"));
+			//If this party type is not an associated party, then remove the role element
+			var isAssocParty = _.contains(this.get("roleOptions"), this.get("role"));
+			
+			if( !isAssocParty ){
+				$(objectDOM).find("role").remove();
+			}
+			//Otherwise, change the value of the role element
+			else{
+				//If for some reason there is no role, create a default role
+				if( !this.get("role") )
+					var role = "associatedParty";
 				else
-					this.getEMLPosition(objectDOM, "role").after( $(document.createElement("role")).text(this.get("role")) );
-			} 
+					var role = this.get("role");
+				
+				if($(objectDOM).find("role").length)
+					$(objectDOM).find("role").text(role);
+				else
+					this.getEMLPosition(objectDOM, "role").after( $(document.createElement("role")).text(role) );
+			}
 						
 			//XML id attribute
 			this.createID();
