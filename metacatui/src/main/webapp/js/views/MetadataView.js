@@ -1212,6 +1212,8 @@ define(['jquery',
 
             this.saveProvPending = false;
             this.hideSaving();
+            this.stopListening(this.dataPackage, "error", this.saveError);
+    
             // Turn off "save" footer
             this.$("#metadata-footer").css("visibility", "hidden")   
             // Update the metadata table header with the new resource map id.
@@ -1238,7 +1240,7 @@ define(['jquery',
         saveError: function(errorMsg){
             console.log("saveError called");
             var errorId = "error" + Math.round(Math.random()*100),
-                message = $(document.createElement("div")).append("<p>Your changes could be saved.</p>");
+                message = $(document.createElement("div")).append("<p>Your changes could not be saved.</p>");
 
             message.append($(document.createElement("a"))
                                 .text("See details")
@@ -1250,13 +1252,14 @@ define(['jquery',
                                 .attr("id", errorId)
                                 .append($(document.createElement("pre")).text(errorMsg)));
 
-            MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, {
+            MetacatUI.appView.showAlert(message, "alert-error", "body", null, {
                 emailBody: "Error message: Data Package save error: " + errorMsg,
-                remove: true
+                remove: true 
                 });
             
             this.saveProvPending = false;
             this.hideSaving(); 
+            this.stopListening(this.dataPackage, "successSaving", this.saveSuccess);
 
             // Turn off "save" footer
             this.$("#metadata-footer").css("visibility", "hidden")   
@@ -1274,7 +1277,7 @@ define(['jquery',
             if(this.dataPackage.provEditsPending()) {
                 this.saveProvPending = true;
                 // If the Data Package failed saving, display an error message
-                this.listenToOnce(this.dataPackage, "errorSaving", this.saveError);
+                this.listenToOnce(this.dataPackage, "error", this.saveError);
                 // Listen for when the package has been successfully saved
                 this.listenToOnce(this.dataPackage, "successSaving", this.saveSuccess);
                 this.showSaving(); 
