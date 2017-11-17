@@ -832,13 +832,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			// Set the selection box labels according to the edit icon that was clicked,
 			// and the ProvChart that it was clicked in.
-			if(this.editorType == "sources") {
+			if (this.editorType == "sources") {
 				if(isProgram) {
 					title = "Add the program that generated " + this.context.get("fileName");
 				} else {
 					title = "Add source data to " + this.context.get("fileName");
 				}
-			} else if(this.editorType == "derivations") {
+			} else if (this.editorType == "derivations") {
 				if(isProgram) {
 					title = "Add the program that read " + this.context.get("fileName");
 				} else {
