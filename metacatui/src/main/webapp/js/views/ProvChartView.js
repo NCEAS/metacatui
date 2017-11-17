@@ -165,12 +165,12 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				}
 				
 				//Derivation charts have a pointer for each node
-				if(view.type == "derivations" && (this.numDerivations > 0 || this.editModeOn))
-					view.$el.append(view.createConnecter(position));
+				//if(view.type == "derivations" && (this.numDerivations > 0 || this.editModeOn))
+				//	view.$el.append(view.createConnecter(position));
 				
 				//Source charts have a connector for each node and one pointer
-				if(view.type == "sources" && (this.numSources > 0 || this.editModeOn))
-					view.$el.append(view.createConnecter(position));
+				//if(view.type == "sources" && (this.numSources > 0 || this.editModeOn))
+				//	view.$el.append(view.createConnecter(position));
 				
 				//Bump the position for non-programs only
 				if(entity.getType() == "program")
