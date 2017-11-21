@@ -449,6 +449,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 if(this.get("uploadResult")){
 					var checksum = md5(this.get("uploadResult"));
 					this.set("checksum", checksum);
+					this.set("checksumAlgorithm", "MD5");
                 }
                 
                 //Create the system metadata XML

@@ -896,6 +896,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					//Get the new checksum of the EML XML
 					var checksum = md5(xml);
 					this.set("checksum", checksum);
+					this.set("checksumAlgorithm", "MD5");
 	     			
 	     			//Create the system metadata XML
 	     			var sysMetaXML = this.serializeSysMeta();
