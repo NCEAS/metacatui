@@ -1574,6 +1574,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
                                 this.addToGraph(dataNode, PROV("wasGeneratedBy"), executionNode);
                             } else {
+                                executionId = this.getExecutionId(programId);
+                                executionNode = this.getExecutionNode(executionId);
+                                console.log("removing wasGenerated for execution: " + executionNode);
                                 graph.removeMatches(dataNode, PROV("wasGeneratedBy"), executionNode);
                                 removed = this.removeProgramFromGraph(programId);   
                                 this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
@@ -1591,6 +1594,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 this.addToGraph(dataNode, RDF("type"), PROVONE("Data"));
                                 this.addToGraph(executionNode, PROV("used"), dataNode);
                             } else {
+                                executionId = this.getExecutionId(programId);
+                                executionNode = this.getExecutionNode(executionId);
+                                console.log("removing used for execution: " + executionNode);
                                 graph.removeMatches(executionNode, PROV("used"), dataNode)
                                 removed = this.removeProgramFromGraph(programId);
                                 this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
