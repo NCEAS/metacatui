@@ -1247,17 +1247,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		var originalXMLString = xmlString;
 	        		
 	        		//Camel case node names
-	        		var regEx = new RegExp("<" + name, "g");
-	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name]);
+	        		var regEx = new RegExp("<" + name + ">", "g");
+	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name] + ">");
 	        		
-	        		regEx = new RegExp(name + ">", "g");
-	        		xmlString = xmlString.replace(regEx, nodeNameMap[name] + ">");
+	        		regEx = new RegExp("<" + name + " ", "g");
+	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name] + " ");
+	        		
+	        		regEx = new RegExp("</" + name + ">", "g");
+	        		xmlString = xmlString.replace(regEx, "</" + nodeNameMap[name] + ">");
 	        		
 	        		//If node names haven't been changed, then find an attribute
 	        		if(xmlString == originalXMLString){
 	        			regEx = new RegExp(" " + name + "=", "g");
 	        			xmlString = xmlString.replace(regEx, " " + nodeNameMap[name] + "=");
 	        		}
+	        		
 	        	}, this);
 	        	
 	        	return xmlString;

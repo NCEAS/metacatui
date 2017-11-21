@@ -231,7 +231,7 @@ define(["jquery", "underscore", "backbone",
                     nodeToInsertAfter = this.getEMLPosition(objectDOM, "unit");
                     
                     if( ! nodeToInsertAfter ) {
-                        $(objectDOM).append(unitNode);
+                        $(objectDOM).prepend(unitNode);
                     } else {
                         $(nodeToInsertAfter).after(unitNode);
                     }
@@ -268,10 +268,13 @@ define(["jquery", "underscore", "backbone",
                 var maxBoundNode;
                 if ( numericDomain ) {
                     
+                	var oldNumericDomainNode = $(numericDomainNode).clone();
+                	
                     // Remove the existing numericDomainNode node
                     if ( typeof numericDomainNode !== "undefined" ) {
                         numericDomainNode.remove();
-                    } 
+                    }
+                    
                     // Build the new numericDomain node
                     numericDomainNode = document.createElement("numericdomain");
                     
@@ -290,22 +293,39 @@ define(["jquery", "underscore", "backbone",
                             minBound = bound.minimum;
                             maxBound = bound.maximum;
                             boundsNode = document.createElement("bounds");
+                            
                             var hasBounds = typeof minBound !== "undefined" || typeof maxBound !== "undefined";
+                            
                             if ( hasBounds ) {
                                 // Populate the minimum element
                                 if ( typeof minBound !== "undefined" ) {
-                                    minBoundNode = document.createElement("minimum");
-                                    $(minBoundNode).text(minBound);
+                                    minBoundNode = $(document.createElement("minimum"));
+                                    minBoundNode.text(minBound);
+                                    
+                                    var existingExclusive = oldNumericDomainNode.find("minimum").attr("exclusive");
+                                    
+                                    if( !existingExclusive || existingExclusive === "false" )
+                                    	minBoundNode.attr("exclusive", "false");
+                                    else
+                                    	minBoundNode.attr("exclusive", "true");
                                 }
 
                                 // Populate the maximum element
                                 if ( typeof maxBound !== "undefined" ) {
-                                    maxBoundNode = document.createElement("maximum");
-                                    $(maxBoundNode).text(maxBound);
+                                    maxBoundNode = $(document.createElement("maximum"));
+                                    maxBoundNode.text(maxBound);
+                                    
+                                    var existingExclusive = oldNumericDomainNode.find("maximum").attr("exclusive");
+                                    
+                                    if( !existingExclusive || existingExclusive === "false" )
+                                    	maxBoundNode.attr("exclusive", "false");
+                                    else
+                                    	maxBoundNode.attr("exclusive", "true");
                                 }
-                                $(boundsNode).append(minBoundNode);
-                                $(boundsNode).append(maxBoundNode);
+                                
+                                $(boundsNode).append(minBoundNode, maxBoundNode);
                                 $(numericDomainNode).append(boundsNode);
+                                
                             } else {
                                 // Do nothing. Content is missing, don't append the node
                             }
