@@ -50,13 +50,27 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			this.$(".login-container").append(signInView.el);
 			signInView.setUpPopup();
 						
-			
 			//Initialize the tooltips in the navbar
 			this.$(".tooltip-this").tooltip({
 				delay: {show: 600},
 				trigger: "hover",
 				placement: "bottom"
-			});			
+			});	
+			
+			this.changeBackground();
+		},
+		
+		changeBackground: function(){
+			// Change the background image if there is one
+			var imageEl = $('#bg_image');
+			if ($(imageEl).length > 0) {				
+				var imgCnt = $(imageEl).attr('data-image-count');
+				
+				//Randomly choose the next background image
+				var bgNum = Math.ceil(Math.random() * imgCnt);
+				
+				$(imageEl).css('background-image', "url('./js/themes/" + MetacatUI.theme + "/img/backgrounds/bg" + bgNum + ".jpg')");
+			}
 		},
 		
 		triggerSearch: function() {

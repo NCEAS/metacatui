@@ -541,6 +541,7 @@ select{
 	    background-size: cover;
 	    background-repeat: no-repeat;
 	    background-position: center;
+	    transition: background 500ms;
     }
     
     /*Share Your Data button */

@@ -65,27 +65,18 @@ define(['jquery',
 			this.$el.append(this.template());
 			
 			// render the nav
-			app.navbarView = new NavbarView();
-			app.navbarView.setElement($('#Navbar')).render();
+			MetacatUI.navbarView = new NavbarView();
+			MetacatUI.navbarView.setElement($('#Navbar')).render();
 			
-			app.altHeaderView = new AltHeaderView();
-			app.altHeaderView.setElement($('#HeaderContainer')).render();
+			MetacatUI.altHeaderView = new AltHeaderView();
+			MetacatUI.altHeaderView.setElement($('#HeaderContainer')).render();
 			
-			app.footerView = new FooterView();
-			app.footerView.setElement($('#Footer')).render();
+			MetacatUI.footerView = new FooterView();
+			MetacatUI.footerView.setElement($('#Footer')).render();
 			
 			//Load the Slaask chat widget if it is enabled in this theme
 			if(MetacatUI.appModel.get("slaaskKey") && window._slaask)
 		    	_slaask.init(MetacatUI.appModel.get("slaaskKey"));
-			
-			// listen for image loading - bind only once in init method
-			var imageEl = $('#bg_image');
-			if ($(imageEl).length > 0) {
-				// only show the image when it is completely done loading
-				$(imageEl).load(function() {
-					$(imageEl).fadeIn('slow');
-				});
-			}
 			
 			//Change the document title when the app changes the MetacatUI.appModel title at any time
 			this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
@@ -103,7 +94,8 @@ define(['jquery',
 		// Render the main view and/or re-render subviews. Don't call .html() here
 		// so we don't lose state, rather use .setElement(). Delegate rendering 
 		// and event handling to sub views
-		render: function () {									
+		render: function () {
+			
 			return this;
 		},
 		
@@ -117,29 +109,7 @@ define(['jquery',
 			var thisAppViewRef = this;
 	
 			// Change the background image if there is one
-			var imageEl = $('#bg_image');
-			if ($(imageEl).length > 0) {
-				
-				var imgCnt = $(imageEl).attr('data-image-count');
-				
-				// hide the existing image
-				$(imageEl).fadeOut('fast', function() {
-					
-					//Randomly choose the next background image
-					var bgNum = Math.ceil(Math.random() * imgCnt);
-					//If the element is an img, change the src attribute
-					if ($(imageEl).prop('tagName') == 'IMG'){
-						$(imageEl).css('background-image', "url('./js/themes/" + theme + "/img/backgrounds/bg" + bgNum + ".jpg')");
-						// note the load() callback will show this image for us
-					}
-					else { 
-						//Otherwise, change the background image style property
-						$(imageEl).css('background-image', 'url(\'./js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg\')');
-						$(imageEl).fadeIn('slow');
-					}
-					
-				});
-			}
+			MetacatUI.navbarView.changeBackground();
 		
 			
 			// close the current view
