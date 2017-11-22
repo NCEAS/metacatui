@@ -823,6 +823,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     #Content{
     	padding-top: 118px;
+    	margin-left: auto;
+    	margin-right: auto;
     }
     .mapMode #Content{
     	padding-top: 112px;

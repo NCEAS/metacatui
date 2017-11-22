@@ -4,7 +4,6 @@ MetacatUI.themeMap =
 {
 	'*': {
 		// example overrides are provided here
-		'templates/app.html' : 'themes/' + MetacatUI.theme + '/templates/app.html',
 		'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
 		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
 		'templates/about.html' : 'themes/' + MetacatUI.theme + '/templates/about.html',

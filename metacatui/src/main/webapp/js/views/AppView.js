@@ -129,7 +129,7 @@ define(['jquery',
 					var bgNum = Math.ceil(Math.random() * imgCnt);
 					//If the element is an img, change the src attribute
 					if ($(imageEl).prop('tagName') == 'IMG'){
-						$(imageEl).attr('src', './js/themes/' + theme + '/img/backgrounds/bg' + bgNum + '.jpg');
+						$(imageEl).css('background-image', "url('./js/themes/" + theme + "/img/backgrounds/bg" + bgNum + ".jpg')");
 						// note the load() callback will show this image for us
 					}
 					else { 

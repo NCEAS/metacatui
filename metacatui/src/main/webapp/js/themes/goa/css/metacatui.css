@@ -138,6 +138,21 @@
     color: #333;
     font-weight: normal;
 }
+.btn-primary {
+    background-image: none;
+    border-width: 0px;
+}
+
+/* EDITOR 
+* --------------------------------------------------- */
+.data-package-item.message-row button {
+    margin-left: auto;
+    margin-right: auto;
+    height: 50px;
+}
+.Editor #Content {
+    padding-top: 0px;
+}
 
 /* HEADER CSS
 -------------------------------------------------- */    

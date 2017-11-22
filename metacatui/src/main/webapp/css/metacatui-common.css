@@ -109,12 +109,13 @@ article.container {
 	padding: 2%;
 	width: 96%;
 }
-#Content{
+/*#Content{
 	width: 90%;
 	max-width: 1200px;
 	margin-left: auto;
 	margin-right: auto;
-}
+}*/
+
 .mapMode #Content{
 	width: 100%;
    	margin: 0px;
@@ -3179,6 +3180,9 @@ Editor View
     margin: 0px;
     width: 100%;
     max-width: 100%;
+}
+#editor-body{
+	padding-bottom: 100px;
 }
 .Editor #Content {
     padding-top: 70px;

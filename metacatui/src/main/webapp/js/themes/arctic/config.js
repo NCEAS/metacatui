@@ -4,7 +4,6 @@ MetacatUI.themeMap =
 {
 	'*': {
 		// Templates include extension
-		'templates/app.html' : 'themes/' + MetacatUI.theme + '/templates/app.html',
 		'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
 		'templates/featuredData.html' : 'themes/' + MetacatUI.theme + '/templates/featuredData.html',
 		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
