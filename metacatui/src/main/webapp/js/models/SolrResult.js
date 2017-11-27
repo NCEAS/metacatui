@@ -474,7 +474,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			if(field == "prov_usedByExecution" ||
 			   field == "prov_usedByProgram"   ||
-			   field == "prov_generated")
+			   field == "prov_generated"       ||
+			   field == "prov_hasDerivations")
 				return true;
 			else
 				return false;
