@@ -548,29 +548,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			//Fit the context element to its contents
 			$(this.contextEl).height("auto");
 			
-			//For source charts
-			if(this.sources){
-				//Use the last expanded/visible connecter element to determine the chart height
-				var lastConnecter = _.last(this.$(".connecter.expanded"));				
-				if(typeof lastConnecter !== "undefined") 
-					this.$el.height(parseInt(lastConnecter.style.top));
-				else
-					this.$el.height(this.height);
-				
-				//Find the pointer and move to the half-way point of the chart height
-				this.$(".prov-pointer").css("top", "50%");
-			}
-			//For derivations charts
-			else if(this.derivations){
-				//Get the position of the last visible pointer in the chart and use that to determine the chart height
-				var lastPointer = _.last(this.$(".prov-pointer.expanded"));				
-				if(typeof lastPointer !== "undefined")
-					this.$el.height(parseInt(lastPointer.style.top) + this.pointerHeight/2);
-				else
-					this.$el.height(this.height);
-					
-				this.$(".connecter").css("top", "50%");	
-			}
+			//Use the last expanded/visible connecter element to determine the chart height
+			var lastConnecter = _.last(this.$(".connecter.expanded"));				
+			
+			if(typeof lastConnecter !== "undefined") 
+				this.$el.height(parseInt(lastConnecter.style.top));
+			else
+				this.$el.height(this.height);
+			
+			//Find the pointer and move to the half-way point of the chart height
+			this.$(".prov-pointer").css("top", "50%");
 			
 			//Hide the expand control and show the hidden nodes
 			this.$(".expand-control").fadeIn();
@@ -581,11 +568,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			var chartEl = this.$el,
 				i = 0,
 				numAnimations = this.$(".collapsed").length;
-			this.$(".collapsed").fadeOut(/*function(){
-				i++;
-				if(scroll && numAnimations == i)
-					appView.scrollTo(chartEl);
-			}*/);			
+			
 		},
 		
 		switchNodes: function(nodeA, nodeB){
