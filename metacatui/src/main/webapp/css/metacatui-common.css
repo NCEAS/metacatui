@@ -1638,6 +1638,14 @@ img.icon{
     	width: 85%;
     	width: calc(100% - 180px);
 }
+.entitydetails tr,
+.entitydetails table,
+.entitydetails tbody,
+.entitydetails td {
+    display: block;
+    word-wrap: break-word;
+    box-sizing: border-box;
+}
 .entitydetails > h4 > *{
 	float: left;
 	margin-bottom: 20px;
