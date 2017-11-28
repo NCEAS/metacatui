@@ -551,7 +551,6 @@ img.icon{
 	margin-bottom: 10px;
 	color: #666;
 	position: absolute;
-	z-index: 2;
 	cursor: pointer;
 }
 .prov-chart .node:focus{
@@ -931,17 +930,19 @@ img.icon{
 	margin-left: 105px;
 	box-sizing: border-box;
 }
-.entitydetails.hasProvLeft{
+.form-horizontal .controls.entitydetails{
+	margin-left: 100px;
+}
+.form-horizontal .controls.entitydetails.hasProvLeft{
 	margin-left: 0px;
 	width: calc(100% - 305px);
     display: inline-block;
 }
-.entitydetails.hasProvRight{
-	margin-right: 0px;
+.form-horizontal .controls.entitydetails.hasProvRight{
     width: calc(100% - 305px);
     display: inline-block;
 }
-.entitydetails.hasProvLeft .thumbnail.pdf{
+.form-horizontal .controls.entitydetails.hasProvLeft .thumbnail.pdf{
 	margin-left: 60px;
 }
 #article-container.hasProvLeft table.download-contents .name,
@@ -957,7 +958,7 @@ img.icon{
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
 	margin-left: 0px;
-	width: calc(100% - 220px);
+	width: calc(100% - 230px);
 }
 #article-container.hasProvLeft,
 #article-container.hasProvRight{
@@ -975,15 +976,15 @@ img.icon{
 	width: calc(100% - 214px);
 }
 /* The metadata is narrowed even more when there are programs */
-.entitydetails.hasPrograms.hasProvLeft{
+.form-horizontal .entitydetails.hasPrograms.hasProvLeft{
 	margin-left: 57px;
 	width: calc(100% - 272px); /* When there is a program column on one side */
 }
-.entitydetails.hasPrograms.hasProvRight{
+.form-horizontal .entitydetails.hasPrograms.hasProvRight{
 	margin-right: 57px;
-	width: calc(100% - 276px); /* When there is a program column on one side */
+	width: calc(100% - 362px); /* When there is a program column on one side */
 }
-.entitydetails.hasProvLeft.hasProvRight.hasPrograms{
+.form-horizontal .entitydetails.hasProvLeft.hasProvRight.hasPrograms{
 	width: calc(100% - 334px); /* When there are program columns on both sides */
 }
 
