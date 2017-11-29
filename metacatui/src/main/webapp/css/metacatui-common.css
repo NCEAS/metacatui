@@ -1489,6 +1489,11 @@ img.icon{
 #Content.no-stylesheet .citation .title{
 	font-weight: bold;
 }
+#Metadata{
+	padding-left: 0px;
+	padding-right: 0px;
+    width: 100%;
+}
 .entitydetails.controls-well > .thumbnail{
 	margin-left: 180px;
 }

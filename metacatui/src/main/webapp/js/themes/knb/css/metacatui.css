@@ -1408,10 +1408,6 @@ svg .no-activity,
 
   /* Metadata rendering CSS
   -------------------------------------------------- */
-    #Metadata {
-		min-height: 800px;
-		width: 90%;
-    }
     
     #Metadata > .container{
 		width: 100%;
