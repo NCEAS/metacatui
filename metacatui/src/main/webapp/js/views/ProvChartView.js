@@ -246,7 +246,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 					icon = "icon-file-text";
 				else if (type == "image")
 					icon = "icon-picture";
-				else if (type == "pdf")
+				else if (type == "PDF")
 					icon = "icon-file pdf";
 			}
 			else if(provEntity.type == "Package"){
@@ -314,6 +314,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 					 .attr("data-id", provEntity.get("id"));
 			
 			//Display images in the prov chart node
+			
 			if(type == "image"){
 				$(nodeEl).css("background-image", "url('" + provEntity.get("url") + "')");
 			}
