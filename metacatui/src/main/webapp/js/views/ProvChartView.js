@@ -195,8 +195,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvSta
 			if(this.numPrograms > 0) this.$el.addClass("has-programs");
 			if(this.numDerivations == 1 && !this.numPrograms) this.$el.addClass("one-derivation");
 			
+			//Specify classes for the context element (e.g. entity details container)
 			var contextClasses = this.type == "sources" ? "hasProvLeft" : "hasProvRight";
-			if(this.numPrograms > 0) contextClasses += " hasPrograms";
+			
+			if(this.numPrograms > 0 && this.type == "sources"){
+				contextClasses += " hasProgramsLeft";
+			}
+			else if(this.numPrograms > 0 && this.type == "derivations"){
+				contextClasses += " hasProgramsRight";
+			}
+			
 			$(this.contextEl).addClass(contextClasses);
 			
 			//If it's a derivation chart, add a connector line

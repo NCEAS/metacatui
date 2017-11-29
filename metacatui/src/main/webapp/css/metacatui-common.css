@@ -669,6 +669,9 @@ img.icon{
 .program-icon{
 	font-size: 25px;
 }
+.prov-chart .node .pdf.icon {
+    margin-left: 5px;
+}
 /********* The Prov Chart colors *******/		
 .prov-chart .node.uniqueNode1,
 .entitydetails.uniqueNode1{
@@ -939,8 +942,14 @@ img.icon{
     display: inline-block;
 }
 .form-horizontal .controls.entitydetails.hasProvRight{
-    width: calc(100% - 305px);
+    width: calc(100% - 278px);
     display: inline-block;
+}
+.form-horizontal .controls.entitydetails.hasProgramsRight{
+	margin-right: 58px;
+}
+.form-horizontal .controls.entitydetails.hasProgramsLeft {
+    margin-left: 58px;
 }
 .form-horizontal .controls.entitydetails.hasProvLeft .thumbnail.pdf{
 	margin-left: 60px;
