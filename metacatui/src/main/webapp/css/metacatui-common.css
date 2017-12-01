@@ -1189,6 +1189,7 @@ img.icon{
 }
 .prov-chart .popover-content .header > .name{
 	font-size: 1.2em;
+	word-wrap: break-word;
 }
 .prov-chart .popover-content .header > .subtle{
 	margin-bottom: 0px;
