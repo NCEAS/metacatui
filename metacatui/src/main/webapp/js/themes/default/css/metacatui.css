@@ -139,12 +139,6 @@ Bold 700
     	clear: both;
     }
     
-    .table-striped tbody>tr:nth-child(odd)>td, 
-    .table-striped tbody>tr:nth-child(odd)>th,
-    .table-striped tfoot>tr>th{
-    	background-color: #E9E9E9;
-    }
-    
     thead{
     	background-color: #f3f3f3;
     	border-bottom: 1px solid #999;
@@ -289,7 +283,17 @@ select{
 .sign-in select{
 		width: 220px;
 }
-	
+
+ /* EDITOR 
+-------------------------------------------------- */ 	
+.Editor #Content{
+	padding-top: 45px;
+}
+.data-package-item.message-row button {
+    height: 50px;
+    border-width: 0px;
+}
+
 
 /* CUSTOMIZE THE ACCORDIAN 
 -------------------------------------------------- */
@@ -439,6 +443,7 @@ select{
 		color: #444444;
 		box-shadow: none;
 		-webkit-box-shadow: none;
+		background-image: none;
 	}
     .btn-primary {
       background-color: #166194;
@@ -535,7 +540,7 @@ select{
       top: 0px;
       width: 100%;
       position:fixed;
-      z-index:3;
+      z-index: 1;
     }
     #bg_image{
 	    background-size: cover;
@@ -2354,9 +2359,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     font-weight: normal;
     font-size: .9em;
 }
- .table .btn{
- 	min-width: 110px;
- }
 
 /* HIGHLIGHTING
  -----------------------------------------------*/

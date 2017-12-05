@@ -179,7 +179,11 @@
 -------------------------------------------------- */  
 .Editor #Content {
     padding-top: 0px;
-}   
+} 
+.data-package-item.message-row button{
+	height: 50px;
+	border-width: 0px;
+}  
     
 /* MDQ 
 -------------------------------------------------- */ 
@@ -222,7 +226,7 @@
   header#altHeader {
     position: relative;
     top: 0px;
-    z-index: 100;
+    z-index: 0;
     min-height: 400px;      
   }
   
@@ -1418,10 +1422,6 @@ svg .no-activity,
 
   /* Metadata rendering CSS
   -------------------------------------------------- */
-    #Metadata {
-		min-height: 800px;
-		width: 90%;
-    }
     
     #Metadata > .container{
 		width: 100%;

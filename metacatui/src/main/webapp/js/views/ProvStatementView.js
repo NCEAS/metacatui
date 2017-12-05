@@ -35,6 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 		//Prov fields / predicates in the prov statements that we do not want to display
 		skipPredicates: ["prov_generatedByExecution", 
 		                 "prov_generatedByUser", 
+		                 "prov_instanceOfClass",
 		                 "prov_wasGeneratedBy", 
 		                 "prov_usedByExecution", 
 		                 "prov_usedByUser",

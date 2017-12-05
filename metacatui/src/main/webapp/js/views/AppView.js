@@ -381,11 +381,12 @@ define(['jquery',
 		
 		scrollTo: function(pageElement, offsetTop){
 			//Find the header height if it is a fixed element
-			if(typeof offsetTop == "undefined")
-				var offsetTop = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
+			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
+			var navOffset    = (this.$("#Navbar").css("position") == "fixed") ? this.$("#Navbar").outerHeight() : 0;
+			var totalOffset = headerOffset + navOffset;
 			
 			$("body,html").stop(true,true) //stop first for it to work in FF
-						  .animate({ scrollTop: $(pageElement).offset().top - 40 - offsetTop}, 1000);
+						  .animate({ scrollTop: $(pageElement).offset().top - 40 - totalOffset}, 1000);
 			return false;
 		},
 		
