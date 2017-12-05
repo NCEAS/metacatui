@@ -1975,14 +1975,17 @@ define(['underscore', 'jquery', 'backbone',
     	 * Resizes the vertical table of contents so it's always the same height as the editor body
     	 */
         resizeTOC: function(){
-        	var tableBottom = document.getElementById("data-package-container").getBoundingClientRect().bottom,
+        	var tableBottom = $("#editor-body .ui-resizable-handle")[0].getBoundingClientRect().bottom,
         		navTop = tableBottom;
         	
-        	if(tableBottom < $("#Navbar").outerHeight())
-        		navTop = $("#Navbar").outerHeight();
+        	if(tableBottom < $("#Navbar").outerHeight()){
+        		if( $("#Navbar").css("position") == "fixed" )
+        			navTop = $("#Navbar").outerHeight();
+        		else
+        			navTop = 0;
+        	}
         	
-        	navTop += $("#editor-body .ui-resizable-handle").outerHeight();
-        	
+        	        	
         	$(".metadata-toc").css("top", navTop);
         },
         

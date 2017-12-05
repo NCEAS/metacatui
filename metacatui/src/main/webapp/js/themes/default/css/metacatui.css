@@ -16,8 +16,6 @@ Bold 700
     }
     
     body {
-      background-color: #555555; /*IE 8 fallback*/
-      background: rgba(0, 0, 0, .8);
       min-height: 100%;
       position: relative;
       padding-bottom: 130px; /* Keeps footer down */
@@ -25,6 +23,9 @@ Bold 700
     body.mapMode{
     	padding-bottom: 0px;
     }
+    #Content{
+		padding: 80px 40px 20px 40px;
+	}
     a {
       color: #166194;
       font-weight: 600;
@@ -128,18 +129,14 @@ Bold 700
     ul.plain-list > li{
     	line-height: 25px;
     	list-style: none;
+    	display: inline;
+    	margin-left: 5px;
     }
     .nav-tabs ~ section{
     	background-color: #FFF;
     }
     .clear{
     	clear: both;
-    }
-    
-    .table-striped tbody>tr:nth-child(odd)>td, 
-    .table-striped tbody>tr:nth-child(odd)>th,
-    .table-striped tfoot>tr>th{
-    	background-color: #E9E9E9;
     }
     
     thead{
@@ -181,6 +178,7 @@ Bold 700
 	    margin-left: -512px;   /* 50% */
 	  }
 	}
+
 	
 	/** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
 	.ellipsis{
@@ -285,7 +283,17 @@ select{
 .sign-in select{
 		width: 220px;
 }
-	
+
+ /* EDITOR 
+-------------------------------------------------- */ 	
+.Editor #Content{
+	padding-top: 45px;
+}
+.data-package-item.message-row button {
+    height: 50px;
+    border-width: 0px;
+}
+
 
 /* CUSTOMIZE THE ACCORDIAN 
 -------------------------------------------------- */
@@ -435,6 +443,7 @@ select{
 		color: #444444;
 		box-shadow: none;
 		-webkit-box-shadow: none;
+		background-image: none;
 	}
     .btn-primary {
       background-color: #166194;
@@ -529,8 +538,15 @@ select{
    }
     nav#Navbar {
       top: 0px;
-      width: auto;
-      float: none;    
+      width: 100%;
+      position:fixed;
+      z-index: 1;
+    }
+    #bg_image{
+	    background-size: cover;
+	    background-repeat: no-repeat;
+	    background-position: center;
+	    transition: background 500ms;
     }
     
     /*Share Your Data button */
@@ -794,6 +810,10 @@ select{
 		max-height: 900px;
 		margin: 0 auto;
 		display: block;
+	}
+	
+	.copy-success .icon {
+    	font-size: 1em;
 	}
 	
 	#Metadata h4{
@@ -1073,7 +1093,6 @@ select{
 	 overflow-x: visible;
 	 float: left;
 	 clear: left;
-	 border-right: 1px solid #999;
 }
 #sidebar > * {
     padding-right: 0px;
@@ -1432,6 +1451,8 @@ li.ui-menu-item > a:hover,
 -------------------------------------------------- */
 	.mapMode #Content{
 		max-width: 100%;
+		padding-top: 44px;
+		padding-left: 0px;
 	}
 	
     /*-- Results header --*/  
@@ -1523,15 +1544,7 @@ li.ui-menu-item > a:hover,
       padding-right: 10px;
     }
     .result-row:nth-child(odd){
-    	background-color: #CCCCCC; /*IE 8 fallback */
-    	background-color: rgba(255, 255, 255, 1);
-    }
-    .result-row:nth-child(odd) .multi-line-ellipsis:after{
-        background-color: #CCCCCC; /*IE 8 fallback */
-  		background: rgba(185, 185, 185, 0.1);
-  	}
-    .result-row:nth-child(even){
-    	background-color: transparent;
+    	background-color: #f1f1f19e;
     }
     
     .result-row .result-row,
@@ -1762,12 +1775,12 @@ svg .metadata,
   	fill: #0E69A1;
   }
   
-    /* The universal color for packages */
+/* The universal color for packages */
   
 .profile .packages,
 svg .packages{
-	color: #ABA805;
-	fill: #ABA805;
+	color: #05ab8f;
+	fill: #05ab8f;
 }
 .profile .bar-label.packages{
 	fill: inherit;
@@ -1990,7 +2003,9 @@ svg .point:hover ~ .line-chart-label{
 #data-coverage-year-range{
 	display: block;
 }
-
+.profile .circle-badge circle{
+	stroke: #05ab8f;
+}
 	
 
 /* MAPS 
@@ -2042,28 +2057,26 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #mainContent{
 	height: 0px;
 	padding: 0px;
+	margin-top: 50px;
 }
 
 #mainContent h1{
 	font: 400 60px/60px "Oswald", Arial, sans-serif;
-	color: #FFFFFF;
+	color: #375796;
 	text-transform: uppercase;
 	width: 300px;
+	margin-bottom: 20px;
 }
 
 #mainContent input{
 	height: 90px;
-	border-radius: 20px 0px 0px 20px;
-	-webkit-border-radius: 20px 0px 0px 20px;
-	-moz-border-radius: 20px 0px 0px 20px;
-	font-size: 30px; 
-	border: 3px solid #EEEEEE;
-	border-right: 0px; 
-	padding-left: 20px;
-	margin-right: 20px;
-	float: left;
-	background-color: #FFFFFF; /* IE fallback */
-	background-color: rgba(255,255,255,0.8);
+    border-radius: 8px 0px 0px 8px;
+    -moz-border-radius: 20px 0px 0px 20px;
+    font-size: 30px;
+    border: 2px solid #cacde2;
+    padding-left: 20px;
+    margin-right: 20px;
+    float: left;
 }
 
 #mainContent input::-webkit-input-placeholder{
@@ -2080,26 +2093,22 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #search_btn_main{
-	float: left;
-	height: 98px;
-	margin-left: -20px;
-	border-radius: 0 15px 15px 0;
-	-webkit-border-radius: 0 15px 15px 0;
-	-moz-border-radius: 0 15px 15px 0;
-	border: 3px solid #EEEEEE;
-	border-left: 0px;
-	background-color: #FFFFFF;
-	background-color: rgba(255,255,255,0.8);
-	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-	-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-	padding: 0px;
-	width: 100px;
-	line-height: 90px;
+	height: 100px;
+    margin-left: -20px;
+    -webkit-border-radius: 0 8px 8px 0;
+    -moz-border-radius: 0 15px 15px 0;
+    border-left: 0px;
+    background-color: #375796;
+    -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+    padding: 0px;
+    width: 100px;
+    background-image: none;
 }
 
 #search_btn_main > i{
-	color: #999999;
+	color: #FFF;
+	font-size: 2em;
+    line-height: 3.1em;
 }
 
 /*-------------- DOCUMENTATION CSS -----------------------------*/
@@ -2350,9 +2359,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     font-weight: normal;
     font-size: .9em;
 }
- .table .btn{
- 	min-width: 110px;
- }
 
 /* HIGHLIGHTING
  -----------------------------------------------*/

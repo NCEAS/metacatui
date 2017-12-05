@@ -449,6 +449,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 if(this.get("uploadResult")){
 					var checksum = md5(this.get("uploadResult"));
 					this.set("checksum", checksum);
+					this.set("checksumAlgorithm", "MD5");
                 }
                 
                 //Create the system metadata XML
@@ -1247,17 +1248,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        		var originalXMLString = xmlString;
 	        		
 	        		//Camel case node names
-	        		var regEx = new RegExp("<" + name, "g");
-	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name]);
+	        		var regEx = new RegExp("<" + name + ">", "g");
+	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name] + ">");
 	        		
-	        		regEx = new RegExp(name + ">", "g");
-	        		xmlString = xmlString.replace(regEx, nodeNameMap[name] + ">");
+	        		regEx = new RegExp("<" + name + " ", "g");
+	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name] + " ");
+	        		
+	        		regEx = new RegExp("</" + name + ">", "g");
+	        		xmlString = xmlString.replace(regEx, "</" + nodeNameMap[name] + ">");
 	        		
 	        		//If node names haven't been changed, then find an attribute
 	        		if(xmlString == originalXMLString){
 	        			regEx = new RegExp(" " + name + "=", "g");
 	        			xmlString = xmlString.replace(regEx, " " + nodeNameMap[name] + "=");
 	        		}
+	        		
 	        	}, this);
 	        	
 	        	return xmlString;

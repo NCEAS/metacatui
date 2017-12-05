@@ -109,12 +109,13 @@ article.container {
 	padding: 2%;
 	width: 96%;
 }
-#Content{
+/*#Content{
 	width: 90%;
 	max-width: 1200px;
 	margin-left: auto;
 	margin-right: auto;
-}
+}*/
+
 .mapMode #Content{
 	width: 100%;
    	margin: 0px;
@@ -592,7 +593,6 @@ img.icon{
 	margin-bottom: 10px;
 	color: #666;
 	position: absolute;
-	z-index: 0;
 	cursor: pointer;
 }
 .prov-chart .node:focus{
@@ -738,6 +738,9 @@ img.icon{
 }
 .prov-chart .program-icon{
 	font-size: 25px;
+}
+.prov-chart .node .pdf.icon {
+    margin-left: 5px;
 }
 /* Program editor node text */
 .prov-chart .editor text {
@@ -999,22 +1002,30 @@ img.icon{
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
-	width: calc(100% - 220px); /* 100% - prov-chart width - (padding + borders)*/
+	width: calc(100% - 215px); /* 100% - prov-chart width - (padding + borders)*/
 	display: inline-block;	
 	margin-left: 105px;
 	box-sizing: border-box;
 }
-.entitydetails.hasProvLeft{
+.form-horizontal .controls.entitydetails{
+	margin-left: 100px;
+}
+.form-horizontal .controls.entitydetails.hasProvLeft{
 	margin-left: 0px;
 	width: calc(100% - 305px);
     display: inline-block;
 }
-.entitydetails.hasProvRight{
-	margin-right: 0px;
-    width: calc(100% - 305px);
+.form-horizontal .controls.entitydetails.hasProvRight{
+    width: calc(100% - 278px);
     display: inline-block;
 }
-.entitydetails.hasProvLeft .thumbnail.pdf{
+.form-horizontal .controls.entitydetails.hasProgramsRight{
+	margin-right: 58px;
+}
+.form-horizontal .controls.entitydetails.hasProgramsLeft {
+    margin-left: 58px;
+}
+.form-horizontal .controls.entitydetails.hasProvLeft .thumbnail.pdf{
 	margin-left: 60px;
 }
 #article-container.hasProvLeft table.download-contents .name,
@@ -1030,7 +1041,7 @@ img.icon{
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
 	margin-left: 0px;
-	width: calc(100% - 220px);
+	width: calc(100% - 230px);
 }
 #article-container.hasProvLeft,
 #article-container.hasProvRight{
@@ -1048,15 +1059,15 @@ img.icon{
 	width: calc(100% - 214px);
 }
 /* The metadata is narrowed even more when there are programs */
-.entitydetails.hasPrograms.hasProvLeft{
+.form-horizontal .entitydetails.hasPrograms.hasProvLeft{
 	margin-left: 57px;
 	width: calc(100% - 272px); /* When there is a program column on one side */
 }
-.entitydetails.hasPrograms.hasProvRight{
+.form-horizontal .entitydetails.hasPrograms.hasProvRight{
 	margin-right: 57px;
-	width: calc(100% - 276px); /* When there is a program column on one side */
+	width: calc(100% - 362px); /* When there is a program column on one side */
 }
-.entitydetails.hasProvLeft.hasProvRight.hasPrograms{
+.form-horizontal .entitydetails.hasProvLeft.hasProvRight.hasPrograms{
 	width: calc(100% - 334px); /* When there are program columns on both sides */
 }
 
@@ -1252,6 +1263,7 @@ img.icon{
 }
 .prov-chart .popover-content .header > .name{
 	font-size: 1.2em;
+	word-wrap: break-word;
 }
 .prov-chart .popover-content .header > .subtle{
 	margin-bottom: 0px;
@@ -1454,6 +1466,11 @@ img.icon{
 #Content.no-stylesheet .citation .title{
 	font-weight: bold;
 }
+#Metadata{
+	padding-left: 0px;
+	padding-right: 0px;
+    width: 100%;
+}
 .entitydetails.controls-well > .thumbnail{
 	margin-left: 180px;
 }
@@ -1608,6 +1625,14 @@ body > .alert-container {
     	padding: 20px;
     	width: 85%;
     	width: calc(100% - 180px);
+}
+.entitydetails tr,
+.entitydetails table,
+.entitydetails tbody,
+.entitydetails td {
+    display: block;
+    word-wrap: break-word;
+    box-sizing: border-box;
 }
 .entitydetails > h4 > *{
 	float: left;
@@ -2042,7 +2067,7 @@ table.download-contents .btn-container .btn{
     margin-top: 1em;
 }
 .download-contents th .btn-primary{
-	min-width: 120px;
+	min-width: 138px;
 }
 .download-contents.nested .table-header.title a{
 	color: #FFF;
@@ -3180,8 +3205,13 @@ Editor View
     width: 100%;
     max-width: 100%;
 }
+#editor-body{
+	padding-bottom: 100px;
+}
 .Editor #Content {
     padding-top: 70px;
+    padding-left: 0px;
+    padding-right: 0px;
     max-width: 100%;
 }
 #editor-header {
@@ -3202,6 +3232,9 @@ Editor View
     line-height: 3em;
     padding-left: 20px;
     box-sizing: border-box;
+}
+.side-nav-item a:focus {
+    text-decoration: none;
 }
 .side-nav-item.error a{
 	color: red;
@@ -3880,6 +3913,10 @@ textarea.xlarge{
 .Editor .remove:hover{
 	cursor: pointer;
 	color: #FF0000;
+}
+.Editor .dropdown-menu .remove:hover{
+	background-image: none;
+	background-color: transparent;
 }
 
 .taxonomic-coverage-row .remove{

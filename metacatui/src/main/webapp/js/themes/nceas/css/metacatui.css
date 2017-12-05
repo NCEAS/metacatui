@@ -130,6 +130,15 @@ input[type="password"]{
     min-width: 220px;
 }
 
+/* EDITOR 
+* --------------------------------------------------- */
+.data-package-item.message-row button {
+    margin-left: auto;
+    margin-right: auto;
+    height: 50px;
+}
+
+
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */    
   /*.notification {
@@ -757,17 +766,6 @@ body {
 }
 #top form {
 	margin: 0px;
-}
-h1 {
-	font-size: 24px;
-	font-weight: bold;
-	margin: 9px;
-}
-h2 {
-	font-size: 22px;
-	color: #8a3d2c;
-	font-weight: normal;
-	margin: 5px 0px;
 }
 #main-content {
 	margin: 0;
@@ -2409,6 +2407,10 @@ ul.images li {
 }
 
 /* Buttons */
+.btn-primary {
+    background-image: none;
+    border-width: 0px;
+}
 .form-submit {
   margin-bottom: 1px;
   cursor: pointer;
@@ -2925,14 +2927,12 @@ body.wysiwygeditor {
  **/
  
  body{font-family:Arial, Helvetica, sans-serif}
-#site-name{font-size:3.5em;font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
-#site-slogan{font-size:1.2em;font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
-#page-title{font-size:2em;font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
-.node-title{font-size:1.6em;font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
-.comment-title{font-size:1.4em;font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
-.block-title{font-size:1.4em;font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
-h1,h2,h3,h4{font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
-h5,h6{font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
+#site-name{font-size:3.5em;}
+#site-slogan{font-size:1.2em;}
+#page-title{font-size:2em;}
+.node-title{font-size:1.6em;}
+.comment-title{font-size:1.4em;}
+.block-title{font-size:1.4em;}
 h1{font-size:2em;}
 h2{font-size:1.6em;}
 h3{font-size:1.4em;}

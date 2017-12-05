@@ -155,6 +155,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"measurementscale" : "measurementScale",
 			            	"methodstep" : "methodStep",
 			            	"missingvaluecode" : "missingValueCode",
+			            	"multipliertosi" : "multiplierToSI",
 			            	"nonnumericdomain" : "nonNumericDomain",
 			            	"notplanned" : "notPlanned",
 			            	"numbertype" : "numberType",
@@ -169,6 +170,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"otherentity" : "otherEntity",
 			            	"othermaintenanceperiod" : "otherMaintenancePeriod",
 			            	"packageid" : "packageId",
+			            	"parentsi" : "parentSI",
 			            	"physicallinedelimiter" : "physicalLineDelimiter",
 			            	"pubdate" : "pubDate",
 			            	"pubplace" : "pubPlace",
@@ -183,6 +185,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"studytype" : "studyType",
 			            	"textdomain" : "textDomain",
 			            	"textformat" : "textFormat",
+			            	"typesystem" : "typeSystem",
+			            	"unittype" : "unitType",
 			            	"valueattributereference" : "valueAttributeReference",
                             "xsi:schemalocation" : "xsi:schemaLocation"
             			}
@@ -892,10 +896,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 					//Get the new checksum of the EML XML
 					var checksum = md5(xml);
 					this.set("checksum", checksum);
+					this.set("checksumAlgorithm", "MD5");
 	     			
 	     			//Create the system metadata XML
 	     			var sysMetaXML = this.serializeSysMeta();
-	     			
+	     				     			
 	     			//Send the system metadata as a Blob 
 	     			var sysMetaXMLBlob = new Blob([sysMetaXML], {type : 'application/xml'});
 	     			

@@ -133,10 +133,28 @@
 	}
 
 /* BUTTONS CUSTOMIZATIONS
--------------------------------------------------- */	
+-------------------------------------------------- */
+.btn{
+	background-image: none;
+}	
 .btn.subtle {
     color: #333;
     font-weight: normal;
+}
+.btn-primary {
+    background-image: none;
+    border-width: 0px;
+}
+
+/* EDITOR 
+* --------------------------------------------------- */
+.data-package-item.message-row button {
+    margin-left: auto;
+    margin-right: auto;
+    height: 50px;
+}
+.Editor #Content {
+    padding-top: 0px;
 }
 
 /* HEADER CSS
@@ -216,14 +234,12 @@
     nav#Navbar {
       position: relative;
       top: 0px;
-      z-index: 200;
       margin: 0 auto;
       background-image: none;
     }
     
     .navbar {
       border: none;
-      z-index: 210;   
       background-color: #000000;
       background-image: none;
       filter: none;
@@ -231,7 +247,6 @@
 
     .navbar-inner {
       border: none;
-      z-index: 220;
       padding: 0px;
       background-image: none;
       background-color: transparent;
@@ -732,6 +747,9 @@ svg .point:hover ~ .line-chart-label{
 		min-height: 800px;
     }
    
+   .metadata-view {
+    	padding: 0px 40px;
+	}
    .attributeList div.span2{
    		width: 23.404255319148934%; /*Effectively make it span3 */
    	}
@@ -780,10 +798,6 @@ svg .point:hover ~ .line-chart-label{
     .table-header a {
 	    font-weight: normal;
 	    color: #08c;
-	}
-	.table.download-contents .btn-container .btn {
-    	font-size: .85em;
-    	width: 115px;
 	}
 
 	/** Data Display & Thumbnails **/
@@ -1027,6 +1041,7 @@ aside.well{
 	-webkit-border-radius: 0px 5px 5px 0px;
 	border: 1px solid #AAAAAA;
 	width: 35px;
+	margin-left: -5px;
 }
 .filter.btn > .icon{
 	margin-left: -1px;
@@ -1056,6 +1071,9 @@ aside.well{
 	font-weight: normal;
 	font-size: .9em;
 } 
+.ui-checkboxradio-label .icon-check {
+    display: none;
+}
   	
 /*-- Inputs for search filters --*/
 
