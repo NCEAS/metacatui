@@ -1426,7 +1426,6 @@ define(['jquery',
 							if( !solrResult.get("isPublic") ){
 								//Create an XHR
 								var xhr = new XMLHttpRequest();
-								xhr.responseType = "blob";
 								xhr.withCredentials = true;
 								
 								if(type == "PDF"){
@@ -1436,7 +1435,6 @@ define(['jquery',
 									    iframe.attr("src", window.URL.createObjectURL(xhr.response)); // xhr.response is a blob
 									    var a = $(dataDisplay).find("a.zoom-in").remove();
 									    //TODO: Allow fancybox previews of private PDFs
-
 									}
 								}
 								else if(type == "image"){
@@ -1449,6 +1447,7 @@ define(['jquery',
 								
 								//Open and send the request with the user's auth token
 								xhr.open('GET', solrResult.get("url"));
+								xhr.responseType = "blob";
 								xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
 								xhr.send();
 							}

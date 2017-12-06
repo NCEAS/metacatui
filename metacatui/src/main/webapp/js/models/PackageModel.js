@@ -1253,22 +1253,30 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				url = this.get("url"),
 				model = this;
 
-			if(filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4))) filename += ".zip";
+			//Add the .zip extension if it's not there
+			if(filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4)))
+				filename += ".zip";
 
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
-			xhr.responseType = "blob";
 			xhr.withCredentials = true;
 			
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
-			xhr.onload = function(){ 
-			    var a = document.createElement('a');
-			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
-			    a.download = filename; // Set the file name.
-			    a.style.display = 'none';
-			    document.body.appendChild(a);
-			    a.click();
-			    delete a;
+			xhr.onload = function(){
+				
+			   //For IE, we need to use the navigator API
+			   if (navigator && navigator.msSaveOrOpenBlob) {
+				   navigator.msSaveOrOpenBlob(xhr.response, filename);
+			   }
+			   else{
+					var a = document.createElement('a');
+					a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+					a.download = filename; // Set the file name.
+					a.style.display = 'none';
+					document.body.appendChild(a);
+					a.click();
+					delete a;   
+			   }
 			    
 			    model.trigger("downloadComplete");
 			};
@@ -1282,6 +1290,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
+			xhr.responseType = "blob";
 			xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
 			xhr.send();
 		},
