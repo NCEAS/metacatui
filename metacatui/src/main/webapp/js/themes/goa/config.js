@@ -10,7 +10,6 @@ MetacatUI.themeMap =
 		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
 		'templates/search.html' : 'themes/' + MetacatUI.theme + '/templates/search.html',
 		'templates/defaultHeader.html' : 'themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
-		'templates/alert.html' : 'themes/' + MetacatUI.theme + '/templates/alert.html',
 		'routers/router' : 'themes/' + MetacatUI.theme + '/routers/router'
 		//'templates/resultsItem.html' : 'themes/' + MetacatUI.theme + '/templates/resultsItem.html'
 		}

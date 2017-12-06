@@ -217,8 +217,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if(this.numPrograms > 0) this.$el.addClass("has-programs");
 			if(this.numDerivations == 1 && !this.numPrograms) this.$el.addClass("one-derivation");
 			
+			//Specify classes for the context element (e.g. entity details container)
 			var contextClasses = this.type == "sources" ? "hasProvLeft" : "hasProvRight";
-			if(this.numPrograms > 0) contextClasses += " hasPrograms";
+
+			if(this.numPrograms > 0 && this.type == "sources"){
+				contextClasses += " hasProgramsLeft";
+			}
+			else if(this.numPrograms > 0 && this.type == "derivations"){
+				contextClasses += " hasProgramsRight";
+			}
+			
 			$(this.contextEl).addClass(contextClasses);
 			
 			//If it's a derivation chart, add a connector line
@@ -296,7 +304,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					icon = "icon-file-text";
 				else if (type == "image")
 					icon = "icon-picture";
-				else if (type == "pdf")
+				else if (type == "PDF")
 					icon = "icon-file pdf";
 			}
 			else if(provEntity.type == "DataPackage"){
@@ -783,13 +791,21 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if(isCollapsed) $(nodeB).first().addClass("collapsed");
 		},
 		
+		/*
+		 * Will show a preview of the data for the currently active node
+		 */
 		previewData: function(e){
 			//Don't go anywhere yet...
 			e.preventDefault();
 			
-			if(this.parentView){
-				if(this.parentView.previewData(e))
-					return;
+			//If this prov chart has a parent view with a previewData function, then execute that
+			if(this.parentView && this.parentView.previewData && this.parentView.previewData(e)){
+					
+				//Trigger a click on the active node to deactivate it
+				this.$(".node.active").click();
+				
+				//Exit
+				return;
 			}
 			
 			//Get the target of the click
@@ -799,7 +815,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			if(button.length < 1) 
 				button = $(button).parents("[href]");
 			
-			window.location = $(button).attr("href");  //navigate to the link href
+			//Trigger a click on the active node to deactivate it
+			this.$(".node.active").click();
+			
+			//navigate to the link href
+			window.location = $(button).attr("href");
 		},
 		
 		// Display a modal dialog that will be used to select a list of package

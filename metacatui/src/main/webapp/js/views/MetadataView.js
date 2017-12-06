@@ -1136,9 +1136,10 @@ define(['jquery',
             // could occur if a user undoes a previous which could result in 
             // an empty edit list.
             if(this.dataPackage.provEditsPending()) {
-                this.$("#metadata-footer").css("visibility", "visible")    
+                this.showEditorControls();  
             } else {
-                this.$("#metadata-footer").css("visibility", "hidden")    
+            	this.hideEditorControls(); 
+            	
                 // Reset the edited flag for each package member
                 _.each(this.dataPackage.toArray(), function(item) {
                     item.selectedInEditor == false;
@@ -1203,7 +1204,8 @@ define(['jquery',
             this.stopListening(this.dataPackage, "error", this.saveError);
     
             // Turn off "save" footer
-            this.$("#metadata-footer").css("visibility", "hidden")   
+            this.hideEditorControls(); 
+            
             // Update the metadata table header with the new resource map id.
             // First find the PackageTableView for the top level package, and
             // then re-render it with the update resmap id.
@@ -1250,7 +1252,7 @@ define(['jquery',
             this.stopListening(this.dataPackage, "successSaving", this.saveSuccess);
 
             // Turn off "save" footer
-            this.$("#metadata-footer").css("visibility", "hidden")   
+            this.hideEditorControls();  
         },
 
         /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
@@ -1292,6 +1294,14 @@ define(['jquery',
             //When prov is saved, revert the Save button back to normal
             this.$("#save-metadata-prov").html("Save").removeClass("btn-disabled");	    
         
+        },
+        
+        showEditorControls: function(){
+        	this.$("#editor-footer").slideDown();
+        },
+        
+        hideEditorControls: function(){
+        	this.$("#editor-footer").slideUp();
         },
         
 		getEntityNames: function(packageModels){
