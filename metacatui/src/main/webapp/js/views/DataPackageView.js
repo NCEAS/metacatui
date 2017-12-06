@@ -193,6 +193,20 @@ define([
                 
             },
             
+            /* 
+                Remove the subview represented by the given model item.
+                
+                @param item The model representing the sub view to be removed
+            */
+            removeOne: function(item) {
+                if (_.contains(Object.keys(this.subviews), item.id)) {
+                    // Remove the view and the its reference in the subviews list
+                    this.subviews[item.id].remove();
+                    delete this.subviews[item.id];
+                    
+                }
+            },
+            
             handleAddFiles: function(e){
             	//Pass this on to the DataItemView for the root data package
             	this.$(".data-package-item.folder").first().data("view").handleAddFiles(e);            	
