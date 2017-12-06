@@ -437,86 +437,71 @@ select{
   box-shadow: none;
 
 }
-	.btn{
-		border-radius: 3px;
-		border-color: #CCC;
-		color: #444444;
-		box-shadow: none;
-		-webkit-box-shadow: none;
-		background-image: none;
-	}
-    .btn-primary {
-      background-color: #166194;
-      color: #FFFFFF;
-      border-color: #163894;
-    }
-    .btn:hover i,
-    .download-contents .download .btn-primary:hover i{
-    	color: #2299D4;
-    }
-    .btn-primary:hover{
-    	background-color: #0377DD;
-    	background-position: 0 -50px;
-    	border-color: #0377DD;
-    }
+.btn{
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+    border-color: #CCC;
+    color: #444444;
+    box-shadow: none;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    padding: 6px 12px;
+    text-shadow: none;
+}
+.btn-primary,
+.data-package-item .btn-primary {
+  background-color: #166194;
+  color: #FFFFFF;
+  border-color: #155988;
+}
+.btn-primary:hover{
+	background-color: #0377DD;
+	border-color: #0377DD;
+}
 
-    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
-      color: #FFFFFF; 
-      text-decoration:none;     
-    }
-    
-    .btn-primary {
-      color: #FFFFFF;
-      background-image: linear-gradient(to bottom,#166194,#163894);
-      background-image: -webkit-gradient(linear,0 0,0 100%,from(#166194),to(#163894));
-      background-image: -webkit-linear-gradient(top,#166194,#163894);
-    }
-    
-    .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
-		background-color: #999999;
-		color: #FFFFFF;
-		text-shadow: none;
-		border: none;
-    }
-        
-    
-    .btn-group > .dropdown-toggle {
-		-webkit-border-top-right-radius: 4px;
-		-moz-border-top-right-radius: 4px;
-		border-top-right-radius: 4px;
-		-webkit-border-bottom-right-radius: 4px;
-		-moz-border-bottom-right-radius: 4px;
-		border-radius: 4px;
-	}
+.btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
+  color: #FFFFFF; 
+  text-decoration:none;     
+}
+.btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
+	background-color: #999999;
+	color: #FFFFFF;
+	text-shadow: none;
+	border: none;
+}
+.btn-group > .dropdown-toggle {
+	-webkit-border-top-right-radius: 4px;
+	-moz-border-top-right-radius: 4px;
+	border-top-right-radius: 4px;
+	-webkit-border-bottom-right-radius: 4px;
+	-moz-border-bottom-right-radius: 4px;
+	border-radius: 4px;
+}
 	
-     /* Download  and Publish buttons */
-     #downloadPackage a.btn {
-    	width: 100px;
-    	margin-bottom: 8px;
-    } 
-    
-    .download-this-package{
-    	clear: both;
-    	margin-left: 5px;
-    }
-    
-    .download-this-package i{
-    	margin-left: 10px;
-    }
-    
-    #downloadPackage .dropdown-toggle {
-		font: 400 20px/20px "Oswald", Arial, sans-serif;
-	 }
-    
-    .btn-group.open .btn.dropdown-toggle{
-    	color: #166194;
-      	background: rgba(22, 97, 148, 0.2);
-    }  
-    
-    .dropdown-menu > li > a.btn{
-    	background-color: #FFFFFF;
-    	font: 300 18px/18px "Oswald", Arial, sans-serif;
-    }
+/* Download  and Publish buttons */
+#downloadPackage a.btn {
+  	width: 100px;
+  	margin-bottom: 8px;
+}
+.download-this-package{
+  	clear: both;
+  	margin-left: 5px;
+} 
+.download-this-package i{
+  	margin-left: 10px;
+}  
+#downloadPackage .dropdown-toggle {
+	font: 400 20px/20px "Oswald", Arial, sans-serif;
+}  
+.btn-group.open .btn.dropdown-toggle{
+  	color: #166194;
+	background: rgba(22, 97, 148, 0.2);
+}    
+.dropdown-menu > li > a.btn{
+  	background-color: #FFFFFF;
+  	font: 300 18px/18px "Oswald", Arial, sans-serif;
+}
     
 /* ICONS CSS
 -------------------------------------------------- */
@@ -548,6 +533,10 @@ select{
 	    background-position: center;
 	    transition: background 500ms;
     }
+    
+.btn.direct-search {
+	padding: 4px 8px;
+}
     
     /*Share Your Data button */
     #share-data-view{

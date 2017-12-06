@@ -219,6 +219,9 @@ header .citation {
 /****************************************** 
 ** Buttons ***
 ******************************************/
+.btn, .btn-primary{
+	background-image: none;
+}
 .inline-buttons {
   margin-bottom: 20px;
   margin-top: 20px;
