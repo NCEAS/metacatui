@@ -1560,7 +1560,6 @@ define(['jquery',
 							if( !solrResult.get("isPublic") ){
 								//Create an XHR
 								var xhr = new XMLHttpRequest();
-								xhr.responseType = "blob";
 								xhr.withCredentials = true;
 								
 								if(type == "PDF"){
@@ -1583,6 +1582,7 @@ define(['jquery',
 								
 								//Open and send the request with the user's auth token
 								xhr.open('GET', solrResult.get("url"));
+								xhr.responseType = "blob";
 								xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
 								xhr.send();
 							}

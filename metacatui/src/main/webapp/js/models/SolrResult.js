@@ -221,29 +221,41 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
-			xhr.responseType = "blob";
 			
 			if(MetacatUI.appUserModel.get("loggedIn"))
 				xhr.withCredentials = true;
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
-			    var a = document.createElement('a');
-			    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+
+			   //Get the file name to save this file as
+			   var filename = xhr.getResponseHeader('Content-Disposition');
 			   
-			    var filename = xhr.getResponseHeader('Content-Disposition');
-			    if(!filename){
-			    	filename = model.get("fileName") || model.get("title") || model.get("id") || "";
-			    }
-			    else
-			    	filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
+			   if(!filename){
+				   filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+			   }
+			   else
+				   filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
 			    
-			    a.download = filename.trim(); // Set the file name.
+			   filename = filename.trim();
 			    
-			    a.style.display = 'none';
-			    document.body.appendChild(a);
-			    a.click();
-			    delete a;
+			   //For IE, we need to use the navigator API
+			   if (navigator && navigator.msSaveOrOpenBlob) {
+				   navigator.msSaveOrOpenBlob(xhr.response, filename);
+			   }
+			   //Other browsers can download it via a link
+			   else{
+				    var a = document.createElement('a');
+				    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
+				   
+				    // Set the file name.
+				    a.download = filename
+				    
+				    a.style.display = 'none';
+				    document.body.appendChild(a);
+				    a.click();
+				    delete a;   
+			   }
 			    
 			    model.trigger("downloadComplete");
 			};
@@ -272,6 +284,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
+			xhr.responseType = "blob";
 			
 			if(MetacatUI.appUserModel.get("loggedIn"))
 				xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
