@@ -1074,29 +1074,34 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	}, this);
 	        },
 	        
-	        loadFile: function(){
+            /*
+                Loads a file from the local disk  into a FileReader
+                object and caches it in the DataONEObject.uploadReader
+                property for later upload to the server.
+             */
+             loadFile: function(){
                 var reader = new FileReader(),
-                	model  = this;
+                    model  = this;
                 
-                //Trigger the file added event
+                // Trigger the file added event
                 MetacatUI.rootDataPackage.trigger("fileAdded", this);
                 
                 // Set up the reader event handlers and
                 // pass the event *and* the dataONEObject to the handlers
                 reader.onprogress = function(event) {
-                	model.handleFileLoadProgress(event);
+                    model.handleFileLoadProgress(event);
                 }
                 
                 reader.onerror = function(event) {
-                	model.handleFileLoadError(event);
+                    model.handleFileLoadError(event);
                 }
                 
                 reader.onload = function(event) {
-                	model.handleFileLoadSuccess(event);
+                    model.handleFileLoadSuccess(event);
                 }
                 
                 reader.onabort = function(event) {
-                	model.handleFileLoadAbort(event);
+                    model.handleFileLoadAbort(event);
                 }
                 
                 // Now initiate the file read
@@ -1105,28 +1110,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 this.set("uploadReader", reader);
 	        },
 	        
-	        handleFileLoadSuccess: function(event){
-	        	// event.target.result has the file object bytes
+            /*
+                Once a File object is locally loaded into an ArrayBuffer,
+                determine if it already exists in the collection, and if not,
+                update its properties, save it to the server, and add
+                it to the DataPackage collection on success.
+                
+                @param event  The file load event
+             */
+            handleFileLoadSuccess: function(event){
+               // event.target.result has the file object bytes
                 
                 // Make the DataONEObject for the file, add it to the collection
                 var checksum = md5(event.target.result);
-                this.set("checksum", checksum);
-                this.set("checksumAlgorithm", "MD5");
-                
-                this.set("uploadStatus", "q"); // set status to queued
-                this.set("uploadResult", event.target.result);
-                                
-                delete event; // Let large files be garbage collected
-                                
-                this.once("successSaving", function(){ 
-                	MetacatUI.rootDataPackage.add(this);
-                	MetacatUI.rootDataPackage.handleAdd(this);
-                });
-                
-                //Upload the file
-                this.save();
-	        },
-	        
+                var existingChecksums = 
+                    MetacatUI.rootDataPackage.pluck("checksum");
+                if ( _.contains(existingChecksums, checksum) ) {
+                    console.log("This object already exists in the Data Package. " +
+                        "Removing the DataItemView row.");
+                     // Tell the view to remove the row by id
+                    MetacatUI.eventDispatcher.trigger("fileLoadError", this);
+                } else {
+                    this.set("checksum", checksum);
+                    this.set("checksumAlgorithm", "MD5");
+                    
+                    this.set("uploadStatus", "q"); // set status to queued
+                    this.set("uploadResult", event.target.result);
+                                    
+                    delete event; // Let large files be garbage collected
+                                    
+                    this.once("successSaving", function(){ 
+                        MetacatUI.rootDataPackage.add(this);
+                        MetacatUI.rootDataPackage.handleAdd(this);
+                    });
+                    
+                    //Upload the file
+                    this.save();
+                }
+            },
+            
             /* During file reading, deal with abort events */
 	        handleFileLoadAbort: function(event){
                 // When file reading is aborted, update the model upload status
