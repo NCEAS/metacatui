@@ -329,7 +329,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 
                 var fileList,            // The list of chosen files
                     parentDataPackage,   // The id of the first resource of this row's scimeta
-                    dataONEObject,       // The dataONEObject to represent this file
                     self = this;         // A reference to this view
 
                 event.stopPropagation();
@@ -357,7 +356,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     _.each(fileList, function(file) {
                         console.log("Processing " + file.name + ", size: " + file.size);
                         
-                        dataONEObject = new DataONEObject({
+                        var dataONEObject = new DataONEObject({
                             synced: true,
                             type: "Data",
                             fileName: file.name,
@@ -370,7 +369,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         });
                         
                         dataONEObject.loadFile();
-                                                
+                        
                     }, this);
                     
                 }
