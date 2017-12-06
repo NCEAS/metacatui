@@ -494,17 +494,20 @@ define(['underscore',
             // Review message for "arctic" theme.
             if (MetacatUI.appModel.get("contentIsModerated")) {
                 var message = this.editorSubmitMessageTemplate({
-                    themeTitle: MetacatUI.themeTitle
-                });
+                    	themeTitle: MetacatUI.themeTitle
+                	}),
+                	timeout = null;
+                
             }
             else {
                 var message = $(document.createElement("div")).append(
                 		$(document.createElement("span")).text("Your changes have been submitted. "),
-                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
+                	timeout = 4000;
             }
             
         	
-            MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
+            MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
             
             //Rerender the CitationView
             var citationView = _.where(this.subviews, { type: "Citation" });
