@@ -1035,7 +1035,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       background-color: #555555; /*IE 8 fallback */
       background: rgba(0,0,0,0.3);
       position: absolute;
-      top: 150px;
+      top: 115px;
       left: 50%;
       margin: 0px 0px 0px -250px;
       width: 500px;

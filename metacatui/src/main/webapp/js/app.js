@@ -122,11 +122,11 @@ function(Bootstrap, AppView, AppModel) {
 	if(typeof MetacatUI.customAppConfig == "function") MetacatUI.customAppConfig();
 	
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 
+	require(['underscore', 'backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 
              'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', 
              'models/UserModel', 'models/DataONEObject', 'collections/DataPackage'
 	         ],
-	function(Backbone, UIRouter, SolrResultList, Search, Stats, MapModel, LookupModel, NodeModel, UserModel, DataONEObject, DataPackage) {
+	function(_, Backbone, UIRouter, SolrResultList, Search, Stats, MapModel, LookupModel, NodeModel, UserModel, DataONEObject, DataPackage) {
 		'use strict';  
 	    		
 		//Create all the other models and collections first
@@ -144,6 +144,11 @@ function(Bootstrap, AppView, AppModel) {
 		
 		MetacatUI.appUserModel = new UserModel();
 		
+        /* Create a general event dispatcher to enable 
+           communication across app components 
+        */
+        MetacatUI.eventDispatcher = _.clone(Backbone.Events);
+        
 		//Load the App View now
 		MetacatUI.appView = new AppView();
 			

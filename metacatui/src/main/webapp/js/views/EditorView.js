@@ -457,6 +457,9 @@ define(['underscore',
         	//When the model is invalid, show the required fields
         	this.listenTo(this.model, "invalid", this.showValidation);
         	this.listenTo(this.model, "valid",   this.showValidation);
+            
+            // When a data package member fails to load, remove it and warn the user
+            this.listenTo(MetacatUI.eventDispatcher, "fileLoadError", this.handleFileLoadError);
         },
 
         /*
@@ -881,8 +884,31 @@ define(['underscore',
             this.subviews = [];
 			window.onbeforeunload = null;
 
-        }
+        },
 
+        /*
+            Handle to "fileLoadError" events by alerting the users
+            and removing the row from the data package table.
+            
+            @param item The model item passed by the fileLoadError event
+         */
+         handleFileLoadError: function(item) {
+            var message;
+            var fileName;
+            /* Remove the data package table row */
+            this.dataPackageView.removeOne(item);
+            /* Then inform the user */
+            if ( item && item.get && 
+                (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) { 
+                fileName = item.get("fileName");
+                message = "The file " + fileName + 
+                    " is already listed in the package. The duplicate file has not been added.";
+            } else {
+                message = "The chosen file is already listed in the package. " +
+                    "The duplicate file has not been added.";
+            }
+            MetacatUI.appView.showAlert(message, "alert-info", "body", 5000, {remove: true});
+         }
     });
     return EditorView;
 });
