@@ -59,6 +59,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 		},
 		
+        /*
+            Parse the object DOM to create the model
+            @param objectDOM the XML DOM to parse
+            @return modelJSON the resulting model attributes object
+         */
 		parse: function(objectDOM){
 			if(!objectDOM)
 				var objectDOM = this.get("objectDOM");				
