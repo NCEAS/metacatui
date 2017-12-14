@@ -807,7 +807,9 @@ define(['underscore',
 				}
 				else{
 					var elsWithViews = _.filter(categoryEls, function(el){
-							return ( $(el).data("view") && $(el).data("view").showValidation );
+							return ( $(el).data("view") && 
+									$(el).data("view").showValidation &&
+									!$(el).data("view").isNew );
 						});
 					
 					if(elsWithViews.length){
@@ -838,12 +840,13 @@ define(['underscore',
 					.addClass("error")
 					.show();
 				
-				this.model.once("change:" + category, this.model.isValid);
+				this.model.off("change:"  + category, this.model.checkValidity);
+				this.model.once("change:" + category, this.model.checkValidity);
 				
 			}, this);
 			
 			if(errors){
-				MetacatUI.appView.showAlert("Provide the missing information flagged below.", 
+				MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.", 
 						"alert-error", 
 						this.$el, 
 						null, 
@@ -852,6 +855,11 @@ define(['underscore',
 						});
 			}
 
+		},
+		
+		checkValidity: function(){
+			if(this.model.isValid())
+				this.model.trigger("valid");
 		},
 
 	    /*
