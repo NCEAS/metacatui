@@ -22,7 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 this.on("change:description " +
                     "change:east " +
                     "change:west " +
-                    "change:south" +
+                    "change:south " +
                     "change:north",
                     this.trickleUpChange);
             },
@@ -287,37 +287,65 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             * @return {string} The error messages that the user will see
             */
             validate: function () {
-                var errorMsg = "";
+                var errors = {};
 
                 if (!this.get("description")) {
-                    errorMsg += this.getErrorMessage("description");
+                    errors.description = this.getErrorMessage("description");
                 }
 
-                var status = this.getCoordinateStatus();
-
-
-                if (!this.checkForPairs(status)) {
+                var pointStatuses = this.getCoordinateStatus();
+/*
+                if (!this.checkForPairs(pointStatuses)) {
                     errorMsg = this.addSpace(errorMsg);
                     errorMsg += this.getErrorMessage("needPair");
                 }
 
-                if (this.checkForMissing(status)) {
-                    errorMsg = this.addSpace(errorMsg);
-                    errorMsg += this.getErrorMessage("missing");
+                if( this.hasMissingPoint(pointStatuses) ) {
+                    //errorMsg = this.addSpace(errorMsg);
+                    errors += this.getErrorMessage("missing");
                 }
-
-                errorMsg += this.addSpace(this.generateStatusErrors(status), true);
-                return errorMsg;
+*/
+ //               errorMsg += this.addSpace(this.generateStatusErrors(pointStatuses), true);
+                
+                if( !pointStatuses.north.isSet && !pointStatuses.south.isSet && 
+                		!pointStatuses.east.isSet && !pointStatuses.west.isSet){
+                	errors.north = this.getErrorMessage("needPair");
+                	errors.west  = "";
+                }
+                
+                //Check that all the values are correct
+                if( pointStatuses.north.isSet && !pointStatuses.north.isValid )
+                	errors.north = this.getErrorMessage("north");
+                if( pointStatuses.south.isSet && !pointStatuses.south.isValid )
+                	errors.south = this.getErrorMessage("south");
+                if( pointStatuses.east.isSet && !pointStatuses.east.isValid )
+                	errors.east = this.getErrorMessage("east");
+                if( pointStatuses.west.isSet && !pointStatuses.west.isValid )
+                	errors.west = this.getErrorMessage("west");
+                
+                if( pointStatuses.north.isSet && !pointStatuses.west.isSet )
+                	errors.west = this.getErrorMessage("missing");
+                else if( !pointStatuses.north.isSet && pointStatuses.west.isSet )
+                	errors.north = this.getErrorMessage("missing");
+                else if( pointStatuses.south.isSet && !pointStatuses.east.isSet )
+                	errors.east = this.getErrorMessage("missing");
+                else if( !pointStatuses.south.isSet && pointStatuses.east.isSet )
+                	errors.south = this.getErrorMessage("missing");
+                
+                if( Object.keys(errors).length )
+                	return errors;
+                else
+                	return false;
             },
 
             /**
              * Checks for any coordinates with missing counterparts.
              * 
-             * @function checkForMissing
+             * @function hasMissingPoint
              * @param status The status of the coordinates
              * @return {bool} True if there are missing coordinates, false otherwise
              */
-            checkForMissing: function (status) {
+            hasMissingPoint: function (status) {
                 if ((status.north.isSet && !status.west.isSet) ||
                     (!status.north.isSet && status.west.isSet)) {
                     return true
@@ -379,6 +407,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
             trickleUpChange: function () {
                 this.get("parentModel").trigger("change");
+                this.get("parentModel").trigger("change:geoCoverage");
             },
 
             formatXML: function (xmlString) {
