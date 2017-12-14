@@ -820,8 +820,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
                 //Validate before we try anything else
                 if(!this.isValid()){
+                	this.trigger("invalid");
                 	this.trigger("cancelSave");
                 	return false;
+                }
+                else{
+                	this.trigger("valid");
                 }
                 
                 // Set missing file names before saving
@@ -1127,7 +1131,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if( Object.keys(errors).length )
             		return errors;
             	else{
-            		this.trigger("valid");
             		return;
             	}
 			},
