@@ -3245,7 +3245,11 @@ Editor View
     text-decoration: none;
 }
 .side-nav-item.error a{
-	color: red;
+	color: #da4e4e;
+}
+.side-nav-item.error .active {
+    background-color: #da4e4e;
+    color: #FFFFFF;
 }
 .side-nav-item a .icon.hidden{
 	display: none;
@@ -4008,9 +4012,8 @@ textarea.xlarge{
     display: block;
 }
 .locations-table .notification{
-	min-height: .8em;
-    font-size: .8em;
-    margin-bottom: 0px;
+	min-height: 1em;
+    font-size: .9em;
 }
 .locations-table textarea.error{
 	border-color: red;
