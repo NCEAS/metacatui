@@ -962,7 +962,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 				
     			//First quickly validate all the models before attempting to save any
     			var allValid = _.every(modelsToBeSaved, function(m) {
-    				return m.isValid();
+
+    				if( m.isValid() ){
+    					m.trigger("valid");
+    					return true;
+    				}
+    				else{
+    					return false;
+    				}
+    				
     			});
     			
                 // If at least once model to be saved is invalid, 
