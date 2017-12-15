@@ -47,7 +47,6 @@ define(['underscore', 'jquery', 'backbone',
 			"focusout .pubDate input"        : "showPubDateValidation",
 			
 			"keyup .eml-geocoverage.new"        : "updateLocations",
-			"click .eml-geocoverage.new .coord" : "updateLocations",
 			
 			"change .taxonomic-coverage"             : "updateTaxonCoverage",
 			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
@@ -803,19 +802,26 @@ define(['underscore', 'jquery', 'backbone',
 	    		//Add the locations section to the page
 	    		locationsTable.append(geoView.el);
 	    		
+	    		//Listen to validation events
+	    		this.listenTo(geo, "valid", this.updateLocationsError);
+	    		
 	    		//Save it in our subviews array
 	    		this.subviews.push(geoView);
 	    	}, this);
 	    	
 	    	//Now add one empty row to enter a new geo coverage
 	    	if(this.edit){
-	    		var newGeo = new EMLGeoCoverageView({
-	    			edit: true,
-	    			model: new EMLGeoCoverage({ parentModel: this.model, isNew: true}),
-	    			isNew: true
-	    		});
-	    		locationsTable.append(newGeo.render().el);
-	    		newGeo.$el.find(".remove-container").append(this.createRemoveButton(null, "geoCoverage", ".eml-geocoverage", ".locations-table"));
+	    		var newGeoModel = new EMLGeoCoverage({ parentModel: this.model, isNew: true}),
+	    			newGeoView = new EMLGeoCoverageView({
+		    			edit: true,
+		    			model: newGeoModel,
+		    			isNew: true
+	    			});
+	    		locationsTable.append(newGeoView.render().el);
+	    		newGeoView.$el.find(".remove-container").append(this.createRemoveButton(null, "geoCoverage", ".eml-geocoverage", ".locations-table"));
+	    		
+	    		//Listen to validation events
+	    		this.listenTo(newGeoModel, "valid", this.updateLocationsError);
 	    	}
 	    },
 	    
@@ -1157,13 +1163,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(!e) return;
 	    	
 	    	e.preventDefault();
-	    	
-	    	// Don't create a new EMLGeoCoverageView if the value isn't set
-	    	if(!$(e.target).val())
-	    		return;
-	    	
-	    	var viewEl = $(e.target).parents(".eml-geocoverage");
-	    	
+
+	    	var viewEl = $(e.target).parents(".eml-geocoverage"),
+	    		geoCovModel = viewEl.data("model");
+	    		   
+	    	//If the EMLGeoCoverage is new
 	    	if(viewEl.is(".new")){
 	    		
 	    		if(this.$(".eml-geocoverage.new").length > 1)
@@ -1198,6 +1202,27 @@ define(['underscore', 'jquery', 'backbone',
 	    			this.model.set("geoCoverage", currentCoverages);
 	    		}
 	    	}
+	    },
+	    
+	    /*
+	     * If all the EMLGeoCoverage models are valid, remove the error messages for the Locations section
+	     */
+	    updateLocationsError: function(){
+	    	var allValid = _.every(this.model.get("geoCoverage"), function(geoCoverageModel){
+	    		
+	    						return geoCoverageModel.isValid();
+	    		
+	    					});
+	    	
+	    	if(allValid){
+	    		this.$(".side-nav-item.error[data-category='geoCoverage']")
+	    			.removeClass("error")
+	    			.find(".icon.error").hide();
+	    		this.$(".section[data-section='locations'] .notification.error")
+	    			.removeClass("error")
+	    			.text("");
+	    	}
+	    	
 	    },
 		
 	    /*
@@ -1925,7 +1950,7 @@ define(['underscore', 'jquery', 'backbone',
         	//Remove the active class from all the menu items
         	$(".side-nav-item a.active").removeClass("active");
         	//Set the clicked item to active
-        	$(".side-nav [data-section='" + section + "']").addClass("active");
+        	$(".side-nav-item a[data-section='" + section + "']").addClass("active");
         	
         	//Set the active section on this view
         	this.activeSection = section;
@@ -1944,7 +1969,7 @@ define(['underscore', 'jquery', 'backbone',
             	//Remove the active class from all the menu items
             	$(".side-nav-item a.active").removeClass("active");
             	
-            	$(".side-nav [data-section='" + section + "']").addClass("active");
+            	$(".side-nav-item a[data-section='" + section + "']").addClass("active");
             	this.activeSection = section;
             	this.visibleSection = section;
             	return;

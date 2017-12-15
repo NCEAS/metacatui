@@ -820,8 +820,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
                 //Validate before we try anything else
                 if(!this.isValid()){
+                	this.trigger("invalid");
                 	this.trigger("cancelSave");
                 	return false;
+                }
+                else{
+                	this.trigger("valid");
                 }
                 
                 // Set missing file names before saving
@@ -945,17 +949,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
 	                      return xhr;
 	                },
-					success: function(model, response, xhr){
-						console.log('yay, EML has been saved');
+					success: function(model, response, xhr){	
 						
 						model.set("numSaveAttempts", 0);
 						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
                         model.fetch({merge: true, sysMeta: true});
-						model.trigger("successSaving", model);                        
+						model.trigger("successSaving", model);
+						
 					},
 					error: function(model, response, xhr){
-						console.log("error updating EML: ", response.responseText);
 						
 						model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
                     	var numSaveAttempts = model.get("numSaveAttempts");
@@ -963,7 +966,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     	//Reset the identifier changes
                     	model.resetID();
                     	
-                		if(numSaveAttempts < 3){
+                		if( numSaveAttempts < 3 && (response.status == 408 || response.status == 0) ){
                     		
                     		//Try saving again in 10, 40, and 90 seconds
                     		setTimeout(function(){ 
@@ -978,7 +981,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 								errorContainer = errorDOM.filter("error"),
 								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM.not("style, title"),
 								errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
-							
+									                    
+		                    //When there is no network connection (status == 0), there will be no response text
+                    		if(!errorMsg)
+                    			errorMsg = "There was a network issue that prevented your metadata from uploading. " +
+                    					   "Make sure you are connected to a reliable internet connection.";
+                    		
 		                    model.set("errorMessage", errorMsg);
 
 		                    model.set("uploadStatus", "e");
@@ -1127,7 +1135,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if( Object.keys(errors).length )
             		return errors;
             	else{
-            		this.trigger("valid");
             		return;
             	}
 			},

@@ -183,7 +183,11 @@
 .data-package-item.message-row button{
 	height: 50px;
 	border-width: 0px;
-}  
+}
+.side-nav-item .active {
+    background-color: #006699;
+    color: #FFFFFF;
+}
     
 /* MDQ 
 -------------------------------------------------- */ 

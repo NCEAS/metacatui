@@ -146,8 +146,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             
             /* Provide the model URL on the server based on the newness of the object */
         	url: function(){
-                
-                // With no id, we can't do anything
+
+        		// With no id, we can't do anything
         		if( !this.get("id") && !this.get("seriesid") ) return "";
         		
                 // Determine if we're updating a new/existing object,
@@ -509,7 +509,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 		model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
                     	var numSaveAttempts = model.get("numSaveAttempts");
 
-                		if(numSaveAttempts < 3){
+                		if( numSaveAttempts < 3 && (response.status == 408 || response.status == 0) ){
                     		
                     		//Try saving again in 10, 40, and 90 seconds
                     		setTimeout(function(){ 
@@ -520,7 +520,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     	else{
                     		model.set("numSaveAttempts", 0);
                     	
-                    		var parsedResponse = $(response.responseText).not("style, title").text();                    		
+                    		var parsedResponse = $(response.responseText).not("style, title").text();
+                    		
+                    		//When there is no network connection (status == 0), there will be no response text
+                    		if(!parsedResponse)
+                    			parsedResponse = "There was a network issue that prevented this file from uploading. " +
+                    							 "Make sure you are connected to a reliable internet connection.";
+                    		
 	                        model.set("errorMessage", parsedResponse);
 	                        
 	                        model.set("uploadStatus", "e");
