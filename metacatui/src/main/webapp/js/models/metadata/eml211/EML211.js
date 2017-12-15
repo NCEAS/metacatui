@@ -479,18 +479,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				// This one is special because it has a default behavior, unlike 
 				// the others: When no pubDate is set, it should be set to
 				// the current year
-				var pubDate 	= this.get('pubDate'),
-					pubDateEl 	= document.createElement('pubdate');
+				var pubDate = this.get('pubDate');
 
 				datasetNode.find('pubdate').remove();
 
 				if (pubDate != null && pubDate.length > 0) {
+
+					var pubDateEl = document.createElement('pubdate');
+					
 					$(pubDateEl).text(pubDate);
-				} else {
-					$(pubDateEl).text((new Date).getFullYear());
+					
+					this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
 				}
 
-				this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
 
 	           	// Serialize the parts of EML that are eml-text modules
 	           	var textFields = ["abstract"];
