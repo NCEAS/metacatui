@@ -3652,7 +3652,6 @@ textarea.xlarge{
 }
 .attribute-menu.side-nav-items{
 	overflow-y: overlay;
-	margin-top: 40px;
 	position: fixed;
 	height: 400px;
 	background-color: #EEE;
@@ -3662,7 +3661,6 @@ textarea.xlarge{
 	width: calc(100% - 170px - 60px);
     float: right;
     padding: 0px 20px;
-    margin-top: 40px;
 }
 .eml-attribute .title{
 	margin-bottom: 20px;
@@ -4030,17 +4028,21 @@ textarea.xlarge{
 	left: 40%;
     max-width: 1000px;
     min-width: 300px;
+    transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0); 
+    -moz-transform: translate3d(0,0,0); 
 }
 .eml-entity .modal-body{
 	max-height: calc(100% - 110px);
 	height: calc(100% - 110px);	
-	padding: 0px;
+	padding: 0px; 
 }
 .eml-entity .nav-tabs{
 	position: fixed;
-    width: calc(80% - 12px);
-    max-width: 988px;
+    width: 100%;
     background-color: white;
+    min-height: 30px;
+    margin-bottom: 0px; 
 }
 .eml-entity .nav-tabs li {
     width: 50%;
@@ -4056,10 +4058,11 @@ textarea.xlarge{
 .eml-entity .tab-content{
 	width: 100%;
 	box-sizing: border-box;
+	margin-top: 40px;
 }
 .eml-entity .overview-container{
 	padding: 20px;
-	margin-top: 20px;
+	margin-top: 0px;
     width: calc(100% - 40px);
 }
 .eml-entity .preview-container{
