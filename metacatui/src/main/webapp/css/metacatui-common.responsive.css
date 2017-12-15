@@ -129,13 +129,24 @@
 	}
 	
 }
- 
+
+@media only screen and (max-width : 1000px){
+	/* Editor styles */
+	.temporal-coverage .control-label span{
+		display: block;
+	}
+	.temporal-coverage .control-label {
+    	height: 4em;
+	}
+}
+
 /* Smartphones (landscape) ----------- */
-@media only screen and (min-width : 321px) and (max-width : 700px){
+@media only screen and (max-width : 700px){
 	/*************** General Structure ***********/
 	.row-fluid .span6.pagination-left {
   		width: 100%;
 	}
+	
 }
  
 /* Smartphones (portrait) ----------- */
@@ -166,7 +177,7 @@ and (max-width : 1024px)
 and (orientation : portrait) {
 /* STYLES GO HERE */
 }
- 
+
 /* Desktops and laptops ----------- */
 @media only screen
 and (min-width : 1224px) {
