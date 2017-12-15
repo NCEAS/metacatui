@@ -913,12 +913,12 @@ define(['underscore',
                 (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) { 
                 fileName = item.get("fileName");
                 message = "The file " + fileName + 
-                    " is already listed in the package. The duplicate file has not been added.";
+                    " is already included in this dataset. The duplicate file has not been added.";
             } else {
-                message = "The chosen file is already listed in the package. " +
+                message = "The chosen file is already included in this dataset. " +
                     "The duplicate file has not been added.";
             }
-            MetacatUI.appView.showAlert(message, "alert-info", "body", 5000, {remove: true});
+            MetacatUI.appView.showAlert(message, "alert-info", this.el, 5000, {remove: true});
          }
     });
     return EditorView;

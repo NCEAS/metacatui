@@ -130,13 +130,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 if(this.model.get("uploadStatus") == "e" && this.model.get("errorMessage")){
                 	var errorMsg = this.model.get("errorMessage");
                 	
-                	this.$(".icon.error").tooltip({
+                	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
                 		title: "<div class='status-tooltip error'><h6>Error saving:</h6><div>" + errorMsg + "</div></div>",
                 		container: "body"
                 	});
+                	
                 	this.$el.removeClass("loading");
                 }
                 else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" || this.model.get("uploadStatus") == "q") && attributes.numAttributes == 0){
