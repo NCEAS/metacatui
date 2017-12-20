@@ -964,35 +964,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.$('#selectModal').modal('show');
 		},
 
-		/**
-		* [This function is the eventListener fucntion that will set the tooltip for PROGRAMS]
-		* @param  {} e [description]
-		* @return {}   [description]
-		*
-		* TODO : Modify it such that it displays correct tooltip for every mouseover (hover). 
-		*			It just requires 1st hover to set the tooltip , so it does not work for the first hover.
-		*/
-		displayProvSVGEntities: function(e) {
-			var toolTipTitle = null;
-			
-			// Set the selection box labels according to the edit icon that was clicked,
-			// and the ProvChart that it was clicked in.
-			if (this.type == "sources") {
-					toolTipTitle = "Add the program that generated " + this.context.get("fileName");
-			} else if (this.type == "derivations") {
-					toolTipTitle = "Add the program that read " + this.context.get("fileName");
-			} else {
-				toolTipTitle = "Add data to " + this.context.get("fileName");
-			}
-			
-			this.$el.find("svg").tooltip({
-				placement: "top",
-				// trigger: "hover",
-				title: toolTipTitle
-			});
-		},
-
-
 		// Read selected values from a ProvEntitySelectView which is a modal dialog
 		// that displays a selection list of package members to add to a prov chart.
 		getSelectedProvEntities: function(e) {
