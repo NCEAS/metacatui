@@ -283,7 +283,7 @@ define(['underscore',
 	            	}
             	});
             
-            var tableHeight = ($(window).height() - $("#Navbar").height()) * .75;          
+            var tableHeight = ($(window).height() - $("#Navbar").height()) * .40;
             $packageTableContainer.css("height", tableHeight + "px");
 
             var table = this.dataPackageView.$el;
