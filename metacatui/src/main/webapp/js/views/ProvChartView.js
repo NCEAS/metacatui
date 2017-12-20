@@ -18,15 +18,16 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			this.offsetTop     = options.offsetTop     || this.nodeHeight; //The top margin of the chart, in pixels
 			this.title 		   = options.title         || "";
 			this.editModeOn    = options.editModeOn    || false;
-			this.editorType    = options.editorType    || null;
-
+			
 			this.subviews = new Array()
 			this.selectProvEntityView = null;
 			this.type = null;
+			
 			// Does this chart need to be re-rendered after prov relationships have been updated?
 			this.rerender = false;
+			
 			//For Sources charts
-			if((!this.derivations && this.sources) || (this.editModeOn && this.editorType == "sources")) {
+			if((!this.derivations && this.sources) || (this.editModeOn && this.type == "sources")) {
 				this.type 		    = "sources";
 				this.provEntities   = this.sources;
 				
@@ -49,7 +50,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			}
 			
 			//For Derivations charts
-			if((!this.sources && this.derivations) || (this.editModeOn && this.editorType == "derivations")) {
+			if((!this.sources && this.derivations) || (this.editModeOn && this.type == "derivations")) {
 				this.type 	   	     = "derivations";
 				this.provEntities = this.derivations;
 				
@@ -102,8 +103,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			"click .expand-control"   : "expandNodes",
 			"click .collapse-control" : "collapseNodes",
 			"click .preview"          : "previewData",
-			"mouseover .editor"	      : "displayProvEditorEntities",
-			"mouseover svg"			  : "displayProvSVGEntities",
 			"click .editor"		      : "selectProvEntities",
 			"click #selectDone"       : "getSelectedProvEntities",
 		},
@@ -191,18 +190,23 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				// supported per ProvCharView. Also, don't display a program icon if the package members
 				// we are annotating is a program (cuurently don't support programs as inputs/outputs of programs).
 				if((this.context.getType() != "program") && this.numPrograms == 0) {
-					this.$(".programs").append(this.createEditorNode("program", this.context.get("id"), programPosition));
-                    this.$(".programs").append(this.createConnecter());
+					var programNode = this.createEditorNode("program", this.context.get("id"), programPosition);
+					this.$(".programs").append(programNode, this.createConnecter());
+    				this.createEditTooltip(programNode);
 					programPosition++;
 					this.numPrograms++;
 				}
 				
 				// Draw a data node editor
-				this.$el.append(this.createEditorNode("data", this.context.get("id"), position));
+				var dataNode = this.createEditorNode("data", this.context.get("id"), position);
+				this.$el.append(dataNode);
+				this.createEditTooltip(dataNode);
 				position++;
 				
-				if(this.editorType == "sources") this.numSources++;
-				if(this.editorType == "derivations") this.numDerivations++;
+				if(this.type == "sources")
+					this.numSources++;
+				if(this.type == "derivations")
+					this.numDerivations++;
                 
                 // Add a connector for this edit icon.
                 this.$el.append(this.createConnecter(position-1));
@@ -335,22 +339,31 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 
 			if(provEntity.getType() != "program"){
 				//Create a DOM element to represent the node	
-				var nodeEl = $(document.createElement("div")).css("top", top);;
+				var nodeEl = $(document.createElement("div")).css("top", top);
+				
 				// Add a delete icon to the node if editing is on
 				if(this.editModeOn) {
-					var deleteIcon = $(document.createElement("i")).attr("class", "data icon-remove-sign hide");
-					$(nodeEl).append(deleteIcon);
 					
-					$(nodeEl).hover(
+					//Create a delete icon
+					var deleteIcon = $(document.createElement("i"))
+									.addClass("data icon icon-remove-sign remove")
+									.attr("title", "Remove")
+									.hide();
+					
+					//Add the delete icon to the node
+					nodeEl.append(deleteIcon);
+					
+					//When the node is hovered over, show the delete icon
+					nodeEl.hover(
 						// mouseenter action
 						// This could either be a nice, simple data node (a div) or a program node (an svg polygon).
 						function(e) {
 							// The cursor entered in the 'polygon' element, navigate to the group element that
 							// holds the delete icon, so that we can turn it on.
 							// Setup a data node for delete
-							$(e.target).find("i.icon-remove-sign").removeClass("hide");
-							$(e.target).find("i.icon-remove-sign").addClass("show");
-							$(e.target).find("i.icon-remove-sign").on("click", function(evt){
+							$(e.target).find(".remove").show();
+
+							$(e.target).find(".remove").on("click", function(evt){
 								// Stop propagation of of the click event so that parent elements don't receive it.
 								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
 								evt.stopPropagation();
@@ -364,13 +377,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                         // turn off all delete icons in this prov chart, which works every time and doesn't require us
                         // to test the event target that was fired.
 						function(e) {
-                            view.$('*').find("i.icon-remove-sign").removeClass("show");
-                            view.$('*').find("i.icon-remove-sign").addClass("hide");
+                            view.$(".remove").hide();
 						}
-					);	
+					);
 				}
 			} else {
 				type="program";
+				
 				//Create an SVG drawing for the program arrow shape
 				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
 					nodeEl = $(document.createElementNS("http://www.w3.org/2000/svg", "polygon"))
@@ -395,15 +408,17 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				$(g).append(iconEl);			
 				$(svg).append(nodeEl, g);
 
-				// Add a delete icon to the node if editing is on
 				if(this.editModeOn) {
-				    var gdel = $(document.createElementNS("http://www.w3.org/2000/svg", "g"))
+
+					// Add a delete icon to the node if editing is on
+					var gdel = $(document.createElementNS("http://www.w3.org/2000/svg", "g"))
 							.attr("transform", "translate(35,25)")
-							.attr("class", "program icon-remove-sign pointer hide");
+							.attr("class", "program pointer");
 					var deleteIcon = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
 							.text("\uF057")
-							.attr("fill", "#FF0000") // put this in the css file 
-							.attr("class", "icon icon-foo pointer");
+							.attr("class", "icon icon-foo remove pointer")
+							.attr("title", "Remove")
+							.hide();
 					$(gdel).append(deleteIcon);
 					$(svg).append(gdel);
 										
@@ -413,32 +428,26 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 						function(e) {
 							// The cursor entered in the 'polygon' element, navigate to the group element that
 							// holds the delete icon, so that we can turn it on.
-							var gNode = $(e.target).find("g[class*='icon-remove-sign']");
+							var deleteIcon = $(e.target).find("[class*='remove']");
 							
-							if(gNode.length){
-								var classStr = $(gNode).attr("class");
-								$(gNode).attr("class", classStr.replace("hide", "show"));
-								$(gNode).on("click", function(evt){
-									// Stop propagation of of the click event so that parent elements don't receive it.
-									// This will prevent the node popover from displaying for this node when the delete icon is clicked.
-									evt.stopPropagation();	
-									var dataId = $(evt.target).parent().parent().find("polygon").attr("data-id");
-									var nodeClass = $(evt.target).parent().parent().find("polygon").attr("class");
-									view.removeProv(dataId, nodeClass);
-								});
-							}
+							deleteIcon.show();
+							
+							deleteIcon.on("click", function(evt){
+								// Stop propagation of of the click event so that parent elements don't receive it.
+								// This will prevent the node popover from displaying for this node when the delete icon is clicked.
+								evt.stopPropagation();	
+								var dataId = $(evt.target).parent().parent().find("polygon").attr("data-id");
+								var nodeClass = $(evt.target).parent().parent().find("polygon").attr("class");
+								view.removeProv(dataId, nodeClass);
+							});
 						},
 						// mouseleave action
 						function(e) {
                             // Hide all remove icons for program nodes. See comments for
                             // hiding data icons above (mouseleave for data icons).
-                            var gNodes = view.$('*').find("g[class*='icon-remove-sign']");
-                            for (var i = 0; i < gNodes.length; i++) { 
-                                var gNode = gNodes[i]
-                                console.log("hiding element:" + gNode);
-                                var classStr = $(gNode).attr("class");
-                                $(gNode).attr("class", classStr.replace("show", "hide"));
-                            }
+                            var deleteIcon = view.$("[class*='remove']");
+                            
+                            deleteIcon.hide();
                         }
 					);
 				}
@@ -641,28 +650,32 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			var svg = null;
 			// Only two types of editor nodes, "data" and "program"
 			if(type != "program"){
+				
 				//Create a DOM element to represent the node	
-				nodeEl = document.createElement("div");
-				$(nodeEl).css("top", top);
+				nodeEl = $(document.createElement("div")).css("top", top);
+				
 				//Add classes via .attr() so it works for SVG, too
-				var currentClasses = $(nodeEl).attr("class") || "";
-				$(nodeEl).attr("class", currentClasses + " " + type + " node pointer editor " + isCollapsed);
-				$(nodeEl).attr("tabindex", 0);
+				var currentClasses = nodeEl.attr("class") || "";
+				nodeEl.attr("class", currentClasses + " " + type + " node pointer editor " + isCollapsed);
+				nodeEl.attr("tabindex", 0);
+				
 				//Reference the id of the data object
-				$(nodeEl).attr("data-id", id);
+				nodeEl.attr("data-id", id);
 						 
 				//Create the plus icon
-				var iconEl = document.createElement("i");
-				$(iconEl).addClass(" icon icon-plus");
+				var iconEl = $(document.createElement("i")).addClass("icon icon-plus");
 				
 				//Put the icon in the node
-				$(nodeEl).append(iconEl);
-				$(nodeEl).append("Add");
+				nodeEl.append(iconEl, "Add");
+				
+				
 			} else {
 				//Create an SVG drawing for the program arrow shape
 				svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-				nodeEl = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-				$(nodeEl).attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20");
+				nodeEl = $(document.createElementNS("http://www.w3.org/2000/svg", "polygon"));
+				
+				//Create the SVG shape by adding x,y coordinates for lines to connect to
+				nodeEl.attr("points", "2,20 2,48 17,48 17,67 67,33.5 17,2 17,20");
 
 				//Set a viewBox, height, width, and top position
 				svg.setAttribute("viewBox", "0 0 " + this.nodeHeight + " " + this.nodeHeight);
@@ -679,22 +692,21 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				//Create a group element to contain the icon
 				var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 				$(g).attr("transform", "translate(25,30)")
-				//$(g).attr("class", "program-icon pointer ");
 				$(g).attr("class", " program editor pointer ");
 				
 				//Add classes via .attr() so it works for SVG, too
-				var currentClasses = $(nodeEl).attr("class") || "";
-				$(nodeEl).attr("class", currentClasses + " " + type + " node editor pointer " + isCollapsed);
-				$(nodeEl).attr("tabindex", 0);
-				$(nodeEl).attr("data-id", id);
+				var currentClasses = nodeEl.attr("class") || "";
+				nodeEl.attr("class", currentClasses + " " + type + " node editor pointer " + isCollapsed);
+				nodeEl.attr("tabindex", 0);
+				nodeEl.attr("data-id", id);
 				
-				//Create a group element to contain the text "Add"
-				var addEl = $(document.createElementNS("http://www.w3.org/2000/svg", "text"))
-										.text("Add");
-				var gAdd = document.createElementNS("http://www.w3.org/2000/svg", "g");
-				$(gAdd).attr("transform", "translate(18,45)")
-				$(gAdd).attr("class", " program node editor pointer ");
-				$(gAdd).append(addEl);
+				//Create a "group" element
+				var gAdd = $(document.createElementNS("http://www.w3.org/2000/svg", "g"));
+				
+				//Position the group element and add the text "Add"
+				gAdd.attr("transform", "translate(18,45)")
+					.attr("class", " program node editor pointer ")
+					.append($(document.createElementNS("http://www.w3.org/2000/svg", "text")).text("Add"));
 				
 				//Glue it all together
 				$(g).append(iconEl);
@@ -702,12 +714,11 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			}
 			
 			if(svg != null) {
-				return (svg);
+				return svg;
 			} else {
-				return(nodeEl);
+				return nodeEl;
 			}
 			
-			//return (svg != null)? svg : nodeEl;
 		},
 		
 		createConnecter: function(position){
@@ -734,6 +745,70 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			}
 			
 			return pointer;
+		},
+		
+		/*
+		 * createEditTooltip
+		 * Adds a Bootstrap tooltip to the given prov node which tells the user how to edit it
+		 * 
+		 * @param nodeEl - the DOM element for the prov node
+		 */
+		createEditTooltip: function(nodeEl){
+			
+			//Start a tooltip title and get the object's file name
+			var toolTipTitle = "",
+				fileName     = this.context.get("fileName") || " this data file.",
+				nodeType     = $(nodeEl).is("svg") ? "program" : "data";
+			
+			//Create the tooltip title 
+			if (this.type == "sources" && nodeType == "data") {
+				toolTipTitle = "Add source " + nodeType + " to " + fileName;
+			}
+			else if(this.type == "sources" && nodeType == "program"){
+				toolTipTitle = "Add a program that output " + fileName;
+			}
+			else if (this.type == "derivations" && nodeType == "data") {
+				toolTipTitle = "Add derived data to " + fileName;
+			}
+			else if(this.type == "derivations" && nodeType == "program"){
+				toolTipTitle = "Add a program that used " + fileName;
+			}
+			
+			//Create the tooltip settings for programs and data nodes
+			var tooltipOptions = {
+				placement: "top",
+				title: toolTipTitle,
+				delay: 600	
+			}
+			
+			//Programs need tooltips to be handled a bit differently since they are SVG elements
+			if(nodeType == "program"){
+				
+				//Add the trigger
+				tooltipOptions.trigger = "manual";
+				tooltipOptions.container = this.el;
+				
+				//Create the Bootstrap tooltip and manually show and hide it 
+				//based on mouseover and mouseout events
+				$(nodeEl).tooltip(tooltipOptions)
+						 .mouseenter(function(){
+					          setTimeout(function(){ 
+					        	  	$(nodeEl).tooltip("show") 
+					        	  }, 500);
+						 })
+						 .mouseleave(function(){
+					          setTimeout(function(){ 
+					        	  	$(nodeEl).tooltip("hide") 
+					        	  }, 500);
+						 });
+				
+			}
+			else{
+				tooltipOptions.trigger = "hover";
+				
+				//Create the Bootstrap tooltip
+				$(nodeEl).tooltip(tooltipOptions);	
+			}
 		},
 		
 		/*
@@ -840,13 +915,13 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			// Set the selection box labels according to the edit icon that was clicked,
 			// and the ProvChart that it was clicked in.
-			if (this.editorType == "sources") {
+			if (this.type == "sources") {
 				if(isProgram) {
 					title = "Add the program that generated " + this.context.get("fileName");
 				} else {
 					title = "Add source data to " + this.context.get("fileName");
 				}
-			} else if (this.editorType == "derivations") {
+			} else if (this.type == "derivations") {
 				if(isProgram) {
 					title = "Add the program that read " + this.context.get("fileName");
 				} else {
@@ -888,39 +963,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			// Display the modal and wait for completion.
 			this.$('#selectModal').modal('show');
 		},
-		
-
-
-
-		/**
-		* [This function is the eventListener fucntion that will set the tooltip for DATA-FILES]
-		* @param  {} e [description]
-		* @return {}   [description]
-		*
-		* TODO : Modify it such that it displays correct tooltip for every mouseover (hover). 
-		*			It just requires 1st hover to set the tooltip , so it does not work for the first hover.
-		*/
-		displayProvEditorEntities: function(e) {
-			var toolTipTitle = null;
-			
-			// Set the selection box labels according to the edit icon that was clicked,
-			// and the ProvChart that it was clicked in.
-			if (this.editorType == "sources") {
-					toolTipTitle = "Add source data to " + this.context.get("fileName");
-			} else if (this.editorType == "derivations") {
-					toolTipTitle = "Add derived data to " + this.context.get("fileName");
-			} else {
-				toolTipTitle = "Add data to " + this.context.get("fileName");
-			}
-			
-			this.$el.find(".editor").tooltip({
-				placement: "top",
-				// trigger: "hover",
-				title: toolTipTitle
-			});
-		},
-
-
 
 		/**
 		* [This function is the eventListener fucntion that will set the tooltip for PROGRAMS]
@@ -935,9 +977,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			// Set the selection box labels according to the edit icon that was clicked,
 			// and the ProvChart that it was clicked in.
-			if (this.editorType == "sources") {
+			if (this.type == "sources") {
 					toolTipTitle = "Add the program that generated " + this.context.get("fileName");
-			} else if (this.editorType == "derivations") {
+			} else if (this.type == "derivations") {
 					toolTipTitle = "Add the program that read " + this.context.get("fileName");
 			} else {
 				toolTipTitle = "Add data to " + this.context.get("fileName");
@@ -1035,7 +1077,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                     addMember = this.dataPackage.get(pidToAdd);
                     addMember.selectedInEditor = true;
                 };
-				if(this.editorType == "sources") {
+				if(this.type == "sources") {
                     // source chart
 					// This is a sources chart and the entity to add is a program
 					if(entityType == "program") {
@@ -1213,7 +1255,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                 entityType = (_.contains(classNames, "program")) ? "program" : "data";
             }
 			// Is this a source prov chart or derivations
-			if(this.editorType == "sources") {
+			if(this.type == "sources") {
                 // This is a sources chart and the entity to remove is a program
 				if(entityType == "program") {
 					// source fields: prov_generatedByExecution, prov_generatedByProgram, prov_used, 
