@@ -228,6 +228,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			return DataONEObject.prototype.parse.call(this, response);
             			
             		response = this.cleanUpXML(response);
+                    response = this.dereference(response);
             		this.set("objectXML", response);
             		var emlElement = $($.parseHTML(response)).filter("eml\\:eml");
             	}
@@ -238,7 +239,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	
             	if(!datasetEl || !datasetEl.length)
             		return {};
-            		
+                
             	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
             		emlDistribution = ["distribution"],
             		emlEntities = ["datatable", "otherentity", "spatialvector"],
@@ -247,7 +248,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	var nodes = datasetEl.children(),
             		modelJSON = {};
-            	
             	for(var i=0; i<nodes.length; i++){
 
             		var thisNode = nodes[i];
@@ -1366,6 +1366,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     return emlString;
             },
             
+            /*
+                Replace elements named "source" with "sourced" due to limitations
+                with using $.parseHTML() rather than $.parseXML()
+                
+                @param xmlString  The XML string to make the replacement in
+            */
             cleanUpXML: function(xmlString){
             	xmlString.replace("<source>", "<sourced>");
             	xmlString.replace("</source>", "</sourced>");
@@ -1373,6 +1379,46 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	return xmlString;
             },
             
+            /*
+                Dereference "reference" elements and replace them with a cloned copy
+                of the referenced content
+                
+                @param xmlString  The XML string with reference elements to transform
+            */
+            dereference: function(xmlString) {
+                var referencesList; // the array of references elements in the document
+                var referencedID;  // The id of the referenced element
+                var referencesParentEl;  // The parent of the given references element
+                var referencedEl; // The referenced DOM to be copied
+                
+                xmlDOM = $.parseXML(xmlString);
+                referencesList = xmlDOM.getElementsByTagName("references");
+                
+                if (referencesList.length) {
+                    // Process each references elements
+                    _.each(referencesList, function(referencesEl, index, referencesList) {
+                        // Can't rely on the passed referencesEl since the list length changes
+                        // because of the remove() below. Reuse referencesList[0] for every item:
+                        // referencedID = $(referencesEl).text(); // doesn't work
+                        referencesEl = referencesList[0];
+                        referencedID = $(referencesEl).text();
+                        referencesParentEl = ($(referencesEl).parent())[0];
+                        if (typeof referencedID !== "undefined" && referencedID != "") {
+                            referencedEl = xmlDOM.getElementById(referencedID);
+                            if (typeof referencedEl != "undefined") {
+                                // Clone the referenced element and replace the references element
+                                var referencedClone = ($(referencedEl).clone())[0];
+                                $(referencesParentEl)
+                                    .children(referencesEl.localName)
+                                    .replaceWith($(referencedClone).children());
+                                //$(referencesParentEl).append($(referencedClone).children());
+                                $(referencesParentEl).attr("id", DataONEObject.generateId());
+                            }
+                        }
+                    }, xmlDOM);
+                }
+                return (new XMLSerializer()).serializeToString(xmlDOM);
+            },
             trickleUpChange: function(){
             	//Mark the package as changed
 				MetacatUI.rootDataPackage.packageModel.set("changed", true);
