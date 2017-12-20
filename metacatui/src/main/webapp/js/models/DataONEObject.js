@@ -287,8 +287,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             		if(!response.response.docs.length){
             			this.set("notFound", true);
             		}
+            		
+            		var doc = response.response.docs[0];
+            		
+            		//Take out any empty values
+            		_.each(Object.keys(doc), function(field){
+            			if( !doc[field] && doc[field] !== 0 )
+            				delete doc[field];
+            		});
             		            		
-            	    return response.response.docs[0];                   
+            	    return doc;                   
                 }
             	else
             		// Default to returning the raw response           	
