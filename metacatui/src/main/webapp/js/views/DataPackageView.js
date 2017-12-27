@@ -96,9 +96,7 @@ define([
              */
             addOne: function(item) {
             	if(!item) return false;
-            	
-                console.log("DataPackageView.addOne called for " + item.id);
-                
+            	                
                 //Don't add duplicate rows
                 if(this.$(".data-package-item[data-id='" + item.id + "']").length) 
                 	return;
@@ -112,11 +110,25 @@ define([
                 
                 dataItemView = new DataItemView({model: item});
                 this.subviews[item.id] = dataItemView; // keep track of all views
+                
+                //Get the science metadata that documents this item
                 scimetaParent = item.get("isDocumentedBy");
                 
-                if ( typeof scimetaParent !== "undefined" && scimetaParent !== null ) {
-                    scimetaParent = scimetaParent[0];
-                    
+                //If this item is not documented by a science metadata object,
+                // and there is only one science metadata doc in the package, then assume it is
+                // documented by that science metadata doc
+                if( typeof scimetaParent == "undefined" || !scimetaParent ){
+                	
+                	//Get the science metadata models
+                	var metadataIds = this.dataPackage.sciMetaPids;
+                	
+                	//If there is only one science metadata model in the package, then use it
+                	if( metadataIds.length == 1 )
+                		scimetaParent = metadataIds[0];
+                }
+                //Otherwise, get the first science metadata doc that documents this object
+                else{
+                    scimetaParent = scimetaParent[0];                    
                 }
                 
                 if((scimetaParent == item.get("id")) || (!scimetaParent && item.get("type") == "Metadata")) {

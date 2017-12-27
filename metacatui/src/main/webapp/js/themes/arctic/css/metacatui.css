@@ -482,7 +482,7 @@ footer .logos a:hover, a:focus{
     	border: 1px solid #146660;
     }
 
-    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a, a.btn-primary:visited {
+    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
       color: #FFFFFF; 
       text-decoration:none;     
     }

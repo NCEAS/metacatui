@@ -284,11 +284,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             	
                 // If the response is a list of Solr docs   
             	} else if (( typeof response === "object") && (response.response && response.response.docs)){
+            		
+            		//If no objects were found in the index, mark as notFound and exit
             		if(!response.response.docs.length){
             			this.set("notFound", true);
+            			return;
             		}
+            		
+            		//Get the Solr document (there should be only one)
+            		var doc = response.response.docs[0];
+            		
+            		//Take out any empty values
+            		_.each(Object.keys(doc), function(field){
+            			if( !doc[field] && doc[field] !== 0 )
+            				delete doc[field];
+            		});
             		            		
-            	    return response.response.docs[0];                   
+            	    return doc;                   
                 }
             	else
             		// Default to returning the raw response           	

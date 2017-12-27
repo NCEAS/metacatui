@@ -440,6 +440,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                           }
                     }, this);
                     
+                    //Save the list of science metadata pids
+                    this.sciMetaPids = sciMetaPids;
+                    
                     //Put the science metadata pids first
                     memberPIDs = _.difference(memberPIDs, sciMetaPids);
                     _.each(_.uniq(sciMetaPids), function(id){ memberPIDs.unshift(id); });

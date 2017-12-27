@@ -610,23 +610,22 @@ img.icon{
 .prov-chart .node.previous{
 	border-width: 1px;
 }
-.prov-chart .icon-remove-sign.hide{
-	display: none;
-}
-.prov-chart .data.icon-remove-sign.show{
+.prov-chart .node .icon.remove,
+.prov-chart .programs .icon.remove{
+	color: #960303;
+	fill: #960303;
 	position:absolute;
 	display: block;
-	top: 5px;
-	height: 5px;
-	width: 5px;
-	right: 5px;
-	color: #ff0000;
+	font-size: 20px;
 }
-.prov-chart .program.icon-remove-sign.show{
-	position:absolute;
-	display: block;
-	font-size:25px;
-	color: #ff0000;
+.prov-chart .node .icon.remove:hover,
+.prov-chart .programs .icon.remove:hover{
+	color: #FF0000;
+	fill: #FF0000;
+}
+.prov-chart .node .data.icon.remove{
+	top: 0px;
+	right: -5px;
 }
 
 .prov-chart .connecter{
@@ -715,7 +714,7 @@ img.icon{
 	background-position: 50% 50%;
 }
 .prov-chart .node.editor{
-	border-color: #333;
+	border-color: #999999;
     border-style: dashed;
 	text-align: center;
 	line-height: 16px;
@@ -755,40 +754,40 @@ img.icon{
 	border-color: #FF0000;
 	stroke: #FF0000;
 }
-.prov-chart .node.uniqueNode1 .icon,
+.prov-chart .uniqueNode1 .icon,
 .provenance-statement .node-link.uniqueNode1 .icon,
 .prov-chart .uniqueNode1 + .program-icon{
 	color: #FF0000;
 	fill: #FF0000;
 }
-.prov-chart .node.uniqueNode2,
+.prov-chart .uniqueNode2,
 .entitydetails.uniqueNode2{
 	border-color: #878700;
 	stroke: #878700;
 }
-.prov-chart .node.uniqueNode2 .icon,
+.prov-chart .uniqueNode2 .icon,
 .provenance-statement .node-link.uniqueNode2 .icon,
 .prov-chart .uniqueNode2 + .program-icon{
 	color: #878700;
 	fill: #878700;
 }
-.prov-chart .node.uniqueNode3,
+.prov-chart .uniqueNode3,
 .entitydetails.uniqueNode3{
 	border-color: #00EAFF;
 	stroke: #00EAFF;
 }
-.prov-chart .node.uniqueNode3 .icon,
+.prov-chart .uniqueNode3 .icon,
 .provenance-statement .node-link.uniqueNode3 .icon,
 .prov-chart .uniqueNode3 + .program-icon{
 	color: #00EAFF;
 	fill: #00EAFF;
 }
-.prov-chart .node.uniqueNode4,
+.prov-chart .uniqueNode4,
 .entitydetails.uniqueNode4{
 	border-color: #AA00FF;
 	stroke: #AA00FF;
 }
-.prov-chart .node.uniqueNode4 .icon,
+.prov-chart .uniqueNode4 .icon,
 .provenance-statement .node-link.uniqueNode4 .icon,
 .prov-chart .uniqueNode4 + .program-icon{
 	color: #AA00FF;
@@ -799,7 +798,7 @@ img.icon{
 	border-color: #FF7F00;
 	stroke: #FF7F00;
 }
-.prov-chart .node.uniqueNode5 .icon,
+.prov-chart .uniqueNode5 .icon,
 .provenance-statement .node-link.uniqueNode5 .icon,
 .prov-chart .uniqueNode5 + .program-icon{
 	color: #FF7F00;
@@ -810,7 +809,7 @@ img.icon{
 	border-color: #739900;
 	stroke: #739900;
 }
-.prov-chart .node.uniqueNode6 .icon,
+.prov-chart .uniqueNode6 .icon,
 .provenance-statement .node-link.uniqueNode6 .icon,
 .prov-chart .uniqueNode6 + .program-icon{
 	color: #739900;
@@ -821,7 +820,7 @@ img.icon{
 	border-color: #0095FF;
 	stroke: #0095FF;
 }
-.prov-chart .node.uniqueNode7 .icon,
+.prov-chart .uniqueNode7 .icon,
 .provenance-statement .node-link.uniqueNode7 .icon,
 .prov-chart .uniqueNode7 + .program-icon{
 	color: #0095FF;
@@ -832,7 +831,7 @@ img.icon{
 	border-color: #FF00AA;
 	stroke: #FF00AA;
 }
-.prov-chart .node.uniqueNode8 .icon,
+.prov-chart .uniqueNode8 .icon,
 .provenance-statement .node-link.uniqueNode8 .icon,
 .prov-chart .uniqueNode8 + .program-icon{
 	color: #FF00AA;
@@ -843,7 +842,7 @@ img.icon{
 	border-color: #FFD400;
 	stroke: #FFD400;
 }
-.prov-chart .node.uniqueNode9 .icon,
+.prov-chart .uniqueNode9 .icon,
 .provenance-statement .node-link.uniqueNode9 .icon,
 .prov-chart .uniqueNode9 + .program-icon{
 	color: #FFD400;
@@ -854,7 +853,7 @@ img.icon{
 	border-color: #6AFF00;
 	stroke: #6AFF00;
 }
-.prov-chart .node.uniqueNode10 .icon,
+.prov-chart .uniqueNode10 .icon,
 .provenance-statement .node-link.uniqueNode10 .icon,
 .prov-chart .uniqueNode10 + .program-icon{
 	color: #6AFF00;
@@ -865,7 +864,7 @@ img.icon{
 	border-color: #0040FF;
 	stroke: #0040FF;
 }
-.prov-chart .node.uniqueNode11 .icon,
+.prov-chart .uniqueNode11 .icon,
 .provenance-statement .node-link.uniqueNode11 .icon,
 .prov-chart .uniqueNode11 + .program-icon{
 	color: #0040FF;
@@ -876,7 +875,7 @@ img.icon{
 	border-color:#EDB9B9;
 	stroke:#EDB9B9;
 }
-.prov-chart .node.uniqueNode12 .icon,
+.prov-chart .uniqueNode12 .icon,
 .provenance-statement .node-link.uniqueNode12 .icon,
 .prov-chart .uniqueNode12 + .program-icon{
 	color: #EDB9B9;
@@ -887,7 +886,7 @@ img.icon{
 	border-color: #B9D7ED;
 	stroke: #B9D7ED;
 }
-.prov-chart .node.uniqueNode13 .icon,
+.prov-chart .uniqueNode13 .icon,
 .provenance-statement .node-link.uniqueNode13 .icon,
 .prov-chart .uniqueNode13 + .program-icon{
 	color: #B9D7ED;
@@ -898,7 +897,7 @@ img.icon{
 	border-color:#E7E9B9;
 	stroke:#E7E9B9;
 }
-.prov-chart .node.uniqueNode14 .icon,
+.prov-chart .uniqueNode14 .icon,
 .provenance-statement .node-link.uniqueNode14 .icon,
 .prov-chart .uniqueNode14 + .program-icon{
 	color: #E7E9B9;
@@ -909,7 +908,7 @@ img.icon{
 	border-color: #DCB9ED;	
 	stroke: #DCB9ED;	
 }
-.prov-chart .node.uniqueNode15 .icon,
+.prov-chart .uniqueNode15 .icon,
 .provenance-statement .node-link.uniqueNode15 .icon,
 .prov-chart .uniqueNode15 + .program-icon{
 	color: #DCB9ED;
@@ -919,7 +918,7 @@ img.icon{
 	border-color:#B9EDE0;
 	stroke:#B9EDE0;
 } 
-.prov-chart .node.uniqueNode16 .icon,
+.prov-chart .uniqueNode16 .icon,
 .provenance-statement .node-link.uniqueNode16 .icon,
 .prov-chart .uniqueNode16 + .program-icon{
 	color: #B9EDE0;
@@ -930,7 +929,7 @@ img.icon{
 	border-color:#8F2323;
 	stroke:#8F2323;
 } 
-.prov-chart .node.uniqueNode17 .icon,
+.prov-chart .uniqueNode17 .icon,
 .provenance-statement .node-link.uniqueNode17 .icon,
 .prov-chart .uniqueNode17 + .program-icon{
 	color: #8F2323;
@@ -941,7 +940,7 @@ img.icon{
 	border-color:#23628F;
 	stroke:#23628F;
 } 
-.prov-chart .node.uniqueNode18 .icon,
+.prov-chart .uniqueNode18 .icon,
 .provenance-statement .node-link.uniqueNode18 .icon,
 .prov-chart .uniqueNode18 + .program-icon{
 	color: #23628F;
@@ -952,7 +951,7 @@ img.icon{
 	border-color:#8F6A23;
 	stroke:#8F6A23;
 } 
-.prov-chart .node.uniqueNode19 .icon,
+.prov-chart .uniqueNode19 .icon,
 .provenance-statement .node-link.uniqueNode19 .icon,
 .prov-chart .uniqueNode19 + .program-icon{
 	color: #8F6A23;
@@ -963,7 +962,7 @@ img.icon{
 	border-color:#6B238F;
 	stroke:#6B238F;
 } 
-.prov-chart .node.uniqueNode20 .icon,
+.prov-chart .uniqueNode20 .icon,
 .provenance-statement .node-link.uniqueNode20 .icon,
 .prov-chart .uniqueNode20 + .program-icon{
 	color: #6B238F;
@@ -974,7 +973,7 @@ img.icon{
 	border-color:#4F8F23;
 	stroke:#4F8F23;
 } 
-.prov-chart .node.uniqueNode21 .icon,
+.prov-chart .uniqueNode21 .icon,
 .provenance-statement .node-link.uniqueNode21 .icon,
 .prov-chart .uniqueNode21 + .program-icon{
 	color: #4F8F23;
@@ -985,7 +984,7 @@ img.icon{
 	border-color:#000000;
 	stroke:#000000;
 } 
-.prov-chart .node.uniqueNode22 .icon,
+.prov-chart .uniqueNode22 .icon,
 .provenance-statement .node-link.uniqueNode22 .icon,
 .prov-chart .uniqueNode22 + .program-icon{
 	color: #000000;
@@ -996,7 +995,7 @@ img.icon{
 	border-color:#737373;
 	stroke:#737373;
 } 
-.prov-chart .node.uniqueNode23 .icon,
+.prov-chart .uniqueNode23 .icon,
 .provenance-statement .node-link.uniqueNode23 .icon,
 .prov-chart .uniqueNode23 + .program-icon{
 	color: #737373;
