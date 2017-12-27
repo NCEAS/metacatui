@@ -1455,15 +1455,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     /* Show progress */
                     reader.onprogress = function(event) {
                         // console.log('Loaded ' + event.loaded + ' of ' + event.total);
-                        console.log('Processed ' + (offset + event.loaded) + ' of ' + file.size);
+                        // console.log('Processed ' + (offset + event.loaded) + ' of ' + file.size);
                     };
                     /* Handle load finish */
                     reader.onloadend = function(event) {
                         if (event.target.readyState == FileReader.DONE) {
                             hash.update(event.target.result);
-                        } else {
-                            console.log("Ready state: " + reader.readyState);
-                            
                         }
                         offset += sliceSize; 
                         if ( _seek() ) {
