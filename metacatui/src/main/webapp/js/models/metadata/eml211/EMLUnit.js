@@ -24,8 +24,6 @@ define(["jquery", "underscore", "backbone"], function($, _, Backbone) {
 
         /* Constructs a new instance */
         initialize: function(attrs, options) {
-            console.log("EMLUnit.initialize() called.");
-
         },
 
         /* No op - Units are read only */
