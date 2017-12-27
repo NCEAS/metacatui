@@ -77,7 +77,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 		                
 	                //Get the parent EML model
 	                var parentEML = MetacatUI.rootDataPackage.where({
-	                    	id: this.model.get("isDocumentedBy")[0]
+	                    	id: Array.isArray(this.model.get("isDocumentedBy")) ? 
+	                    			this.model.get("isDocumentedBy")[0] : null
 	                	});
 	                
 	                if( Array.isArray(parentEML) )

@@ -870,7 +870,8 @@ define(['underscore',
 			if(!MetacatUI.appUserModel.get("loggedIn")) return true;
 
 			//If the form hasn't been edited, we can close this view without confirmation
-			if(!MetacatUI.rootDataPackage.getQueue().length) return true;
+			if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
+				return true;
 
 			var isLeaving = confirm("Do you want to leave this page? All information you've entered will be lost.");
 			return isLeaving;
