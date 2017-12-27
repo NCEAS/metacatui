@@ -834,11 +834,19 @@ define(['jquery',
 				$(container).html(controlsEl);
 
 				//Insert an Edit button
-				controlsEl.append(
-					viewRef.editMetadataTemplate({
-						identifier: pid
+				if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){ 
+					controlsEl.append(
+						this.editMetadataTemplate({
+							identifier: pid,
+							supported: true
+						}));
+				}
+				else{
+					controlsEl.append(this.editMetadataTemplate({
+						supported: false
 					}));
-
+				}
+				
 				//Insert a Publish button if its not already published with a DOI
 				if(!model.isDOI()){
 					//Insert the template

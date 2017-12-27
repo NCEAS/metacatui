@@ -42,6 +42,8 @@ define(['jquery', 'underscore', 'backbone'],
 				title: true
 			},
 			
+			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
+			
 			baseUrl: "https://knb.ecoinformatics.org",
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
