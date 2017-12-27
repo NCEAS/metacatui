@@ -368,8 +368,20 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
+                        // Add it to the parent collection
+                        this.collection.add(dataONEObject);
                         
-                        dataONEObject.loadFile();
+                        // Asychronously calculate the checksum
+                        if ( dataONEObject.get("uploadFile") && ! dataONEObject.get("checksum") ) {
+                            this.stopListening(dataONEObject, "checksumCalculated");
+                            dataONEObject.listenToOnce(dataONEObject, "checksumCalculated", dataONEObject.save);
+                            try {
+                                dataONEObject.calculateChecksum();
+                            } catch (exception) {
+                                // TODO: Fail gracefully here for the user
+                            }
+                        }
+                        
                         
                     }, this);
                     

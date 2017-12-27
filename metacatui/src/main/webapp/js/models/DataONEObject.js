@@ -424,7 +424,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             * Saves the DataONEObject System Metadata to the server
             */
             save: function(attributes, options){
-
+                
                 // Set missing file names before saving
                 if ( ! this.get("fileName") ) {
                     this.setMissingFileName();
@@ -444,27 +444,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 //Add the identifier to the XHR data
                 formData.append("pid", this.get("id"));
-            				
-				//If there's been a new uploaded file, get the new checksum of the object 
-                if(this.get("uploadResult")){
-					var checksum = md5(this.get("uploadResult"));
-					this.set("checksum", checksum);
-					this.set("checksumAlgorithm", "MD5");
-                }
                 
                 //Create the system metadata XML
                 var sysMetaXML = this.serializeSysMeta();
                 				
                 //Send the system metadata as a Blob 
-                var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
+                var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
                 //Add the system metadata XML to the XHR data
                 formData.append("sysmeta", xmlBlob, "sysmeta.xml");
-				
+                
                 if ( this.isNew() ) {
                     // Create the new object (MN.create())
                     formData.append("object", this.get("uploadFile"), this.get("fileName"));
                     
-                } else if(this.get("uploadResult") || this.hasContentChanges) {
+                } else if (this.hasContentChanges) {
                     // Update the object (MN.update())
                     //TODO: enable replacement of DATA objects
                 }
@@ -1145,13 +1138,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                                     
                     delete event; // Let large files be garbage collected
                                     
-                    this.once("successSaving", function(){ 
-                        MetacatUI.rootDataPackage.add(this);
-                        MetacatUI.rootDataPackage.handleAdd(this);
-                    });
+                    // this.once("successSaving", function(){ 
+                    //     MetacatUI.rootDataPackage.add(this);
+                    //     MetacatUI.rootDataPackage.handleAdd(this);
+                    // });
                     
-                    //Upload the file
-                    this.save();
+                    // Upload the file
+                    // this.save();
                 }
             },
             
@@ -1170,15 +1163,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
             },
 	        
-            /* During file reading, deal with read errors */ 
+            /* During file loading, deal with load errors */ 
 	        handleFileLoadError: function(event){
-                // On error, update the model upload status
-	        	
+                // Tell the view to remove the row by id
+                MetacatUI.eventDispatcher.trigger("fileReadError", this);
 	        },
 	        
 	        /* During file reading, update the import progress in the model */
             handleFileLoadProgress: function(event) {
                 // event is a ProgressEvent - use it to update the import progress bar
+                console.log('Loaded ' + event.loaded + ' of ' + event.total);
                 
                 if ( event.lengthComputable ) {
                     var percentLoaded = Math.round((event.loaded/event.total) * 100);
@@ -1530,9 +1524,91 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				if(_.indexOf(ids, this.get('formatId')) == -1) return false;
 				else return true;
 			},
- 
+            
+            /*
+             *  Calculate a checksum for the object
+             *  @param algorithm  The algorithm to use, defaults to MD5
+             *  @return checksum  A checksum plain JS object with value and algorithm attributes
+             */
+            calculateChecksum: function(algorithm) {
+                var algorithm = algorithm || "MD5";
+                var checksum = {algorithm: undefined, value: undefined};
+                var hash; // The checksum hash
+                var file; // The file to be read by slicing
+                var reader; // The FileReader used to read each slice
+                var offset = 0; // Byte offset for reading slices
+                var sliceSize = Math.pow(2,20) // 1MB slices
+                var model = this;
+                // Do we have a file?
+                if (this.get("uploadFile") instanceof Blob) {
+                    file = this.get("uploadFile");
+                    reader = new FileReader();
+                    /* Handle load errors */
+                    reader.onerror = function(event) {
+                        console.log("Error reading: " + event);
+                    };
+                    /* Show progress */
+                    reader.onprogress = function(event) {
+                        // console.log('Loaded ' + event.loaded + ' of ' + event.total);
+                        console.log('Processed ' + (offset + event.loaded) + ' of ' + file.size);
+                    };
+                    /* Handle load finish */
+                    reader.onloadend = function(event) {
+                        if (event.target.readyState == FileReader.DONE) {
+                            hash.update(event.target.result);
+                        } else {
+                            console.log("Ready state: " + reader.readyState);
+                            
+                        }
+                        offset += sliceSize; 
+                        if ( _seek() ) {
+                            model.set("checksum", hash.hex());
+                            model.set("checksumAlgorithm", checksum.algorithm);
+                            model.trigger("checksumCalculated", model.attributes);
+                        };
+                    };
+                } else {
+                    message = "The given object is not a blob or a file object."
+                    throw new Error(message);
+                }
+                
+                switch ( algorithm ) {
+                    case "MD5":
+                        checksum.algorithm = algorithm;
+                        hash = md5.create();
+                        _seek();
+                        break;
+                    case "SHA-1":
+                        console.log("Generating SHA-1 checksum");
+                        // TODO: Support SHA-1
+                        // break;
+                    default:
+                        message = "The given algorithm: " + algorithm + " is not supported."
+                        throw new Error(message);
+                }
+                
+                /* 
+                 *  A helper function internal to calculateChecksum() used to slice 
+                 *  the file at the next offset by slice size
+                 */
+                function _seek() {
+                    var calculated = false;
+                    var slice;
+                    // Digest the checksum when we're done calculating
+                    if (offset >= file.size) {
+                        hash.digest();
+                        calculated = true;
+                        return calculated;
+                    }
+                    // slice the file and read the slice
+                    slice = file.slice(offset, offset + sliceSize);
+                    reader.readAsArrayBuffer(slice);
+                    return calculated;
+
+                }
+            }
 		},
-    {
+        {
 			/* Generate a unique identifier to be used as an XML id attribute */
 			generateId: function() {
 				var idStr = ''; // the id to return
