@@ -1086,42 +1086,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        },
 	        
             /*
-                Loads a file from the local disk  into a FileReader
-                object and caches it in the DataONEObject.uploadReader
-                property for later upload to the server.
-             */
-             loadFile: function(){
-                var reader = new FileReader(),
-                    model  = this;
-                
-                // Trigger the file added event
-                MetacatUI.rootDataPackage.trigger("fileAdded", this);
-                
-                // Set up the reader event handlers and
-                // pass the event *and* the dataONEObject to the handlers
-                reader.onprogress = function(event) {
-                    model.handleFileLoadProgress(event);
-                }
-                
-                reader.onerror = function(event) {
-                    model.handleFileLoadError(event);
-                }
-                
-                reader.onload = function(event) {
-                    model.handleFileLoadSuccess(event);
-                }
-                
-                reader.onabort = function(event) {
-                    model.handleFileLoadAbort(event);
-                }
-                
-                // Now initiate the file read
-                reader.readAsArrayBuffer(this.get("uploadFile"));
-                
-                this.set("uploadReader", reader);
-	        },
-	        
-            /*
                 Once a File object is locally loaded into an ArrayBuffer,
                 determine if it already exists in the collection, and if not,
                 update its properties, save it to the server, and add
