@@ -132,7 +132,6 @@ define(['jquery',
             // Once the ScienceMetadata is populated, populate the associated package
             //this.metadataModel = metadataModel;
 			// Create a new data package with this id
-            console.log("called getDataPackage with pid: " + pid);
 			this.dataPackage = new DataPackage([], {id: pid});
 			//Fetch the data package. DataPackage.parse() triggers 'complete'
 			this.dataPackage.fetch();
@@ -984,10 +983,8 @@ define(['jquery',
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {
             // Show the provenance trace for this package
-            console.log("called checkForProv");
             var model = this.model;
             if(this.dataPackage.provenanceFlag == "complete") {
-                console.log("checkForProv complete!");
                 this.drawProvCharts(this.dataPackage);
                 // Check each prov chart to see if it has been marked for re-rendering and
                 // redraw it if it has been.
@@ -1018,8 +1015,6 @@ define(['jquery',
 			var editModeOn = false; 
             
 			this.model.get("isAuthorized") ? editModeOn = true : editModeOn = false;
-			//editModeOn = true; 
-			console.log("prov edit mode on: " + editModeOn);
 			var view = this;
 			//Draw two flow charts to represent the sources and derivations at a package level
 			var packageSources     = dataPackage.sourcePackages;
@@ -1170,29 +1165,15 @@ define(['jquery',
 			
 			view.drawProvCharts(this.dataPackage);
 			view.listenToOnce(this.dataPackage, "redrawProvCharts", view.redrawProvCharts);
-			
-			/*
-			_.each(this.dataPackageList, function(dataPackage){
-				console.log("Checking dataPackage: " + dataPackage.get("id"));
-				if(dataPackage.provenanceFlag == "complete") {
-					console.log("redrawing prov chart for dataPackage: ", dataPackage.get("id"));
-					view.drawProvCharts(dataPackage);
-					// Check each prov chart to see if it has been marked for re-rendering and
-					// redraw it if it has been.
-					view.listenToOnce(dataPackage, "redrawProvCharts", view.redrawProvCharts);
-				}
-			});
-			*/
+
 		},
 		
         /*
          * When the data package collection saves successfully, tell the user
          */
         saveSuccess: function(savedObject){
-            console.log("saveSuccess called");
             //We only want to perform these actions after the package saves
             if(savedObject.type != "DataPackage") return;
-            console.log("saveSuccess executing");
 
             //Change the URL to the new id
             MetacatUI.uiRouter.navigate("#view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
@@ -1270,7 +1251,6 @@ define(['jquery',
             // Only call this function once per save operation.
             if(this.saveProvPending) return;
             
-            console.log("Saving provenance edits...");
             var view = this;
             if(this.dataPackage.provEditsPending()) {
                 this.saveProvPending = true;
@@ -1281,7 +1261,6 @@ define(['jquery',
                 this.showSaving(); 
                 this.dataPackage.saveProv();
             } else {
-                console.log("No prov edits have been entered.");
                 //TODO: should a dialog be displayed saying that no prov edits were made?
             }
         },

@@ -90,10 +90,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard'],
 					// Get a ref to the <input> element associated with this Copy element
 					var $target = $(e.trigger).prev("input");
 
-					// Show or hide the tooltip depending on the state
-					console.log('attr is `' + $target.attr("data-original-title") + '`');
-					console.log('data is `' + $target.data("original-title") + '`');
-
 					if($target.data("original-title") !== null) {
 						console.log('showing tip');
 						$target.tooltip({

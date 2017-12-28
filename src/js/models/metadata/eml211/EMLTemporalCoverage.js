@@ -242,8 +242,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if (this.isGreaterTime(beginDate, endDate, beginTime, endTime))
 				errors.beginTime = "The begin time must be before the end time."
 			
-			console.log(errors);
-
 			if(Object.keys(errors).length)
 				return errors;
 			else

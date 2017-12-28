@@ -219,7 +219,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
          * Deserialize a Package from OAI-ORE RDF XML
          */
         parse: function(response, options) {
-            console.log("DataPackage: parse() called.")
             
             //Save the raw XML in case it needs to be used later
             this.set("objectXML", $.parseHTML(response));
@@ -372,7 +371,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					    processData: false,
 						data: formData,
 						success: function(response){
-							console.log('yay');
 						},
 						error: function(data){
 							console.log("error updating system metadata");
@@ -397,9 +395,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				var checksum = md5(mapXML);
 				this.set("checksum", checksum);
 				
-				console.log("new package id: " + this.get("id"));
-				console.log(mapXML);
-				
 				var requestSettings = {
 						url: MetacatUI.appModel.get("objectServiceUrl"),
 						type: "PUT",
@@ -408,7 +403,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						processData: false,
 						data: formData,
 						success: function(response){
-							console.log("yay, map is updated");
 						},
 						error: function(data){
 							console.log("error udpating object");
@@ -617,9 +611,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
         	}, this);
         	
         	xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");
-        	
-        	console.log(xmlString);
-        	
+        	        	
         	return xmlString;
         },
         
@@ -1318,7 +1310,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 		
 		//Check authority of the Metadata SolrResult model instead
 		checkAuthority: function(){
-			console.log("check auth of package");
 			
 			//Call the auth service
 			var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');

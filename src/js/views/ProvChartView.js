@@ -1208,7 +1208,6 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		// A delete icon has been clicked for a prov node, so remove the prov relationships that this node represents.
 		// The pid and the type ("program" or "data") are needed in order to remove the appropriate prov relationships.
 		removeProv: function(pidToRemove, classNames) {
-            console.log("removing prov for: " + classNames)
             var view = this;
 			var memberPid = this.context.get("id");
             

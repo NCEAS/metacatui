@@ -115,7 +115,7 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 					// We only replace <paras> because <funding> is an EMLText module
 					// instance and can contain other content we don't want to remove
 					// when serializing
-					$(fundingNode).children("para").remove(); console.log("Clearing out funding paras before adding the latest ones!");
+					$(fundingNode).children("para").remove();
 				}
 
 				_.each(this.get('funding'), function(f) {
@@ -124,7 +124,7 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 			} else {
 				if (fundingNode.length !== 0) {
 					// Remove all funding <para>s
-					$(fundingNode).children("para").remove(); console.log("Clearing out funding paras cause none were set.")
+					$(fundingNode).children("para").remove();
 				}
 			}
 			

@@ -33,7 +33,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 		},
 
 		switchSuite: function(event) {
-			console.log("Switching Suite");
 
 			var select = $(event.target);
 
@@ -63,7 +62,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 				xhr.onreadystatechange = function() {
 				    if (this.readyState == 4 && this.status == 200){
 				        //this.response is what you're looking for
-				        console.log(this.response, typeof this.response);
 				        var sysMetaBlob = this.response;
 				        
 				        // fetch the metadata contents by the pid
@@ -71,13 +69,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 						xhr.onreadystatechange = function() {
 						    if (this.readyState == 4 && this.status == 200){
 						        //this.response is what you're looking for
-						        console.log(this.response, typeof this.response);
 						        var documentBlob = this.response;
 						        // send to MDQ as blob
 								var formData = new FormData();
 								formData.append('document', documentBlob);
 								formData.append('systemMetadata', sysMetaBlob);
-								console.log("Submitting object to MDQ engine");
 								viewRef.showResults(formData);
 						    }
 						}
@@ -149,7 +145,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 		},
 
 		submitForm: function(event) {
-			console.log("Submitting form to MDQ");
 
 			var form = $(event.target).parents("form");
 
@@ -233,7 +228,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 						color = 'RED';
 					}
 				}
-				//console.log("result color:" + color);
 				return color;
 
 			});

@@ -110,10 +110,7 @@ define(['underscore', 'jquery', 'backbone',
         	//The EML Model and ID
     		this.model = options.model || new EML();    		
     		if(!this.model.get("id") && options.id) this.model.set("id", options.id);
-    		
-    		//This is a new EML doc being created
-    		if(!this.model.get("id")) console.log("No data set id is specified");
-    		
+
     		//Get the current mode
     		this.edit = options.edit || false;
     		    		

@@ -16,12 +16,6 @@ define(['jquery', 'underscore', 'backbone', 'x2js', 'models/formats/ObjectFormat
         
         model: ObjectFormat,
         
-        /* Create a new ObjectFormats collection */
-        initialize: function() {
-            console.log("ObjectFormats.initialize() called.");
-            
-        },
-        
         /* 
          * The constructed URL of the collection
          * (/cn/v2/formats)
@@ -43,7 +37,6 @@ define(['jquery', 'underscore', 'backbone', 'x2js', 'models/formats/ObjectFormat
         
         /* Parse the XML response from the CN */
         parse: function(response) {
-            console.log("ObjectFormats.parse() called.");
             
             // If the collection is already parsed, just return it
             if ( typeof response === "object" ) return response;

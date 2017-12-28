@@ -340,7 +340,6 @@ define(['jquery',
 			
 			// showing the viewer show the concepts with labels, definitions and audit info
 			this.$el.annotator('subscribe', 'annotationViewerShown', function(viewer, annotations) {
-				console.log("annotationViewerShown: " + viewer);
 									
 				$(viewer.element).find(".annotator-tag").each(function(index, element) {
 					var conceptUri = $(element).html();
@@ -429,9 +428,7 @@ define(['jquery',
 		},
 		
 		preRenderAnnotations : function(annotations) {
-			
-			console.log("preRenderAnnotations");
-			
+						
 			var uris = [];
 			
 			//look up the concept details in a batch
@@ -453,12 +450,9 @@ define(['jquery',
 		},
 		
 		renderAnnotations : function(annotations) {
-			
-			console.log("renderAnnotations");
-			
+						
 			// keep from duplicating 
 			if (this.rendered) {
-				console.log("renderAnnotations already called");
 				return;
 			}
 			this.rendered = true;
@@ -469,11 +463,9 @@ define(['jquery',
 			});
 			
 			// only want to show the manual annotations
-			console.log("All annotation count: " + annotations.length);
 			annotations = _.filter(annotations, function(ann){
 				return (ann.field == "sem_annotation");
 			});
-			console.log("Filtered for sem_annotation: " + annotations.length);
 			
 			//Now extract the rejeced annotations
 			var rejectedAnnotations = _.filter(annotations, function(ann){
@@ -526,9 +518,6 @@ define(['jquery',
 				
 				// figure out the annotation being selected
 				var annotationId = $(event.target).attr("data-id");
-				
-				console.log("hover trigger for target: " + event.target);
-				console.log("hover trigger for annotation: " + annotationId);
 
 				// trigger as if a hover on highlighted region
 				var highlight = $("[data-annotation-id='" + annotationId + "']");
@@ -583,9 +572,7 @@ define(['jquery',
 		},
 		
 		renderAnnotation: function(annotationModel) {	
-			
-			console.log("renderAnnotation");
-			
+						
 			var canEdit = 
 				_.contains(annotationModel.get("permissions").admin, MetacatUI.appUserModel.get("username"))
 				||
@@ -597,9 +584,7 @@ define(['jquery',
 			var highlight = $("[data-annotation-id='" + annotationModel.get("id") + "']");
 			var section = $(highlight).closest(".tab-pane").children(".annotation-container");
 			var tab = $(highlight).closest(".tab-pane");
-			//console.log("tab: " + tab);
 			var tabControl = $("a[href='#" + $(tab).attr("id") + "'");
-			//console.log("tabControl: " + tabControl);
 			var icons = $(tabControl).find(".icon-tag");
 			if ($(icons).size() == 0) {
 				tabControl.prepend("<i class='icon-tag'></i>")
@@ -611,10 +596,6 @@ define(['jquery',
 				console.log("Highlights not completed yet - cannot render annotation");
 				return;
 			}
-			
-			//console.log("Rendering annotation: " + annotationModel.get("id"));
-			//console.log("Rendering annotation");
-
 						
 			//Render the annotation tag itself
 			var annotationTag = $.parseHTML(this.annotationTemplate({
@@ -690,7 +671,6 @@ define(['jquery',
 		flagAnnotation : function(e) {
 			
 			var annotationId = $(e.target).attr("data-id");
-			console.log("deleting annotation id: " +  annotationId);
 			var view = $('#metadata-container').data("annotator-view");
 			var annotations = view.$el.data('annotator').plugins.Store.annotations;
 			var annotation = _.findWhere(annotations, {id: annotationId});
@@ -704,7 +684,6 @@ define(['jquery',
 		
 		deleteAnnotation : function(e) {
 			var annotationId = $(e.target).attr("data-id");
-			console.log("deleting annotation id: " +  annotationId);
 			var view = $('#metadata-container').data("annotator-view");
 			var annotations = view.$el.data('annotator').plugins.Store.annotations;
 			var annotation = _.findWhere(annotations, {id: annotationId});
@@ -791,7 +770,6 @@ define(['jquery',
 		
 		annotationStored : function(annotation) {
 			
-			console.log("annotationStored");
 			var view = $('#metadata-container').data("annotator-view");
 			
 			// add the data id to this
@@ -804,7 +782,6 @@ define(['jquery',
 		
 		annotationUpdated : function(annotation) {
 			
-			console.log("annotationUpdated");
 			var view = $('#metadata-container').data("annotator-view");
 			view.reindexPid(annotation, false);
 			
@@ -812,14 +789,11 @@ define(['jquery',
 		
 		// reindex when an annotation is updated
 		reindexPid : function(annotation, isDelete) {
-			
-			console.log("reindexPid");
-			
+						
 			var view = $('#metadata-container').data("annotator-view");
 			
 			// re load the annotations
 			var annotations = view.$el.data('annotator').plugins.Store.annotations;
-			console.log("annotations length: " + annotations.length);
 			if (isDelete) {
 				annotations = _.reject(annotations, function(a) {
 					return annotation.id == a.id;
