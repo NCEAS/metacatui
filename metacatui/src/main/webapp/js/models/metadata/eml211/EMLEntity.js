@@ -143,11 +143,16 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 //Find the id from the download distribution URL
                 var urlNode = $objectDOM.find("url");
                 if(urlNode.length){
-                	var downloadURL = urlNode.text();
-                	downloadURL = downloadURL.substring( downloadURL.indexOf("resolve/") + 8 );
-
-                	if(downloadURL.length)
-                        attributes.downloadID = downloadURL;
+                	var downloadURL = urlNode.text(),
+                		downloadID  = "";
+                	
+                	if( downloadURL.indexOf("/resolve/") > -1 )
+                		downloadID = downloadURL.substring( downloadURL.indexOf("/resolve/") + 9 );
+                	else if( downloadURL.indexOf("/object/") > -1 )
+                		downloadID = downloadURL.substring( downloadURL.indexOf("/object/") + 8 );
+                	
+                	if(downloadID.length)
+                        attributes.downloadID = downloadID;
                 }
                 
                 //Find the format name
