@@ -374,7 +374,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         
                         // Asychronously calculate the checksum
                         if ( dataONEObject.get("uploadFile") && ! dataONEObject.get("checksum") ) {
-                            this.stopListening(dataONEObject, "checksumCalculated");
+                            dataONEObject.stopListening(dataONEObject, "checksumCalculated");
                             dataONEObject.listenToOnce(dataONEObject, "checksumCalculated", dataONEObject.save);
                             try {
                                 dataONEObject.calculateChecksum();

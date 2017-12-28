@@ -111,6 +111,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 this.id = this.packageModel.id;
 
                 this.on("add", this.saveReference);
+                this.on("add", this.handleAdd);
                 this.on("add", this.triggerComplete);
                 this.on("successSaving", this.updateRelationships);
 
