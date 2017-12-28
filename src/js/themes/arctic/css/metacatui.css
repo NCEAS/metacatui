@@ -535,14 +535,6 @@ footer .logos a:hover, a:focus{
 		-webkit-border-bottom-right-radius: 4px;
 		border-radius: 4px;
 	}
-    
-    i.glyphicons-icon, i.halflings-icon {
-      opacity: .8;
-    }
-
-    i.glyphicons-icon.white {
-      opacity: 1;
-    }
     #clear-all{
     	background-color: #19B36A;
     }

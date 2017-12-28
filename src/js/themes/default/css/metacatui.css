@@ -502,17 +502,6 @@ select{
   	background-color: #FFFFFF;
   	font: 300 18px/18px "Oswald", Arial, sans-serif;
 }
-    
-/* ICONS CSS
--------------------------------------------------- */
-    
-    i.glyphicons-icon, i.halflings-icon {
-      opacity: .8;
-    }
-
-    i.glyphicons-icon.white {
-      opacity: 1;
-    }
    
     
 /* NAVIGATION

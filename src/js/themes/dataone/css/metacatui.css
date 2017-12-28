@@ -436,12 +436,6 @@ footer{
 /* ICONS CSS
 -------------------------------------------------- */
     
-i.glyphicons-icon, i.halflings-icon {
-  opacity: .8;
-}
-i.glyphicons-icon.white {
-  opacity: 1;
-}
 .icon-circle-badge{
 	background-color: #1C6E84;
 }
