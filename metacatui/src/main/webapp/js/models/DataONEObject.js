@@ -475,7 +475,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 }
                 
                 var model = this;
-
+                
+                // On create(), add to the package and the metadata
+                // Note: This should be added to the parent collection
+                // but for now we are using the root collection
+                this.once("successSaving", function(){
+                    MetacatUI.rootDataPackage.add(this);
+                    MetacatUI.rootDataPackage.handleAdd(this);
+                });
+                
                 //Put together the AJAX and Backbone.save() options
                 var requestSettings = {
                     url: this.url(),
