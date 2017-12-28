@@ -460,6 +460,9 @@ define(['underscore',
             
             // When a data package member fails to load, remove it and warn the user
             this.listenTo(MetacatUI.eventDispatcher, "fileLoadError", this.handleFileLoadError);
+
+            // When a data package member fails to be read, remove it and warn the user
+            this.listenTo(MetacatUI.eventDispatcher, "fileReadError", this.handleFileReadError);
         },
 
         /*
@@ -899,12 +902,12 @@ define(['underscore',
         },
 
         /*
-            Handle to "fileLoadError" events by alerting the users
+            Handle "fileLoadError" events by alerting the user
             and removing the row from the data package table.
             
             @param item The model item passed by the fileLoadError event
          */
-         handleFileLoadError: function(item) {
+        handleFileLoadError: function(item) {
             var message;
             var fileName;
             /* Remove the data package table row */
@@ -919,8 +922,37 @@ define(['underscore',
                 message = "The chosen file is already included in this dataset. " +
                     "The duplicate file has not been added.";
             }
-            MetacatUI.appView.showAlert(message, "alert-info", this.el, 5000, {remove: true});
-         }
+            MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
+        },
+        
+        /*
+            Handle "fileReadError" events by alerting the user
+            and removing the row from the data package table.
+            
+            @param item The model item passed by the fileReadError event
+         */
+        handleFileReadError: function(item) {
+            var message;
+            var fileName;
+            /* Remove the data package table row */
+            this.dataPackageView.removeOne(item);
+            /* Then inform the user */
+            if ( item && item.get && 
+                (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) { 
+                fileName = item.get("fileName");
+                message = "The file " + fileName + 
+                    " could not be read. You may not have permission to read the file," + 
+                    " or the file was too large for your browser to upload. " +
+                    "The file has not been added.";
+            } else {
+                message = "The chosen file " +
+                    " could not be read. You may not have permission to read the file," + 
+                    " or the file was too large for your browser to upload. " +
+                    "The file has not been added.";
+            }
+            MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
+        }
+
     });
     return EditorView;
 });

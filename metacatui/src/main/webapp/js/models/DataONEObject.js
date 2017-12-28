@@ -436,7 +436,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             * Saves the DataONEObject System Metadata to the server
             */
             save: function(attributes, options){
-
+                
                 // Set missing file names before saving
                 if ( ! this.get("fileName") ) {
                     this.setMissingFileName();
@@ -456,33 +456,34 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 //Add the identifier to the XHR data
                 formData.append("pid", this.get("id"));
-            				
-				//If there's been a new uploaded file, get the new checksum of the object 
-                if(this.get("uploadResult")){
-					var checksum = md5(this.get("uploadResult"));
-					this.set("checksum", checksum);
-					this.set("checksumAlgorithm", "MD5");
-                }
                 
                 //Create the system metadata XML
                 var sysMetaXML = this.serializeSysMeta();
                 				
                 //Send the system metadata as a Blob 
-                var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});			
+                var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
                 //Add the system metadata XML to the XHR data
                 formData.append("sysmeta", xmlBlob, "sysmeta.xml");
-				
+                
                 if ( this.isNew() ) {
                     // Create the new object (MN.create())
                     formData.append("object", this.get("uploadFile"), this.get("fileName"));
                     
-                } else if(this.get("uploadResult") || this.hasContentChanges) {
+                } else if (this.hasContentChanges) {
                     // Update the object (MN.update())
                     //TODO: enable replacement of DATA objects
                 }
                 
                 var model = this;
-
+                
+                // On create(), add to the package and the metadata
+                // Note: This should be added to the parent collection
+                // but for now we are using the root collection
+                this.once("successSaving", function(){
+                    MetacatUI.rootDataPackage.add(this);
+                    MetacatUI.rootDataPackage.handleAdd(this);
+                });
+                
                 //Put together the AJAX and Backbone.save() options
                 var requestSettings = {
                     url: this.url(),
@@ -1092,112 +1093,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	}, this);
 	        },
 	        
-            /*
-                Loads a file from the local disk  into a FileReader
-                object and caches it in the DataONEObject.uploadReader
-                property for later upload to the server.
-             */
-             loadFile: function(){
-                var reader = new FileReader(),
-                    model  = this;
-                
-                // Trigger the file added event
-                MetacatUI.rootDataPackage.trigger("fileAdded", this);
-                
-                // Set up the reader event handlers and
-                // pass the event *and* the dataONEObject to the handlers
-                reader.onprogress = function(event) {
-                    model.handleFileLoadProgress(event);
-                }
-                
-                reader.onerror = function(event) {
-                    model.handleFileLoadError(event);
-                }
-                
-                reader.onload = function(event) {
-                    model.handleFileLoadSuccess(event);
-                }
-                
-                reader.onabort = function(event) {
-                    model.handleFileLoadAbort(event);
-                }
-                
-                // Now initiate the file read
-                reader.readAsArrayBuffer(this.get("uploadFile"));
-                
-                this.set("uploadReader", reader);
-	        },
-	        
-            /*
-                Once a File object is locally loaded into an ArrayBuffer,
-                determine if it already exists in the collection, and if not,
-                update its properties, save it to the server, and add
-                it to the DataPackage collection on success.
-                
-                @param event  The file load event
-             */
-            handleFileLoadSuccess: function(event){
-               // event.target.result has the file object bytes
-                
-                // Make the DataONEObject for the file, add it to the collection
-                var checksum = md5(event.target.result);
-                var existingChecksums = 
-                    MetacatUI.rootDataPackage.pluck("checksum");
-                if ( _.contains(existingChecksums, checksum) ) {
-                    console.log("This object already exists in the Data Package. " +
-                        "Removing the DataItemView row.");
-                     // Tell the view to remove the row by id
-                    MetacatUI.eventDispatcher.trigger("fileLoadError", this);
-                } else {
-                    this.set("checksum", checksum);
-                    this.set("checksumAlgorithm", "MD5");
-                    
-                    this.set("uploadStatus", "q"); // set status to queued
-                    this.set("uploadResult", event.target.result);
-                                    
-                    delete event; // Let large files be garbage collected
-                                    
-                    this.once("successSaving", function(){ 
-                        MetacatUI.rootDataPackage.add(this);
-                        MetacatUI.rootDataPackage.handleAdd(this);
-                    });
-                    
-                    //Upload the file
-                    this.save();
-                }
-            },
-            
-            /* During file reading, deal with abort events */
-	        handleFileLoadAbort: function(event){
-                // When file reading is aborted, update the model upload status
-	        	
-	        },
-	        
-            /* During file reading, handle the user's cancel request */
-            handleFileCancel: function(event) {
-                // TODO: enable canceling of the file read from disk
-                // Need to get a reference to the FileReader to call abort
-                // 
-                // this.uploadReader.abort(); ?
-                
-            },
-	        
-            /* During file reading, deal with read errors */ 
-	        handleFileLoadError: function(event){
-                // On error, update the model upload status
-	        	
-	        },
-	        
-	        /* During file reading, update the import progress in the model */
-            handleFileLoadProgress: function(event) {
-                // event is a ProgressEvent - use it to update the import progress bar
-                
-                if ( event.lengthComputable ) {
-                    var percentLoaded = Math.round((event.loaded/event.total) * 100);
-                    this.set("percentLoaded", percentLoaded);
-                }
-            },
-	        
 	        /*
 	         * Finds the latest version of this object by travesing the obsolescence chain
 	         */
@@ -1542,9 +1437,88 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				if(_.indexOf(ids, this.get('formatId')) == -1) return false;
 				else return true;
 			},
- 
+            
+            /*
+             *  Calculate a checksum for the object
+             *  @param algorithm  The algorithm to use, defaults to MD5
+             *  @return checksum  A checksum plain JS object with value and algorithm attributes
+             */
+            calculateChecksum: function(algorithm) {
+                var algorithm = algorithm || "MD5";
+                var checksum = {algorithm: undefined, value: undefined};
+                var hash; // The checksum hash
+                var file; // The file to be read by slicing
+                var reader; // The FileReader used to read each slice
+                var offset = 0; // Byte offset for reading slices
+                var sliceSize = Math.pow(2,20) // 1MB slices
+                var model = this;
+                // Do we have a file?
+                if (this.get("uploadFile") instanceof Blob) {
+                    file = this.get("uploadFile");
+                    reader = new FileReader();
+                    /* Handle load errors */
+                    reader.onerror = function(event) {
+                        console.log("Error reading: " + event);
+                    };
+                    /* Show progress */
+                    reader.onprogress = function(event) {
+                        // console.log('Loaded ' + event.loaded + ' of ' + event.total);
+                        // console.log('Processed ' + (offset + event.loaded) + ' of ' + file.size);
+                    };
+                    /* Handle load finish */
+                    reader.onloadend = function(event) {
+                        if (event.target.readyState == FileReader.DONE) {
+                            hash.update(event.target.result);
+                        }
+                        offset += sliceSize; 
+                        if ( _seek() ) {
+                            model.set("checksum", hash.hex());
+                            model.set("checksumAlgorithm", checksum.algorithm);
+                            model.trigger("checksumCalculated", model.attributes);
+                        };
+                    };
+                } else {
+                    message = "The given object is not a blob or a file object."
+                    throw new Error(message);
+                }
+                
+                switch ( algorithm ) {
+                    case "MD5":
+                        checksum.algorithm = algorithm;
+                        hash = md5.create();
+                        _seek();
+                        break;
+                    case "SHA-1":
+                        console.log("Generating SHA-1 checksum");
+                        // TODO: Support SHA-1
+                        // break;
+                    default:
+                        message = "The given algorithm: " + algorithm + " is not supported."
+                        throw new Error(message);
+                }
+                
+                /* 
+                 *  A helper function internal to calculateChecksum() used to slice 
+                 *  the file at the next offset by slice size
+                 */
+                function _seek() {
+                    var calculated = false;
+                    var slice;
+                    // Digest the checksum when we're done calculating
+                    if (offset >= file.size) {
+                        hash.digest();
+                        calculated = true;
+                        return calculated;
+                    }
+                    // slice the file and read the slice
+                    slice = file.slice(offset, offset + sliceSize);
+                    reader.readAsArrayBuffer(slice);
+                    return calculated;
+
+                }
+            }
 		},
-    {
+        {
 			/* Generate a unique identifier to be used as an XML id attribute */
 			generateId: function() {
 				var idStr = ''; // the id to return

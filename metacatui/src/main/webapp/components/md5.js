@@ -2,31 +2,53 @@
  * [js-md5]{@link https://github.com/emn178/js-md5}
  *
  * @namespace md5
- * @version 0.4.1
+ * @version 0.7.3
  * @author Chen, Yi-Cyuan [emn178@gmail.com]
- * @copyright Chen, Yi-Cyuan 2014-2016
+ * @copyright Chen, Yi-Cyuan 2014-2017
  * @license MIT
  */
-(function (root) {
+(function () {
   'use strict';
 
-  var NODE_JS = typeof process == 'object' && process.versions && process.versions.node;
+  var ERROR = 'input is invalid type';
+  var WINDOW = typeof window === 'object';
+  var root = WINDOW ? window : {};
+  if (root.JS_MD5_NO_WINDOW) {
+    WINDOW = false;
+  }
+  var WEB_WORKER = !WINDOW && typeof self === 'object';
+  var NODE_JS = !root.JS_MD5_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
   if (NODE_JS) {
     root = global;
+  } else if (WEB_WORKER) {
+    root = self;
   }
-  var COMMON_JS = !root.JS_MD5_TEST && typeof module == 'object' && module.exports;
-  var AMD = typeof define == 'function' && define.amd;
-  var ARRAY_BUFFER = !root.JS_MD5_TEST && typeof ArrayBuffer != 'undefined';
+  var COMMON_JS = !root.JS_MD5_NO_COMMON_JS && typeof module === 'object' && module.exports;
+  var AMD = typeof define === 'function' && define.amd;
+  var ARRAY_BUFFER = !root.JS_MD5_NO_ARRAY_BUFFER && typeof ArrayBuffer !== 'undefined';
   var HEX_CHARS = '0123456789abcdef'.split('');
   var EXTRA = [128, 32768, 8388608, -2147483648];
   var SHIFT = [0, 8, 16, 24];
-  var OUTPUT_TYPES = ['hex', 'array', 'digest', 'buffer', 'arrayBuffer'];
+  var OUTPUT_TYPES = ['hex', 'array', 'digest', 'buffer', 'arrayBuffer', 'base64'];
+  var BASE64_ENCODE_CHAR = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
 
   var blocks = [], buffer8;
   if (ARRAY_BUFFER) {
     var buffer = new ArrayBuffer(68);
     buffer8 = new Uint8Array(buffer);
     blocks = new Uint32Array(buffer);
+  }
+
+  if (root.JS_MD5_NO_NODE_JS || !Array.isArray) {
+    Array.isArray = function (obj) {
+      return Object.prototype.toString.call(obj) === '[object Array]';
+    };
+  }
+
+  if (ARRAY_BUFFER && (root.JS_MD5_NO_ARRAY_BUFFER_IS_VIEW || !ArrayBuffer.isView)) {
+    ArrayBuffer.isView = function (obj) {
+      return typeof obj === 'object' && obj.buffer && obj.buffer.constructor === ArrayBuffer;
+    };
   }
 
   /**
@@ -77,6 +99,15 @@
    * @example
    * md5.buffer('The quick brown fox jumps over the lazy dog');
    */
+  /**
+   * @method base64
+   * @memberof md5
+   * @description Output hash as base64 string
+   * @param {String|Array|Uint8Array|ArrayBuffer} message message to hash
+   * @returns {String} base64 string
+   * @example
+   * md5.base64('The quick brown fox jumps over the lazy dog');
+   */
   var createOutputMethod = function (outputType) {
     return function (message) {
       return new Md5(true).update(message)[outputType]();
@@ -114,7 +145,7 @@
     method.update = function (message) {
       return method.create().update(message);
     };
-    for (var i = 0;i < OUTPUT_TYPES.length;++i) {
+    for (var i = 0; i < OUTPUT_TYPES.length; ++i) {
       var type = OUTPUT_TYPES[i];
       method[type] = createOutputMethod(type);
     }
@@ -122,26 +153,24 @@
   };
 
   var nodeWrap = function (method) {
-    var crypto, Buffer;
-    try {
-      if (root.JS_MD5_TEST) {
-        throw 'JS_MD5_TEST';
-      }
-      crypto = require('crypto');
-      Buffer = require('buffer').Buffer;
-    } catch (e) {
-      console.log(e);
-      return method;
-    }
+    var crypto = eval("require('crypto')");
+    var Buffer = eval("require('buffer').Buffer");
     var nodeMethod = function (message) {
-      if (typeof message == 'string') {
+      if (typeof message === 'string') {
         return crypto.createHash('md5').update(message, 'utf8').digest('hex');
-      } else if (message.constructor == ArrayBuffer) {
-        message = new Uint8Array(message);
-      } else if (message.length === undefined) {
+      } else {
+        if (message === null || message === undefined) {
+          throw ERROR;
+        } else if (message.constructor === ArrayBuffer) {
+          message = new Uint8Array(message);
+        }
+      }
+      if (Array.isArray(message) || ArrayBuffer.isView(message) ||
+        message.constructor === Buffer) {
+        return crypto.createHash('md5').update(new Buffer(message)).digest('hex');
+      } else {
         return method(message);
       }
-      return crypto.createHash('md5').update(new Buffer(message)).digest('hex');
     };
     return nodeMethod;
   };
@@ -169,7 +198,7 @@
         this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
     }
-    this.h0 = this.h1 = this.h2 = this.h3 = this.start = this.bytes = 0;
+    this.h0 = this.h1 = this.h2 = this.h3 = this.start = this.bytes = this.hBytes = 0;
     this.finalized = this.hashed = false;
     this.first = true;
   }
@@ -187,11 +216,25 @@
     if (this.finalized) {
       return;
     }
-    var notString = typeof(message) != 'string';
-    if (notString && message.constructor == root.ArrayBuffer) {
-      message = new Uint8Array(message);
+
+    var notString, type = typeof message;
+    if (type !== 'string') {
+      if (type === 'object') {
+        if (message === null) {
+          throw ERROR;
+        } else if (ARRAY_BUFFER && message.constructor === ArrayBuffer) {
+          message = new Uint8Array(message);
+        } else if (!Array.isArray(message)) {
+          if (!ARRAY_BUFFER || !ArrayBuffer.isView(message)) {
+            throw ERROR;
+          }
+        }
+      } else {
+        throw ERROR;
+      }
+      notString = true;
     }
-    var code, index = 0, i, length = message.length || 0, blocks = this.blocks;
+    var code, index = 0, i, length = message.length, blocks = this.blocks;
     var buffer8 = this.buffer8;
 
     while (index < length) {
@@ -206,17 +249,17 @@
 
       if (notString) {
         if (ARRAY_BUFFER) {
-          for (i = this.start;index < length && i < 64; ++index) {
+          for (i = this.start; index < length && i < 64; ++index) {
             buffer8[i++] = message[index];
           }
         } else {
-          for (i = this.start;index < length && i < 64; ++index) {
+          for (i = this.start; index < length && i < 64; ++index) {
             blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
           }
         }
       } else {
         if (ARRAY_BUFFER) {
-          for (i = this.start;index < length && i < 64; ++index) {
+          for (i = this.start; index < length && i < 64; ++index) {
             code = message.charCodeAt(index);
             if (code < 0x80) {
               buffer8[i++] = code;
@@ -236,7 +279,7 @@
             }
           }
         } else {
-          for (i = this.start;index < length && i < 64; ++index) {
+          for (i = this.start; index < length && i < 64; ++index) {
             code = message.charCodeAt(index);
             if (code < 0x80) {
               blocks[i >> 2] |= code << SHIFT[i++ & 3];
@@ -267,6 +310,10 @@
         this.start = i;
       }
     }
+    if (this.bytes > 4294967295) {
+      this.hBytes += this.bytes / 4294967296 << 0;
+      this.bytes = this.bytes % 4294967296;
+    }
     return this;
   };
 
@@ -288,6 +335,7 @@
       blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
     }
     blocks[14] = this.bytes << 3;
+    blocks[15] = this.hBytes << 3 | this.bytes >>> 29;
     this.hash();
   };
 
@@ -477,21 +525,21 @@
     var h0 = this.h0, h1 = this.h1, h2 = this.h2, h3 = this.h3;
 
     return HEX_CHARS[(h0 >> 4) & 0x0F] + HEX_CHARS[h0 & 0x0F] +
-       HEX_CHARS[(h0 >> 12) & 0x0F] + HEX_CHARS[(h0 >> 8) & 0x0F] +
-       HEX_CHARS[(h0 >> 20) & 0x0F] + HEX_CHARS[(h0 >> 16) & 0x0F] +
-       HEX_CHARS[(h0 >> 28) & 0x0F] + HEX_CHARS[(h0 >> 24) & 0x0F] +
-       HEX_CHARS[(h1 >> 4) & 0x0F] + HEX_CHARS[h1 & 0x0F] +
-       HEX_CHARS[(h1 >> 12) & 0x0F] + HEX_CHARS[(h1 >> 8) & 0x0F] +
-       HEX_CHARS[(h1 >> 20) & 0x0F] + HEX_CHARS[(h1 >> 16) & 0x0F] +
-       HEX_CHARS[(h1 >> 28) & 0x0F] + HEX_CHARS[(h1 >> 24) & 0x0F] +
-       HEX_CHARS[(h2 >> 4) & 0x0F] + HEX_CHARS[h2 & 0x0F] +
-       HEX_CHARS[(h2 >> 12) & 0x0F] + HEX_CHARS[(h2 >> 8) & 0x0F] +
-       HEX_CHARS[(h2 >> 20) & 0x0F] + HEX_CHARS[(h2 >> 16) & 0x0F] +
-       HEX_CHARS[(h2 >> 28) & 0x0F] + HEX_CHARS[(h2 >> 24) & 0x0F] +
-       HEX_CHARS[(h3 >> 4) & 0x0F] + HEX_CHARS[h3 & 0x0F] +
-       HEX_CHARS[(h3 >> 12) & 0x0F] + HEX_CHARS[(h3 >> 8) & 0x0F] +
-       HEX_CHARS[(h3 >> 20) & 0x0F] + HEX_CHARS[(h3 >> 16) & 0x0F] +
-       HEX_CHARS[(h3 >> 28) & 0x0F] + HEX_CHARS[(h3 >> 24) & 0x0F];
+      HEX_CHARS[(h0 >> 12) & 0x0F] + HEX_CHARS[(h0 >> 8) & 0x0F] +
+      HEX_CHARS[(h0 >> 20) & 0x0F] + HEX_CHARS[(h0 >> 16) & 0x0F] +
+      HEX_CHARS[(h0 >> 28) & 0x0F] + HEX_CHARS[(h0 >> 24) & 0x0F] +
+      HEX_CHARS[(h1 >> 4) & 0x0F] + HEX_CHARS[h1 & 0x0F] +
+      HEX_CHARS[(h1 >> 12) & 0x0F] + HEX_CHARS[(h1 >> 8) & 0x0F] +
+      HEX_CHARS[(h1 >> 20) & 0x0F] + HEX_CHARS[(h1 >> 16) & 0x0F] +
+      HEX_CHARS[(h1 >> 28) & 0x0F] + HEX_CHARS[(h1 >> 24) & 0x0F] +
+      HEX_CHARS[(h2 >> 4) & 0x0F] + HEX_CHARS[h2 & 0x0F] +
+      HEX_CHARS[(h2 >> 12) & 0x0F] + HEX_CHARS[(h2 >> 8) & 0x0F] +
+      HEX_CHARS[(h2 >> 20) & 0x0F] + HEX_CHARS[(h2 >> 16) & 0x0F] +
+      HEX_CHARS[(h2 >> 28) & 0x0F] + HEX_CHARS[(h2 >> 24) & 0x0F] +
+      HEX_CHARS[(h3 >> 4) & 0x0F] + HEX_CHARS[h3 & 0x0F] +
+      HEX_CHARS[(h3 >> 12) & 0x0F] + HEX_CHARS[(h3 >> 8) & 0x0F] +
+      HEX_CHARS[(h3 >> 20) & 0x0F] + HEX_CHARS[(h3 >> 16) & 0x0F] +
+      HEX_CHARS[(h3 >> 28) & 0x0F] + HEX_CHARS[(h3 >> 24) & 0x0F];
   };
 
   /**
@@ -575,6 +623,34 @@
    */
   Md5.prototype.buffer = Md5.prototype.arrayBuffer;
 
+  /**
+   * @method base64
+   * @memberof Md5
+   * @instance
+   * @description Output hash as base64 string
+   * @returns {String} base64 string
+   * @see {@link md5.base64}
+   * @example
+   * hash.base64();
+   */
+  Md5.prototype.base64 = function () {
+    var v1, v2, v3, base64Str = '', bytes = this.array();
+    for (var i = 0; i < 15;) {
+      v1 = bytes[i++];
+      v2 = bytes[i++];
+      v3 = bytes[i++];
+      base64Str += BASE64_ENCODE_CHAR[v1 >>> 2] +
+        BASE64_ENCODE_CHAR[(v1 << 4 | v2 >>> 4) & 63] +
+        BASE64_ENCODE_CHAR[(v2 << 2 | v3 >>> 6) & 63] +
+        BASE64_ENCODE_CHAR[v3 & 63];
+    }
+    v1 = bytes[i];
+    base64Str += BASE64_ENCODE_CHAR[v1 >>> 2] +
+      BASE64_ENCODE_CHAR[(v1 << 4) & 63] +
+      '==';
+    return base64Str;
+  };
+
   var exports = createMethod();
 
   if (COMMON_JS) {
@@ -604,4 +680,4 @@
       });
     }
   }
-}(this));
+})();
