@@ -31,10 +31,10 @@ limitations under the License.
 ## Screenshots
 
 The main search screen, as configured for the KNB Repository:
-![KNB Search](https://raw.githubusercontent.com/NCEAS/metacatui/master/screenshots/metacatui-knb-1200w.png)
+![KNB Search](https://raw.githubusercontent.com/NCEAS/metacatui/master/docs/screenshots/metacatui-knb-1200w.png)
 
 A metadata view, as configured for the Arctic Data Center:
-![Arctic Data Center Metadata View](https://raw.githubusercontent.com/NCEAS/metacatui/master/screenshots/metacatui-arctic-1200w.png)
+![Arctic Data Center Metadata View](https://raw.githubusercontent.com/NCEAS/metacatui/master/docs/screenshots/metacatui-arctic-1200w.png)
 
 ## Acknowledgements
 Work on this package was supported by:

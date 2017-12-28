@@ -10,8 +10,6 @@ MetacatUI.themeMap =
 		'templates/mainContent.html' : 'themes/' + MetacatUI.theme + '/templates/mainContent.html',
 		'templates/altHeader.html' : 'themes/' + MetacatUI.theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : 'themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
-		'templates/tools.html' : 'themes/' + MetacatUI.theme + '/templates/tools.html',
-		'templates/about.html' : 'themes/' + MetacatUI.theme + '/templates/about.html',
 		'templates/userProfileMenu.html' : 'themes/' + MetacatUI.theme + '/templates/userProfileMenu.html',
 		'templates/publishDOI.html' : 'themes/' + MetacatUI.theme + '/templates/publishDOI.html',
 		'templates/resultsItem.html' : 'themes/' + MetacatUI.theme + '/templates/resultsItem.html',

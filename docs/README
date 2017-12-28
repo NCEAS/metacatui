@@ -16,7 +16,6 @@ That's it!
 Required items for a theme:
 	'js/themes/<theme>/config.js'
 	'js/themes/<theme>/css/metacatui.css'
-	'js/themes/<theme>/img/favicon-32.png'
 
 About CSS:
 Each theme uses a 'js/themes/<theme>/css/metacatui.css' file that is pulled in during the initial
