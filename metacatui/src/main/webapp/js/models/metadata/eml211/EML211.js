@@ -228,6 +228,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			return DataONEObject.prototype.parse.call(this, response);
             			
             		response = this.cleanUpXML(response);
+                    response = this.dereference(response);
             		this.set("objectXML", response);
             		var emlElement = $($.parseHTML(response)).filter("eml\\:eml");
             	}
@@ -238,7 +239,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	
             	if(!datasetEl || !datasetEl.length)
             		return {};
-            		
+                
             	var emlParties = ["metadataprovider", "associatedparty", "creator", "contact", "publisher"],
             		emlDistribution = ["distribution"],
             		emlEntities = ["datatable", "otherentity", "spatialvector"],
@@ -247,7 +248,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		
             	var nodes = datasetEl.children(),
             		modelJSON = {};
-            	
             	for(var i=0; i<nodes.length; i++){
 
             		var thisNode = nodes[i];
@@ -479,18 +479,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 				// This one is special because it has a default behavior, unlike 
 				// the others: When no pubDate is set, it should be set to
 				// the current year
-				var pubDate 	= this.get('pubDate'),
-					pubDateEl 	= document.createElement('pubdate');
+				var pubDate = this.get('pubDate');
 
 				datasetNode.find('pubdate').remove();
 
 				if (pubDate != null && pubDate.length > 0) {
+
+					var pubDateEl = document.createElement('pubdate');
+					
 					$(pubDateEl).text(pubDate);
-				} else {
-					$(pubDateEl).text((new Date).getFullYear());
+					
+					this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
 				}
 
-				this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
 
 	           	// Serialize the parts of EML that are eml-text modules
 	           	var textFields = ["abstract"];
@@ -820,8 +821,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 
                 //Validate before we try anything else
                 if(!this.isValid()){
+                	this.trigger("invalid");
                 	this.trigger("cancelSave");
                 	return false;
+                }
+                else{
+                	this.trigger("valid");
                 }
                 
                 // Set missing file names before saving
@@ -945,17 +950,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
 	                      return xhr;
 	                },
-					success: function(model, response, xhr){
-						console.log('yay, EML has been saved');
+					success: function(model, response, xhr){	
 						
 						model.set("numSaveAttempts", 0);
 						model.set("uploadStatus", "c");
                         model.set("sysMetaXML", model.serializeSysMeta());
                         model.fetch({merge: true, sysMeta: true});
-						model.trigger("successSaving", model);                        
+						model.trigger("successSaving", model);
+						
 					},
 					error: function(model, response, xhr){
-						console.log("error updating EML: ", response.responseText);
 						
 						model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
                     	var numSaveAttempts = model.get("numSaveAttempts");
@@ -963,7 +967,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     	//Reset the identifier changes
                     	model.resetID();
                     	
-                		if(numSaveAttempts < 3){
+                		if( numSaveAttempts < 3 && (response.status == 408 || response.status == 0) ){
                     		
                     		//Try saving again in 10, 40, and 90 seconds
                     		setTimeout(function(){ 
@@ -978,7 +982,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 								errorContainer = errorDOM.filter("error"),
 								msgContainer   = errorContainer.length? errorContainer.find("description") : errorDOM.not("style, title"),
 								errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
-							
+									                    
+		                    //When there is no network connection (status == 0), there will be no response text
+                    		if(!errorMsg)
+                    			errorMsg = "There was a network issue that prevented your metadata from uploading. " +
+                    					   "Make sure you are connected to a reliable internet connection.";
+                    		
 		                    model.set("errorMessage", errorMsg);
 
 		                    model.set("uploadStatus", "e");
@@ -1127,7 +1136,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	if( Object.keys(errors).length )
             		return errors;
             	else{
-            		this.trigger("valid");
             		return;
             	}
 			},
@@ -1359,6 +1367,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     return emlString;
             },
             
+            /*
+                Replace elements named "source" with "sourced" due to limitations
+                with using $.parseHTML() rather than $.parseXML()
+                
+                @param xmlString  The XML string to make the replacement in
+            */
             cleanUpXML: function(xmlString){
             	xmlString.replace("<source>", "<sourced>");
             	xmlString.replace("</source>", "</sourced>");
@@ -1366,6 +1380,46 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	return xmlString;
             },
             
+            /*
+                Dereference "reference" elements and replace them with a cloned copy
+                of the referenced content
+                
+                @param xmlString  The XML string with reference elements to transform
+            */
+            dereference: function(xmlString) {
+                var referencesList; // the array of references elements in the document
+                var referencedID;  // The id of the referenced element
+                var referencesParentEl;  // The parent of the given references element
+                var referencedEl; // The referenced DOM to be copied
+                
+                xmlDOM = $.parseXML(xmlString);
+                referencesList = xmlDOM.getElementsByTagName("references");
+                
+                if (referencesList.length) {
+                    // Process each references elements
+                    _.each(referencesList, function(referencesEl, index, referencesList) {
+                        // Can't rely on the passed referencesEl since the list length changes
+                        // because of the remove() below. Reuse referencesList[0] for every item:
+                        // referencedID = $(referencesEl).text(); // doesn't work
+                        referencesEl = referencesList[0];
+                        referencedID = $(referencesEl).text();
+                        referencesParentEl = ($(referencesEl).parent())[0];
+                        if (typeof referencedID !== "undefined" && referencedID != "") {
+                            referencedEl = xmlDOM.getElementById(referencedID);
+                            if (typeof referencedEl != "undefined") {
+                                // Clone the referenced element and replace the references element
+                                var referencedClone = ($(referencedEl).clone())[0];
+                                $(referencesParentEl)
+                                    .children(referencesEl.localName)
+                                    .replaceWith($(referencedClone).children());
+                                //$(referencesParentEl).append($(referencedClone).children());
+                                $(referencesParentEl).attr("id", DataONEObject.generateId());
+                            }
+                        }
+                    }, xmlDOM);
+                }
+                return (new XMLSerializer()).serializeToString(xmlDOM);
+            },
             trickleUpChange: function(){
             	//Mark the package as changed
 				MetacatUI.rootDataPackage.packageModel.set("changed", true);

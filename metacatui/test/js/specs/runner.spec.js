@@ -9,7 +9,7 @@ require.config({
     // urlArgs: "buster=" + (new Date()).getTime(),
     paths: {
         // Pull common libs from the app components library
-        "jquery": "../src/main/webapp/components/jquery",
+        "jquery": "../src/main/webapp/components/jquery-1.9.1.min",
         "underscore": "../src/main/webapp/components/underscore-min",
         "backbone": "../src/main/webapp/components/backbone",
         "mocha": "./js/mocha",

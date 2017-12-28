@@ -183,7 +183,11 @@
 .data-package-item.message-row button{
 	height: 50px;
 	border-width: 0px;
-}  
+}
+.side-nav-item .active {
+    background-color: #006699;
+    color: #FFFFFF;
+}
     
 /* MDQ 
 -------------------------------------------------- */ 
@@ -419,7 +423,7 @@
       background-repeat: none;
     }
 
-    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a, a.btn-primary:visited {
+    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
       color: #FFFFFF; 
       text-decoration:none;     
     }

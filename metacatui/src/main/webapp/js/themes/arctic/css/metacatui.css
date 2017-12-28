@@ -482,7 +482,7 @@ footer .logos a:hover, a:focus{
     	border: 1px solid #146660;
     }
 
-    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a, a.btn-primary:visited {
+    .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
       color: #FFFFFF; 
       text-decoration:none;     
     }
@@ -549,21 +549,18 @@ footer .logos a:hover, a:focus{
     
 /* EDITOR 
 ----------------------- */
-.Editor #data-package-table .dropdown-menu li {
+#data-package-table .dropdown-menu li {
     float: left;
     position: relative;
     width: 100%;
 }
-   
-.Editor #data-package-table .dropdown-menu li a {
-    background-color: #1F254F;
-    background-image: none;
-    color: #FFF;
-    font-weight: lighter;
-    font-family: "AllerLight";
-    text-align: left;
-    box-sizing: border-box;
-    text-align: center;
+#data-package-table .dropdown-menu li a{
+	text-align: center;
+}
+#data-package-table .dropdown-menu li a:focus{
+	background-image: none;
+    background-color: transparent;
+    color: inherit;
 }
 .data-package-item .btn.edit:hover,
 .data-package-item .btn.edit:focus{
@@ -581,12 +578,6 @@ footer .logos a:hover, a:focus{
 }
 #data-package-table td:last-of-type ul li{
 	background-color: #FFF;	
-}
-.data-package-item .dropdown-menu li a {
-    background-color: #FFF;
-    color: #19B36A;
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-weight: normal;
 }
 .data-package-item .bar{
 	background-color: #1E254F;

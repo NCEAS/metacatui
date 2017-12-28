@@ -317,7 +317,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              *  Overload fetch calls for a DataPackage
              */
             fetch: function(options) {
-                console.log("DataPackage: fetch() called.");
 
                 //Fetch the system metadata for this resource map
                 this.packageModel.fetch();
@@ -336,7 +335,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              * Deserialize a Package from OAI-ORE RDF XML
              */
             parse: function(response, options) {
-                console.log("DataPackage: parse() called.")
 
                 //Save the raw XML in case it needs to be used later
                 this.objectXML = response;
@@ -442,6 +440,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                           }
                     }, this);
                     
+                    //Save the list of science metadata pids
+                    this.sciMetaPids = sciMetaPids;
+                    
                     //Put the science metadata pids first
                     memberPIDs = _.difference(memberPIDs, sciMetaPids);
                     _.each(_.uniq(sciMetaPids), function(id){ memberPIDs.unshift(id); });
@@ -497,7 +498,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 			   			have been fetched, as the prov info will be stored in them.
 			   			*/
                 parseProv: function() {
-                console.log("DataPackage: parseProv() called.");
 
                 try {
                     /* Now run the SPARQL queries for the provenance relationships */
@@ -807,7 +807,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 		  			?prov_wasDerivedFrom : t {termType: "Literal", value: "urn:uuid:aae9d025-a331-4c3a-b399-a8ca0a2826ef", datatype: t}]
 				*/
 				onResult: function(result) {
-					/* console.log(result); */
+
 					var currentPid = this.getValue(result, "?pid");
 					var resval;
 					var provFieldResult;
@@ -874,7 +874,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 									if(!_.contains(vals, resultMember)) {
 										vals.push(resultMember);
 										currentMember.set(fieldName, vals);
-										console.log("Added " + currentMember.get("id") + ": " + fieldName + " = " + resultMember.get("id"));
 									}
 									//provFieldValues = _.uniq(provFieldValues);
 									// Add the current prov valid (a pid) to the current value in the member
@@ -889,7 +888,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 									if(!_.contains(vals, provFieldResult)) {
 										vals.push(provFieldResult);
 										currentMember.set(fieldName, vals);
-										console.log("Added " + currentMember.get("id") + ": " + fieldName + " = " + provFieldResult);
 									}
 								}
 			 				}
@@ -902,7 +900,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               if(this.queriesToRun > 1) {
                 this.queriesToRun--;
               } else {
-                console.log("All prov queries have completed.");
                 // Signal that all prov queries have finished
 				this.provenanceFlag = "complete";
                 this.trigger("queryComplete");
@@ -920,7 +917,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     		 * Overwrite the Backbone.Collection.sync() function to set custom options
     		 */
     		save: function(options){
-                console.log("DataPackage.save() called");
+
     			if(!options) var options = {};
     			
     			this.packageModel.set("uploadStatus", "p");
@@ -962,7 +959,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 				
     			//First quickly validate all the models before attempting to save any
     			var allValid = _.every(modelsToBeSaved, function(m) {
-    				return m.isValid();
+
+    				if( m.isValid() ){
+    					m.trigger("valid");
+    					return true;
+    				}
+    				else{
+    					return false;
+    				}
+    				
     			});
     			
                 // If at least once model to be saved is invalid, 
@@ -1030,7 +1035,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					var mapXML = this.serialize();
     			}
     			catch (serializationException) {
-    				console.log(serializationException);
 
     				//If serialization failed, revert back to our old id
     				this.packageModel.resetID();
@@ -1061,9 +1065,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
     			formData.append("sysmeta", xmlBlob, "sysmeta");
 
-				console.log("new package id: " + this.packageModel.get("id"));
-				console.log(mapXML);
-
 				var collection = this;
 				var requestSettings = {
 						url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
@@ -1073,7 +1074,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 						processData: false,
 						data: formData,
 						success: function(response){
-							console.log("yay, map is saved");
 
 							//Update the object XML
 							collection.objectXML = mapXML;
@@ -1092,7 +1092,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
 						},
 						error: function(data){
-							console.log("error udpating object");
 
 							//Reset the id back to its original state
 							collection.packageModel.resetID();
@@ -1430,7 +1429,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 this.sort();
                 this.trigger("complete", this);
 
-                console.log("DataPackage is complete. All " + this.length + " models have been synced and added.");
             },
             
             /* Accumulate edits that are made to the provenance relationships via the ProvChartView. these
@@ -1439,8 +1437,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             recordProvEdit: function(operation, subject, predicate, object) {
                 
                 if (!this.provEdits.length) {
-                    this.provEdits = [[operation, subject, predicate, object]];
-                    console.log("add prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                
+                	this.provEdits = [[operation, subject, predicate, object]];
+
                 } else {
                     // First check if the edit already exists in the list. If yes, then
                     // don't add it again! This could occur if an edit icon was clicked rapidly
@@ -1453,7 +1452,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     });
                     
                     if(typeof editFound != "undefined") {
-                        console.log("pruning duplicate prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
                         return;
                     }
 
@@ -1474,18 +1472,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             && editPredicate == predicate
                             && editObject == object) {
                                 
-                            console.log("removing prov edit: " + editOperation + ", " 
-                                + editSubjectId + ", " + editPredicate + ", " + editObject);
                             return true; 
                         }
                     });
                     
                     // If we cancelled out the inverse of the current edit, don't save the
                     // current edit either, as they cancel each other out.
-                    if(this.provEdits.length < editListSize) {
-                        console.log("cancel prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
-                    } else {
-                        console.log("add prov edit: " + operation + ", " + subject + ", " + predicate + ", " + object);
+                    if(editListSize > this.provEdits.length) {
                         this.provEdits.push([operation, subject, predicate, object]);
                     }
                 }
@@ -1503,11 +1496,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             saveProv: function() {
                 var rdf = this.rdf;
                 var graph = this.dataPackageGraph;
-                console.log("Saving provenance edits...");
+
                 var provEdits = this.provEdits;
                 if(!provEdits.length) {
-                    // TODO: display dialog indicating prov has not changed
-                    console.log("Provenance relationships have not been edited.")
                     return;
                 }
                 var RDF = rdf.Namespace(this.namespaces.RDF),
@@ -1528,7 +1519,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     subject = edit[1];
                     predicate = edit[2];
                     object = edit[3];
-                    console.log("Prov edit: " + operation + ": "+ subject + ", " + predicate + ", " + object);
+
                     // The predicates of the provenance edits recorded by the ProvChartView 
                     // indicate which W3C PROV relationship has been recorded. 
                     // First check if this relationship alread exists in the RDF graph.
@@ -1576,7 +1567,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             } else {
                                 executionId = this.getExecutionId(programId);
                                 executionNode = this.getExecutionNode(executionId);
-                                console.log("removing wasGenerated for execution: " + executionNode);
+
                                 graph.removeMatches(dataNode, PROV("wasGeneratedBy"), executionNode);
                                 removed = this.removeProgramFromGraph(programId);   
                                 this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
@@ -1596,7 +1587,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             } else {
                                 executionId = this.getExecutionId(programId);
                                 executionNode = this.getExecutionNode(executionId);
-                                console.log("removing used for execution: " + executionNode);
+
                                 graph.removeMatches(executionNode, PROV("used"), dataNode)
                                 removed = this.removeProgramFromGraph(programId);
                                 this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
@@ -1640,7 +1631,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //this.dataPackage.packageModel.set("oldPid", oldId);
                 //this.dataPackage.packageModel.set("id", newId);
                 this.save();
-                console.log("resmap save has been called");
                 
             },
     				
@@ -1649,8 +1639,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             addToGraph: function(subject, predicate, object) {
                 var graph = this.dataPackageGraph;
                 var statements = graph.statementsMatching(subject, predicate, object);
+
                 if(!statements.length) {
-                    console.log("add to graph: " + subject.value + ", " + predicate.value + ", " + object.value);
                     graph.add(subject, predicate, object);
                 }
             },
@@ -1713,8 +1703,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                 // The specified statement term isn't being used for prov, so remove it.
                 if(typeof found == "undefined") {
-                    //console.log("no refs to stmt, removed: " + subjectNode.value + ", " 
-                    //   + predicateNode.value + ", " + objectNode.value);
                     graph.removeMatches(subjectNode, predicateNode, objectNode, undefined);
                 }
             },
@@ -1774,16 +1762,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     if(typeof stmts == "undefined") {
                         // Couldn't find the execution, return the standard RDF node value
                         executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
-                        console.log("Execution Node: " + executionNode.value);
                         return executionNode;
                     } else {
-                        console.log("Execution Node: " + testNode.value);
                         return testNode;
                     }
                 } else {
                     // The executionNode was found in the RDF graph as a urn
                     var executionNode = stmts[0].subject;
-                    console.log("Execution Node: " + executionNode.value);
                     return executionNode;
                 }
             },
@@ -1804,11 +1789,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 var associationNode = null;
                 var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
                 
-                console.log("adding program: " + programId);
                 if(!executionId.length) {
                     // This is a new execution, so create new execution and association ids
                     executionId = "urn:uuid:" + uuid.v4();
-                    console.log("new execution: " + executionId);
                     member.set("prov_wasExecutedByExecution", [executionId]);
                     // Blank node id. RDF validator doesn't like ':' so don't use in the id
                     //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
@@ -1817,7 +1800,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     associationNode = graph.bnode();
                 } else {
                     executionId = executionId[0];
-                    console.log("reusing execution id: " + executionId);
                     // Check if an association exists in the RDF graph for this execution id
                     //executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
                     executionNode = this.getExecutionNode(executionId);
@@ -1829,13 +1811,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // IF an associati on was found, then use it, else geneate a new one
                     // (Associations aren't stored in the )
                     if(stmts.length) {
-                        console.log("found association id: ", + stmts[0].object.value)
                         associationNode = stmts[0].object;
                         //associationId = stmts[0].object.value;
                     } else {
                         //associationId = "_" + uuid.v4();
                         associationNode = graph.bnode();
-                        console.log("did not find association using new id: ", + associationId);
                     }
                 }
                 //associationNode = graph.bnode(associationId);
@@ -1868,7 +1848,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 XSD     = rdf.Namespace(this.namespaces.XSD);
                 var associationNode = null;
                 
-                console.log("checking program " + programId + " for removal...");
                 var executionId = this.getExecutionId(programId);
                 if(executionId == null) return false;
                 
@@ -1915,7 +1894,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     graph.removeMatches(executionNode, RDF("type"), PROVONE("Execution"));
                     graph.removeMatches(executionNode, DCTERMS("identifier"), rdf.literal(executionId, undefined, XSD("string")));
                     graph.removeMatches(executionNode, PROV("qualifiedAssociation"), associationNode);
-                    console.log("removed program: " + programId + " and execution: " + executionId);
                 } catch (error) {
                     console.log(error);
                 }
@@ -1927,7 +1905,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
              */
             serialize: function() {
             	//Create an RDF serializer
-              console.log("called serialize()");
             	var serializer = this.rdf.Serializer(),
                     cnResolveUrl,
                     idNode,
@@ -2140,8 +2117,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 
                 } else {
-                  console.log("creating new resource map");
-                    // Create the OAI-ORE graph from scratch
+
+                	// Create the OAI-ORE graph from scratch
                     this.dataPackageGraph = this.rdf.graph();
                     cnResolveUrl = MetacatUI.appModel.get("resolveServiceUrl") || "https://cn.dataone.org/cn/v2/resolve/";
                     this.dataPackageGraph.cnResolveUrl = cnResolveUrl;

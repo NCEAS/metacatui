@@ -55,10 +55,10 @@ define(['jquery', 'underscore', 'backbone'],
 			nodeServiceUrl: null,
 			// NOTE: include your bioportal apikey for suggested classes
 			// see: http://bioportal.bioontology.org/account
-			bioportalAPIKey: "24e4775e-54e0-11e0-9d7b-005056aa3316",
-			bioportalSearchUrl: null, // use this to deactivate the annotator view
-			bioportalBatchUrl: "https://data.bioontology.org/batch",
-			annotatorUrl: null,
+			//bioportalAPIKey: "24e4775e-54e0-11e0-9d7b-005056aa3316",
+			//bioportalSearchUrl: null, // use this to deactivate the annotator view
+			//bioportalBatchUrl: "https://data.bioontology.org/batch",
+			//annotatorUrl: null,
 			//orcidBaseUrl: "https://sandbox.orcid.org",
 			//orcidSearchUrl: null,
 			accountsUrl: null,

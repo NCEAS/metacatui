@@ -32,9 +32,6 @@ define(['underscore', 'jquery', 'backbone',
 
             events: {
                 "change": "updateModel",
-                "focusout .input-container": "validateRow",
-                "keyup textarea.error": "updateError",
-                "keyup .coord.error": "updateError",
                 "mouseover .remove": "toggleRemoveClass",
                 "mouseout  .remove": "toggleRemoveClass"
             },
@@ -56,119 +53,6 @@ define(['underscore', 'jquery', 'backbone',
                 }
 
                 return this;
-            },
-
-            /**
-            * This is where we add validation error messages to the notification container.
-            *
-            * @function showVaidationError
-            * @param {string} errorMsg The error message that will be displayed to the user
-            */
-            showValidationError: function (errorMsg) {
-                this.$(".notification").text(errorMsg).addClass("error");
-                this.$el.addClass("error");
-            },
-
-            /**
-            * This is where we remove old error messages from the error notification container
-            * 
-            * @function removeValidationError
-            * @param status The status object holding the state of the coordinate boxes
-            */
-            removeValidationError: function (status) {
-                this.$("input.error, textarea.error").removeClass("error");
-                this.$(".notification.error").text("");
-                this.$el.removeClass("error");
-            },
-
-            /**
-            * If we have an invalid edit box, we display a red border around it. This function
-            * iterates through the status object and modifies the css to display a red border.
-            * We also want to remove the border when the value is correct.
-            *
-            * @function setErrorBorderState
-            * @param status The current state of the coordinate boxes 
-            */
-            setErrorBorderState: function (status) {
-
-                for (coordinate in status) {
-                    if (status[coordinate].isSet && !status[coordinate].isValid) {
-                        this.$("." + coordinate).addClass("error");
-                    } else {
-                        this.$("." + coordinate).removeClass("error");
-                    }
-                }
-            },
-
-            /**
-            * We need to display errors based on rules that are more complex
-            * than single coordinate input. For example, if the user sets
-            * the north coordinate, we'll want to display an error if they
-            * forgot to enter the west coordinate. This should only be used
-            * when validating the entire row, because we want to give the user
-            * a chance to fill out coordinate pairs before displaying errors about
-            * missing coordinates.
-            * 
-            * @function getBorderStatus
-            * @param status
-            * @return needsErrorBorder A flag denoting which coordinate boxes need error borders
-            */
-            getBorderStatus: function (status) {
-
-                var needsErrorBorder = {
-                    'north': {
-                        hasError: false
-                    },
-                    'east': {
-                        hasError: false
-                    },
-                    'south': {
-                        hasError: false
-                    },
-                    'west': {
-                        hasError: false
-                    }
-                }
-
-                if (status.north.isSet && !status.west.isSet) {
-                    needsErrorBorder['west'].hasError = true;
-                }
-
-                if (status.west.isSet && !status.north.isSet) {
-                    needsErrorBorder['north'].hasError = true;
-                }
-
-                if (status.south.isSet && !status.east.isSet) {
-                    needsErrorBorder['east'].hasError = true;
-                }
-
-                if (status.east.isSet && !status.south.isSet) {
-                    needsErrorBorder['south'].hasError = true;
-                }
-
-                if (!status.north.isSet && !status.west.isSet &&
-                    !status.south.isSet && !status.east.isSet) {
-                    needsErrorBorder['north'].hasError = true;
-                    needsErrorBorder['west'].hasError = true;
-                }
-
-                if (status.north.isSet && !status.north.isValid) {
-                    needsErrorBorder['north'].hasError = true;
-                }
-
-                if (status.east.isSet && !status.east.isValid) {
-                    needsErrorBorder['east'].hasError = true;
-                }
-
-                if (status.south.isSet && !status.south.isValid) {
-                    needsErrorBorder['south'].hasError = true;
-                }
-
-                if (status.west.isSet && !status.west.isValid) {
-                    needsErrorBorder['west'].hasError = true;
-                }
-
-                return needsErrorBorder;
             },
 
             /**
@@ -273,104 +157,16 @@ define(['underscore', 'jquery', 'backbone',
 
 
                 // Validate the coordinate boxes
-                this.validateCoordinates(e);
+                //this.validateCoordinates(e);
 
+                //If this model is part of the EML inside the root data package, mark the package as changed
                 if (this.model.get("parentModel")) {
                     if (this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel"))) {
-                        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+                        MetacatUI.rootDataPackage.packageModel.set("changed", true);                        
                     }
                 }
-            },
-
-            /**
-            * When we validate across lat/long boxes, we still want to display any
-            * errors that don't pertain to the lat/long (like a missing description).
-            * We do the check here and get the error messages because they will
-            * end up being wiped away when we generate the new error string in
-            * this.model.generateStatusErrors().
-            *
-            * @function checkPreviousErrors
-            * @param status The current state of the coordinate inputs
-            * @return {string} The error message that will be displayed
-            */
-            checkPreviousErrors: function (status) {
-                var errorMsg = "";
-
-                var errors = {
-                    'description': 0,
-                    'pair': 0,
-                    'missing': 0
-                }
-
-                if (this.$(".description").hasClass("error")) {
-                    errors["description"] = true;
-                    errorMsg = this.model.addSpace(this.model.getErrorMessage("description"));
-                }
-
-                /*
-                * Some errors aren't programmatically linked to elements (we just add the error to
-                * a string). In the case of the 'description' error, we were able to check if 'description'
-                * had the error class defined. In the case of a missing lat/long we have to first grab the old
-                * error message and check if there was an error. IF there was, we need check if it is 
-                * still valid. If it's not, we'll discard it.
-                */
-                oldError = this.$(".notification").text();
-
-                if (oldError.search(this.model.getErrorMessage("needPair")) != -1) {
-                    if (!this.model.checkForPairs(status)) {
-                        errors["pair"] = true;
-                        errorMsg += this.model.addSpace(this.model.getErrorMessage("needPair"));
-                    }
-                }
-
-                if (oldError.search(this.model.getErrorMessage("missing")) != -1) {
-                    if (this.model.checkForMissing(status)) {
-                        errors["missing"] = true;
-                        errorMsg += this.model.addSpace(this.model.getErrorMessage("missing"));
-                    }
-                }
-
-                return errors;
-            },
-
-            /** 
-             * We perform validation two ways:
-             *   1. By validating the entire row
-             *   2. By validating only the coordinates
-             *
-             *  This function handles the validation, addition, and removal of any errors
-             *  associated with invalid latitude and longitude values (#2).
-             *
-             * @function validateCoordinates
-            */
-            validateCoordinates: function () {
-                var status = this.model.getCoordinateStatus();
-                var errorMsg = ""
-
-                // We want to check for any errors not associated with individual coordinates and display them.
-                // Handle that here
-                var previousErrors = this.checkPreviousErrors(status);
-                if (previousErrors["description"]) {
-                    errorMsg += this.model.addSpace(this.model.getErrorMessage("description"));
-                }
-                if (previousErrors["pair"]) {
-                    errorMsg += this.model.addSpace(this.model.getErrorMessage("needPair"));
-                }
-                if (previousErrors["missing"]) {
-                    errorMsg += this.model.addSpace(this.model.getErrorMessage("missing"));
-                }
-
-                errorMsg = this.model.addSpace(errorMsg);
-
-                // Get all of the errors regarding coordinate values
-                errorMsg += this.model.generateStatusErrors(status);
-
-                if (errorMsg) {
-                    this.showValidationError(errorMsg);
-                } else {
-                    this.removeValidationError(status);
-                }
-                this.setErrorBorderState(status);
+                
+                this.validate();
             },
 
             /**
@@ -378,133 +174,54 @@ define(['underscore', 'jquery', 'backbone',
              * across the row and displays any errors. This id called when the user clicks out of an edit box 
              * on to the page.
              * 
-             * @function validateRow
+             * @function validate
              * @param e The event
              * @param options
              */
-            validateRow: function (e, options) {
+            validate: function (e, options) {
 
-                var view = this;
+            	//Query for the EMlGeoCoverageView element that the user is actively interacting with
+                var activeGeoCovEl = $(document.activeElement).parents(".eml-geocoverage");
 
-                setTimeout(function () {
+                //If the user is not actively in this view, then exit
+                if (activeGeoCovEl.length && activeGeoCovEl[0] == this.el)
+                    return;
 
-                    var geoCoverage = $(document.activeElement).parents(".eml-geocoverage");
+                //If the model is valid, then remove error styling and exit
+                if( this.model.isValid() ) {
+                	this.$(".error").removeClass("error");
+                	this.$el.removeClass("error");
+                	this.$(".notification").empty();
+                	this.model.trigger("valid");
+                                            
+                    return;
+                }
+                else{
+                	
+                	this.showValidation();
 
-                    if (geoCoverage.length && geoCoverage[0] == view.el)
-                        return;
-
-                    //If the model is valid, then remove error styling and exit
-                    if (view.model.isValid()) {
-                        view.$(".error").removeClass("error");
-                        view.$el.removeClass("error");
-                        view.$(".notification").empty();
-                        return;
-                    }
-
-                    /*
-                    * Get the state (whether the coordinate has a value and validity status) of the coordinates.
-                    * There is a process that checks the validity of the coordinates without the description
-                    * field (see validateCoordinates), so we'll splice that flow and append a check for the 
-                    * description at the end.
-                    */
-                    var status = view.model.getCoordinateStatus();
-                    description = view.$(".description").val(),
-                        hasError = false;
-
-                    /*
-                    * Check the case that none of the fields have been filled out, but there exists a 
-                    * geoCoverage error. In this case, we'll display the error and then stop further
-                    * validation.
-                    */
-                    if (view.isNew && !status.north.isSet && !status.south.isSet &&
-                        !status.east.isSet && !status.west.isSet && !description) {
-
-                        // Check for the empty model and for any geoCoverage errors
-                        var emlModel = view.model.get("parentModel");
-                        if (emlModel && emlModel.type == "EML" && $(".eml-geocoverage").index(view.el) == 0) {
-
-                            var validationErrors = emlModel.validationError;
-                            if (validationErrors && validationErrors.geoCoverage) {
-                                view.$(".notification").text(validationErrors.geoCoverage).addClass("error");
-                                view.$el.addClass("error");
-                                return;
-                            }
-                        }
-
-                        //Otherwise, there is no error
-                        hasError = false;
-                    }
-                    else {
-                        hasError = view.addErrorClasses(status, view, hasError);
-                    }
-
-                    if (hasError) {
-                        view.showValidationError(view.model.validationError);
-                        view.model.validate();
-                    }
-                    else {
-                        view.removeValidationError();
-                    }
-                    //view.setErrorBorderState(status);
-                }, 1);
+                }
+                    
             },
-
-            /**
-            * Run though a check of different conditions that may happen. For example,
-            * this is where we check if a latitude was set, but not the longitude. For
-            * any errors that are set in this section, we handle the cases where they need
-            * to be removed. In the previous case we'll want to make the longitude box have
-            * a red border
-            *
-            * @function addErrorClasses
-            * @param status The status object holding the state of each coordinate box
-            * @param view this
-            * @param {bool} hasError The error flag. set to true when there is invalid input
-            * @return {bool} hasError The error flag
-            */
-            addErrorClasses: function (status, view, hasError) {
-                borderStatus = this.getBorderStatus(status);
-
-                for (coordinate in borderStatus) {
-                    if (borderStatus[coordinate].hasError) {
-                        view.$("." + coordinate).addClass("error");
-                        hasError = true;
-                    }
-                    else {
-                        view.$("." + coordinate).removeClass("error");
-                    }
-                }
-
-                //Check if there isn't a geographic description
-                if (!description) {
-                    view.$(".description").addClass("error");
-                    hasError = true;
-                }
-                else {
-                    view.$(".description").removeClass("error");
-                }
-                return hasError;
-            },
-
-            /**
-             * When the user is typing in an input with an error, check if they've fixed the error
-             * and remove any error messages. This includes turning the red border off.
-             * 
-             * @function updateError
-             * @param e The event
+            
+            /*
+             * Resets the error messaging and displays the current error messages for this model
+             * This function is used by the EditorView during the package validation process
              */
-            updateError: function (e) {
-                var input = $(e.target);
+            showValidation: function(){
+            	this.$(".error").removeClass("error");
+            	this.$el.removeClass("error");
+            	this.$(".notification").empty();
+                
+            	var errorMessages = "";
+            	
+            	for( field in this.model.validationError ){
+            		this.$("[data-attribute='" + field + "']").addClass("error");
+            		
+            		errorMessages += this.model.validationError[field] + " ";
+            	}
 
-                if (input.val()) {
-                    input.removeClass("error");
-
-                    //If there are no more errors, remove the error class from the view
-                    if (!this.$(".error").length) {
-                        this.$(".notification.error").text("");
-                        this.$el.removeClass("error");
-                    }
-                }
+        		this.$(".notification").text(errorMessages).addClass("error");
             },
 
             /**
@@ -523,6 +240,7 @@ define(['underscore', 'jquery', 'backbone',
              */
             notNew: function () {
                 this.$el.removeClass("new");
+                this.isNew = false;
             }
         });
 

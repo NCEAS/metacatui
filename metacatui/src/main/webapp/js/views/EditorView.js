@@ -283,7 +283,7 @@ define(['underscore',
 	            	}
             	});
             
-            var tableHeight = ($(window).height() - $("#Navbar").height()) * .75;          
+            var tableHeight = ($(window).height() - $("#Navbar").height()) * .40;
             $packageTableContainer.css("height", tableHeight + "px");
 
             var table = this.dataPackageView.$el;
@@ -460,6 +460,9 @@ define(['underscore',
             
             // When a data package member fails to load, remove it and warn the user
             this.listenTo(MetacatUI.eventDispatcher, "fileLoadError", this.handleFileLoadError);
+
+            // When a data package member fails to be read, remove it and warn the user
+            this.listenTo(MetacatUI.eventDispatcher, "fileReadError", this.handleFileReadError);
         },
 
         /*
@@ -494,17 +497,20 @@ define(['underscore',
             // Review message for "arctic" theme.
             if (MetacatUI.appModel.get("contentIsModerated")) {
                 var message = this.editorSubmitMessageTemplate({
-                    themeTitle: MetacatUI.themeTitle
-                });
+                    	themeTitle: MetacatUI.themeTitle
+                	}),
+                	timeout = null;
+                
             }
             else {
                 var message = $(document.createElement("div")).append(
                 		$(document.createElement("span")).text("Your changes have been submitted. "),
-                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset."));
+                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
+                	timeout = 4000;
             }
             
         	
-            MetacatUI.appView.showAlert(message, "alert-success", this.$el, 4000, {remove: true});
+            MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
             
             //Rerender the CitationView
             var citationView = _.where(this.subviews, { type: "Citation" });
@@ -804,7 +810,9 @@ define(['underscore',
 				}
 				else{
 					var elsWithViews = _.filter(categoryEls, function(el){
-							return ( $(el).data("view") && $(el).data("view").showValidation );
+							return ( $(el).data("view") && 
+									$(el).data("view").showValidation &&
+									!$(el).data("view").isNew );
 						});
 					
 					if(elsWithViews.length){
@@ -835,12 +843,13 @@ define(['underscore',
 					.addClass("error")
 					.show();
 				
-				this.model.once("change:" + category, this.model.isValid);
+				this.model.off("change:"  + category, this.model.checkValidity);
+				this.model.once("change:" + category, this.model.checkValidity);
 				
 			}, this);
 			
 			if(errors){
-				MetacatUI.appView.showAlert("Provide the missing information flagged below.", 
+				MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.", 
 						"alert-error", 
 						this.$el, 
 						null, 
@@ -849,6 +858,11 @@ define(['underscore',
 						});
 			}
 
+		},
+		
+		checkValidity: function(){
+			if(this.model.isValid())
+				this.model.trigger("valid");
 		},
 
 	    /*
@@ -859,7 +873,8 @@ define(['underscore',
 			if(!MetacatUI.appUserModel.get("loggedIn")) return true;
 
 			//If the form hasn't been edited, we can close this view without confirmation
-			if(!MetacatUI.rootDataPackage.getQueue().length) return true;
+			if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
+				return true;
 
 			var isLeaving = confirm("Do you want to leave this page? All information you've entered will be lost.");
 			return isLeaving;
@@ -887,12 +902,12 @@ define(['underscore',
         },
 
         /*
-            Handle to "fileLoadError" events by alerting the users
+            Handle "fileLoadError" events by alerting the user
             and removing the row from the data package table.
             
             @param item The model item passed by the fileLoadError event
          */
-         handleFileLoadError: function(item) {
+        handleFileLoadError: function(item) {
             var message;
             var fileName;
             /* Remove the data package table row */
@@ -902,13 +917,42 @@ define(['underscore',
                 (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) { 
                 fileName = item.get("fileName");
                 message = "The file " + fileName + 
-                    " is already listed in the package. The duplicate file has not been added.";
+                    " is already included in this dataset. The duplicate file has not been added.";
             } else {
-                message = "The chosen file is already listed in the package. " +
+                message = "The chosen file is already included in this dataset. " +
                     "The duplicate file has not been added.";
             }
-            MetacatUI.appView.showAlert(message, "alert-info", "body", 5000, {remove: true});
-         }
+            MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
+        },
+        
+        /*
+            Handle "fileReadError" events by alerting the user
+            and removing the row from the data package table.
+            
+            @param item The model item passed by the fileReadError event
+         */
+        handleFileReadError: function(item) {
+            var message;
+            var fileName;
+            /* Remove the data package table row */
+            this.dataPackageView.removeOne(item);
+            /* Then inform the user */
+            if ( item && item.get && 
+                (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) { 
+                fileName = item.get("fileName");
+                message = "The file " + fileName + 
+                    " could not be read. You may not have permission to read the file," + 
+                    " or the file was too large for your browser to upload. " +
+                    "The file has not been added.";
+            } else {
+                message = "The chosen file " +
+                    " could not be read. You may not have permission to read the file," + 
+                    " or the file was too large for your browser to upload. " +
+                    "The file has not been added.";
+            }
+            MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
+        }
+
     });
     return EditorView;
 });
