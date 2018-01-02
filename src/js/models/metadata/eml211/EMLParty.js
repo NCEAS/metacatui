@@ -476,17 +476,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 }, this);
 			 
 			// role
-			//If this party type is not an associated party, then remove the role element
-			var isAssocParty = _.contains(this.get("roleOptions"), this.get("role"));
-			
-			if( !isAssocParty ){
+			//If this party type is not an associated party, then remove the role element			
+			if( type != "associatedParty" && type != "personnel" ){
 				$(objectDOM).find("role").remove();
 			}
 			//Otherwise, change the value of the role element
 			else{
 				//If for some reason there is no role, create a default role
 				if( !this.get("role") )
-					var role = "associatedParty";
+					var role = "Associated Party";
 				else
 					var role = this.get("role");
 				
