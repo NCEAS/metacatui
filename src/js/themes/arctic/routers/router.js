@@ -348,7 +348,6 @@ function ($, _, Backbone) {
 		},
 
 		renderSignInSuccess: function(){
-			console.log("renderSignInSuccess");
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
 		},

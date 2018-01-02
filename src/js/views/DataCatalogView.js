@@ -372,22 +372,17 @@ define(['jquery',
 		},
 		
 		jumpUp : function() {
-			
-			//console.log("Jumping UP!");
-						
+									
 			// re-root the tree at the parent concept of the root
 			var tree = $("[data-category='annotation'] .expand-collapse-control").data().popoverContent.find("#bioportal-tree").data("NCBOTree");
 			var options = tree.options();
 			var startingRoot = options.startingRoot;
-			//console.log("startingRoot: " + startingRoot);
 			
 			if (startingRoot == "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType") {
-				console.log("Already at top of tree");
 				return false;
 			}
 			
 			var parentId = $("a[data-id='"+ encodeURIComponent(startingRoot) + "'").attr("data-subclassof");
-			console.log("parentId: " + parentId);
 			
 			// re-root
 			$.extend(options, {startingRoot: parentId});

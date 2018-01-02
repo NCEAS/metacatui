@@ -61,11 +61,9 @@ define(['underscore',
         	
         	//Get information about this object
         	this.listenToOnce(model, "sync", function(model){
-        		console.log(model, "is the model that was fetched");
         		
         		//Is this an EML 2.1.1 doc?
         		if(model.get("formatid") == "eml://ecoinformatics.org/eml-2.1.1"){
-					console.log("this is an EML object");
 					var metadataModel = new EML(model.toJSON());
 
 					//Save the model in the view and trigger the event
@@ -102,7 +100,6 @@ define(['underscore',
         renderMetadata: function(){
         	this.$el.html("metadata goes here");
         	
-        	console.log(this.model);
         },
         
         // This function is called when there is no metadata document in this dataset. Only system metadata will be displayed.

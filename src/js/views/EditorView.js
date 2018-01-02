@@ -158,7 +158,6 @@ define(['underscore',
 
         /* Get the data package associated with the EML */
         getDataPackage: function(scimetaModel) {
-            console.log("EditorView.getDataPackage() called.");
 
             if(!this.model.get("synced") || !this.model.get("isAuthorized")) return;
 
@@ -237,9 +236,7 @@ define(['underscore',
         },
 
         renderChildren: function(model, options) {
-            console.log("EditorView.renderChildren() called.");
-            console.log(model);
-            console.log(options);
+
 
         },
 
@@ -350,7 +347,6 @@ define(['underscore',
                 return;
 
             } else {
-            	console.log("Rendering EML Model ", model.get("id"));
 
             	//Create an EML model
                 if(model.type != "EML"){

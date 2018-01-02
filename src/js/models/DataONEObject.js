@@ -185,7 +185,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              * Overload Backbone.Model.fetch, so that we can set custom options for each fetch() request
              */
             fetch: function(options){
-            	console.log("Fetching " + this.get("id"));
                 
                 if ( ! options ) var options = {};
                 else var options = _.clone(options);
@@ -250,7 +249,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
              * It deserializes the incoming XML from the /meta REST endpoint and converts it into JSON.
              */
             parse: function(response){
-                // console.log("Parsing " + this.get("id"));
             	
             	// If the response is XML
             	if( (typeof response == "string") && response.indexOf("<") == 0 ) {
@@ -508,7 +506,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                       return xhr;
                     },
                     success: function(model, response, xhr){
-                        console.log('yay, DataONEObject has been saved');
                         
                         model.set("numSaveAttempts", 0);
                         model.set("uploadStatus", "c");
@@ -1057,7 +1054,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	                var current = e.loaded;
 
 	                var Percentage = (current * 100)/max;
-	                console.log(Percentage);
 
 
 	                if(Percentage >= 100)
@@ -1462,8 +1458,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     };
                     /* Show progress */
                     reader.onprogress = function(event) {
-                        // console.log('Loaded ' + event.loaded + ' of ' + event.total);
-                        // console.log('Processed ' + (offset + event.loaded) + ' of ' + file.size);
                     };
                     /* Handle load finish */
                     reader.onloadend = function(event) {
@@ -1489,7 +1483,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         _seek();
                         break;
                     case "SHA-1":
-                        console.log("Generating SHA-1 checksum");
                         // TODO: Support SHA-1
                         // break;
                     default:

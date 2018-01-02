@@ -295,13 +295,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             
             /* Duplicate a file or folder */
             duplicate: function(event) {
-                console.log("DataItemView.duplicate() called.");
                 
             },
             
             /* Add a sub folder */
             addFolder: function(event) {
-                console.log("DataItemView.addFolder() called.");
                 
             },
             
@@ -310,7 +308,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 Multiple files are allowed using the shift and or option/alt key
             */
             handleAddFiles: function(event) {
-                console.log("DataItemView.handleAddFiles() called.");
                 
                 event.stopPropagation();
                 var fileUploadElement = this.$el.find(".file-upload");
@@ -327,7 +324,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 add the files to the collection 
             */
             addFiles: function(event) {
-                console.log("DataItemView.addFiles() called.");
                 
                 var fileList,            // The list of chosen files
                     parentDataPackage,   // The id of the first resource of this row's scimeta
@@ -356,7 +352,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     
                     // Read each file, and make a DataONEObject
                     _.each(fileList, function(file) {
-                        console.log("Processing " + file.name + ", size: " + file.size);
                         
                         var dataONEObject = new DataONEObject({
                             synced: true,
@@ -392,7 +387,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         
             /* During file reading, update the progress bar */
             updateLoadProgress: function(event) {
-                console.log(event);
                 
                 // TODO: Update the progress bar
                 
@@ -516,8 +510,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         eventModel = eventModels[0];
                         
                     } else {
-                        console.log("The model of the event isn't in the root package.");
-                        console.log("TODO: Check in nested packages.");
                         return;
                     }
                     
@@ -543,10 +535,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         	
                         	if(metadataModels.length == 1)
                         		return metadataModels[0];
-                        	
-                            console.log("The model of the event has no isDocumentedBy value.");
-                            console.log("TODO: When parsing packages, ensure documents/isDocumentedBy values are present.");
-                            
+                        	                            
                         }
                     }
                 }
@@ -571,7 +560,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         if ( ! MetacatUI.rootDataPackage.packageModel.get("latestVersion") ) {
                             // Decide how to handle this by calling model.findLatestVersion()
                             // and listen for the result, setting getParentDataPackage() as the callback?
-                            console.log("In dataItemView.getParentDataPackage(), latestVersion is not set.");
                                
                         } else {
                             parentResourceMapId = MetacatUI.rootDataPackage.packageModel.get("latestVersion");

@@ -14,12 +14,6 @@ define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLU
         	return unit.get("_name").charAt(0).toUpperCase() + unit.get("_name").slice(1);
         },
 
-        /* Create a new Units collection */
-        initialize: function() {
-            console.log("Units.initialize() called.");
-
-        },
-
         /*
          * The URL of the EML unit Dictionary
          */
@@ -38,7 +32,6 @@ define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLU
 
         /* Parse the XML response */
         parse: function(response) {
-            console.log("Units.parse() called.");
 
             // If the collection is already parsed, just return it
             if ( typeof response === "object" ) return response;

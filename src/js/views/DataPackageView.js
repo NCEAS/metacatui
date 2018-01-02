@@ -241,7 +241,6 @@ define([
             
             /* Show or hide the data rows associated with the event row science metadata */
             toggleRows: function(event) {
-                console.log("DataPackageView.toggleRows() called.");
                 
                 if ( this.isOpen ) {
                     

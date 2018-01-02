@@ -427,9 +427,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
             		
             	}
-            	
-            	console.log(modelJSON);
-            	
+            	            	
             	return modelJSON;           	
             },
             
@@ -723,9 +721,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	//Camel-case the XML
 		    	var emlString = ""; 
 		    	_.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
-		    	           	     
-		    	console.log(emlString);
-		    	
+		    	           	     		    	
 	           	return emlString;
             },
             
@@ -916,9 +912,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	   			catch(error){
 	   				//Reset the identifier since we didn't actually update the object
 	   				this.resetID();
-	   				
-	   				console.log("error during EML.save(): ", error);
-	   				
+	   					   				
 	   				this.set("uploadStatus", "e"); 
 	   				this.trigger("error");
 	   				this.trigger("cancelSave");

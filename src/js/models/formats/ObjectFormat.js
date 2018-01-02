@@ -37,7 +37,6 @@ define(['jquery', 'underscore', 'backbone'], function($, _, Backbone) {
         
         /* No op - Formats are read only */
         save: function() {
-            console.log("Object format is read only. Not implemented");
             
             return false;
         }
