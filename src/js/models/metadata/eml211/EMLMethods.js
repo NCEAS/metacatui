@@ -94,18 +94,41 @@ define(['jquery',
 				objectDOM = $("<methods></methods>");
 			}
 			
-			_.each(this.get('methodStepDescription'), function(step) {
-				$(objectDOM).append($(document.createElement('methodStep')).append(step.updateDOM()));
+			//Update the method step descriptions
+			var existingMethodSteps = $(objectDOM).find("methodstep");
+			_.each(this.get('methodStepDescription'), function(step, i) {
+				
+				if( existingMethodSteps[i] ){
+					$(existingMethodSteps[i]).replaceWith( step.updateDOM() );
+				}					
+				else{
+					$(objectDOM).append( $(document.createElement('methodStep'))
+							    				    .append( step.updateDOM() ) );
+				}
+							
+				
 			});
 
-			// Insert a blank methodStep if none are set but one of the sampling elements is
-			if (this.get('methodStepDescription').length == 0 && (this.get('samplingDescription') || this.get('studyExtentDescription'))) {
-				$(objectDOM).append("<methodStep><description><para>No method step description provided.</para></description></methodStep>");
-			}
 			
+			//If there are no method steps...
+			if ( this.get('methodStepDescription').length == 0 ) {
+				
+				//Remove any existing method steps from the EML
+				if(existingMethodSteps.length){
+					existingMethodSteps.remove();
+				}
+				
+				// If there are no method steps but there is sampling metadata, then insert an empty method step
+				if( this.get('samplingDescription') || this.get('studyExtentDescription') )
+					$(objectDOM).append("<methodStep><description><para>No method step description provided.</para></description></methodStep>");
+			}
+
+			
+			// Update the sampling metadata
 			if (this.get('samplingDescription') || this.get('studyExtentDescription')) {
-				var samplingEl = $(document.createElement('sampling')),
-				    studyExtentEl = $(document.createElement('studyExtent'))
+				
+				var samplingEl    = $(document.createElement('sampling')),
+				    studyExtentEl = $(document.createElement('studyExtent'));
 
 				if (this.get('studyExtentDescription') && !this.get('studyExtentDescription').isEmpty()) {
 					$(studyExtentEl).append(this.get('studyExtentDescription').updateDOM());
@@ -120,8 +143,19 @@ define(['jquery',
 				} else {
 					$(samplingEl).append($(document.createElement('samplingDescription')).html("<para>No sampling description provided.</para>"));
 				}
-
-				$(objectDOM).append(samplingEl);
+				
+				//Find the existing <sampling> element
+				var existingSampling = $(objectDOM).find("sampling");
+				
+				//Replace the existing sampling element, if it exists
+				if( existingSampling.length > 0 ){
+					existingSampling.replaceWith(samplingEl);
+				}
+				//Or append a new one
+				else{
+					$(objectDOM).append(samplingEl);
+				}
+				
 			}
 
 			// Remove empty (zero-length or whitespace-only) nodes

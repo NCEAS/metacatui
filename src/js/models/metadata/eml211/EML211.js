@@ -678,6 +678,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 						else
 							datasetNode.append(methodsEl);
 					}
+					else{
+						
+						datasetNode.find("methods").replaceWith(methodsEl);
+						
+					}
 					
 				}
 	           	//Serialize the keywords
