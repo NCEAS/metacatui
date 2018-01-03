@@ -9,23 +9,23 @@ require.config({
     // urlArgs: "buster=" + (new Date()).getTime(),
     paths: {
         // Pull common libs from the app components library
-        "jquery": "../src/main/webapp/components/jquery-1.9.1.min",
-        "underscore": "../src/main/webapp/components/underscore-min",
-        "backbone": "../src/main/webapp/components/backbone",
+        "jquery": "../src/components/jquery-1.9.1.min",
+        "underscore": "../src/components/underscore-min",
+        "backbone": "../src/components/backbone",
         "mocha": "./js/mocha",
         "chai": "./js/chai",
         "chai-jquery": "./js/chai-jquery",
         "chai-backbone": "./js/chai-backbone",
-        "uuid": "../src/main/webapp/components/uuid",
-        "md5": "../src/main/webapp/components/md5",
-        "x2js": "../src/main/webapp/components/xml2json",
+        "uuid": "../src/components/uuid",
+        "md5": "../src/components/md5",
+        "x2js": "../src/components/xml2json",
         // The paths to the app components
-        "models": "../src/main/webapp/js/models",
-        "collections": "../src/main/webapp/js/collections",
-        "views": "../src/main/webapp/js/views",
-        "routers": "../src/main/webapp/js/routers",
-        "templates": "../src/main/webapp/js/templates",
-        "themes": "../src/main/webapp/js/themes"
+        "models": "../src/js/models",
+        "collections": "../src/js/collections",
+        "views": "../src/js/views",
+        "routers": "../src/js/routers",
+        "templates": "../src/js/templates",
+        "themes": "../src/js/themes"
     },
     shim: {
         "mocha": {

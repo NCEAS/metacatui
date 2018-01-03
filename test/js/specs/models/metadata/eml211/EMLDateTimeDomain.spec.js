@@ -1,7 +1,7 @@
 "use strict";
 
 define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLDateTimeDomain"],
+    "../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain"],
     function(chai, chaiJquery, chaiBackbone, EMLDateTimeDomain) {
 
         // Configure the Chai assertion library

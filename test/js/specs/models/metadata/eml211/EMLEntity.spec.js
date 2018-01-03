@@ -1,7 +1,7 @@
 "use strict";
 
 define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLEntity"],
+    "../../../../../../src/js/models/metadata/eml211/EMLEntity"],
     function(chai, chaiJquery, chaiBackbone, EMLEntity) {
 
         // Configure the Chai assertion library

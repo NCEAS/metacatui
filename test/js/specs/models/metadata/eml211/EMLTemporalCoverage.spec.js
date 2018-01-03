@@ -1,7 +1,7 @@
 "use strict";
 
 define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLTemporalCoverage"],
+    "../../../../../../src/js/models/metadata/eml211/EMLTemporalCoverage"],
     function(chai, chaiJquery, chaiBackbone, EMLTemporalCoverage) {
 
         // Configure the Chai assertion library

@@ -19,13 +19,13 @@ the `EMLEntityModel` located in:
 
 .. code::
 
-    metacatui/metacatui/src/main/webapp/js/models/metadata/eml211/EMLEntity.js
+    metacatui/src/js/models/metadata/eml211/EMLEntity.js
 
 has a corresponding spec file in:
 
 .. code::
 
-    metacatui/metacatui/test/js/specs/models/metadata/eml211/EMLEntity.spec.js
+    metacatui/test/js/specs/models/metadata/eml211/EMLEntity.spec.js
 
 You can use `EMLEntity.spec.js` as a template for writing other spec files,
 but in general, use the RequireJS `define()` method to define a module and
@@ -34,7 +34,7 @@ inject dependencies, such as:
 .. code::
 
     define(["chai", "chai-jquery", "chai-backbone",
-        "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLEntity"],
+        "../../../../../../src/js/models/metadata/eml211/EMLEntity"],
         function(chai, chaiJquery, chaiBackbone, EMLEntity) {
 
         // spec code goes here
@@ -45,7 +45,7 @@ call in:
 
 .. code::
 
-    metacatui/metacatui/test/js/specs/runner.spec.js
+    metacatui/test/js/specs/runner.spec.js
 
 We currently have library definitions for JQuery, Underscore, Backbone, Mocha,
 Chai, Chai-JQuery, and Chai-Backbone.
@@ -54,6 +54,6 @@ Running tests
 -------------
 The test suite to be run is defined in `runner.spec.js`, so add the path to
 you spec file into the `tests` array.  To run the `runner.spec.js` file,
-open the `metacatui/metacatui/test/index.html` file in the browser(s) you want
+open the `metacatui/test/index.html` file in the browser(s) you want
 to test in.  Each time `index.html` is reloaded, the runner calls `mocha.run()`, which
 will execute all of the tests in the suite.

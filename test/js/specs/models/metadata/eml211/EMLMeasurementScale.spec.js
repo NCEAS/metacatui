@@ -1,10 +1,10 @@
 "use strict";
 
 define(["chai", "chai-jquery", "chai-backbone",
-        "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLMeasurementScale",
-        "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLNonNumericDomain",
-        "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLNumericDomain",
-        "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLDateTimeDomain",
+        "../../../../../../src/js/models/metadata/eml211/EMLMeasurementScale",
+        "../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain",
+        "../../../../../../src/js/models/metadata/eml211/EMLNumericDomain",
+        "../../../../../../src/js/models/metadata/eml211/EMLDateTimeDomain",
 ],
     function(chai, chaiJquery, chaiBackbone, EMLMeasurementScale,
         EMLNonNumericDomain, EMLNumericDomain, EMLDateTimeDomain) {

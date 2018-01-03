@@ -1,7 +1,7 @@
 "use strict";
 
 define(["chai", "chai-jquery", "chai-backbone",
-    "../../../../../../src/main/webapp/js/models/metadata/eml211/EMLNonNumericDomain"],
+    "../../../../../../src/js/models/metadata/eml211/EMLNonNumericDomain"],
     function(chai, chaiJquery, chaiBackbone, EMLNonNumericDomain) {
 
         // Configure the Chai assertion library
