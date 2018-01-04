@@ -91,19 +91,20 @@ define(['jquery',
 			if (this.get("objectDOM")) {
 				objectDOM = this.get("objectDOM").cloneNode(true);
 			} else {
-				objectDOM = $("<methods></methods>");
+				objectDOM = $(document.createElement("methods"));
 			}
 			
 			//Update the method step descriptions
 			var existingMethodSteps = $(objectDOM).find("methodstep");
-			_.each(this.get('methodStepDescription'), function(step, i) {
+			_.each(this.get('methodStepDescription'), function(stepDescription, i) {
 				
 				if( existingMethodSteps[i] ){
-					$(existingMethodSteps[i]).replaceWith( step.updateDOM() );
+					$(existingMethodSteps[i]).children("description")
+											 .replaceWith( stepDescription.updateDOM() );
 				}					
 				else{
 					$(objectDOM).append( $(document.createElement('methodStep'))
-							    				    .append( step.updateDOM() ) );
+							    				    .append( stepDescription.updateDOM() ) );
 				}
 							
 				
