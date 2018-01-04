@@ -44,23 +44,30 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if(!objectDOM)
 				var objectDOM = this.get("objectDOM").cloneNode(true);
 			
+			//Start a list of paragraphs
 			var paragraphs = [];
 			
-			//Get the direct children of this text element and save them as paragraphs - ignore any nested formatting elements for now
-			//TODO: Support more detailed text formattin
-			paragraphs = _.map($(objectDOM).find('*'), function(el) {
-				if (el.children.length > 0) {
-					return "";
-				} else {
-					return el.textContent;
-				}
-			})
-
-			var modelJSON = {
-				text: _.filter(paragraphs, function(p) { return p.length > 0; })
+			//Get all the contained nodes of this text element
+			var allNodes = $(objectDOM).find('*');
+			
+			// Save all the contained nodes as paragraphs
+			// ignore any nested formatting elements for now
+			//TODO: Support more detailed text formatting
+			if( allNodes.length ){
+				
+				_.each(allNodes, function(node) {
+					if( node.textContent )
+						paragraphs.push(node.textContent);
+				});
+				
+			}
+			else if( objectDOM.textContent ){
+				paragraphs[0] = objectDOM.textContent;
 			}
 			
-			return modelJSON;
+			return {
+				text: paragraphs
+			}
 		},
 		
 		serialize: function(){
