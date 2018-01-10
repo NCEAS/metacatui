@@ -91,6 +91,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                	
 	                	//If we found an EMLEntity model
 	                	if(entity){
+	                		
+	                		//Get the file name from the metadata if it is not in the model
+	                		if( !this.model.get("fileName") && entity.get("entityName") ){
+	                			this.model.set("fileName", entity.get("entityName"));
+	                			attributes.fileName = entity.get("entityName");
+	                		}
+	                			                		
 	                		//Get the number of attributes for this entity
 	                		attributes.numAttributes = entity.get("attributeList").length;
 	                		attributes.hasAttributeChanges = this.hasAttributeChanges;
