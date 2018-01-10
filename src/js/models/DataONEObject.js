@@ -605,12 +605,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	//Update the system metadata values
 	        	xml.find("serialversion").text(this.get("serialVersion") || "0");
 	        	xml.find("identifier").text((this.get("newPid") || this.get("id")));
-                
+	        	xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
 	        	xml.find("formatid").text(this.get("formatId") || this.getFormatId());                                
 	        	xml.find("size").text(this.get("size"));
 	        	xml.find("checksum").text(this.get("checksum"));
                 xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
-	        	xml.find("submitter").text(MetacatUI.appUserModel.get("username"));
 	        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
 
 	        	//Write the access policy
