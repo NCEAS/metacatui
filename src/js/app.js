@@ -197,8 +197,20 @@ function(Bootstrap, AppView, AppModel) {
 		//Make the router and begin the Backbone history
 		//The router will figure out which view to load first based on window location
 		MetacatUI.uiRouter = new UIRouter();
-		Backbone.history.start();
-	  
+		//Backbone.history.start();
+		Backbone.history.start({pushState: true});
+		$(document).on("click", "a", function(e)
+		{
+
+			var href = $(e.currentTarget).attr('href');
+
+			var res = Backbone.history.navigate(href,true);
+			//if we have an internal route don't call the server
+			if(res)
+				e.preventDefault();
+
+			});
+	
 	});
     	
 });
