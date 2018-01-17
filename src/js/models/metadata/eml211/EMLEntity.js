@@ -26,6 +26,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 	                physical: [], // Zero to many EMLPhysical objects
 	                physicalMD5Checksum: null,
 	                physicalSize: null,
+	                physicalObjectName: null,
 	                coverage: [], // Zero to many EML{Geo|Taxon|Temporal}Coverage objects
 	                methods: null, // Zero or one EMLMethod object
 	                additionalInfo: [], // Zero to many EMLText objects
@@ -131,6 +132,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 var physical = $objectDOM.find("physical");
                 if(physical){
                 	attributes.physicalSize = physical.find("size").text();
+                	attributes.physicalObjectName = physical.find("objectname").text();
                 	
                 	var checksumType = physical.find("authentication").attr("method");
                 	if(checksumType == "MD5")

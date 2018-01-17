@@ -91,6 +91,21 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                	
 	                	//If we found an EMLEntity model
 	                	if(entity){
+	                		
+	                		//Get the file name from the metadata if it is not in the model
+	                		if( !this.model.get("fileName") ){
+	                			
+	                			var fileName = "";
+	                			
+	                			if( entity.get("physicalObjectName") )
+	                				fileName = entity.get("physicalObjectName");
+	                			else if( entity.get("entityName") )
+	                				fileName = entity.get("entityName");
+	                			
+	                			if( fileName )
+	                				attributes.fileName = fileName;
+	                		}
+	                			                		
 	                		//Get the number of attributes for this entity
 	                		attributes.numAttributes = entity.get("attributeList").length;
 	                		attributes.hasAttributeChanges = this.hasAttributeChanges;
