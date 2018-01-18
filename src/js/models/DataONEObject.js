@@ -50,6 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     sizeStr: null,
                     type: null, // Data, Metadata, or DataPackage
                     formatType: null,
+                    metadataEntity: null, // A model that represents the metadata for this file, e.g. an EMLEntity model
                     latestVersion: null,
                     isDocumentedBy: null,
                     documents: [],
@@ -277,6 +278,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             				delete sysMetaValues[key];
             			}
             		}, this);
+            		
+            		delete sysMetaValues.fileName;
             		
             		return sysMetaValues;
             	

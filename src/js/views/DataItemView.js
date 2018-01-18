@@ -86,8 +86,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                
 	                //If we found a parent EML model
 	                if(parentEML && parentEML.type == "EML"){
+	                	
 	                	//Find the EMLEntity model for this data item
-	                	var entity = parentEML.getEntity(this.model);
+	                	var entity = this.model.get("metadataEntity") || parentEML.getEntity(this.model);
 	                	
 	                	//If we found an EMLEntity model
 	                	if(entity){
@@ -104,6 +105,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                			
 	                			if( fileName )
 	                				attributes.fileName = fileName;
+	                				this.model.set("fileName", fileName);
 	                		}
 	                			                		
 	                		//Get the number of attributes for this entity
