@@ -763,8 +763,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         objectFormats = MetacatUI.objectFormats.where({extension: ext});
                     
                         if ( objectFormats.length > 0 ) {
-                            formatId = objectFormats[0].get("formatId");
-                            objectFormats = [];
+                        	
+                        	//If this is a "nc" file, assume it is a netCDF-3 file. 
+                        	if( ext == "nc" ){
+                        		formatId = "netCDF-3";
+                        	}
+                        	else{
+                                formatId = objectFormats[0].get("formatId");
+                                objectFormats = [];                        		
+                        	}
+
                             return formatId;
                         
                         }
