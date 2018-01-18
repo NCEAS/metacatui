@@ -278,9 +278,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             				delete sysMetaValues[key];
             			}
             		}, this);
-            		
-            		delete sysMetaValues.fileName;
-            		
+            		            		
             		return sysMetaValues;
             	
                 // If the response is a list of Solr docs   
