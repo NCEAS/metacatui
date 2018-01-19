@@ -2388,8 +2388,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 	metadataModel.get("documents").push(dataONEObject.id);
                 }
                 
-                // Create an EML Entity for this DataONE Object
-                if(metadataModel.type == "EML"){                	
+                // Create an EML Entity for this DataONE Object if there isn't one already
+                if(metadataModel.type == "EML" && !dataONEObject.get("metadataEntity")){                	
                 	metadataModel.createEntity(dataONEObject);
 	            }
 

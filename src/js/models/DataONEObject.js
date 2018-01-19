@@ -108,6 +108,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 this.on("successSaving", this.updateRelationships);
                 
+            	//Save a reference to this DataONEObject model in the metadataEntity model
+            	//whenever the metadataEntity is set
+                this.on("change:metadataEntity", function(){
+                	var entityMetadataModel = this.get("metadataEntity");
+                	
+                	if( entityMetadataModel )
+                		entityMetadataModel.set("dataONEObject", this);
+                	
+                });
+                
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });

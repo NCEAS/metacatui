@@ -1258,6 +1258,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Find the entity model for a given DataONEObject
              */
             getEntity: function(dataONEObj){
+            	
+            	//If an EMLEntity model has been found for this object before, then return it
+            	if( dataONEObj.get("metadataEntity") )
+            		return dataONEObj.get("metadataEntity");
 
             	var entity = _.find(this.get("entities"), function(e){
             		
@@ -1300,6 +1304,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	
             	//If we found an entity, give it an ID and return it
             	if(entity){
+            		
+            		//If this entity has been matched to another DataONEObject already, then don't match it again 
+            		if( entity.get("dataONEObject") ){
+            			return;
+            		}
                 	
                 	//Create an XML-safe ID and set it on the Entity model
                 	entity.set("xmlID", dataONEObj.getXMLSafeID());
