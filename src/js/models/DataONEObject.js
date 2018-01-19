@@ -141,7 +141,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	    			replicationstatus: "replicationStatus",
 	    			replicaverified: "replicaVerified",		
 	    			rightsholder: "rightsHolder",
-	    			serialversion: "serialVersion"
+	    			serialversion: "serialVersion",
+                    seriesid: "seriesId"
             	};
             },
             
