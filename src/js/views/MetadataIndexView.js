@@ -61,7 +61,8 @@ define(['jquery',
 			var view = this;
 						
 			//Get all the fields from the Solr index
-			var query = 'q=id:"' + encodeURIComponent(this.pid) + '"&rows=1&start=0&fl=*&wt=json';
+			var query = 'q=(id:"' + encodeURIComponent(this.pid) + '"+OR+seriesId:"'+
+									encodeURIComponent(this.pid)+'")&rows=1&start=0&fl=*&wt=json';
 			var requestSettings = {
 				url: MetacatUI.appModel.get('queryServiceUrl') + query, 
 				success: function(data, textStatus, xhr){ 
