@@ -3385,6 +3385,11 @@ ul.side-nav-items {
     background-color: #FFF;
     color: #ffbc00;
 }
+.data-package-item .btn.error,
+.data-package-item .status .icon.danger,
+.data-package-item .status .icon.error{
+	color: #FF0000;
+}
 .data-package-item .dropdown-menu{
 	border-color: #CCC;
     border-width: 1px;

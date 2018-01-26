@@ -69,17 +69,22 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 
                 //Set some defaults
                 attributes.numAttributes = 0;
-                attributes.hasAttributeChanges = false;
                 attributes.entityIsValid = false;
+                attributes.hasInvalidAttribute = false;
                 		
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
                 		                
 	                //Get the parent EML model
-	                var parentEML = MetacatUI.rootDataPackage.where({
+                	if( this.parentEML ){
+                		var parentEML = this.parentEML;
+                	}
+                	else{
+                		var parentEML = MetacatUI.rootDataPackage.where({
 	                    	id: Array.isArray(this.model.get("isDocumentedBy")) ? 
 	                    			this.model.get("isDocumentedBy")[0] : null
 	                	});
+                	}
 	                
 	                if( Array.isArray(parentEML) )
 	                	parentEML = parentEML[0];
@@ -87,11 +92,15 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                //If we found a parent EML model
 	                if(parentEML && parentEML.type == "EML"){
 	                	
+	                	this.parentEML = parentEML;
+	                	
 	                	//Find the EMLEntity model for this data item
 	                	var entity = this.model.get("metadataEntity") || parentEML.getEntity(this.model);
 	                	
 	                	//If we found an EMLEntity model
 	                	if(entity){
+	                		
+	                		this.entity = entity;
 	                		
 	                		//Get the file name from the metadata if it is not in the model
 	                		if( !this.model.get("fileName") ){
@@ -110,13 +119,33 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                			                		
 	                		//Get the number of attributes for this entity
 	                		attributes.numAttributes = entity.get("attributeList").length;
-	                		attributes.hasAttributeChanges = this.hasAttributeChanges;
+	                		//Determine if the entity model is valid
 	                		attributes.entityIsValid = entity.isValid();
 	                		
+	                		//Check if there are any invalid attribute models
+	                		//Also listen to each attribute model
+                			_.each( entity.get("attributeList"), function(attr){
+				                
+                				var isValid = attr.isValid();
+                				
+                				//Mark that this entity has at least one invalid attribute
+	                			if( !attributes.hasInvalidAttribute && !isValid )
+	                				attributes.hasInvalidAttribute = true;
+	                			
+	                			this.stopListening(attr);
+	                			
+	                			//Listen to when the validation status changes and rerender
+	                			if(isValid)
+	                				this.listenTo( attr, "invalid", this.render);
+	                			else
+	                				this.listenTo( attr, "valid",   this.render);
+	                			
+	                			
+	                		}, this);
+	                		
 	                		//If there are no attributes now, rerender when one is added
-	                		if(attributes.numAttributes == 0){
-	                			this.listenTo(entity, "change:attributeList", this.handleAttributeChanges);
-	                		}
+	                		this.listenTo(entity, "change:attributeList", this.render);
+	                		
 	                	}
 	                	else{
 	                		//Rerender when an entity is added
@@ -171,6 +200,19 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             		this.$el.removeClass("loading");
             		
             	}
+                else if( attributes.hasInvalidAttribute ){
+                	
+                	this.$(".status .icon").tooltip({
+                		placement: "top",
+                		trigger: "hover",
+                		html: true,
+                		title: "<div class='status-tooltip'>There is missing information about this file. Click 'Describe'</div>",
+                		container: "body"
+                	});
+
+                	this.$el.removeClass("loading");
+                	
+                }
                 else if(this.model.get("uploadStatus") == "c"){
 
             		this.$(".status .icon").tooltip({
@@ -498,16 +540,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 
             },
             
-            /*
-             * When the attributes for this 
-             */
-            handleAttributeChanges: function(){
-            	this.hasAttributeChanges = true;
-            	
-            	
-            	this.render();
-            },
-            
             /* 
              * Return the parent science metadata model associated with the
              * data or metadata row of the UI event
@@ -670,7 +702,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             hideRequired: function(){
 
             	//Remove the error styling
-				this.$(".error").removeClass("error");
+				this.$("[contenteditable].error").removeClass("error");
             },
             
             /*
