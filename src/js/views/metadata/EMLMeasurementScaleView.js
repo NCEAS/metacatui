@@ -259,13 +259,17 @@ define(['underscore', 'jquery', 'backbone',
             	var select = $(document.createElement("select"))
             					.addClass("units full-width input")
             					.attr("data-category", "unit"),
-            		eml    = this.model.get("parentModel"),
+            		eml    = this.model.get("parentModel") ? this.model.get("parentModel").get("parentModel") : null,
             		i 	   = 0;
             	
             	//Find the EML model
-            	while(eml.type != "EML" && i<6){
-            		eml = eml.get("parentModel");
-            		i++;
+            	if( eml ){
+	            
+            		while(eml.type != "EML" && i<6){
+	            		eml = eml.get("parentModel");
+	            		i++;
+	            	}
+            		
             	}
             	
             	//Get the units collection or wait until it has been fetched
@@ -518,6 +522,12 @@ define(['underscore', 'jquery', 'backbone',
             			
             		this.updateCodeList(index);
             	}
+            	
+            	//Add this EMLMeasurementScale model to the EMLAttribute model when it is updated in the view
+            	var attributeModel = this.model.get("parentModel");
+            	
+            	if( attributeModel )
+            		attributeModel.set("measurementScale", this.model);
             },
             
             updateCodeList: function(rowNum){
