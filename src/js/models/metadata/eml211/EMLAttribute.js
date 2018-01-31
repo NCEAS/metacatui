@@ -336,20 +336,37 @@ define(["jquery", "underscore", "backbone",
             validate: function(){
             	var errors = {};
 
+            	//If there is no attribute name, add that error message
             	if(!this.get("attributeName"))
             		errors.attributeName = "Provide a name for this attribute.";
             	
+            	//If there is no attribute definition, add that error message
             	if(!this.get("attributeDefinition"))
             		errors.attributeDefinition = "Provide a definition for this attribute.";
             	
-            	if(!this.get("measurementScale"))
+            	//Get the EML measurement scale model
+            	var measurementScaleModel = this.get("measurementScale");
+            	
+            	// If there is no measurement scale model, then add that error message
+            	if( !measurementScaleModel ){
             		errors.measurementScale = "Choose a category.";
-
+            	}
+            	// If there is a measurement scale model and it is valid and there are no other
+        		// errors, then trigger this model as valid and exit.
+            	else if( measurementScaleModel.isValid() && !Object.keys(errors).length ){
+            		
+        			this.trigger("valid", this);
+        			return;
+            		
+            	}
+            	else if( !measurementScaleModel.isValid() ){
+            		errors.measurementScale = "More information is needed.";
+            	}
+            	
+            	//If there is at least one error, then return the errors object
             	if(Object.keys(errors).length)
             		return errors;
-            	else{
-            		this.trigger("valid", this);
-            	}
+
             },
 
             /* Let the top level package know of attribute changes from this object */

@@ -379,6 +379,12 @@ define(["jquery", "underscore", "backbone",
             	
             	if( Object.keys(errors).length )
             		return errors;
+            	else{
+            		
+            		this.trigger("valid");
+            		return;
+            		
+            	}
 
             },
 

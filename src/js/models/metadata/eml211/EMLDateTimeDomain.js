@@ -296,7 +296,14 @@ define(["jquery", "underscore", "backbone",
             
             /* Validate the values of this model */
             validate: function(){
-            	if( !this.get("formatString") ) return { formatString: "Choose a date-time format." }
+            	if( !this.get("formatString") ) 
+            		return { formatString: "Choose a date-time format." }
+            	else{
+            		
+            		this.trigger("valid");
+            		return;
+            		
+            	}
             }
 
         });
