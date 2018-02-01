@@ -29,7 +29,7 @@ if ( MetacatUI.useD3 ) {
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
-  baseUrl: 'js/',
+  baseUrl: '/js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: MetacatUI.themeMap,
   urlArgs: "v=" + MetacatUI.metacatUIVersion,

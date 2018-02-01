@@ -20,7 +20,7 @@ MetacatUI.metacatUIVersion = "2.0.0RC4";
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", "js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
+    script.setAttribute("src", "/js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
     document.getElementsByTagName("body")[0].appendChild(script);
 
     script.onload = function(){
@@ -34,8 +34,8 @@ MetacatUI.loadTheme = function(theme) {
 }
 MetacatUI.initApp = function () {			
     var script = document.createElement("script");
-    script.setAttribute("data-main", "js/app.js?v=" + MetacatUI.metacatUIVersion);
-    script.src = "components/require.js";
+    script.setAttribute("data-main", "/js/app.js?v=" + MetacatUI.metacatUIVersion);
+    script.src = "/components/require.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }
 
