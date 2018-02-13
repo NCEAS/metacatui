@@ -591,8 +591,12 @@ define(["jquery", "underscore", "backbone",
             	
             	if(Object.keys(errors).length)
             		return errors;
-            	else
+            	else{
+            		
+            		this.trigger("valid");
+            		
             		return;
+            	}
             },
             
             removeCode: function(index){

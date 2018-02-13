@@ -618,9 +618,8 @@ define(['underscore',
         	//For EML metadata docs
         	if(this.model.type == "EML"){
 	        	//Get the Entity View
-	        	var entityView = $(e.target).data("entityView"),
-	        		clickedEl = $(e.target),
-	        		row = clickedEl.parents(".data-package-item"),
+	        	var row = $(e.target).parents(".data-package-item"),
+	        		entityView = row.data("entityView"),
 	        		dataONEObject = row.data("model");
 	        	
 	        	if(dataONEObject.get("uploadStatus") == "p" || dataONEObject.get("uploadStatus") == "l" || dataONEObject.get("uploadStatus") == "e")
@@ -677,7 +676,7 @@ define(['underscore',
 	        		}
 
 	        		//Attach the view to the edit button so we can access it again
-	        		clickedEl.data("entityView", entityView);
+	        		row.data("entityView", entityView);
 
 	        		//Render the view
 	        		entityView.render();

@@ -50,6 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     sizeStr: null,
                     type: null, // Data, Metadata, or DataPackage
                     formatType: null,
+                    metadataEntity: null, // A model that represents the metadata for this file, e.g. an EMLEntity model
                     latestVersion: null,
                     isDocumentedBy: null,
                     documents: [],
@@ -107,6 +108,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 
                 this.on("successSaving", this.updateRelationships);
                 
+            	//Save a reference to this DataONEObject model in the metadataEntity model
+            	//whenever the metadataEntity is set
+                this.on("change:metadataEntity", function(){
+                	var entityMetadataModel = this.get("metadataEntity");
+                	
+                	if( entityMetadataModel )
+                		entityMetadataModel.set("dataONEObject", this);
+                	
+                });
+                
                 this.on("sync", function(){
                 	this.set("synced", true);
                 });
@@ -140,7 +151,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	    			replicationstatus: "replicationStatus",
 	    			replicaverified: "replicaVerified",		
 	    			rightsholder: "rightsHolder",
-	    			serialversion: "serialVersion"
+	    			serialversion: "serialVersion",
+                    seriesid: "seriesId"
             	};
             },
             
@@ -277,7 +289,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             				delete sysMetaValues[key];
             			}
             		}, this);
-            		
+            		            		
             		return sysMetaValues;
             	
                 // If the response is a list of Solr docs   
@@ -762,8 +774,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                         objectFormats = MetacatUI.objectFormats.where({extension: ext});
                     
                         if ( objectFormats.length > 0 ) {
-                            formatId = objectFormats[0].get("formatId");
-                            objectFormats = [];
+                        	
+                        	//If this is a "nc" file, assume it is a netCDF-3 file. 
+                        	if( ext == "nc" ){
+                        		formatId = "netCDF-3";
+                        	}
+                        	else{
+                                formatId = objectFormats[0].get("formatId");
+                                objectFormats = [];                        		
+                        	}
+
                             return formatId;
                         
                         }

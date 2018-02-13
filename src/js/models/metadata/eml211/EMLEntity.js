@@ -51,6 +51,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 	                    "constraint"
 	                ],
 	                parentModel: null, // The parent model this entity belongs to
+	                dataONEObject: null, //Reference to the DataONEObject this EMLEntity describes
 	                objectXML: null, // The serialized XML of this EML entity
 	                objectDOM: null  // The DOM of this EML entity
             	}
@@ -152,6 +153,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 		downloadID = downloadURL.substring( downloadURL.indexOf("/resolve/") + 9 );
                 	else if( downloadURL.indexOf("/object/") > -1 )
                 		downloadID = downloadURL.substring( downloadURL.indexOf("/object/") + 8 );
+                	else if( downloadURL.indexOf("ecogrid") > -1 ){
+                		var withoutEcoGridPrefix = downloadURL.substring( downloadURL.indexOf("ecogrid://") + 10 ),
+							downloadID = withoutEcoGridPrefix.substring( withoutEcoGridPrefix.indexOf("/")+1 );
+                	}
+                		
                 	
                 	if(downloadID.length)
                         attributes.downloadID = downloadID;

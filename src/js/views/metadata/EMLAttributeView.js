@@ -52,24 +52,32 @@ define(['underscore', 'jquery', 'backbone',
             	//Insert the template HTML
             	this.$el.html(viewHTML);
             	
-            	//Add the measurement scale view
-            	if(this.isNew){
-            		var measurementScaleModel = EMLMeasurementScale.getInstance();
-            		measurementScaleModel.set("parentModel", this.model);
-            		this.model.set("measurementScale", measurementScaleModel);
-            		
-            		this.$el.addClass("new");
-            	}
-            	else
-            		measurementScaleModel = this.model.get("measurementScale");
+            	var measurementScaleModel = this.model.get("measurementScale");
             	
+            	if( !this.model.get("measurementScale") ){
+            		//Create a new EMLMeasurementScale model if this is a new attribute
+            		measurementScaleModel = EMLMeasurementScale.getInstance();            		
+            	}
+            	
+            	//Save a reference to this EMLAttribute model
+            	measurementScaleModel.set("parentModel", this.model);          	
+            	
+            	//Create an EMLMeasurementScaleView for this attribute's measurement scale
             	var measurementScaleView = new EMLMeasurementScaleView({
             		model: measurementScaleModel
             	});
+            	
+            	//Render the EMLMeasurementScaleView and insert it into this view
             	measurementScaleView.render();
             	this.$(".measurement-scale-container").append(measurementScaleView.el);
             	this.measurementScaleView = measurementScaleView;
             	
+            	//Mark this view DOM as new if it is a new attribute
+            	if(this.isNew){
+            		this.$el.addClass("new");
+            	}  
+            	
+            	//Save a reference to this model's id in the DOM
             	this.$el.attr("data-attribute-id", this.model.cid);
             },
             

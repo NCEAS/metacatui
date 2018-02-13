@@ -1227,7 +1227,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	//Get the current list of entities
 				var currentEntities = this.get("entities");
 				
-				if(!position)
+				if( typeof position == "undefined" || position == -1)
 					currentEntities.push(emlEntity);
 				else
 					//Add the entity model to the entity array
@@ -1258,6 +1258,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
              * Find the entity model for a given DataONEObject
              */
             getEntity: function(dataONEObj){
+            	
+            	//If an EMLEntity model has been found for this object before, then return it
+            	if( dataONEObj.get("metadataEntity") )
+            		return dataONEObj.get("metadataEntity");
 
             	var entity = _.find(this.get("entities"), function(e){
             		
@@ -1269,15 +1273,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		else if(e.get("downloadID") && e.get("downloadID") == dataONEObj.get("id"))
             			return true;
             		
-            		//If this entity name matches the dataone object file name, AND no other dataone object file name
-            		if( (e.get("entityName") == dataONEObj.get("fileName")) || (e.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName")) ){
+            		// Get the file name from the EML for this entity
+            		var fileNameFromEML = e.get("physicalObjectName") || e.get("entityName");
+            		
+            		// If the EML file name matches the DataONEObject file name
+            		if( (fileNameFromEML == dataONEObj.get("fileName")) || (fileNameFromEML.replace(/ /g, "_") == dataONEObj.get("fileName")) ){
+            			
+            			//Get an array of all the other entities in this EML
             			var otherEntities = _.without(this.get("entities"), e);
             			
+                		// If this entity name matches the dataone object file name, AND no other dataone object file name
+                		// matches, then we can assume this is the entity element for this file.
             			var otherMatchingEntity = _.find(otherEntities, function(otherE){
-            				if( (otherE.get("entityName") == dataONEObj.get("fileName")) || (otherE.get("entityName").replace(/ /g, "_") == dataONEObj.get("fileName")) )
+            				
+            				// Get the file name from the EML for the other entities 
+            				var otherFileNameFromEML = otherE.get("physicalObjectName") || otherE.get("entityName");
+            				
+            				// If the file names match, return true
+            				if( (otherFileNameFromEML == dataONEObj.get("fileName")) || (otherFileNameFromEML.replace(/ /g, "_") == dataONEObj.get("fileName")) )
             					return true;
             			});
             			
+            			// If this entity's file name didn't match any other file names in the EML, 
+            			// then this entity is a match for the given dataONEObject
             			if( !otherMatchingEntity )
             				return true;
             		}
@@ -1286,9 +1304,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	
             	//If we found an entity, give it an ID and return it
             	if(entity){
+            		
+            		//If this entity has been matched to another DataONEObject already, then don't match it again 
+            		if( entity.get("dataONEObject") ){
+            			return;
+            		}
                 	
                 	//Create an XML-safe ID and set it on the Entity model
                 	entity.set("xmlID", dataONEObj.getXMLSafeID());
+                	
+                	//Save a reference to this entity so we don't have to refind it later
+                	dataONEObj.set("metadataEntity", entity);
                 	
             		return entity;
             	}

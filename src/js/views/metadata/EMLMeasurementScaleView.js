@@ -192,12 +192,12 @@ define(['underscore', 'jquery', 'backbone',
             		}, this);
             	
             		//Trigger the invalid event on the attribute model
-                	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
+                //	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
 
             	}
             	else{
             		//Trigger the valid event on the attribute model
-            		this.model.get("parentModel").trigger("valid", this.model.get("parentModel"));
+            	//	this.model.get("parentModel").trigger("valid", this.model.get("parentModel"));
             	}
             	
             },
@@ -259,13 +259,17 @@ define(['underscore', 'jquery', 'backbone',
             	var select = $(document.createElement("select"))
             					.addClass("units full-width input")
             					.attr("data-category", "unit"),
-            		eml    = this.model.get("parentModel"),
+            		eml    = this.model.get("parentModel") ? this.model.get("parentModel").get("parentModel") : null,
             		i 	   = 0;
             	
             	//Find the EML model
-            	while(eml.type != "EML" && i<6){
-            		eml = eml.get("parentModel");
-            		i++;
+            	if( eml ){
+	            
+            		while(eml.type != "EML" && i<6){
+	            		eml = eml.get("parentModel");
+	            		i++;
+	            	}
+            		
             	}
             	
             	//Get the units collection or wait until it has been fetched
@@ -518,6 +522,12 @@ define(['underscore', 'jquery', 'backbone',
             			
             		this.updateCodeList(index);
             	}
+            	
+            	//Add this EMLMeasurementScale model to the EMLAttribute model when it is updated in the view
+            	var attributeModel = this.model.get("parentModel");
+            	
+            	if( attributeModel )
+            		attributeModel.set("measurementScale", this.model);
             },
             
             updateCodeList: function(rowNum){
@@ -527,17 +537,30 @@ define(['underscore', 'jquery', 'backbone',
     					!this.model.get("nonNumericDomain")[0] || 
     					!this.model.get("nonNumericDomain")[0].enumeratedDomain){
     				
+    				var isEmpty = false;
+    				
     				//Go through each code row in this view and grab the values
-    				_.each(this.$("." + this.model.get("measurementScale") + "-options .code-row"), function(row, i){
+    				_.each(this.$("." + this.model.get("measurementScale") + "-options .code-row"), function(row, i, rows){
     					var $row = $(row),
     						code = $row.find(".code").val(),
     						def  = $row.find(".definition").val();
     					
+    					//Update the enumerated domain with this code
     					if(code || def){
-        					this.model.updateEnumeratedDomain(code, def, i);    					    						
+        					this.model.updateEnumeratedDomain(code, def, i);
+    					}
+    					//If there is only one row and it has no code or definition,
+    					//then this is an empty code list
+    					else if( rows.length == 1 && i == 0){
+    						isEmpty = true;
     					}
     					
     				}, this);
+    				
+    				//If there are no codes in the list, update the enumerated domain with blank values
+    				if( isEmpty ){
+    					this.model.updateEnumeratedDomain(null, null);
+    				}
     			}
     			else if(rowNum > -1){
     				var $row = $(this.$("." + this.model.get("measurementScale") + "-options .code-row")[rowNum]),
