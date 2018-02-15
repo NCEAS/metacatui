@@ -275,7 +275,7 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Get the units collection or wait until it has been fetched
             	if(!eml.units.length){
-            		this.listenTo(eml.units, "sync", this.createUnitDropdown);
+            		this.listenTo(eml.units, "sync", this.renderUnitDropdown);
             		return;
             	}
             	
@@ -283,6 +283,12 @@ define(['underscore', 'jquery', 'backbone',
             	var defaultOption = $(document.createElement("option"))
 										.text("Choose a standard unit");
 				select.append(defaultOption);
+				
+				//Create an "Other" option to show at the top
+				var otherOption = $(document.createElement("option"))
+									.text("Other / None")
+									.attr("value", "dimensionless");
+				select.append(otherOption);
 				
             	//Create each unit option in the unit dropdown
             	eml.units.each(function(unit){
