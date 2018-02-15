@@ -489,11 +489,11 @@ define(['underscore',
 
             this.toggleControls();
 
-            // TODO : Remove conditions if you want to review datasets for every theme
-            // Review message for "arctic" theme.
+            // Review message for themes that have contentIsModerated==true in the app config.
             if (MetacatUI.appModel.get("contentIsModerated")) {
                 var message = this.editorSubmitMessageTemplate({
-                    	themeTitle: MetacatUI.themeTitle
+                    	themeTitle: MetacatUI.themeTitle,
+                    	viewURL: "#view/" + this.model.get("id")
                 	}),
                 	timeout = null;
                 
