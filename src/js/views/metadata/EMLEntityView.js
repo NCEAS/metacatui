@@ -75,7 +75,13 @@ define(['underscore', 'jquery', 'backbone',
             	var view = this;
        		  	this.$el.on("shown", function(){
        		  		view.setAttrMenuHeight();
+       		  		
+       		  		window.addEventListener('resize', function(event){
+	       		  		view.setAttrMenuHeight();
+	       		  	});
        		  	});
+       		  	
+       		  	
        		  		
             },
             
