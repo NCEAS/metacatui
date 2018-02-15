@@ -559,7 +559,7 @@ define(["jquery", "underscore", "backbone",
             			//For enumerated domain types
             			if(key == "enumeratedDomain" && domain[key].codeDefinition){
             			
-            				var isEmpty = false;
+            				var isEmpty = (domain[key].codeDefinition.length == 0) ? true : false;
             				
             				//Validate the list of codes
             				for(var i=0; i < domain[key].codeDefinition.length; i++){

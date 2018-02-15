@@ -50,6 +50,7 @@ define(['underscore', 'jquery', 'backbone',
             	
             	this.isNew = (options.isNew === true) ? true : this.model? false : true;
             	this.model = options.model || EMLMeasurementScale.getInstance();
+            	this.parentView = options.parentView || null;
             },
             
             render: function(){
@@ -439,6 +440,10 @@ define(['underscore', 'jquery', 'backbone',
             	this.model.removeCode(index);
             	
             	codeRow.remove();
+            	
+            	this.showValidation();
+            	
+            	this.parentView.showValidation();
             	
             },
             

@@ -64,7 +64,8 @@ define(['underscore', 'jquery', 'backbone',
             	
             	//Create an EMLMeasurementScaleView for this attribute's measurement scale
             	var measurementScaleView = new EMLMeasurementScaleView({
-            		model: measurementScaleModel
+            		model: measurementScaleModel,
+            		parentView: this
             	});
             	
             	//Render the EMLMeasurementScaleView and insert it into this view
