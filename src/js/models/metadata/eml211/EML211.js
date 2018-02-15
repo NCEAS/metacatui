@@ -331,24 +331,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		//Parse EMLText modules
             		else if(_.contains(emlText, thisNode.localName)){
             			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
-            			
-            			var emlText = new EMLText({ 
-	            				objectDOM: thisNode, 
+
+            			modelJSON[thisNode.localName].push(new EMLText({
+	            				objectDOM: thisNode,
 	            				parentModel: model
-            				});
-            			modelJSON[thisNode.localName].push(emlText);
-            			
-            			
+            				}));
+
             		}
 					else if(_.contains(emlMethods, thisNode.localName)) {
 						if(typeof modelJSON[thisNode.localName] === "undefined") modelJSON[thisNode.localName] = [];
 						
-						var emlMethods = new EMLMethods({
+						modelJSON[thisNode.localName] =  new EMLMethods({
 							objectDOM: thisNode,
 							parentModel: model
-						})
-
-						modelJSON[thisNode.localName] = emlMethods;
+						});
 	
 					}
             		//Parse keywords
