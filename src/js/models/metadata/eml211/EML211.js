@@ -1196,7 +1196,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     if ( $(eml).find(nodeOrder[i]).length ) {
                         // Handle non-entity nodes
                         if ( ! isEntityNode ) {
-                            return $(eml).find(nodeOrder[i]).last();
+                            return $(eml).find("dataset").children(nodeOrder[i]).last();
                         } else {
                             // Handle entity nodes by returning the 
                             // last child of the parent <dataset> since
