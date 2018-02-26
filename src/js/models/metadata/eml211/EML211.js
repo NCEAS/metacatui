@@ -331,24 +331,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		//Parse EMLText modules
             		else if(_.contains(emlText, thisNode.localName)){
             			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
-            			
-            			var emlText = new EMLText({ 
-	            				objectDOM: thisNode, 
+
+            			modelJSON[thisNode.localName].push(new EMLText({
+	            				objectDOM: thisNode,
 	            				parentModel: model
-            				});
-            			modelJSON[thisNode.localName].push(emlText);
-            			
-            			
+            				}));
+
             		}
 					else if(_.contains(emlMethods, thisNode.localName)) {
 						if(typeof modelJSON[thisNode.localName] === "undefined") modelJSON[thisNode.localName] = [];
 						
-						var emlMethods = new EMLMethods({
+						modelJSON[thisNode.localName] =  new EMLMethods({
 							objectDOM: thisNode,
 							parentModel: model
-						})
-
-						modelJSON[thisNode.localName] = emlMethods;
+						});
 	
 					}
             		//Parse keywords
@@ -492,7 +488,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
 
 	           	// Serialize the parts of EML that are eml-text modules
-	           	var textFields = ["abstract"];
+	           	var textFields = ["abstract", "additionalInfo"];
 	           	_.each(textFields, function(field){
 	           		
 	           		var fieldName = this.nodeNameMap()[field] || field;
@@ -1196,7 +1192,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                     if ( $(eml).find(nodeOrder[i]).length ) {
                         // Handle non-entity nodes
                         if ( ! isEntityNode ) {
-                            return $(eml).find(nodeOrder[i]).last();
+                            return $(eml).find("dataset").children(nodeOrder[i]).last();
                         } else {
                             // Handle entity nodes by returning the 
                             // last child of the parent <dataset> since
