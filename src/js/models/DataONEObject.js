@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     checksumAlgorithm: "MD5",
                     submitter: null,
                     rightsHolder : null,
-                    accessPolicy: [],
+                    accessPolicy: [], //An array of accessPolicy literal JS objects
                     replicationAllowed: null,
                     replicationPolicy: [],
                     obsoletes: null,
@@ -94,7 +94,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
         	
             initialize: function(attrs, options) {
             	if(typeof attrs == "undefined") var attrs = {};
-            	if(typeof options == "undefined") var options = {};
+            	
+            	//Set the default access policy using the AppModel configuration
+            	this.set("accessPolicy", MetacatUI.appModel.get("defaultAccessPolicy"));
             	
                 this.on("change:size", this.bytesToSize);
                 if(attrs.size)
@@ -271,6 +273,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             		//Save the raw XML in case it needs to be used later
                     this.set("sysMetaXML", response);
             		
+                    //Find the XML node for the system metadata
             		for(var i=0; i<responseDoc.length; i++){
             			if((responseDoc[i].nodeType == 1) && (responseDoc[i].localName.indexOf("systemmetadata") > -1)){
             				systemMetadata = responseDoc[i];
@@ -289,6 +292,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             				delete sysMetaValues[key];
             			}
             		}, this);
+            		
+            		//The access policy gets parsed in a special way
+            		sysMetaValues.accessPolicy = this.parseAccessPolicy(sysMetaValues.accessPolicy);
             		            		
             		return sysMetaValues;
             	
@@ -728,7 +734,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	}, this);
 	        	
 	        	xmlString = xmlString.replace(/systemmetadata/g, "systemMetadata");
-	        	
+	        		        	
 	        	return xmlString;
 	        },
 	        
@@ -824,68 +830,84 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                     return sysmetaDOM;
             },
             
+            /*
+             * Takes the simple XML-to-JSON JSON conversion and parses it into model attributes
+             */
+            parseAccessPolicy: function(accessPolicy){
+            	
+            	//If there is no access policy, do not attempt to parse anything
+            	if( typeof accessPolicy == "undefined" || !accessPolicy)
+            		return {}
+            		
+            	//Start an array of parsed access policies
+            	var parsedAccessPolicy = [];
+            	
+            	//Format the "allow" attribute as an array
+            	if( typeof accessPolicy.allow != "undefined" && !Array.isArray(accessPolicy.allow) )
+            		accessPolicy.allow = [accessPolicy.allow];
+
+            	//Parse each "allow" access rule
+            	_.each(accessPolicy.allow, function(accessRule){
+            		
+            		//Start an access rule object with the given subject
+            		var parsedAccessRule = {
+            				subject: accessRule.subject	
+            			}
+            		
+            		//Make sure the permission attribute is an array, not a string
+            		if( !Array.isArray(accessRule.permission) )
+            			accessRule.permission = [accessRule.permission];
+            		
+            		//Parse each permission rule
+            		_.each(accessRule.permission, function(permission){
+            			
+            			//Set the permission to true for this permission type
+            			parsedAccessRule[permission] = true;
+            			
+            		});
+            		            	
+            		//Add the finished access rule to the policy array
+            		parsedAccessPolicy.push(parsedAccessRule);
+            		
+            	});
+            	
+            	//Return the parsed access policy array
+            	return parsedAccessPolicy;
+            },
+            
 	        serializeAccessPolicy: function(){
-	        	//Write the access policy if it exists
-                var accessPolicyXML,
-                    subjects = [],
-                    permissions = [],
-                    rulesBySubject = {}; // a lookup table of existing rules by subject ( to prevent repeats)
-                
-                // If the AppModel.setPublicAccess flag is true,
-                // allow developer override to force public read access to new objects 
-                if ( MetacatUI.appModel.get("setPublicAccess") ) {
-                    var policy = this.get("accessPolicy").allow;
-                    if ( typeof policy === "undefined" ) {
-                        policy = {allow: [{subject: "public", permission: "read"}]};
-                        this.set("accessPolicy", policy);
-                    
-                    }
-                }    
-                
-                if ( typeof this.get("accessPolicy").allow === "undefined" ) {
-                    return accessPolicyXML;
-                    
-                }
-	        	accessPolicyXML = '\t<accessPolicy>\n';
+	        	//Write the access policy if it exists                
+	        	var accessPolicyXML = '\t<accessPolicy>\n';
                 
                 // Parse the AccessPolicy object
-                _.each(this.get("accessPolicy"), function(accessRules, accessRuleName, accessPolicy) {
+                _.each(this.get("accessPolicy"), function(accessRule, i, accessPolicy) {
                     
-                    // _.each() arguments are different for arrays vs objects. Make sure we have an array
-                    accessRules = Array.isArray(accessRules) ? accessRules : [accessRules];
-                    
-                    // Iterate through the policy allow rules (deny rules don't apply in DataONE)
-                    _.each(accessRules, function(accessRule, indexOrKey, accessRules) {
-                         
-                        // Process each subject in the subject list
-                        subjects = Array.isArray(accessRule.subject) ? accessRule.subject : [accessRule.subject];
-                        permissions = Array.isArray(accessRule.permission) ? accessRule.permission : [accessRule.permission];
-                        _.each(permissions, function(perm) {
-                            
-                            _.each(subjects, function(subject) {
-                                // Add each permission in the permissions list if the rule doesn't already exist
-                                if ( ! _.contains(rulesBySubject[subject], perm) ) {
-                                    accessPolicyXML += '\t\t<' + accessRuleName + '>\n';
-                                    accessPolicyXML += '\t\t\t<subject>' + subject + '</subject>\n';
-                                    accessPolicyXML += '\t\t\t<permission>' + perm + '</permission>\n';
-                                    accessPolicyXML += '\t\t</' + accessRuleName + '>\n';
-                                    if ( Array.isArray(rulesBySubject[subject]) ) {
-                                        rulesBySubject[subject].push(perm);
-                                    
-                                    } else {
-                                        rulesBySubject[subject] = [perm]; 
-                                    
-                                    }
-                                    
-                                }
-                            });
-                        });
-                    });
-	        	});
-	        	accessPolicyXML += '\t</accessPolicy>';
-	        	rulesBySubject = {};
+                	//Serialize the allow rules
+                	if( accessRule.read || accessRule.write || accessRule.changePermission ){
+                		
+                		//Star the "allow" node
+                		accessPolicyXML += '\t\t<allow>\n';
+                		//Add the subject
+            			accessPolicyXML += '\t\t<subject>' + accessRule.subject + '</subject>\n';
+                		
+            			//Add the permission nodes
+                		if( accessRule.read )
+                			accessPolicyXML += '\t\t<permission>read</permission>\n';
+                		if( accessRule.write )
+                			accessPolicyXML += '\t\t<permission>write</permission>\n';
+                		if( accessRule.changePermission )
+                			accessPolicyXML += '\t\t<permission>changePermission</permission>\n';
+                		
+                		//Close the "allow" node
+                		accessPolicyXML += '\t\t</allow>\n';
+                	}
+
+                });
                 
-	        	return accessPolicyXML;
+                accessPolicyXML += '\t</accessPolicy>\n';
+                                
+                return accessPolicyXML;
+ 
 	        },
 	        
 	        updateID: function(id){

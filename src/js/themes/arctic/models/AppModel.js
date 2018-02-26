@@ -56,6 +56,14 @@ define(['jquery', 'underscore', 'backbone'],
 			},
 			
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
+			
+			defaultAccessPolicy: [{
+				
+				subject: "CN=arctic-data-admins,DC=dataone,DC=org",
+				read: true,
+				write: true,
+				changePermission: true
+			}],
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
@@ -92,7 +100,6 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			setPublicAccess: false, // Set to true to force public read access on newly created objects
 			mdqUrl: "https://quality.nceas.ucsb.edu/quality/"
 
 		},

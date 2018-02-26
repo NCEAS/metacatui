@@ -44,6 +44,18 @@ define(['jquery', 'underscore', 'backbone'],
 			
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
 			
+			defaultAccessPolicy: [{
+				
+				subject: "CN=knb-data-admins,DC=dataone,DC=org",
+				read: true,
+				write: true,
+				changePermission: true
+			},
+			{
+				subject: "public",
+				read: true
+			}],
+			
 			baseUrl: "https://knb.ecoinformatics.org",
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
