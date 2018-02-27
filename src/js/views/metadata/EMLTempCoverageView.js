@@ -74,7 +74,9 @@ define(['underscore', 'jquery', 'backbone',
         		this.model.set(attribute, value);
         		        		
         		if(this.model.isValid() && this.model.get("parentModel") && this.model.get("parentModel").type == "EML"){
-        			  
+        			        			
+        			this.notNew();
+
         			this.model.mergeIntoParent();
         			this.model.trickleUpChange(); 
         		}
@@ -132,6 +134,7 @@ define(['underscore', 'jquery', 'backbone',
         	 */
         	notNew: function(){
         		this.$el.removeClass("new");
+        		this.isNew = false;
         	}
         });
         
