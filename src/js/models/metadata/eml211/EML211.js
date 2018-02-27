@@ -445,16 +445,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	_.each(basicText, function(fieldName){
 	           		var basicTextValues = this.get(fieldName);
 	           		
-	           		if(!Array.isArray(basicTextValues)) basicTextValues = [basicTextValues];
+	           		if(!Array.isArray(basicTextValues))
+	           			basicTextValues = [basicTextValues];
 	           		
 					// Remove existing nodes
 	           		datasetNode.find(fieldName.toLowerCase()).remove();
 					
 					// Create new nodes
 					var nodes = _.map(basicTextValues, function(value) {
-						var node = document.createElement(fieldName.toLowerCase());
-						$(node).text(value);
-						return node;
+						
+						if(value){
+							
+							var node = document.createElement(fieldName.toLowerCase());
+							$(node).text(value);
+							return node;
+							
+						}
+						else{
+							return "";
+						}
 					});
 
 					// Insert new nodes
@@ -517,7 +526,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           			    
 	           			}
 	           				
-	           			$(node).html($(thisTextModel.updateDOM()).html());
+	           			$(node).html( $(thisTextModel.updateDOM() ).html());
 	           			
 	           		}, this);
 	           		
@@ -1003,7 +1012,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	var errors = {};
             	
             	//A title is always required by EML
-            	if(!this.get("title").length){           		
+            	if( !this.get("title").length || !this.get("title")[0] ){           		
             		errors.title = "A title is required";            		
             	}
 				
@@ -1074,7 +1083,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 		if(!isRequired) return;
                 		
                 		if(key == "alternateIdentifier"){
-                			if( !this.get("alternateIdentifier").length )
+                			if( !this.get("alternateIdentifier").length || _.every(this.get("alternateIdentifier"), function(altId){ return altId.trim() == "" }) )
                 				errors.alternateIdentifier = "At least one alternate identifier is required."
                 		}
                 		else if(key == "generalTaxonomicCoverage"){

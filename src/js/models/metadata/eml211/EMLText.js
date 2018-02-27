@@ -93,14 +93,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			//Format the text
 			var paragraphs = this.get("text");
 			_.each(paragraphs, function(p){
-				 if(!p.length) p = " ";
+				
+				//If this paragraph text is a string, add a <para> node with that text
+				if( typeof p == "string" && p.trim().length )
+					$(objectDOM).append("<para>" + p + "</para>");
 				 
-				$(objectDOM).append("<para>" + p + "</para>");
 			});
-			 
-			// Remove empty (zero-length or whitespace-only) nodes
-			$(objectDOM).find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();
-			
+			 			
 			return objectDOM;
 		},
 		

@@ -1280,6 +1280,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(!e) return false;
 	    	
 	    	var category  = $(e.target).attr("data-category"),
+	    		currentValue = this.model.get(category),
 	    		textModel = $(e.target).data("model"),
 	    		value     = $(e.target).val().trim();
 
@@ -1297,8 +1298,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(!textModel){
 	    		
 	    		//Get the current value for this category and create a new EMLText model
-	    		var currentValue = this.model.get(category),
-	    			newTextModel = new EMLText({ text: paragraphs, parentModel: this.model });
+	    		var newTextModel = new EMLText({ text: paragraphs, parentModel: this.model });
 	    		
 	    		// Save the new model onto the underlying DOM node
 	    		$(e.target).data({ "model" : newTextModel });
@@ -1316,9 +1316,35 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 	    	//Update the existing EMLText model
 	    	else{
-	    		textModel.set("text", paragraphs);
-	    		textModel.trigger("change:text");
+	    		
+	    		//If there are no paragraphs or all the paragraphs are empty...
+	    		if( !paragraphs.length || _.every(paragraphs, function(p){ return p.trim() == "" }) ){
+	    			
+	    			//Remove this text model from the array of text models since it is empty
+    				var newValue = _.without(currentValue, textModel);
+    				this.model.set(category, newValue);
+    				
+	    		}
+	    		else{
+	    			
+		    		textModel.set("text", paragraphs);
+		    		textModel.trigger("change:text");
+	    			
+	    			//Is this text model set on the EML model?	    			
+	    			if( !_.contains(currentValue, textModel) ){
+	    				
+	    				//Push this text model into the array of EMLText models
+	    				currentValue.push(textModel);
+	    				this.model.trigger("change:" + category);
+		    			this.model.trigger("change");
+		    			
+	    			}
+	    			
+	    			
+	    		}
+	    		
 	    	}
+	    	
 	    },
 	    
 	    /*
@@ -1392,12 +1418,18 @@ define(['underscore', 'jquery', 'backbone',
 	    	var currentValue = model.get(category);
 	    	
 	    	//Insert the new value into the array
-	    	if(Array.isArray(currentValue)){
+	    	if( Array.isArray(currentValue) ){
+	    		
 	    		//Find the position this text input is in
 	    		var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
+	    		
+	    		//Set the value in that position in the array
 	    		currentValue[position] = value;
+	    			    		
+	    		//Set the changed array on this model
 	    		model.set(category, currentValue);
 	    		model.trigger("change:" + category);
+	    		
 	    	}
 	    	//Update the model if the current value is a string
 	    	else if(typeof currentValue == "string"){
@@ -1416,7 +1448,8 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 
 			// Trigger a change on the entire package
-			MetacatUI.rootDataPackage.packageModel.set("changed", true);	    	
+			MetacatUI.rootDataPackage.packageModel.set("changed", true);	
+			
 		},
 		
 		/* One-off handler for updating pubDate on the model when the form 
