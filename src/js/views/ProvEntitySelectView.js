@@ -60,11 +60,19 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 				// first it is a program type, or if the type isn't defined, or
 				// if it is not data.
 				members = _.filter(members, function(item) {
-					if(item.getType() == "program") return true;
+					/*if(item.getType() == "program") return true;
 					if(typeof item.getType() === "undefined") return true;
 					if(item.getType() === null) return true;
 					if(!item.isData()) return true;
 					return false;
+					*/
+					
+					//Just filter out metadata and annotation objects
+					if(item.getType() == "metadata" || item.getType() == "annotation")
+						return false;
+					else
+						return true;
+					
 				});	
 			} else if (this.selectEntityType == "data") {
 			// Don't display metadata in the selection view
@@ -77,13 +85,18 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
 				});	
 			}
 			
+			//Sort members so that the already-used objects are at the bottom
+			var selectedMembers = _.where(members, { selectedInEditor: true }),
+				unselectedMembers = _.difference(members, selectedMembers),
+				sortedMembers = _.union(unselectedMembers, selectedMembers);
+			
             // Create a list of styles to apply to the selection box options. Currently
             // this includes gray background for previously selected items, white for new
             // ones.
             // The selection list should at this point contain unused program items
             // or data items that are new or used (previously selected).
             var optionStyles = {};
-            _.each(members, function(item){ 
+            _.each(sortedMembers, function(item){ 
                 if (item.selectedInEditor == true) {
                     optionStyles[item.get("id")] = "background-color: lightgray";
                 } else {
@@ -92,13 +105,13 @@ define(['jquery', 'underscore', 'backbone', "text!templates/provEntitySelect.htm
             });
             
 			// Set the number of items to display in the select list
-			if(this.displayRows == 0) this.displayRows == Math.min(10, members.length);
+			if(this.displayRows == 0) this.displayRows == Math.min(10, sortedMembers.length);
 			
 			this.$el.html(this.template({
 				title         : this.title,
 				selectLabel   : this.selectLabel,
 				selectMode    : this.selectMode,
-				members       : members,
+				members       : sortedMembers,
 				displayRows   : this.displayRows,
                 optionStyles  : optionStyles
 			}));
