@@ -1476,9 +1476,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         }
                     });
                     
-                    // If we cancelled out the inverse of the current edit, don't save the
-                    // current edit either, as they cancel each other out.
-                    if(editListSize > this.provEdits.length) {
+                    // If we cancelled out edit containing inverse of the current edit
+                    // then the edit list will now be one edit shorter. Test for this 
+                    // and only save the current edit if we didn't remove the inverse.
+                    if(editListSize >= this.provEdits.length) {
                         this.provEdits.push([operation, subject, predicate, object]);
                     }
                 }
