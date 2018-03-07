@@ -305,7 +305,6 @@ define(['underscore',
         renderMember: function(model, collection, options) {
 
             // Render metadata or package information, based on the type
-
             if ( typeof model.attributes === "undefined") {
                 return;
 
@@ -877,6 +876,11 @@ define(['underscore',
 
         /* Close the view and its sub views */
         onClose: function() {
+        	
+        	//Stop listening to the "add" event so that new package members aren't rendered
+        	this.stopListening(MetacatUI.rootDataPackage, "add" );
+        	
+        	//Remove all the other events
             this.off();    // remove callbacks, prevent zombies
             this.model.off();
 
