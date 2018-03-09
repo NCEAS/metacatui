@@ -488,9 +488,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var creator = this.get('creator');
 				
 				if(Array.isArray(creator))
-					query += "+" + this.getGroupedQuery(this.fieldNameMap["creator"], creator, { operator: "AND", subtext: true });				
+					query += "+" + this.getGroupedQuery(this.fieldNameMap["creator"], creator, { operator: "AND", subtext: false });				
 				else if(creator) 
-					query += "+" + this.fieldNameMap["creator"] + ':*' + model.escapeSpecialChar(encodeURIComponent(creator)) + "*";
+					query += "+" + this.fieldNameMap["creator"] + ':' + model.escapeSpecialChar(encodeURIComponent(creator));
 			}
 						
 			return query;
