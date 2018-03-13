@@ -388,12 +388,12 @@ define(['underscore', 'jquery', 'backbone',
 		    	this.renderPerson(null, "new");
 	    	}
 	    	
-	    	//Listen to the EML model for new EMLParty models that are added behind the scenes 
-	    	// (mainly from EMLParty.createFromUser()
+	    	// When the EML model has been saved, re-render the people section.
+	    	// This is needed because the EML model will automatically create a creator and contact
+	    	//   if none is supplied by the user. This will render them when they are added. 
 	    	var view = this;
-	    	this.listenTo(this.model, "change:creator change:contact", function(emlModel, changedModels){
-	    		
-	    		this.renderPerson(changedModels[0], changedModels[0].get("type"));
+	    	this.listenTo(this.model, "successSaving", function(){
+	    		this.renderPeople();
 	    	});
 	    	
     		//Initialize the tooltips
