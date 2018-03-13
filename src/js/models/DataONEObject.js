@@ -11,6 +11,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
         var DataONEObject = Backbone.Model.extend({
         	
         	type: "DataONEObject",
+            PROV:    "http://www.w3.org/ns/prov#",
+            PROVONE: "http://purl.dataone.org/provone/2015/01/15/ontology#",
             
         	defaults: function(){
         		return{
@@ -1474,6 +1476,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 				if(_.indexOf(ids, this.get('formatId')) == -1) return false;
 				else return true;
 			},
+            
+            /*
+             * Set the DataONE ProvONE provenance class
+             * param className - the shortened form of the actual classname value. The 
+             * shortname will be appened to the ProvONE namespace, for example,
+             * the className "program" will result in the final class name
+             * "http://purl.dataone.org/provone/2015/01/15/ontology#Program"
+             * see https://github.com/DataONEorg/sem-prov-ontologies/blob/master/provenance/ProvONE/v1/provone.html
+             */
+             setProvClass: function(className) {
+                 className = className.toLowerCase();
+                 className = className.charAt(0).toUpperCase() + className.slice(1)
+                 /* This function is intended to be used for the ProvONE classes that are
+                  * typically represented in DataONEObjects: "Data", "Program", and hopefully
+                  * someday "Execution", as we don't allow the user to set the namespace
+                  * e.g. to "PROV", so therefor we check for the currently known ProvONE classes.
+                  */
+                  if (_.contains(['Program', 'Data', 'Visualization', 'Document', 'Execution', 'User'], className)) {
+                      this.set("prov_instanceOfClass", [this.PROVONE + className]);
+                  } else if (_.contains(['Entity', 'Usage', 'Generation', 'Association'], className)) {
+                      this.set("prov_instanceOfClass", [this.PROV + className]);
+                  } else {
+                     message = "The given class name: " + className + " is not in the known ProvONE or PROV classes."
+                     throw new Error(message);
+                  }
+              },
             
             /*
              *  Calculate a checksum for the object

@@ -1028,7 +1028,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
                 for (var i = 0; i < values.length; i++) { 
                     var pid = values[i];
                     var member = this.dataPackage.get(pid);
-                    member.set("prov_instanceOfClass", ["http://purl.dataone.org/provone/2015/01/15/ontology#Program"]);
+                    member.setProvClass("program");
                 }
             }
             
