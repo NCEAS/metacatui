@@ -75,9 +75,11 @@ define(['underscore', 'jquery', 'backbone',
             	var view = this;
        		  	this.$el.on("shown", function(){
        		  		view.setAttrMenuHeight();
+       		  		view.setMenuWidth();
        		  		
        		  		window.addEventListener('resize', function(event){
 	       		  		view.setAttrMenuHeight();
+	       		  		view.setMenuWidth();
 	       		  	});
        		  	});
        		  	
@@ -277,6 +279,12 @@ define(['underscore', 'jquery', 'backbone',
             	var attrMenuHeight = this.$(".modal-body").height() - this.$(".nav-tabs").height();
 
             	this.$(".attribute-menu").css("height", attrMenuHeight + "px");
+            },
+            
+            setMenuWidth: function(){
+            	
+            	this.$(".entity-container .nav").width( this.$el.width() );
+            	
             },
             
             /*
