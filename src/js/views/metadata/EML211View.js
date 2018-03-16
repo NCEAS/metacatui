@@ -1929,7 +1929,9 @@ define(['underscore', 'jquery', 'backbone',
         	e.preventDefault();
         	
         	var clickedEl = $(e.target),
-        		section = clickedEl.attr("data-section") || clickedEl.children("[data-section]").attr("data-section");
+        		section = clickedEl.attr("data-section") || 
+        				  clickedEl.children("[data-section]").attr("data-section") ||
+        				  clickedEl.parents("[data-section]").attr("data-section");
         	
         	if(this.visibleSection == "all")
         		this.scrollToSection(section);
@@ -1942,7 +1944,6 @@ define(['underscore', 'jquery', 'backbone',
         		this.activeSection = section;
         		this.visibleSection = section;
         		
-        		//if(this.$el.scrollTop() < $("#Navbar").height())
         		$("body").scrollTop(this.$(".section." + section).offset().top - $("#Navbar").height());
         	}
         		
