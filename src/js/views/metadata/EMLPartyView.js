@@ -245,9 +245,13 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
              */
         	showValidation: function() {
 
+        		//Remove the error styling
+        		this.$(".notification").empty();
+                this.$(".error").removeClass("error");
+                
+                //If the model is valid, exit
                 if (this.model.isValid()) {
-                    this.$(".notification").empty();
-                    this.$(".error").removeClass("error");
+                    
                     return;
                 }                
                 
