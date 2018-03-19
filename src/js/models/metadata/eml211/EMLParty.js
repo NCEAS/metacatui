@@ -564,10 +564,27 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Checks the values of the model to determine if it is EML-valid
 		 */
 		validate: function(){
+			
+			var givenName = this.get("individualName")? this.get("individualName").givenName : null,
+				surName   = this.get("individualName")? this.get("individualName").surName : null;
+			
 			//The EMLParty must have either an organization name, position name, or surname. It must ALSO have a type or role.
 			if ( !this.get("organizationName") && !this.get("positionName") && 
-					(!this.get("individualName") || (this.get("individualName") && !this.get("individualName").surName)))
-				return { name: "Either a last name, position name, or organization name is required." };
+					(!this.get("individualName") || !surName ) ){
+			
+				return { 
+					surName: "Either a last name, position name, or organization name is required.",
+					positionName: "",
+					organizationName: ""
+				}
+			
+			}
+			//If there is a first name and no last name, then this is not a valid individualName
+			else if( givenName.length && !surName ){
+				
+				return { surName: "Provide a last name." }
+				
+			}
 		},
 		
 		isOrcid: function(username){

@@ -251,23 +251,26 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
                     return;
                 }                
                 
-                // Check if we need to validate the person
+                // Check if there are values to validate
                 if(this.needsValidation()) {
-                    hasPosition = this.model.get("positionName");
-                    hasOrganization = this.model.get("organizationName");
-                    hasLastName = this.model.get("individualName") &&
-                     this.model.get("individualName").surName;
-
-                     // If the user has supplied 1/3 required fields, skip validation.
-                    if(hasPosition || hasLastName || hasOrganization) {
-                        return;
-                    }
-
-                    this.$("[data-attribute='positionName']").addClass("error");
-                    this.$("[data-attribute='organizationName']").addClass("error");
-        		    this.$("[data-attribute='surName']").addClass("error");
+                	                	
+                	//Start the full error message string for all the EMLParty errors
+                	var errorMessages = "";
+                	
+                	//Iterate over each field that has a validation error
+                	_.mapObject( this.model.validationError, function(errorMsg, attribute){
+                		
+                		//Find the input element for this attribute and add the error styling
+                		this.$("[data-attribute='" + attribute + "']").addClass("error");
+                		
+                		//Add this error message to the full error messages string
+                		errorMessages += errorMsg + " ";
+                		
+                	}, this);
+                	
+            		//Add the full error message text to the notification area and add the error styling
+            		this.$(".notification").text(errorMessages).addClass("error");
         		
-            		this.$(".notification").text(this.model.validationError.name).addClass("error");
                }
             },
             
