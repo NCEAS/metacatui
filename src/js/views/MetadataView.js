@@ -100,7 +100,9 @@ define(['jquery',
 
 			if(typeof options.el !== "undefined")
 				this.setElement(options.el);
+
 		},
+
 
 		// Render the main metadata view
 		render: function () {
@@ -122,9 +124,93 @@ define(['jquery',
 
 			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 			this.getModel();
-            
+
+
 			return this;
 		},
+		
+		// Linked Data Object for appending the jsonld into the browser DOM
+		getLinkedData: function (model) {
+				// JSON-LD object
+				var baseUrl = window.location.protocol + "//" + window.location.host;
+				
+				var spatialCov = {
+					"@type": "Place",
+					"additionalProperty": [
+					{
+						"@type": "PropertyValue",
+						"additionalType": "http://dbpedia.org/resource/Coordinate_reference_system",
+						"name": "Coordinate Reference System",
+						"value": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+					}
+					],
+					"geo": {
+						"@type": "GeoShape",
+						"box": model.get("northBoundCoord") + "," + model.get("southBoundCoord") + " " 
+							 + model.get("eastBoundCoord") + "," + model.get("westBoundCoord")
+					},
+					"subjectOf": {
+						"@type": "CreativeWork",
+						"fileFormat": "application/vnd.geo+json",
+						"text": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Box\",\"coordinates\""
+							  + ":[[[\""
+							  + model.get("northBoundCoord") + "\" ,\"" 
+							  + model.get("southBoundCoord") + "\"],[\"" 
+							  + model.get("eastBoundCoord") + "\", \"" 
+							  + model.get("westBoundCoord") + "\"]]]}}"
+						}
+				};
+				//the most likely item to change is the Metacat deployment context
+				var elJSON = {
+					"@context": {
+						"@vocab": "http://schema.org/",
+						"datacite": "http://purl.org/spar/datacite/",
+						"earthcollab": "https://library.ucar.edu/earthcollab/schema#",
+						"geolink": "http://schema.geolink.org/1.0/base/main#",
+						"geolink-vocab":"http:\/\/schema.geolink.org\/1.0\/voc\/local#",
+						"vivo": "http://vivoweb.org/ontology/core#",
+						"dbpedia": "http://dbpedia.org/resource/",
+						"geo-upper": "http://www.geoscienceontology.org/geo-upper#"
+					},
+					"@id" : model.get("id"),
+					"@type" : "Dataset",
+					"additionalType": model.get("formatType"),
+					"name": model.get("title"),
+					"description": model.get("abstract"),
+					"url": baseUrl + "/view/" + model.get("id"),
+					"version": model.get("dateModified"),
+					"author": model.get("origin").join(', '),
+					"keywords" : Object.keys(model),
+					"citation": model.get("origin").join(', ') + " ("
+							  + model.get("dateUploaded").substring(0,4) 
+							  + ") " + model.get("title") 
+							  +  " " + model.get("datasource")+ ". " + model.get("id") + ".",
+					"datePublished" : model.get("dateUploaded").substring(0,10),
+					"temporalCoverage" : model.get("beginDate").substring(0,10) + "/"
+									   + model.get("endDate").substring(0,10),
+					"spatialCoverage" : spatialCov
+				};
+				
+				
+				// Check if the jsonld already exists from the previous data view
+				// If not create a new script tag and append otherwise replace the text for the script
+				if(!document.getElementById('jsonld')) {
+						var el = document.createElement('script');
+						el.type = 'application/ld+json';
+						el.id = 'jsonld';
+						el.text = JSON.stringify(elJSON);
+						document.querySelector('head').appendChild(el);
+					}
+					else {
+						var script = document.getElementById('jsonld');
+						script.text = JSON.stringify(elJSON);
+					}
+				
+		
+			return;
+		},
+		
+		
 
 		getDataPackage: function(pid) {
             // Get the metadata model that is associated with this DataPackage collection
@@ -195,6 +281,7 @@ define(['jquery',
 			});
 			this.listenToOnce(model, "404", this.showNotFound);
 			model.getInfo();
+
 		},
 
 		renderMetadata: function(){
@@ -206,6 +293,8 @@ define(['jquery',
 			this.$(this.tableContainer).html(this.loadingTemplate({
 					msg: "Retrieving data set details..."
 				}));
+			
+
 
 			//Insert the breadcrumbs
 			this.insertBreadcrumbs();
@@ -283,6 +372,9 @@ define(['jquery',
 				$.ajax(_.extend(loadSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
 			else this.renderMetadataFromIndex();
+			
+			// Insert the Linked Data into the header of the page.
+			this.getLinkedData(this.model);
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
@@ -548,6 +640,7 @@ define(['jquery',
 				packageModel.complete = true;
 				viewRef.insertPackageTable(packageModel);
 			}
+            
 
 			//Insert the data details sections
 			this.insertDataDetails();
