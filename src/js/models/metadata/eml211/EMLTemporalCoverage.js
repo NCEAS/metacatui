@@ -302,11 +302,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					return false;
 				
 				// Validation pattern for HH:MM:SS values.
-				// Range for HH validation : 00-23
+				// Range for HH validation : 00-24
 				// Range for MM validation : 00-59
 				// Range for SS validation : 00-59
 				// Leading 0's are must in case of single digit values.
-				var timePattern = /^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/;
+				var timePattern = /^(?:2[0-4]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/;
 				return (timeString.match(timePattern));
 			}
 			else
