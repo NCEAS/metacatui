@@ -228,12 +228,22 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				errors.endDate = "The end date must be formatted as YYYY-MM-DD or YYYY.";				
 			}
 			
-			//Check the validity of the time formats
-			if(beginTime && !this.isTimeFormatValid(beginTime))
-				errors.beginTime = "The begin time must be formatted as HH:MM:SS";
-			if(endTime && !this.isTimeFormatValid(endTime))
-				errors.endTime = "The end time must be formatted as HH:MM:SS";
+			//Check the validity of the begin time format
+			if(beginTime){
+				var timeErrorMessage = this.validateTimeFormat(beginTime);
 				
+				if( typeof timeErrorMessage == "string" )
+					errors.beginTime = timeErrorMessage;
+			}
+			
+			//Check the validity of the end time format
+			if(endTime){
+				var timeErrorMessage = this.validateTimeFormat(endTime);
+				
+				if( typeof timeErrorMessage == "string" )
+					errors.endTime = timeErrorMessage;
+			}
+
 			// Check if begin date greater than end date for the temporalCoverage
 			if (this.isGreaterDate(beginDate, endDate))
 				errors.beginDate = "The begin date must be before the end date."
@@ -288,7 +298,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 		},
 		
-		isTimeFormatValid: function(timeString){
+		validateTimeFormat: function(timeString){
 			
 			//If the last character is a "Z", then remove it for now
 			if( timeString.substring(timeString.length-1, timeString.length) == "Z"){
@@ -298,19 +308,38 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if(timeString.length == 8){
 				var timeParts = timeString.split(":");
 				
-				if(timeParts.length != 3)
-					return false;
-				
+				if(timeParts.length != 3){
+					return "Time must be formatted as HH:MM:SS";
+				}
+								
 				// Validation pattern for HH:MM:SS values.
 				// Range for HH validation : 00-24
 				// Range for MM validation : 00-59
 				// Range for SS validation : 00-59
 				// Leading 0's are must in case of single digit values.
-				var timePattern = /^(?:2[0-4]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/;
-				return (timeString.match(timePattern));
+				var timePattern = /^(?:2[0-4]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/,
+					validTimePattern = timeString.match(timePattern);
+				
+				//If the hour is 24, only accept 00:00 for MM:SS. Any minutes or seconds in the midnight hour should be
+				//formatted as 00:XX:XX not 24:XX:XX
+				if(validTimePattern && timeParts[0] == "24" && (timeParts[1] != "00" || timeParts[2] != "00")){
+					return "The midnight hour starts at 00:00:00 and ends at 00:59:59.";
+				}
+				else if(!validTimePattern && parseInt(timeParts[0]) > "24"){
+					return "Time of the day starts at 00:00 and ends at 23:59.";
+				}
+				else if(!validTimePattern && parseInt(timeParts[1]) > "59"){
+					return "Minutes should be between 00 and 59.";
+				}
+				else if(!validTimePattern && parseInt(timeParts[2]) > "59"){
+					return "Seconds should be between 00 and 59.";
+				}
+				else
+					return true;
+
 			}
 			else
-				return false;
+				return "Time must be formatted as HH:MM:SS";
 		},
 		
 		/**
