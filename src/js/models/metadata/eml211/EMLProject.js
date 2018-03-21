@@ -81,24 +81,33 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 				var personnel = this.get("personnel");
 				
 				if(!personnel){
-					_.each(this.get("parentModel").get("creator"), function(party){
+					
+					personnel = [];
+					
+					_.each(this.get("parentModel").get("creator"), function(creator){
 						
-						var personnel = new EMLParty({
+						var newPersonnel = new EMLParty({
 							role: "principalInvestigator",
 							parentModel: this,
 							type: "personnel",
-							individualName: party.get("individualName")							
+							individualName: Object.assign({}, creator.get("individualName"))						
 						});
 						
-						this.set("personnel", [personnel]);
+						personnel.push(newPersonnel);
 						
-						$(objectDOM).append(personnel.updateDOM());
+						$(objectDOM).append(newPersonnel.updateDOM());
+						
 					}, this);
+					
+					this.trigger("change:personnel");
+					
 				}
 				else{
+					
 					_.each(this.get("personnel"), function(party){						
 						$(objectDOM).append(party.updateDOM());
 					}, this);
+				
 				}					
 			}
 			 
