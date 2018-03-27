@@ -133,29 +133,68 @@ function ($, _, Backbone) {
 
 			this.renderText(options);
 		},
-		
+
 		/*
-          Renders the editor view given a root package identifier,
-          or a metadata identifier.  If the latter, the corresponding
-          package identifier will be queried and then rendered.
-        */
+    * Renders the editor view given a root package identifier,
+    * or a metadata identifier.  If the latter, the corresponding
+    * package identifier will be queried and then rendered.
+    */
 		renderEditor: function (pid) {
-			this.routeHistory.push("submit");
-			
+
+			//If there is no EditorView yet, create one
 			if( ! MetacatUI.appView.editorView ){
+
+				var router = this;
+
+				//Load the EditorView file
 				require(['views/EditorView'], function(EditorView) {
+					//Add the submit route to the router history
+					router.routeHistory.push("submit");
+
+					//Create a new EditorView
 					MetacatUI.appView.editorView = new EditorView({pid: pid});
+
+					//Set the pid from the pid given in the URL
 					MetacatUI.appView.editorView.pid = pid;
+
+					//Render the EditorView
 					MetacatUI.appView.showView(MetacatUI.appView.editorView);
 				});
-                
-			} else {
-				MetacatUI.appView.editorView.pid = pid;
-				MetacatUI.appView.showView(MetacatUI.appView.editorView);
-                
+
+			}
+			// If the EditorView already exists, check if we need to show a confirmation alert
+			else {
+
+				//The default action is to close the view and route to the editor
+				var closeView = true;
+
+				//If we are currently on the EditorView, then ask the user if they are sure they want to leave
+				if( MetacatUI.appView.currentView == MetacatUI.appView.editorView ){
+					closeView = MetacatUI.appView.editorView.confirmClose();
+				}
+
+				//If we have decided to close the view, route to the Editor View
+				if(closeView){
+
+					//Set the pid from the pid given in the URL
+					MetacatUI.appView.editorView.pid = pid;
+
+					//Add the submit route to the router history
+					this.routeHistory.push("submit");
+
+					//Render the Editor View
+					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+				}
+				else{
+
+					//If we have decided to stay on the current Editor View, undo the last route
+					this.undoLastRoute();
+					return;
+				}
+
 			}
 		},
-
+		
 		renderMdqRun: function (suiteId, pid) {
 			this.routeHistory.push("quality");
 
@@ -267,7 +306,7 @@ function ($, _, Backbone) {
 
 			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
 			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
-			
+
 			var seriesId;
 
 			//Check for a seriesId
@@ -338,7 +377,7 @@ function ($, _, Backbone) {
 					MetacatUI.appView.showView(MetacatUI.appView.userView, viewOptions);
 			}
 		},
-		
+
 		renderMyProfile: function(section, subsection){
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
 				this.renderSignIn();
@@ -373,7 +412,7 @@ function ($, _, Backbone) {
 				MetacatUI.appUserModel.logout();
 			}
 		},
-		
+
 		renderSignIn: function(){
 
 			var router = this;
@@ -384,10 +423,10 @@ function ($, _, Backbone) {
 					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
 					router.renderSignIn();
 				});
-				
+
 				return;
 			}
-			
+
 			//If the user status has been checked and they are already logged in, we will forward them to their profile
 			if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
 				this.navigate("my-profile", { trigger: true });
@@ -408,10 +447,10 @@ function ($, _, Backbone) {
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
 		},
-		
+
 		renderLdapSignInError: function(){
 			this.routeHistory.push("signinldaperror");
-			
+
 			if(!MetacatUI.appView.signInView){
 				require(['views/SignInView'], function(SignInView){
 					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});

@@ -81,11 +81,11 @@ define(['underscore',
         /* Render the view */
         render: function() {
 
-            MetacatUI.appModel.set('headerType', 'default');
+          MetacatUI.appModel.set('headerType', 'default');
 
         	//Style the body as an Editor
-            $("body").addClass("Editor rendering");
-            this.$el.empty();
+          $("body").addClass("Editor rendering");
+          this.$el.empty();
 
         	//Inert the basic template on the page
         	this.$el.html(this.template({
@@ -859,20 +859,34 @@ define(['underscore',
     				this.model.trigger("valid");
     		},
 
-  	    /*
-  	     * Alerts the user that changes will not be saved if s/he navigates away from this view.
-  	     */
-    		confirmClose: function(){
-    			//If the user isn't logged in, we can leave this page
-    			if(!MetacatUI.appUserModel.get("loggedIn")) return true;
+        /*
+        * Determine if a confirmation alert should be displayed, and if so, will display it and return the user's response.
+        *
+        * This function will be called by the onBeforeUnload window event
+        *
+        * When the router is navigating to the EditorView when already on the EditorView, the window object will not
+        * fire an beforeUnload event. An example is when the user is already on the EditorView and clicks a link to the EditorView.
+        * So to catch these routing events, the app Router will watch for this specific situation.
+        */
+        confirmClose: function(){
 
-    			//If the form hasn't been edited, we can close this view without confirmation
+          //If the user isn't logged in, we can leave this view without confirmation
+          if(!MetacatUI.appUserModel.get("loggedIn"))
+            return true;
+
+          //If the form hasn't been edited, we can close this view without confirmation
     			if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
     				return true;
 
-    			var isLeaving = confirm("Do you want to leave this page? All information you've entered will be lost.");
-    			return isLeaving;
-    		},
+          //Show the confirm alert to the user and if they click "OK", return true
+          if( MetacatUI.appView.confirmLeave() )
+            return true;
+          //If the user clicks "Cancel", return false
+          else {
+            return false;
+          }
+
+        },
 
         /* Close the view and its sub views */
         onClose: function() {
@@ -881,22 +895,22 @@ define(['underscore',
         	this.stopListening(MetacatUI.rootDataPackage, "add" );
 
         	//Remove all the other events
-            this.off();    // remove callbacks, prevent zombies
-            this.model.off();
+          this.off();    // remove callbacks, prevent zombies
+          this.model.off();
 
-            $(".Editor").removeClass("Editor");
-            this.$el.empty();
+          $(".Editor").removeClass("Editor");
+          this.$el.empty();
 
-            this.model = null;
+          this.model = null;
 
-            // Close each subview
-            _.each(this.subviews, function(subview) {
-      				if(subview.onClose)
-      					subview.onClose();
-            });
+          // Close each subview
+          _.each(this.subviews, function(subview) {
+      			if(subview.onClose)
+      				subview.onClose();
+          });
 
-            this.subviews = [];
-			      window.onbeforeunload = null;
+          this.subviews = [];
+			    window.onbeforeunload = null;
 
         },
 
