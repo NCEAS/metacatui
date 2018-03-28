@@ -2,8 +2,8 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/ScienceMetadataView',
         'views/metadata/EMLGeoCoverageView',
         'views/metadata/EMLPartyView',
-		'views/metadata/EMLMethodsView',
-		'views/metadata/EMLTempCoverageView',
+    		'views/metadata/EMLMethodsView',
+    		'views/metadata/EMLTempCoverageView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLGeoCoverage',
         'models/metadata/eml211/EMLKeywordSet',
@@ -12,7 +12,7 @@ define(['underscore', 'jquery', 'backbone',
         'models/metadata/eml211/EMLText',
         'models/metadata/eml211/EMLTaxonCoverage',
         'models/metadata/eml211/EMLTemporalCoverage',
-		'models/metadata/eml211/EMLMethods',
+		    'models/metadata/eml211/EMLMethods',
         'text!templates/metadata/eml.html',
         'text!templates/metadata/eml-people.html',
         'text!templates/metadata/EMLPartyCopyMenu.html',
@@ -20,23 +20,23 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/dates.html',
         'text!templates/metadata/locationsSection.html',
         'text!templates/metadata/taxonomicCoverage.html',
-		'text!templates/metadata/taxonomicClassificationTable.html',
-		'text!templates/metadata/taxonomicClassificationRow.html'],
-	function(_, $, Backbone, ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView,
-			EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
+    		'text!templates/metadata/taxonomicClassificationTable.html',
+    		'text!templates/metadata/taxonomicClassificationRow.html'],
+	function(_, $, Backbone,
+      ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView,
+
+      EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
+
 			EMLTemporalCoverage, EMLMethods, Template, PeopleTemplate, EMLPartyCopyMenuTemplate, OverviewTemplate,
-			 DatesTemplate, LocationsTemplate,
-			 TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
+			DatesTemplate, LocationsTemplate, TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
 
     var EMLView = ScienceMetadataView.extend({
 
-    	type: "EML211",
+      type: "EML211",
 
-        el: '#metadata-container',
+      el: '#metadata-container',
 
-        /* Templates */
-
-        events: {
+      events: {
         	"change .text"                 : "updateText",
 
         	"change .basic-text"            : "updateBasicText",
@@ -44,15 +44,15 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .basic-text-row .remove" : "previewTextRemove",
         	"mouseout .basic-text-row .remove"  : "previewTextRemove",
 
-			"change .pubDate input"          : "updatePubDate",
-			"focusout .pubDate input"        : "showPubDateValidation",
+			    "change .pubDate input"          : "updatePubDate",
+			    "focusout .pubDate input"        : "showPubDateValidation",
 
-			"keyup .eml-geocoverage.new"        : "updateLocations",
+			    "keyup .eml-geocoverage.new"        : "updateLocations",
 
-			"change .taxonomic-coverage"             : "updateTaxonCoverage",
-			"keyup .taxonomic-coverage .new input"   : "addNewTaxon",
-			"keyup .taxonomic-coverage .new select"  : "addNewTaxon",
-			"focusout .taxonomic-coverage tr"        : "showTaxonValidation",
+			    "change .taxonomic-coverage"             : "updateTaxonCoverage",
+			    "keyup .taxonomic-coverage .new input"   : "addNewTaxon",
+			    "keyup .taxonomic-coverage .new select"  : "addNewTaxon",
+          "focusout .taxonomic-coverage tr"        : "showTaxonValidation",
         	"click .taxonomic-coverage-row .remove"  : "removeTaxonRank",
         	"mouseover .taxonomic-coverage .remove"  : "previewTaxonRemove",
         	"mouseout .taxonomic-coverage .remove"   : "previewTaxonRemove",
@@ -62,23 +62,23 @@ define(['underscore', 'jquery', 'backbone',
         	"mouseover .keyword-row .remove" : "previewKeywordRemove",
         	"mouseout .keyword-row .remove"  : "previewKeywordRemove",
 
-			"change .usage"                  : "updateRadioButtons",
+          "change .usage"                  : "updateRadioButtons",
 
-			"change .funding"                : "updateFunding",
+          "change .funding"                : "updateFunding",
         	"keyup .funding.new"             : "addFunding",
         	"mouseover .funding-row .remove" : "previewFundingRemove",
         	"mouseout .funding-row .remove"  : "previewFundingRemove",
         	"keyup .funding.error"           : "handleFundingTyping",
 
-			"click .side-nav-item"           : "switchSection",
+          "click .side-nav-item"           : "switchSection",
 
-			"keyup .eml-party.new"     : "handlePersonTyping",
+			    "keyup .eml-party.new"     : "handlePersonTyping",
         	"change #new-party-menu"   : "chooseNewPersonType",
         	"click .eml-party .copy"   : "showCopyPersonMenu",
         	"click #copy-party-save"   : "copyPerson",
         	"click .eml-party .remove" : "removePerson",
 
-			"click  .remove" : "handleRemove"
+			    "click  .remove" : "handleRemove"
         },
 
         /* A list of the subviews */
@@ -94,6 +94,7 @@ define(['underscore', 'jquery', 'backbone',
          */
         visibleSection: "overview",
 
+        /* Templates */
         template: _.template(Template),
         overviewTemplate: _.template(OverviewTemplate),
         datesTemplate: _.template(DatesTemplate),
@@ -121,53 +122,53 @@ define(['underscore', 'jquery', 'backbone',
 
         /* Render the view */
         render: function() {
-			  MetacatUI.appModel.set('headerType', 'default');
+			    MetacatUI.appModel.set('headerType', 'default');
 
-			//Render the basic structure of the page and table of contents
-			this.$el.html(this.template({
-				activeSection: this.activeSection,
-				visibleSection: this.visibleSection
-			}));
-			this.$container = this.$(".metadata-container");
+    			//Render the basic structure of the page and table of contents
+    			this.$el.html(this.template({
+    				activeSection: this.activeSection,
+    				visibleSection: this.visibleSection
+    			}));
+    			this.$container = this.$(".metadata-container");
 
-			//Render all the EML sections when the model is synced
-			this.renderAllSections();
-			if(!this.model.get("synced"))
-				this.listenToOnce(this.model, "sync", this.renderAllSections);
+    			//Render all the EML sections when the model is synced
+    			this.renderAllSections();
+    			if(!this.model.get("synced"))
+    				this.listenToOnce(this.model, "sync", this.renderAllSections);
 
-			//Listen to updates on the data package collections
-			_.each(this.model.get("collections"), function(dataPackage){
-				if(dataPackage.type != "DataPackage") return;
+    			//Listen to updates on the data package collections
+    			_.each(this.model.get("collections"), function(dataPackage){
+    				if(dataPackage.type != "DataPackage") return;
 
-				//When the data package has been saved, render the EML again
-				this.listenTo(dataPackage, "successSaving", this.renderAllSections);
-			}, this);
+    				//When the data package has been saved, render the EML again
+    				this.listenTo(dataPackage, "successSaving", this.renderAllSections);
+    			}, this);
 
-            return this;
+          return this;
         },
 
         renderAllSections: function(){
         	this.renderOverview();
-	    	this.renderPeople();
-	    	this.renderDates();
-	    	this.renderLocations();
-	    	this.renderTaxa();
-	    	this.renderMethods();
-	    	this.renderProject();
-	    	this.renderSharing();
+  	    	this.renderPeople();
+  	    	this.renderDates();
+  	    	this.renderLocations();
+  	    	this.renderTaxa();
+  	    	this.renderMethods();
+  	    	this.renderProject();
+  	    	this.renderSharing();
 
-	    	this.renderRequiredIcons();
+	    	  this.renderRequiredIcons();
 
-	    	//Scroll to the active section
-	    	if(this.activeSection != "overview"){
-	    		MetacatUI.appView.scrollTo(this.$(".section." + this.activeSection));
-	    	}
+  	    	//Scroll to the active section
+  	    	if(this.activeSection != "overview"){
+  	    		MetacatUI.appView.scrollTo(this.$(".section." + this.activeSection));
+  	    	}
 
-			//When scrolling through the metadata, highlight the side navigation
-	    	var view = this;
-	    	$(document).scroll(function(){
-	    		view.highlightTOC.call(view);
-	    	});
+			    //When scrolling through the metadata, highlight the side navigation
+  	    	var view = this;
+  	    	$(document).scroll(function(){
+  	    		view.highlightTOC.call(view);
+  	    	});
 
         },
 
@@ -184,7 +185,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	var overviewEl = this.$container.find(".overview");
 	    	$(overviewEl).html(this.overviewTemplate());
 
-			//Title
+			  //Title
 		    this.renderTitle();
 		    this.listenTo(this.model, "change:title", this.renderTitle);
 
@@ -220,23 +221,22 @@ define(['underscore', 'jquery', 'backbone',
 
 		    //Usage
 		    //Find the model value that matches a radio button and check it
-			// Note the replace() call removing newlines and replacing them with a single space
-			// character. This is a temporary hack to fix https://github.com/NCEAS/metacatui/issues/128
+			  // Note the replace() call removing newlines and replacing them with a single space
+			  // character. This is a temporary hack to fix https://github.com/NCEAS/metacatui/issues/128
 		    if(this.model.get("intellectualRights"))
 		    	this.$(".checkbox .usage[value='" + this.model.get("intellectualRights").replace(/\r?\n|\r/g, ' ') + "']").prop("checked", true);
 
 		    //Funding
 		    this.renderFunding();
 
-			// pubDate
-			// BDM: This isn't a createBasicText call because that helper
-			// assumes multiple values for the category
-			// TODO: Consider a re-factor of createBasicText
-			var pubDateInput = $(overviewEl).find("input.pubDate").val(this.model.get("pubDate"));
+  			// pubDate
+  			// BDM: This isn't a createBasicText call because that helper
+  			// assumes multiple values for the category
+  			// TODO: Consider a re-factor of createBasicText
+  			var pubDateInput = $(overviewEl).find("input.pubDate").val(this.model.get("pubDate"));
 
-
-			//Initialize all the tooltips
-			this.$(".tooltip-this").tooltip();
+  			//Initialize all the tooltips
+  			this.$(".tooltip-this").tooltip();
 
 	    },
 
@@ -246,8 +246,8 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 
 	    /*
-         * Renders the People section of the page
-         */
+       * Renders the People section of the page
+       */
 	    renderPeople: function(){
 	    	this.$(".section.people").empty().append("<h2>People</h2>");
 
@@ -862,19 +862,19 @@ define(['underscore', 'jquery', 'backbone',
 	    },
 
 	    /*
-         * Renders the Methods section of the page
-         */
+       * Renders the Methods section of the page
+       */
 	    renderMethods: function(){
 	    	var methodsModel = this.model.get("methods");
 
-			if (!methodsModel) {
-				methodsModel = new EMLMethods({ edit: this.edit, parentModel: this.model });
-			}
+  			if (!methodsModel) {
+  				methodsModel = new EMLMethods({ edit: this.edit, parentModel: this.model });
+  			}
 
-			this.$(".section.methods").html(new EMLMethodsView({
-				model: methodsModel,
-				edit: this.edit }).render().el);
-		},
+			  this.$(".section.methods").html(new EMLMethodsView({
+				      model: methodsModel,
+				      edit: this.edit }).render().el);
+		  },
 
 	    /*
          * Renders the Projcet section of the page
@@ -2083,107 +2083,110 @@ define(['underscore', 'jquery', 'backbone',
 		/* Generic event handler for removing sections of the EML (both
 		the DOM and inside the EML211Model) */
 		handleRemove: function(e) {
-			var submodel = $(e.target).data('submodel'), // Optional sub-model to remove attribute from
-			    attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
-			    selector = $(e.target).data('selector'), // Selector to find the parent DOM elemente we'll remove
-				container = $(e.target).data('container'), // Selector to find the parent container so we can remove by index
-				parentEl, // Element we'll remove
-				model; // Specific sub-model we're removing
+  			var submodel = $(e.target).data('submodel'), // Optional sub-model to remove attribute from
+  			    attribute = $(e.target).data('attribute'), // Attribute on the EML211 model we're removing from
+  			    selector = $(e.target).data('selector'), // Selector to find the parent DOM elemente we'll remove
+  				  container = $(e.target).data('container'), // Selector to find the parent container so we can remove by index
+  				  parentEl, // Element we'll remove
+  				  model; // Specific sub-model we're removing
 
-			if (!attribute) return;
-			if (!container) return;
+  			if (!attribute) return;
+  			if (!container) return;
 
-			// Find the element we'll remove from the DOM
-			if (selector) {
-				parentEl = $(e.target).parents(selector).first();
-			} else {
-				parentEl = $(e.target).parents().first();
-			}
+  			// Find the element we'll remove from the DOM
+  			if (selector) {
+  				parentEl = $(e.target).parents(selector).first();
+  			} else {
+  				parentEl = $(e.target).parents().first();
+  			}
 
-			if (parentEl.length == 0) return;
+  			if (parentEl.length == 0) return;
 
+  			// Handle remove on a EML model / sub-model
+  			if (submodel) {
 
-			// Handle remove on a EML model / sub-model
-			if (submodel) {
+  				  model = this.model.get(submodel);
 
-				model = this.model.get(submodel);
+  				  if (!model) return;
 
-				if (!model) return;
+    				// Get the current value of the attribute so we can remove from it
+    				var currentValue,
+    					submodelIndex;
 
-				// Get the current value of the attribute so we can remove from it
-				var currentValue,
-					submodelIndex;
+    				if (Array.isArray(this.model.get(submodel))) {
+    					// Stop now if there's nothing to remove in the first place
+    					if (this.model.get(submodel).length == 0) return;
 
-				if (Array.isArray(this.model.get(submodel))) {
-					// Stop now if there's nothing to remove in the first place
-					if (this.model.get(submodel).length == 0) return;
+    					// For multi-valued submodels, find *which* submodel we are removing or
+    					// removingn from
+    					submodelIndex = $(container).index($(e.target).parents(container).first());
+    					if (submodelIndex === -1) return;
 
-					// For multi-valued submodels, find *which* submodel we are removing or
-					// removingn from
-					submodelIndex = $(container).index($(e.target).parents(container).first());
-					if (submodelIndex === -1) return;
+    					currentValue = this.model.get(submodel)[submodelIndex].get(attribute);
+    				} else {
+    					currentValue = this.model.get(submodel).get(attribute);
+    				}
 
-					currentValue = this.model.get(submodel)[submodelIndex].get(attribute);
-				} else {
-					currentValue = this.model.get(submodel).get(attribute);
-				}
+    				//FInd the position of this field in the list of fields
+    				var position = $(e.target).parents(container)
+    								.first()
+    								.children(selector)
+    								.index($(e.target).parents(selector));
 
-				//FInd the position of this field in the list of fields
-				var position = $(e.target).parents(container)
-								.first()
-								.children(selector)
-								.index($(e.target).parents(selector));
+    				// Remove from the EML Model
+    				if (position >= 0) {
+    					if (Array.isArray(this.model.get(submodel))) {
+    						currentValue.splice(position, 1); // Splice returns the removed members
+    						this.model.get(submodel)[submodelIndex].set(attribute, currentValue);
+    					} else {
+    						currentValue.splice(position, 1); // Splice returns the removed members
+    						this.model.get(submodel).set(attribute, currentValue);
+    					}
 
-				// Remove from the EML Model
-				if (position >= 0) {
-					if (Array.isArray(this.model.get(submodel))) {
-						currentValue.splice(position, 1); // Splice returns the removed members
-						this.model.get(submodel)[submodelIndex].set(attribute, currentValue);
-					} else {
-						currentValue.splice(position, 1); // Splice returns the removed members
-						this.model.get(submodel).set(attribute, currentValue);
-					}
+    				}
 
-				}
+    			} else if (selector) {
+    				// Find the index this attribute is in the DOM
+    				var position = $(e.target).parents(container).first()
+                          .children(selector)
+                          .index($(e.target).parents(selector));
 
-			} else if (selector) {
-				// Find the index this attribute is in the DOM
-				var position = $(e.target).parents(container).first().children(selector).index($(e.target).parents(selector));
+    				//Remove this index of the array
+    				var currentValue = this.model.get(attribute);
 
-				//Remove this index of the array
-				var currentValue = this.model.get(attribute);
+    				if( Array.isArray(currentValue) )
+    					currentValue.splice(position, 1);
 
-				if( Array.isArray(currentValue) )
-					currentValue.splice(position, 1);
+    				//Set the array on the model so the 'set' function is executed
+    				this.model.set(attribute, currentValue);
 
-				//Set the array on the model so the 'set' function is executed
-				this.model.set(attribute, currentValue);
+      			}
+            // Handle remove on a basic text field
+            else {
+      				// The DOM order matches the EML model attribute order so we can remove
+      				// by that
+      				var position = $(e.target).parents(container).first().children(selector).index(selector);
+      				var currentValue = this.model.get(attribute);
 
-			} else { // Handle remove on a basic text field
-				// The DOM order matches the EML model attribute order so we can remove
-				// by that
-				var position = $(e.target).parents(container).first().children(selector).index(selector);
-				var currentValue = this.model.get(attribute);
+      				// Remove from the EML Model
+      				if (position >= 0) {
+      					currentValue.splice(position, 1);
+      					this.model.set(attribute, currentValue);
+      				}
+      			}
 
-				// Remove from the EML Model
-				if (position >= 0) {
-					currentValue.splice(position, 1);
-					this.model.set(attribute, currentValue);
-				}
-			}
+      			// Trigger a change on the entire package
+      			MetacatUI.rootDataPackage.packageModel.set("changed", true);
 
-			// Trigger a change on the entire package
-			MetacatUI.rootDataPackage.packageModel.set("changed", true);
-
-			// Remove the DOM
-			$(parentEl).remove();
+      			// Remove the DOM
+      			$(parentEl).remove();
 
             //updating the tablesIndex once the element has been removed
             var tableNums = this.$(".editor-header-index");
             for (var i = 0; i < tableNums.length; i++) {
                 $(tableNums[i]).text(i + 1);
             }
-		},
+		    },
 
         /* Close the view and its sub views */
         onClose: function() {
@@ -2197,7 +2200,7 @@ define(['underscore', 'jquery', 'backbone',
             this.model = null;
 
             this.subviews = [];
-			window.onbeforeunload = null;
+			      window.onbeforeunload = null;
 
         }
     });
