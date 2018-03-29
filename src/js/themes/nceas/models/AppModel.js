@@ -1,5 +1,5 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone'], 				
+define(['jquery', 'underscore', 'backbone'],
 	function($, _, Backbone) {
 	'use strict';
 
@@ -21,7 +21,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: false,
-			
+
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
 			 * Any field set to true will prevent the user from saving the Editor until a value has been given
@@ -41,11 +41,11 @@ define(['jquery', 'underscore', 'backbone'],
 				temporalCoverage: true,
 				title: true
 			},
-			
+
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
-			
+
 			defaultAccessPolicy: [{
-				
+
 				subject: "CN=knb-data-admins,DC=dataone,DC=org",
 				read: true,
 				write: true,
@@ -55,7 +55,7 @@ define(['jquery', 'underscore', 'backbone'],
 				subject: "public",
 				read: true
 			}],
-			
+
 			baseUrl: "https://knb.ecoinformatics.org",
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
@@ -83,9 +83,9 @@ define(['jquery', 'underscore', 'backbone'],
 			//annotatorUrl: null,
 			accountsUrl: null
 		},
-				
+
 		defaultView: "submit",
-		
+
 		initialize: function() {
 
 			// these are pretty standard, but can be customized if needed
@@ -98,18 +98,18 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
-			
+
 			// Object format list
-            if ( typeof this.get("formatsUrl") != "undefined" ) {
-                this.set("formatsServiceUrl", 
-                    this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
-            }
-            
+      if ( typeof this.get("formatsUrl") != "undefined" ) {
+          this.set("formatsServiceUrl",
+              this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+      }
+
 			//Token URLs
 			if(typeof this.get("tokenUrl") != "undefined"){
 				this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
 				this.set("tokenUrl",  this.get("portalUrl") + "token");
-								
+
 				//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
 				if(typeof this.get("signInUrl") !== "undefined")
 					this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
@@ -119,21 +119,21 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
 				if(this.get('orcidBaseUrl'))
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
-				
+
 				if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
 					this.set("signOutUrl", this.get('portalUrl') + "logout");
-				
+
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
 
 			}
-		
+
 			this.on("change:pid", this.changePid);
 		},
-		
-		changePid: function(model, name){			
+
+		changePid: function(model, name){
 			this.set("previousPid", model.previous("pid"));
 		}
 	});
-	return AppModel;		
+	return AppModel;
 });

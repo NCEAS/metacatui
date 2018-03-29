@@ -29,12 +29,12 @@ define(['jquery', 'underscore', 'backbone'],
 
 			userProfiles: true,
 			profileUsername: null,
-						
+
 			maxDownloadSize: 3000000000,
 
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: true,
-			
+
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
 			 * Any field set to true will prevent the user from saving the Editor until a value has been given
@@ -54,11 +54,11 @@ define(['jquery', 'underscore', 'backbone'],
 				temporalCoverage: true,
 				title: true
 			},
-			
+
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
-			
+
 			defaultAccessPolicy: [{
-				
+
 				subject: "CN=arctic-data-admins,DC=dataone,DC=org",
 				read: true,
 				write: true,
@@ -83,7 +83,7 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			formatsServiceUrl: null,
-            formatsUrl: "/formats",
+      formatsUrl: "/formats",
 			resolveServiceUrl: null,
 			//bioportalSearchUrl: null,
 			orcidBaseUrl: "https:/orcid.org",
@@ -132,7 +132,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//DataONE CN API
 			if(this.get("d1CNBaseUrl")){
-				
+
 				//Account services
 				if(typeof this.get("accountsUrl") != "undefined"){
 					this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
@@ -149,15 +149,15 @@ define(['jquery', 'underscore', 'backbone'],
 
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
-				
+
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
-				
+
 				// Object format list
-                if ( typeof this.get("formatsUrl") != "undefined" ) {
-                    this.set("formatsServiceUrl", 
-                        this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
-                }
+        if ( typeof this.get("formatsUrl") != "undefined" ) {
+            this.set("formatsServiceUrl",
+                this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+        }
 
 				//Authentication / portal URLs
 				this.set('portalUrl', this.get('d1CNBaseUrl') + 'portal/');
@@ -181,7 +181,7 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set("signOutUrl", this.get('portalUrl') + "logout");
 
 			}
-			
+
 			//The package service for v2 DataONE API
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
