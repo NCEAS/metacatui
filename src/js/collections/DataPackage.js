@@ -69,13 +69,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					PROV:    "http://www.w3.org/ns/prov#",
 					PROVONE: "http://purl.dataone.org/provone/2015/01/15/ontology#"
     		},
-			
+
 				sources: [],
 				derivations: [],
 				provenanceFlag: null,
 				sourcePackages: [],
 				derivationPackages: [],
-				relatedModels: [], 
+				relatedModels: [],
                 provEdits: [],		// Contains provenance relationships added or deleted to this DataONEObject.
                         // Each entry is [<operation ('add' or 'delete'), <prov field name>, <object id>], i.e. ['add', 'prov_used', 'urn:uuid:5678']
 
@@ -120,7 +120,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             // Build the DataPackage URL based on the MetacatUI.appModel.objectServiceUrl
             // and id or seriesid
             url: function(options) {
-            	
+
             	if(options && options.update){
             		return MetacatUI.appModel.get("objectServiceUrl") +
                     (encodeURIComponent(this.packageModel.get("oldPid")) || encodeURIComponent(this.packageModel.get("seriesid")));
@@ -360,11 +360,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     models = []; // the models returned by parse()
 
                 try {
-                	
+
                 	//First, make sure we are only using one CN Base URL in the RDF or the RDF parsing will fail.
-                    var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';                   
+                    var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
                     response = response.replace(/cn-\S+.test.dataone.org\/cn\/v\d\/resolve/g, "cn.dataone.org/cn/v2/resolve");
-                	
+
                     this.rdf.parse(response, this.dataPackageGraph, this.url(), 'application/rdf+xml');
 
                   	// List the package members
@@ -407,7 +407,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Get the isDocumentedBy relationships
                     documentsStatements = this.dataPackageGraph.statementsMatching(
                         undefined, CITO("documents"), undefined, undefined);
-                    
+
                     var sciMetaPids = [];
 
                     _.each(documentsStatements, function(documentsStatement) {
@@ -415,7 +415,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                           // Extract and URI-decode the metadata pid
                           scimetaID = decodeURIComponent(
                                 _.last(documentsStatement.subject.value.split("/")));
-                          
+
                           sciMetaPids.push(scimetaID);
 
                           // Extract and URI-decode the data pid
@@ -444,10 +444,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 	                      	  dataObj.set("isDocumentedBy", isDocBy);
                           }
                     }, this);
-                    
+
                     //Save the list of science metadata pids
                     this.sciMetaPids = sciMetaPids;
-                    
+
                     //Put the science metadata pids first
                     memberPIDs = _.difference(memberPIDs, sciMetaPids);
                     _.each(_.uniq(sciMetaPids), function(id){ memberPIDs.unshift(id); });
@@ -477,7 +477,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                                 			//Trigger a replace event so other parts of the app know when a model has been replaced with a different type
                                 			oldModel.trigger("replace", newModel);
-                                			
+
                                 			if(newModel.type == "EML")
                                 				collection.trigger("add:EML");
                                 		});
@@ -485,20 +485,20 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 else{
                                 	newModel.set("synced", true);
                                 	collection.add(newModel, { replace: true });
-                                	
+
                                 	if(newModel.type == "EML")
                         				collection.trigger("add:EML");
                                 }
                         	});
 
                     }, this);
-					
+
 									} catch (error) {
 										console.log(error);
 									}
 									return models;
 							},
-			
+
 							/* Parse the provenance relationships from the RDF graph, after all DataPackage members
 			   			have been fetched, as the prov info will be stored in them.
 			   			*/
@@ -765,42 +765,42 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Process each SPARQL query
                     var keys = Object.keys(provQueries);
                     this.queriesToRun = keys.length;
-                    
+
 					//Bind the onResult and onDone functions to the model so they can be called out of context
 					this.onResult = _.bind(this.onResult, this);
 					this.onDone   = _.bind(this.onDone, this);
-					
+
                     /* Run queries for all provenance fields.
                     Each query may have multiple solutions and  each solution will trigger a callback
                     to the 'onResult' function. When each query has completed, the 'onDone' function
                     is called for that query.
                      */
                     for (var iquery = 0; iquery < keys.length; iquery++) {
-                    	
+
                       var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, this.dataPackageGraph);
                       this.dataPackageGraph.query(eq, this.onResult, this.url(), this.onDone);
-                      
+
                     }
-                    
+
                 } catch (error) {
-                	
+
                     console.log(error);
-                    
+
                 }
             },
-            
-            // The return values have to be extracted from the result. 
+
+            // The return values have to be extracted from the result.
             getValue: function(result, name) {
                 var res = result[name];
                 // The result is of type 'NamedNode', just return the string value
                 if (res) {
                     return res.value;
-                } else 
+                } else
                 return " ";
             },
 
             /* This callback is called for every query solution of the SPARQL queries. One
-           query may result in multple queries solutions and calls to this function. 
+           query may result in multple queries solutions and calls to this function.
 	   			Each query result returns two pids, i.e. pid: 1234 prov_generated: 5678,
 	   			which corresponds to the RDF triple '5678 wasGeneratedBy 1234', or the
 	   			DataONE solr document for pid '1234', with the field prov_generated: 5678. */
@@ -818,7 +818,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					var provFieldResult;
 					var provFieldValues;
 					// If there is a solution for this query, assign the value
-					// to the prov field attribute (e.g. "prov_generated") of the package member (a DataONEObject) 
+					// to the prov field attribute (e.g. "prov_generated") of the package member (a DataONEObject)
 					// with id = '?pid'
 					if(typeof currentPid !== 'undefined' && currentPid !== " ") {
 						var currentMember = null;
@@ -842,7 +842,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 							resval = "?" + fieldName;
 							// The pid corresponding to the object of the RDF triple, with the predicate
 							// of 'prov_generated', 'prov_used', etc.
-							// getValue returns a string value. 
+							// getValue returns a string value.
 							provFieldResult = this.getValue(result, resval);
 							if(provFieldResult != " ") {
 								// Find the Datapacakge member for the result 'pid' and add the result
@@ -872,7 +872,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 											vals.push(resultMember);
 											currentMember.set("provDerivations", vals);
 										}
-									} 
+									}
 									// Get the existing values for this prov field in the package member
 									vals = currentMember.get(fieldName);
 									// Push this result onto the prov file list if it is not there, i.e.
@@ -899,7 +899,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 						}
 					}
 				},
-			
+
             /* This callback is called when all queries have finished. */
             onDone: function() {
               if(this.queriesToRun > 1) {
@@ -924,9 +924,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     		save: function(options){
 
     			if(!options) var options = {};
-    			
+
     			this.packageModel.set("uploadStatus", "p");
-    			
+
     			//Get the system metadata first if we haven't retrieved it yet
     			if(!this.packageModel.get("sysMetaXML")){
     				var collection = this;
@@ -950,18 +950,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			var dataModels       = _.difference(this.models, metadataModels);
     			var sortedModels     = _.union(metadataModels, dataModels);
 				var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
-				var modelsToBeSaved  = _.filter(sortedModels, function(m){ 
+				var modelsToBeSaved  = _.filter(sortedModels, function(m){
 											//Models should be saved if they are in the save queue, had an error saving earlier,
 											//or they are Science Metadata model that is NOT already in progress
-											return (m.get("uploadStatus") == "q" || 
-													//m.get("uploadStatus") == "e" || 
-													(m.get("type") == "Metadata" && 
-															m.get("uploadStatus") != "p" && 
+											return (m.get("uploadStatus") == "q" ||
+													//m.get("uploadStatus") == "e" ||
+													(m.get("type") == "Metadata" &&
+															m.get("uploadStatus") != "p" &&
 															m.get("uploadStatus") != "c" &&
 															m.get("uploadStatus") != "e" &&
 															m.get("uploadStatus") !== null))
 									    });
-				
+
     			//First quickly validate all the models before attempting to save any
     			var allValid = _.every(modelsToBeSaved, function(m) {
 
@@ -972,10 +972,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     				else{
     					return false;
     				}
-    				
+
     			});
-    			
-                // If at least once model to be saved is invalid, 
+
+                // If at least once model to be saved is invalid,
                 // or the metadata failed to save, cancel the save.
                 if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
                          return model.get("uploadStatus");
@@ -985,13 +985,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     this.trigger("cancelSave");
     				return;
     			}
-    			
+
     			//First save all the models of the collection, if needed
     			_.each(modelsToBeSaved, function(model){
 					//If the model is saved successfully, start this save function again
     				this.stopListening(model, "successSaving", this.save);
 					this.listenToOnce(model, "successSaving", this.save);
-					
+
 					//If the model fails to save, start this save function
 					this.stopListening(model, "errorSaving", this.save);
 					this.listenToOnce(model, "errorSaving", this.save);
@@ -1001,7 +1001,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 					//Add it to the list of models in progress
 					modelsInProgress.push(model);
-    				
+
     			}, this);
 
     			//If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
@@ -1059,7 +1059,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 				var checksum = md5(mapXML);
 				this.packageModel.set("checksum", checksum);
 				this.packageModel.set("checksumAlgorithm", "MD5");
-				
+
 				//Set the file name based on the id
 				this.packageModel.set("fileName", "resourceMap_" + this.packageModel.get("id") + ".xml");
 
@@ -1087,12 +1087,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             collection.packageModel.fetch({merge: true});
                             // Reset the content changes status
                             collection.packageModel.set("hasContentChanges", false);
-                            
+
                             //Reset the upload status for all members
                             _.each(collection.where({ uploadStatus: "c" }), function(m){
                             	m.set("uploadStatus", m.defaults().uploadStatus);
                             });
-                            
+
                             //Reset the upload status for the package
                             collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
 						},
@@ -1100,12 +1100,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
 							//Reset the id back to its original state
 							collection.packageModel.resetID();
-							
+
 							//Reset the upload status for all members
                             _.each(collection.where({ uploadStatus: "c" }), function(m){
                             	m.set("uploadStatus", m.defaults().uploadStatus);
                             });
-                            
+
                             //Reset the upload status for the package
                             collection.packageModel.set("uploadStatus", "e");
 
@@ -1435,14 +1435,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 this.trigger("complete", this);
 
             },
-            
+
             /* Accumulate edits that are made to the provenance relationships via the ProvChartView. these
                edits are accumulated here so that they are available to any package member or view.
             */
             recordProvEdit: function(operation, subject, predicate, object) {
-                
+
                 if (!this.provEdits.length) {
-                
+
                 	this.provEdits = [[operation, subject, predicate, object]];
 
                 } else {
@@ -1455,18 +1455,18 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             edit[2] == predicate &&
                             edit[3] == object);
                     });
-                    
+
                     if(typeof editFound != "undefined") {
                         return;
                     }
 
                     // If this is a delete operation, then check if a matching operation
                     // is in the edit list (i.e. the user may have changed their mind, and
-                    // they just want to cancel an edit). If yes, then just delete the 
+                    // they just want to cancel an edit). If yes, then just delete the
                     // matching add edit request
                     var editListSize = this.provEdits.length;
                     var oppositeOp = (operation == "delete") ? "add" : "delete";
-                    
+
                     this.provEdits = _.reject(this.provEdits, function(edit) {
                         var editOperation = edit[0];
                         var editSubjectId = edit[1];
@@ -1476,26 +1476,26 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             && editSubjectId == subject
                             && editPredicate == predicate
                             && editObject == object) {
-                                
-                            return true; 
+
+                            return true;
                         }
                     });
-                    
+
                     // If we cancelled out edit containing inverse of the current edit
-                    // then the edit list will now be one edit shorter. Test for this 
+                    // then the edit list will now be one edit shorter. Test for this
                     // and only save the current edit if we didn't remove the inverse.
                     if(editListSize >= this.provEdits.length) {
                         this.provEdits.push([operation, subject, predicate, object]);
                     }
                 }
             },
-            
+
             // Return true if the prov edits list is not empty
             provEditsPending: function() {
                 if(this.provEdits.length) return true;
                 return false;
             },
-            
+
             /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
             update the ORE Resource Map and save it to the server.
             */
@@ -1513,10 +1513,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
                 CITO =    rdf.Namespace(this.namespaces.CITO),
                 XSD =     rdf.Namespace(this.namespaces.XSD);
-                
+
                 var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
-                
-                /* Check if this package member had provenance relationships added 
+
+                /* Check if this package member had provenance relationships added
                     or deleted by the provenance editor functionality of the ProvChartView
                 */
                 _.each(provEdits, function(edit) {
@@ -1527,12 +1527,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     predicate = edit[2];
                     object = edit[3];
 
-                    // The predicates of the provenance edits recorded by the ProvChartView 
-                    // indicate which W3C PROV relationship has been recorded. 
+                    // The predicates of the provenance edits recorded by the ProvChartView
+                    // indicate which W3C PROV relationship has been recorded.
                     // First check if this relationship alread exists in the RDF graph.
                     // See DataPackage.parseProv for a description of how relationships from an ORE resource map
                     // are parsed and stored in DataONEObjects. Here we are reversing the process, so may need
-                    // The representation of the PROVONE data model is simplified in the ProvChartView, to aid 
+                    // The representation of the PROVONE data model is simplified in the ProvChartView, to aid
                     // legibility for users not familiar with the details of the PROVONE model. In this simplification,
                     // a provone:Program has direct inputs and outputs. In the actual model, a prov:Execution has
                     // inputs and outputs and is connected to a program via a prov:association. We must 'expand' the
@@ -1544,9 +1544,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     var derivedDataURI, derivedDataNode;
                     var lastRef = false;
                     //var graph = this.dataPackageGraph;
-            
+
                     switch (predicate) {
-                        case "prov_wasDerivedFrom": 
+                        case "prov_wasDerivedFrom":
                             derivedDataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
                             dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(object));
                             if(operation == "add") {
@@ -1576,11 +1576,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                                 executionNode = this.getExecutionNode(executionId);
 
                                 graph.removeMatches(dataNode, PROV("wasGeneratedBy"), executionNode);
-                                removed = this.removeProgramFromGraph(programId);   
+                                removed = this.removeProgramFromGraph(programId);
                                 this.removeIfLastProvRef(dataNode, RDF("type"), PROVONE("Data"));
                             }
                             break;
-                        case "prov_usedByProgram":	
+                        case "prov_usedByProgram":
                             programId = object;
                             dataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
                             if(operation == "add") {
@@ -1619,7 +1619,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             if(operation == "add") {
                                 this.addToGraph(entityNode, RDF("type"), classNode);
                             } else {
-                                // Make sure there are no other references to this 
+                                // Make sure there are no other references to this
                                 this.removeIfLastProvRef(entityNode, RDF("type"), classNode);
                             }
                             break;
@@ -1627,8 +1627,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             // Print error if predicate for prov edit not found.
                     }
                 }, this);
-          
-                // Since the provenance editor is run from the MetadataView, only 
+
+                // Since the provenance editor is run from the MetadataView, only
                 // the resource map will have to be updated (with the new prov rels),
                 // as no other editing is possible. Therefor we have to manually set
                 // the resource maps' new id so that the serialize() function will treat
@@ -1638,9 +1638,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //this.dataPackage.packageModel.set("oldPid", oldId);
                 //this.dataPackage.packageModel.set("id", newId);
                 this.save();
-                
+
             },
-    				
+
             /* Add the specified relationship to the RDF graph only if it
             has not already been added. */
             addToGraph: function(subject, predicate, object) {
@@ -1651,11 +1651,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     graph.add(subject, predicate, object);
                 }
             },
-    		
+
     		/* Remove the statement fromn the RDF graph only if the subject of this
                relationship is not referenced by any other provenance relationship, i.e.
-               for example, the prov relationship "id rdf:type provone:data" is only 
-               needed if the subject ('id') is referenced in another relationship. 
+               for example, the prov relationship "id rdf:type provone:data" is only
+               needed if the subject ('id') is referenced in another relationship.
                Also don't remove it if the subject is in any other prov statement,
                meaning it still references another prov object.
             */
@@ -1668,43 +1668,43 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 var provStr    = PROV("").value;
                 // PROVONE namespace value, used to identify PROVONE statements
                 var provoneStr = PROVONE("").value;
-                // Get the statements from the RDF graph that reference the subject of the 
-                // statement to remove. 
+                // Get the statements from the RDF graph that reference the subject of the
+                // statement to remove.
                 var statements = graph.statementsMatching(undefined, undefined, subjectNode);
-                        
+
                 var found = _.find(statements, function(statement) {
                     if(statement.subject == subjectNode &&
                         statement.predicate == predicateNode &&
                         statement.object == objectNode) return false;
                     var pVal = statement.predicate.value;
-              
+
                     // Now check if the subject is referenced in a prov statement
                     // There is another statement that references the subject of the
                     // statement to remove, so it is still being used and don't
                     // remove it.
                     if(pVal.indexOf(provStr) != -1) return true;
                     if(pVal.indexOf(provoneStr) != -1) return true;
-                    return false; 
+                    return false;
                 }, this);
-                
+
                 // IF not found in the first test, keep looking.
                 if(typeof found == "undefined") {
-                    // Get the statements from the RDF where 
+                    // Get the statements from the RDF where
                     var statements = graph.statementsMatching(subjectNode, undefined, undefined);
-                        
+
                     found = _.find(statements, function(statement) {
                         if(statement.subject == subjectNode &&
                             statement.predicate == predicateNode &&
                             statement.object == objectNode) return false;
                         var pVal = statement.predicate.value;
-                  
+
                         // Now check if the subject is referenced in a prov statement
                         if(pVal.indexOf(provStr) != -1) return true;
                         if(pVal.indexOf(provoneStr) != -1) return true;
                         // There is another statement that references the subject of the
                         // statement to remove, so it is still being used and don't
                         // remove it.
-                        return false 
+                        return false
                     }, this);
                 }
 
@@ -1713,7 +1713,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     graph.removeMatches(subjectNode, predicateNode, objectNode, undefined);
                 }
             },
-        
+
             /* Get the execution identifier that is associated with a program id.
                This will either be in the 'prov_wasExecutedByExecution' of the package member
                for the program script, or available by tracing backward in the RDF graph from
@@ -1728,7 +1728,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 DCTERMS = rdf.Namespace(this.namespaces.DCTERMS),
                 PROV    = rdf.Namespace(this.namespaces.PROV),
                 PROVONE = rdf.Namespace(this.namespaces.PROVONE);
-                
+
                 var member = this.get(programId);
                 var executionId = member.get("prov_wasExecutedByExecution");
                 if(executionId.length > 0) {
@@ -1746,10 +1746,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     return(stmts[0].subject)
                 }
             },
-            
+
             /* Get the RDF node for an execution that is associated with the execution identifier.
-               The execution may have been created in the resource map as a 'bare' urn:uuid 
-               (no resolveURI), or as a resolve URL, so check for both until the id is 
+               The execution may have been created in the resource map as a 'bare' urn:uuid
+               (no resolveURI), or as a resolve URL, so check for both until the id is
                found.
             */
             getExecutionNode: function(executionId) {
@@ -1758,7 +1758,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 var stmts = null;
                 var testNode = null;
                 var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
-                
+
                 // First see if the execution exists in the RDF graph as a 'bare' idenfier, i.e.
                 // a 'urn:uuid'.
                 stmts = graph.statementsMatching(rdf.sym(executionId), undefined, undefined);
@@ -1795,7 +1795,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 var associationId = null;
                 var associationNode = null;
                 var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
-                
+
                 if(!executionId.length) {
                     // This is a new execution, so create new execution and association ids
                     executionId = "urn:uuid:" + uuid.v4();
@@ -1813,7 +1813,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Check if there is an association id for this execution.
                     // If this execution is newly created (via the editor (existing would
                     // be parsed from the resmap), then create a new association id.
-                    var stmts = graph.statementsMatching(executionNode, 
+                    var stmts = graph.statementsMatching(executionNode,
                         PROV("qualifiedAssociation"), undefined);
                     // IF an associati on was found, then use it, else geneate a new one
                     // (Associations aren't stored in the )
@@ -1839,7 +1839,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 }
                 return executionId;
             },
-        
+
             // Remove a program identifier from the RDF graph and remove associated
             // linkage between the program id and the exection, if the execution is not
             // being used by any other statements.
@@ -1854,25 +1854,25 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 PROVONE = rdf.Namespace(this.namespaces.PROVONE),
                 XSD     = rdf.Namespace(this.namespaces.XSD);
                 var associationNode = null;
-                
+
                 var executionId = this.getExecutionId(programId);
                 if(executionId == null) return false;
-                
+
                 //var executionNode = rdf.sym(cnResolveUrl + encodeURIComponent(executionId));
                 var executionNode = this.getExecutionNode(executionId);
                 var programNode = rdf.sym(cnResolveUrl + encodeURIComponent(programId));
-                
-                // In order to remove this program from the graph, we have to first determine that 
-                // nothing else is using the execution that is associated with the program (the plan). 
+
+                // In order to remove this program from the graph, we have to first determine that
+                // nothing else is using the execution that is associated with the program (the plan).
                 // There may be additional 'used', 'geneated', 'qualifiedGeneration', etc. items that
-                // may be pointing to the execution. If yes, then don't delete the execution or the 
+                // may be pointing to the execution. If yes, then don't delete the execution or the
                 // program (the execution's plan).
                 try {
                     // Is the program in the graph? If the program is not in the graph, then
                     // we don't know how to remove the proper execution and assocation.
                     stmts = graph.statementsMatching(undefined, undefined, programNode);
                     if(typeof(stmts) == "undefined" || !stmts.length) return(false);
-                    
+
                     // Is anything else linked to this execution?
                     stmts = graph.statementsMatching(executionNode, PROV("used"));
                     if(!typeof(stmts) == "undefined" || stmts.length) return(false);
@@ -1884,14 +1884,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     if(!typeof(stmts) == "undefined" || stmts.length) return(false);
                     stmts = graph.statementsMatching(undefined, PROV("wasPartOf"), executionNode);
                     if(!typeof(stmts) == "undefined" || stmts.length) return(false);
-                    
+
                     // get association
                     stmts = graph.statementsMatching(undefined, PROV("hadPlan"), programNode);
                     associationNode = stmts[0].subject;
                 } catch (error) {
                     console.log(error);
                 }
-                    
+
                 // The execution isn't needed any longer, so remove it and the program.
                 try {
                     graph.removeMatches(programNode, RDF("type"), PROVONE("Program"));
@@ -1906,7 +1906,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 }
                 return(true)
             },
-            
+
             /*
              * Serialize the DataPackage to OAI-ORE RDF XML
              */
@@ -2020,9 +2020,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     _.each(aggByStatements, function(statement) {
                         if( !_.contains(allMemberIds, statement.subject.value) ) {
                             this.removeFromAggregation(statement.subject.value);
-                        } 
+                        }
                     }, this);
-                    
+
                 	// Change all the statements in the RDF where the aggregation is the subject, to reflect the new resource map ID
                     var aggregationSubjStatements = this.dataPackageGraph.statementsMatching(aggregationNode);
                     _.each(aggregationSubjStatements, function(statement){
@@ -2032,7 +2032,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         objectClone = this.cloneNode(statement.object);
                         this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
                     }, this);
-                    
+
                     if(aggregationSubjStatements.length) {
                         this.dataPackageGraph.removeMany(aggregationNode);
                     }
@@ -2046,11 +2046,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         objectClone.value = cnResolveUrl + encodeURIComponent(pid) + "#aggregation";
                         this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
     	            }, this);
-                    
+
                     if(aggregationObjStatements.length) {
                         this.dataPackageGraph.removeMany(undefined, undefined, aggregationNode);
                     }
-                    
+
                     // Get a fresh copy of the 'isAggregatedBy' statements (as some may have been
                     // removed above), and check for any that contain an object that is not the
                     // aggregation.
@@ -2067,7 +2067,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                             }
                         }
                     }, this)
-    	            
+
     			    //Change all the resource map identifier literal node in the RDF graph
     				if ( typeof idStatement != "undefined" ) {
                         try {
@@ -2165,11 +2165,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 }
 
                 var xmlString = serializer.statementsToXML(this.dataPackageGraph.statements);
-  
+
             	return xmlString;
             },
-            
-            // Clone an rdflib.js Node by creaing a new node based on the 
+
+            // Clone an rdflib.js Node by creaing a new node based on the
             // original node RDF term type and data type.
             cloneNode: function(nodeToClone) {
                 switch(nodeToClone.termType) {
@@ -2383,25 +2383,33 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             getQueue: function(){
             	return this.filter(function(m){ return m.get("uploadStatus") == "q" || m.get("uploadStatus") == "p" });
             },
-            
+
+            /*
+            *  Adds a DataONEObject model to this DataPackage collection
+            */
+            addModel: function(model){
+              this.add(model);
+              this.handleAdd(model);
+            },
+
             handleAdd: function(dataONEObject){
             	var metadataModel = this.find(function(m){ return m.get("type") == "Metadata" });
-            	
+
             	// Append to or create a new documents list
                 if ( ! Array.isArray(metadataModel.get("documents")) ) {
                 	metadataModel.set("documents", [dataONEObject.id]);
-                    
+
                 } else {
                 	metadataModel.get("documents").push(dataONEObject.id);
                 }
-                
+
                 // Create an EML Entity for this DataONE Object if there isn't one already
-                if(metadataModel.type == "EML" && !dataONEObject.get("metadataEntity")){                	
+                if(metadataModel.type == "EML" && !dataONEObject.get("metadataEntity")){
                 	metadataModel.createEntity(dataONEObject);
 	            }
 
                 metadataModel.set("uploadStatus", "q");
-                                
+
                 this.packageModel.set("changed", true);
                 this.packageModel.trigger("change:changed");
             },
