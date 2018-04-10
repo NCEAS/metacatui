@@ -996,6 +996,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 					this.stopListening(model, "errorSaving", this.save);
 					this.listenToOnce(model, "errorSaving", this.save);
 
+          //If the model fails to save, start this save function
+					this.stopListening(model, "cancelSave", this.save);
+					this.listenToOnce(model,  "cancelSave", this.save);
+
 					//Save the model and watch for fails
 					model.save();
 
