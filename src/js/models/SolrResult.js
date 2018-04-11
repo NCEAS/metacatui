@@ -176,11 +176,18 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("url", MetacatUI.appModel.get("resolveServiceUrl") + encodeURIComponent(this.get("id")));
 		},
 
-		// checks if the pid is already a DOI
+		/**
+		 * Checks if the pid  or sid is already a DOI
+		 *
+		 * @returns {boolean} True if it is a DOI
+         */
 		isDOI: function() {
-			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."];
+			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.", 
+				"https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."];
+			var dataset_id = this.get("seriesId");
+			if (! dataset_id) dataset_id = this.get("id");
 			for (var i=0; i < DOI_PREFIXES.length; i++) {
-				if (this.get("id").toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0)
+				if (dataset_id.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
 					return true;
 			}
 			return false;
