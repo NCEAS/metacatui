@@ -55,7 +55,7 @@
 	<% } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ) { %>
 		<i class="icon icon-circle-blank warning icon-large"></i>
 	<% } else if( type != "Metadata" && numAttributes > 0 && hasInvalidAttribute ) { %>
-		<i class="icon icon-circle-blank danger icon-large"></i>
+		<i class="icon icon-exclamation-sign danger icon-large"></i>
 	<% } else if( type != "Metadata" && numAttributes > 0 && !hasInvalidAttribute && entityIsValid ) { %>
 		<i class="icon icon-ok-circle success icon-large"></i>
 	<% } else if( type != "Metadata" && !entityIsValid ) { %>

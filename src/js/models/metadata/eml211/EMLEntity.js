@@ -11,7 +11,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
          * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
          */
         var EMLEntity = Backbone.Model.extend({
-        	
+
         	//The class name for this model
         	type: "EMLEntity",
 
@@ -33,11 +33,11 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 	                attributeList: [], // Zero to many EMLAttribute objects
 	                constraint: [], // Zero to many EMLConstraint objects
 	                references: null, // A reference to another EMLEntity by id (needs work)
-	                
+
 	                //Temporary attribute until we implement the eml-physical module
 	                downloadID: null,
 	                formatName: null,
-	                
+
 	                /* Attributes not from EML */
 	                nodeOrder: [ // The order of the top level XML element nodes
 	                    "alternateIdentifier",
@@ -88,7 +88,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     "change:constraint " +
                     "change:references",
                     EMLEntity.trickleUpChange);
-                
+
             },
 
             /*
@@ -134,21 +134,21 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 if(physical){
                 	attributes.physicalSize = physical.find("size").text();
                 	attributes.physicalObjectName = physical.find("objectname").text();
-                	
+
                 	var checksumType = physical.find("authentication").attr("method");
                 	if(checksumType == "MD5")
                 		attributes.physicalMD5Checksum = physical.find("authentication").text();
                 }
-                
+
                 attributes.objectXML = objectXML;
                 attributes.objectDOM = $objectDOM[0];
-                
+
                 //Find the id from the download distribution URL
                 var urlNode = $objectDOM.find("url");
                 if(urlNode.length){
                 	var downloadURL = urlNode.text(),
                 		downloadID  = "";
-                	
+
                 	if( downloadURL.indexOf("/resolve/") > -1 )
                 		downloadID = downloadURL.substring( downloadURL.indexOf("/resolve/") + 9 );
                 	else if( downloadURL.indexOf("/object/") > -1 )
@@ -157,12 +157,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 		var withoutEcoGridPrefix = downloadURL.substring( downloadURL.indexOf("ecogrid://") + 10 ),
 							downloadID = withoutEcoGridPrefix.substring( withoutEcoGridPrefix.indexOf("/")+1 );
                 	}
-                		
-                	
+
+
                 	if(downloadID.length)
                         attributes.downloadID = downloadID;
                 }
-                
+
                 //Find the format name
                 var formatNode = $objectDOM.find("formatName");
                 if(formatNode.length){
@@ -200,7 +200,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 } else {
                     this.get("attributeList").splice(index, attribute);
                 }
-                
+
                 this.trigger("change:attributeList");
             },
 
@@ -210,19 +210,36 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
             removeAttribute: function(attribute, index) {
             	if(!index)
             		var attrIndex = this.get("attributeList").indexOf(attribute);
-                
+
             	this.get("attributeList").splice(attrIndex, 1);
             },
 
             /* Validate the top level EMLEntity fields */
             validate: function() {
-                var errorMap = {};
+                var errors = {};
+
                 // will be run by calls to isValid()
                 if ( ! this.get("entityName") ) {
-                    errorMap.entityName = new Error("An entity name is required.");
+                    errors.entityName = new Error("An entity name is required.");
                 }
 
-                return errorMap;
+                //Validate each of the EMLAttributes
+                _.each( this.get("attributeList"), function(attribute){
+
+                  if( !attribute.isValid() ){
+                    if( !errors.attributeList )
+            					errors.attributeList = [attribute.validationError];
+            				else
+            					errorsattributeList.push(attribute.validationError);
+            		  }
+
+                });
+
+                if( Object.keys(errors).length )
+                  return errors;
+                else
+                  return false;
+
             },
 
             /* Copy the original XML and update fields in a DOM object */

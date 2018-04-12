@@ -8,17 +8,17 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
          * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
          */
         var EMLOtherEntity = EMLEntity.extend({
-        	
+
         	//The class name for this model
         	type: "EMLOtherEntity",
 
             /* Attributes of any entity */
             defaults: function(){
 	            return	_.extend({
-	
+
 		                /* Attributes from EML */
 		                entityType: null, // The type of the entity
-		
+
 		                /* Attributes not from EML */
 		                nodeOrder: [ // The order of the top level XML element nodes
 		                    "alternateIdentifier",
@@ -32,7 +32,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 		                    "constraint",
 		                    "entityType"
 		                ],
-	
+
 	            	}, EMLEntity.prototype.defaults());
             },
 
@@ -125,7 +125,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "entityType");
-                        
+
                         if ( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("entitytype"))
                                 .text(this.get("entityType"))[0]);
@@ -154,12 +154,6 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 this.set("objectXML", xmlString);
 
                 return xmlString;
-            },
-
-            validate: function(){
-                if( !this.get("entityName") ) {
-                    return "Please specify a data name.";
-                }
             }
 
         });

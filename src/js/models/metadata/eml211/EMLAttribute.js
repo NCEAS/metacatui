@@ -27,7 +27,7 @@ define(["jquery", "underscore", "backbone",
 	                coverage: null, // an EMLCoverage object
 	                methods: [], // Zero or more EMLMethods objects
 	                references: null, // A reference to another EMLAttribute by id (needs work)
-	
+
 	                /* Attributes not from EML */
 	                type: "attribute", // The element type in the DOM
 	                parentModel: null, // The parent model this attribute belongs to
@@ -133,20 +133,20 @@ define(["jquery", "underscore", "backbone",
 
                 return attributes;
             },
-            
+
             serialize: function(){
             	var objectDOM = this.updateDOM(),
 					xmlString = objectDOM.outerHTML;
-		
+
 				//Camel-case the XML
 		    	xmlString = this.formatXML(xmlString);
-	    	
+
 		    	return xmlString;
             },
-            
+
             /* Copy the original XML and update fields in a DOM object */
             updateDOM: function(objectDOM){
-                
+
                 var nodeToInsertAfter;
                 var type = this.get("type") || "attribute";
                 if ( ! objectDOM ) {
@@ -180,7 +180,7 @@ define(["jquery", "underscore", "backbone",
                         $(objectDOM).find("attributename").text(this.get("attributeName"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeName");
-                        
+
                         if( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("attributename"))
                                 .text(this.get("attributeName"))[0]);
@@ -228,7 +228,7 @@ define(["jquery", "underscore", "backbone",
                         $(objectDOM).find("attributedefinition").text(this.get("attributeDefinition"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "attributeDefinition");
-                        
+
                         if( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("attributedefinition"))
                                 .text(this.get("attributeDefinition"))[0]);
@@ -274,24 +274,24 @@ define(["jquery", "underscore", "backbone",
                 var measurementScaleNodes;
                 var measurementScaleNode;
                 var domainNode;
-                if ( typeof measurementScale !== "undefined" ) {
-                    
+                if ( typeof measurementScale !== "undefined" && measurementScale) {
+
                     // Find the measurementScale child or create a new one
                     measurementScaleNodes = $(objectDOM).children("measurementscale");
                     if ( measurementScaleNodes.length ) {
                         measurementScaleNode = measurementScaleNodes[0];
-                        
+
                     } else {
                         measurementScaleNode = document.createElement("measurementscale");
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "measurementScale");
-                        
+
                         if ( typeof nodeToInsertAfter === "undefined" ) {
                             $(objectDOM).append(measurementScaleNode);
                         } else {
                             $(nodeToInsertAfter).after(measurementScaleNode);
                         }
                     }
-                    
+
                     // Append the measurementScale domain content
                     domainNode = measurementScale.updateDOM();
                     if (typeof domainNode !== "undefined" ) {
@@ -304,7 +304,7 @@ define(["jquery", "underscore", "backbone",
                 }
                 return objectDOM;
             },
-            
+
             /*
              * Get the DOM node preceding the given nodeName
              * to find what position in the EML document
@@ -339,34 +339,34 @@ define(["jquery", "underscore", "backbone",
             	//If there is no attribute name, add that error message
             	if(!this.get("attributeName"))
             		errors.attributeName = "Provide a name for this attribute.";
-            	
+
             	//If there is no attribute definition, add that error message
             	if(!this.get("attributeDefinition"))
             		errors.attributeDefinition = "Provide a definition for this attribute.";
-            	
+
             	//Get the EML measurement scale model
             	var measurementScaleModel = this.get("measurementScale");
-            	
+
             	// If there is no measurement scale model, then add that error message
             	if( !measurementScaleModel ){
             		errors.measurementScale = "Choose a category.";
             	}
             	else{
             		var measurementScaleIsValid = measurementScaleModel.isValid();
-            		
+
             		// If there is a measurement scale model and it is valid and there are no other
             		// errors, then trigger this model as valid and exit.
                 	if( measurementScaleIsValid && !Object.keys(errors).length ){
-                		
+
             			this.trigger("valid", this);
             			return;
-                		
+
                 	}
                 	else if( !measurementScaleIsValid ){
                 		errors.measurementScale = "More information is needed.";
                 	}
             	}
-            	
+
             	//If there is at least one error, then return the errors object
             	if(Object.keys(errors).length)
             		return errors;

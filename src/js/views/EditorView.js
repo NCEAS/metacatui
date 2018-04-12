@@ -786,7 +786,7 @@ define(['underscore',
     			//First clear all the error messaging
     			this.$(".notification.error").empty();
     			this.$(".side-nav-item .icon").hide();
-    			this.$(".error").removeClass("error");
+    			this.$("#metadata-container .error").removeClass("error");
     			$(".alert-container").remove();
 
 
@@ -795,7 +795,7 @@ define(['underscore',
     			_.each(errors, function(errorMsg, category){
 
     				var categoryEls = this.$("[data-category='" + category + "']"),
-    					dataItemRow = categoryEls.parents(".data-package-item");
+    					  dataItemRow = categoryEls.parents(".data-package-item");
 
     				//If this field is in a DataItemView, then delegate to that view
     				if(dataItemRow.length && dataItemRow.data("view")){
