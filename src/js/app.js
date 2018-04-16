@@ -34,7 +34,7 @@ require.config({
   map: MetacatUI.themeMap,
   urlArgs: "v=" + MetacatUI.metacatUIVersion,
   paths: {
-    jquery: 'https://code.jquery.com/jquery-1.9.1.min',
+    jquery: '../components/jquery-1.9.1.min',
     jqueryui: '../components/jquery-ui.min',
     jqueryform: '../components/jquery.form',
     underscore: '../components/underscore-min',
