@@ -370,7 +370,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             handleAddFiles: function(event) {
 
                 event.stopPropagation();
-                var fileUploadElement = this.$el.find(".file-upload");
+                var fileUploadElement = this.$(".file-upload");
+
+                fileUploadElement.val("");
 
                 if ( fileUploadElement ) {
                     fileUploadElement.click();
