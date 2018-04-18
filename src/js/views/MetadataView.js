@@ -9,6 +9,7 @@ define(['jquery',
 		'collections/DataPackage',
 		'models/DataONEObject',
 		'models/PackageModel',
+		'models/NodeModel',
 		'models/SolrResult',
 		'models/metadata/ScienceMetadata',
 		'views/DownloadButtonView',
@@ -35,7 +36,7 @@ define(['jquery',
     'text!templates/annotation.html',
     'uuid'
 		],
-	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
+	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, NodeModel, SolrResult, ScienceMetadata,
 			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
@@ -51,6 +52,7 @@ define(['jquery',
 		pid: null,
 		seriesId: null,
         saveProvPending: false,
+		nodeModel: new NodeModel(),
 
 		model: new SolrResult(),
 		packageModels: new Array(),
@@ -131,9 +133,48 @@ define(['jquery',
 		
 		// Linked Data Object for appending the jsonld into the browser DOM
 		getLinkedData: function (model) {
-				// JSON-LD object
+				// setting the base URL
 				var baseUrl = window.location.protocol + "//" + window.location.host;
-				
+
+				// Logic for formatting Author's text
+				var authors = model.get("origin"),
+					count = 0,
+					authorText = "";
+
+				_.each(authors, function (author) {
+					count++;
+
+					if(count == 6){
+						authorText += ", et al. ";
+						return;
+					}
+					else if(count > 6) 
+						return;
+
+					if(count > 1){
+						if(authors.length > 2) authorText += ",";
+
+						if (count == authors.length) authorText += " and";
+
+						if (authors.length > 1) authorText += " ";
+					}
+
+					authorText += author;
+
+					if (count == authors.length) authorText += ". ";
+				});
+
+				// setting up the publisher name
+				var nodeModelObject = _.findWhere(this.nodeModel.get("members"), this.nodeModel.get("currentMemberNode"));
+				var publisherName;
+				if(!nodeModelObject) {
+					publisherName = "DataONE" ;
+				}
+				else {
+					publisherName = nodeModelObject.name;
+				};
+
+				// spatial coverage object
 				var spatialCov = {
 					"@type": "Place",
 					"additionalProperty": [
@@ -160,51 +201,54 @@ define(['jquery',
 							  + model.get("westBoundCoord") + "\"]]]}}"
 						}
 				};
-				//the most likely item to change is the Metacat deployment context
+				var pubDate = new Date(model.get("pubDate").substring(0,10));
+				var beginDate = new Date(model.get("beginDate").substring(0,10));
+				var endDate = new Date(model.get("endDate").substring(0,10));
+
+				// JSON LD object
 				var elJSON = {
 					"@context": {
 						"@vocab": "http://schema.org/",
-						"datacite": "http://purl.org/spar/datacite/",
-						"earthcollab": "https://library.ucar.edu/earthcollab/schema#",
-						"geolink": "http://schema.geolink.org/1.0/base/main#",
-						"geolink-vocab":"http:\/\/schema.geolink.org\/1.0\/voc\/local#",
-						"vivo": "http://vivoweb.org/ontology/core#",
-						"dbpedia": "http://dbpedia.org/resource/",
-						"geo-upper": "http://www.geoscienceontology.org/geo-upper#"
 					},
-					"@id" : model.get("id"),
-					"@type" : "Dataset",
-					"additionalType": model.get("formatType"),
-					"name": model.get("title"),
+					"@type": "Dataset",
+					"@id": model.get("id"),
+					"variableMeasured": model.get("attributeName"),
+					"creator": model.get("origin"),
+					"datePublished": pubDate.getFullYear() + "-" + ('0'+pubDate.getMonth()).slice(-2)
+									+ "-" + ('0'+pubDate.getDate()).slice(-2),
+					"keywords": model.get("keywords"),
+					"publisher": publisherName,
+					"schemaVersion": model.get("formatId"),
+					"spatialCoverage" : spatialCov,
+					"temporalCoverage" : pubDate.getFullYear() + "-"
+										+ ('0'+pubDate.getMonth()).slice(-2) + "-"
+										+ ('0'+pubDate.getDate()).slice(-2) + "/" 
+										+ pubDate.getFullYear() + "-" 
+										+ ('0'+pubDate.getMonth()).slice(-2)
+										+ "-" + ('0'+pubDate.getDate()).slice(-2),
 					"description": model.get("abstract"),
+					"identifier": model.get("id"),
+					"name": model.get("title"),
 					"url": baseUrl + "/view/" + model.get("id"),
-					"version": model.get("dateModified"),
-					"author": model.get("origin").join(', '),
-					"keywords" : Object.keys(model),
-					"citation": model.get("origin").join(', ') + " ("
-							  + model.get("dateUploaded").substring(0,4) 
-							  + ") " + model.get("title") 
-							  +  " " + model.get("datasource")+ ". " + model.get("id") + ".",
-					"datePublished" : model.get("dateUploaded").substring(0,10),
-					"temporalCoverage" : model.get("beginDate").substring(0,10) + "/"
-									   + model.get("endDate").substring(0,10),
-					"spatialCoverage" : spatialCov
+					"citation": authorText + pubDate.getFullYear()
+							  + ". " + model.get("title") 
+							  + ". " + model.get("datasource")+ ". " + model.get("id") + "."
 				};
 				
 				
 				// Check if the jsonld already exists from the previous data view
 				// If not create a new script tag and append otherwise replace the text for the script
 				if(!document.getElementById('jsonld')) {
-						var el = document.createElement('script');
-						el.type = 'application/ld+json';
-						el.id = 'jsonld';
-						el.text = JSON.stringify(elJSON);
-						document.querySelector('head').appendChild(el);
-					}
-					else {
-						var script = document.getElementById('jsonld');
-						script.text = JSON.stringify(elJSON);
-					}
+					var el = document.createElement('script');
+					el.type = 'application/ld+json';
+					el.id = 'jsonld';
+					el.text = JSON.stringify(elJSON);
+					document.querySelector('head').appendChild(el);
+				}
+				else {
+					var script = document.getElementById('jsonld');
+					script.text = JSON.stringify(elJSON);
+				}
 				
 		
 			return;
