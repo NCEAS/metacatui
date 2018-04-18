@@ -102,18 +102,30 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				
 			modelJSON.address = addressesJSON;
 			
-			//Set the other misc. text fields
-			modelJSON.organizationName = $(objectDOM).children("organizationname").text();
-			modelJSON.positionName     = $(objectDOM).children("positionname").text();
-			modelJSON.email            = _.map($(objectDOM).children("electronicmailaddress"), function(email){
-											return  $(email).text();
-										 });
-			modelJSON.role 			   = $(objectDOM).find("role").text();
-			modelJSON.onlineUrl 	   = [$(objectDOM).find("onlineurl").first().text()];
-			modelJSON.userId 	       = [$(objectDOM).find("userid").first().text()];
-						
+			//Set the text fields
+			modelJSON.organizationName = $(objectDOM).children("organizationname").text() || null;
+			modelJSON.positionName     = $(objectDOM).children("positionname").text() || null;
+			modelJSON.role 			   = $(objectDOM).find("role").text() || null;
+			
 			//Set the id attribute
-			modelJSON.xmlID = $(objectDOM).attr("id");			
+			modelJSON.xmlID = $(objectDOM).attr("id");
+
+			//Email - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
+			if( $(objectDOM).children("electronicmailaddress").length ){
+				modelJSON.email = _.map($(objectDOM).children("electronicmailaddress"), function(email){
+										return  $(email).text();
+								  });
+			}
+			
+			//Online URL - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
+			if( $(objectDOM).find("onlineurl").length ){
+				modelJSON.onlineUrl = [$(objectDOM).find("onlineurl").first().text()];
+			}
+			
+			//User ID - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
+			if( $(objectDOM).find("userid").length ){
+				modelJSON.userId = [$(objectDOM).find("userid").first().text()];
+			}
 			
 			return modelJSON;
 		},
@@ -564,10 +576,36 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		 * Checks the values of the model to determine if it is EML-valid
 		 */
 		validate: function(){
+			
+			var individualName = this.get("individualName") || {},
+				givenName = individualName.givenName || [],
+				surName   = individualName.surName || null;
+			
+			//If there are no values in this model that would be serialized, then the model is valid
+			if( !this.get("organizationName") && !this.get("positionName") && !givenName.length && !surName
+					&& !this.get("address").length && !this.get("phone").length && !this.get("fax").length 
+					&& !this.get("email").length && !this.get("onlineUrl").length && !this.get("userId").length){
+
+				return;
+				
+			}
 			//The EMLParty must have either an organization name, position name, or surname. It must ALSO have a type or role.
-			if ( !this.get("organizationName") && !this.get("positionName") && 
-					(!this.get("individualName") || (this.get("individualName") && !this.get("individualName").surName)))
-				return { name: "Either a last name, position name, or organization name is required." };
+			else if ( !this.get("organizationName") && !this.get("positionName") && 
+					(!this.get("individualName") || !surName ) ){
+			
+				return { 
+					surName: "Either a last name, position name, or organization name is required.",
+					positionName: "",
+					organizationName: ""
+				}
+			
+			}
+			//If there is a first name and no last name, then this is not a valid individualName
+			else if( givenName.length && !surName ){
+				
+				return { surName: "Provide a last name." }
+				
+			}
 		},
 		
 		isOrcid: function(username){

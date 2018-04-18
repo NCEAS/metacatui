@@ -29,14 +29,14 @@
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-phone">Phone number</label>
 			<input type="tel" value="<%=phone%>" id="<%=uniqueId%>-phone" name="Phone number" class="span6 tooltip-this phone" data-attribute="phone" placeholder="Phone" />
-			
+
 			<label class="hidden" for="<%=uniqueId%>-fax">Fax number</label>
 			<input type="tel" value="<%=fax%>" id="<%=uniqueId%>-fax" name="fax number" class="span6 tooltip-this phone" data-attribute="fax" placeholder="Fax" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-orcid">ORCID</label>
 			<img src="img/orcid_64x64.png" class="input-logo" alt="ORCID logo" title="ORCID logo"/>
-			<input type="text" value="<%=userId%>" id="<%=uniqueId%>-orcid" name="orcid" class="tooltip-this" data-attribute="userId" placeholder="ORCID (e.g. http://orcid.org/0000-0002-1825-0097)" />
+			<input type="text" value="<%=userId%>" id="<%=uniqueId%>-orcid" name="orcid" class="tooltip-this" data-attribute="userId" data-html="true" placeholder="For maximum impact, add this person's ORCID. <a href='https://orcid.org/orcid-search/search'>Search for an ORCID by name.</a>" />
 		</div>
 	</div>
 	<div class="span4">
@@ -51,14 +51,14 @@
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-city">City</label>
 			<input type="text" value="<%=city%>" id="<%=uniqueId%>-city" name="city" class="span6 tooltip-this" data-attribute="city" placeholder="City" />
-			
+
 			<label class="hidden" for="<%=uniqueId%>-state">State or Administrative Area</label>
 			<input type="text" value="<%=adminArea%>" id="<%=uniqueId%>-state" name="state" class="span6 tooltip-this" data-attribute="administrativeArea" placeholder="State or province" />
 		</div>
 		<div class="row-fluid">
-			<label class="hidden" for="<%=uniqueId%>-zip">Zip Code</label>		
+			<label class="hidden" for="<%=uniqueId%>-zip">Zip Code</label>
 			<input type="text" value="<%=postalCode%>" id="<%=uniqueId%>-zip" name="zip code" class="span6 tooltip-this" data-attribute="postalCode" placeholder="Postal code" />
-			
+
 			<label class="hidden" for="<%=uniqueId%>-country">Country</label>
 			<input type="text" value="<%=country%>" id="<%=uniqueId%>-country" name="country" class="span6 tooltip-this" data-attribute="country" placeholder="Country" />
 		</div>

@@ -81,11 +81,11 @@ define(['underscore',
         /* Render the view */
         render: function() {
 
-            MetacatUI.appModel.set('headerType', 'default');
+          MetacatUI.appModel.set('headerType', 'default');
 
         	//Style the body as an Editor
-            $("body").addClass("Editor rendering");
-            this.$el.empty();
+          $("body").addClass("Editor rendering");
+          this.$el.empty();
 
         	//Inert the basic template on the page
         	this.$el.html(this.template({
@@ -194,7 +194,7 @@ define(['underscore',
 
                 // Set the listeners
                 this.setListeners();
-                
+
                 //Render the data package
                 this.renderDataPackage();
 
@@ -279,7 +279,7 @@ define(['underscore',
 	            		view.emlView.resizeTOC();
 	            	}
             	});
-            
+
             var tableHeight = ($(window).height() - $("#Navbar").height()) * .40;
             $packageTableContainer.css("height", tableHeight + "px");
 
@@ -305,7 +305,6 @@ define(['underscore',
         renderMember: function(model, collection, options) {
 
             // Render metadata or package information, based on the type
-
             if ( typeof model.attributes === "undefined") {
                 return;
 
@@ -356,11 +355,11 @@ define(['underscore',
                 	MetacatUI.rootDataPackage.remove(model);
                 	MetacatUI.rootDataPackage.add(EMLmodel, { silent: true });
                 	model.trigger("replace", EMLmodel);
-                	
+
                 	//Fetch the EML and render it
-                	this.listenToOnce(EMLmodel, "sync", this.renderMetadata);                	
+                	this.listenToOnce(EMLmodel, "sync", this.renderMetadata);
                 	EMLmodel.fetch();
-                	
+
                 	return;
                 }
 
@@ -453,7 +452,7 @@ define(['underscore',
         	//When the model is invalid, show the required fields
         	this.listenTo(this.model, "invalid", this.showValidation);
         	this.listenTo(this.model, "valid",   this.showValidation);
-            
+
             // When a data package member fails to load, remove it and warn the user
             this.listenTo(MetacatUI.eventDispatcher, "fileLoadError", this.handleFileLoadError);
 
@@ -471,7 +470,7 @@ define(['underscore',
         	if(btn.is(".btn-disabled")) return;
 
 	       	this.showSaving();
-	       	
+
         	//Save the package!
         	MetacatUI.rootDataPackage.save();
         },
@@ -496,7 +495,7 @@ define(['underscore',
                     	viewURL: "#view/" + this.model.get("id")
                 	}),
                 	timeout = null;
-                
+
             }
             else {
                 var message = $(document.createElement("div")).append(
@@ -504,17 +503,17 @@ define(['underscore',
                 		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
                 	timeout = 4000;
             }
-            
-        	
+
+
             MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
-            
+
             //Rerender the CitationView
             var citationView = _.where(this.subviews, { type: "Citation" });
             if(citationView.length){
 	            citationView[0].createTitleLink = true;
 	            citationView[0].render();
             }
-            
+
             // Reset the state to clean
             MetacatUI.rootDataPackage.packageModel.set("changed", false);
             this.model.set("hasContentChanges", false);
@@ -543,7 +542,7 @@ define(['underscore',
         		emailBody: "Error message: Data Package save error: " + errorMsg,
         		remove: true
         		});
-        	
+
         	//Reset the Saving styling
         	this.hideSaving();
         },
@@ -552,164 +551,164 @@ define(['underscore',
          * Called when there is no object found with this ID
          */
         showNotFound: function(){
-			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
-			if(!MetacatUI.appUserModel.get("checked")){
-				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
-				return;
-			}
-			//If the user is not logged in
-			else if(!MetacatUI.appUserModel.get("loggedIn")){
-				this.showSignIn();
-				return;
-			}
+      			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
+      			if(!MetacatUI.appUserModel.get("checked")){
+      				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
+      				return;
+      			}
+      			//If the user is not logged in
+      			else if(!MetacatUI.appUserModel.get("loggedIn")){
+      				this.showSignIn();
+      				return;
+      			}
 
-			if(!this.model.get("notFound")) return;
+      			if(!this.model.get("notFound")) return;
 
-			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
-			  "<ul class='indent'>" +
-			  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-				  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
-				  "<li>The content was removed because it was invalid.</li>" +
-			  "</ul>";
-			this.hideLoading();
-			MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
+      			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
+      			  "<ul class='indent'>" +
+      			  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
+      				  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+      				  "<li>The content was removed because it was invalid.</li>" +
+      			  "</ul>";
+      			this.hideLoading();
+      			MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
 
-		},
+    		},
 
-		showLatestVersion: function(){
-			var view = this;
+    		showLatestVersion: function(){
+    			var view = this;
 
-			//When the latest version is found,
-			this.listenToOnce(this.model, "change:latestVersion", function(){
-				//Make sure it has a newer version, and if so,
-				if(view.model.get("latestVersion") != view.model.get("id")){
-					//Get the obsoleted id
-					var oldID = view.model.get("id");
+    			//When the latest version is found,
+    			this.listenToOnce(this.model, "change:latestVersion", function(){
+    				//Make sure it has a newer version, and if so,
+    				if(view.model.get("latestVersion") != view.model.get("id")){
+    					//Get the obsoleted id
+    					var oldID = view.model.get("id");
 
-					//Reset the current model
-					view.pid = view.model.get("latestVersion");
-					view.model = null;
+    					//Reset the current model
+    					view.pid = view.model.get("latestVersion");
+    					view.model = null;
 
-					//Update the URL
-					MetacatUI.uiRouter.navigate("#submit/" + view.pid, { trigger: false, replace: true });
+    					//Update the URL
+    					MetacatUI.uiRouter.navigate("#submit/" + view.pid, { trigger: false, replace: true });
 
-					//Render the new model
-					view.render();
+    					//Render the new model
+    					view.render();
 
-					//Show a warning that the user was trying to edit old content
-					MetacatUI.appView.showAlert("You've been forwarded to the newest version of your dataset for editing.",
-							"alert-warning", this.$el, 12000, { remove: true });
-				}
-				else
-					view.getDataPackage();
-			});
+    					//Show a warning that the user was trying to edit old content
+    					MetacatUI.appView.showAlert("You've been forwarded to the newest version of your dataset for editing.",
+    							"alert-warning", this.$el, 12000, { remove: true });
+    				}
+    				else
+    					view.getDataPackage();
+    			});
 
-			//Find the latest version of this metadata object
-			this.model.findLatestVersion();
-		},
+    			//Find the latest version of this metadata object
+    			this.model.findLatestVersion();
+    		},
 
-		/*
-		 * Show the entity editor
-		 */
-		showEntity: function(e){
-        	if(!e || !e.target)
-        		return;
+    		/*
+    		 * Show the entity editor
+    		 */
+    		showEntity: function(e){
+            	if(!e || !e.target)
+            		return;
 
-        	//For EML metadata docs
-        	if(this.model.type == "EML"){
-	        	//Get the Entity View
-	        	var row = $(e.target).parents(".data-package-item"),
-	        		entityView = row.data("entityView"),
-	        		dataONEObject = row.data("model");
-	        	
-	        	if(dataONEObject.get("uploadStatus") == "p" || dataONEObject.get("uploadStatus") == "l" || dataONEObject.get("uploadStatus") == "e")
-	        		return;
+            	//For EML metadata docs
+            	if(this.model.type == "EML"){
+    	        	//Get the Entity View
+    	        	var row = $(e.target).parents(".data-package-item"),
+    	        		entityView = row.data("entityView"),
+    	        		dataONEObject = row.data("model");
 
-	        	//If there isn't a view yet, create one
-	        	if(!entityView){
+    	        	if(dataONEObject.get("uploadStatus") == "p" || dataONEObject.get("uploadStatus") == "l" || dataONEObject.get("uploadStatus") == "e")
+    	        		return;
 
-	        		//Get the entity model for this data package item
-	        		var entityModel = this.model.getEntity(row.data("model"));
+    	        	//If there isn't a view yet, create one
+    	        	if(!entityView){
 
-	        		//Create a new EMLOtherEntity if it doesn't exist
-	        		if(!entityModel){
-	        			entityModel = new EMLOtherEntity({
-	        				entityName : dataONEObject.get("fileName"),
-	        				entityType : dataONEObject.get("formatId") || dataONEObject.get("mediaType"),
-	        				parentModel: this.model,
-	        				xmlID: dataONEObject.getXMLSafeID()
-	        			});
+    	        		//Get the entity model for this data package item
+    	        		var entityModel = this.model.getEntity(row.data("model"));
 
-	        			if(!dataONEObject.get("fileName")){
-		        			//Listen to changes to required fields on the otherEntity models
-		        			this.listenTo(entityModel, "change:entityName", function(){
-		        				if(!entityModel.isValid()) return;
+    	        		//Create a new EMLOtherEntity if it doesn't exist
+    	        		if(!entityModel){
+    	        			entityModel = new EMLOtherEntity({
+    	        				entityName : dataONEObject.get("fileName"),
+    	        				entityType : dataONEObject.get("formatId") || dataONEObject.get("mediaType"),
+    	        				parentModel: this.model,
+    	        				xmlID: dataONEObject.getXMLSafeID()
+    	        			});
 
-		        				//Get the position this entity will be in
-		        				var position = $(".data-package-item.data").index(row);
+    	        			if(!dataONEObject.get("fileName")){
+    		        			//Listen to changes to required fields on the otherEntity models
+    		        			this.listenTo(entityModel, "change:entityName", function(){
+    		        				if(!entityModel.isValid()) return;
 
-		        				this.model.addEntity(entityModel, position);
-		        			});
-	        			}
-	        			else{
-	        				//Get the position this entity will be in
-	        				var position = $(".data-package-item.data").index(row);
+    		        				//Get the position this entity will be in
+    		        				var position = $(".data-package-item.data").index(row);
 
-	        				this.model.addEntity(entityModel, position);
-	        			}
-	        		}
+    		        				this.model.addEntity(entityModel, position);
+    		        			});
+    	        			}
+    	        			else{
+    	        				//Get the position this entity will be in
+    	        				var position = $(".data-package-item.data").index(row);
 
-	        		//Create a new view for the entity based on the model type
-	        		if(entityModel.type == "EMLOtherEntity"){
-		        		entityView = new EMLEntityView({
-		        			model: entityModel,
-		        			DataONEObject: dataONEObject,
-		        			edit: true
-		        		});
-	        		}
-	        		else{
-	        			entityView = new EMLEntityView({
-		        			model: entityModel,
-		        			DataONEObject: dataONEObject,
-		        			edit: true
-		        		});
-	        		}
+    	        				this.model.addEntity(entityModel, position);
+    	        			}
+    	        		}
 
-	        		//Attach the view to the edit button so we can access it again
-	        		row.data("entityView", entityView);
+    	        		//Create a new view for the entity based on the model type
+    	        		if(entityModel.type == "EMLOtherEntity"){
+    		        		entityView = new EMLEntityView({
+    		        			model: entityModel,
+    		        			DataONEObject: dataONEObject,
+    		        			edit: true
+    		        		});
+    	        		}
+    	        		else{
+    	        			entityView = new EMLEntityView({
+    		        			model: entityModel,
+    		        			DataONEObject: dataONEObject,
+    		        			edit: true
+    		        		});
+    	        		}
 
-	        		//Render the view
-	        		entityView.render();
-	        	}
+    	        		//Attach the view to the edit button so we can access it again
+    	        		row.data("entityView", entityView);
 
-	        	//Show the modal window editor for this entity
-	        	if(entityView)
-	        		entityView.show();
-        	}
+    	        		//Render the view
+    	        		entityView.render();
+    	        	}
 
-		},
+    	        	//Show the modal window editor for this entity
+    	        	if(entityView)
+    	        		entityView.show();
+            	}
 
-		showSignIn: function(){
-    		var container = $(document.createElement("div")).addClass("container center");
-    		this.$el.html(container);
-    		var signInButtons = new SignInView().render().el;
-    		$(container).append('<h1>Sign in to submit data</h1>', signInButtons);
-		},
+    		},
 
-		/*
-		 * Shows a message if the user is not authorized to edit this package
-		 */
-		notAuthorized: function(){
-			if(this.model.get("isAuthorized") || this.model.get("notFound")) return;
+    		showSignIn: function(){
+        		var container = $(document.createElement("div")).addClass("container center");
+        		this.$el.html(container);
+        		var signInButtons = new SignInView().render().el;
+        		$(container).append('<h1>Sign in to submit data</h1>', signInButtons);
+    		},
 
-			this.$("#editor-body").empty();
-			MetacatUI.appView.showAlert("You are not authorized to edit this data set.",
-					"alert-error", "#editor-body");
+    		/*
+    		 * Shows a message if the user is not authorized to edit this package
+    		 */
+    		notAuthorized: function(){
+    			if(this.model.get("isAuthorized") || this.model.get("notFound")) return;
 
-			//Stop listening to any further events
-			this.stopListening();
-			this.model.off();
-		},
+    			this.$("#editor-body").empty();
+    			MetacatUI.appView.showAlert("You are not authorized to edit this data set.",
+    					"alert-error", "#editor-body");
+
+    			//Stop listening to any further events
+    			this.stopListening();
+    			this.model.off();
+    		},
 
         /*
          * Cancel all edits in the editor
@@ -725,35 +724,35 @@ define(['underscore',
         },
 
         /* Show the editor footer controls (Save bar) */
-	    showControls: function(){
-	    	this.$(".editor-controls").removeClass("hidden").slideDown();
-	    },
+  	    showControls: function(){
+  	    	this.$(".editor-controls").removeClass("hidden").slideDown();
+  	    },
 
         /* Hide the editor footer controls (Save bar) */
-	    hideControls: function(){
-        	this.hideSaving();
+  	    hideControls: function(){
+          	this.hideSaving();
 
-	    	this.$(".editor-controls").slideUp();
-	    },
-	    
-	    showSaving: function(){
+  	    	this.$(".editor-controls").slideUp();
+  	    },
 
-        	//Change the style of the save button
-        	this.$("#save-editor")
-        		.html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
-        		.addClass("btn-disabled");
+  	    showSaving: function(){
 
-	    	this.$("input, textarea, select, button").prop("disabled", true);	    	
-	    	
-	    },
+          	//Change the style of the save button
+          	this.$("#save-editor")
+          		.html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
+          		.addClass("btn-disabled");
 
-	    hideSaving: function(){
-	    	this.$("input, textarea, select, button").prop("disabled", false);
+  	    	this.$("input, textarea, select, button").prop("disabled", true);
 
-        	//When the package is saved, revert the Save button back to normal
-        	this.$("#save-editor").html("Submit dataset").removeClass("btn-disabled");	    
-	    
-	    },
+  	    },
+
+  	    hideSaving: function(){
+  	    	this.$("input, textarea, select, button").prop("disabled", false);
+
+          	//When the package is saved, revert the Save button back to normal
+          	this.$("#save-editor").html("Submit dataset").removeClass("btn-disabled");
+
+  	    },
 
         /* Toggle the editor footer controls (Save bar) */
         toggleControls: function() {
@@ -768,185 +767,204 @@ define(['underscore',
             }
         },
 
-	    showLoading: function(container, message){
-	    	if(typeof container == "undefined" || !container)
-	    		var container = this.$el;
+  	    showLoading: function(container, message){
+  	    	if(typeof container == "undefined" || !container)
+  	    		var container = this.$el;
 
-	    	$(container).html(MetacatUI.appView.loadingTemplate({ msg: message }));
-	    },
+  	    	$(container).html(MetacatUI.appView.loadingTemplate({ msg: message }));
+  	    },
 
-	    hideLoading: function(container){
-	    	if(typeof container == "undefined" || !container)
-	    		var container = this.$el;
+  	    hideLoading: function(container){
+  	    	if(typeof container == "undefined" || !container)
+  	    		var container = this.$el;
 
-	    	$(container).find(".loading").remove();
-	    },
+  	    	$(container).find(".loading").remove();
+  	    },
 
-		showValidation: function(){
-			
-			//First clear all the error messaging
-			this.$(".notification.error").empty();
-			this.$(".side-nav-item .icon").hide();
-			this.$(".error").removeClass("error");
-			$(".alert-container").remove();
-			
-			
-			var errors = this.model.validationError;
-			
-			_.each(errors, function(errorMsg, category){
-				
-				var categoryEls = this.$("[data-category='" + category + "']"),
-					dataItemRow = categoryEls.parents(".data-package-item");
+    		showValidation: function(){
 
-				//If this field is in a DataItemView, then delegate to that view
-				if(dataItemRow.length && dataItemRow.data("view")){
-					dataItemRow.data("view").showValidation(category, errorMsg);
-					return;
-				}
-				else{
-					var elsWithViews = _.filter(categoryEls, function(el){
-							return ( $(el).data("view") && 
-									$(el).data("view").showValidation &&
-									!$(el).data("view").isNew );
-						});
-					
-					if(elsWithViews.length){
-						_.each(elsWithViews, function(el){
-							$(el).data("view").showValidation();
-						});
-					}
-					else{
-						//Show the error message
-						categoryEls.filter(".notification").addClass("error").text(errorMsg);
-						
-						//Add the error message to inputs
-						categoryEls.filter("textarea, input").addClass("error");
-					}
-				}
-				
-				//Get the link in the table of contents navigation
-				var navigationLink = this.$(".side-nav-item[data-category='" + category + "']");
-				
-				if(!navigationLink.length){
-					var section = categoryEls.parents("[data-section]");
-					navigationLink = this.$(".side-nav-item." + $(section).attr("data-section"));
-				}
-				
-				//Show the error icon in the table of contents				
-				navigationLink.addClass("error")
-					.find(".icon")
-					.addClass("error")
-					.show();
-				
-				this.model.off("change:"  + category, this.model.checkValidity);
-				this.model.once("change:" + category, this.model.checkValidity);
-				
-			}, this);
-			
-			if(errors){
-				MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.", 
-						"alert-error", 
-						this.$el, 
-						null, 
-						{
-	        				remove: true
-						});
-			}
+    			//First clear all the error messaging
+    			this.$(".notification.error").empty();
+    			this.$(".side-nav-item .icon").hide();
+    			this.$(".error").removeClass("error");
+    			$(".alert-container").remove();
 
-		},
-		
-		checkValidity: function(){
-			if(this.model.isValid())
-				this.model.trigger("valid");
-		},
 
-	    /*
-	     * Alerts the user that changes will not be saved if s/he navigates away from this view.
-	     */
-		confirmClose: function(){
-			//If the user isn't logged in, we can leave this page
-			if(!MetacatUI.appUserModel.get("loggedIn")) return true;
+    			var errors = this.model.validationError;
 
-			//If the form hasn't been edited, we can close this view without confirmation
-			if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
-				return true;
+    			_.each(errors, function(errorMsg, category){
 
-			var isLeaving = confirm("Do you want to leave this page? All information you've entered will be lost.");
-			return isLeaving;
-		},
+    				var categoryEls = this.$("[data-category='" + category + "']"),
+    					dataItemRow = categoryEls.parents(".data-package-item");
+
+    				//If this field is in a DataItemView, then delegate to that view
+    				if(dataItemRow.length && dataItemRow.data("view")){
+    					dataItemRow.data("view").showValidation(category, errorMsg);
+    					return;
+    				}
+    				else{
+    					var elsWithViews = _.filter(categoryEls, function(el){
+    							return ( $(el).data("view") &&
+    									$(el).data("view").showValidation &&
+    									!$(el).data("view").isNew );
+    						});
+
+    					if(elsWithViews.length){
+    						_.each(elsWithViews, function(el){
+    							$(el).data("view").showValidation();
+    						});
+    					}
+    					else{
+    						//Show the error message
+    						categoryEls.filter(".notification").addClass("error").text(errorMsg);
+
+    						//Add the error message to inputs
+    						categoryEls.filter("textarea, input").addClass("error");
+    					}
+    				}
+
+    				//Get the link in the table of contents navigation
+    				var navigationLink = this.$(".side-nav-item[data-category='" + category + "']");
+
+    				if(!navigationLink.length){
+    					var section = categoryEls.parents("[data-section]");
+    					navigationLink = this.$(".side-nav-item." + $(section).attr("data-section"));
+    				}
+
+    				//Show the error icon in the table of contents
+    				navigationLink.addClass("error")
+    					.find(".icon")
+    					.addClass("error")
+    					.show();
+
+    				this.model.off("change:"  + category, this.model.checkValidity);
+    				this.model.once("change:" + category, this.model.checkValidity);
+
+    			}, this);
+
+    			if(errors){
+    				MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.",
+    						"alert-error",
+    						this.$el,
+    						null,
+    						{
+    	        				remove: true
+    						});
+    			}
+
+    		},
+
+    		checkValidity: function(){
+    			if(this.model.isValid())
+    				this.model.trigger("valid");
+    		},
+
+        /*
+        * Determine if a confirmation alert should be displayed, and if so, will display it and return the user's response.
+        *
+        * This function will be called by the onBeforeUnload window event
+        *
+        * When the router is navigating to the EditorView when already on the EditorView, the window object will not
+        * fire an beforeUnload event. An example is when the user is already on the EditorView and clicks a link to the EditorView.
+        * So to catch these routing events, the app Router will watch for this specific situation.
+        */
+        confirmClose: function(){
+
+          //If the user isn't logged in, we can leave this view without confirmation
+          if(!MetacatUI.appUserModel.get("loggedIn"))
+            return true;
+
+          //If the form hasn't been edited, we can close this view without confirmation
+    			if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
+    				return true;
+
+          //Show the confirm alert to the user and if they click "OK", return true
+          if( MetacatUI.appView.confirmLeave() )
+            return true;
+          //If the user clicks "Cancel", return false
+          else {
+            return false;
+          }
+
+        },
 
         /* Close the view and its sub views */
         onClose: function() {
-            this.off();    // remove callbacks, prevent zombies
-            this.model.off();
 
-            $(".Editor").removeClass("Editor");
-            this.$el.empty();
+        	//Stop listening to the "add" event so that new package members aren't rendered
+        	this.stopListening(MetacatUI.rootDataPackage, "add" );
 
-            this.model = null;
+        	//Remove all the other events
+          this.off();    // remove callbacks, prevent zombies
+          this.model.off();
 
-            // Close each subview
-            _.each(this.subviews, function(subview) {
-				if(subview.onClose)
-					subview.onClose();
-            });
+          $(".Editor").removeClass("Editor");
+          this.$el.empty();
 
-            this.subviews = [];
-			window.onbeforeunload = null;
+          this.model = null;
+
+          // Close each subview
+          _.each(this.subviews, function(subview) {
+      			if(subview.onClose)
+      				subview.onClose();
+          });
+
+          this.subviews = [];
+			    window.onbeforeunload = null;
 
         },
 
         /*
             Handle "fileLoadError" events by alerting the user
             and removing the row from the data package table.
-            
+
             @param item The model item passed by the fileLoadError event
          */
-        handleFileLoadError: function(item) {
-            var message;
-            var fileName;
-            /* Remove the data package table row */
-            this.dataPackageView.removeOne(item);
-            /* Then inform the user */
-            if ( item && item.get && 
-                (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) { 
-                fileName = item.get("fileName");
-                message = "The file " + fileName + 
-                    " is already included in this dataset. The duplicate file has not been added.";
-            } else {
-                message = "The chosen file is already included in this dataset. " +
-                    "The duplicate file has not been added.";
-            }
-            MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
-        },
-        
+          handleFileLoadError: function(item) {
+              var message;
+              var fileName;
+              /* Remove the data package table row */
+              this.dataPackageView.removeOne(item);
+              /* Then inform the user */
+              if ( item && item.get &&
+                  (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) {
+                  fileName = item.get("fileName");
+                  message = "The file " + fileName +
+                      " is already included in this dataset. The duplicate file has not been added.";
+              } else {
+                  message = "The chosen file is already included in this dataset. " +
+                      "The duplicate file has not been added.";
+              }
+              MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
+          },
+
         /*
             Handle "fileReadError" events by alerting the user
             and removing the row from the data package table.
-            
+
             @param item The model item passed by the fileReadError event
          */
-        handleFileReadError: function(item) {
-            var message;
-            var fileName;
-            /* Remove the data package table row */
-            this.dataPackageView.removeOne(item);
-            /* Then inform the user */
-            if ( item && item.get && 
-                (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) { 
-                fileName = item.get("fileName");
-                message = "The file " + fileName + 
-                    " could not be read. You may not have permission to read the file," + 
-                    " or the file was too large for your browser to upload. " +
-                    "The file has not been added.";
-            } else {
-                message = "The chosen file " +
-                    " could not be read. You may not have permission to read the file," + 
-                    " or the file was too large for your browser to upload. " +
-                    "The file has not been added.";
-            }
-            MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
-        }
+          handleFileReadError: function(item) {
+              var message;
+              var fileName;
+              /* Remove the data package table row */
+              this.dataPackageView.removeOne(item);
+              /* Then inform the user */
+              if ( item && item.get &&
+                  (item.get("fileName") !== "undefined" || item.get("fileName") !== null) ) {
+                  fileName = item.get("fileName");
+                  message = "The file " + fileName +
+                      " could not be read. You may not have permission to read the file," +
+                      " or the file was too large for your browser to upload. " +
+                      "The file has not been added.";
+              } else {
+                  message = "The chosen file " +
+                      " could not be read. You may not have permission to read the file," +
+                      " or the file was too large for your browser to upload. " +
+                      "The file has not been added.";
+              }
+              MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
+          }
 
     });
     return EditorView;

@@ -1555,7 +1555,7 @@ define(['jquery',
 			//If we've cached these filter results, then use the cache instead of sending a new request
 			if(!MetacatUI.appSearchModel.autocompleteCache) MetacatUI.appSearchModel.autocompleteCache = {}; 
 			else if(MetacatUI.appSearchModel.autocompleteCache[facetQuery]){
-				this.setupAutocomplete(MetacatUI.appSearchModel.autocompleteCache[facetQuery]);
+				this.setupAutocomplete(input, MetacatUI.appSearchModel.autocompleteCache[facetQuery]);
 				return;
 			}
 

@@ -29,12 +29,12 @@ define(['jquery', 'underscore', 'backbone'],
 
 			userProfiles: true,
 			profileUsername: null,
-						
+
 			maxDownloadSize: 3000000000,
-			
+
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: false,
-			
+
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
 			 * Any field set to true will prevent the user from saving the Editor until a value has been given
@@ -54,9 +54,9 @@ define(['jquery', 'underscore', 'backbone'],
 				temporalCoverage: true,
 				title: true
 			},
-			
+
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
-			
+
 			defaultAccessPolicy: [],
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
@@ -76,8 +76,8 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
-            formatsServiceUrl: null,
-            formatsUrl: "/formats",
+      formatsServiceUrl: null,
+      formatsUrl: "/formats",
 			//grantsUrl: null,
 			//bioportalSearchUrl: null,
 			//orcidSearchUrl: null,
@@ -139,7 +139,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
-				
+
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
 
@@ -147,9 +147,9 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("tokenUrl") != "undefined"){
 					this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
 					this.set("tokenUrl",  this.get("portalUrl") + "token");
-						
+
 					this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
-						
+
 					//The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
 					if(typeof this.get("signInUrl") !== "undefined")
 						this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
@@ -159,17 +159,17 @@ define(['jquery', 'underscore', 'backbone'],
 						this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
 					if(this.get('orcidBaseUrl'))
 						this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
-						
+
 					if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
 						this.set("signOutUrl", this.get('portalUrl') + "logout");
-						
+
 				}
-					
+
 				// Object format list
-                if ( typeof this.get("formatsUrl") != "undefined" ) {
-                     this.set("formatsServiceUrl", 
-                     this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
-                }
+        if ( typeof this.get("formatsUrl") != "undefined" ) {
+             this.set("formatsServiceUrl",
+             this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+        }
 
 				//ORCID search
 				if(typeof this.get("orcidBaseUrl") != "undefined")

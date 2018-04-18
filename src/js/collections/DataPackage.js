@@ -360,6 +360,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     models = []; // the models returned by parse()
 
                 try {
+                	
+                	//First, make sure we are only using one CN Base URL in the RDF or the RDF parsing will fail.
+                    var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';                   
+                    response = response.replace(/cn-\S+.test.dataone.org\/cn\/v\d\/resolve/g, "cn.dataone.org/cn/v2/resolve");
+                	
                     this.rdf.parse(response, this.dataPackageGraph, this.url(), 'application/rdf+xml');
 
                   	// List the package members
@@ -760,27 +765,27 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Process each SPARQL query
                     var keys = Object.keys(provQueries);
                     this.queriesToRun = keys.length;
+                    
+					//Bind the onResult and onDone functions to the model so they can be called out of context
+					this.onResult = _.bind(this.onResult, this);
+					this.onDone   = _.bind(this.onDone, this);
+					
                     /* Run queries for all provenance fields.
-                       Each query may have multiple solutions and  each solution will trigger a callback
-                       to the 'onResult' function. When each query has completed, the 'onDone' function
-                       is called for that query.
-                    */
-					
-										//var myDataPackageGraph = rdf.graph();
-										//this.rdf.parse(this.objectXML, myDataPackageGraph, this.url(), 'application/rdf+xml');
-                    //var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, myDataPackageGraph);
-                    var eq = rdf.SPARQLToQuery(provQueries['prov_wasDerivedFrom'], false, this.dataPackageGraph);
-					
-										this.onResult = _.bind(this.onResult, this);
-										this.onDone   = _.bind(this.onDone, this);
-					
+                    Each query may have multiple solutions and  each solution will trigger a callback
+                    to the 'onResult' function. When each query has completed, the 'onDone' function
+                    is called for that query.
+                     */
                     for (var iquery = 0; iquery < keys.length; iquery++) {
+                    	
                       var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, this.dataPackageGraph);
-                      //var eq = rdf.SPARQLToQuery(provQueries[keys[iquery]], false, myDataPackageGraph);
-                      this.dataPackageGraph.query(eq, this.onResult, this.url(), this.onDone)
+                      this.dataPackageGraph.query(eq, this.onResult, this.url(), this.onDone);
+                      
                     }
+                    
                 } catch (error) {
+                	
                     console.log(error);
+                    
                 }
             },
             
@@ -1476,9 +1481,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         }
                     });
                     
-                    // If we cancelled out the inverse of the current edit, don't save the
-                    // current edit either, as they cancel each other out.
-                    if(editListSize > this.provEdits.length) {
+                    // If we cancelled out edit containing inverse of the current edit
+                    // then the edit list will now be one edit shorter. Test for this 
+                    // and only save the current edit if we didn't remove the inverse.
+                    if(editListSize >= this.provEdits.length) {
                         this.provEdits.push([operation, subject, predicate, object]);
                     }
                 }
@@ -1509,6 +1515,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 XSD =     rdf.Namespace(this.namespaces.XSD);
                 
                 var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                
                 /* Check if this package member had provenance relationships added 
                     or deleted by the provenance editor functionality of the ProvChartView
                 */

@@ -1,18 +1,18 @@
 <div data-category="nonNumericDomain">
 	<h5>Possible Values <span class="required-icon"></span></h5>
 	<p class="notification" data-category="nonNumericDomain"></p>
-		
+
 	<label class="radio">
-		  <input type="radio" name="domainType" data-category="nonNumericDomain" 
-		  value="enumeratedDomain" class="possible-text" 
+		  <input type="radio" name="domainType" data-category="nonNumericDomain"
+		  value="enumeratedDomain" class="possible-text"
 		  />
 		  Code List - The values of this attribute are taken from a list of codes
-		  <p class="subtle"> e.g. data might have a variable named 'site' with
+		  <p class="subtle"> Example: data might have a variable named 'site' with
 	             values 'A', 'B', and 'C', and the code list would
 	             explain how to interpret those codes.
 		  </p>
 	</label>
-	
+
 	<div class="enumerated-domain enumeratedDomain non-numeric-domain-type indent hidden" data-category="enumeratedDomain">
 		<p class="notification" data-category="enumeratedDomain"></p>
 		<table class="table table-bordered">
@@ -30,25 +30,25 @@
 			</tbody>
 		</table>
 	</div>
-	
+
 	<label class="radio">
-		  <input type="radio" name="domainType" data-category="nonNumericDomain" 
-		  value="pattern" class="possible-text" 
+		  <input type="radio" name="domainType" data-category="nonNumericDomain"
+		  value="pattern" class="possible-text"
 		  />
 		  Particular Text - This text is constrained to a pattern or regular expression
-		  <p class="subtle"> 
-		  	  e.g. '[0-9]{3}-[0-9]{3}-[0-9]{4}' allows for only
+		  <p class="subtle">
+		  	  Example: '[0-9]{3}-[0-9]{3}-[0-9]{4}' allows for only
 	             numeric digits in the pattern of a US phone
 	             number.
 	      </p>
 	</label>
-	
+
 	<div class="text-domain textDomain non-numeric-domain-type pattern indent hidden">
 	</div>
-	
+
 	<label class="radio">
-		  <input type="radio" name="domainType" data-category="nonNumericDomain" 
-		  value="anything" class="possible-text" 
+		  <input type="radio" name="domainType" data-category="nonNumericDomain"
+		  value="anything" class="possible-text"
 		  />
 		  Anything - Any text is allowed
 	</label>

@@ -2,41 +2,55 @@
 
 <div class="title" data-category="title">
 	<h5>Title <i class="required-icon hidden" data-category="title"></i></h5>
-	<p class="subtle">A brief but meaningful title for this dataset. A good title includes the topic, geographic location, dates, and scale of the data. </p>
+	<p class="subtle">
+		A title for this dataset. Include the topic, geographic location, dates,
+		and if applicable, the scale of the data. Write out all abbreviations. </p>
 	<p class="notification" data-category="title"></p>
 	<div class="title-container"></div>
 </div>
 
 <div class="abstract">
 	<h5>Abstract <i class="required-icon hidden" data-category="abstract"></i></h5>
-	<p class="subtle">Short summary of the purpose and content of this data set. </p>
+	<p class="subtle">
+		Provide a brief overview that summarizes the specific contents and purpose of this dataset.
+	</p>
 	<p class="notification" data-category="abstract"></p>
 </div>
 
 <div class="keywords">
-	
-	<div class="row-fluid">
-		<h5 class="span10">Keyword <i class="required-icon hidden" data-category="keywordSets"></i></h5>
-		<h5 class="span2">Keyword Thesaurus</h5>
-	</div>
-	<p class="subtle">Have a look at the <a href="http://gcmd.arcticlcc.org/" target="_blank">
-	NASA Global Change Master Directory (GCMD)</a> (particularly under EARTH SCIENCE > Biosphere) and see if you can find 
-	keywords that appropriately describe your data set. If not, use your own keywords.</p>
-	
+
+	<h5>Keywords <i class="required-icon hidden" data-category="keywordSets"></i></h5>
+
+	<p class="subtle">
+		Add keywords that accurately categorize these data. Add one keyword per line.
+	</p>
+	<p class="subtle">
+		Keyword suggestions for the Earth Sciences can be found on the <a href="http://gcmd.arcticlcc.org/" target="_blank">NASA Global Change Master Directory (GCMD)</a>, particularly under Earth Science > Biosphere.
+	</p>
 	<p class="notification" data-category="keywordSets"></p>
-	
+
+	<div class="row-fluid header">
+		<h5 class="span9">Keyword</h5>
+		<h5 class="span3">Keyword Thesaurus</h5>
+	</div>
+
 </div>
 
 <div data-category="funding">
 	<h5>Funding <i class="required-icon hidden" data-category="funding"></i></h5>
-	<p class="subtle">Search for an NSF award by keyword OR enter any other funding information.</p>
+	<p class="subtle">
+		To link this dataset to your research project, identify the appropriate funding identification.
+		To search for an NSF award, start typing and choose your award from the search result list.
+	</p>
 	<p class="notification" data-category="funding"></p>
 	<div class="funding-container"></div>
 </div>
 
 <div class="pubDate">
 	<h5>Publication Date</h5>
-	<p class="subtle">Specify a custom publication date for this dataset. If not set, will be set to today's date. The value should either by a four digit year (e.g. 2017) or a full date in the form YYYY-MM-DD.</p>
+	<p class="subtle">
+		Set a citation date for this data set. This can be a year (YYYY) or an exact date (YYYY-MM-DD).
+	</p>
 	<p class="notification" data-category="pubDate"></p>
 	<input class="pubDate" type="text" name="pubDate" data-category="pubDate" placeholder="YYYY-MM-DD or YYYY" />
 </div>
@@ -51,7 +65,7 @@
 			data-placement="top" data-trigger="hover" data-delay="600"
 			data-title="By dedicating this work to the public domain, you waive your interest in your work and place the work as completely as possible in the public domain so others may freely use the work without restriction under copyright or database law. Attribution for your work is still expected according to norms in your research field.">
 			<input type="radio"  name="usage" data-category="intellectualRights" class="usage"
-				value="This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/." 
+				value="This work is dedicated to the public domain under the Creative Commons Universal 1.0 Public Domain Dedication. To view a copy of this dedication, visit https://creativecommons.org/publicdomain/zero/1.0/."
 				 />
 			<span class="span6 text">Creative Commons Public Domain</span>
 			<a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank"><img src="img/cc-zero.png" /></a>
@@ -60,7 +74,7 @@
 			data-placement="top" data-trigger="hover" data-delay="600"
 			data-title="By licensing this work, you let others copy, distribute, display, and perform your copyrighted work, and derivative works based upon it, but only if they give you appropriate credit.">
 			<input type="radio" name="usage" data-category="intellectualRights" class="usage"
-				value="This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/." 
+				value="This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/."
 				 />
 			<span class="span6 text">Creative Commons Attribution</span>
 			<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank"><img src="img/cc-by.png" /></a>
