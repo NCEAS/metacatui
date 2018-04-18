@@ -110,8 +110,8 @@ define(['underscore',
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
 
         	//When the user tries to navigate away, confirm with the user
-        	var view = this;
-        	window.onbeforeunload = function(){ view.confirmClose() };
+          $("a[href]").unbind("click", this.confirmClose);
+          $("a[href]").click(this.confirmClose);
 
           // When the user mistakenly drops a file into an area in the window
           // that isn't a proper drop-target, prevent navigating away from the
@@ -860,31 +860,36 @@ define(['underscore',
     		},
 
         /*
-        * Determine if a confirmation alert should be displayed, and if so, will display it and return the user's response.
-        *
-        * This function will be called by the onBeforeUnload window event
-        *
-        * When the router is navigating to the EditorView when already on the EditorView, the window object will not
-        * fire an beforeUnload event. An example is when the user is already on the EditorView and clicks a link to the EditorView.
-        * So to catch these routing events, the app Router will watch for this specific situation.
+        * This function is called whenever a link is clicked while on the EditorView.
+        * If it is a link to another page, and if edits have been made in the Editor,
+        * we will display a confirmation alert to the user
         */
-        confirmClose: function(){
+        confirmClose: function(e){
+
+          if(typeof e == "undefined" || !e)
+            return;
+
+          //Get the URL
+          var url = $(e.target).attr("href");
+
+          //If the link href is non-existent or an email, exit this function
+          if( url == "#" || (url.indexOf("mailto:") > -1) || !url )
+            return;
 
           //If the user isn't logged in, we can leave this view without confirmation
           if(!MetacatUI.appUserModel.get("loggedIn"))
-            return true;
+            return;
 
           //If the form hasn't been edited, we can close this view without confirmation
-    			if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
-    				return true;
+          if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
+            return;
 
           //Show the confirm alert to the user and if they click "OK", return true
           if( MetacatUI.appView.confirmLeave() )
-            return true;
+            return;
+
           //If the user clicks "Cancel", return false
-          else {
-            return false;
-          }
+          return false;
 
         },
 
@@ -910,7 +915,9 @@ define(['underscore',
           });
 
           this.subviews = [];
-			    window.onbeforeunload = null;
+
+          //Remove the click listener on links that prevents users from losing their changes
+          $("a[href]").unbind("click", this.confirmClose);
 
         },
 

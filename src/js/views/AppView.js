@@ -115,14 +115,6 @@ define(['jquery',
 			// close the current view
 			if (this.currentView){
 
-				//Check if the view will need to cancel the close
-				if((typeof this.currentView.confirmClose == "function") && (this.currentView != view)){
-					if(!this.currentView.confirmClose()){
-						MetacatUI.uiRouter.undoLastRoute();
-						return;
-					}
-				}
-
 				// need reference to the old/current view for the callback method
 				var oldView = this.currentView;
 

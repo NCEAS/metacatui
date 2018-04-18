@@ -162,19 +162,7 @@ function ($, _, Backbone) {
 				});
 
 			}
-			// If the EditorView already exists, check if we need to show a confirmation alert
 			else {
-
-				//The default action is to close the view and route to the editor
-				var closeView = true;
-
-				//If we are currently on the EditorView, then ask the user if they are sure they want to leave
-				if( MetacatUI.appView.currentView == MetacatUI.appView.editorView ){
-					closeView = MetacatUI.appView.editorView.confirmClose();
-				}
-
-				//If we have decided to close the view, route to the Editor View
-				if(closeView){
 
 					//Set the pid from the pid given in the URL
 					MetacatUI.appView.editorView.pid = pid;
@@ -184,17 +172,10 @@ function ($, _, Backbone) {
 
 					//Render the Editor View
 					MetacatUI.appView.showView(MetacatUI.appView.editorView);
-				}
-				else{
-
-					//If we have decided to stay on the current Editor View, undo the last route
-					this.undoLastRoute();
-					return;
-				}
 
 			}
 		},
-		
+
 		renderMdqRun: function (suiteId, pid) {
 			this.routeHistory.push("quality");
 
