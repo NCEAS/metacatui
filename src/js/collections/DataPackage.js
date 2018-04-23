@@ -12,12 +12,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
       */
       var DataPackage = Backbone.Collection.extend({
 
+        //The name of this type of collection
+        type: "DataPackage",
+
         // The package identifier
         id: null,
 
         // The type of the object (DataPackage, Metadata, Data)
-        type: 'DataPackage',
-
         // Simple queue to enqueue file transfers. Use push() and shift()
         // to add and remove items. If this gets to large/slow, possibly
         // switch to http://code.stephenmorley.org/javascript/queues/
@@ -466,19 +467,24 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                       //If the model type has changed, then mark the model as unsynced, since there may be custom fetch() options for the new model
                       if(oldModel.type != newModel.type){
-                      	newModel.set("synced", false);
 
-                      	newModel.fetch();
-                      	newModel.once("sync", function(fetchedModel){
-                      			fetchedModel.set("synced", true);
-                      			collection.add(fetchedModel, { merge: true });
+                        // DataPackages shouldn't be fetched until we support nested packages better in the UI
+                        if(newModel.type == "DataPackage"){
+                          //Trigger a replace event so other parts of the app know when a model has been replaced with a different type
+                          oldModel.trigger("replace", newModel);
+                        }
+                        else{
+                          newModel.set("synced", false);
 
-                      			//Trigger a replace event so other parts of the app know when a model has been replaced with a different type
-                      			oldModel.trigger("replace", newModel);
+                        	newModel.fetch();
+                        	newModel.once("sync", function(fetchedModel){
+                        			fetchedModel.set("synced", true);
+                        			collection.add(fetchedModel, { merge: true });
 
-                      			if(newModel.type == "EML")
-                      				collection.trigger("add:EML");
-                      		});
+                        			if(newModel.type == "EML")
+                        				collection.trigger("add:EML");
+                        		});
+                        }
                       }
                       else{
                       	newModel.set("synced", true);
