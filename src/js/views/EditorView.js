@@ -109,9 +109,7 @@ define(['underscore',
         	else
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
 
-        	//When the user tries to navigate away, confirm with the user
-          $("a[href]").unbind("click", this.confirmClose);
-          $("a[href]").click(this.confirmClose);
+          this.listenToLinkClicks();
 
           // When the user mistakenly drops a file into an area in the window
           // that isn't a proper drop-target, prevent navigating away from the
@@ -486,39 +484,41 @@ define(['underscore',
         	//Change the URL to the new id
         	MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
 
-            this.toggleControls();
+          this.toggleControls();
 
-            // Review message for themes that have contentIsModerated==true in the app config.
-            if (MetacatUI.appModel.get("contentIsModerated")) {
-                var message = this.editorSubmitMessageTemplate({
-                    	themeTitle: MetacatUI.themeTitle,
-                    	viewURL: "#view/" + this.model.get("id")
-                	}),
-                	timeout = null;
+          // Review message for themes that have contentIsModerated==true in the app config.
+          if (MetacatUI.appModel.get("contentIsModerated")) {
+              var message = this.editorSubmitMessageTemplate({
+                  	themeTitle: MetacatUI.themeTitle,
+                  	viewURL: "#view/" + this.model.get("id")
+              	}),
+              	timeout = null;
 
-            }
-            else {
-                var message = $(document.createElement("div")).append(
-                		$(document.createElement("span")).text("Your changes have been submitted. "),
-                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
-                	timeout = 4000;
-            }
+          }
+          else {
+              var message = $(document.createElement("div")).append(
+              		$(document.createElement("span")).text("Your changes have been submitted. "),
+              		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
+              	timeout = 4000;
+          }
 
+          MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
 
-            MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
+          //Rerender the CitationView
+          var citationView = _.where(this.subviews, { type: "Citation" });
+          if(citationView.length){
+            citationView[0].createTitleLink = true;
+            citationView[0].render();
+          }
 
-            //Rerender the CitationView
-            var citationView = _.where(this.subviews, { type: "Citation" });
-            if(citationView.length){
-	            citationView[0].createTitleLink = true;
-	            citationView[0].render();
-            }
+          //Re-bind the click listener to all links, since new ones were just added.
+          this.listenToLinkClicks();
 
-            // Reset the state to clean
-            MetacatUI.rootDataPackage.packageModel.set("changed", false);
-            this.model.set("hasContentChanges", false);
+          // Reset the state to clean
+          MetacatUI.rootDataPackage.packageModel.set("changed", false);
+          this.model.set("hasContentChanges", false);
 
-            this.setListeners();
+          this.setListeners();
         },
 
         /*
@@ -859,6 +859,17 @@ define(['underscore',
     				this.model.trigger("valid");
     		},
 
+        listenToLinkClicks: function(){
+          //When the user tries to navigate away, confirm with the user
+          $("a[href]").unbind("click", this.confirmClose);
+          $("a[href]").click(this.confirmClose);
+
+          //Listen to clicks in anywhere in the citation container too
+          $("#citation-container").unbind("click", this.confirmClose);
+          $("#citation-container").click(this.confirmClose);
+
+        },
+
         /*
         * This function is called whenever a link is clicked while on the EditorView.
         * If it is a link to another page, and if edits have been made in the Editor,
@@ -870,10 +881,11 @@ define(['underscore',
             return;
 
           //Get the URL
-          var url = $(e.target).attr("href");
+          var link = e.target.tagName == "A" ? $(e.target) : $(e.target).parents("a").first();
+              url  = link.attr("href");
 
           //If the link href is non-existent or an email, exit this function
-          if( url == "#" || (url.indexOf("mailto:") > -1) || !url )
+          if( url == "#" || typeof url == "undefined" || !url || (url.indexOf("mailto:") > -1) )
             return;
 
           //If the user isn't logged in, we can leave this view without confirmation
