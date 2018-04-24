@@ -111,9 +111,20 @@ define(['jquery',
 			// Change the background image if there is one
 			MetacatUI.navbarView.changeBackground();
 
-
 			// close the current view
 			if (this.currentView){
+
+				if( typeof this.currentView.confirmClose == "function" ){
+					var confirmMsg = this.currentView.confirmClose();
+
+					if(confirmMsg){
+						var leave = confirm(confirmMsg);
+						if( !leave ){
+							MetacatUI.uiRouter.undoLastRoute();
+							return;
+						}
+					}
+				}
 
 				// need reference to the old/current view for the callback method
 				var oldView = this.currentView;

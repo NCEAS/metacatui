@@ -109,7 +109,7 @@ define(['underscore',
         	else
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
 
-          this.listenToLinkClicks();
+          window.onbeforeunload = this.confirmClose;
 
           // When the user mistakenly drops a file into an area in the window
           // that isn't a proper drop-target, prevent navigating away from the
@@ -511,9 +511,6 @@ define(['underscore',
             citationView[0].render();
           }
 
-          //Re-bind the click listener to all links, since new ones were just added.
-          this.listenToLinkClicks();
-
           // Reset the state to clean
           MetacatUI.rootDataPackage.packageModel.set("changed", false);
           this.model.set("hasContentChanges", false);
@@ -859,34 +856,10 @@ define(['underscore',
     				this.model.trigger("valid");
     		},
 
-        listenToLinkClicks: function(){
-          //When the user tries to navigate away, confirm with the user
-          $("a[href]").unbind("click", this.confirmClose);
-          $("a[href]").click(this.confirmClose);
-
-          //Listen to clicks in anywhere in the citation container too
-          $("#citation-container").unbind("click", this.confirmClose);
-          $("#citation-container").click(this.confirmClose);
-
-        },
-
         /*
-        * This function is called whenever a link is clicked while on the EditorView.
-        * If it is a link to another page, and if edits have been made in the Editor,
-        * we will display a confirmation alert to the user
+        * This function is called whenever the user is about to leave the webpage
         */
-        confirmClose: function(e){
-
-          if(typeof e == "undefined" || !e)
-            return;
-
-          //Get the URL
-          var link = e.target.tagName == "A" ? $(e.target) : $(e.target).parents("a").first();
-              url  = link.attr("href");
-
-          //If the link href is non-existent or an email, exit this function
-          if( url == "#" || typeof url == "undefined" || !url || (url.indexOf("mailto:") > -1) )
-            return;
+        confirmClose: function(){
 
           //If the user isn't logged in, we can leave this view without confirmation
           if(!MetacatUI.appUserModel.get("loggedIn"))
@@ -896,12 +869,7 @@ define(['underscore',
           if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
             return;
 
-          //Show the confirm alert to the user and if they click "OK", return true
-          if( MetacatUI.appView.confirmLeave() )
-            return;
-
-          //If the user clicks "Cancel", return false
-          return false;
+          return "Are you sure you want to leave this page? All of your changes will be lost.";
 
         },
 
@@ -928,9 +896,8 @@ define(['underscore',
 
           this.subviews = [];
 
-          //Remove the click listener on links that prevents users from losing their changes
-          $("a[href]").unbind("click", this.confirmClose);
-          $("#citation-container").unbind("click", this.confirmClose);
+          //Remove the click listener on the onbeforeunload event
+          window.onbeforeunload = null;
 
         },
 
