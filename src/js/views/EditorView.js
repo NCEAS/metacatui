@@ -930,6 +930,7 @@ define(['underscore',
 
           //Remove the click listener on links that prevents users from losing their changes
           $("a[href]").unbind("click", this.confirmClose);
+          $("#citation-container").unbind("click", this.confirmClose);
 
         },
 
