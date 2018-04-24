@@ -481,6 +481,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         			fetchedModel.set("synced", true);
                         			collection.add(fetchedModel, { merge: true });
 
+                              //Trigger a replace event so other parts of the app know when a model has been replaced with a different type
+                              oldModel.trigger("replace", newModel);
+
                         			if(newModel.type == "EML")
                         				collection.trigger("add:EML");
                         		});
