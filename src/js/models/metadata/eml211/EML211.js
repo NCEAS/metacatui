@@ -1384,6 +1384,28 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	}, this);
             },
 
+            addParty: function(partyModel, position){
+
+              //If the EMLParty model is empty, don't add it to the EML211 model
+              if(partyModel.isEmpty())
+                return;
+
+              //Get the role of this EMLParty
+              var role = partyModel.get("type") || "associatedParty";
+
+              //If this model already contains this EMLParty, then exit
+              if( _.contains(this.get(role), partyModel) )
+                return;
+
+              if( typeof position == "undefined" ){
+                this.get(role).push(partyModel);
+              }
+              else {
+                this.get(role).splice(position, 0, partyModel);
+              }
+
+            },
+
             createUnits: function(){
             	this.units.fetch();
             },

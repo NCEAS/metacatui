@@ -684,13 +684,13 @@ define(['underscore', 'jquery', 'backbone',
 	    			//Create a new EMLParty model
     				var newPerson = new EMLParty();
 
-    				//Add this new EMLParty to the EML model
-	    			this.model.get("associatedParty").push(newPerson);
-
 	    			//Create all the attributes for the new person. We're only changing the role
-	    			newPerson.set( partyToCopy.toJSON() );
+	    			newPerson.set( partyToCopy.copyValues() );
 	    			newPerson.set("type", "associatedParty");
 	    			newPerson.set("role", role);
+
+            //Add this new EMLParty to the EML model
+            this.model.addParty(newPerson);
 
 	    			//Render this new person
 		    		this.renderPerson(newPerson, role);
@@ -705,14 +705,14 @@ define(['underscore', 'jquery', 'backbone',
 	    			//Create a new EMLParty model
     				var newPerson = new EMLParty();
 
-    				//Add this new EMLParty to the EML model
-	    			this.model.get(role).push(newPerson);
-
     				// Copy the attributes from the original person
     				// and set it on the new person
-    				newPerson.set(partyToCopy.toJSON());
+    				newPerson.set(partyToCopy.copyValues());
     				newPerson.set("type", role);
     				newPerson.set("role", newPerson.defaults().role);
+
+            //Add this new EMLParty to the EML model
+            this.model.addParty(newPerson);
 
 	    			//Render this new person
 		    		this.renderPerson(newPerson, role);
