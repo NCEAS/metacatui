@@ -141,8 +141,16 @@ define(['jquery',
 				}
 				else if(this.model.get("formatType") == "DATA"){
 					if(this.model.get("isDocumentedBy")){
-						this.pid = _.first(this.model.get("isDocumentedBy"));
+            //Get the metadata pid that documents this data object
+            this.pid = _.first(this.model.get("isDocumentedBy"));
+
+            //Reset the model
+            this.model.set( this.model.defaults );
+            this.model.set("id", this.pid);
+
+            //Retrieve the model
 						this.getModel(this.pid);
+
 						return;
 					}
 					else{
@@ -226,7 +234,7 @@ define(['jquery',
 								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
 								else if((response.indexOf('id="Metadata"') == -1)){
 									viewRef.$el.addClass("container no-stylesheet");
-									
+
 									if(viewRef.model.get("indexed")){
 										viewRef.renderMetadataFromIndex();
 										return;
@@ -235,7 +243,7 @@ define(['jquery',
 
 								//Now show the response from the view service
 								viewRef.$(viewRef.metadataContainer).html(response);
-								
+
 								//If there is no info from the index and there is no metadata doc rendered either, then display a message
 								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
 									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
@@ -332,7 +340,7 @@ define(['jquery',
 		},
 
 		insertBreadcrumbs: function(){
-			
+
 			var breadcrumbs = $(document.createElement("ol"))
 						      .addClass("breadcrumb")
 						      .append($(document.createElement("li"))
@@ -373,7 +381,7 @@ define(['jquery',
 				this.listenToOnce(appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
-			
+
 			if(!this.model.get("notFound")) return;
 
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
@@ -458,6 +466,10 @@ define(['jquery',
 			var viewRef = this;
 
 			if(!packages) var packages = this.packageModels;
+
+      //Format this variable as an array
+      if( !Array.isArray(packages) )
+        packages = [packages];
 
 			//Get the entity names from this page/metadata
 			this.getEntityNames(packages);
@@ -580,7 +592,7 @@ define(['jquery',
 			$(tableContainer).append(tableView.render().el);
 
 			$(tableContainer).find(".tooltip-this").tooltip();
-			
+
 			this.subviews.push(tableView);
 		},
 
@@ -724,7 +736,7 @@ define(['jquery',
 
 			var dataSource  = nodeModel.getMember(this.model),
 				replicaMNs  = nodeModel.getMembers(this.model.get("replicaMN"));
-			
+
 			//Filter out the data source from the replica nodes
 			if(Array.isArray(replicaMNs) && replicaMNs.length){
 				replicaMNs = _.without(replicaMNs, dataSource);
@@ -732,36 +744,36 @@ define(['jquery',
 
 			if(dataSource && dataSource.logo){
 				this.$("img.data-source").remove();
-				
+
 				//Insert the data source template
 				this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
 					node : dataSource
 				})).addClass("has-data-source");
-				
+
 				this.$(this.citationContainer).addClass("has-data-source");
 				this.$(".tooltip-this").tooltip();
-				
-				$(".popover-this.data-source.logo").popover({ 
-						trigger: "manual", 
-						html: true, 
+
+				$(".popover-this.data-source.logo").popover({
+						trigger: "manual",
+						html: true,
 						title: "From the " + dataSource.name + " repository",
 						content: function(){
 							var content = "<p>" + dataSource.description + "</p>";
-							
+
 							if(replicaMNs.length){
 								content += '<h5>Exact copies hosted by ' + replicaMNs.length + ' repositories: </h5><ul class="unstyled">';
-							
+
 								_.each(replicaMNs, function(node){
-									content += '<li><a href="https://search.dataone.org/#profile/' + 
-												node.shortIdentifier + 
-												'" class="pointer">' + 
-												node.name + 
+									content += '<li><a href="https://search.dataone.org/#profile/' +
+												node.shortIdentifier +
+												'" class="pointer">' +
+												node.name +
 												'</a></li>';
 								});
-								
+
 								content += "</ul>";
 							}
-							
+
 							return content;
 						},
 						animation:false
@@ -825,21 +837,21 @@ define(['jquery',
 							identifier: pid
 						}));
 				}
-				
+
 				//Check the authority on the package models
 				//If there is no package, then exit now
 				if(!viewRef.packageModels || !viewRef.packageModels.length) return;
-				
+
 				//Check for authorization on the resource map
 				var packageModel = this.packageModels[0];
-				
+
 				//if there is no package, then exit now
 				if(!packageModel.get("id")) return;
-				
+
 				//Listen for changes to the authorization flag
 				//packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-				//packageModel.once("sync", viewRef.createProvEditor, viewRef); 
-						
+				//packageModel.once("sync", viewRef.createProvEditor, viewRef);
+
 				//Now get the RDF XML and check for the user's authority on this resource map
 				//packageModel.fetch();
 				//packageModel.checkAuthority();
@@ -1042,7 +1054,7 @@ define(['jquery',
 					//Don't use the unique class on images since they will look a lot different anyway by their image
 					if(!$(matchingNodes).first().hasClass("image")){
 						var className = "uniqueNode" + i;
-						
+
 						//Add the unique class and up the iterator
 						if(matchingNodes.prop("tagName") != "polygon")
 							$(matchingNodes).addClass(className);
@@ -1060,7 +1072,7 @@ define(['jquery',
 				});
 			}
 		},
-		
+
 		/*
 		 * Creates a provenance editor
 		 */
@@ -1068,18 +1080,18 @@ define(['jquery',
 			//Get the package - just get the first one for now
 			//TODO: Make sure this is the parent resource map
 			var packageModel = this.packageModels[0];
-						
+
 			//If this user is not authorized to edit this resource map, then exit
 			//Or if this is package hasn't been retrieved yet, then exit
 			if(!packageModel.get("id") || !packageModel.get("isAuthorized") || !packageModel.get("objectXML")) return;
-			
+
 			//Render the prov charts in the gutters
 			_.each(this.$(".entitydetails"), function(entityDetailsEl){
 				//If this section doesn't have a prov chart already, create a new blank one
 				if(!$(entityDetailsEl).is(".hasProvLeft") || !$(entityDetailsEl).is(".hasProvRight")){
 
 					$(entityDetailsEl).parent().addClass("gutters");
-					
+
 					//Get the id of this entity
 					var entityId = $(entityDetailsEl).attr("data-id"),
 						model,
@@ -1094,10 +1106,10 @@ define(['jquery',
 							if(members[ii].get("id") == entityId){
 								model = members[ii];
 								break findMember;
-							}							
+							}
 						}
 					}
-					
+
 					//Create the blank prov chart editor for sources
 					if(!$(entityDetailsEl).is(".hasProvLeft")){
 						//Create the chart view
@@ -1111,13 +1123,13 @@ define(['jquery',
 						});
 						//Add the view to the subviews list
 						this.subviews.push(sourcesProvEditor);
-						
+
 						//Render the chart and insert into the page
 						$(entityDetailsEl).before(sourcesProvEditor.render().el);
 					}
-					
+
 					//Create the blank prov chart editor for derivations
-					if(!$(entityDetailsEl).is(".hasProvRight")){	
+					if(!$(entityDetailsEl).is(".hasProvRight")){
 						//Create the chart view
 						var derivationsProvEditor = new ProvChart({
 							context      : model,
@@ -1129,7 +1141,7 @@ define(['jquery',
 						});
 						//Add the view to the subviews list
 						this.subviews.push(derivationsProvEditor);
-						
+
 						//Render the chart and insert into the page
 						$(entityDetailsEl).after(derivationsProvEditor.render().el);
 					}
@@ -1385,10 +1397,10 @@ define(['jquery',
 				_.each(packageMembers, function(solrResult, i){
 					//Don't display any info about nested packages
 					if(solrResult.type == "Package") return;
-					
+
 					var objID = solrResult.get("id");
 
-					if(objID == viewRef.pid) 
+					if(objID == viewRef.pid)
 						return;
 
 					//Is this a visual object (image or PDF)?
@@ -1408,26 +1420,26 @@ define(['jquery',
 					//Insert the data display HTML and the anchor tag to mark this spot on the page
 					if(container){
 						if((type == "image") || (type == "PDF")){
-							
+
 							//Create the data display HTML
 							var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
 												type : type,
 												src : solrResult.get("url"),
 												objID : objID
 											  }).trim());
-							
+
 							//Insert into the page
 							if($(container).children("label").length > 0)
 								$(container).children("label").first().after(dataDisplay);
 							else
 								$(container).prepend(dataDisplay);
-							
+
 							//If this image or PDF is private, we need to load it via an XHR request
 							if( !solrResult.get("isPublic") ){
 								//Create an XHR
 								var xhr = new XMLHttpRequest();
 								xhr.withCredentials = true;
-								
+
 								if(type == "PDF"){
 									//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 									xhr.onload = function(){
@@ -1439,12 +1451,12 @@ define(['jquery',
 								}
 								else if(type == "image"){
 									xhr.onload = function(){
-										
+
 										if(xhr.response)
 											$(dataDisplay).find("img").attr("src", window.URL.createObjectURL(xhr.response));
 									}
 								}
-								
+
 								//Open and send the request with the user's auth token
 								xhr.open('GET', solrResult.get("url"));
 								xhr.responseType = "blob";
@@ -1836,10 +1848,10 @@ define(['jquery',
 		},
 
 		closePopovers: function(e){
-			//If this is a popover element or an element that has a popover, don't close anything. 
+			//If this is a popover element or an element that has a popover, don't close anything.
 			//Check with the .classList attribute to account for SVG elements
 			var svg = $(e.target).parents("svg");
-			
+
 			if(_.contains(e.target.classList, "popover-this") ||
 			  ($(e.target).parents(".popover-this").length > 0)  ||
 			  ($(e.target).parents(".popover").length > 0) ||
