@@ -6,8 +6,8 @@
 var recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if(mapKey){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&sensor=false&key=' + mapKey;
-	define('gmaps', 
-			['async!' + gmapsURL], 
+	define('gmaps',
+			['async!' + gmapsURL],
 			function() {
 				return google.maps;
 			}
@@ -20,7 +20,7 @@ if(useD3) var d3URL = '../components/d3.v3.min';
 else 	  var d3URL = null;
 
 /* Configure the app to use requirejs, and map dependency aliases to their
-   directory location (.js is ommitted). Shim libraries that don't natively 
+   directory location (.js is ommitted). Shim libraries that don't natively
    support requirejs. */
 require.config({
   baseUrl: 'js/',
@@ -28,7 +28,7 @@ require.config({
   map: themeMap,
   urlArgs: "v=" + window.metacatUIVersion,
   paths: {
-    jquery: 'https://code.jquery.com/jquery-1.9.1',//'../components/jquery',
+    jquery: '../components/jquery',
     jqueryui: '../components/jquery-ui-1.10.3.custom.min',
     jqueryform: '../components/jquery.form',
     underscore: '../components/underscore-min',
@@ -37,7 +37,7 @@ require.config({
     text: '../components/require-text',
     moment: '../components/moment.min',
     jws: '../components/jws-3.2.min',
-    jsrasign: '../components/jsrsasign-4.9.0.min',    
+    jsrasign: '../components/jsrsasign-4.9.0.min',
     domReady: '../components/domready',
     async: '../components/async',
     recaptcha: [recaptchaURL, 'scripts/placeholder'],
@@ -64,7 +64,7 @@ require.config({
       deps: ['underscore', 'jquery'],
       exports: 'Backbone'
     },
-    bootstrap: { 
+    bootstrap: {
     	deps: ['jquery'],
     	exports: 'Bootstrap'
     },
@@ -102,43 +102,43 @@ var appUserModel = appUserModel || {};
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
 function(Bootstrap, AppView, AppModel) {
-	'use strict';  
-    		
+	'use strict';
+
 	// initialize the application
 	appModel = new AppModel({context: '/' + metacatContext});
-	
+
 	//Check for custom settings in the theme config file
 	if(typeof customAppConfig == "function") customAppConfig();
-	
+
 	/* Now require the rest of the libraries for the application */
-	require(['backbone', 
-	         'routers/router', 
-	         'collections/SolrResults', 
+	require(['backbone',
+	         'routers/router',
+	         'collections/SolrResults',
 	         'models/Search', 'models/RegistryModel', 'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', "models/UserModel"
 	         ],
 	function(Backbone, UIRouter, SolrResultList, Search, RegistryModel, Stats, MapModel, LookupModel, NodeModel, UserModel) {
-		'use strict';  
-	    		
+		'use strict';
+
 		//Create all the other models first
 		appSearchResults = new SolrResultList([], {});
-		
+
 		appSearchModel = new Search();
-		
+
 		registryModel = new RegistryModel();
-		
+
 		statsModel = new Stats();
-		
+
 		mapModel = (typeof customMapModelOptions == "object")? new MapModel(customMapModelOptions) : new MapModel();
-		
+
 		appLookupModel = new LookupModel();
-		
+
 		nodeModel = new NodeModel();
-		
+
 		appUserModel = new UserModel();
-		
+
 		//Load the App View now
 		appView = new AppView();
-			
+
 		// Initialize routing and start Backbone.history()
 		(function() {
 		  /**
@@ -166,7 +166,7 @@ function(Bootstrap, AppView, AppModel) {
 		            return true;
 		          }
 		        });
-		       
+
 		       if(!match) this.trigger("routeNotFound");
 		       return match;
 		    },
@@ -180,13 +180,12 @@ function(Bootstrap, AppView, AppModel) {
 		        }
 		  });
 		}).call(this);
-		
+
 		//Make the router and begin the Backbone history
 		//The router will figure out which view to load first based on window location
 		uiRouter = new UIRouter();
 		Backbone.history.start();
-	  
-	});
-    	
-});
 
+	});
+
+});
