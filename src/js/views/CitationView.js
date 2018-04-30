@@ -1,15 +1,15 @@
-define(['jquery', 'underscore', 'backbone', 'models/SolrResult'], 				
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 	function($, _, Backbone, SolrResult) {
 	'use strict';
 
-	
+
 	var CitationView = Backbone.View.extend({
-		
+
 		type: "Citation",
-		
+
 		initialize: function(options){
 			if((options === undefined) || (!options)) var options = {};
-			
+
 			this.id   		= options.id	 	 || null;
 			this.attributes = options.attributes || null;
 			this.className += options.className  || "";
@@ -18,69 +18,61 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			this.title      = options.title      || null;
 			this.createLink = (options.createLink == false) ? false : true;
 			this.createTitleLink = (options.createLink == false) ? false : true;
-			
+
 			//If a metadata doc was passed but no data or package model, then save the metadata as our model, too
-			if(!this.model && this.metadata) this.model = this.metadata;			
-			//If the model is a Package, then get the metadata doc in this package				
-			else if(this.model && this.model.type == "Package") 
+			if(!this.model && this.metadata) this.model = this.metadata;
+			//If the model is a Package, then get the metadata doc in this package
+			else if(this.model && this.model.type == "Package")
 				this.metadata = this.model.getMetadata();
 			//If the model is a metadata doc and there was no other metadata specified, then use the model
-			else if(this.model && (this.model.get("formatType") == "METADATA") && !this.metadata) 
-				this.metadata = this.model;			
+			else if(this.model && (this.model.get("formatType") == "METADATA") && !this.metadata)
+				this.metadata = this.model;
 		},
-				
+
 		tagName : "cite",
-		
+
 		className : "citation",
-		
+
 		/*
 		 * Creates a citation
 		 */
 		render: function(){
-			
-			if (!this.model && !this.metadata && !this.id) 
-				return this;	
+
+			if (!this.model && !this.metadata && !this.id)
+				return this;
 			else if(!this.model && !this.metadata && this.pid){
 				//Create a model
  				this.metadata = new SolrResult({id: this.pid});
  				this.model = this.metadata;
- 				
+
  				//Retrieve the citation info for this model and render once we have it
  				var view = this;
  				this.model.on("change", function(){ view.render.call(view); });
- 				this.model.getCitationInfo();			
+ 				this.model.getCitationInfo();
  				return;
 			}
  			else if(this.metadata && this.metadata.get("archived")){
  				this.$el.append('<span class="danger">This content has been archived. </span>');
- 				
+
  				//The ID
- 				var idEl = $(document.createElement("span")).addClass("id");
- 				if(this.metadata.get("seriesId")){
- 					$(idEl).text(this.metadata.get("seriesId") + ", version: " + this.metadata.get("id") + ". ");
- 				}
- 				else{
- 			        $(idEl).text("" + this.metadata.get("id") + ". ");				
- 				}
+				var idEl = this.createIDElement();
  				this.$el.append(idEl);
- 				
+
  				return this;
- 			}		 
+ 			}
 			//Create the citation from the metadata doc if we have one
 			else if (this.metadata) {
-				
+
 				//If this object is in progress of saving, don't RErender this view.
 				if(this.metadata.get("uploadStatus") == "p" && this.$el.children().length)
 					return;
-					
+
 				//Clear the element
 				this.$el.html("");
-				
+
 				var pubDate = this.metadata.get("pubDate"),
 					dateUploaded = this.metadata.get("dateUploaded"),
 					title = Array.isArray(this.metadata.get("title")) ? (this.metadata.get("title")[0] || this.title || "") : this.metadata.get("title") || this.title || "",
-					id = this.metadata.get("id"),
-					seriesId = this.metadata.get("seriesId") || null,
 					datasource = this.metadata.get("datasource");
 
 				//Format the author text
@@ -88,27 +80,27 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var authors = this.metadata.get("creator"),
 						count = 0,
 						authorText = "";
-					
+
 					_.each(authors, function (author) {
 						count++;
-						
+
 						if(count == 6){
 	 		            	authorText += ", et al. ";
 	 		            	return;
 	 		            }
-	 		            else if(count > 6) 
+	 		            else if(count > 6)
 	 		            	return;
-	 		            	
+
 	 		            //Get the individual's name, or position name, or organization name, in that order
-						var name = author.get("individualName") ? 
+						var name = author.get("individualName") ?
 									_.flatten([author.get("individualName").givenName, author.get("individualName").surName]).join(" ") :
 									author.get("positionName") || author.get("organizationName");
-	 		             
+
 						if(count > 1){
 		 		            if(authors.length > 2) authorText += ",";
-	
+
 							if (count == authors.length) authorText += " and";
-	
+
 							if (authors.length > 1) authorText += " ";
 						}
 
@@ -124,34 +116,33 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 					_.each(authors, function (author) {
 						count++;
-						
+
 						if(count == 6){
 	 		            	authorText += ", et al. ";
 	 		            	return;
 	 		            }
-	 		            else if(count > 6) 
+	 		            else if(count > 6)
 	 		            	return;
-	 		             
+
 						if(count > 1){
 		 		            if(authors.length > 2) authorText += ",";
-	
+
 							if (count == authors.length) authorText += " and";
-	
+
 							if (authors.length > 1) authorText += " ";
 						}
-						
+
 						authorText += author;
 
 						if (count == authors.length) authorText += ". ";
 					});
 				}
 			}
-			//If there is no metadata doc, then this is probably a data doc without science metadata. 
+			//If there is no metadata doc, then this is probably a data doc without science metadata.
 			//So create the citation from the index values
 			else {
 				var author = this.model.get("rightsHolder") || this.model.get("submitter") || "",
 					dateUploaded = this.model.get("dateUploaded"),
-					id = this.model.get("id"),
 					datasource = this.model.get("datasource");
 
 				//Format the author text
@@ -182,19 +173,19 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var publisherText = "";
 			if (typeof datasource !== "undefined" && datasource) {
 				var memberNode = MetacatUI.nodeModel.getMember(datasource);
-								
-				if(memberNode) 
-  					publisherText = memberNode.name + ". "; 
+
+				if(memberNode)
+  					publisherText = memberNode.name + ". ";
   				else
-  					publisherText = datasource + ". "; 
+  					publisherText = datasource + ". ";
 			}
 			else{
 				var memberNode = MetacatUI.nodeModel.getMember(MetacatUI.nodeModel.get("currentMemberNode"));
-				
-				if(memberNode) 
+
+				if(memberNode)
   					publisherText = memberNode.name + ". ";
 			}
-			
+
 			var publisherEl = $(document.createElement("span")).addClass('publisher');
 
 			// Only set text if we have a non-zero-length publisherText string
@@ -203,81 +194,114 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 
 			//The ID
-			var idEl = $(document.createElement("span")).addClass("id");
-			if (seriesId) {
-				$(idEl).text(seriesId + ", version: " + id + ". ");
-			}
-			else {
-				$(idEl).text("" + id + ". ");
-			}
+			var idEl = this.createIDElement();
 
 			if ((typeof title !== "undefined") && title){
 				if(title.trim().charAt(title.length-1) != ".")
 					title = title.trim() + ". ";
 				else
 					title = title.trim() + " ";
-				
-				var titleEl = $(document.createElement("span")).addClass("title").attr("data-id", id).text(title);
+
+				var titleEl = $(document.createElement("span"))
+											.addClass("title")
+											.attr("data-id", this.metadata.get("id"))
+											.text(title);
 			}
 			else
 				var titleEl = document.createElement("span");
-			
+
 			//Create a link and put all the citation parts together
 			if (this.createLink){
 				var linkEl = $(document.createElement("a"))
 								.addClass("route-to-metadata")
-								.attr("data-id", id)
-								.attr("href", "#view/" + id)
+								.attr("data-id", this.metadata.get("id"))
+								.attr("href", "#view/" + this.metadata.get("id"))
 								.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
 				this.$el.append(linkEl);
 			}
 			else if(this.createTitleLink){
 				var linkEl = $(document.createElement("a"))
 								.addClass("route-to-metadata")
-								.attr("data-id", id)
-								.attr("href", "#view/" + id)
+								.attr("data-id", this.metadata.get("id"))
+								.attr("href", "#view/" + this.metadata.get("id"))
 								.append(titleEl);
 				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
 			}
 			else{
 				this.$el.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
 			}
-		
+
 			this.setUpListeners();
-			
+
 			return this;
 		},
-		
+
+		createIDElement: function(){
+
+			var id 			 = this.metadata.get("id"),
+					seriesId = this.metadata.get("seriesId");
+
+			var idEl = $(document.createElement("span")).addClass("id");
+			if(seriesId){
+				//Create a link for the identifier if it is a DOI
+				if( this.metadata.isDOI(seriesId) && !this.createLink ){
+					var doiURL  = (seriesId.indexOf("doi:") == 0)? "https://doi.org/" + seriesId.substring(4) : seriesId,
+							doiLink = $(document.createElement("a"))
+													.attr("href", doiURL)
+													.text(seriesId);
+
+					idEl.append(doiLink, $(document.createElement("span")).text(", version: "));
+				}
+				else{
+					idEl.html($(document.createElement("span")).text(seriesId + ", version: "));
+				}
+			}
+
+			if( id.indexOf("doi:") == 0 && !this.createLink ){
+				var doiURL  = (id.indexOf("doi:") == 0)? "https://doi.org/" + id.substring(4) : id,
+						doiLink = $(document.createElement("a"))
+												.attr("href", doiURL)
+												.text(id);
+
+				idEl.append(doiLink, $(document.createElement("span")).text(". "));
+			}
+			else{
+				idEl.append($(document.createElement("span")).text(id + ". "));
+			}
+
+			return idEl;
+		},
+
 		setUpListeners: function(){
 			if (!this.metadata) return;
-			
+
 			this.stopListening();
-			
+
 			//If anything in the model changes, rerender this citation
 			this.listenTo(this.metadata, "change:origin change:creator change:pubDate change:dateUploaded change:title change:seriesId change:id change:datasource", this.render);
 
 			//If this model is an EML211 model, then listen differently
 			if(this.metadata.type == "EML"){
 				var creators = this.metadata.get("creator");
-				
+
 				//Listen to the names
 				for(var i=0; i<creators.length; i++){
 					this.listenTo(creators[i], "change:individualName change:organizationName change:positionName", this.render);
 				}
-				
+
 			}
 		},
-		
+
 		routeToMetadata: function(e){
 			var id = this.model.get("id");
-			
+
 			//If the user clicked on a download button or any element with the class 'stop-route', we don't want to navigate to the metadata
 			if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
 				return;
-			
+
 			MetacatUI.uiRouter.navigate('view/'+id, {trigger: true});
 		}
 	});
-	
+
 	return CitationView;
 });

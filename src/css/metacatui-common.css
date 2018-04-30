@@ -1435,6 +1435,10 @@ img.icon{
 {
 	display: none;
 }
+.metadata-view{
+  padding-left: 20px;
+  padding-right: 20px;
+}
 #metadata-index-details .entitydetails .size{
 	display: inherit;
 }
@@ -3677,7 +3681,7 @@ textarea.xlarge{
 	transform: translate3d(0,0,0);
 	-webkit-transform: translate3d(0,0,0);
 	-moz-transform: translate3d(0,0,0);
-	
+
 	overflow-y: auto;
 	position: fixed;
 	height: 400px;
