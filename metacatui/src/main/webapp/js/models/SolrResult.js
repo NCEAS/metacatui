@@ -176,12 +176,28 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		// checks if the pid is already a DOI
-		isDOI: function() {
-			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10."];
+		isDOI: function(customString) {
+			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.",
+				"https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."];
+
+			//If a custom string is given, then check that instead of the seriesId and id from the model
+			if( typeof customString == "string" ){
+				for (var i=0; i < DOI_PREFIXES.length; i++) {
+					if (customString.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+						return true;
+				}
+			}
+
+			var seriesId = this.get("seriesId"),
+			    pid      = this.get("id");
+
 			for (var i=0; i < DOI_PREFIXES.length; i++) {
-				if (this.get("id").toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0)
+				if (seriesId && seriesId.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+					return true;
+				else if (pid && pid.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
 					return true;
 			}
+
 			return false;
 		},
 
@@ -220,24 +236,24 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
-			
+
 			if(appUserModel.get("loggedIn"))
 				xhr.withCredentials = true;
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
-			    
+
 			   //Get the file name to save this file as
 			   var filename = xhr.getResponseHeader('Content-Disposition');
-			   
+
 			   if(!filename){
 				   filename = model.get("fileName") || model.get("title") || model.get("id") || "";
 			   }
 			   else
 				   filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
-			    
+
 			   filename = filename.trim();
-			    
+
 			   //For IE, we need to use the navigator API
 			   if (navigator && navigator.msSaveOrOpenBlob) {
 				   navigator.msSaveOrOpenBlob(xhr.response, filename);
@@ -246,24 +262,24 @@ define(['jquery', 'underscore', 'backbone'],
 			   else{
 				    var a = document.createElement('a');
 				    a.href = window.URL.createObjectURL(xhr.response); // xhr.response is a blob
-				   
+
 				    // Set the file name.
 				    a.download = filename
-				    
+
 				    a.style.display = 'none';
 				    document.body.appendChild(a);
 				    a.click();
-				    delete a;   
+				    delete a;
 			   }
-			    
+
 			   //Trigger the download complete event
 			   model.trigger("downloadComplete");
 			};
-			
+
 			xhr.onerror = function(e){
 				var a = document.createElement('a');
 			    a.href = url;
-			    
+
 			    var filename = model.get("fileName") || model.get("title") || model.get("id") || "";
 				if(filename)
 					a.download = filename;
@@ -271,10 +287,10 @@ define(['jquery', 'underscore', 'backbone'],
 			    a.style.display = 'none';
 			    document.body.appendChild(a);
 			    a.click();
-			    
+
 				model.trigger("downloadComplete");
 			};
-			
+
 			xhr.onprogress = function(e){
 			    if (e.lengthComputable){
 			        var percent = (e.loaded / e.total) * 100;
@@ -285,10 +301,10 @@ define(['jquery', 'underscore', 'backbone'],
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);
 			xhr.responseType = "blob";
-			
+
 			if(appUserModel.get("loggedIn"))
 				xhr.setRequestHeader("Authorization", "Bearer " + appUserModel.get("token"));
-			
+
 			xhr.send();
 		},
 
@@ -334,7 +350,7 @@ define(['jquery', 'underscore', 'backbone'],
 							model.set(mostRecent[0]);
 						else
 							model.set(docs[0]); //Just default to the first doc found
-						
+
 						model.trigger("sync");
 					}
 					else{
@@ -355,7 +371,7 @@ define(['jquery', 'underscore', 'backbone'],
 		getCitationInfo: function(){
 			this.getInfo("id,seriesId,origin,pubDate,dateUploaded,title,datasource");
 		},
-		
+
 		/*
 		 * Get the system metadata for this object
 		 */
@@ -371,33 +387,33 @@ define(['jquery', 'underscore', 'backbone'],
 					//Check if this is archvied
 					var archived = ($(data).find("archived").text() == "true");
 					model.set("archived", archived);
-					
+
 					//Get the file size
 					model.set("size", ($(data).find("size").text() || ""));
-					
+
 					//Get the entity name
 					model.set("filename", ($(data).find("filename").text() || ""));
-					
+
 					//Check if this is a metadata doc
 					var formatId = $(data).find("formatid").text() || "",
 						formatType;
 					model.set("formatId", formatId);
-					if((formatId.indexOf("ecoinformatics.org") > -1) || 
-							(formatId.indexOf("FGDC") > -1) || 
-							(formatId.indexOf("INCITS") > -1) || 
-							(formatId.indexOf("namespaces/netcdf") > -1) || 
-							(formatId.indexOf("waterML") > -1) || 
-							(formatId.indexOf("darwin") > -1) || 
-							(formatId.indexOf("dryad") > -1) || 
-							(formatId.indexOf("http://www.loc.gov/METS") > -1) || 
-							(formatId.indexOf("ddi:codebook:2_5") > -1) || 
-							(formatId.indexOf("http://www.icpsr.umich.edu/DDI") > -1) || 
-							(formatId.indexOf("http://purl.org/ornl/schema/mercury/terms/v1.0") > -1) || 
-							(formatId.indexOf("datacite") > -1) || 
-							(formatId.indexOf("isotc211") > -1) || 
+					if((formatId.indexOf("ecoinformatics.org") > -1) ||
+							(formatId.indexOf("FGDC") > -1) ||
+							(formatId.indexOf("INCITS") > -1) ||
+							(formatId.indexOf("namespaces/netcdf") > -1) ||
+							(formatId.indexOf("waterML") > -1) ||
+							(formatId.indexOf("darwin") > -1) ||
+							(formatId.indexOf("dryad") > -1) ||
+							(formatId.indexOf("http://www.loc.gov/METS") > -1) ||
+							(formatId.indexOf("ddi:codebook:2_5") > -1) ||
+							(formatId.indexOf("http://www.icpsr.umich.edu/DDI") > -1) ||
+							(formatId.indexOf("http://purl.org/ornl/schema/mercury/terms/v1.0") > -1) ||
+							(formatId.indexOf("datacite") > -1) ||
+							(formatId.indexOf("isotc211") > -1) ||
 							(formatId.indexOf("metadata") > -1))
 						model.set("formatType", "METADATA");
-					
+
 					//Trigger the sync event so the app knows we found the model info
 					model.trigger("sync");
 				},
@@ -405,7 +421,7 @@ define(['jquery', 'underscore', 'backbone'],
 					model.notFound();
 				}
 			}
-			
+
 			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
 
@@ -551,15 +567,15 @@ define(['jquery', 'underscore', 'backbone'],
 
 			return _.uniq(_.flatten(derivations));
 		},
-		
+
 		getInputs: function(){
 			return this.get("prov_used");
 		},
-		
+
 		getOutputs: function(){
 			return this.get("prov_generated");
 		},
-		
+
 		/****************************/
 
 		/**
