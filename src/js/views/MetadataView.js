@@ -122,14 +122,8 @@ define(['jquery',
 
 			this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
-			// Injects Clipboard objects into DOM elements returned from the View
-			// Service
-			this.on("metadataLoaded", function() {
-				this.insertCopiables();
-			})
-
 			this.getModel();
-            
+
 			return this;
 		},
 
@@ -241,11 +235,11 @@ define(['jquery',
 				var loadSettings = {
 						url: endpoint,
 						success: function(response, status, xhr) {
-							
+
 							//If the user has navigated away from the MetadataView, then don't render anything further
 							if(MetacatUI.appView.currentView != viewRef)
 								return;
-								
+
 							//Our fallback is to show the metadata details from the Solr index
 							if (status=="error")
 								viewRef.renderMetadataFromIndex();
@@ -258,7 +252,7 @@ define(['jquery',
 								//Mark this as a metadata doc with no stylesheet, or one that is at least different than usual EML and FGDC
 								else if((response.indexOf('id="Metadata"') == -1)){
 									viewRef.$el.addClass("container no-stylesheet");
-									
+
 									if(viewRef.model.get("indexed")){
 										viewRef.renderMetadataFromIndex();
 										return;
@@ -267,7 +261,7 @@ define(['jquery',
 
 								//Now show the response from the view service
 								viewRef.$(viewRef.metadataContainer).html(response);
-								
+
 								//If there is no info from the index and there is no metadata doc rendered either, then display a message
 								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
 									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
@@ -278,6 +272,9 @@ define(['jquery',
 
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
+
+                // Injects Clipboard objects into DOM elements returned from the View Service
+                viewRef.insertCopiables();
 
 								viewRef.setUpAnnotator();
 							}
@@ -363,7 +360,7 @@ define(['jquery',
 		},
 
 		insertBreadcrumbs: function(){
-			
+
 			var breadcrumbs = $(document.createElement("ol"))
 						      .addClass("breadcrumb")
 						      .append($(document.createElement("li"))
@@ -404,7 +401,7 @@ define(['jquery',
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
 				return;
 			}
-			
+
 			if(!this.model.get("notFound")) return;
 
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
@@ -490,7 +487,7 @@ define(['jquery',
 			//var dataPackage = this.dataPackage;
 
 			if(!packages) var packages = this.packageModels;
-            
+
 
 			//Get the entity names from this page/metadata
 			this.getEntityNames(packages);
@@ -522,7 +519,7 @@ define(['jquery',
 				$("#downloadPackage").remove();
 
 			});
-            
+
 			//Collapse the table list after the first table
 			var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
 				numTables = additionalTables.children(".download-contents").length,
@@ -607,7 +604,7 @@ define(['jquery',
 			//Insert the package table HTML
 			$(tableContainer).append(tableView.render().el);
 			$(this.tableContainer).children(".loading").remove();
-            
+
 			$(tableContainer).find(".tooltip-this").tooltip();
 
 			this.subviews.push(tableView);
@@ -753,7 +750,7 @@ define(['jquery',
 
 			var dataSource  = MetacatUI.nodeModel.getMember(this.model),
 				replicaMNs  = MetacatUI.nodeModel.getMembers(this.model.get("replicaMN"));
-			
+
 			//Filter out the data source from the replica nodes
 			if(Array.isArray(replicaMNs) && replicaMNs.length){
 				replicaMNs = _.without(replicaMNs, dataSource);
@@ -761,36 +758,36 @@ define(['jquery',
 
 			if(dataSource && dataSource.logo){
 				this.$("img.data-source").remove();
-				
+
 				//Insert the data source template
 				this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
 					node : dataSource
 				})).addClass("has-data-source");
-				
+
 				this.$(this.citationContainer).addClass("has-data-source");
 				this.$(".tooltip-this").tooltip();
-				
-				$(".popover-this.data-source.logo").popover({ 
-						trigger: "manual", 
-						html: true, 
+
+				$(".popover-this.data-source.logo").popover({
+						trigger: "manual",
+						html: true,
 						title: "From the " + dataSource.name + " repository",
 						content: function(){
 							var content = "<p>" + dataSource.description + "</p>";
-							
+
 							if(replicaMNs.length){
 								content += '<h5>Exact copies hosted by ' + replicaMNs.length + ' repositories: </h5><ul class="unstyled">';
-							
+
 								_.each(replicaMNs, function(node){
-									content += '<li><a href="https://search.dataone.org/#profile/' + 
-												node.shortIdentifier + 
-												'" class="pointer">' + 
-												node.name + 
+									content += '<li><a href="https://search.dataone.org/#profile/' +
+												node.shortIdentifier +
+												'" class="pointer">' +
+												node.name +
 												'</a></li>';
 								});
-								
+
 								content += "</ul>";
 							}
-							
+
 							return content;
 						},
 						animation:false
@@ -840,7 +837,7 @@ define(['jquery',
 				$(container).html(controlsEl);
 
 				//Insert an Edit button
-				if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){ 
+				if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
 					controlsEl.append(
 						this.editMetadataTemplate({
 							identifier: pid,
@@ -852,7 +849,7 @@ define(['jquery',
 						supported: false
 					}));
 				}
-				
+
 				//Insert a Publish button if its not already published with a DOI
 				if(!model.isDOI()){
 					//Insert the template
@@ -862,21 +859,21 @@ define(['jquery',
 							identifier: pid
 						}));
 				}
-				
+
 				//Check the authority on the package models
 				//If there is no package, then exit now
 				if(!viewRef.packageModels || !viewRef.packageModels.length) return;
-				
+
 				//Check for authorization on the resource map
 				var packageModel = this.packageModels[0];
-				
+
 				//if there is no package, then exit now
 				if(!packageModel.get("id")) return;
-				
+
 				//Listen for changes to the authorization flag
 				//packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-				//packageModel.once("sync", viewRef.createProvEditor, viewRef); 
-						
+				//packageModel.once("sync", viewRef.createProvEditor, viewRef);
+
 				//Now get the RDF XML and check for the user's authority on this resource map
 				packageModel.fetch();
 				packageModel.checkAuthority();
@@ -889,19 +886,18 @@ define(['jquery',
 		 * View Service. This code depends on the implementation of the Metacat
 		 * View Service in that it depends on elements with the class "copy" being
 		 * contained in the HTML returned from the View Service.
-		 * 
+		 *
 		 * To add more copiable buttons (or other elements) to a View Service XSLT,
 		 * you should be able to just add something like:
-		 * 
+		 *
 		 *   <button class="btn copy" data-clipboard-text="your-text-to-copy">
 		 * 	   Copy
 		 *   </button>
-		 * 
+		 *
 		 * to your XSLT and this should pick it up automatically.
 		*/
 		insertCopiables: function(){
-			var container = $("#Metadata");
-			var copiables = $(container).find(".copy");
+			var copiables = $("#Metadata .copy");
 
 			_.each(copiables, function(copiable) {
 				var clipboard = new Clipboard(copiable);
@@ -909,11 +905,11 @@ define(['jquery',
 				clipboard.on("success", function(e) {
 					var el = $(e.trigger),
 							oldInner = $(el).html();
-				
-					$(el).html("✔");
+
+					$(el).html( $(document.createElement("span")).addClass("icon icon-ok success") );
 
 					// Use setTimeout instead of jQuery's built-in Events system because
-					// it didn't look flexible enough to allow me update innerHTML in 
+					// it didn't look flexible enough to allow me update innerHTML in
 					// a chain
 					setTimeout(function() {
 						$(el).html(oldInner);
@@ -1045,7 +1041,7 @@ define(['jquery',
                 });
             }
         },
-        
+
 		/*
 		 * Renders ProvChartViews on the page to display provenance on a package level and on an individual object level.
 		 * This function looks at four sources for the provenance - the package sources, the package derivations, member sources, and member derivations
@@ -1053,12 +1049,12 @@ define(['jquery',
 		drawProvCharts: function(dataPackage){
 			//Provenance has to be retrieved from the Package Model (getProvTrace()) before the charts can be drawn
 			if(dataPackage.provenanceFlag != "complete") return false;
-			
-			// If the user is authorized to edit the provenance for this package 
+
+			// If the user is authorized to edit the provenance for this package
 			// then turn on editing, so that // edit icons are displayed.
 			//var isAuthorized = true;
-			var editModeOn = false; 
-            
+			var editModeOn = false;
+
 			this.model.get("isAuthorized") ? editModeOn = true : editModeOn = false;
 			var view = this;
 			//Draw two flow charts to represent the sources and derivations at a package level
@@ -1094,7 +1090,7 @@ define(['jquery',
 					// Don't draw prov charts for metadata objects.
 					if(member.get("type").toLowerCase() == "metadata") return;
 					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
-					
+
 					//Retrieve the sources and derivations for this member
 					var memberSources 	  = member.get("provSources") || new Array(),
 						memberDerivations = member.get("provDerivations") || new Array();
@@ -1115,10 +1111,10 @@ define(['jquery',
 						view.subviews.push(memberSourcesProvChart);
 						$(entityDetailsSection).before(memberSourcesProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
-					} 
+					}
 
 					//Make the derivation chart for this member
-					// If edit is on, then either a 'blank' derivations ProvChart will be displayed if there, 
+					// If edit is on, then either a 'blank' derivations ProvChart will be displayed if there,
 					// are no derivations for this member or edit icons will be displayed with prov icons.
 					if(memberDerivations.length || editModeOn){
 						var memberDerivationsProvChart = new ProvChart({
@@ -1133,7 +1129,7 @@ define(['jquery',
 						view.subviews.push(memberDerivationsProvChart);
 						$(entityDetailsSection).after(memberDerivationsProvChart.render().el);
 						view.$(view.articleContainer).addClass("gutters");
-					} 
+					}
 				});
 			}
 
@@ -1154,7 +1150,7 @@ define(['jquery',
 					//Don't use the unique class on images since they will look a lot different anyway by their image
 					if(!$(matchingNodes).first().hasClass("image")){
 						var className = "uniqueNode" + i;
-						
+
 						//Add the unique class and up the iterator
 						if(matchingNodes.prop("tagName") != "polygon")
 							$(matchingNodes).addClass(className);
@@ -1172,29 +1168,29 @@ define(['jquery',
 				});
 			}
 		},
-		
+
 		/* Step through all prov charts and re-render each one that has been
 		   marked for re-rendering.
 		*/
 		redrawProvCharts: function() {
 			var view = this;
-			
+
             // Check if prov edits are active and turn on the prov save bar if so.
             // Alternatively, turn off save bar if there are no prov edits, which
-            // could occur if a user undoes a previous which could result in 
+            // could occur if a user undoes a previous which could result in
             // an empty edit list.
             if(this.dataPackage.provEditsPending()) {
-                this.showEditorControls();  
+                this.showEditorControls();
             } else {
-            	this.hideEditorControls(); 
-            	
+            	this.hideEditorControls();
+
                 // Reset the edited flag for each package member
                 _.each(this.dataPackage.toArray(), function(item) {
                     item.selectedInEditor == false;
                 });
             }
 			_.each(this.subviews, function(thisView, i) {
-				
+
 				// Check if this is a ProvChartView
 				if(thisView.className.indexOf("prov-chart") !== -1) {
 					// Check if this ProvChartView is marked for re-rendering
@@ -1202,17 +1198,17 @@ define(['jquery',
 					thisView.onClose();
 				}
 			});
-			
+
 			// Remove prov charts from the array of subviews.
 			this.subviews = _.filter(this.subviews, function(item) {
-	  			return item.className.indexOf("prov-chart") == -1; 
+	  			return item.className.indexOf("prov-chart") == -1;
  			});
-			
+
 			view.drawProvCharts(this.dataPackage);
 			view.listenToOnce(this.dataPackage, "redrawProvCharts", view.redrawProvCharts);
 
 		},
-		
+
         /*
          * When the data package collection saves successfully, tell the user
          */
@@ -1222,24 +1218,24 @@ define(['jquery',
 
             //Change the URL to the new id
             MetacatUI.uiRouter.navigate("#view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
-            
+
             var message = $(document.createElement("div")).append($(document.createElement("span")).text("Your changes have been saved. "));
-            
+
             MetacatUI.appView.showAlert(message, "alert-success", "body", 4000, {remove: false});
-            
+
             // Reset the state to clean
             this.dataPackage.packageModel.set("changed", false);
 
             // If provenance relationships were updated, then reset the edit list now.
-            if(this.dataPackage.provEdits.length) this.dataPackage.provEdits = [];  
+            if(this.dataPackage.provEdits.length) this.dataPackage.provEdits = [];
 
             this.saveProvPending = false;
             this.hideSaving();
             this.stopListening(this.dataPackage, "error", this.saveError);
-    
+
             // Turn off "save" footer
-            this.hideEditorControls(); 
-            
+            this.hideEditorControls();
+
             // Update the metadata table header with the new resource map id.
             // First find the PackageTableView for the top level package, and
             // then re-render it with the update resmap id.
@@ -1278,15 +1274,15 @@ define(['jquery',
 
             MetacatUI.appView.showAlert(message, "alert-error", "body", null, {
                 emailBody: "Error message: Data Package save error: " + errorMsg,
-                remove: true 
+                remove: true
                 });
-            
+
             this.saveProvPending = false;
-            this.hideSaving(); 
+            this.hideSaving();
             this.stopListening(this.dataPackage, "successSaving", this.saveSuccess);
 
             // Turn off "save" footer
-            this.hideEditorControls();  
+            this.hideEditorControls();
         },
 
         /* If provenance relationships have been modified by the provenance editor (in ProvChartView), then
@@ -1295,7 +1291,7 @@ define(['jquery',
         saveProv: function() {
             // Only call this function once per save operation.
             if(this.saveProvPending) return;
-            
+
             var view = this;
             if(this.dataPackage.provEditsPending()) {
                 this.saveProvPending = true;
@@ -1303,13 +1299,13 @@ define(['jquery',
                 this.listenToOnce(this.dataPackage, "error", this.saveError);
                 // Listen for when the package has been successfully saved
                 this.listenToOnce(this.dataPackage, "successSaving", this.saveSuccess);
-                this.showSaving(); 
+                this.showSaving();
                 this.dataPackage.saveProv();
             } else {
                 //TODO: should a dialog be displayed saying that no prov edits were made?
             }
         },
-        
+
         showSaving: function(){
 
             //Change the style of the save button
@@ -1317,25 +1313,25 @@ define(['jquery',
                 .html('<i class="icon icon-spinner icon-spin"></i> Saving...')
                 .addClass("btn-disabled");
 
-            this.$("input, textarea, select, button").prop("disabled", true);	    	
+            this.$("input, textarea, select, button").prop("disabled", true);
         },
 
         hideSaving: function(){
             this.$("input, textarea, select, button").prop("disabled", false);
 
             //When prov is saved, revert the Save button back to normal
-            this.$("#save-metadata-prov").html("Save").removeClass("btn-disabled");	    
-        
+            this.$("#save-metadata-prov").html("Save").removeClass("btn-disabled");
+
         },
-        
+
         showEditorControls: function(){
         	this.$("#editor-footer").slideDown();
         },
-        
+
         hideEditorControls: function(){
         	this.$("#editor-footer").slideUp();
         },
-        
+
 		getEntityNames: function(packageModels){
 			var viewRef = this;
 
@@ -1551,10 +1547,10 @@ define(['jquery',
 				_.each(packageMembers, function(solrResult, i){
 					//Don't display any info about nested packages
 					if(solrResult.type == "Package") return;
-					
+
 					var objID = solrResult.get("id");
 
-					if(objID == viewRef.pid) 
+					if(objID == viewRef.pid)
 						return;
 
 					//Is this a visual object (image or PDF)?
@@ -1570,30 +1566,30 @@ define(['jquery',
 
 					var downloadButton = new DownloadButtonView({ model: solrResult });
 					downloadButton.render();
-					
+
 					//Insert the data display HTML and the anchor tag to mark this spot on the page
 					if(container){
 						if((type == "image") || (type == "PDF")){
-							
+
 							//Create the data display HTML
 							var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
 												type : type,
 												src : solrResult.get("url"),
 												objID : objID
 											  }).trim());
-							
+
 							//Insert into the page
 							if($(container).children("label").length > 0)
 								$(container).children("label").first().after(dataDisplay);
 							else
 								$(container).prepend(dataDisplay);
-							
+
 							//If this image or PDF is private, we need to load it via an XHR request
 							if( !solrResult.get("isPublic") ){
 								//Create an XHR
 								var xhr = new XMLHttpRequest();
 								xhr.withCredentials = true;
-								
+
 								if(type == "PDF"){
 									//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 									xhr.onload = function(){
@@ -1606,12 +1602,12 @@ define(['jquery',
 								}
 								else if(type == "image"){
 									xhr.onload = function(){
-										
+
 										if(xhr.response)
 											$(dataDisplay).find("img").attr("src", window.URL.createObjectURL(xhr.response));
 									}
 								}
-								
+
 								//Open and send the request with the user's auth token
 								xhr.open('GET', solrResult.get("url"));
 								xhr.responseType = "blob";
@@ -1956,7 +1952,7 @@ define(['jquery',
 		showError: function(msg){
 			//Remove any existing error messages
 			this.$el.children(".alert-container").remove();
-			
+
 			this.$el.prepend(
 				this.alertTemplate({
 					msg: msg,
@@ -2006,10 +2002,10 @@ define(['jquery',
 		},
 
 		closePopovers: function(e){
-			//If this is a popover element or an element that has a popover, don't close anything. 
+			//If this is a popover element or an element that has a popover, don't close anything.
 			//Check with the .classList attribute to account for SVG elements
 			var svg = $(e.target).parents("svg");
-			
+
 			if(_.contains(e.target.classList, "popover-this") ||
 			  ($(e.target).parents(".popover-this").length > 0)  ||
 			  ($(e.target).parents(".popover").length > 0) ||

@@ -1527,6 +1527,9 @@ body > .alert-container {
     font-family: inherit;
     font-size: 1em;
 }
+#Metadata table .copy{
+	min-width: 50px;
+}
 #Content.no-stylesheet.container{
 	width: 86%;
 }
