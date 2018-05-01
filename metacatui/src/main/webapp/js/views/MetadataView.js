@@ -256,6 +256,9 @@ define(['jquery',
 								//Add a map of the spatial coverage
 								if(gmaps) viewRef.insertSpatialCoverageMap();
 
+                // Injects Clipboard objects into DOM elements returned from the View Service
+                viewRef.insertCopiables();
+
 								viewRef.setUpAnnotator();
 							}
 						},
@@ -857,6 +860,43 @@ define(['jquery',
 				//packageModel.checkAuthority();
 			});
 			this.model.checkAuthority();
+		},
+
+    /*
+		 * Injects Clipboard objects onto DOM elements returned from the Metacat
+		 * View Service. This code depends on the implementation of the Metacat
+		 * View Service in that it depends on elements with the class "copy" being
+		 * contained in the HTML returned from the View Service.
+		 *
+		 * To add more copiable buttons (or other elements) to a View Service XSLT,
+		 * you should be able to just add something like:
+		 *
+		 *   <button class="btn copy" data-clipboard-text="your-text-to-copy">
+		 * 	   Copy
+		 *   </button>
+		 *
+		 * to your XSLT and this should pick it up automatically.
+		*/
+		insertCopiables: function(){
+			var copiables = $("#Metadata .copy");
+
+			_.each(copiables, function(copiable) {
+				var clipboard = new Clipboard(copiable);
+
+				clipboard.on("success", function(e) {
+					var el = $(e.trigger),
+							oldInner = $(el).html();
+
+					$(el).html( $(document.createElement("span")).addClass("icon icon-ok success") );
+
+					// Use setTimeout instead of jQuery's built-in Events system because
+					// it didn't look flexible enough to allow me update innerHTML in
+					// a chain
+					setTimeout(function() {
+						$(el).html(oldInner);
+					}, 500)
+				});
+			});
 		},
 
 		/*

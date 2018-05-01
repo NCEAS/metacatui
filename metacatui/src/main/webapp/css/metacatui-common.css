@@ -1,5 +1,5 @@
 
-/****************************************** 
+/******************************************
 ** General Styling ***
 ******************************************/
 a:hover{
@@ -61,7 +61,7 @@ a:hover{
 	font-size: 12px;
 }
 
-/****************************************** 
+/******************************************
 ** General Structure ***
 ******************************************/
 html{
@@ -120,7 +120,7 @@ footer{
 	min-height: 100%;
 }
 
-/****************************************** 
+/******************************************
 ** Navigation ***
 ******************************************/
 .breadcrumb{
@@ -172,12 +172,12 @@ footer{
 	display:inline-block;
 	cursor:pointer;
 	text-decoration:none;
-}  
+}
 .nav .right .dropdown-menu {
   left: -50%;
 }
 
-/****************************************** 
+/******************************************
 ** Titles ***
 ******************************************/
 h3{
@@ -188,7 +188,7 @@ header .citation {
     display: block;
 }
 
-/****************************************** 
+/******************************************
 ** Buttons ***
 ******************************************/
 .inline-buttons {
@@ -228,7 +228,7 @@ header .citation {
 }
 
 
-/****************************************** 
+/******************************************
 ** Download Buttons ***
 ******************************************/
 .btn.download{
@@ -248,7 +248,7 @@ header .citation {
 	display: none;
 }
 
-/****************************************** 
+/******************************************
 ** Notifications and Alerts ***
 ******************************************/
 .notification.loading .icon{
@@ -292,7 +292,7 @@ header .citation {
 	margin-top: 10px;
 }
 .alert .icon-left{
-	float: left; 
+	float: left;
 	margin-right: 10px;
 }
 .alert.plain{
@@ -300,7 +300,7 @@ header .citation {
 	border-color: #DDD;
 	color: #333;
 }
-.notification.success, 
+.notification.success,
 .icon.success{
 	color: #008000;
 }
@@ -333,7 +333,7 @@ header .citation {
     max-width: 90%;
     margin-left: 5%;
 }
-/****************************************** 
+/******************************************
 ** Icons ***
 ******************************************/
 .btn > i{
@@ -358,7 +358,7 @@ h4 > .icon{
 	height: 20px;
 }
 img.icon{
-	max-height: 1.4em;	
+	max-height: 1.4em;
 }
 .icon-positive{
 	color: green;
@@ -380,7 +380,7 @@ img.icon{
 	font-weight: bold;
 	font-size: .9em;
 }
-/****************************************** 
+/******************************************
 ** Results and Result Rows ***
 ******************************************/
 .result-row{
@@ -477,7 +477,7 @@ img.icon{
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
-  margin-top: -2px;  
+  margin-top: -2px;
 }
 .result-row .tooltip-inner{
 	font-size: 1.2em;
@@ -486,7 +486,7 @@ img.icon{
 	width: 16px;
 	display: inline-block;
 }
-/****************************************** 
+/******************************************
 ** Provenance flow-charts ***
 ******************************************/
 .prov-chart{
@@ -508,7 +508,7 @@ img.icon{
    	margin-left: 17px;
    	padding-left: 16px;
 	border-left-width: 1px;
-   	border-left-style: solid;	
+   	border-left-style: solid;
 }
 .sources-programs{
 	padding-left: 0px;
@@ -641,10 +641,10 @@ img.icon{
 .provenance-statement a{
 	/*Keep the icons and links right by each other */
 	display: inline;
-	word-break: break-word; 
+	word-break: break-word;
 }
 .provenance-statement .currently-viewing{
-	font-weight: bold;	
+	font-weight: bold;
 }
 .prov-chart .image.node{
 	background-size: cover;
@@ -664,7 +664,7 @@ img.icon{
 .prov-chart .program.node.active{
 	stroke: #00eb89;
 	stroke-width: 2px;
-	transition: stroke 200ms; 
+	transition: stroke 200ms;
 }
 .program-icon{
 	font-size: 25px;
@@ -672,7 +672,7 @@ img.icon{
 .prov-chart .node .pdf.icon {
     margin-left: 5px;
 }
-/********* The Prov Chart colors *******/		
+/********* The Prov Chart colors *******/
 .prov-chart .node.uniqueNode1,
 .entitydetails.uniqueNode1{
 	border-color: #FF0000;
@@ -829,8 +829,8 @@ img.icon{
 }
 .prov-chart .node.uniqueNode15,
 .entitydetails.uniqueNode15{
-	border-color: #DCB9ED;	
-	stroke: #DCB9ED;	
+	border-color: #DCB9ED;
+	stroke: #DCB9ED;
 }
 .prov-chart .node.uniqueNode15 .icon,
 .provenance-statement .node-link.uniqueNode15 .icon,
@@ -841,7 +841,7 @@ img.icon{
 .prov-chart .node.uniqueNode16{
 	border-color:#B9EDE0;
 	stroke:#B9EDE0;
-} 
+}
 .prov-chart .node.uniqueNode16 .icon,
 .provenance-statement .node-link.uniqueNode16 .icon,
 .prov-chart .uniqueNode16 + .program-icon{
@@ -852,7 +852,7 @@ img.icon{
 .entitydetails.uniqueNode17{
 	border-color:#8F2323;
 	stroke:#8F2323;
-} 
+}
 .prov-chart .node.uniqueNode17 .icon,
 .provenance-statement .node-link.uniqueNode17 .icon,
 .prov-chart .uniqueNode17 + .program-icon{
@@ -863,7 +863,7 @@ img.icon{
 .entitydetails.uniqueNode18{
 	border-color:#23628F;
 	stroke:#23628F;
-} 
+}
 .prov-chart .node.uniqueNode18 .icon,
 .provenance-statement .node-link.uniqueNode18 .icon,
 .prov-chart .uniqueNode18 + .program-icon{
@@ -874,7 +874,7 @@ img.icon{
 .entitydetails.uniqueNode19{
 	border-color:#8F6A23;
 	stroke:#8F6A23;
-} 
+}
 .prov-chart .node.uniqueNode19 .icon,
 .provenance-statement .node-link.uniqueNode19 .icon,
 .prov-chart .uniqueNode19 + .program-icon{
@@ -885,7 +885,7 @@ img.icon{
 .entitydetails.uniqueNode20{
 	border-color:#6B238F;
 	stroke:#6B238F;
-} 
+}
 .prov-chart .node.uniqueNode20 .icon,
 .provenance-statement .node-link.uniqueNode20 .icon,
 .prov-chart .uniqueNode20 + .program-icon{
@@ -896,7 +896,7 @@ img.icon{
 .entitydetails.uniqueNode21{
 	border-color:#4F8F23;
 	stroke:#4F8F23;
-} 
+}
 .prov-chart .node.uniqueNode21 .icon,
 .provenance-statement .node-link.uniqueNode21 .icon,
 .prov-chart .uniqueNode21 + .program-icon{
@@ -907,7 +907,7 @@ img.icon{
 .entitydetails.uniqueNode22{
 	border-color:#000000;
 	stroke:#000000;
-} 
+}
 .prov-chart .node.uniqueNode22 .icon,
 .provenance-statement .node-link.uniqueNode22 .icon,
 .prov-chart .uniqueNode22 + .program-icon{
@@ -918,18 +918,18 @@ img.icon{
 .entitydetails.uniqueNode23{
 	border-color:#737373;
 	stroke:#737373;
-} 
+}
 .prov-chart .node.uniqueNode23 .icon,
 .provenance-statement .node-link.uniqueNode23 .icon,
 .prov-chart .uniqueNode23 + .program-icon{
 	color: #737373;
 	fill: #737373;
-}		
+}
 /*The context sections gets narrowed when there is one prov chart next to it*/
 .gutters .entitydetails{
 	width: 60%; /* IE fallback */
 	width: calc(100% - 215px); /* 100% - prov-chart width - (padding + borders)*/
-	display: inline-block;	
+	display: inline-block;
 	margin-left: 105px;
 	box-sizing: border-box;
 }
@@ -1025,7 +1025,7 @@ img.icon{
 #mdqResult .progress-bar-success {
 	opacity: 0.50;
 }
-	
+
 .list-group-item.success .icon-caret-right,
 .list-group-item.success .icon-caret-down,
 .list-group-item.warning .icon-caret-right,
@@ -1089,14 +1089,14 @@ img.icon{
 	font-size: 1em;
 }
 #mdqTypeSummary {
-	float: right; 
+	float: right;
 	width: 70%;
 }
 
 #mdqResult #data-chart {
 	height: 220px;
 	width: 250px;
-	margin:0px;	
+	margin:0px;
 }
 
 
@@ -1207,7 +1207,7 @@ img.icon{
 }
 .prov-chart .popover-title i{
 	font-size: 1.2em;
-} 
+}
 .prov-chart .popover .thumbnail{
 	margin-bottom: 20px;
 	height: auto;
@@ -1232,11 +1232,11 @@ img.icon{
 #Metadata .popover-content .citation{
 	font-size: 1em;
 	font-weight: normal;
-} 
+}
 
-/****************************************** 
+/******************************************
 ** Collapsable Lists (ExpandCollapseView) **
-******************************************/	
+******************************************/
 .expand-collapse .collapsed{
 	display: none;
 }
@@ -1247,7 +1247,7 @@ img.icon{
 .expand-collapse .control,
 .expand-collapse .expanded{
 	display: inline-block;
-}	
+}
 .expand-collapse .control.collapse{
 	overflow: visible;
 	margin-left: 5px;
@@ -1262,9 +1262,9 @@ img.icon{
 .expand-collapse .spacer{
 	margin-right: 10px;
 }
-/****************************************** 
+/******************************************
 ************ Popup Login **************
-******************************************/	
+******************************************/
 .fancybox-inline{
 	background-color: #FFF;
 	padding: 20px;
@@ -1373,7 +1373,7 @@ img.icon{
 	background-color: #aacf14;
 	    cursor: pointer;
 	  transition: all 500ms;
-	
+
 }
 .fancybox-inline .orcid-signin a:hover > span{
 	color: white;
@@ -1394,7 +1394,7 @@ img.icon{
 }
 .scroll-y{
 	overflow-y: scroll;
-	-webkit-transform: translate3d(0,0,0); 
+	-webkit-transform: translate3d(0,0,0);
 }
 .inline input,
 .inline label{
@@ -1433,9 +1433,9 @@ img.icon{
 	width: auto;
 	margin-bottom: 20px;
 }
-/****************************************** 
+/******************************************
 ** The Metadata and MetadataIndex View **
-******************************************/	
+******************************************/
 #metadata-index-details .General .title,
 #metadata-index-details .Other .text,
 #metadata-index-details .Other .attributeDescription,
@@ -1449,7 +1449,7 @@ img.icon{
 #metadata-index-details .Other .author,
 #metadata-index-details .Other .authorGivenName,
 #metadata-index-details .Other .authorGivenNameSort,
-#metadata-index-details .Other .authorSurName,	
+#metadata-index-details .Other .authorSurName,
 #metadata-index-details .Other .authorSurNameSort,
 #metadata-index-details .Other .authorLastName,
 #metadata-index-details .Other .replicaVerifiedDate,
@@ -1504,6 +1504,9 @@ img.icon{
 	padding-right: 0px;
     width: 100%;
 }
+#Metadata table .copy{
+	min-width: 50px;
+}
 .entitydetails.controls-well > .thumbnail{
 	margin-left: 180px;
 }
@@ -1526,7 +1529,7 @@ img.icon{
 .metadata-view .controls-container > .controls .inline-buttons{
 	margin-top: 0px;
 	margin-bottom: 0px;
-	
+
 }
 #metadata-container > .alert-container{
 	margin-top: 40px;
@@ -1544,10 +1547,10 @@ img.icon{
     font-family: inherit;
     font-size: 1em;
 }
-#Content.no-stylesheet.container{ 
+#Content.no-stylesheet.container{
 	width: 86%;
 }
-#Content.no-stylesheet.container > .breadcrumb{ 
+#Content.no-stylesheet.container > .breadcrumb{
 	width: 100%;
 	margin-top: 20px;
 }
@@ -1586,13 +1589,13 @@ img.icon{
 .taxonomicCoverage .control-label{
     width: auto;
     padding: 0px 10px;
-}    
+}
 .taxonomicCoverage .controls > .control-group:nth-child(2n){
     margin-left: 107px;
-}    
+}
 .taxonomicCoverage .control-label{
    color: #999;
-}    
+}
 .taxonomicCoverage .controls {
 	margin-left: 0px;
 }
@@ -1639,7 +1642,7 @@ img.icon{
 .citation-container ~ .data-source .LTER{
 	max-height: 90px;
 }
-/****************************************** 
+/******************************************
 * The Data Details box in the Metadata View
 ********************************************/
 .entitydetails{
@@ -1693,7 +1696,7 @@ img.icon{
 	background-color: #CCCCCC;
 	padding: 5px;
 	color: white;
-	margin-bottom: 20px;	
+	margin-bottom: 20px;
 	border-top-left-radius: 4px;
 	border-top-right-radius: 4px;
 	margin-left: -5px;
@@ -1701,7 +1704,7 @@ img.icon{
 	padding-left: 10px;
 }
 
-/****************************************** 
+/******************************************
 * Annotations
 ********************************************/
 .annotator-adder, .annotator-outer, .annotator-notice {
@@ -1711,7 +1714,7 @@ img.icon{
 	margin-left: 180px;
 }
 .annotation-container .add-tag{
-	margin-left: 10px;	
+	margin-left: 10px;
 	margin-top: 10px;
     margin-bottom: 20px;
     text-shadow: none;
@@ -1723,7 +1726,7 @@ img.icon{
 	height: 0px;
 	margin-left: 180px;
 }
-.annotator-listing > .annotator-checkbox:nth-child(2n), 
+.annotator-listing > .annotator-checkbox:nth-child(2n),
 .annotator-listing > .annotator-checkbox:nth-child(3n) {
     display: none;
 }
@@ -1824,7 +1827,7 @@ img.icon{
     color: #FFF;
 }
 .annotation-flag.btn-success:hover{
-	background-color: #66ce66;	
+	background-color: #66ce66;
 }
 .annotation-viewer-container .warning{
 	color: #d00000;
@@ -1889,7 +1892,7 @@ img.icon{
 #bioportal-popover .popover{
 	max-width: 500px;
 	width: 500px;
-	
+
 }
 #bioportal-popover .popover-content{
 	width: 95%;
@@ -1906,7 +1909,7 @@ img.icon{
 #resetTree {
 	float: right;
 }
-/****************************************** 
+/******************************************
 * Images, Maps, and Media
 ********************************************/
 .thumbnail{
@@ -1945,7 +1948,7 @@ img.icon{
 .control-group ~ .thumbnail{
 	margin-left: 180px;
 }
-img[src*="gstatic.com/"].georegion-map, 
+img[src*="gstatic.com/"].georegion-map,
 img[src*="googleapis.com/"].georegion-map{
 	max-width: 100%;
 }
@@ -1971,7 +1974,7 @@ img[src*="googleapis.com/"].georegion-map{
   width: 10000px;
 }
 .media-body h5 a{
-	color: inherit;	
+	color: inherit;
 }
 .media-object {
   display: block;
@@ -2008,12 +2011,12 @@ img[src*="googleapis.com/"].georegion-map{
   padding-left: 0;
   list-style: none;
 }
-/****************************************** 
+/******************************************
 * Download / Resource Map contents table
 ********************************************/
 #downloadContents .controls-well{
 	overflow-x: scroll;
-	-webkit-transform: translate3d(0,0,0); 
+	-webkit-transform: translate3d(0,0,0);
 }
 .download-contents{
 	float: none;
@@ -2046,7 +2049,7 @@ table.download-contents.nested{
 	border-bottom: 1px solid #8DA2AA;
 }
 .table-header-link{
-	font-weight: normal;	
+	font-weight: normal;
 }
 .table tr > th .tooltip{
 	font-weight: normal;
@@ -2064,11 +2067,11 @@ table.download-contents.nested{
 }
 .download-contents .format-type{
 	text-align: left;
-}   
+}
 .download-contents .file-type i {
   color: #999;
   margin-left: 5px;
-} 
+}
 .download-contents .ellipsis{
 	display: block;
 	max-width: 250px;
@@ -2080,7 +2083,7 @@ table.download-contents .name{
 table.download-contents .btn-container,
 table.download-contents .btn-container .btn{
 	width: 140px;
-} 
+}
 .download-contents.service .btn-container .btn{
 	width: 135px;
 }
@@ -2105,15 +2108,15 @@ table.download-contents .btn-container .btn{
 	margin-bottom: 10px;
 	display: block;
 }
-    
+
 /* The footer / expand-collapse control */
-.table tfoot th{ 
-	text-align: center; 
+.table tfoot th{
+	text-align: center;
 }
 tfoot .control{
 	border-bottom-width: 1px;
 	border-bottom-style: dotted;
-	cursor: pointer;	
+	cursor: pointer;
 }
 tfoot .control i{
 	margin-left: 5px;
@@ -2130,7 +2133,7 @@ tfoot .control i{
 }
 /**----------------------------------------**/
 
-/****************************************** 
+/******************************************
 
 
 /******************************************
@@ -2227,7 +2230,7 @@ tfoot .control i{
 .citation .label{
 	display: inline;
 	font-weight: bolder;
-	text-shadow: none;	
+	text-shadow: none;
 }
 #results .popover{
 	min-width: 300px;
@@ -2235,9 +2238,9 @@ tfoot .control i{
 	font-size: .9em;
 	line-height: 1.3em;
 }
-.popover cite{ 
+.popover cite{
 	display: block;
-	margin-bottom: 20px; 
+	margin-bottom: 20px;
 }
 .citation .id{
 	color: #888;
@@ -2254,7 +2257,7 @@ tfoot .control i{
 	cursor: pointer;
 }
 
-/****************************************** 
+/******************************************
 ** User Profile ***
 ******************************************/
 #user-profile{
@@ -2406,7 +2409,7 @@ address.email-container:before{
 #quality-score, #quality-chart{
 	display: none;
 }
-/****************************************** 
+/******************************************
 ** Stats ***
 ******************************************/
 .no-activity *,
@@ -2542,9 +2545,9 @@ svg .no-activity,
 	fill: #CCCCCC;
 }
 
-  
-  
-/****************************************** 
+
+
+/******************************************
 ** Panels ***
 ******************************************/
 .panel {
@@ -2673,7 +2676,7 @@ svg .no-activity,
 .list-group-item.create-group a{
 	font-weight: normal;
 }
-/****************************************** 
+/******************************************
 ** Searching and Map ***
 ******************************************/
 #clear-all{
@@ -2760,7 +2763,7 @@ body.mapMode{
 .list-only .map-toggle-container{
 	display: none;
 }
-/****************************************** 
+/******************************************
 ** Filters ***
 ******************************************/
 .filter-container{
@@ -2776,7 +2779,7 @@ body.mapMode{
 	-webkit-transition: max-height .5s ease-in-out;
 	-moz-transition: max-height .5s ease-in-out;
   	overflow: hidden;
-}   
+}
 .filter-input-contain{
 	clear: both;
 }
@@ -2947,7 +2950,7 @@ body.mapMode{
 .checkbox-list .less-link{
 	font-weight: normal;
 	font-size: .9em;
-} 
+}
 .checkbox-list .more-link  .icon,
 .checkbox-list .less-link  .icon{
 	margin-left: 5px;
@@ -2969,11 +2972,11 @@ body.mapMode{
 .ui-buttonset input[type="checkbox"]{
    	display: none;
 }
-.ui-buttonset .icon-check-empty, 
+.ui-buttonset .icon-check-empty,
 .ui-buttonset .icon-check{
 	margin-right: 5px;
 }
-label.ui-state-active i.icon-check-empty, 
+label.ui-state-active i.icon-check-empty,
 label.ui-state-default i.icon-check {
   display: none;
 }
@@ -2987,14 +2990,14 @@ label.ui-state-active i.icon-check{
 	float: left;
 	margin: 0px;
 	margin-right: 8px;
-}  
+}
 .filter-contain .icon.more-info{
    	font-size: 14px;
    	line-height: 23px;
    	top: 5px;
    	float: left;
    	cursor: default;
-}   
+}
 .filter-contain .icon.expand,
 .filter-contain .icon.collapse{
 	margin-right: 15px;
@@ -3002,10 +3005,10 @@ label.ui-state-active i.icon-check{
 #filter-year > .icon,
 #includes-files > .icon{
   	margin-top: 0px;
-}  
+}
 .filter-contain > .icon-sitemap{
   	font-size: 18px;
-}  
+}
 .filter-contain > .icon-map-marker{
   	font-size: 22px;
 }
@@ -3030,7 +3033,7 @@ label.ui-state-active i.icon-check{
 	border-color: #CCC;
 	background-color:#e6e6e6;
 	color: #333;
-}  
+}
 .btn.download[disabled], .btn-primary.download[disabled]:hover{
 	min-width: 105px;
 }
@@ -3187,7 +3190,7 @@ input.subtle:focus
 	padding: .5em 0;
 }
 .cell-icon{
-	width: 1em;	
+	width: 1em;
 }
 .progress{
 	margin-top: 2em;
@@ -3196,7 +3199,7 @@ input.subtle:focus
 	overflow: visible;
 }
 #collapseParties .popover{
-	z-index: 0;	
+	z-index: 0;
 }
 #RegistryGuide > div{
 	font-size: 1.8em;
@@ -3290,7 +3293,7 @@ CSS library fixes
 /* overflow-y:scroll fix for webkit browsers */
 .pre-scrollable, /*Bootstrap */
 .fancybox-lock .fancybox-overlay{ /* Fancybox */
-	-webkit-transform: translate3d(0,0,0); 
+	-webkit-transform: translate3d(0,0,0);
 }
 
 /** Progress Bars from Bootstrap 3.3.6 **/
