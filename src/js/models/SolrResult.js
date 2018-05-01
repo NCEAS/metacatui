@@ -177,13 +177,22 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		/**
-		 * Checks if the pid  or sid is already a DOI
+		 * Checks if the pid or sid or given string is a DOI
 		 *
+		 * @param {string} customString - Optional. An identifier string to check instead of the id and seriesId attributes on the model
 		 * @returns {boolean} True if it is a DOI
-         */
-		isDOI: function() {
+		 */
+		isDOI: function(customString) {
 			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.",
 				"https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."];
+
+			//If a custom string is given, then check that instead of the seriesId and id from the model
+			if( typeof customString == "string" ){
+				for (var i=0; i < DOI_PREFIXES.length; i++) {
+					if (customString.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+						return true;
+				}
+			}
 
 			var seriesId = this.get("seriesId"),
 			    pid      = this.get("id");
