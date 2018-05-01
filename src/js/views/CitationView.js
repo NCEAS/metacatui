@@ -239,7 +239,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		createIDElement: function(){
 
 			var id 			 = this.metadata.get("id"),
-					seriesId = this.metadata.get("seriesId");
+					seriesId = this.metadata.get("seriesId"),
+          datasource = this.metadata.get("datasource");
 
 			var idEl = $(document.createElement("span")).addClass("id");
 			if(seriesId){
@@ -250,14 +251,36 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 													.attr("href", doiURL)
 													.text(seriesId);
 
-					idEl.append(doiLink, $(document.createElement("span")).text(", version: "));
+          // Begin PANGAEA-specific override 1 (this is temporary)
+					// If this is a PENGAEA dataset with a seriesId, then don't show the pid.
+				  if (typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA") {
+            idEl.append(doiLink, $(document.createElement("span")).text(". "));
+          }
+          // End PANGAEA-specific override 1
+          else{
+					  idEl.append(doiLink, $(document.createElement("span")).text(", version: "));
+          }
 				}
 				else{
-					idEl.html($(document.createElement("span")).text(seriesId + ", version: "));
+					// Begin PANGAEA-specific override 2 (this is temporary)
+					// If this is a PENGAEA dataset with a seriesId, then don't show the pid.
+				  if (typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA") {
+					  idEl.html($(document.createElement("span")).text(seriesId + ". "));
+					}
+					// End PANGAEA-specific override 2
+					else{
+						idEl.html($(document.createElement("span")).text(seriesId + ", version: "));
+					}
 				}
 			}
 
-			if( id.indexOf("doi:") == 0 && !this.createLink ){
+      // Begin PANGAEA-specific override 3 (this is temporary)
+			// If this is a PENGAEA dataset with a seriesId, then don't show the pid. Return now.
+      if(typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA" && seriesId){
+        return idEl;
+      }
+      // End PANGAEA-specific override 3
+			else if( id.indexOf("doi:") == 0 && !this.createLink ){
 				var doiURL  = (id.indexOf("doi:") == 0)? "https://doi.org/" + id.substring(4) : id,
 						doiLink = $(document.createElement("a"))
 												.attr("href", doiURL)
