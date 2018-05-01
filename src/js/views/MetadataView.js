@@ -19,7 +19,6 @@ define(['jquery',
 		'views/PackageTableView',
 		'views/AnnotatorView',
 		'views/CitationView',
-		'views/ServiceTableView',
 		'text!templates/metadata/metadata.html',
 		'text!templates/dataSource.html',
 		'text!templates/publishDOI.html',
@@ -37,7 +36,7 @@ define(['jquery',
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-			 AnnotatorView, CitationView, ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
 			 MapTemplate, AnnotationTemplate, uuid) {
@@ -219,9 +218,6 @@ define(['jquery',
 			//Insert controls
 			this.insertControls();
 			this.insertOwnerControls();
-
-			// Service table
-			this.insertServiceTable();
 
 			//Show loading icon in metadata section
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
@@ -976,51 +972,6 @@ define(['jquery',
 
 			this.$(".tooltip-this").tooltip();
 		},
-
-		// Create, render, and insert the View for the ServiceType
-		insertServiceTable: function() {
-			if (!this.model.get("isService")) return;
-
-			var serviceData = this.parseServiceInformation();
-			var serviceTable = new ServiceTable(serviceData);
-			this.$(this.tableContainer).after(serviceTable.render().$el);
-		},
-
-		// Collect information about services into an Array of Objects
-		//
-		// Returns: Array of Objects, each object should have keys:
-		//   name, description, type, and endpoint
-		parseServiceInformation: function() {
-			// The serviceTitle and serviceDescription Solr fields are concatenated
-			// fields where a colon (:) separates each value. Since they may container
-			// URIs, we can't just split on ':' and instead we have to use a fancy
-			// regex. Here, I use a Negative Lookahead which causes the regex to split
-			// on : but not when the : is immediately followed by a // or a number
-			// (the number case catches ports, e.g. http://example.com:5000)
-			var split_pattern = /:(?!\/\/|\d)/;
-
-			// Collect values
-			var names = this.model.get("serviceTitle") ? this.model.get("serviceTitle").split(split_pattern) : [],
-				descriptions = this.model.get("serviceDescription") ? this.model.get("serviceDescription").split(split_pattern) : [],
-				types = this.model.get("serviceType") || [],
-				endpoints = this.model.get("serviceEndpoint") || [];
-
-			// Create our Array of Objects, filling in defaults for each property
-			var data = _.map(_.range(endpoints.length), function(i) {
-				return {
-					name: names[i] || 'No name provided',
-					description: descriptions[i] || 'No description provided',
-					type: types[i] || 'Unknown Type',
-					endpoint: endpoints[i] || null
-				}
-			});
-
-			// Sort the informaton by Name
-			var sorted = _.sortBy(data, 'name');
-
-			return sorted;
-		},
-
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {
             // Show the provenance trace for this package
