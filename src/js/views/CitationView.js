@@ -205,7 +205,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//The ID
 			var idEl = $(document.createElement("span")).addClass("id");
 			if (seriesId) {
-				$(idEl).text(seriesId + ", version: " + id + ". ");
+				// Begin PANGAEA-specific override (this is temporary)
+				if (typeof datasource !== "undefined" && datasource !== null && datasource === "urn:node:PANGAEA") {
+					$(idEl).text(seriesId +". ");
+				// End PANGAEA-specific override
+				} else {
+					$(idEl).text(seriesId + ", version: " + id + ". ");
+				}
 			}
 			else {
 				$(idEl).text("" + id + ". ");
