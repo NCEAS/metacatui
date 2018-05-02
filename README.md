@@ -2,8 +2,8 @@
 
 - **Author**: Matthew B. Jones, Chris Jones, Ben Leinfelder, Lauren Walker, Bryce Mecum, Peter Slaughter ([NCEAS](http://www.nceas.ucsb.edu))
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
-- [Package source code on Github](https://github.com/NCEAS/metacatUI)
-- [**Submit Bugs and feature requests**](https://projects.ecoinformatics.org/ecoinfo/projects/metacatui/)
+- [Package source code on Github](https://github.com/NCEAS/metacatui)
+- [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues)
 - [Task Board](https://waffle.io/NCEAS/metacatui)
 - Discussion list: metacat-dev@ecoinformatics.org
 
@@ -22,7 +22,7 @@ A metadata view, as configured for the Arctic Data Center:
 ## Installation
 
 ### Using MetacatUI with your own Metacat repository
- See the [Metacat documentation](https://github.com/NCEAS/metacat) for full installation instructions. In particular, the []`themes` section](https://github.com/NCEAS/metacat/blob/master/docs/user/metacat/source/themes.rst) of the Metacat documentation gives installation instructions for using MetacatUI with your Metacat repository.
+ See the [Metacat documentation](https://github.com/NCEAS/metacat) for full installation instructions. In particular, the [`themes` section](https://github.com/NCEAS/metacat/blob/master/docs/user/metacat/source/themes.rst) of the Metacat documentation gives installation instructions for using MetacatUI with your Metacat repository.
 
 ### Using MetacatUI locally with a remote Metacat repository
 To run MetacatUI, you will need to first install a web server such as [Apache](https://httpd.apache.org/). The following instructions are for Mac OS X.
