@@ -880,8 +880,7 @@ define(['jquery',
 				var clipboard = new Clipboard(copiable);
 
 				clipboard.on("success", function(e) {
-					var el = $(e.trigger),
-							oldInner = $(el).html();
+					var el = $(e.trigger);
 
 					$(el).html( $(document.createElement("span")).addClass("icon icon-ok success") );
 
@@ -889,7 +888,7 @@ define(['jquery',
 					// it didn't look flexible enough to allow me update innerHTML in
 					// a chain
 					setTimeout(function() {
-						$(el).html(oldInner);
+						$(el).html("Copy");
 					}, 500)
 				});
 			});
