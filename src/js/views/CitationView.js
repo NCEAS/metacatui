@@ -40,9 +40,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 			if (!this.model && !this.metadata && !this.id)
 				return this;
-			else if(!this.model && !this.metadata && this.pid){
+			else if(!this.model && !this.metadata && this.id){
 				//Create a model
- 				this.metadata = new SolrResult({id: this.pid});
+ 				this.metadata = new SolrResult({id: this.id});
  				this.model = this.metadata;
 
  				//Retrieve the citation info for this model and render once we have it
@@ -141,12 +141,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//If there is no metadata doc, then this is probably a data doc without science metadata.
 			//So create the citation from the index values
 			else {
-				var author = this.model.get("rightsHolder") || this.model.get("submitter") || "",
-					dateUploaded = this.model.get("dateUploaded"),
-					datasource = this.model.get("datasource");
-
-				//Format the author text
-				var authorText = author ? author.substring(3, author.indexOf(",O=")) + ". " : "";
+				var authorText = this.model.get("rightsHolder") || this.model.get("submitter") || "",
+					  dateUploaded = this.model.get("dateUploaded"),
+					  datasource = this.model.get("datasource");
 			}
 
 			//The author
@@ -238,14 +235,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 		createIDElement: function(){
 
-			var id 			 = this.metadata.get("id"),
-					seriesId = this.metadata.get("seriesId"),
-          datasource = this.metadata.get("datasource");
+			var model    = this.metadata || this.model,
+					id 			 = model.get("id"),
+					seriesId = model.get("seriesId"),
+          datasource = model.get("datasource");
 
 			var idEl = $(document.createElement("span")).addClass("id");
 			if(seriesId){
 				//Create a link for the identifier if it is a DOI
-				if( this.metadata.isDOI(seriesId) && !this.createLink ){
+				if( model.isDOI(seriesId) && !this.createLink ){
 					var doiURL  = (seriesId.indexOf("doi:") == 0)? "https://doi.org/" + seriesId.substring(4) : seriesId,
 							doiLink = $(document.createElement("a"))
 													.attr("href", doiURL)

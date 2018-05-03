@@ -1515,8 +1515,8 @@ body > .alert-container {
     transform: translateX(-50%);
 }
 /* Hide the elements from the view service that we don't need to display */
-#metadata-container .citation,
-#metadata-container #downloadPackage{
+#Metadata form > .citation,
+#Metadata #downloadPackage{
 	display: none;
 }
 /* Used in metadata view for metadata format types without stylesheet */
