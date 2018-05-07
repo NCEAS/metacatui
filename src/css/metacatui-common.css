@@ -1621,6 +1621,24 @@ body > .alert-container {
 	max-height: 90px;
 }
 /******************************************
+* Metrics Controller Styling
+********************************************/
+a.btn.metrics{
+    display: inline-block;
+    font-size: 14px;
+    position: relative;
+    width: 139.89px;
+}
+
+.metric-well {
+    padding-top: 10px;
+    padding-bottom: 0px;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+/******************************************
 * The Data Details box in the Metadata View
 ********************************************/
 .entitydetails{
