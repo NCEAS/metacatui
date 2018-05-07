@@ -94,12 +94,17 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//If there is no metadata doc, then this is probably a data doc without science metadata.
 			//So create the citation from the index values
 			else{
-				var author       = this.model.get("rightsHolder") || this.model.get("submitter") || "",
+				var authorText   = this.model.get("rightsHolder") || this.model.get("submitter") || "",
 					  dateUploaded = this.model.get("dateUploaded"),
 					  datasource	 = this.model.get("datasource");
 
 				//Format the author text
-				var authorText = author? author.substring(3, author.indexOf(",O=")) + ". " : "";
+				if( authorText.indexOf(",O=") > -1 ){
+					authorText = authorText.substring(3, authorText.indexOf(",O=")) + ". ";
+				}
+				else{
+					authorText += ". ";
+				}
 			}
 
 	        //The author
@@ -133,11 +138,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			var idEl = this.createIDElement();
 
 			//Create a link
+			var idForLink = this.metadata? this.metadata.get("id") : this.model.get("id");
+
 	        if(this.createLink){
 	        	var linkEl = $(document.createElement("a"))
 											     .addClass("route-to-metadata")
-													 .attr("data-id", this.metadata.get("id"))
-													 .attr("href", "#view/" + this.metadata.get("id"));
+													 .attr("data-id", idForLink)
+													 .attr("href", "#view/" + idForLink);
 					}
 	        else{
 	        	var linkEl = document.createElement("span");
@@ -146,7 +153,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 	        if((typeof title !== "undefined") && title){
 	        	var titleEl = $(document.createElement("span"))
 													  .addClass("title")
-														.attr("data-id", this.metadata.get("id"))
+														.attr("data-id", idForLink)
 														.text(title + ". ");
 					}
 	        else{
@@ -162,14 +169,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 		createIDElement: function(){
 
-			var id 			 = this.metadata.get("id"),
-					seriesId = this.metadata.get("seriesId"),
-          datasource = this.metadata.get("datasource");
+			var model    = this.metadata || this.model,
+          id 			 = model.get("id"),
+          seriesId = model.get("seriesId"),
+          datasource = model.get("datasource");
 
 			var idEl = $(document.createElement("span")).addClass("id");
 			if(seriesId){
 				//Create a link for the identifier if it is a DOI
-				if( this.metadata.isDOI(seriesId) && !this.createLink ){
+				if( model.isDOI(seriesId) && !this.createLink ){
 					var doiURL  = (seriesId.indexOf("doi:") == 0)? "https://doi.org/" + seriesId.substring(4) : seriesId,
 							doiLink = $(document.createElement("a"))
 													.attr("href", doiURL)

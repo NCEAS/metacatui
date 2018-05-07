@@ -1535,7 +1535,7 @@ img.icon{
 	margin-top: 40px;
 }
 /* Hide the elements from the view service that we don't need to display */
-#metadata-container .citation,
+#Metadata form > .citation,
 #metadata-container #downloadPackage{
 	display: none;
 }
