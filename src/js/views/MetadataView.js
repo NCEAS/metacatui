@@ -1,6 +1,6 @@
 /*global define */
 define(['jquery',
-        'jqueryui',
+		'jqueryui',
 		'underscore',
 		'backbone',
 		'gmaps',
@@ -10,6 +10,7 @@ define(['jquery',
 		'models/DataONEObject',
 		'models/PackageModel',
 		'models/SolrResult',
+		'models/MetricModel',
 		'models/metadata/ScienceMetadata',
 		'views/DownloadButtonView',
 		'views/ProvChartView',
@@ -19,6 +20,7 @@ define(['jquery',
 		'views/PackageTableView',
 		'views/AnnotatorView',
 		'views/CitationView',
+		'views/MetricView',
 		'views/ServiceTableView',
 		'text!templates/metadata/metadata.html',
 		'text!templates/dataSource.html',
@@ -32,15 +34,15 @@ define(['jquery',
 		'text!templates/editMetadata.html',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html',
-    'text!templates/annotation.html',
-    'uuid'
+		'text!templates/annotation.html',
+		'uuid'
 		],
-	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-			 AnnotatorView, CitationView, ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
-			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
-			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, uuid) {
+	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package,
+			 SolrResult, MetricModel, ScienceMetadata, DownloadButtonView, ProvChart, MetadataIndex,
+			 ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, CitationView, MetricView,
+			 ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate, VersionTemplate,
+			 LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate,
+			 EditMetadataTemplate, DataDisplayTemplate,  MapTemplate, AnnotationTemplate, uuid) {
 	'use strict';
 
 
@@ -60,6 +62,7 @@ define(['jquery',
 		citationContainer: "#citation-container",
 		tableContainer:    "#table-container",
 		controlsContainer: "#metadata-controls-container",
+		metricsContainer: "#metrics-controls-container",
 		ownerControlsContainer: "#owner-controls-container",
 		breadcrumbContainer: "#breadcrumb-container",
 		parentLinkContainer: "#parent-link-container",
@@ -217,6 +220,10 @@ define(['jquery',
 			this.showLatestVersion();
 			//Insert controls
 			this.insertControls();
+
+			//Insert Metrics Stats into the dataset landing pages
+			this.insertMetricsControls();
+
 			this.insertOwnerControls();
 
 			// Service table
@@ -935,6 +942,22 @@ define(['jquery',
 
 			this.$(".tooltip-this").tooltip();
 		},
+
+		// Inserting the Metric Stats
+		insertMetricsControls: function() {
+			var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
+			var citationButton = new MetricView({ metric:'Citation'});
+			var downloadButton = new MetricView({ metric:'Download'});
+			var viewButton = new MetricView({ metric:'View'});
+			var qualityButton = new MetricView({ metric:'Quality'});
+			metrics.append(citationButton.$el);
+			metrics.append(downloadButton.$el);
+			metrics.append(viewButton.$el);
+			metrics.append(qualityButton.$el);
+			metrics.append(viewButton.$el);
+			this.$(this.tableContainer).before(metrics);
+		},
+
 
 		// Create, render, and insert the View for the ServiceType
 		insertServiceTable: function() {
