@@ -431,7 +431,10 @@ define(['underscore',
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", function(event) {
                     if (MetacatUI.rootDataPackage.packageModel.get("changed") ) {
-                        this.model.set("uploadStatus", "q"); // Clears the error status
+                        // Put this metadata model in the queue when the package has been changed
+                        // Don't put it in the queue if it's in the process of saving already
+                        if( this.model.get("uploadStatus") != "p" )
+                          this.model.set("uploadStatus", "q");
                     }
                 });
 

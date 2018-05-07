@@ -2415,8 +2415,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             *  Adds a DataONEObject model to this DataPackage collection
             */
             addModel: function(model){
-              this.add(model);
-              this.handleAdd(model);
+
+              //Check that this collection doesn't already contain this model
+              if( !this.contains(model) ){
+                this.add(model);
+                this.handleAdd(model);
+              }
+
             },
 
             handleAdd: function(dataONEObject){
