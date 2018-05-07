@@ -22,6 +22,7 @@ define(['jquery',
 		'views/CitationView',
 		'views/MetricView',
 		'views/ServiceTableView',
+        'views/MetricModalView',
 		'text!templates/metadata/metadata.html',
 		'text!templates/dataSource.html',
 		'text!templates/publishDOI.html',
@@ -40,7 +41,7 @@ define(['jquery',
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package,
 			 SolrResult, MetricModel, ScienceMetadata, DownloadButtonView, ProvChart, MetadataIndex,
 			 ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, CitationView, MetricView,
-			 ServiceTable, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate, VersionTemplate,
+			 ServiceTable, MetricModalView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate, VersionTemplate,
 			 LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate,
 			 EditMetadataTemplate, DataDisplayTemplate,  MapTemplate, AnnotationTemplate, uuid) {
 	'use strict';
@@ -93,7 +94,8 @@ define(['jquery',
 			"mouseover .highlight-node"  : "highlightNode",
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData",
-			"click     #save-metadata-prov" : "saveProv"
+			"click     #save-metadata-prov" : "saveProv",
+			'click     .metrics'         : 'showMetricModal'
 		},
 
 		initialize: function (options) {
@@ -949,13 +951,17 @@ define(['jquery',
 			var citationButton = new MetricView({ metric:'Citation'});
 			var downloadButton = new MetricView({ metric:'Download'});
 			var viewButton = new MetricView({ metric:'View'});
-			var qualityButton = new MetricView({ metric:'Quality'});
 			metrics.append(citationButton.$el);
 			metrics.append(downloadButton.$el);
 			metrics.append(viewButton.$el);
-			metrics.append(qualityButton.$el);
-			metrics.append(viewButton.$el);
 			this.$(this.tableContainer).before(metrics);
+		},
+
+		// Inserting Metric Modals
+		showMetricModal: function() {
+			console.log("Button Clicked");
+			var modalView = new MetricModalView();
+			modalView.show();
 		},
 
 
