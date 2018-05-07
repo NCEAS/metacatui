@@ -1386,10 +1386,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
   					var imageIds = ["image/gif",
   					                "image/jp2",
   					                "image/jpeg",
-  					                "image/png",
-  					                "image/svg xml",
-  					                "image/svg+xml",
-  					                "image/bmp"];
+  					                "image/png"];
 
   					//Does this data object match one of these IDs?
   					if(_.indexOf(imageIds, this.get('formatId')) == -1) return false;
@@ -1425,6 +1422,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
             								"audio/mpeg",
             								"audio/x-ms-wma",
             								"audio/x-wav",
+          					                "image/svg xml",
+          					                "image/svg+xml",
+          					                "image/bmp",
             								"image/tiff",
             								"text/anvl",
             								"text/csv",
