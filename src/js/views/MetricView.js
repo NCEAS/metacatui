@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
-    function($, _, Backbone, MetricModalTemplate) {
+define(['jquery', 'underscore', 'backbone'],
+    function($, _, Backbone) {
     'use strict';
 
     var MetricView = Backbone.View.extend({
@@ -12,49 +12,36 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
                                             " <%=metricIcon%>'></i> <%=metricName%> </a>"),
 
         events: {
-
+            
         },
 
         initialize: function(options){
             if((typeof options == "undefined")){
                 var options = {};
+                console.console.log('Undefined options');
             }
             else {
-                this.render(options.metric, options.results);
+                this.render(options.metric);
+                console.log(options.metric);
             }
         },
 
-        render: function (metric, results) {
-            var metricTotal;
-
-            // Check if the metric object exists in results obtained from the service 
-            // If it does, get its total value else set the total count to 0
-            if(metric.toLowerCase() in results) {
-                var metricTotal = results[metric.toLowerCase()].reduce(function(acc, val) { return acc + val; });
-                console.log(metricTotal);
-            } else {
-                metricTotal = 0;
-            };
-
-            // Generating the Button view for the given metric
-            if  (metric == 'Citations') {
-                var buttonContent = this.metricButtonTemplate({metricValue:metricTotal, metricIcon:'icon-quote-right', metricName:'Citations'});
-            } else if (metric == 'Requests') {
-                var buttonContent = this.metricButtonTemplate({metricValue:metricTotal, metricIcon:'icon-cloud-download', metricName:'Downloads'});
-            } else if (metric == 'Investigation') {
-                var buttonContent = this.metricButtonTemplate({metricValue:metricTotal, metricIcon:'icon-eye-open', metricName:'Views'});
+        render: function (metric) {
+            if  (metric == 'Citation') {
+                var buttonContent = this.metricButtonTemplate({metricValue:2, metricIcon:'icon-quote-right', metricName:'Citation'});
+            } else if (metric == 'Download') {
+                var buttonContent = this.metricButtonTemplate({metricValue:3, metricIcon:'icon-cloud-download', metricName:'Download'});
+            } else if (metric == 'View') {
+                var buttonContent = this.metricButtonTemplate({metricValue:4, metricIcon:'icon-eye-open', metricName:'View'});
+            } else if (metric == 'Quality') {
+                var buttonContent = this.metricButtonTemplate({metricValue:95, metricIcon:'icon-dashboard', metricName:'Quality'});
             } else {
                 var buttonContent = '';
             };
-
             this.$el = buttonContent;
             return this;
-        },
-
-        getMetricCount: function() {
-
-        }
-    });
-
-    return MetricView;
+		}
+	});
+	
+	return MetricView;
 });

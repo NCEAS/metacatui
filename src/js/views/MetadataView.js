@@ -947,40 +947,14 @@ define(['jquery',
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
-			var metricModel = new MetricModel(this.pid);
-			var metricresults;
-			var self = this;
-			// Retreive the model from the server for the given PID
-			// TODO: Create a Metric Request Object
-			metricModel.fetch({
-
-				headers: {
-					'Accept': 'application/json'
-				} ,
-
-				success:function(response){
-					metricModel.setMetricsRequest(response['changed']['metricsRequest'])
-					metricModel.setResults(response['changed']['results'])
-					metricresults = response['changed']['results'];
-				},
-
-				error: function (errorResponse) {
-					console.log(errorResponse)
-				}
-			}).done(function(){
-
-				var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
-
-				var citationButton = new MetricView({ metric:'Citations', results: metricModel.getResults()});
-				var downloadButton = new MetricView({ metric:'Requests', results: metricModel.getResults()});
-				var viewButton = new MetricView({ metric:'Investigation', results: metricModel.getResults()});
-
-				metrics.append(citationButton.$el);
-				metrics.append(downloadButton.$el);
-				metrics.append(viewButton.$el);
-
-				self.$(self.tableContainer).before(metrics);
-			});
+			var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
+			var citationButton = new MetricView({ metric:'Citation'});
+			var downloadButton = new MetricView({ metric:'Download'});
+			var viewButton = new MetricView({ metric:'View'});
+			metrics.append(citationButton.$el);
+			metrics.append(downloadButton.$el);
+			metrics.append(viewButton.$el);
+			this.$(this.tableContainer).before(metrics);
 		},
 
 		// Inserting Metric Modals

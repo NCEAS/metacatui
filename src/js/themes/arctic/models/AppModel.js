@@ -100,19 +100,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
-
-
-			// set these flags to true if the metrics contents should be published on the 
-			// dataset landing page
-			displayMetricWell: true,
-			displayDatasetMetrics: true,
-			displayDatasetCitationMetric: true,
-			displayDatasetDownloadMetric: true,
-			displayDatasetViewMetric: true,
-			displayDatasetEditButton: true,
-			displayDatasetQualityMetric: false,
-			displayDatasetAnalyzeButton: false
+			mdqUrl: "https://quality.nceas.ucsb.edu/quality/"
 
 		},
 

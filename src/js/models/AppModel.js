@@ -94,20 +94,7 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsMapsUrl: null,
 			groupsUrl: null,
 			portalUrl: null,
-			mdqUrl: null,
-
-
-			// set these flags to true if the metrics contents should be published on the 
-			// dataset landing page
-			displayMetricWell: true,
-			displayDatasetMetrics: true,
-			displayDatasetCitationMetric: true,
-			displayDatasetDownloadMetric: true,
-			displayDatasetViewMetric: true,
-			displayDatasetEditButton: true,
-			displayDatasetQualityMetric: false,
-			displayDatasetAnalyzeButton: false
-
+			mdqUrl: null
 		},
 
 		defaultView: "data",
