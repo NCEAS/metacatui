@@ -223,8 +223,11 @@ define(['jquery',
 			//Insert controls
 			this.insertControls();
 
-			//Insert Metrics Stats into the dataset landing pages
-			this.insertMetricsControls();
+			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
+				//Insert Metrics Stats into the dataset landing pages
+				this.insertMetricsControls();
+			}
+
 
 			this.insertOwnerControls();
 
@@ -969,15 +972,26 @@ define(['jquery',
 				}
 			}).done(function(){
 
-				var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
+				if (MetacatUI.appModel.get("displayMetricWell")) {
+					var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
+				} else {
+					var metrics = $(document.createElement("div")).addClass("metric-well");
+				}
 
-				var citationButton = new MetricView({ metric:'Citations', results: metricModel.getResults()});
-				var downloadButton = new MetricView({ metric:'Requests', results: metricModel.getResults()});
-				var viewButton = new MetricView({ metric:'Investigation', results: metricModel.getResults()});
+				if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
+					var citationButton = new MetricView({ metric:'Citations', results: metricModel.getResults()});
+					metrics.append(citationButton.$el);
+				}
 
-				metrics.append(citationButton.$el);
-				metrics.append(downloadButton.$el);
-				metrics.append(viewButton.$el);
+				if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
+					var downloadButton = new MetricView({ metric:'Requests', results: metricModel.getResults()});
+					metrics.append(downloadButton.$el);
+				}
+
+				if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
+					var viewButton = new MetricView({ metric:'Investigation', results: metricModel.getResults()});
+					metrics.append(viewButton.$el);
+				}
 
 				self.$(self.tableContainer).before(metrics);
 			});
@@ -985,9 +999,11 @@ define(['jquery',
 
 		// Inserting Metric Modals
 		showMetricModal: function() {
-			console.log("Button Clicked");
-			var modalView = new MetricModalView();
-			modalView.show();
+			if (MetacatUI.appModel.get("displayMetricModals")) {
+				console.log("Button Clicked");
+				var modalView = new MetricModalView();
+				modalView.show();
+			}
 		},
 
 
