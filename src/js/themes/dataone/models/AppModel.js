@@ -35,11 +35,11 @@ define(['jquery', 'underscore', 'backbone'],
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: false,
 
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://cn-stage-2.test.dataone.org",
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
-			d1CNBaseUrl:  "https://cn.dataone.org",
+			d1CNBaseUrl:  "https://cn-stage-2.test.dataone.org",
 			d1CNService: "/cn/v2",
 			viewServiceUrl: null,
 			packageServiceUrl: null,
@@ -70,7 +70,19 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			mdqUrl: null
+			mdqUrl: null,
+
+
+			// set these flags to true if the metrics contents should be published on the 
+			// dataset landing page
+			displayMetricWell: true,
+			displayDatasetMetrics: true,
+			displayDatasetCitationMetric: true,
+			displayDatasetDownloadMetric: true,
+			displayDatasetViewMetric: true,
+			displayDatasetEditButton: true,
+			displayDatasetQualityMetric: false,
+			displayDatasetAnalyzeButton: false
 
 		},
 

@@ -16,10 +16,13 @@
 				print('<img src="js/themes/dataone/img/data-file-icon-magenta-desat.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This data set includes data files"></i>');
 			} %>
 	         
-	</div>    		      
+	</div>
+
 	<div class="on-map icons stop-route">
-		<% if (typeof southBoundCoord != "undefined"){
-	          print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
+		<% if (typeof southBoundCoord !== "undefined" && southBoundCoord != null){
+	          if (typeof geohash_9 !== "undefined" && geohash_9 != null){
+		          print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
+              }
 	       }
 	       else{
 	          print('<i class="icon icon-map-marker inactive stop-route"></i>');
