@@ -38,6 +38,7 @@ define(["jquery", "underscore", "backbone",
             initialize: function(attributes, options) {
 
                 this.on("change:numericDomain", this.trickleUpChange);
+
             },
 
             /**
@@ -78,18 +79,24 @@ define(["jquery", "underscore", "backbone",
                 // Add the unit
                 var unitObject = {};
                 var unit = $objectDOM.children("unit");
-                var standardUnit;
-                var customUnit;
-                if ( unit.length ) {
-                    standardUnit = $(unit).children("standardunit").text();
-                    standardUnit = $(unit).children("standardunit").text();
+                var standardUnitNodes = unit.children("standardunit"),
+                    customUnitNodes   = unit.children("customunit"),
+                    standardUnit,
+                    customUnit;
+
+                if ( standardUnitNodes.length ) {
+                    standardUnit = standardUnitNodes.text();
+
+                    if( standardUnit )
+                      unitObject.standardUnit = standardUnit;
+                }
+                else if( customUnitNodes.length ){
+                    customUnit = customUnitNodes.text();
+
+                    if( customUnit )
+                      unitObject.customUnit = customUnit;
                 }
 
-                if ( standardUnit ) {
-                    unitObject.standardUnit = standardUnit;
-                } else {
-                    unitObject.customUnit = customUnit;
-                }
                 attributes.unit = unitObject;
 
                 // Add the precision
@@ -226,24 +233,24 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                     $(unitNode).append(unitTypeNode);
-                    
+
                     // Add the unit to the DOM
                     nodeToInsertAfter = this.getEMLPosition(objectDOM, "unit");
-                    
+
                     if( ! nodeToInsertAfter ) {
                         $(objectDOM).prepend(unitNode);
                     } else {
                         $(nodeToInsertAfter).after(unitNode);
                     }
                 }
-                
+
                 // Update the precision
                 if ( this.get("precision") ) {
                     if ( $(objectDOM).find("precision").length ) {
                         $(objectDOM).find("precision").text(this.get("precision"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "precision");
-                        
+
                         if( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("precision"))
                                 .text(this.get("precision"))[0]);
@@ -255,7 +262,7 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
-                
+
                 // Update the numericDomain
                 var numericDomain = this.get("numericDomain");
                 var numericDomainNode = $(objectDOM).find("numericdomain")[0];
@@ -267,43 +274,43 @@ define(["jquery", "underscore", "backbone",
                 var minBoundNode;
                 var maxBoundNode;
                 if ( numericDomain ) {
-                    
+
                 	var oldNumericDomainNode = $(numericDomainNode).clone();
-                	
+
                     // Remove the existing numericDomainNode node
                     if ( typeof numericDomainNode !== "undefined" ) {
                         numericDomainNode.remove();
                     }
-                    
+
                     // Build the new numericDomain node
                     numericDomainNode = document.createElement("numericdomain");
-                    
+
                     // Do we have numberType?
                     if ( typeof numericDomain.numberType !== "undefined" ) {
                         numberTypeNode = document.createElement("numbertype");
                         $(numberTypeNode).text(numericDomain.numberType);
                         $(numericDomainNode).append(numberTypeNode);
                     }
-                    
+
                     // Do we have bounds?
                     if ( typeof numericDomain.bounds !== "undefined" &&
                          numericDomain.bounds.length ) {
-                        
+
                         _.each(numericDomain.bounds, function(bound) {
                             minBound = bound.minimum;
                             maxBound = bound.maximum;
                             boundsNode = document.createElement("bounds");
-                            
+
                             var hasBounds = typeof minBound !== "undefined" || typeof maxBound !== "undefined";
-                            
+
                             if ( hasBounds ) {
                                 // Populate the minimum element
                                 if ( typeof minBound !== "undefined" ) {
                                     minBoundNode = $(document.createElement("minimum"));
                                     minBoundNode.text(minBound);
-                                    
+
                                     var existingExclusive = oldNumericDomainNode.find("minimum").attr("exclusive");
-                                    
+
                                     if( !existingExclusive || existingExclusive === "false" )
                                     	minBoundNode.attr("exclusive", "false");
                                     else
@@ -314,18 +321,18 @@ define(["jquery", "underscore", "backbone",
                                 if ( typeof maxBound !== "undefined" ) {
                                     maxBoundNode = $(document.createElement("maximum"));
                                     maxBoundNode.text(maxBound);
-                                    
+
                                     var existingExclusive = oldNumericDomainNode.find("maximum").attr("exclusive");
-                                    
+
                                     if( !existingExclusive || existingExclusive === "false" )
                                     	maxBoundNode.attr("exclusive", "false");
                                     else
                                     	maxBoundNode.attr("exclusive", "true");
                                 }
-                                
+
                                 $(boundsNode).append(minBoundNode, maxBoundNode);
                                 $(numericDomainNode).append(boundsNode);
-                                
+
                             } else {
                                 // Do nothing. Content is missing, don't append the node
                             }
@@ -333,10 +340,10 @@ define(["jquery", "underscore", "backbone",
                     } else {
                         // Basically do nothing. Don't append the numericDomain element
                         // TODO: handle numericDomain.references
-                        
+
                     }
                     nodeToInsertAfter = this.getEMLPosition(objectDOM, "numericDomain");
-                    
+
                     if( ! nodeToInsertAfter ) {
                         $(objectDOM).append(numericDomainNode);
                     } else {
@@ -370,20 +377,20 @@ define(["jquery", "underscore", "backbone",
                     }
                 }
             },
-            
+
             validate: function(){
             	var errors = {};
-            	
+
             	if(!this.get("unit"))
             		errors.unit = "Choose a unit.";
-            	
+
             	if( Object.keys(errors).length )
             		return errors;
             	else{
-            		
+
             		this.trigger("valid");
             		return;
-            		
+
             	}
 
             },

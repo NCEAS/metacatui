@@ -187,6 +187,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"textformat" : "textFormat",
 			            	"typesystem" : "typeSystem",
 			            	"unittype" : "unitType",
+                    "unitlist" : "unitList",
 			            	"valueattributereference" : "valueAttributeReference",
                             "xsi:schemalocation" : "xsi:schemaLocation"
             			}
