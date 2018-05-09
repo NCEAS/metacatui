@@ -107,6 +107,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// dataset landing page
 			displayMetricWell: true,
 			displayDatasetMetrics: true,
+			displayDatasetMetricsTooltip: true,
 			displayDatasetCitationMetric: true,
 			displayDatasetDownloadMetric: true,
 			displayDatasetViewMetric: true,

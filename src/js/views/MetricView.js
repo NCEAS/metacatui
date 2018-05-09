@@ -9,8 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'models/MetricModel', 'views/MetricM
         className: 'btn metrics',
 
         //Templates
-        metricButtonTemplate:  _.template("<span class='value'> <i class='icon icon-spinner icon-spin'></i> </span> <i class='icon" +
-                                            " <%=metricIcon%>'></i> <%=metricName%>" ),
+        metricButtonTemplate:  _.template("<span class='value'> <i class='icon icon-spinner icon-spin'></i> </span>" + 
+                            " <i class='icon <%=metricIcon%>'></i> <%=metricName%>" ),
 
         events: {
 
@@ -36,6 +36,14 @@ define(['jquery', 'underscore', 'backbone', 'models/MetricModel', 'views/MetricM
             } else {
                 this.$el.html('');
             };
+
+            // Adding tool-tip for the buttons
+            // TODO: Change to 'Show metricName', once you've the modals working.
+            this.$el.addClass("tooltip-this")
+                    .attr("data-title", "Dataset " + this.model.get("metricName"))
+                    .attr("data-placement", "top")
+                    .attr("data-trigger", "hover")
+                    .attr("data-container", "body");
 
             // waiting for the fetch() call to succeed.
             this.listenTo(this.model, "change:results", this.renderResults);
