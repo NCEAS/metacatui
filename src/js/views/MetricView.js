@@ -1,15 +1,16 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
-    function($, _, Backbone, MetricModalTemplate) {
+define(['jquery', 'underscore', 'backbone', 'models/MetricModel', 'views/MetricModalView'],
+    function($, _, Backbone, MetricModel, MetricModalTemplate) {
     'use strict';
 
     var MetricView = Backbone.View.extend({
 
-        el: '#metricButton',
+        tagName: 'a',
+        className: 'btn metrics',
 
         //Templates
-        metricButtonTemplate:  _.template("<a class='btn metrics'> <%=metricValue%> <i class='icon" +
-                                            " <%=metricIcon%>'></i> <%=metricName%> </a>"),
+        metricButtonTemplate:  _.template("<span class='value'> <i class='icon icon-spinner icon-spin'></i> </span> <i class='icon" +
+                                            " <%=metricIcon%>'></i> <%=metricName%>" ),
 
         events: {
 
@@ -19,37 +20,54 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             if((typeof options == "undefined")){
                 var options = {};
             }
-            else {
-                this.render(options.metric, options.results);
-            }
+
+            this.model = new MetricModel({pid: options.pid, metricName: options.metricName});
         },
 
-        render: function (metric, results) {
-            var metricTotal;
+        render: function () {
+            var metric = this.model.get('metricName');
+            // Generating the Button view for the given metric
+            if  (metric == 'Citations') {
+                this.$el.html(this.metricButtonTemplate({metricValue:'', metricIcon:'icon-quote-right', metricName:metric}));
+            } else if (metric == 'Downloads') {
+                this.$el.html(this.metricButtonTemplate({metricValue:'', metricIcon:'icon-cloud-download', metricName:metric}));
+            } else if (metric == 'Views') {
+                this.$el.html(this.metricButtonTemplate({metricValue:'', metricIcon:'icon-eye-open', metricName:metric}));
+            } else {
+                this.$el.html('');
+            };
+
+            // waiting for the fetch() call to succeed.
+            this.listenTo(this.model, "change:results", this.renderResults);
+            
+            this.getMetrics();
+            
+            return this;
+        },
+
+
+        getMetrics: function() {
+            this.model.fetch();
+        },
+
+
+        renderResults: function() {
+            var metric = this.model.get('metricName');
+            var results = this.model.get('results');
 
             // Check if the metric object exists in results obtained from the service 
             // If it does, get its total value else set the total count to 0
             if(metric.toLowerCase() in results) {
-                var metricTotal = results[metric.toLowerCase()].reduce(function(acc, val) { return acc + val; });
-                console.log(metricTotal);
+                var total = results[metric.toLowerCase()].reduce(function(acc, val) { return acc + val; });
+                this.model.set('metricValue', total);
             } else {
-                metricTotal = 0;
+                this.model.set('metricValue', 0);
             };
 
-            // Generating the Button view for the given metric
-            if  (metric == 'Citations') {
-                var buttonContent = this.metricButtonTemplate({metricValue:metricTotal, metricIcon:'icon-quote-right', metricName:'Citations'});
-            } else if (metric == 'Requests') {
-                var buttonContent = this.metricButtonTemplate({metricValue:metricTotal, metricIcon:'icon-cloud-download', metricName:'Downloads'});
-            } else if (metric == 'Investigation') {
-                var buttonContent = this.metricButtonTemplate({metricValue:metricTotal, metricIcon:'icon-eye-open', metricName:'Views'});
-            } else {
-                var buttonContent = '';
-            };
-
-            this.$el = buttonContent;
-            return this;
+            // Replacing the metric total count with the spinning icon.
+            this.$('.value').text(total);
         }
+
     });
 
     return MetricView;

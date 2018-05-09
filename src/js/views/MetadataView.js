@@ -10,7 +10,6 @@ define(['jquery',
 		'models/DataONEObject',
 		'models/PackageModel',
 		'models/SolrResult',
-		'models/MetricModel',
 		'models/metadata/ScienceMetadata',
 		'views/DownloadButtonView',
 		'views/ProvChartView',
@@ -39,7 +38,7 @@ define(['jquery',
 		'uuid'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package,
-			 SolrResult, MetricModel, ScienceMetadata, DownloadButtonView, ProvChart, MetadataIndex,
+			 SolrResult, ScienceMetadata, DownloadButtonView, ProvChart, MetadataIndex,
 			 ExpandCollapseList, ProvStatement, PackageTable, AnnotatorView, CitationView, MetricView,
 			 ServiceTable, MetricModalView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate, VersionTemplate,
 			 LoadingTemplate, ControlsTemplate, UsageTemplate, DownloadContentsTemplate, AlertTemplate,
@@ -950,51 +949,32 @@ define(['jquery',
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
-			var metricModel = new MetricModel(this.pid);
-			var metricresults;
 			var self = this;
 			// Retreive the model from the server for the given PID
 			// TODO: Create a Metric Request Object
-			metricModel.fetch({
 
-				headers: {
-					'Accept': 'application/json'
-				} ,
+			if (MetacatUI.appModel.get("displayMetricWell")) {
+				var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
+			} else {
+				var metrics = $(document.createElement("div")).addClass("metric-well");
+			}
 
-				success:function(response){
-					metricModel.setMetricsRequest(response['changed']['metricsRequest'])
-					metricModel.setResults(response['changed']['results'])
-					metricresults = response['changed']['results'];
-				},
+			if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
+				var citationsMetricView = new MetricView({pid: this.pid, metricName: 'Citations'});
+				metrics.append(citationsMetricView.render().el);
+			}
 
-				error: function (errorResponse) {
-					console.log(errorResponse)
-				}
-			}).done(function(){
+			if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
+				var downloadsMetricView = new MetricView({pid: this.pid, metricName: 'Downloads'});
+				metrics.append(downloadsMetricView.render().el);
+			}
 
-				if (MetacatUI.appModel.get("displayMetricWell")) {
-					var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
-				} else {
-					var metrics = $(document.createElement("div")).addClass("metric-well");
-				}
+			if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
+				var viewsMetricView = new MetricView({pid: this.pid, metricName: 'Views'});
+				metrics.append(viewsMetricView.render().el);
+			}
 
-				if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-					var citationButton = new MetricView({ metric:'Citations', results: metricModel.getResults()});
-					metrics.append(citationButton.$el);
-				}
-
-				if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
-					var downloadButton = new MetricView({ metric:'Requests', results: metricModel.getResults()});
-					metrics.append(downloadButton.$el);
-				}
-
-				if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
-					var viewButton = new MetricView({ metric:'Investigation', results: metricModel.getResults()});
-					metrics.append(viewButton.$el);
-				}
-
-				self.$(self.tableContainer).before(metrics);
-			});
+			self.$(self.tableContainer).before(metrics);
 		},
 
 		// Inserting Metric Modals
