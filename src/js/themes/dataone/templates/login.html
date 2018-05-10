@@ -1,6 +1,6 @@
-<% 
+<%
 	if((typeof newTab !== "undefined") && newTab) var linkAttr = 'target="_blank"';
-	else var linkAttr = '';	
+	else var linkAttr = '';
 %>
 
 <div id="signinPopup" class="modal hide fade sign-in">
@@ -14,7 +14,7 @@
 				<div class="span12">
 			<% } else if (signInUrlOrcid){ %>
 				<div class="span5">
-			<% }	
+			<% }
 			   if(signInUrlOrcid) { %>
 					<div class="orcid-signin">
 						<a href="<%=signInUrlOrcid%>" class="signin orcid-btn update-orcid-sign-in-url" <%=linkAttr%>>
@@ -23,14 +23,14 @@
 						</a>
 					</div>
 				</div>
-			<% } 
-			   if(signInUrlOrcid && (signInUrl || signInUrlLdap)) { %> 
+			<% }
+			   if(signInUrlOrcid && signInUrl)) { %>
 				<span class="divider-text span1">OR</span>
 				<div class="span6">
-			<% } 
-			   else if(signInUrl || signInUrlLdap){ %>
+			<% }
+			   else if(signInUrl){ %>
 				<div class="span12">
-			<% } 
+			<% }
 			   if(signInUrl) { %>
 					<div class="well scroll-y">
 						<a class="btn update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign in with your University or Institution</a>
@@ -41,15 +41,11 @@
 						<% } %>
 					</div>
 			<% }
-			   if(signInUrlLdap) { %>
-					<a href="#" class="btn ldap" data-name="NCEAS - National Center for Ecological Analysis and Synthesis" data-value="o=NCEAS,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with an NCEAS Account</a>
-					<a href="#" class="btn ldap" data-name="KNB Data Repository" data-value="o=unaffiliated,dc=ecoinformatics,dc=org" <%=linkAttr%>>Sign in with a KNB Account</a>
-			<% }
-			   if(signInUrl || signInUrlLdap){ %>
+			   if(signInUrl){ %>
 				</div>
 			<% } %>
 		</div>
-	</div>					
+	</div>
 </div>
 <div id="signupPopup" class="modal hide fade">
 	<div class="modal-header center">
@@ -66,7 +62,7 @@
 					<span>Sign up with ORCID</span>
 				</a>
 			</div>
-		<% } 
+		<% }
 		else if(signInUrl) { %>
 			<p>There's no need to create a new account - just use one of your existing accounts from Google or from a list of 100+ Universities and Institutions:</p>
 				<a class="btn btn-primary btn-large center update-sign-in-url" href="<%=signInUrl%>" <%=linkAttr%>>Sign up now</a>
@@ -79,6 +75,6 @@
 						<% } %>
 				</div>
 			</div>
-		<% } %>	
+		<% } %>
 	</div>
 </div>

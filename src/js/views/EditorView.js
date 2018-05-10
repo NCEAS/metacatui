@@ -21,6 +21,8 @@ define(['underscore',
 
     var EditorView = Backbone.View.extend({
 
+        type: "Editor",
+
         el: "#Content",
 
         /* The initial editor layout */
@@ -102,12 +104,14 @@ define(['underscore',
 	        this.listenToOnce(this.model, "change:notFound", this.showNotFound);
 
         	//If we checked for authentication already
-        	if(MetacatUI.appUserModel.get("checked"))
+        	if(MetacatUI.appUserModel.get("checked")){
         		this.fetchModel();
+          }
         	//If we haven't checked for authentication yet,
         	//wait until the user info is loaded before we request the Metadata
-        	else
+        	else{
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
+          }
 
           window.onbeforeunload = this.confirmClose;
 
@@ -130,28 +134,31 @@ define(['underscore',
 
         fetchModel: function(){
         	//If we checked for authentication and the user is not logged in
-        	if(!MetacatUI.appUserModel.get("loggedIn"))
+        	if(!MetacatUI.appUserModel.get("loggedIn")){
         		this.showSignIn();
-            //If the user is logged in, fetch the Metadata
+          }
         	else{
-        		//If the user hasn't provided an id, then don't check the authority and mark as synced already
+
+            //If the user hasn't provided an id, then don't check the authority and mark as synced already
 	        	if(!this.pid){
 	        		this.model.set("isAuthorized", true);
-	    			this.model.trigger("sync");
+	    			  this.model.trigger("sync");
 	        	}
-	    		else {
-	    			//Get the data package when we find out the user is authorized to edit it
-	    	        this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
-	    	        //Let a user know when they are not authorized to edit this data set
-	    	        this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
+	    		  else {
+	    			  //Get the data package when we find out the user is authorized to edit it
+	    	      this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
+	    	      //Let a user know when they are not authorized to edit this data set
+	    	      this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
 
-	    	        //Fetch the model
-	    			this.model.fetch();
+	    	      //Fetch the model
+	    			  this.model.fetch();
 
-	    			//Check the authority of this user
-	    			this.model.checkAuthority();
-	    		}
+	    			  //Check the authority of this user
+	    			  this.model.checkAuthority();
+	    		  }
+
         	}
+
         },
 
         /* Get the data package associated with the EML */
@@ -879,8 +886,13 @@ define(['underscore',
         /* Close the view and its sub views */
         onClose: function() {
 
-        	//Stop listening to the "add" event so that new package members aren't rendered
-        	this.stopListening(MetacatUI.rootDataPackage, "add" );
+        	//Stop listening to the "add" event so that new package members aren't rendered.
+          //Check first if the DataPackage has been intialized. An easy check is to see is
+          // the 'models' attribute is undefined. If the DataPackage collection has been intialized,
+          // then it would be an empty array.
+          if( typeof MetacatUI.rootDataPackage.models !== "undefined" ){
+        	  this.stopListening(MetacatUI.rootDataPackage, "add");
+          }
 
         	//Remove all the other events
           this.off();    // remove callbacks, prevent zombies

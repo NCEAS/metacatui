@@ -18,6 +18,9 @@ a:hover{
 .footnote{
 	font-size: .7em;
 }
+.underline{
+	text-decoration: underline;
+}
 .alert .footnote{
 	font-size: .9em;
 	margin-top: 10px;
@@ -256,6 +259,9 @@ header .citation {
 #Content > .login > * {
     font-size: 2em;
     margin-right: 10px;
+}
+#Content > .login > .alert-container{
+	font-size: inherit;
 }
 
 
@@ -1368,6 +1374,9 @@ img.icon{
 }
 #signInPopup .orcid-signin {
     margin-top: 10%;
+}
+.sign-in-ldap select{
+	width: 220px;
 }
 .modal.container{
 	padding: 20px 20px 40px 20px;
