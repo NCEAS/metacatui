@@ -387,7 +387,7 @@ define(["jquery", "underscore", "backbone",
                               }
                               else{
                                 //Remove the textDomain node and replace it with an enumeratedDomain node
-                                $($(objectDOM).children("textdomain")[i]).replaceWith(this.createEnumeratedDomainDOM());
+                                $($(objectDOM).children("textdomain")[i]).replaceWith(this.createEnumeratedDomainDOM(domain.enumeratedDomain));
                               }
                             }
 
@@ -425,7 +425,7 @@ define(["jquery", "underscore", "backbone",
 
                             } else if ( domainType === "enumeratedDomain" ) {
 
-                              nonNumericDomainNode.append(this.createEnumeratedDomainDOM(domain));
+                              nonNumericDomainNode.append(this.createEnumeratedDomainDOM(domain.enumeratedDomain));
 
                             } else {
                                 console.log("The domainType: " + domainType + " is not recognized.");
@@ -518,7 +518,7 @@ define(["jquery", "underscore", "backbone",
 
               if ( enumeratedDomain.codeDefinition.length ) {
 
-                  // Add each codeDefinition
+                  // Update each codeDefinition
                   _.each(enumeratedDomain.codeDefinition, function(codeDef, i) {
 
                       var codeDefNode = $($(enumeratedDomainNode).children("codedefinition")[i]);
@@ -581,6 +581,18 @@ define(["jquery", "underscore", "backbone",
 
                   }, this);
 
+                  // If there are more codeDefinition nodes than there are codeDefinitions
+                  // in the model, then we need to remove the extraneous nodes
+                  var numNodes = $(enumeratedDomainNode).children("codedefinition").length,
+                      numCodes = enumeratedDomain.codeDefinition.length;
+
+                  if( numNodes > numCodes ){
+                    //Get the extraneous nodes by selecting the last X child elements
+                    var nodesToRemove = $(enumeratedDomainNode).children("codedefinition").slice( (numNodes - numCodes) * -1 );
+                    //Remove them from the DOM
+                    nodesToRemove.remove();
+                  }
+
               } else if ( domain.enumeratedDomain.externalCodeSet ) {
                   // TODO Handle externalCodeSet
 
@@ -609,24 +621,25 @@ define(["jquery", "underscore", "backbone",
                   // Add each codeDefinition
                   _.each(enumeratedDomain.codeDefinition, function(codeDef) {
 
+                      var codeDefinitionNode = document.createElement("codedefinition");
+
                       // Add the required code element
                       if ( codeDef.code ) {
-                          codeDefinitionNode = document.createElement("codedefinition");
-                          codeNode = document.createElement("code");
+                          var codeNode = document.createElement("code");
                           $(codeNode).text(codeDef.code);
                           $(codeDefinitionNode).append(codeNode);
                       }
 
                       // Add the required definition element
                       if ( codeDef.definition ) {
-                          definitionNode = document.createElement("definition");
+                          var definitionNode = document.createElement("definition");
                           $(definitionNode).text(codeDef.definition);
                           $(codeDefinitionNode).append(definitionNode);
                       }
 
                       // Add the optional source element
                       if ( codeDef.source ) {
-                          sourceNode = document.createElement("sourced"); // Accommodate parseHTML() with "d"
+                          var sourceNode = document.createElement("sourced"); // Accommodate parseHTML() with "d"
                           $(sourceNode).text(codeDef.source);
                           $(codeDefinitionNode).append(sourceNode);
                       }
