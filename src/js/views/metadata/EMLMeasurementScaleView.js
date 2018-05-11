@@ -311,7 +311,8 @@ define(['underscore', 'jquery', 'backbone',
             	if(currentUnit && currentUnit.standardUnit){
 
             		//Get the dropdown for this measurement scale
-            		var currentDropdown = this.$("." + this.model.get("measurementScale") + "-options select");
+                // (We default interval to ratio in the editor)
+                var currentDropdown = this.$(".ratio-options select");
 
             		//Select the unit from the EML
             		currentDropdown.val(currentUnit.standardUnit);
