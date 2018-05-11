@@ -1623,20 +1623,54 @@ body > .alert-container {
 /******************************************
 * Metrics Controller Styling
 ********************************************/
-a.btn.metrics{
+/* Style for the metric button */
+a.btn.metrics {
     display: inline-block;
-    font-size: 14px;
-    position: relative;
-    width: 139.89px;
+    width: 145px;
+    padding-right: 0px;
+    margin-top: -6px;
+}
+a.btn.metrics:hover .metric-value.badge {
+    float: right;
+    color: #1C6E84;
+    background-color: #FFFFFF;
+}
+i.icon.metric-icon.icon-spinner.icon-spin {
+    margin-top: 2px;
+    margin-right: 15px;
+}
+.metric-icon {
+    margin-right: 10px;
+    float: left;
+}
+.metric-name {
+    float: left;
+}
+.metric-value {
+    float: right;
+}
+.metric-value.badge {
+    float: right;
+    color: #FFFFFF;
+    background-color: #1C6E84;
+    margin-top: 2px;
 }
 
+/* Style for the toolbars that contains buttons in the well on either side. */
+.metric-toolbar {
+    float: left;
+    width: 70%;
+}
+.edit-toolbar {
+    float: right;
+    width: 30%;
+}
+
+/* Style for the metric well */
 .metric-well {
-    padding-top: 10px;
-    padding-bottom: 0px;
-    display: flex;
-    justify-content: space-between;
+    width: 100%;
+    padding-top: 0px;
 }
-
 
 /******************************************
 * The Data Details box in the Metadata View
