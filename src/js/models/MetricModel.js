@@ -13,6 +13,18 @@ define(['jquery', 'underscore', 'backbone'],
             results: null,
             url: null,
             pid: '',
+
+            // metrics and metric Facets returned as response from the user
+            // datatype: array
+            citations: null,
+            views: null,
+            downloads: null,
+            months: null,
+            country: null,
+            years: null,
+            repository: null,
+            award: null,
+
             metricsRequiredFields: {
                 metricName: true,
                 pid: true
@@ -44,7 +56,11 @@ define(['jquery', 'underscore', 'backbone'],
         parse: function(response){
             return {
                 "metricRequest": response.metricsRequest,
-                "results": response.results
+                "citations": response.results.citations,
+                "views": response.results.investigations,
+                "downloads": response.results.requests,
+                "months": response.results.month,
+                "country": response.results.country
             }
         }
 

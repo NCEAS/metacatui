@@ -959,19 +959,25 @@ define(['jquery',
 				var metrics = $(document.createElement("div")).addClass("metric-well");
 			}
 
-			if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-				var citationsMetricView = new MetricView({pid: this.pid, metricName: 'Citations'});
-				metrics.append(citationsMetricView.render().el);
-			}
+			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
+				var buttonToolbar = $(document.createElement("div")).addClass("metric-toolbar btn-toolbar");
 
-			if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
-				var downloadsMetricView = new MetricView({pid: this.pid, metricName: 'Downloads'});
-				metrics.append(downloadsMetricView.render().el);
-			}
+				if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
+					var citationsMetricView = new MetricView({pid: this.pid, metricName: 'Citations'});
+					buttonToolbar.append(citationsMetricView.render().el);
+				}
 
-			if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
-				var viewsMetricView = new MetricView({pid: this.pid, metricName: 'Views'});
-				metrics.append(viewsMetricView.render().el);
+				if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
+					var downloadsMetricView = new MetricView({pid: this.pid, metricName: 'Downloads'});
+					buttonToolbar.append(downloadsMetricView.render().el);
+				}
+
+				if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
+					var viewsMetricView = new MetricView({pid: this.pid, metricName: 'Views'});
+					buttonToolbar.append(viewsMetricView.render().el);
+				}
+
+				metrics.append(buttonToolbar);
 			}
 
 			self.$(self.tableContainer).before(metrics);
