@@ -473,12 +473,38 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					 this.getEMLPosition(objectDOM, "userid").after(idNode);
 				 }
 
-				 //If this is an orcid identifier, format it with the orcid.org prefix and add the directory attribute
+				 //If this is an orcid identifier, format it correctly
 				 if(this.isOrcid(id)){
-					 if(id.length == 19)
-						 id = "http://orcid.org/" + id;
-
+            // Add the directory attribute
 					 idNode.attr("directory", "https://orcid.org");
+
+           //If this ORCID does not start with "http"
+           if( id.indexOf("http") == -1 ){
+             //If this is an ORCID with just the 16-digit numbers and hyphens, then add
+             // the https://orcid.org/ prefix to it
+             if( id.length == 19){
+               id = "https://orcid.org/" + id;
+             }
+             //If it starts with "orcid.org", then add the "https://" prefix
+             else if( id.indexOf("orcid.org") == 0 ){
+               id = "https://" + id;
+             }
+             //If it starts with "www.orcid.org", then add the "https" prefix and remove the "www"
+             else if( id.indexOf("www.orcid.org") == 0 ){
+               id = "https://" + id.replace("www.orcid.org", "orcid.org");
+             }
+           }
+
+           //If there is a "www", remove it
+           if( id.indexOf("www.orcid.org") > -1 ){
+             id = id.replace("www.orcid.org", "orcid.org");
+           }
+
+           //If it has the http:// prefix, add the 's' for secure protocol
+           if( id.indexOf("http://") == 0){
+             id = id.replace("http", "https");
+           }
+
 				 }
 				 else{
 					 idNode.attr("directory", "unknown");
@@ -675,8 +701,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		isOrcid: function(username){
 			if(!username) return false;
 
-			//Checks for ORCIDs using the orcid base URL as a prefix
-			if((username.indexOf("http://orcid.org") == 0) && username.length == 36){
+			//If the ORCID URL is anywhere in this username string, it is an ORCID
+			if(username.indexOf("orcid.org") > -1){
 				return true;
 			}
 
@@ -684,7 +710,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 * http://support.orcid.org/knowledgebase/articles/116780-structure-of-the-orcid-identifier
 			 */
 			var total = 0,
-				baseDigits = username.replace(/-/g, "").substr(0, 15);
+				  baseDigits = username.replace(/-/g, "").substr(0, 15);
 
 			for(var i=0; i<baseDigits.length; i++){
 				var digit = parseInt(baseDigits.charAt(i));
