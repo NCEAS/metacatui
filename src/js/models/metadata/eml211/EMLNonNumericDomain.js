@@ -14,10 +14,12 @@ define(["jquery", "underscore", "backbone",
         	type: "EMLNonNumericDomain",
 
             /* Attributes of an EMLNonNumericDomain object */
-            defaults: {
-                /* Attributes from EML, extends attributes from EMLMeasurementScale */
-                measurementScale: null, // the name of this measurement scale
-                nonNumericDomain: [] // One or more of enumeratedDomain, textDomain, references
+            defaults: function(){
+                return {
+                  /* Attributes from EML, extends attributes from EMLMeasurementScale */
+                  measurementScale: null, // the name of this measurement scale
+                  nonNumericDomain: [] // One or more of enumeratedDomain, textDomain, references
+                }
             },
 
             /**
