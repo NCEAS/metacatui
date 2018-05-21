@@ -1135,6 +1135,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //Reset the upload status for the package
                 collection.packageModel.set("uploadStatus", "e");
 
+                //Send this exception to Google Analytics
+                if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                  ga("send", "exception", {
+                    "exDescription": "DataPackage save error: " + errorMsg +
+                      " | Id: " + collection.packageModel.get("id"),
+                    "exFatal": true
+                  });
+                }
+
 							  collection.trigger("error", data.responseText);
 						  }
 				  }

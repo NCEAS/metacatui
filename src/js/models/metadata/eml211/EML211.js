@@ -998,9 +998,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		                    model.set("uploadStatus", "e");
 
 							model.trigger("errorSaving", errorMsg);
-                		}
+
+              //Send this exception to Google Analytics
+              if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                ga('send', 'exception', {
+                  'exDescription': "EML save error: " + errorMsg + " | Id: " + model.get("id"),
+                  'exFatal': true
+                });
+              }
+            }
 					}
-	   			}, MetacatUI.appUserModel.createAjaxSettings());
+	   		}, MetacatUI.appUserModel.createAjaxSettings());
 
 	   			return Backbone.Model.prototype.save.call(this, attributes, saveOptions);
             },

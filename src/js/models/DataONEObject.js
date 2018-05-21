@@ -555,6 +555,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 
                       model.set("uploadStatus", "e");
                       model.trigger("errorSaving", response.responseText);
+
+                      //Send this exception to Google Analytics
+                      if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                        ga("send", "exception", {
+                          "exDescription": "DataONEObject save error: " + parsedResponse +
+                            " | Id: " + model.get("id"),
+                          "exFatal": true
+                        });
+                      }
                   	}
                   }
               };
@@ -1342,7 +1351,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
   				//Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
   				getType: function(){
   					//The list of formatIds that are images
-  
+
                     //The list of formatIds that are images
   					var pdfIds = ["application/pdf"];
   					var annotationIds = ["http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html"];
