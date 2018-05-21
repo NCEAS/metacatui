@@ -1074,6 +1074,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         		if( !taxonModel.isEmpty() && !taxonModel.isValid() ){
         			errors = _.extend(errors, taxonModel.validationError);
         		}
+            else if( taxonModel.isEmpty() &&
+              this.get("taxonCoverage").length == 1 &&
+              MetacatUI.appModel.get("emlEditorRequiredFields").taxonCoverage ){
+
+              taxonModel.isValid();
+              errors = _.extend(errors, taxonModel.validationError);
+
+            }
 
             //Validate each EMLEntity model
             _.each( this.get("entities"), function(entityModel){

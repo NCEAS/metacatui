@@ -162,8 +162,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if(!this.get("generalTaxonomicCoverage") && MetacatUI.appModel.get("emlEditorRequiredFields").generalTaxonomicCoverage)
 				errors.generalTaxonomicCoverage = "Provide a description of the taxonomic coverage.";
 
-			if( !this.get("taxonomicClassification").length )
+      //If there are no taxonomic classifications and it is either required in
+      // the AppModel OR a general coverage was given, then require it
+			if( !this.get("taxonomicClassification").length &&
+            (MetacatUI.appModel.get("emlEditorRequiredFields").taxonCoverage || this.get("generalTaxonomicCoverage")) ){
 				errors.taxonomicClassification = "Provide at least one complete taxonomic classification.";
+      }
 			else{
 				//Every taxonomic classification should be valid
 				if(!_.every(this.get("taxonomicClassification"), this.isClassificationValid, this))
