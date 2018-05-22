@@ -219,6 +219,11 @@ header .citation {
     display: block;
 }
 
+hr.project{
+	padding: 0px;
+  margin: 0px;
+}
+
 /******************************************
 ** Buttons ***
 ******************************************/
@@ -2004,6 +2009,16 @@ img[src*="googleapis.com/"].georegion-map{
 .media-list {
   padding-left: 0;
   list-style: none;
+}
+/******************************************
+* Projects Header
+********************************************/
+.projectHeader {
+	border-spacing: 10px;
+	border-collapse: separate;
+}
+.projectHeader td{
+	vertical-align: middle;
 }
 /******************************************
 * Download / Resource Map contents table
