@@ -219,11 +219,6 @@ header .citation {
     display: block;
 }
 
-hr.project{
-	padding: 0px;
-  margin: 0px;
-}
-
 /******************************************
 ** Buttons ***
 ******************************************/
@@ -2011,7 +2006,7 @@ img[src*="googleapis.com/"].georegion-map{
   list-style: none;
 }
 /******************************************
-* Projects Header
+* Projects
 ********************************************/
 .projectHeader {
 	border-spacing: 10px;
@@ -2019,6 +2014,19 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .projectHeader td{
 	vertical-align: middle;
+}
+hr.project{
+	padding: 0px;
+  margin: 0px;
+}
+.members-container{
+	border:1px solid rgb(204,204,204);
+	border-radius:4px;
+	padding:10px;
+}
+.member-title{
+	border-bottom: 1px solid rgb(204,204,204);
+	padding-bottom: 5px;
 }
 /******************************************
 * Download / Resource Map contents table

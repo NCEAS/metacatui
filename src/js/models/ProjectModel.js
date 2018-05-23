@@ -95,15 +95,16 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         //}
       }, this);
 
-      //Get the collection id
+      //Get the collection id and model
       var collection = $(xmlDoc).find("projectCollection")
+      MetacatUI.responsetest = response;
       if ( collection ){
         modelJSON.projectCollection = new CollectionModel({
-          id: collection.text()
+          id: collection.find("collectionID").text()
         });
       }
 
-			//Parse the funding info
+			//TODO fix this: Parse the funding info
 			modelJSON.funding = [];
 			var fundingEl    = $(xmlDoc).find("funding"),
 				  fundingNodes = fundingEl.children("para").length ? fundingEl.children("para") : fundingEl;
@@ -117,13 +118,16 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
 			}, this);
 
-			/*
-			var personnelNode = $(objectDOM).find("personnel");
+			var personnelNodes = $(xmlDoc).find("personnel");
 			modelJSON.personnel = [];
-			for(var i=0; i<personnelNode.length; i++){
-				modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode[i], parentModel: this }));
-			}
-			*/
+      _.each(personnelNodes, function(personnelNode){
+         modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode, parentModel: this }))
+      })
+
+      this.set("personnel", modelJSON.personnel);
+
+      MetacatUI.jsontest = modelJSON;
+
 			return modelJSON;
 		}
 	});
