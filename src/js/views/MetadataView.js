@@ -954,7 +954,7 @@ define(['jquery',
 			// TODO: Create a Metric Request Object
 
 			if (MetacatUI.appModel.get("displayMetricWell")) {
-				var metrics = $(document.createElement("div")).addClass("metric-well well well-sm");
+				var metrics = $(document.createElement("div")).addClass("metric-well well well-lg");
 			} else {
 				var metrics = $(document.createElement("div")).addClass("metric-well");
 			}

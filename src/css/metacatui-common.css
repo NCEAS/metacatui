@@ -1628,7 +1628,18 @@ a.btn.metrics {
     display: inline-block;
     width: 145px;
     padding-right: 0px;
-    margin-top: -6px;
+    margin-top: -14px;
+    margin-left: -5px;
+}
+i.icon.icon-cloud-download {
+    font-size: 1.2em; !important;
+}
+i.icon.icon-eye-open {
+    font-size: 1.2em; !important;
+}
+.btn-group+.btn-group, .btn-toolbar>.btn+.btn,
+.btn-toolbar>.btn+.btn-group, .btn-toolbar>.btn-group+.btn {
+    margin-left: 15px;
 }
 a.btn.metrics:hover .metric-value.badge {
     float: right;
@@ -1669,7 +1680,7 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 /* Style for the metric well */
 .metric-well {
     width: 100%;
-    padding-top: 0px;
+
 }
 
 /******************************************
