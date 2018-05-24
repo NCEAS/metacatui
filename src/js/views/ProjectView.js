@@ -70,8 +70,6 @@ define(['jquery',
 			//Insert primary project personnel
 			this.insertProjectPersonnel();
 
-			MetacatUI.proj = this.model;
-
 			//this.DataCatalogView.setElement(this.$('#Content')).render();
 		},
 
@@ -98,19 +96,27 @@ define(['jquery',
 
 		insertProjectPersonnel: function() {
 			var container = this.$(this.personnelContainer);
-			container.append("<h4 class='member-title'>Project Members</h4>");
+			container.prepend("<h4 class='member-title'>Project Members</h4>");
 
 			var personnelList = this.model.get('personnel');
-
 			var primaryList = _.filter(personnelList, function(personnel){ return personnel.get("role").includes("primary") });
-			MetacatUI.pi = primaryList;
 
-			//TODO make this into columns, will probably need to iterate on index and add new rows as needed
-			_.each(primaryList, function(personnel){
-				container.append("<div><strong>" + personnel.get("givenName") + "</strong>, "
-				+ personnel.get("positionName") + "<br>" + "Contact: " + personnel.get("email") + "</div>")
-				//container.append("<div><strong>" + personnel.get("positionName") + "</strong></div>")
-			});
+			var personnelHTML;
+
+			for(var i=0; i<primaryList.length; i++){
+				var personnel = primaryList[i];
+				if(i%2 == 0) {
+					personnelHTML = personnelHTML + "<tr><td><strong>" +
+					personnel.get("givenName") + "</strong>, " + personnel.get("positionName") +
+					"<br>" + "Contact: " + personnel.get("email") + "</td>";
+				} else {
+					personnelHTML = personnelHTML + "<td><strong>" + personnel.get("givenName") +
+					"</strong>, " + personnel.get("positionName") + "<br>" +
+					"Contact: " + personnel.get("email") + "</td></tr>";
+				}
+			};
+
+			this.$("#member-table").append(personnelHTML);
 		}
 
 	});

@@ -2028,6 +2028,13 @@ hr.project{
 	border-bottom: 1px solid rgb(204,204,204);
 	padding-bottom: 5px;
 }
+.member-table td{
+	width:50%;
+	padding-bottom:8px;
+}
+.member-table tr{
+	vertical-align:top;
+}
 /******************************************
 * Download / Resource Map contents table
 ********************************************/
