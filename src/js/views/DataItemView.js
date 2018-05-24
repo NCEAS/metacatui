@@ -572,7 +572,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     } else {
                         // It's data, get the parent scimeta
                         parentMetadata = MetacatUI.rootDataPackage.where({
-                            id: eventModel.get("isDocumentedBy")[0]
+                            id: Array.isArray(eventModel.get("isDocumentedBy"))? eventModel.get("isDocumentedBy")[0] : null
                         });
 
                         if ( parentMetadata.length > 0 ) {

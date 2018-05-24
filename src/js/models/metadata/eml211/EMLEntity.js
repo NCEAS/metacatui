@@ -220,7 +220,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
 
                 // will be run by calls to isValid()
                 if ( ! this.get("entityName") ) {
-                    errors.entityName = new Error("An entity name is required.");
+                    errors.entityName = "An entity name is required.";
                 }
 
                 //Validate each of the EMLAttributes

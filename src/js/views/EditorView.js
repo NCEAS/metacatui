@@ -184,6 +184,9 @@ define(['underscore',
                 MetacatUI.rootDataPackage = new DataPackage([this.model]);
                 MetacatUI.rootDataPackage.packageModel.set("synced", true);
 
+                //Handle the add of the metadata model
+                MetacatUI.rootDataPackage.handleAdd(this.model);
+
                 // Associate the science metadata with the resource map
                 if ( this.model.get && Array.isArray(this.model.get("resourceMap")) ) {
                     this.model.get("resourceMap").push(MetacatUI.rootDataPackage.packageModel.id);
@@ -210,13 +213,19 @@ define(['underscore',
                 // Create a new data package with this id
                 MetacatUI.rootDataPackage = new DataPackage([this.model], {id: resourceMapIds[0]});
 
+                //Handle the add of the metadata model
+                MetacatUI.rootDataPackage.saveReference(this.model);
+
                 // If there is more than one resource map, we need to make sure we fetch the most recent one
                 if ( resourceMapIds.length > 1 ) {
 
             		//Now, find the latest version
             		this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "change:latestVersion", function(model) {
                         //Create a new data package for the latest version package
-            			MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+            			      MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+
+                        //Handle the add of the metadata model
+                        MetacatUI.rootDataPackage.saveReference(this.model);
 
                          //Fetch the data package
                          MetacatUI.rootDataPackage.fetch();
@@ -359,6 +368,7 @@ define(['underscore',
                 	//Replace the old ScienceMetadata model in the collection
                 	MetacatUI.rootDataPackage.remove(model);
                 	MetacatUI.rootDataPackage.add(EMLmodel, { silent: true });
+                  MetacatUI.rootDataPackage.handleAdd(EMLmodel);
                 	model.trigger("replace", EMLmodel);
 
                 	//Fetch the EML and render it

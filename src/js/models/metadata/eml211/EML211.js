@@ -1311,7 +1311,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		var fileNameFromEML = e.get("physicalObjectName") || e.get("entityName");
 
             		// If the EML file name matches the DataONEObject file name
-            		if( (fileNameFromEML == dataONEObj.get("fileName")) || (fileNameFromEML.replace(/ /g, "_") == dataONEObj.get("fileName")) ){
+            		if( fileNameFromEML &&
+                  ((fileNameFromEML == dataONEObj.get("fileName")) ||
+                    (fileNameFromEML.replace(/ /g, "_") == dataONEObj.get("fileName"))) ){
 
             			//Get an array of all the other entities in this EML
             			var otherEntities = _.without(this.get("entities"), e);
