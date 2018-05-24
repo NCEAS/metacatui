@@ -10,7 +10,7 @@ define(['jquery',
 				'text!templates/project.html',
 				'text!templates/projectHeader.html',
 				'text!templates/about.html'],
-	function($, _, Backbone, Bootstrap, Project, SolrResult, DataONEObject, DataCatalogView, ProjectTemplate, ProjectHeaderTemplate, testTemplate) {
+	function($, _, Backbone, Bootstrap, Project, SearchResults, DataONEObject, DataCatalogView, ProjectTemplate, ProjectHeaderTemplate, testTemplate) {
 	'use strict';
 
 	// Our overall **AppView** is the top-level piece of UI.
@@ -28,9 +28,7 @@ define(['jquery',
 		headerTemplate: _.template(ProjectHeaderTemplate),
 
 		initialize: function () {
-			this.DataCatalogView = new DataCatalogView();
 			this.projectId = MetacatUI.appModel.get("projectId")
-
 		},
 
 		// Render the main view and/or re-render subviews. Don't call .html() here
@@ -62,15 +60,13 @@ define(['jquery',
 			this.insertHeader();
 
 			//Insert project search
-			//this.insertProjectSearch();
+			this.insertProjectSearch();
 
 			//Insert project description
 			this.insertProjectDescription();
 
 			//Insert primary project personnel
 			this.insertProjectPersonnel();
-
-			//this.DataCatalogView.setElement(this.$('#Content')).render();
 		},
 
 
@@ -83,8 +79,22 @@ define(['jquery',
 		},
 
 		insertProjectSearch: function(){
-			//TODO change this to custom project search
-			this.DataCatalogView.setElement(this.$(this.searchContainer)).render();
+			//TODO pass Collection definition to catalog view
+
+			var searchModel = this.get.("projectCollection") ? this.get.("projectCollection").get("searchResults") : null;
+			var view = new DataCatalogView({
+				el: this.$("#project-search-results"),
+				mode: "list",
+				//searchModel: collection.get('searchModel'),
+				//searchResults: new SearchResults([], { rows: 5, start: 0 }),
+				isSubView: true,
+				filters : false
+			});
+
+			view.render();
+			view.$el.addClass("list-only");
+			view.$(".auto-height").removeClass("auto-height").css("height", "auto");
+			$("#metacatui-app").removeClass("DataCatalog mapMode");
 		},
 
 		//TODO will need to parse markdown
@@ -106,11 +116,11 @@ define(['jquery',
 			for(var i=0; i<primaryList.length; i++){
 				var personnel = primaryList[i];
 				if(i%2 == 0) {
-					personnelHTML = personnelHTML + "<tr><td><strong>" +
+					personnelHTML += "<tr><td><strong>" +
 					personnel.get("givenName") + "</strong>, " + personnel.get("positionName") +
 					"<br>" + "Contact: " + personnel.get("email") + "</td>";
 				} else {
-					personnelHTML = personnelHTML + "<td><strong>" + personnel.get("givenName") +
+					personnelHTML += "<td><strong>" + personnel.get("givenName") +
 					"</strong>, " + personnel.get("positionName") + "<br>" +
 					"Contact: " + personnel.get("email") + "</td></tr>";
 				}

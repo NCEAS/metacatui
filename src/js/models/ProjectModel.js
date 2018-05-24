@@ -1,6 +1,6 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/CollectionModel"],
-    function($, _, Backbone, EMLParty, CollectionModel) {
+define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/CollectionModel", "collections/SolrResults"],
+    function($, _, Backbone, EMLParty, CollectionModel, SearchResults) {
 
 	var ProjectModel = Backbone.Model.extend({
 
@@ -18,7 +18,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       award: null,
       synopsis: null,
       logos: [],
-      projectLogo: null
+      projectLogo: null,
+      searchResults: null
 		},
 
     //Don't need this yet
@@ -61,7 +62,6 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
 		parse: function(response){
       var xmlDoc = response;
-      MetacatUI.docTest = xmlDoc;
 			var modelJSON = {};
 
       //Parse the title
@@ -97,11 +97,12 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
       //Get the collection id and model
       var collection = $(xmlDoc).find("projectCollection")
-      MetacatUI.responsetest = response;
       if ( collection ){
         modelJSON.projectCollection = new CollectionModel({
           id: collection.find("collectionID").text()
         });
+        modelJSON.projectCollection.fetch();
+        this.set("projectCollection", modelJSON.projectCollection);
       }
 
 			//TODO fix this: Parse the funding info
@@ -125,9 +126,6 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       })
 
       this.set("personnel", modelJSON.personnel);
-
-      MetacatUI.jsontest = modelJSON;
-
 			return modelJSON;
 		}
 	});
