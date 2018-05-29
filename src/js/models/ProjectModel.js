@@ -69,21 +69,18 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       var titleNode = _.first($(xmlDoc).find("title"));
       if( titleNode ){
           modelJSON.title = titleNode.innerHTML || null;
-          this.set("title", titleNode.innerHTML);
       }
 
       //Parse the synopsis
       var synopsis = $(xmlDoc).find("synopsis");
       if( synopsis ){
         modelJSON.synopsis = synopsis.text() || null;
-        this.set("synopsis", synopsis.text())
       }
 
       //TODO This will need to be farmed out to a markdown processor
       var description = $(xmlDoc).find("projectDescription");
       if( description ){
         modelJSON.projectDescription = description.text() || null;
-        this.set("projectDescription", description.text())
       }
 
       //TODO need to talk more about different ways that we can store logos. Haven't finalized this.
@@ -98,11 +95,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       //Get the collection id and model
       var collection = $(xmlDoc).find("projectCollection")
       if ( collection ){
-        modelJSON.projectCollection = new CollectionModel({
-          id: collection.find("collectionID").text()
-        });
-        modelJSON.projectCollection.fetch();
-        this.set("projectCollection", modelJSON.projectCollection);
+        modelJSON.projectCollection = collection.find("collectionID").text() || null;
       }
 
 			//TODO fix this: Parse the funding info
@@ -125,7 +118,6 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
          modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode, parentModel: this }))
       })
 
-      this.set("personnel", modelJSON.personnel);
 			return modelJSON;
 		}
 	});
