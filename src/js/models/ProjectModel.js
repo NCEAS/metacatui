@@ -44,6 +44,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
     fetch: function(){
       var model = this;
+
       var requestSettings = {
         url: this.url(),
         dataType: "xml",
@@ -54,6 +55,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
       //Add the authorization header and other AJAX settings
       requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+      //Call Backbone.Model.fetch to retrieve the info
       return Backbone.Model.prototype.fetch.call(this, requestSettings);
     },
 
@@ -66,18 +69,21 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       var titleNode = _.first($(xmlDoc).find("title"));
       if( titleNode ){
           modelJSON.title = titleNode.innerHTML || null;
+          this.set("title", titleNode.innerHTML);
       }
 
       //Parse the synopsis
       var synopsis = $(xmlDoc).find("synopsis");
       if( synopsis ){
         modelJSON.synopsis = synopsis.text() || null;
+        this.set("synopsis", synopsis.text())
       }
 
       //TODO This will need to be farmed out to a markdown processor
       var description = $(xmlDoc).find("projectDescription");
       if( description ){
         modelJSON.projectDescription = description.text() || null;
+        this.set("projectDescription", description.text())
       }
 
       //TODO need to talk more about different ways that we can store logos. Haven't finalized this.
@@ -92,7 +98,11 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       //Get the collection id and model
       var collection = $(xmlDoc).find("projectCollection")
       if ( collection ){
-        modelJSON.projectCollection = collection.find("collectionID").text() || null;
+        modelJSON.projectCollection = new CollectionModel({
+          id: collection.find("collectionID").text()
+        });
+        modelJSON.projectCollection.fetch();
+        this.set("projectCollection", modelJSON.projectCollection);
       }
 
 			//TODO fix this: Parse the funding info
@@ -106,6 +116,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         if( $(fundingNode).text() ){
             modelJSON.funding.push( $(fundingNode).text() );
         }
+
 			}, this);
 
 			var personnelNodes = $(xmlDoc).find("personnel");
@@ -114,6 +125,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
          modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode, parentModel: this }))
       })
 
+      this.set("personnel", modelJSON.personnel);
 			return modelJSON;
 		}
 	});
