@@ -26,6 +26,7 @@ define(['jquery',
 		logoContainer: "#project-logos-container",
 		statsContainer: "#project-stats-container",
 		allPersonnelContainer: "#project-personnel-container-all",
+		acknowledgmentsContainer: "#project-acknowledgments-container",
 
 		type: "Project",
 
@@ -59,7 +60,6 @@ define(['jquery',
 
 			this.getModel();
 
-			MetacatUI.col = this.collectionModel;
 			return this;
 		},
 
@@ -95,8 +95,11 @@ define(['jquery',
 			//Insert stats
 			this.insertProjectStats();
 
-			//Insert people tab
+			//Insert people in the people tab
 			this.insertProjectPeopleTab();
+
+			//Insert project acknowledgments();
+			this.insertProjectAcknowledgments();
 		},
 
 		insertHeader: function() {
@@ -113,7 +116,6 @@ define(['jquery',
 			var search = this.collectionModel.get('searchModel');
 			var results = this.collectionModel.get('searchResults');
 
-			MetacatUI.col2 = this.collectionModel;
 			var view = new DataCatalogView({
 				el: this.$("#project-search-results"),
 				mode: "list",
@@ -184,9 +186,24 @@ define(['jquery',
 
 		},
 
+		insertProjectAcknowledgments: function() {
+			//Insert acknowledgments info
+			this.$(this.acknowledgmentsContainer).prepend("<h4 class='project-section-title'>Acknowledgments</h4>");
+			var acknowledgments = this.model.get('acknowledgments');
+		  this.$(this.acknowledgmentsContainer).append("<span>" + acknowledgments + "</span>");
+
+			//Add the funding info
+			this.$(this.acknowledgmentsContainer).append("<br><br><h4 class='project-section-title'>Funding</h4>");
+			var fundingSources = this.model.get('funding'),
+				view = this;
+			_.each(fundingSources, function(funding){
+				view.$(view.acknowledgmentsContainer).append("<span>" + funding + "</span><br>");
+			});
+		},
+
 		insertProjectStats: function(){
 
-			//Just testing this out
+			//Just testing this out... obviously will need to get this from elsewhere
 			var username = "http://orcid.org/0000-0002-6220-0134";
 			//var username = this.model.get("username");
 			var view = this;
@@ -229,7 +246,6 @@ define(['jquery',
 		},
 
 		switchTab: function(e){
-			MetacatUI.test = e;
 			e.preventDefault();
 
 			var link = $(e.target);

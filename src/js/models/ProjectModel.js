@@ -14,7 +14,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 			parentModel: null,
       projectDescription: null,
       resultsOverview: null,
-      acknowledgements: null,
+      acknowledgments: null,
       award: [],
       synopsis: null,
       logos: [],
@@ -115,10 +115,10 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
          modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode, parentModel: this }))
       })
 
-      //Parse the acknowledgements
-      var acknowledgements = $(xmlDoc).find("acknowledgements");
-      if( acknowledgements ){
-        modelJSON.acknowledgements = acknowledgements.text() || null;
+      //Parse the acknowledgments -
+      var acknowledgments = $(xmlDoc).find("acknowledgements");
+      if( acknowledgments ){
+        modelJSON.acknowledgments = acknowledgments.text() || null;
       }
 
 			return modelJSON;
