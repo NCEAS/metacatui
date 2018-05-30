@@ -84,12 +84,12 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
       //TODO need to talk more about different ways that we can store logos. Haven't finalized this.
       // options: URL to external source, stored as an object w/ pid, or raw bytes
-      // Do we want to create a model for logo/image as well?
       var logos = $(xmlDoc).find("logos");
       // For now, find all logos that have external URLS
       var logoImages = logos.find("image");
+      modelJSON.logos = [];
       _.each(logoImages, function(logo){
-        modelJSON.logos.push( new ImageModel({ }));
+        modelJSON.logos.push( new Image({ imageURL: $(logo).find("imageURL").text() }));
       });
 
       //Get the collection id and model
@@ -116,7 +116,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       _.each(personnelNodes, function(personnelNode){
          modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode, parentModel: this }))
       })
-
+      MetacatUI.jsontest = modelJSON;
 			return modelJSON;
 		}
 	});

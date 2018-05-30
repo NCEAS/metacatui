@@ -22,6 +22,7 @@ define(['jquery',
 		searchContainer: "#project-search-container",
 		descriptionContainer: "#project-description-container",
 		personnelContainer: "#project-personnel-container",
+		logoContainer: "#project-logos-container",
 
 		type: "Project",
 
@@ -84,13 +85,16 @@ define(['jquery',
 
 			//Insert primary project personnel
 			this.insertProjectPersonnel();
+
+			//Insert project logos
+			this.insertProjectLogos();
 		},
 
 		insertHeader: function() {
 			this.$(this.headerContainer).html(this.headerTemplate({
 				title : this.model.get('title'),
 				synopsis : this.model.get('synopsis'),
-				logo: 'https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/urn%3Auuid%3A4bb02544-d2d5-436a-9d37-8b77c3c31981'
+				logo: this.model.get('logos')[0].get("imageURL") //Inserts first logo in list as title logo
 			}));
 		},
 
@@ -146,24 +150,34 @@ define(['jquery',
 		},
 
 		insertProjectLogos: function() {
-			var logoList = this.model.get('logos');
+			var view = this;
+			var logoList = view.model.get('logos');
+
+			// Right now this assumes that all logos are stored externally and referenced via a url and that we don't want to redisplay the first logo
+			_.each(logoList.slice(1), function(logo){
+				var url = logo.get("imageURL");
+				view.$("#project-logos-container").append("<div class='logo-image'><image src="+url+"></image></div>");
+			});
 
 		},
 
 		//Need to hook this up - probably grab tabs by their data-section names so we don't have to see a different url
 		showTab: function(e){
+			MetacatUI.test = e;
 			e.preventDefault();
 
-			//Get the clicked link
 			var link = $(e.target);
+			//Get the clicked link
+		  link.tab('show');
+			$(e.relatedTarget).tab('hide');
 
 			//Remove the active class from all links and add it to the new active link
 			this.$(".nav-tabs li").removeClass("active");
 			link.parent("li").addClass("active");
 
 			//Hide all the panes and show the correct one
-			this.$(".tab-pane").hide();
-			this.$(link.attr("href")).show();
+			//this.$(".tab-pane").hide();
+			this.$(link.attr("data-target")).show();
 		},
 
 	});

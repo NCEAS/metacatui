@@ -2030,6 +2030,24 @@ hr.project{
 	padding-bottom: 5px;
 }
 .top-buffer { margin-top:5px; }
+.logo-container{
+	height: 100px;
+  white-space: nowrap;
+  width: 100%;
+  display: table;
+	padding-top:10px;
+}
+.logo-image{
+	vertical-align: middle;
+  padding: 10px;
+  display: table-cell;
+}
+.logo-image img{
+	max-width: 100%;
+}
+.project-tab{
+	margin:0px;
+}
 /******************************************
 * Download / Resource Map contents table
 ********************************************/
