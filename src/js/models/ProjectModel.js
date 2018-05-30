@@ -14,8 +14,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 			parentModel: null,
       projectDescription: null,
       resultsOverview: null,
-      funding: null,
-      award: null,
+      acknowledgements: null,
+      award: [],
       synopsis: null,
       logos: [],
       projectLogo: null,
@@ -61,8 +61,6 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       var xmlDoc = response;
 			var modelJSON = {};
 
-      MetacatUI.res = xmlDoc;
-
       //Parse the title
       //There are multiple title nodes nested within funding elements - only want top level
       var titleNode = _.first($(xmlDoc).find("title"));
@@ -105,18 +103,24 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
       //Iterate over each funding node and put the text into the funding array
 			_.each(fundingNodes, function(fundingNode){
-
         if( $(fundingNode).text() ){
             modelJSON.funding.push( $(fundingNode).text() );
         }
 			}, this);
 
+      //Parse the project personnel
 			var personnelNodes = $(xmlDoc).find("personnel");
 			modelJSON.personnel = [];
       _.each(personnelNodes, function(personnelNode){
          modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode, parentModel: this }))
       })
-      MetacatUI.jsontest = modelJSON;
+
+      //Parse the acknowledgements
+      var acknowledgements = $(xmlDoc).find("acknowledgements");
+      if( acknowledgements ){
+        modelJSON.acknowledgements = acknowledgements.text() || null;
+      }
+
 			return modelJSON;
 		}
 	});

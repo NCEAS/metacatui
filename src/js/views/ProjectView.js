@@ -8,10 +8,11 @@ define(['jquery',
 				'models/SolrResult',
 				'models/DataONEObject',
 				'views/DataCatalogView',
+				'views/StatsView',
 				'text!templates/project.html',
 				'text!templates/projectHeader.html',
 				'text!templates/about.html'],
-	function($, _, Backbone, Bootstrap, Project, Collection, SearchResults, DataONEObject, DataCatalogView, ProjectTemplate, ProjectHeaderTemplate, testTemplate) {
+	function($, _, Backbone, Bootstrap, Project, Collection, SearchResults, DataONEObject, DataCatalogView, StatsView, ProjectTemplate, ProjectHeaderTemplate, testTemplate) {
 	'use strict';
 
 	// Our overall **AppView** is the top-level piece of UI.
@@ -23,6 +24,8 @@ define(['jquery',
 		descriptionContainer: "#project-description-container",
 		personnelContainer: "#project-personnel-container",
 		logoContainer: "#project-logos-container",
+		statsContainer: "#project-stats-container",
+		allPersonnelContainer: "#project-personnel-container-all",
 
 		type: "Project",
 
@@ -30,7 +33,7 @@ define(['jquery',
 		headerTemplate: _.template(ProjectHeaderTemplate),
 
 		events: {
-			"click .nav-tabs a" : "showTab"
+			"click .nav-tabs a" : "switchTab"
 		},
 
 		initialize: function () {
@@ -88,6 +91,12 @@ define(['jquery',
 
 			//Insert project logos
 			this.insertProjectLogos();
+
+			//Insert stats
+			this.insertProjectStats();
+
+			//Insert people tab
+			this.insertProjectPeopleTab();
 		},
 
 		insertHeader: function() {
@@ -126,27 +135,41 @@ define(['jquery',
 		},
 
 		insertProjectPersonnel: function() {
-			this.$(this.personnelContainer).prepend("<h4 class='member-title'>Project Members</h4>");
+			this.$(this.personnelContainer).prepend("<h4 class='project-section-title'>Project Members</h4>");
 
 			var personnelList = this.model.get('personnel');
 			var primaryList = _.filter(personnelList, function(personnel){ return personnel.get("role").includes("primary") });
 
+			var personnelHTML = this.generatePersonnelHTML(primaryList);
+
+		  this.$("#members-list-container").append(personnelHTML);
+		},
+
+		insertProjectPeopleTab: function() {
+			this.$(this.allPersonnelContainer).prepend("<h4 class='project-section-title'>Project Members</h4>");
+
+			var personnelList = this.model.get('personnel');
+			var personnelHTML = this.generatePersonnelHTML(personnelList);
+
+		  this.$("#members-list-container-all").append(personnelHTML);
+		},
+
+		generatePersonnelHTML: function(personnelList) {
 			var personnelHTML = "";
 
-			for(var i=0; i<primaryList.length; i++){
-				var personnel = primaryList[i];
-				if(i%2 == 0) {
+			_.each(personnelList, function(personnel, index){
+				if(index%2 == 0) {
 					personnelHTML += "<div class='row top-buffer'><div class='span6'><strong>" +
-					personnel.get("givenName") + "</strong>, " + personnel.get("positionName") +
+					personnel.get("givenName") + "</strong><br> " + personnel.get("positionName") +
 					"<br>" + "Contact: " + personnel.get("email") + "</div>";
 				} else {
 					personnelHTML += "<div class='span6'><strong>" + personnel.get("givenName") +
-					"</strong>, " + personnel.get("positionName") + "<br>" +
+					"</strong><br> " + personnel.get("positionName") + "<br>" +
 					"Contact: " + personnel.get("email") + "</div></div>";
 				}
-			};
+			});
 
-		  this.$("#members-list-continer").append(personnelHTML);
+			return personnelHTML;
 		},
 
 		insertProjectLogos: function() {
@@ -161,22 +184,62 @@ define(['jquery',
 
 		},
 
-		//Need to hook this up - probably grab tabs by their data-section names so we don't have to see a different url
-		showTab: function(e){
+		insertProjectStats: function(){
+
+			//Just testing this out
+			var username = "http://orcid.org/0000-0002-6220-0134";
+			//var username = this.model.get("username");
+			var view = this;
+
+			//Insert a couple stats into the profile
+			this.listenToOnce(MetacatUI.statsModel, "change:firstUpload", this.insertFirstUpload);
+
+			this.listenToOnce(MetacatUI.statsModel, "change:totalUploads", function(){
+				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalUploads")));
+			});
+
+			MetacatUI.statsModel.once("change:downloads", function(){
+				if( !this.get("downloads") )
+					view.$("#total-download-wrapper, section.downloads").hide();
+				else
+					view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
+			});
+
+			//Create a base query for the statistics
+			var statsSearchModel = this.collectionModel.get("searchModel").clone();
+			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
+			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+			MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+			//Create the description for this profile
+			var description = "A summary of all datasets from " + this.model.get("title");
+
+
+			//Render the Stats View for the project
+			this.statsView = new StatsView({
+				title: "Statistics and Figures",
+				description: description,
+				el: this.$(this.statsContainer)
+			});
+			//this.subviews.push(this.statsView);
+			this.statsView.render();
+
+			if(this.model.noActivity)
+				this.statsView.$el.addClass("no-activity");
+		},
+
+		switchTab: function(e){
 			MetacatUI.test = e;
 			e.preventDefault();
 
 			var link = $(e.target);
-			//Get the clicked link
+
 		  link.tab('show');
 			$(e.relatedTarget).tab('hide');
 
-			//Remove the active class from all links and add it to the new active link
 			this.$(".nav-tabs li").removeClass("active");
 			link.parent("li").addClass("active");
 
-			//Hide all the panes and show the correct one
-			//this.$(".tab-pane").hide();
 			this.$(link.attr("data-target")).show();
 		},
 

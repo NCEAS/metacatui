@@ -2025,11 +2025,15 @@ hr.project{
 	padding:10px;
 	margin:0px;
 }
-.member-title{
+.project-section-title{
 	border-bottom: 1px solid rgb(204,204,204);
+	width:20%;
 	padding-bottom: 5px;
 }
-.top-buffer { margin-top:5px; }
+.top-buffer {
+	margin-top:5px;
+	margin-bottom:8px;
+}
 .logo-container{
 	height: 100px;
   white-space: nowrap;
@@ -2045,8 +2049,8 @@ hr.project{
 .logo-image img{
 	max-width: 100%;
 }
-.project-tab{
-	margin:0px;
+.project-tabs{
+	width: 100%;
 }
 /******************************************
 * Download / Resource Map contents table
