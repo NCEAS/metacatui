@@ -44,6 +44,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
     fetch: function(){
       var model = this;
+
       var requestSettings = {
         url: this.url(),
         dataType: "xml",
@@ -54,6 +55,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
       //Add the authorization header and other AJAX settings
       requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+      //Call Backbone.Model.fetch to retrieve the info
       return Backbone.Model.prototype.fetch.call(this, requestSettings);
     },
 
@@ -106,6 +109,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         if( $(fundingNode).text() ){
             modelJSON.funding.push( $(fundingNode).text() );
         }
+
 			}, this);
 
       //Parse the project personnel
