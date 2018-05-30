@@ -670,27 +670,48 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	this.serializeParties(eml, "publisher");
 
 				// Serialize methods
-				if (this.get('methods')) {
+				if(this.get('methods')) {
+
+          //If the methods model is empty, remove it from the EML
+          if( this.get("methods").isEmpty() )
+            datasetNode.find("methods").remove();
 
 					//Serialize the methods model
 					var methodsEl = this.get('methods').updateDOM();
 
-					//Add the <methods> node to the EML
-					if (datasetNode.find('methods').length === 0){
-						var insertAfter = this.getEMLPosition(eml, "methods");
+          //If the methodsEl is an empty string or other falsey value, then remove the methods node
+          if( !methodsEl ){
+            datasetNode.find("methods").remove();
+          }
+          else{
 
-						if(insertAfter)
-							insertAfter.after(methodsEl);
-						else
-							datasetNode.append(methodsEl);
-					}
-					else{
+  					//Add the <methods> node to the EML
+  					if (datasetNode.find('methods').length === 0){
+  						var insertAfter = this.getEMLPosition(eml, "methods");
 
-						datasetNode.find("methods").replaceWith(methodsEl);
+  						if(insertAfter)
+  							insertAfter.after(methodsEl);
+  						else
+  							datasetNode.append(methodsEl);
+  					}
+  					else{
 
-					}
+  						datasetNode.find("methods").replaceWith(methodsEl);
+
+  					}
+          }
 
 				}
+        //If there are no methods, then remove the methods nodes
+        else{
+
+          if( datasetNode.find("methods").length > 0 ){
+            datasetNode.find("methods").remove();
+          }
+
+        }
+
+
 	           	//Serialize the keywords
 				this.serializeKeywords(eml, "keywordSets");
 
