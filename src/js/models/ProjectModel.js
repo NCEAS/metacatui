@@ -1,6 +1,6 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/CollectionModel", "collections/SolrResults"],
-    function($, _, Backbone, EMLParty, CollectionModel, SearchResults) {
+define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/CollectionModel", "models/ImageModel", "collections/SolrResults"],
+    function($, _, Backbone, EMLParty, CollectionModel, Image, SearchResults) {
 
 	var ProjectModel = Backbone.Model.extend({
 
@@ -61,6 +61,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       var xmlDoc = response;
 			var modelJSON = {};
 
+      MetacatUI.res = xmlDoc;
+
       //Parse the title
       //There are multiple title nodes nested within funding elements - only want top level
       var titleNode = _.first($(xmlDoc).find("title"));
@@ -82,12 +84,13 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
       //TODO need to talk more about different ways that we can store logos. Haven't finalized this.
       // options: URL to external source, stored as an object w/ pid, or raw bytes
+      // Do we want to create a model for logo/image as well?
       var logos = $(xmlDoc).find("logos");
-      _.each(logos, function(logo) {
-        //var logoType = logo.children()
-        //if( logo.find("imageURL") ){
-        //}
-      }, this);
+      // For now, find all logos that have external URLS
+      var logoImages = logos.find("image");
+      _.each(logoImages, function(logo){
+        modelJSON.logos.push( new ImageModel({ }));
+      });
 
       //Get the collection id and model
       var collection = $(xmlDoc).find("projectCollection")

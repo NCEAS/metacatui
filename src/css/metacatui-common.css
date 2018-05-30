@@ -2023,18 +2023,13 @@ hr.project{
 	border:1px solid rgb(204,204,204);
 	border-radius:4px;
 	padding:10px;
+	margin:0px;
 }
 .member-title{
 	border-bottom: 1px solid rgb(204,204,204);
 	padding-bottom: 5px;
 }
-.member-table td{
-	width:50%;
-	padding-bottom:8px;
-}
-.member-table tr{
-	vertical-align:top;
-}
+.top-buffer { margin-top:5px; }
 /******************************************
 * Download / Resource Map contents table
 ********************************************/

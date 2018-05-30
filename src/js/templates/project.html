@@ -1,12 +1,22 @@
 <article id="project-view">
+  <section class="row-fluid" id="project-section" data-section="project">
     <div id="project-header-container"></div>
+    <div id="project-nav-tabs">
+    <ul class="nav nav-tabs">
+    	<li role="presentation" class="active nav-tab" data-section="project"><a href="#project/<%=id%>" data-section="project" class="section-link">Project Home</a></li>
+    	<li role="presentation" class="nav-tab" data-section="metrics"><a href="#project/<%=id%>" data-section="metrics" class="section-link">Metrics</a></li>
+      <li role="presentation" class="nav-tab" data-section="people"><a href="#project/<%=id%>" data-section="people" class="section-link">People</a></li>
+    </ul>
+  </div>
     <div id="project-search-container">
-      <div id="project-search-results" class="span9 list-only">
+      <div id="project-search-results" class="span12">
       </div>
     </div>
-    <div id="project-description-container"></div>
+    <div id="project-description-container"></div><br>
     <div id="project-personnel-container" class="members-container">
-      <table id="member-table" class="member-table"></table>
+      <div id="members-list-continer" class="container-fluid">
+      </div>
     </div>
     <div id="project-logos-container"></div>
+  </section>
 </article>
