@@ -74,7 +74,7 @@ define(['jquery',
 		},
 
 		renderProjectMetadata: function(){
-
+			MetacatUI.t = this;
 			this.$el.html(this.template({ id: this.projectId }));
 
 			//Insert project header with title/synopsis
@@ -93,7 +93,7 @@ define(['jquery',
 			this.insertProjectLogos();
 
 			//Insert stats
-			this.insertProjectStats();
+			//this.insertProjectStats();
 
 			//Insert people in the people tab
 			this.insertProjectPeopleTab();
@@ -111,16 +111,17 @@ define(['jquery',
 		},
 
 		insertProjectSearch: function(){
-			//TODO pass Collection definition to catalog view
+			//TODO pass Collection definition to catalog view - below isn't working yet
 
 			var search = this.collectionModel.get('searchModel');
 			var results = this.collectionModel.get('searchResults');
 
+			MetacatUI.appModel.searchResults = results;
 			var view = new DataCatalogView({
 				el: this.$("#project-search-results"),
 				mode: "list",
-				//searchModel: search,
-			  //resultsModel: results,
+				searchModel: search,
+			  resultsModel: results,
 				isSubView: true,
 				filters : true
 			});
@@ -158,16 +159,23 @@ define(['jquery',
 
 		generatePersonnelHTML: function(personnelList) {
 			var personnelHTML = "";
-
 			_.each(personnelList, function(personnel, index){
+
+				// TODO this is cluged in here until I can figure out why EMLParty isn't parsing the first/last name
+				var firstname = $(personnel.get("objectDOM")).find("givenName").text(),
+					lastname = $(personnel.get("objectDOM")).find("surName").text(),
+					org = personnel.get("organizationName") || "",
+					position = personnel.get("positionName") || "",
+					email = personnel.get("email") || "";
+
 				if(index%2 == 0) {
 					personnelHTML += "<div class='row top-buffer'><div class='span6'><strong>" +
-					personnel.get("givenName") + "</strong><br> " + personnel.get("positionName") +
-					"<br>" + "Contact: " + personnel.get("email") + "</div>";
+					firstname + " " + lastname + "</strong> " + org + "<br> " + position +
+					"<br>" + "Contact: " + email + "</div>";
 				} else {
-					personnelHTML += "<div class='span6'><strong>" + personnel.get("givenName") +
-					"</strong><br> " + personnel.get("positionName") + "<br>" +
-					"Contact: " + personnel.get("email") + "</div></div>";
+					personnelHTML += "<div class='span6'><strong>" + firstname + " " + lastname +
+					"</strong> " + org + "<br>" + position + "<br>" +
+					"Contact: " + email + "</div></div>";
 				}
 			});
 
@@ -202,9 +210,8 @@ define(['jquery',
 		},
 
 		insertProjectStats: function(){
-
-			//Just testing this out... obviously will need to get this from elsewhere
-			var username = "http://orcid.org/0000-0002-6220-0134";
+			//TODO - edit the stats model so that we can pass in a project ID and find all associated packages
+			//var username = "http://orcid.org/0000-0002-6220-0134";
 			//var username = this.model.get("username");
 			var view = this;
 

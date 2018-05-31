@@ -35,9 +35,8 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', 'collections/SolrRe
       // then field and value for each filter
 
       //Placeholder for now for SASAP
-      this.get("searchModel").set("creator", "http://orcid.org/0000-0002-6220-0134");
-      //this.get("searchModel").set("attribute", "density");
-      //this.trigger("change:searchModel");
+      this.get("searchModel").set("project", "State of Alaska's Salmon and People");
+      this.trigger("change:searchModel");
     },
 
     fetch: function(){

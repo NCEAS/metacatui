@@ -115,9 +115,14 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       //Parse the project personnel
 			var personnelNodes = $(xmlDoc).find("personnel");
 			modelJSON.personnel = [];
+
+      //TODO - I'm running into problems with parsing the xml every time there are children nodes.
+      // I'm not sure if this is a problem with the xml document itself or if something else needs to be done while parsing.
       _.each(personnelNodes, function(personnelNode){
-         modelJSON.personnel.push( new EMLParty({ objectDOM: personnelNode, parentModel: this }))
-      })
+         modelJSON.personnel.push( new EMLParty({
+           objectDOM: personnelNode,
+           parentModel: this }))
+      });
 
       //Parse the acknowledgments -
       var acknowledgments = $(xmlDoc).find("acknowledgements");
