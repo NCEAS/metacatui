@@ -252,6 +252,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	for(var i=0; i<nodes.length; i++){
 
             		var thisNode = nodes[i];
+					var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
+
 
             		//EML Party modules are stored in EMLParty models
             		if(_.contains(emlParties, thisNode.localName)){
@@ -331,9 +333,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
             		//Parse EMLText modules
             		else if(_.contains(emlText, thisNode.localName)){
-            			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
+            			if(typeof modelJSON[convertedName] == "undefined") modelJSON[convertedName] = [];
 
-            			modelJSON[thisNode.localName].push(new EMLText({
+            			modelJSON[convertedName].push(new EMLText({
 	            				objectDOM: thisNode,
 	            				parentModel: model
             				}));
@@ -374,7 +376,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
             		//Parse Entities
             		else if(_.contains(emlEntities, thisNode.localName)){
-            			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
 
             			//Start an array of Entities
             			if(typeof modelJSON["entities"] == "undefined")
@@ -409,7 +410,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			modelJSON["entities"].push(entityModel);
             		}
             		else{
-            			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
             			//Is this a multi-valued field in EML?
             			if(Array.isArray(this.get(convertedName))){
             				//If we already have a value for this field, then add this value to the array
