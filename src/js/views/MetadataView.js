@@ -227,6 +227,7 @@ define(['jquery',
 				"name": model.get("title"),
 				"url": MetacatUI.appModel.get("baseUrl") +
 							 route +
+							 "/" +
 							 encodeURIComponent(model.get("id")),
 				"citation": citationText,
 				"schemaVersion": model.get("formatId"),
