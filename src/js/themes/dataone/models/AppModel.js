@@ -70,8 +70,8 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			mdqUrl: null
-
+			mdqUrl: null,
+			isJSONLDEnabled: true
 		},
 
 		defaultView: "data",

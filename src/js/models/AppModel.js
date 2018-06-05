@@ -94,7 +94,8 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsMapsUrl: null,
 			groupsUrl: null,
 			portalUrl: null,
-			mdqUrl: null
+			mdqUrl: null,
+			isJSONLDEnabled: true
 		},
 
 		defaultView: "data",

@@ -100,8 +100,8 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			mdqUrl: "https://quality.nceas.ucsb.edu/quality/"
-
+			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
+			isJSONLDEnabled: true
 		},
 
 		defaultView: "data",
