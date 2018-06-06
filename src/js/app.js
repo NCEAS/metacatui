@@ -29,31 +29,31 @@ if ( MetacatUI.useD3 ) {
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
-  baseUrl: '/js/',
+  baseUrl: MetacatUI.root + '/js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: MetacatUI.themeMap,
   urlArgs: "v=" + MetacatUI.metacatUIVersion,
   paths: {
     jquery: 'https://code.jquery.com/jquery-1.9.1.min',
-    jqueryui: '../components/jquery-ui.min',
-    jqueryform: '../components/jquery.form',
-    underscore: '../components/underscore-min',
-    backbone: '../components/backbone-min',
-    bootstrap: '../components/bootstrap.min',
-    text: '../components/require-text',
-    jws: '../components/jws-3.2.min',
-    jsrasign: '../components/jsrsasign-4.9.0.min',    
-    async: '../components/async',
+    jqueryui: MetacatUI.root + '/components/jquery-ui.min',
+    jqueryform: MetacatUI.root + '/components/jquery.form',
+    underscore: MetacatUI.root + '/components/underscore-min',
+    backbone: MetacatUI.root + '/components/backbone-min',
+    bootstrap: MetacatUI.root + '/components/bootstrap.min',
+    text: MetacatUI.root + '/components/require-text',
+    jws: MetacatUI.root + '/components/jws-3.2.min',
+    jsrasign: MetacatUI.root + '/components/jsrsasign-4.9.0.min',    
+    async: MetacatUI.root + '/components/async',
     recaptcha: [MetacatUI.recaptchaURL, 'scripts/placeholder'],
-	nGeohash: '../components/geohash/main',
-	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
-    annotator: '../components/annotator/v1.2.10/annotator-full',
-    bioportal: '../components/bioportal/jquery.ncbo.tree-2.0.2',
-    clipboard: '../components/clipboard.min',
-    uuid: '../components/uuid',
-    md5: '../components/md5',
-    rdflib: '../components/rdflib.min',
-    x2js: '../components/xml2json',
+	nGeohash: MetacatUI.root + '/components/geohash/main',
+	fancybox: MetacatUI.root + '/components/fancybox/jquery.fancybox.pack', //v. 2.1.5
+    annotator: MetacatUI.root + '/components/annotator/v1.2.10/annotator-full',
+    bioportal: MetacatUI.root + '/components/bioportal/jquery.ncbo.tree-2.0.2',
+    clipboard: MetacatUI.root + '/components/clipboard.min',
+    uuid: MetacatUI.root + '/components/uuid',
+    md5: MetacatUI.root + '/components/md5',
+    rdflib: MetacatUI.root + '/components/rdflib.min',
+    x2js: MetacatUI.root + '/components/xml2json',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
@@ -198,7 +198,12 @@ function(Bootstrap, AppView, AppModel) {
 		//The router will figure out which view to load first based on window location
 		MetacatUI.uiRouter = new UIRouter();
 		//Backbone.history.start();
-		Backbone.history.start({pushState: true});
+		Backbone.history.start({ 
+			pushState: true,
+			root: MetacatUI.root
+		});
+
+		// TODO: Test against external links
 		$(document).on("click", "a", function(e)
 		{
 

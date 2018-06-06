@@ -2035,7 +2035,7 @@ table.download-contents.nested{
 	font-size: 1em;
 	margin-left: 5px;
 }
-.download-contents a[href="#tools/eml"]{
+.download-contents a[href="tools/eml"]{
 	color: inherit;
 }
 .download .btn i{

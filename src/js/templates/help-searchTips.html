@@ -22,7 +22,7 @@
 	<% } %>
 	
 	<% if(searchModel.filterIsAvailable("resourceMap")){ %>
-		<h4><img src="img/data-table.png" class="icon" />Data files (<%=searchModel.fieldLabels["resourceMap"]%>)</h4>
+		<h4><img src="<%= MetacatUI.root %>/img/data-table.png" class="icon" />Data files (<%=searchModel.fieldLabels["resourceMap"]%>)</h4>
 		<p>If this filter is checked, only search results that include data files will be returned. 
 		If it is unchecked, some search results may be metadata files only.</p>
 	<% } %>

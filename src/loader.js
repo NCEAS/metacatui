@@ -14,13 +14,18 @@ if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
 }
 MetacatUI.useD3 = true; 
 
+// Find out of MetacatUI is deployed in a sub-directory off the top level of
+// the domain
+// TODO: Make this more bulletproof
+MetacatUI.root = document.location.pathname
+
 //This version of Metacat UI - used for cache busting
 MetacatUI.metacatUIVersion = "2.0.0RC4";
 
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", "/js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
+    script.setAttribute("src", MetacatUI.root + "/js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
     document.getElementsByTagName("body")[0].appendChild(script);
 
     script.onload = function(){
@@ -34,8 +39,8 @@ MetacatUI.loadTheme = function(theme) {
 }
 MetacatUI.initApp = function () {			
     var script = document.createElement("script");
-    script.setAttribute("data-main", "/js/app.js?v=" + MetacatUI.metacatUIVersion);
-    script.src = "/components/require.js";
+    script.setAttribute("data-main", MetacatUI.root + "/js/app.js?v=" + MetacatUI.metacatUIVersion);
+    script.src = MetacatUI.root + "/components/require.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }
 
