@@ -70,7 +70,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 //Set some defaults
                 attributes.numAttributes = 0;
-                attributes.entityIsValid = false;
+                attributes.entityIsValid = true;
                 attributes.hasInvalidAttribute = false;
 
                 //Get the number of attributes for this item

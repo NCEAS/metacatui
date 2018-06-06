@@ -378,9 +378,9 @@ define(['underscore', 'jquery', 'backbone',
             */
             showValidation: function(){
 
-              
 
-            }
+
+            },
 
             /*
              * Show the entity overview or attributes tab
