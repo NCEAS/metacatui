@@ -230,7 +230,7 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                     if( !errors.attributeList )
             					errors.attributeList = [attribute.validationError];
             				else
-            					errorsattributeList.push(attribute.validationError);
+            					errors.attributeList.push(attribute.validationError);
             		  }
 
                 });
@@ -286,6 +286,12 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                         });
                     }
                 }
+                else{
+
+                  // Remove all current alternateIdentifiers
+                  $(objectDOM).find("alternateIdentifier").remove();
+
+                }
 
                 // Update the entityName
                 if ( this.get("entityName") ) {
@@ -319,6 +325,13 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                                 .text(this.get("entityDescription"))[0]);
                         }
                     }
+                }
+                //If there is no entity description
+                else{
+
+                  //If there is an entity description node in the XML, remove it
+                  $(objectDOM).find("entityDescription").remove();
+
                 }
 
                 // TODO: Update the physical section

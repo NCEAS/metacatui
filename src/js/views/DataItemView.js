@@ -123,6 +123,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                		//Determine if the entity model is valid
 	                		attributes.entityIsValid = entity.isValid();
 
+                      //Listen to changes to certain attributes of this EMLEntity model
+                      // to re-render this view
+                      this.stopListening(entity);
+                      this.listenTo(entity, "change:entityType, change:entityName", this.render);
+
 	                		//Check if there are any invalid attribute models
 	                		//Also listen to each attribute model
                 			_.each( entity.get("attributeList"), function(attr){
@@ -201,7 +206,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             		this.$el.removeClass("loading");
 
             	}
-                else if( attributes.hasInvalidAttribute ){
+                else if( attributes.hasInvalidAttribute || !attributes.entityIsValid ){
 
                 	this.$(".status .icon").tooltip({
                 		placement: "top",

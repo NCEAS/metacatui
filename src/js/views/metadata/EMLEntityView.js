@@ -53,6 +53,8 @@ define(['underscore', 'jquery', 'backbone',
 
             	this.renderAttributes();
 
+              this.listenTo(this.model, "invalid", this.showValidation);
+
             },
 
             renderEntityTemplate: function(){
@@ -184,6 +186,8 @@ define(['underscore', 'jquery', 'backbone',
             	if(!changedAttr) return;
 
             	this.model.set(changedAttr, $(e.target).val());
+
+              this.model.trickleUpChange();
 
             },
 
@@ -365,6 +369,18 @@ define(['underscore', 'jquery', 'backbone',
 
             	removeBtn.parents(".attribute-menu-item").toggleClass("remove-preview");
             },
+
+            /*
+            * function showValidation
+            *
+            * Will display validation styling and messaging. Should be called after
+            * this view's model has been validated and there are error messages to display
+            */
+            showValidation: function(){
+
+              
+
+            }
 
             /*
              * Show the entity overview or attributes tab

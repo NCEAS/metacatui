@@ -498,7 +498,11 @@ define(['underscore', 'jquery', 'backbone',
             			format = this.$(".datetime-string-custom").val();
             		}
 
-            		this.model.set("formatString", format);
+                //If no format string was provided, then set the default value
+                if( typeof format == "string" && !format.trim().length )
+                  this.model.set("formatString", this.model.defaults().formatString);
+                else
+                  this.model.set("formatString", format);
             	}
             	else if(updatedInput.is(".possible-text")){
             		var possibleText = updatedInput.val();
@@ -521,9 +525,27 @@ define(['underscore', 'jquery', 'backbone',
 	            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
             			}
             			else{
+                    //Get the value of the text input fields for the definition and pattern
+                    var definition = this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='definition']").val(),
+                        pattern = this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='pattern']").val();
+
+                    // If the pattern is an empty string, then set an empty array on the model
+                    if( typeof pattern == "string" && !pattern.trim().length ){
+                      pattern = new Array();
+                    }
+                    // For all other values, put it in an array
+                    else {
+                      pattern = [pattern];
+                    }
+
+                    // If the definition is a string of space characters, then set it to an empty string
+                    if( typeof definition == "string" && !definition.trim().length ){
+                      definition = "";
+                    }
+
             				var textDomain = {
-            						definition: this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='definition']").val(),
-            						pattern: [this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='pattern']").val()],
+            						definition: definition,
+            						pattern: pattern,
             						source: null
             				}
             				this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
@@ -540,15 +562,47 @@ define(['underscore', 'jquery', 'backbone',
             		}
             	}
             	else if(updatedInput.is(".textDomain")){
-            		if(typeof this.model.get("nonNumericDomain")[0] != "object")
-            			this.model.get("nonNumericDomain")[0] = { textDomain: { definition: null, pattern: [], source: null } };
 
+                // If there is no nonNumericDomain object set on the model, create a new empty one
+                if(typeof this.model.get("nonNumericDomain")[0] != "object"){
+            			this.model.get("nonNumericDomain")[0] = { textDomain: { definition: null, pattern: [], source: null } };
+                }
+
+                //Get the textDomain object
             		var textDomain = this.model.get("nonNumericDomain")[0].textDomain;
 
-            		if(updatedInput.attr("data-category") == "definition")
-            			textDomain.definition = updatedInput.val();
-            		else if(updatedInput.attr("data-category") == "pattern")
-            			textDomain.pattern[0] = updatedInput.val();
+                //If the text definition was updated...
+            		if(updatedInput.attr("data-category") == "definition"){
+
+                  //Get the value that was input by the user
+                  var definition = updatedInput.val();
+
+                  // If the definition is a string of space characters, then set it to an empty string
+                  if( typeof definition == "string" && !definition.trim().length ){
+                    definition = "";
+                  }
+
+                  //Update the textDomain object
+                	textDomain.definition = definition;
+                }
+                //If the text pattern was updated...
+            		else if(updatedInput.attr("data-category") == "pattern"){
+                  //Get the value that was input by the user
+                  var pattern = updatedInput.val();
+
+                  // If the pattern is a string of space characters, then set it to an empty string
+                  if( typeof pattern == "string" && !pattern.trim().length ){
+                    textDomain.pattern = [];
+                  }
+                  //Put the value inside a new array and update the textDomain object
+                  else{
+                    textDomain.pattern = [pattern];
+                  }
+                }
+
+                //Manually trigger a change on the nonNumericDomain attribute
+                this.model.trigger("change:nonNumericDomain");
+                
             	}
             	else if(updatedInput.is(".codelist")){
             		var row = updatedInput.parents(".code-row"),
@@ -593,7 +647,7 @@ define(['underscore', 'jquery', 'backbone',
 
     				//If there are no codes in the list, update the enumerated domain with blank values
     				if( isEmpty ){
-    					this.model.updateEnumeratedDomain(null, null);
+    					this.model.updateEnumeratedDomain(null, null, rowNum);
     				}
     			}
     			else if(rowNum > -1){

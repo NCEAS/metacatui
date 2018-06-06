@@ -324,51 +324,14 @@ define(["jquery", "underscore", "backbone",
                         // Update the existing DOM node by id
                         if ( xmlID && $(objectDOM).find("#" + xmlID).length ) {
 
-                            $domainInDOM = $(objectDOM).find("#" + xmlID);
+                            $domainInDOM = $(objectDOM).find("#" + xmlID).find("textdomain");
 
                             if ( domainType === "textDomain" ) {
-                                $domainInDOM.children("definition").text(domain.textDomain.definition);
-                                // Remove existing patterns
-                                $domainInDOM.children("pattern").remove();
 
-                                // Add any new patterns
-                                if ( domain.textDomain.pattern && domain.textDomain.pattern.length ) {
-                                    patterns = Array.from(domain.textDomain.pattern).reverse();
-                                    _.each(patterns, function(pattern) {
-                                        // Prepend before the sourced element if present
-                                        patternNode = document.createElement("pattern");
-                                        $(patternNode).text(pattern);
-                                        if ( $domainInDOM.children("sourced").length ) {
-                                            $domainInDOM.children("sourced").before(patternNode);
-                                        } else {
-                                            $domainInDOM.append(patternNode);
-                                        }
-                                    });
-                                } else {
-                                    // Remove patterns in the DOM not present in the textDomain
-                                    $domainInDOM.children("pattern").remove();
-                                }
-
-                                // Update any new source
-                                if ( domain.textDomain.source ) {
-                                    if ( $domainInDOM.children("sourced").length ) {
-                                        $domainInDOM.children("sourced").text(domain.textDomain.source);
-                                    } else {
-                                        //
-                                        var src = document.createElement("sourced");
-                                        src.textContent = domain.textDomain.source;
-                                        $domainInDOM.children("textDomain").append(src);
-                                    }
-                                } else {
-                                    // Remove the source in the DOM not present in the textDomain
-                                    // TODO: Uncomment this when we support "source" in the UI
-                                    // $domainInDOM.children("source").remove();
-
-                                }
-
+                              this.updateTextDomain(domain.textDomain, $domainInDOM);
                             } else if ( domainType === "enumeratedDomain") {
 
-                                this.updateEnumeratedDomainDOM(domain.enumeratedDomain, $domainInDOM);
+                              this.updateEnumeratedDomainDOM(domain.enumeratedDomain, $domainInDOM);
                             }
 
 
@@ -376,8 +339,9 @@ define(["jquery", "underscore", "backbone",
                       } else if( this.get("nonNumericDomain").length == $(objectDOM).children("nonnumericdomain").length
                           && $(objectDOM).children("nonnumericdomain").length >= i){
 
+                            //If this is a text domain, update the textdomain elements
                             if(typeof domain.textDomain === "object"){
-
+                              this.updateTextDomain(domain.textDomain, $($(objectDOM).children("nonnumericdomain")[i]).find("textdomain"));
                             }
                             else if(typeof domain.enumeratedDomain === "object"){
                               //Get the nonNumericDomain node from the DOM
@@ -389,7 +353,16 @@ define(["jquery", "underscore", "backbone",
                               }
                               else{
                                 //Remove the textDomain node and replace it with an enumeratedDomain node
-                                $($(objectDOM).children("textdomain")[i]).replaceWith(this.createEnumeratedDomainDOM(domain.enumeratedDomain));
+                                var textDomainToReplace = $(objectDOM).find("textdomain");
+
+                                if( textDomainToReplace.length > 0 ){
+                                  $(textDomainToReplace[i]).replaceWith(this.createEnumeratedDomainDOM(domain.enumeratedDomain));
+                                }
+                                else{
+                                  nonNumericDomainNode.html(this.createEnumeratedDomainDOM(domain.enumeratedDomain, document.createElement("enumerateddomain")));
+                                }
+
+
                               }
                             }
 
@@ -472,9 +445,17 @@ define(["jquery", "underscore", "backbone",
                 var enumeratedDomain = {};
                 var codeDefinitions;
 
+                if( typeof code == "string" && !code.trim().length ){
+                  code = "";
+                }
+
+                if( typeof definition == "string" && !definition.trim().length ){
+                  definition = "";
+                }
+
                 // Create from scratch
-                if ( ! nonNumericDomain.length ) {
-                    nonNumericDomain.push({
+                if ( !nonNumericDomain.length || !nonNumericDomain[0] || !nonNumericDomain[0].enumeratedDomain) {
+                    nonNumericDomain[0] = {
                         enumeratedDomain: {
                             codeDefinition: [
                                 {
@@ -483,24 +464,32 @@ define(["jquery", "underscore", "backbone",
                                 }
                             ]
                         }
-                    })
+                    }
+                }
                 // Update existing
-                } else {
+                else {
                     enumeratedDomain = this.get("nonNumericDomain")[0].enumeratedDomain;
-                    if ( typeof enumeratedDomain !== "undefined" ) {
-                        codeDefinitions = enumeratedDomain.codeDefinition;
-                        if ( codeDefinitions.length >= index ) {
-                            codeDefinitions[index] = {
-                                code: code,
-                                definition: definition
-                            }
-                        } else {
-                            codeDefinitions.push({
-                                code: code,
-                                definition: definition
-                            });
-                        }
 
+                    if ( typeof enumeratedDomain !== "undefined" ) {
+
+                      //If there is no code or definition, then remove it from the code list
+                      if( !code && code !== 0 && !definition && definition !== 0 ){
+                        this.removeCode(index);
+                      }
+                      else if ( enumeratedDomain.codeDefinition.length >= index ) {
+                        //Create a new code object and insert it into the array
+                        enumeratedDomain.codeDefinition[index] = {
+                            code: code,
+                            definition: definition
+                        }
+                      }
+                      else {
+                        //Create a new code object and append it to the end of the array
+                        enumeratedDomain.codeDefinition.push({
+                            code: code,
+                            definition: definition
+                        });
+                      }
                     }
                 }
 
@@ -658,6 +647,77 @@ define(["jquery", "underscore", "backbone",
 
               return enumeratedDomainNode;
 
+            },
+
+            /*
+             * Given a textDomain object, and textDomain DOM object, this function
+             *  will update all the DOM elements with the textDomain object values
+             *
+             * @param {object} textDomain - A literal object representing an EML text domain
+             * @return {DOM Element} textDomainEl - An <textdomain> DOM element tree to update
+             */
+            updateTextDomain: function(textDomain, textDomainEl){
+
+              if( typeof textDomainEl === "undefined" )
+                var textDomainEl = document.createElement("textdomain");
+
+              //Create a shortcut to the jQuery object of the text domain element
+              var $textDomainEl = $(textDomainEl);
+
+              var definitionEl = $textDomainEl.find("definition");
+
+              //Update the definition element text
+              if( definitionEl.length > 0 )
+                definitionEl.text(textDomain.definition);
+              else {
+                $textDomainEl.prepend( $(document.createElement("definition")).text(textDomain.definition) );
+              }
+
+              // Remove existing patterns
+              $textDomainEl.find("pattern").remove();
+
+              // Add any new patterns
+              if ( textDomain.pattern && textDomain.pattern.length ) {
+
+                  patterns = Array.from(textDomain.pattern).reverse();
+
+                  _.each(patterns, function(pattern) {
+
+                    //Don't serialize strings with only empty characters
+                    if( typeof pattern == "string" && !pattern.trim().length )
+                      return;
+
+                    var patternNode = document.createElement("pattern");
+
+                    $(patternNode).text(pattern);
+
+                    // Prepend before the sourced element if present
+                    if ( $textDomainEl.find("sourced").length ) {
+                        $textDomainEl.find("sourced").before(patternNode);
+                    } else {
+                        $textDomainEl.append(patternNode);
+                    }
+                  });
+              }
+
+              // Update any new source
+              if ( textDomain.source ) {
+                  if ( $textDomainEl.find("sourced").length ) {
+                      $textDomainEl.find("sourced").text(textDomain.source);
+                  } else {
+                      //
+                      var src = document.createElement("sourced");
+                      src.textContent = textDomain.source;
+                      $textDomainEl.find("textDomain").append(src);
+                  }
+              } else {
+                  // Remove the source in the DOM not present in the textDomain
+                  // TODO: Uncomment this when we support "source" in the UI
+                  // $domainInDOM.children("source").remove();
+
+              }
+
+              return textDomainEl;
             },
 
             /*

@@ -206,13 +206,31 @@ define(["jquery", "underscore", "backbone",
                         if( ! nodeToInsertAfter ) {
                             // Add the new list back in
                             _.each(attributeLabels, function(attributeLabel) {
-                                $(objectDOM).append(
-                                    $(document.createElement("attributelabel"))
-                                        .text(attributeLabel)[0]);
+
+                              //If there is an empty string or falsey value in the label, don't add it to the XML
+                              // We check purposefuly for falsey types (instead of just doing !attributeLabel) because
+                              // it's ok to serialize labels that are the number 0.
+                              if( (typeof attributeLabel == "string" && !attributeLabel.trim().length) ||
+                                  attributeLabel === false || attributeLabel === null || typeof attributeLabel == "undefined"){
+                                    return;
+                              }
+
+                              $(objectDOM).append(
+                                  $(document.createElement("attributelabel"))
+                                      .text(attributeLabel)[0]);
                             });
                         } else {
                             // Add the new list back in after its previous sibling
                             _.each(attributeLabels, function(attributeLabel) {
+
+                                //If there is an empty string or falsey value in the label, don't add it to the XML
+                                // We check purposefuly for falsey types (instead of just doing !attributeLabel) because
+                                // it's ok to serialize labels that are the number 0.
+                                if( (typeof attributeLabel == "string" && !attributeLabel.trim().length) ||
+                                    attributeLabel === false || attributeLabel === null || typeof attributeLabel == "undefined"){
+                                      return;
+                                }
+
                                 $(nodeToInsertAfter).after(
                                     $(document.createElement("attributelabel"))
                                         .text(attributeLabel)[0]);
@@ -253,16 +271,24 @@ define(["jquery", "underscore", "backbone",
                         if( ! nodeToInsertAfter ) {
                             // Add the new list back in
                             _.each(storageTypes, function(storageType) {
-                                $(objectDOM).append(
-                                    $(document.createElement("storagetype"))
-                                        .text(storageType)[0]);
+
+                              if(!storageType)
+                                return;
+
+                              $(objectDOM).append(
+                                  $(document.createElement("storagetype"))
+                                      .text(storageType)[0]);
                             });
                         } else {
                             // Add the new list back in after its previous sibling
                             _.each(storageTypes, function(storageType) {
-                                $(nodeToInsertAfter).after(
-                                    $(document.createElement("storagetype"))
-                                        .text(storageType)[0]);
+
+                              if(!storageType)
+                                return;
+
+                              $(nodeToInsertAfter).after(
+                                  $(document.createElement("storagetype"))
+                                      .text(storageType)[0]);
                             });
                         }
                     }
