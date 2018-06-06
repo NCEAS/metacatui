@@ -333,6 +333,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					 this.getEMLPosition(objectDOM, "address").after(addressNode);
 				 }
 
+         //Remove all the delivery points since they'll be reserialized
+         $(addressNode).find("deliverypoint").remove();
+
 				 _.each(address.deliveryPoint, function(deliveryPoint, ii){
 					 if(!deliveryPoint) return;
 
@@ -359,102 +362,123 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 					 if(!cityNode.length){
 						 cityNode = document.createElement("city");
-						 $(addressNode).append(cityNode);
+
+             if(this.getEMLPosition(addressNode, "city")){
+               this.getEMLPosition(addressNode, "city").after(cityNode);
+             }
+             else{
+                $(addressNode).append(cityNode);
+             }
 					 }
 
 					 $(cityNode).text(address.city);
 				 }
+         else{
+           $(addressNode).find("city").remove();
+         }
 
 				 if(address.administrativeArea){
 					 var adminAreaNode = $(addressNode).find("administrativearea");
 
 					 if(!adminAreaNode.length){
 						 adminAreaNode = document.createElement("administrativearea");
-						 $(addressNode).append(adminAreaNode);
+
+             if(this.getEMLPosition(addressNode, "administrativearea")){
+               this.getEMLPosition(addressNode, "administrativearea").after(adminAreaNode);
+             }
+             else{
+                $(addressNode).append(adminAreaNode);
+             }
+
 					 }
 
 					 $(adminAreaNode).text(address.administrativeArea);
 				 }
+         else{
+           $(addressNode).find("administrativearea").remove();
+         }
 
 				 if(address.postalCode){
 					 var postalcodeNode = $(addressNode).find("postalcode");
 
 					 if(!postalcodeNode.length){
 						 postalcodeNode = document.createElement("postalcode");
-						 $(addressNode).append(postalcodeNode);
+
+             if(this.getEMLPosition(addressNode, "postalcode")){
+               this.getEMLPosition(addressNode, "postalcode").after(postalcodeNode);
+             }
+             else{
+                $(addressNode).append(postalcodeNode);
+             }
+
 					 }
 
 					 $(postalcodeNode).text(address.postalCode);
 				 }
+         else{
+           $(addressNode).find("postalcode").remove();
+         }
 
 				 if(address.country){
 					 var countryNode = $(addressNode).find("country");
 
 					 if(!countryNode.length){
 						 countryNode = document.createElement("country");
-						 $(addressNode).append(countryNode);
+
+             if(this.getEMLPosition(addressNode, "country")){
+               this.getEMLPosition(addressNode, "country").after(countryNode);
+             }
+             else{
+                $(addressNode).append(countryNode);
+             }
+
 					 }
 
 					 $(countryNode).text(address.country);
 				 }
+         else{
+           $(addressNode).find("country").remove();
+         }
 
 			 }, this);
 
 			 // phone[s]
+       $(objectDOM).find("phone[phonetype='voice']").remove();
 			 _.each(this.get("phone"), function(phone) {
-				 var phoneNode = $(objectDOM).find("phone[phonetype='voice']");
 
-				 if(!phoneNode.length){
-					 phoneNode = $(document.createElement("phone")).attr("phonetype", "voice");
-					 this.getEMLPosition(objectDOM, "phone").after(phoneNode);
-				 }
+				var phoneNode = $(document.createElement("phone")).attr("phonetype", "voice").text(phone);
+				this.getEMLPosition(objectDOM, "phone").after(phoneNode);
 
-				 $(phoneNode).text(phone);
 			 }, this);
 
 			 // fax[es]
+       $(objectDOM).find("phone[phonetype='facsimile']").remove();
 			 _.each(this.get("fax"), function(fax) {
-				 var faxNode = $(objectDOM).find("phone[phonetype='facsimile']");
 
-				 if(!faxNode.length){
-					 faxNode = $(document.createElement("phone")).attr("phonetype", "facsimile");
-					 this.getEMLPosition(objectDOM, "phone").after(faxNode);
-				 }
+				var faxNode = $(document.createElement("phone")).attr("phonetype", "facsimile").text(fax);
+				this.getEMLPosition(objectDOM, "phone").after(faxNode);
 
-				 $(faxNode).text(fax);
 			 }, this);
 
 			 // electronicMailAddress[es]
+       $(objectDOM).find("electronicmailaddress").remove();
 			 _.each(this.get("email"), function(email) {
-				 var emailNode = $(objectDOM).find("electronicmailaddress");
 
-				 if(!emailNode.length){
-					 emailNode = document.createElement("electronicmailaddress");
-					 this.getEMLPosition(objectDOM, "electronicmailaddress").after(emailNode);
-				 }
+			   var emailNode = document.createElement("electronicmailaddress");
+				 this.getEMLPosition(objectDOM, "electronicmailaddress").after(emailNode);
 
 				 $(emailNode).text(email);
 
 			 }, this);
 
 			// online URL[es]
+      $(objectDOM).find("onlineurl").remove();
 			 _.each(this.get("onlineUrl"), function(onlineUrl, i) {
-				 var urlNode = $(objectDOM).find("onlineurl")[i];
 
-				 //If there is a XML node but no value, remove the node
-				 if(urlNode && !onlineUrl){
-					 urlNode.remove();
-					 return;
-				 }
-				 else if(!onlineUrl)
-					 return;
+				var urlNode = document.createElement("onlineurl");
+			  this.getEMLPosition(objectDOM, "onlineurl").after(urlNode);
 
-				 if(!urlNode){
-					 urlNode = document.createElement("onlineurl");
-					 this.getEMLPosition(objectDOM, "onlineurl").after(urlNode);
-				 }
-
-				 $(urlNode).text(onlineUrl);
+				$(urlNode).text(onlineUrl);
 
 			 }, this);
 
@@ -621,6 +645,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         getEMLPosition: function(objectDOM, nodeName){
         	var nodeOrder = [ "individualname", "organizationname", "positionname", "address", "phone",
         	                  "electronicmailaddress", "onlineurl", "userid", "role"];
+          var addressOrder = ["deliverypoint", "city", "administrativearea", "postalcode", "country"];
+
+          //If this is an address node, find the position within the address
+          if( _.contains(addressOrder, nodeName) ){
+            nodeOrder = addressOrder;
+          }
 
         	var position = _.indexOf(nodeOrder, nodeName);
         	if(position == -1)
@@ -631,7 +661,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         		if($(objectDOM).find(nodeOrder[i]).length)
         			return $(objectDOM).find(nodeOrder[i]).last();
         	}
-
 
         	return false;
         },
