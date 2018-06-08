@@ -32,14 +32,16 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html',
 		'text!templates/annotation.html',
-		'uuid'
+		'uuid',
+        'views/MetricView',
+        'views/MetricModalView'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, uuid) {
+			 MapTemplate, AnnotationTemplate, uuid, MetricView, MetricModalView) {
 	'use strict';
 
 
@@ -977,9 +979,80 @@ define(['jquery',
 					});
 				});
 			});
-
 			this.$(".tooltip-this").tooltip();
 		},
+
+		// Inserting the Metric Stats
+		insertMetricsControls: function() {
+			var self = this;
+			// Retreive the model from the server for the given PID
+			// TODO: Create a Metric Request Object
+
+			if (MetacatUI.appModel.get("displayMetricWell")) {
+				var metrics = $(document.createElement("div")).addClass("metric-well well well-lg");
+			} else {
+				var metrics = $(document.createElement("div")).addClass("metric-well");
+			}
+
+			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
+				var buttonToolbar = $(document.createElement("div")).addClass("metric-toolbar btn-toolbar");
+
+				if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
+					var citationsMetricView = new MetricView({pid: this.pid, metricName: 'Citations'});
+					buttonToolbar.append(citationsMetricView.render().el);
+				}
+
+				if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
+					var downloadsMetricView = new MetricView({pid: this.pid, metricName: 'Downloads'});
+					buttonToolbar.append(downloadsMetricView.render().el);
+				}
+
+				if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
+					var viewsMetricView = new MetricView({pid: this.pid, metricName: 'Views'});
+					buttonToolbar.append(viewsMetricView.render().el);
+				}
+
+				metrics.append(buttonToolbar);
+			}
+
+			if (MetacatUI.appModel.get("displayDatasetEditButton")) {
+				var editToolbar = $(document.createElement("div")).addClass("edit-toolbar btn-toolbar");
+				//Save some references
+				var pid     = this.model.get("id") || this.pid,
+					model   = this.model,
+					viewRef = this;
+
+				// this.listenToOnce(this.model, "change", function(){
+					//Insert an Edit button
+					if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){ 
+						editToolbar.append(
+							this.editMetadataTemplate({
+								identifier: pid,
+								supported: true
+							}));
+					}
+					else{
+						editToolbar.append(this.editMetadataTemplate({
+							supported: false
+						}));
+					}
+				// });
+				metrics.append(editToolbar);
+			}
+
+			self.$(self.tableContainer).before(metrics);
+		},
+
+		// Inserting Metric Modals
+		showMetricModal: function() {
+			if (MetacatUI.appModel.get("displayMetricModals")) {
+				console.log("Button Clicked");
+				var modalView = new MetricModalView();
+				modalView.show();
+			}
+		},
+
+
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {
             // Show the provenance trace for this package
