@@ -175,6 +175,31 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         		//Remove this step from the model
         		this.model.set("methodStepDescription", _.without(this.model.get("methodStepDescription"), this.model.get("methodStepDescription")[index]));
 
+            //If this was the last step to be removed, and the rest of the EMLMethods
+            // model is empty, then remove the model from the parent EML model
+            if( this.model.isEmpty() ){
+              //Get the parent EML model
+              var parentEML = this.model.get("parentModel");
+
+              //Make sure this model type is EML211
+              if( parentEML && parentEML.type == "EML" ){
+
+                //If the methods are an array,
+                if( Array.isArray(parentEML.get("methods")) ){
+                  //remove this EMLMethods model from the array
+                  parentEML.set( "methods", _.without(parentEML.get("methods"), this.model) );
+                }
+                else{
+                  //If the methods attribute is set to this EMLMethods model,
+                  // then just set it back to it's default
+                  if( parentEML.get("methods") == this.model )
+                    parentEML.set("methods", parentEML.defaults().methods);
+                }
+              }
+
+            }
+
+
         		//Remove the step elements from the page
         		stepEl.parent(".step-container").slideUp("fast", function(){
         			this.remove();

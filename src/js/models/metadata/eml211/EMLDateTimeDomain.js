@@ -15,17 +15,18 @@ define(["jquery", "underscore", "backbone",
             /* Attributes of an EMLDateTimeDomain object */
             el: "datetime",
 
-            defaults: {
-
-                /* Attributes from EML */
-                formatString: null, // Required format string (e.g. YYYY)
-                dateTimePrecision: null, // The precision of the date time value
-                dateTimeDomain: null, // Zero or more bounds, or a references object
-                /* Attributes not from EML */
-                type: "dateTime",
-                parentModel: null, // The parent model this attribute belongs to
-                objectXML: null, // The serialized XML of this EML measurement scale
-                objectDOM: null  // The DOM of this EML measurement scale
+            defaults: function(){
+                return {
+                  /* Attributes from EML */
+                  formatString: null, // Required format string (e.g. YYYY)
+                  dateTimePrecision: null, // The precision of the date time value
+                  dateTimeDomain: null, // Zero or more bounds, or a references object
+                  /* Attributes not from EML */
+                  type: "dateTime",
+                  parentModel: null, // The parent model this attribute belongs to
+                  objectXML: null, // The serialized XML of this EML measurement scale
+                  objectDOM: null  // The DOM of this EML measurement scale
+                }
             },
 
             /*
@@ -172,7 +173,7 @@ define(["jquery", "underscore", "backbone",
                         $(objectDOM).find("formatstring").text(this.get("formatString"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "formatString");
-                        
+
                         if( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("formatstring"))
                                 .text(this.get("formatString"))[0]);
@@ -191,7 +192,7 @@ define(["jquery", "underscore", "backbone",
                         $(objectDOM).find("datetimeprecision").text(this.get("dateTimePrecision"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "dateTimePrecision");
-                        
+
                         if( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("datetimeprecision"))
                                 .text(this.get("dateTimePrecision"))[0]);
@@ -213,18 +214,18 @@ define(["jquery", "underscore", "backbone",
                 var minBoundNode;
                 var maxBoundNode;
                 if ( dateTimeDomain ) {
-                    
+
                     // Remove the existing dateTimeDomain node
                     if ( typeof dateTimeDomainNode !== "undefined" ) {
                         dateTimeDomainNode.remove();
-                    } 
-                    
+                    }
+
                     // Do we have bounds?
                     if ( typeof dateTimeDomain.bounds !== "undefined" &&
                          dateTimeDomain.bounds.length ) {
                         // Build the new dateTimeDomain node
                         dateTimeDomainNode = document.createElement("datetimedomain");
-                        
+
                         _.each(dateTimeDomain.bounds, function(bound) {
                             minBound = bound.minimum;
                             maxBound = bound.maximum;
@@ -252,10 +253,10 @@ define(["jquery", "underscore", "backbone",
                     } else {
                         // Basically do nothing. Don't append the dateTimeDomain element
                         // TODO: handle dateTimeDomain.references
-                        
+
                     }
                     nodeToInsertAfter = this.getEMLPosition(objectDOM, "dateTimeDomain");
-                    
+
                     if( ! nodeToInsertAfter ) {
                         $(objectDOM).append(dateTimeDomainNode);
                     } else {
@@ -293,16 +294,16 @@ define(["jquery", "underscore", "backbone",
             trickleUpChange: function(){
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
             },
-            
+
             /* Validate the values of this model */
             validate: function(){
-            	if( !this.get("formatString") ) 
+            	if( !this.get("formatString") )
             		return { formatString: "Choose a date-time format." }
             	else{
-            		
+
             		this.trigger("valid");
             		return;
-            		
+
             	}
             }
 

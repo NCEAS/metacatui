@@ -70,7 +70,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 //Set some defaults
                 attributes.numAttributes = 0;
-                attributes.entityIsValid = false;
+                attributes.entityIsValid = true;
                 attributes.hasInvalidAttribute = false;
 
                 //Get the number of attributes for this item
@@ -122,6 +122,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                		attributes.numAttributes = entity.get("attributeList").length;
 	                		//Determine if the entity model is valid
 	                		attributes.entityIsValid = entity.isValid();
+
+                      //Listen to changes to certain attributes of this EMLEntity model
+                      // to re-render this view
+                      this.stopListening(entity);
+                      this.listenTo(entity, "change:entityType, change:entityName", this.render);
 
 	                		//Check if there are any invalid attribute models
 	                		//Also listen to each attribute model
@@ -201,7 +206,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             		this.$el.removeClass("loading");
 
             	}
-                else if( attributes.hasInvalidAttribute ){
+                else if( attributes.hasInvalidAttribute || !attributes.entityIsValid ){
 
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
@@ -572,7 +577,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     } else {
                         // It's data, get the parent scimeta
                         parentMetadata = MetacatUI.rootDataPackage.where({
-                            id: eventModel.get("isDocumentedBy")[0]
+                            id: Array.isArray(eventModel.get("isDocumentedBy"))? eventModel.get("isDocumentedBy")[0] : null
                         });
 
                         if ( parentMetadata.length > 0 ) {

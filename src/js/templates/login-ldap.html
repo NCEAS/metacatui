@@ -1,0 +1,35 @@
+<form action="<%=(MetacatUI.appModel.get('signInUrlLdap') + redirectUrl)%>"
+id="SignInLdap" class="form-inline input-group sign-in-ldap"
+method="post"
+  onsubmit="if (this.usernameVisible.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.usernameVisible.value + ',' + this.rdn.value;} return true;">
+
+    <h5>Sign in with an existing account</h5>
+  <div class="control-group">
+    <input type="text" class="input" name="usernameVisible" placeholder="Username" required />
+    <input type="hidden" class="input" name="username" />
+  </div>
+  <div class="control-group">
+    <select name="rdn" required>
+      <option value="" selected="" >— choose one —</option>
+      <option value="o=NCEAS,dc=ecoinformatics,dc=org">NCEAS</option>
+      <option value="o=LTER,dc=ecoinformatics,dc=org">LTER</option>
+      <option value="o=KU,dc=ecoinformatics,dc=org">KU</option>
+      <option value="o=OBFS,dc=ecoinformatics,dc=org">OBFS</option>
+      <option value="o=OSUSB,dc=ecoinformatics,dc=org">OSUSB</option>
+      <option value="o=PARC,dc=ecoinformatics,dc=org">PARC</option>
+      <option value="o=PISCO,dc=ecoinformatics,dc=org">PISCO</option>
+      <option value="o=SAEON,dc=ecoinformatics,dc=org">SAEON</option>
+      <option value="o=SANParks,dc=ecoinformatics,dc=org">SANParks</option>
+      <option value="o=SDSC,dc=ecoinformatics,dc=org">SDSC</option>
+      <option value="o=UCNRS,dc=ecoinformatics,dc=org">UCNRS</option>
+      <option value="o=unaffiliated,dc=ecoinformatics,dc=org">unaffiliated</option>
+      <option value="ou=Account,dc=ecoinformatics,dc=org">Account</opion>
+    </select>
+  </div>
+  <div class="control-group">
+    <input type="password" class="input" name="password" placeholder="Password" required />
+  </div>
+  <div class="control-group">
+    <input type="submit" class="btn btn-primary submit ldap" value="Sign In" id="loginLdap" />
+  </div>
+</form>

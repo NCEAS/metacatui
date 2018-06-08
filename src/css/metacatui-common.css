@@ -18,6 +18,9 @@ a:hover{
 .footnote{
 	font-size: .7em;
 }
+.underline{
+	text-decoration: underline;
+}
 .alert .footnote{
 	font-size: .9em;
 	margin-top: 10px;
@@ -256,6 +259,9 @@ header .citation {
 #Content > .login > * {
     font-size: 2em;
     margin-right: 10px;
+}
+#Content > .login > .alert-container{
+	font-size: inherit;
 }
 
 
@@ -1369,6 +1375,9 @@ img.icon{
 #signInPopup .orcid-signin {
     margin-top: 10%;
 }
+.sign-in-ldap select{
+	width: 220px;
+}
 .modal.container{
 	padding: 20px 20px 40px 20px;
 }
@@ -1434,6 +1443,10 @@ img.icon{
 #metadata-index-details .Other [class^="geohash_"]
 {
 	display: none;
+}
+.metadata-view{
+  padding-left: 20px;
+  padding-right: 20px;
 }
 #metadata-index-details .entitydetails .size{
 	display: inherit;
@@ -1511,8 +1524,8 @@ body > .alert-container {
     transform: translateX(-50%);
 }
 /* Hide the elements from the view service that we don't need to display */
-#metadata-container .citation,
-#metadata-container #downloadPackage{
+#Metadata form > .citation,
+#Metadata #downloadPackage{
 	display: none;
 }
 /* Used in metadata view for metadata format types without stylesheet */
@@ -1522,6 +1535,9 @@ body > .alert-container {
     color: #333;
     font-family: inherit;
     font-size: 1em;
+}
+#Metadata table .copy{
+	min-width: 50px;
 }
 #Content.no-stylesheet.container{
 	width: 86%;
@@ -1620,6 +1636,8 @@ body > .alert-container {
 .citation-container ~ .data-source .LTER{
 	max-height: 90px;
 }
+
+
 /******************************************
 * Metrics Controller Styling
 ********************************************/
@@ -1641,11 +1659,7 @@ i.icon.icon-eye-open {
 .btn-toolbar>.btn+.btn-group, .btn-toolbar>.btn-group+.btn {
     margin-left: 15px;
 }
-a.btn.metrics:hover .metric-value.badge {
-    float: right;
-    color: #1C6E84;
-    background-color: #FFFFFF;
-}
+
 i.icon.metric-icon.icon-spinner.icon-spin {
     margin-top: 2px;
     margin-right: 15px;
@@ -1677,10 +1691,16 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     width: 30%;
 }
 
-/* Style for the metric well */
-.metric-well {
-    width: 100%;
-
+/* Disabling the hover features of the button for a while. Once, the Modals are ready, we'll enable
+these effects
+a.btn.metrics:hover .metric-value.badge {
+    float: right;
+    color: #1C6E84;
+    background-color: #FFFFFF;
+}*/
+a.btn.metrics:hover {
+    color: #1C6E84;
+    background-color: #FFFFFF;
 }
 
 /******************************************
@@ -3740,7 +3760,7 @@ textarea.xlarge{
 	transform: translate3d(0,0,0);
 	-webkit-transform: translate3d(0,0,0);
 	-moz-transform: translate3d(0,0,0);
-	
+
 	overflow-y: auto;
 	position: fixed;
 	height: 400px;

@@ -111,7 +111,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             }
             this.id = this.packageModel.id;
 
-            this.on("add", this.saveReference);
+            this.on("add", this.handleAdd);
             this.on("add", this.triggerComplete);
             this.on("successSaving", this.updateRelationships);
 
@@ -385,7 +385,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                     	 memberModel = this.add(new DataONEObject({
                     		id: memberPID,
-                    		resourceMap: [this.packageModel.get("id")]
+                    		resourceMap: [this.packageModel.get("id")],
+                        collections: [this]
                     	}), { silent: true });
 
                     }
@@ -1135,6 +1136,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 //Reset the upload status for the package
                 collection.packageModel.set("uploadStatus", "e");
 
+                //Send this exception to Google Analytics
+                if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                  ga("send", "exception", {
+                    "exDescription": "DataPackage save error: " + errorMsg +
+                      " | Id: " + collection.packageModel.get("id"),
+                    "exFatal": true
+                  });
+                }
+
 							  collection.trigger("error", data.responseText);
 						  }
 				  }
@@ -1430,13 +1440,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
           }
 
-          if ( ! memberModel.packageModel ) {
-              // We have a model
-              memberModel.set("nodeLevel", this.packageModel.get("nodeLevel")); // same level for all members
-
-          } else {
+          if ( memberModel.type == "DataPackage" ) {
               // We have a nested collection
               memberModel.packageModel.set("nodeLevel", this.packageModel.get("nodeLevel") + 1);
+          }
+          else{
+            // We have a model
+            memberModel.set("nodeLevel", this.packageModel.get("nodeLevel")); // same level for all members
           }
 
           return memberModel;
@@ -1967,51 +1977,50 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             	//Get the pid of this package - depends on whether we are updating or creating a resource map
                 var pid = this.packageModel.get("id"),
-                	oldPid = this.packageModel.get("oldPid"),
-                	updating = oldPid ? true : false;
+                    oldPid = this.packageModel.get("oldPid");
 
                 //Update the pids in the RDF graph only if we are updating the resource map with a new pid
-                if( updating ) {
+                if( !this.packageModel.isNew() ) {
 
                 	//Find the identifier statement in the resource map
-    				idNode =  this.rdf.lit(oldPid);
-    				idStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
-                    idStatement = idStatements[0];
+                  idNode =  this.rdf.lit(oldPid);
+                  idStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
+                  idStatement = idStatements[0];
 
-                    // Remove all describes/isDescribedBy statements (they'll be rebuilt)
-                    this.dataPackageGraph.removeMany(undefined, ORE("describes"), undefined, undefined, undefined);
-                    this.dataPackageGraph.removeMany(undefined, ORE("isDescribedBy"), undefined, undefined, undefined);
+                  // Remove all describes/isDescribedBy statements (they'll be rebuilt)
+                  this.dataPackageGraph.removeMany(undefined, ORE("describes"), undefined, undefined, undefined);
+                  this.dataPackageGraph.removeMany(undefined, ORE("isDescribedBy"), undefined, undefined, undefined);
 
-    				//Get the CN Resolve Service base URL from the resource map
-                    // (mostly important in dev environments where it will not always be cn.dataone.org)
-                    if ( typeof this.dataPackageGraph.cnResolveUrl !== "undefined" ) {
-                        cnResolveUrl = this.dataPackageGraph.cnResolveUrl;
+                  //Get the CN Resolve Service base URL from the resource map
+                  // (mostly important in dev environments where it will not always be cn.dataone.org)
+                  if ( typeof this.dataPackageGraph.cnResolveUrl !== "undefined" ) {
+                    cnResolveUrl = this.dataPackageGraph.cnResolveUrl;
 
-                    } else if ( typeof idStatement !== "undefined" ) {
-                        cnResolveUrl =
+                  } else if ( typeof idStatement !== "undefined" ) {
+                    cnResolveUrl =
                             idStatement.subject.value.substring(0, idStatement.subject.value.indexOf(oldPid)) ||
                             idStatement.subject.value.substring(0, idStatement.subject.value.indexOf(encodeURIComponent(oldPid)));
 
-                    }
+                  }
 
-    				this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
+                  this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
 
-    				//Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
-    	            oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl + oldPid, cnResolveUrl+ encodeURIComponent(oldPid)];
+                  //Create variations of the resource map ID using the resolve URL so we can always find it in the RDF graph
+                  oldPidVariations = [oldPid, encodeURIComponent(oldPid), cnResolveUrl + oldPid, cnResolveUrl+ encodeURIComponent(oldPid)];
 
-                	//Get all the isAggregatedBy statements
-    	            aggregationNode =  this.rdf.sym(cnResolveUrl + encodeURIComponent(oldPid) + "#aggregation");
-    	            aggByStatements =  $.extend(true, [],
+                  //Get all the isAggregatedBy statements
+                  aggregationNode =  this.rdf.sym(cnResolveUrl + encodeURIComponent(oldPid) + "#aggregation");
+                  aggByStatements =  $.extend(true, [],
                         this.dataPackageGraph.statementsMatching(undefined, ORE("isAggregatedBy")));
 
-    	            //Using the isAggregatedBy statements, find all the DataONE object ids in the RDF graph
-    	            var idsFromXML = [];
-    	            _.each(aggByStatements, function(statement){
+                  //Using the isAggregatedBy statements, find all the DataONE object ids in the RDF graph
+                  var idsFromXML = [];
+                  _.each(aggByStatements, function(statement){
 
-    	            	//Check if the resource map ID is the old existing id, so we don't collect ids that are not about this resource map
-    	            	if(_.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) })){
-    	            		var statementID = statement.subject.value;
-    	            		idsFromXML.push(statementID);
+                  	//Check if the resource map ID is the old existing id, so we don't collect ids that are not about this resource map
+                  	if(_.find(oldPidVariations, function(oldPidV){ return (oldPidV + "#aggregation" == statement.object.value) })){
+                  		var statementID = statement.subject.value;
+                  		idsFromXML.push(statementID);
 
     	            		//Add variations of the ID so we make sure we account for all the ways they exist in the RDF XML
     	            		if(statementID.indexOf(cnResolveUrl) > -1) {
@@ -2024,8 +2033,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
     	            }, this);
 
-    	            //Get all the ids from this model
+    	            //Get all the models ids from this collection
                 	idsFromModel = this.pluck("id");
+
+                //Get all the child package ids
+                var childPackages = this.packageModel.get("childPackages");
+                if( typeof childPackages == "object" ){
+                  idsFromModel = _.union( idsFromModel, Object.keys(childPackages) );
+                }
 
     		        //Find the difference between the model IDs and the XML IDs to get a list of added members
     	            var addedIds  = _.without(_.difference(idsFromModel, idsFromXML), oldPidVariations);
@@ -2034,11 +2049,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     // Don't remove documents/documentedBy statements if this is a resource map update only
                     // (because of provenance relationship edits), i.e. no new package members are being added.
                     // Remove all documents and isDocumentedBy statements (they're rebuilt from the collection)
-                    if(!this.provEdits.length) {
+            /*        if(!this.provEdits.length) {
                         this.dataPackageGraph.removeMany(undefined, CITO("documents"), undefined, undefined, undefined);
                         this.dataPackageGraph.removeMany(undefined, CITO("isDocumentedBy"), undefined, undefined, undefined);
                     }
-
+*/
     	            _.each(idsFromModel, function(id){
     	            	allMemberIds.push(cnResolveUrl + encodeURIComponent(id));
     	           	});
@@ -2283,8 +2298,28 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     			if(isDocBy && isDocBy.length){
     				// Get the ids of all the metadata objects in this package
     				var	metadataInPackage = _.compact(_.map(this.models, function(m){ if(m.get("formatType") == "METADATA") return m.get("id"); }));
+
     				// Find the metadata IDs that are in this package that also documents this data object
     				var metadataIds = Array.isArray(isDocBy)? _.intersection(metadataInPackage, isDocBy) : _.intersection(metadataInPackage, [isDocBy]);
+
+            // If this data object is not documented by one of these metadata docs,
+            // then we should check if it's documented by an obsoleted pid. If so,
+            // we'll want to change that so it's documented by a current metadata.
+            if( metadataIds.length == 0 ){
+
+              for(var i=0; i < metadataInPackage.length; i++){
+
+                //If the previous version of this metadata documents this data,
+                if( _.contains(isDocBy, metadataInPackage[i].get("obsoletes")) ){
+                  //Save the metadata id for serialization
+                  metadataIds = [metadataInPackage[i].get("id")];
+
+                  //Exit the for loop
+                  break;
+                }
+              }
+
+            }
 
     				// For each metadata that documents this object, add a CITO:isDocumentedBy and CITO:documents statement
     				_.each(metadataIds, function(metaId){
@@ -2414,31 +2449,70 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             /*
             *  Adds a DataONEObject model to this DataPackage collection
             */
-            addModel: function(model){
-              this.add(model);
-              this.handleAdd(model);
+            addNewModel: function(model){
+
+              //Check that this collection doesn't already contain this model
+              if( !this.contains(model) ){
+                this.add(model);
+
+                //Mark this data package as changed
+                this.packageModel.set("changed", true);
+                this.packageModel.trigger("change:changed");
+              }
+
             },
 
             handleAdd: function(dataONEObject){
             	var metadataModel = this.find(function(m){ return m.get("type") == "Metadata" });
 
             	// Append to or create a new documents list
-                if ( ! Array.isArray(metadataModel.get("documents")) ) {
+              if(metadataModel){
+                if( !Array.isArray(metadataModel.get("documents")) ) {
                 	metadataModel.set("documents", [dataONEObject.id]);
 
                 } else {
-                	metadataModel.get("documents").push(dataONEObject.id);
+                  if( !_.contains( metadataModel.get("documents"), dataONEObject.id ) )
+                	   metadataModel.get("documents").push(dataONEObject.id);
                 }
 
                 // Create an EML Entity for this DataONE Object if there isn't one already
-                if(metadataModel.type == "EML" && !dataONEObject.get("metadataEntity")){
+                if(metadataModel.type == "EML" && !dataONEObject.get("metadataEntity") && dataONEObject.type != "EML"){
                 	metadataModel.createEntity(dataONEObject);
-	            }
+                  metadataModel.set("uploadStatus", "q");
+	              }
 
-                metadataModel.set("uploadStatus", "q");
+              }
 
-                this.packageModel.set("changed", true);
-                this.packageModel.trigger("change:changed");
+              this.saveReference(dataONEObject);
+
+              //Save a reference to this DataPackage
+              // If the collections attribute is an array
+/*              if( Array.isArray(dataONEObject.get("collections")) ){
+                //Add this DataPackage to the collections list if it's not already in the array
+                if( !_.contains(dataONEObject.get("collections"), this) ){
+                  dataONEObject.get("collections").push(this);
+                }
+              }
+              //If the collections attribute is not an array but there is a value,
+              else if(dataONEObject.get("collections")){
+
+                //And if the value is not this DataPackage or it's pid, then set it on the model
+                if( dataONEObject.get("collections") != this && dataONEObject.get("collections") != this.get("id") ){
+                  dataONEObject.set("collections", [dataONEObject.get("collections"), this] );
+                }
+                //Otherwise, set the collections attribute to this DataPackage in an array
+                else {
+                  dataONEObject.set("collections", [this]);
+                }
+
+              }
+              // If there is no value set on the collections attribute, then set it to
+              // this DataPackage in an array
+              else{
+                dataONEObject.set("collections", [this]);
+              }
+*/
+
             },
 
             /*

@@ -1,6 +1,6 @@
-<% 
+<%
 	if((typeof newTab !== "undefined") && newTab) var linkAttr = 'target="_blank"';
-	else var linkAttr = '';	
+	else var linkAttr = '';
 %>
 
 <div id="signinPopup" class="sign-in modal hide fade">
@@ -16,52 +16,19 @@
 						<span>Sign in with ORCID</span>
 					</a>
 				</div>
-		<% } if(signInUrlLdap) { %> 
-		    
+		<% } if(signInUrlLdap) { %>
+
 			<div class="accordion" id="advanced-login">
 				<div class="accordion-heading center">
-					<a class="accordion-toggle" data-toggle="collapse" data-parent="#advanced-login" href="#ldap-login">
+					<a class="accordion-toggle" data-toggle="collapse" data-parent="#advanced-login" href="#signinLdap">
 	        			Have an existing account?
 	      			</a>
 				</div>
-				<div id="ldap-login" class="accordion-body <% if(collapseLdap) { %> collapse <% } %>">
+				<div id="signinLdap" class="accordion-body <% if(collapseLdap) { %> collapse <% } %>">
 					 <div class="accordion-inner center">
-					 
-					 	<form action="<%=(MetacatUI.appModel.get('signInUrlLdap') + redirectUrl)%>"
-					 	id="SignInLdap" class="form-inline input-group" 
-					 	method="post" 
-					   	onsubmit="if (this.usernameVisible.value.indexOf('=') < 0) {this.username.value = 'uid=' + this.usernameVisible.value + ',' + this.rdn.value;} return true;">
-						 
-						  	<h5>Sign in with an existing account</h5>
-							<div class="control-group">
-								<input type="text" class="input" name="usernameVisible" placeholder="Username" />
-								<input type="hidden" class="input" name="username" />
-							</div>
-							<div class="control-group">
-								<select name="rdn">
-									<option value="" selected="">— choose one —</option>
-									<option value="o=NCEAS,dc=ecoinformatics,dc=org">NCEAS</option>
-									<option value="o=LTER,dc=ecoinformatics,dc=org">LTER</option>
-									<option value="o=KU,dc=ecoinformatics,dc=org">KU</option>
-									<option value="o=OBFS,dc=ecoinformatics,dc=org">OBFS</option>
-									<option value="o=OSUSB,dc=ecoinformatics,dc=org">OSUSB</option>
-									<option value="o=PARC,dc=ecoinformatics,dc=org">PARC</option>
-									<option value="o=PISCO,dc=ecoinformatics,dc=org">PISCO</option>
-									<option value="o=SAEON,dc=ecoinformatics,dc=org">SAEON</option>
-									<option value="o=SANParks,dc=ecoinformatics,dc=org">SANParks</option>
-									<option value="o=SDSC,dc=ecoinformatics,dc=org">SDSC</option>
-									<option value="o=UCNRS,dc=ecoinformatics,dc=org">UCNRS</option>
-									<option value="o=unaffiliated,dc=ecoinformatics,dc=org">unaffiliated</option>
-									<option value="ou=Account,dc=ecoinformatics,dc=org">Account</opion>
-								</select>
-							</div>
-							<div class="control-group">
-								<input type="password" class="input" name="password" placeholder="Password"/>
-							</div>
-							<div class="control-group">
-								<input type="submit" class="btn btn-primary submit ldap" value="Sign In" id="loginLdap" />
-							</div>
-						</form>
+
+						 <%=ldapLoginForm%>
+
 					</div>
 				</div>
 			</div>

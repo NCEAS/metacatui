@@ -187,6 +187,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 			            	"textformat" : "textFormat",
 			            	"typesystem" : "typeSystem",
 			            	"unittype" : "unitType",
+                    "unitlist" : "unitList",
 			            	"valueattributereference" : "valueAttributeReference",
                             "xsi:schemalocation" : "xsi:schemaLocation"
             			}
@@ -251,6 +252,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             	for(var i=0; i<nodes.length; i++){
 
             		var thisNode = nodes[i];
+					var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
+
 
             		//EML Party modules are stored in EMLParty models
             		if(_.contains(emlParties, thisNode.localName)){
@@ -330,9 +333,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
             		//Parse EMLText modules
             		else if(_.contains(emlText, thisNode.localName)){
-            			if(typeof modelJSON[thisNode.localName] == "undefined") modelJSON[thisNode.localName] = [];
+            			if(typeof modelJSON[convertedName] == "undefined") modelJSON[convertedName] = [];
 
-            			modelJSON[thisNode.localName].push(new EMLText({
+            			modelJSON[convertedName].push(new EMLText({
 	            				objectDOM: thisNode,
 	            				parentModel: model
             				}));
@@ -373,7 +376,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
             		//Parse Entities
             		else if(_.contains(emlEntities, thisNode.localName)){
-            			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
 
             			//Start an array of Entities
             			if(typeof modelJSON["entities"] == "undefined")
@@ -408,7 +410,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             			modelJSON["entities"].push(entityModel);
             		}
             		else{
-            			var convertedName = this.nodeNameMap()[thisNode.localName] || thisNode.localName;
             			//Is this a multi-valued field in EML?
             			if(Array.isArray(this.get(convertedName))){
             				//If we already have a value for this field, then add this value to the array
@@ -669,27 +670,48 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 	           	this.serializeParties(eml, "publisher");
 
 				// Serialize methods
-				if (this.get('methods')) {
+				if(this.get('methods')) {
+
+          //If the methods model is empty, remove it from the EML
+          if( this.get("methods").isEmpty() )
+            datasetNode.find("methods").remove();
 
 					//Serialize the methods model
 					var methodsEl = this.get('methods').updateDOM();
 
-					//Add the <methods> node to the EML
-					if (datasetNode.find('methods').length === 0){
-						var insertAfter = this.getEMLPosition(eml, "methods");
+          //If the methodsEl is an empty string or other falsey value, then remove the methods node
+          if( !methodsEl ){
+            datasetNode.find("methods").remove();
+          }
+          else{
 
-						if(insertAfter)
-							insertAfter.after(methodsEl);
-						else
-							datasetNode.append(methodsEl);
-					}
-					else{
+  					//Add the <methods> node to the EML
+  					if (datasetNode.find('methods').length === 0){
+  						var insertAfter = this.getEMLPosition(eml, "methods");
 
-						datasetNode.find("methods").replaceWith(methodsEl);
+  						if(insertAfter)
+  							insertAfter.after(methodsEl);
+  						else
+  							datasetNode.append(methodsEl);
+  					}
+  					else{
 
-					}
+  						datasetNode.find("methods").replaceWith(methodsEl);
+
+  					}
+          }
 
 				}
+        //If there are no methods, then remove the methods nodes
+        else{
+
+          if( datasetNode.find("methods").length > 0 ){
+            datasetNode.find("methods").remove();
+          }
+
+        }
+
+
 	           	//Serialize the keywords
 				this.serializeKeywords(eml, "keywordSets");
 
@@ -997,9 +1019,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 		                    model.set("uploadStatus", "e");
 
 							model.trigger("errorSaving", errorMsg);
-                		}
+
+              //Send this exception to Google Analytics
+              if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                ga('send', 'exception', {
+                  'exDescription': "EML save error: " + errorMsg + " | Id: " + model.get("id"),
+                  'exFatal': true
+                });
+              }
+            }
 					}
-	   			}, MetacatUI.appUserModel.createAjaxSettings());
+	   		}, MetacatUI.appUserModel.createAjaxSettings());
 
 	   			return Backbone.Model.prototype.save.call(this, attributes, saveOptions);
             },
@@ -1073,6 +1103,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         		if( !taxonModel.isEmpty() && !taxonModel.isValid() ){
         			errors = _.extend(errors, taxonModel.validationError);
         		}
+            else if( taxonModel.isEmpty() &&
+              this.get("taxonCoverage").length == 1 &&
+              MetacatUI.appModel.get("emlEditorRequiredFields").taxonCoverage ){
+
+              taxonModel.isValid();
+              errors = _.extend(errors, taxonModel.validationError);
+
+            }
 
             //Validate each EMLEntity model
             _.each( this.get("entities"), function(entityModel){
@@ -1294,7 +1332,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		var fileNameFromEML = e.get("physicalObjectName") || e.get("entityName");
 
             		// If the EML file name matches the DataONEObject file name
-            		if( (fileNameFromEML == dataONEObj.get("fileName")) || (fileNameFromEML.replace(/ /g, "_") == dataONEObj.get("fileName")) ){
+            		if( fileNameFromEML &&
+                  ((fileNameFromEML == dataONEObj.get("fileName")) ||
+                    (fileNameFromEML.replace(/ /g, "_") == dataONEObj.get("fileName"))) ){
 
             			//Get an array of all the other entities in this EML
             			var otherEntities = _.without(this.get("entities"), e);

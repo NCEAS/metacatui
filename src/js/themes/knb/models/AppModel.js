@@ -120,6 +120,7 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetAnalyzeButton: false,
 			displayMetricModals: false
 
+
 		},
 
 		defaultView: "data",
@@ -146,7 +147,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			if(typeof this.get("grantsUrl") !== "undefined")
-				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+				this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");
 
 			//ORCID search
 			if(typeof this.get("orcidBaseUrl") != "undefined")

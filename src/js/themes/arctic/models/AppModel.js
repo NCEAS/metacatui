@@ -102,7 +102,6 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
 
-
 			// set these flags to true if the metrics contents should be published on the 
 			// dataset landing page
 			displayMetricWell: true,
@@ -143,7 +142,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Set the NSF Award API proxy
 			if(typeof this.get("grantsUrl") != "undefined")
-				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+				this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");
 
 			//DataONE CN API
 			if(this.get("d1CNBaseUrl")){

@@ -1339,7 +1339,7 @@ define(['underscore', 'jquery', 'backbone',
 		    		textModel.trigger("change:text");
 
 	    			//Is this text model set on the EML model?
-	    			if( !_.contains(currentValue, textModel) ){
+	    			if( Array.isArray(currentValue) && !_.contains(currentValue, textModel) ){
 
 	    				//Push this text model into the array of EMLText models
 	    				currentValue.push(textModel);
@@ -1347,7 +1347,6 @@ define(['underscore', 'jquery', 'backbone',
 		    			this.model.trigger("change");
 
 	    			}
-
 
 	    		}
 

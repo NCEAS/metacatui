@@ -21,6 +21,8 @@ define(['underscore',
 
     var EditorView = Backbone.View.extend({
 
+        type: "Editor",
+
         el: "#Content",
 
         /* The initial editor layout */
@@ -102,12 +104,14 @@ define(['underscore',
 	        this.listenToOnce(this.model, "change:notFound", this.showNotFound);
 
         	//If we checked for authentication already
-        	if(MetacatUI.appUserModel.get("checked"))
+        	if(MetacatUI.appUserModel.get("checked")){
         		this.fetchModel();
+          }
         	//If we haven't checked for authentication yet,
         	//wait until the user info is loaded before we request the Metadata
-        	else
+        	else{
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
+          }
 
           window.onbeforeunload = this.confirmClose;
 
@@ -130,28 +134,31 @@ define(['underscore',
 
         fetchModel: function(){
         	//If we checked for authentication and the user is not logged in
-        	if(!MetacatUI.appUserModel.get("loggedIn"))
+        	if(!MetacatUI.appUserModel.get("loggedIn")){
         		this.showSignIn();
-            //If the user is logged in, fetch the Metadata
+          }
         	else{
-        		//If the user hasn't provided an id, then don't check the authority and mark as synced already
+
+            //If the user hasn't provided an id, then don't check the authority and mark as synced already
 	        	if(!this.pid){
 	        		this.model.set("isAuthorized", true);
-	    			this.model.trigger("sync");
+	    			  this.model.trigger("sync");
 	        	}
-	    		else {
-	    			//Get the data package when we find out the user is authorized to edit it
-	    	        this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
-	    	        //Let a user know when they are not authorized to edit this data set
-	    	        this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
+	    		  else {
+	    			  //Get the data package when we find out the user is authorized to edit it
+	    	      this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
+	    	      //Let a user know when they are not authorized to edit this data set
+	    	      this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
 
-	    	        //Fetch the model
-	    			this.model.fetch();
+	    	      //Fetch the model
+	    			  this.model.fetch();
 
-	    			//Check the authority of this user
-	    			this.model.checkAuthority();
-	    		}
+	    			  //Check the authority of this user
+	    			  this.model.checkAuthority();
+	    		  }
+
         	}
+
         },
 
         /* Get the data package associated with the EML */
@@ -176,6 +183,9 @@ define(['underscore',
                 // Create a new Data packages
                 MetacatUI.rootDataPackage = new DataPackage([this.model]);
                 MetacatUI.rootDataPackage.packageModel.set("synced", true);
+
+                //Handle the add of the metadata model
+                MetacatUI.rootDataPackage.handleAdd(this.model);
 
                 // Associate the science metadata with the resource map
                 if ( this.model.get && Array.isArray(this.model.get("resourceMap")) ) {
@@ -203,13 +213,19 @@ define(['underscore',
                 // Create a new data package with this id
                 MetacatUI.rootDataPackage = new DataPackage([this.model], {id: resourceMapIds[0]});
 
+                //Handle the add of the metadata model
+                MetacatUI.rootDataPackage.saveReference(this.model);
+
                 // If there is more than one resource map, we need to make sure we fetch the most recent one
                 if ( resourceMapIds.length > 1 ) {
 
             		//Now, find the latest version
             		this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "change:latestVersion", function(model) {
                         //Create a new data package for the latest version package
-            			MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+            			      MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+
+                        //Handle the add of the metadata model
+                        MetacatUI.rootDataPackage.saveReference(this.model);
 
                          //Fetch the data package
                          MetacatUI.rootDataPackage.fetch();
@@ -352,6 +368,7 @@ define(['underscore',
                 	//Replace the old ScienceMetadata model in the collection
                 	MetacatUI.rootDataPackage.remove(model);
                 	MetacatUI.rootDataPackage.add(EMLmodel, { silent: true });
+                  MetacatUI.rootDataPackage.handleAdd(EMLmodel);
                 	model.trigger("replace", EMLmodel);
 
                 	//Fetch the EML and render it
@@ -431,7 +448,10 @@ define(['underscore',
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", function(event) {
                     if (MetacatUI.rootDataPackage.packageModel.get("changed") ) {
-                        this.model.set("uploadStatus", "q"); // Clears the error status
+                        // Put this metadata model in the queue when the package has been changed
+                        // Don't put it in the queue if it's in the process of saving already
+                        if( this.model.get("uploadStatus") != "p" )
+                          this.model.set("uploadStatus", "q");
                     }
                 });
 
@@ -876,8 +896,13 @@ define(['underscore',
         /* Close the view and its sub views */
         onClose: function() {
 
-        	//Stop listening to the "add" event so that new package members aren't rendered
-        	this.stopListening(MetacatUI.rootDataPackage, "add" );
+        	//Stop listening to the "add" event so that new package members aren't rendered.
+          //Check first if the DataPackage has been intialized. An easy check is to see is
+          // the 'models' attribute is undefined. If the DataPackage collection has been intialized,
+          // then it would be an empty array.
+          if( typeof MetacatUI.rootDataPackage.models !== "undefined" ){
+        	  this.stopListening(MetacatUI.rootDataPackage, "add");
+          }
 
         	//Remove all the other events
           this.off();    // remove callbacks, prevent zombies

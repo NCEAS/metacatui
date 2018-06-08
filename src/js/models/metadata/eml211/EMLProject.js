@@ -99,11 +99,18 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 
 					_.each(this.get("parentModel").get("creator"), function(creator){
 
+            var individualName = (typeof creator.get("individualName") == "object") ?
+                                    Object.assign({}, creator.get("individualName")) : null,
+                organizationName = creator.get("organizationName"),
+                positionName = creator.get("positionName");
+
 						var newPersonnel = new EMLParty({
 							role: "principalInvestigator",
 							parentModel: this,
 							type: "personnel",
-							individualName: Object.assign({}, creator.get("individualName"))
+							individualName: individualName,
+              organizationName: organizationName,
+              positionName: positionName
 						});
 
 						personnel.push(newPersonnel);
