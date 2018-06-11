@@ -227,7 +227,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var linkEl = $(document.createElement("a"))
 								.addClass("route-to-metadata")
 								.attr("data-id", id)
-								.attr("href", "#view/" + id)
+								.attr("href", "view/" + id)
 								.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
 				this.$el.append(linkEl);
 			}
@@ -235,7 +235,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				var linkEl = $(document.createElement("a"))
 								.addClass("route-to-metadata")
 								.attr("data-id", id)
-								.attr("href", "#view/" + id)
+								.attr("href", "view/" + id)
 								.append(titleEl);
 				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
 			}

@@ -17,7 +17,8 @@ MetacatUI.useD3 = true;
 // Find out of MetacatUI is deployed in a sub-directory off the top level of
 // the domain
 // TODO: Make this more bulletproof
-MetacatUI.root = document.location.pathname
+MetacatUI.root = "/metacatui"
+console.log("MetacatUI deployment root is", MetacatUI.root);
 
 //This version of Metacat UI - used for cache busting
 MetacatUI.metacatUIVersion = "2.0.0RC4";

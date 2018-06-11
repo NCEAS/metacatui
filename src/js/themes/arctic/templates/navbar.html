@@ -3,7 +3,7 @@
 	<div class="border-image" role="img"></div>
 
 		<div id="inner-header" class="wrap cf">
-			<a href="/" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
+			<a href="#" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
 
 			<a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
 					
@@ -35,16 +35,16 @@
 			        		<li><a href="/history">History</a></li>
 			        	</ul>
 					</li>
-			       <li><a href="#submit" class="btn btn-primary">Submit Data</a></li>
+			       <li><a href="submit" class="btn btn-primary">Submit Data</a></li>
 					<% if (loggedIn) { %>
         				<li class="dropdown">
 							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
 							<ul class="dropdown-menu">
-								<li><a href="#submit">Submit data</a></li>
-								<li><a href="#profile/<%=username%>">My profile</a></li>
-								<li><a href="#profile/<%=username%>/s=settings/s=groups">My groups</a></li>
-								<li><a href="#data/my-data">My data sets</a></li>
-								<li><a href="#signout">Sign out</a></li>
+								<li><a href="submit">Submit data</a></li>
+								<li><a href="profile/<%=username%>">My profile</a></li>
+								<li><a href="profile/<%=username%>/s=settings/s=groups">My groups</a></li>
+								<li><a href="data/my-data">My data sets</a></li>
+								<li><a href="signout">Sign out</a></li>
 							</ul>
 						</li>
 			        <% } else { %>

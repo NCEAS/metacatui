@@ -203,18 +203,55 @@ function(Bootstrap, AppView, AppModel) {
 			root: MetacatUI.root
 		});
 
-		// TODO: Test against external links
-		$(document).on("click", "a", function(e)
-		{
+		// // TODO: Test against external links
+		// $(document).on("click", "a", function(e)
+		// {
+		// 	console.log('hi', $(e.currentTarget).attr("href"), $(this).prop("href"));
+		// 	var href = $(e.currentTarget).attr('href');
 
-			var href = $(e.currentTarget).attr('href');
+		// 	var res = Backbone.history.navigate(href,true);
+		// 	//if we have an internal route don't call the server
+		// 	if(res)
+		// 		e.preventDefault();
 
-			var res = Backbone.history.navigate(href,true);
-			//if we have an internal route don't call the server
-			if(res)
-				e.preventDefault();
+		// 	});
 
-			});
+		// $(document).on("click", "a[href^='/']", function(e) {
+		// 	href = $(e.currentTarget).attr("href");
+
+		// 	console.log('hi', $(e.currentTarget).attr("href"), $(this).prop("href"));
+
+		// 	var res = Backbone.history.navigate(href, { trigger: true });
+
+		// 	if (res) {
+		// 		e.preventDefault();
+		// 	}
+		// });
+		var domainRoot = (document.location.protocol + "//" + document.location.host) + MetacatUI.root;
+		console.log("domainRoot", domainRoot);
+		$(document).on("click", "a:not([data-bypass])", function(event) {
+			// Get the *absolute* href from the anchor (not the attribute value)
+			var href = $(this).prop("href");
+
+			// Make sure we do have a link and that this link is located within 
+			// our Backbone application.
+			if(href && href.indexOf(domainRoot) === 0) {
+					// Stop the default event to ensure the link will not cause a page refresh.
+					console.log('preventing default action');
+					event.preventDefault();
+
+					// Get the path, relative to the application root. `Backbone.history.navigate`
+					// will work with the full url, however, `Backbone.history.loadUrl`, which is 
+					// called by `navigate`, will not.
+					var fragment = href.slice(domainRoot.length);
+					console.log("navigating to fragment '" + fragment + "'");
+					// `Backbone.history.navigate` is sufficient for all Routers and will
+					// trigger the correct events. The Router's internal `navigate` method
+					// calls this anyway. `root` is required since we stripped out the `root`
+					// when we created the `fragment `.
+					Backbone.history.navigate(fragment, {"root": MetacatUI.root, "trigger": true});
+			}
+	});
 	
 	});
     	
