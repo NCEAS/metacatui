@@ -2927,3 +2927,66 @@ iframe classes
 
 .col-1-4 + .col-1-4 + .col-1-4 + .col-1-4:nth-child(3n+1){ clear: right; }
 .col-1-4 + .col-1-4 + .col-1-4 + .col-1-4 + .col-1-4:nth-child(4n+1){ clear: left; }
+
+
+/******************************************
+* Metrics Controller Styling
+********************************************/
+/* Style for the metric button */
+a.btn.metrics {
+    margin-top: -20px;
+}
+
+/* Style for the toolbars that contains buttons in the well on either side. */
+.metric-toolbar {
+    float: left;
+    width: auto;
+}
+.edit-toolbar {
+    border-left: 1px solid #E3E3E3;
+    float: right;
+    margin-top: -15px;
+    padding-left: 0px;
+    width: auto;
+
+}
+
+.edit-toolbar >
+#metadata-controls-container >
+.metadata-controls-container {
+    margin-top: 10px;
+    margin-right: -10px;
+    margin-left: 0px;
+    width: auto;
+    height: 38px;
+    display: inline-block;
+    position: relative;
+}
+
+.edit-toolbar >
+#metadata-controls-container >
+.metadata-controls-container >
+a {
+    margin-left: 15px;
+}
+
+.metric-well >
+.edit-toolbar >
+#metadata-controls-container >
+.metadata-controls-container >
+span.copy-success
+{
+    font-size: .9em;
+    top: -40px;
+    left: 17px;
+    position: absolute;
+}
+
+.edit-toolbar >
+#owner-controls-container >
+.authority-controls {
+    float: right;
+    width: auto;
+    margin-right: -25px;
+    margin-left: 290px;
+}

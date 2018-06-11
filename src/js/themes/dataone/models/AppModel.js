@@ -77,16 +77,15 @@ define(['jquery', 'underscore', 'backbone'],
 			// dataset landing page
 			displayMetricWell: true,
 			displayDatasetMetrics: true,
-			displayDatasetMetricsTooltip: true,
+			displayDatasetMetricsTooltip: false,
 			displayDatasetCitationMetric: true,
 			displayDatasetDownloadMetric: true,
 			displayDatasetViewMetric: true,
 			displayDatasetEditButton: false,
 			displayDatasetQualityMetric: false,
 			displayDatasetAnalyzeButton: false,
-			displayMetricModals: false
-
-
+			displayMetricModals: false,
+			displayDatasetControls: true
 		},
 
 		defaultView: "data",

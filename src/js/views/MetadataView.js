@@ -219,16 +219,24 @@ define(['jquery',
 			this.insertDataSource();
 			// is this the latest version? (includes DOI link when needed)
 			this.showLatestVersion();
-			//Insert controls
-			this.insertControls();
+			
 
+            // If we're displaying the metrics well then display copy citation and edit button
+            // inside the well
 			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
 				//Insert Metrics Stats into the dataset landing pages
 				this.insertMetricsControls();
 			}
+            else {
+                // Copy Citation button
+                this.insertControls();
+                
+                // Edit button and the publish button
+                this.insertOwnerControls();
+            }
 
 
-			this.insertOwnerControls();
+			
 
 			//Show loading icon in metadata section
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
@@ -1014,31 +1022,26 @@ define(['jquery',
 
 				metrics.append(buttonToolbar);
 			}
+            
+            
+            if(MetacatUI.appModel.get("displayDatasetControls")) {
+                var controlsToolbar = $(document.createElement("div")).addClass("edit-toolbar btn-toolbar");
+                var copyCitationToolbar = this.$(this.controlsContainer);
+                
+                //Insert controls
+                this.insertControls();
+                controlsToolbar.append(copyCitationToolbar)
 
-			if (MetacatUI.appModel.get("displayDatasetEditButton")) {
-				var editToolbar = $(document.createElement("div")).addClass("edit-toolbar btn-toolbar");
-				//Save some references
-				var pid     = this.model.get("id") || this.pid,
-					model   = this.model,
-					viewRef = this;
-
-				// this.listenToOnce(this.model, "change", function(){
-					//Insert an Edit button
-					if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){ 
-						editToolbar.append(
-							this.editMetadataTemplate({
-								identifier: pid,
-								supported: true
-							}));
-					}
-					else{
-						editToolbar.append(this.editMetadataTemplate({
-							supported: false
-						}));
-					}
-				// });
-				metrics.append(editToolbar);
-			}
+                if(MetacatUI.appModel.get("displayDatasetEditButton")) {
+                    var editToolbar = this.$(this.ownerControlsContainer);
+                    
+                    // Insert Owner Controls
+                    this.insertOwnerControls();
+                    controlsToolbar.append(editToolbar)
+                }
+                
+				metrics.append(controlsToolbar);
+            }
 
 			self.$(self.tableContainer).before(metrics);
 		},

@@ -1644,10 +1644,13 @@ body > .alert-container {
 /* Style for the metric button */
 a.btn.metrics {
     display: inline-block;
-    width: 145px;
+    width: 164px;
     padding-right: 0px;
     margin-top: -14px;
     margin-left: -5px;
+    color: #888888;
+    border-color: #C3C3C3;
+    background-color: #FFFFFF;
 }
 i.icon.icon-cloud-download {
     font-size: 1.2em; !important;
@@ -1677,18 +1680,71 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 .metric-value.badge {
     float: right;
     color: #FFFFFF;
-    background-color: #1C6E84;
+    background-color: #888888;
     margin-top: 2px;
 }
 
 /* Style for the toolbars that contains buttons in the well on either side. */
 .metric-toolbar {
     float: left;
-    width: 70%;
+    width: auto;
 }
 .edit-toolbar {
+    border-left: 1px solid #E3E3E3;
     float: right;
-    width: 30%;
+    margin-top: -15px;
+    width: auto;
+    height: 50px;
+
+}
+
+.edit-toolbar >
+#metadata-controls-container >
+.metadata-controls-container {
+    margin-left: 15px;
+    margin-top: 10px;
+    margin-right: -10px;
+    width: auto;
+    height: 38px;
+    display: inline-block;
+    position: relative;
+}
+
+.metric-well >
+.edit-toolbar >
+#metadata-controls-container >
+.metadata-controls-container >
+span.copy-success
+{
+    font-size: .9em;
+    top: -40px;
+    left: 17px;
+    position: absolute;
+}
+
+.edit-toolbar >
+#owner-controls-container >
+.authority-controls {
+    width: auto;
+    height: 38px;
+    margin-top: -38px;
+    margin-right: -20px;
+    margin-left: 170px;
+}
+
+.edit-toolbar >
+#owner-controls-container >
+.authority-controls >
+#editMetadata {
+    margin-right: 15px;
+}
+
+/* Making the publish button consistent size as the downloads all*/
+.edit-toolbar >
+#owner-controls-container >
+.authority-controls >
+#publish {
+    width: 138px;
 }
 
 /* Disabling the hover features of the button for a while. Once, the Modals are ready, we'll enable
@@ -1698,9 +1754,10 @@ a.btn.metrics:hover .metric-value.badge {
     color: #1C6E84;
     background-color: #FFFFFF;
 }*/
-a.btn.metrics:hover {
-    color: #1C6E84;
+a.btn.metrics:hover, a.btn.metrics:click {
+    color: #888888;
     background-color: #FFFFFF;
+    border-color: #C3C3C3;
 }
 
 /******************************************
