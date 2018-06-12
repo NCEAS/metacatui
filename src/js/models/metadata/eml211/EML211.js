@@ -675,32 +675,33 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           //If the methods model is empty, remove it from the EML
           if( this.get("methods").isEmpty() )
             datasetNode.find("methods").remove();
-
-					//Serialize the methods model
-					var methodsEl = this.get('methods').updateDOM();
-
-          //If the methodsEl is an empty string or other falsey value, then remove the methods node
-          if( !methodsEl ){
-            datasetNode.find("methods").remove();
-          }
           else{
 
-  					//Add the <methods> node to the EML
-  					if (datasetNode.find('methods').length === 0){
-  						var insertAfter = this.getEMLPosition(eml, "methods");
+            //Serialize the methods model
+					  var methodsEl = this.get('methods').updateDOM();
 
-  						if(insertAfter)
-  							insertAfter.after(methodsEl);
-  						else
-  							datasetNode.append(methodsEl);
-  					}
-  					else{
+            //If the methodsEl is an empty string or other falsey value, then remove the methods node
+            if( !methodsEl || !$(methodsEl).children().length ){
+              datasetNode.find("methods").remove();
+            }
+            else{
 
-  						datasetNode.find("methods").replaceWith(methodsEl);
+              //Add the <methods> node to the EML
+              if (datasetNode.find('methods').length === 0){
+                var insertAfter = this.getEMLPosition(eml, "methods");
 
-  					}
+                if(insertAfter)
+                  insertAfter.after(methodsEl);
+                else
+                  datasetNode.append(methodsEl);
+              }
+              else{
+
+                datasetNode.find("methods").replaceWith(methodsEl);
+
+              }
+            }
           }
-
 				}
         //If there are no methods, then remove the methods nodes
         else{
