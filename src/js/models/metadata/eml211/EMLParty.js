@@ -243,7 +243,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 
 			//There needs to be at least one individual name, organization name, or position name
-			if(!this.get("individualName") && !this.get("organizationName") && !this.get("positionName"))
+			if( this.nameIsEmpty() && !this.get("organizationName") && !this.get("positionName"))
 				return "";
 
 			var name = this.get("individualName");
@@ -274,6 +274,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				 if(name.surName)
 					 $(nameNode).append("<surname>" +  name.surName + "</surname>");
 			}
+      //If there is no name set on the model, remove it from the DOM
+      else{
+        $(objectDOM).find("individualname").remove();
+      }
 
 			 // organizationName
 			if(this.get("organizationName")){
@@ -300,9 +304,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 			//Remove the organization name node if there is no organization name
 			else{
-				var orgNameNode = $(objectDOM).find("organizationname");
-				if(orgNameNode.length)
-					orgNameNode.remove();
+				var orgNameNode = $(objectDOM).find("organizationname").remove();
 			}
 
 			 // positionName
@@ -322,6 +324,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				else
 					this.getEMLPosition(objectDOM, "positionname").after(posNameNode);
 			}
+      //Remove the position name node if there is no position name
+      else{
+        $(objectDOM).find("positionname").remove();
+      }
 
 			 // address
 			 _.each(this.get("address"), function(address, i) {
@@ -442,6 +448,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			 }, this);
 
+       if( this.get("address").length == 0 ){
+         $(objectDOM).find("address").remove();
+       }
+
 			 // phone[s]
        $(objectDOM).find("phone[phonetype='voice']").remove();
 			 _.each(this.get("phone"), function(phone) {
@@ -537,6 +547,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				 $(idNode).text(id);
 
 			 }, this);
+
+       //Remove all the user id's if there aren't any in the model
+       if( userId.length == 0 ){
+         $(objectDOM).find("userid").remove();
+       }
 
 			// role
 			//If this party type is not an associated party, then remove the role element
@@ -789,6 +804,50 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       }
 
       return modelValues;
+    },
+
+    /*
+    * function nameIsEmpty - Returns true if the individualName set on this model contains
+    * only empty values. Otherwise, returns false. This is just a shortcut for manually checking
+    * each name field individually.
+    *
+    * @return {boolean}
+    */
+    nameIsEmpty: function(){
+      var name = this.get("individualName");
+
+      if( !name || typeof name != "object" )
+        return true;
+
+      //Check if there are given names
+      var givenName = name.givenName,
+          givenNameEmpty = false;
+
+      if( !givenName || (Array.isArray(givenName) && givenName.length == 0) ||
+        (typeof givenName == "string" && givenName.trim().length == 0) )
+          givenNameEmpty = true;
+
+      //Check if there are no sur names
+      var surName = name.surName,
+          surNameEmpty = false;
+
+      if( !surName || (Array.isArray(surName) && surName.length == 0) ||
+        (typeof surName == "string" && surName.trim().length == 0) )
+          surNameEmpty = true;
+
+      //Check if there are no salutations
+      var salutation = name.salutation,
+          salutationEmpty = false;
+
+      if( !salutation || (Array.isArray(salutation) && salutation.length == 0) ||
+        (typeof salutation == "string" && salutation.trim().length == 0) )
+          salutationEmpty = true;
+
+      if( givenNameEmpty && surNameEmpty && salutationEmpty )
+        return true;
+      else
+        return false;
+
     },
 
 		formatXML: function(xmlString){
