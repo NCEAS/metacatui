@@ -2229,9 +2229,11 @@ define(['jquery',
 		},
 
 		/**
-		 * generateGeoJSONString
-		 * creates a (hopefully) valid geoJSON string from the a set of bounding
-		 * coordinates from the Solr index (north, east, south, west)
+		 * Creates a (hopefully) valid geoJSON string from the a set of bounding
+		 * coordinates from the Solr index (north, east, south, west).
+		 * 
+		 * This function produces either a GeoJSON Point or Polygon depending on
+		 * whether the north and south bounding coordinates are the same.
 		 * 
 		 * Part of the reason for factoring this out, in addition to code 
 		 * organization issues, is that the GeoJSON spec requires us to modify
@@ -2248,6 +2250,59 @@ define(['jquery',
 		 * @param {number} west - West bounding coordinate
 		 */
 		generateGeoJSONString(north, east, south, west) {
+			if (north === south) {
+				return this.generateGeoJSONPoint(north, east);
+			} else {
+				return this.generateGeoJSONPolygon(north, east, south, west);
+			}
+		},
+
+		/**
+		 * Generate a GeoJSON Point object
+		 * 
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 * 
+		 * Example:
+		 * {
+		 *	"type": "Point",
+		 *	"coordinates": [
+		 *			-105.01621,
+		 *			39.57422
+		 * ]}
+
+		*/
+		generateGeoJSONPoint(north, east) {
+			var preamble = "{\"type\":\"Point\",\"coordinates\":",
+		   		inner = "[" + east + "," + north + "]",
+				  postamble = "}";
+
+			return preamble + inner + postamble;
+		},
+
+		/**
+		 * Generate a GeoJSON Polygon object from
+		 * 
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 * @param {number} south - South bounding coordinate
+		 * @param {number} west - West bounding coordinate
+		 * 
+		 * 
+		 * Example:
+		 * 
+		 * {
+     *   "type": "Polygon",
+     *   "coordinates": [[
+     *     [ 100, 0 ],
+     *     [ 101, 0 ],
+     *     [ 101, 1 ],
+		 *     [ 100, 1 ],
+     *     [ 100, 0 ]
+		 * ]}
+		 * 
+		 */
+		generateGeoJSONPolygon(north, east, south, west) {
 			var preamble = "{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\"\:\"Polygon\",\"coordinates\":[[";
 			
 			// Handle the case when the polygon wraps across the 180W/180E boundary
