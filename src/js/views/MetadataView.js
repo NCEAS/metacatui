@@ -2040,10 +2040,11 @@ define(['jquery',
 		},
 
 		/**
-		 * Generate Schema.org JSONLD for the model bound to the view into the head
-		 * tag of the page
+		 * Generate Schema.org-compliant JSONLD for the model bound to the view into
+		 *  the head tag of the page by `insertJSONLD`.
 		 * 
-		 * insertJSONLD does the actual inserting into the DOM
+		 * Note: `insertJSONLD` should be called to do the actual inserting into the
+		 * DOM.
 		 */
 		generateJSONLD: function () {
 			var model = this.model;
@@ -2204,10 +2205,12 @@ define(['jquery',
 		},
 		
 		/** 
-		 * Insert Schema.org JSONLD for the model bound to the view into the head
-		 * tag of the page
+		 * Insert Schema.org-compliant JSONLD for the model bound to the view into 
+		 * the head tag of the page (at the end).
 		 * 
 		 * @param {object} json - JSON-LD to insert into the page
+		 * 
+		 * Some notes:
 		 * 
 		 * - Checks if the JSONLD already exists from the previous data view
 		 * - If not create a new script tag and append otherwise replace the text 
