@@ -70,8 +70,11 @@ define(['jquery', 'underscore', 'backbone', 'models/MetricModel', 'views/MetricM
 
             // Check if the metric object exists in results obtained from the service 
             // If it does, get its total value else set the total count to 0
-            if(results != null) {
-                var total = results.reduce(function(acc, val) { return acc + val; });
+            if (typeof results !== 'undefined') {
+                var total = 0
+                if (results.length > 0) {
+                    var total = results.reduce(function(acc, val) { return acc + val; });
+                }
                 this.model.set('metricValue', total);
             } else {
                 this.model.set('metricValue', 0);
