@@ -2133,10 +2133,8 @@ define(['jquery',
 				"publisher": publisher,
 				"identifier": model.get("id"),
 				"name": model.get("title"),
-				"url": MetacatUI.appModel.get("baseUrl") +
-							 route +
-							 "/" +
-							 encodeURIComponent(model.get("id")),
+				"url": "https://dataone.org/dataset/" + 
+					encodeURIComponent(model.get("id")),
 				"citation": citationText,
 				"schemaVersion": model.get("formatId"),
 			};
