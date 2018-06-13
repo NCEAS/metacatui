@@ -751,6 +751,39 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
 	        	}, this);
 
+            //Do a final check to make sure there are no duplicate ids in the EML
+            var elementsWithIDs = $(eml).find("[id]"),
+            //Get an array of all the ids in this EML doc
+                allIDs = _.map(elementsWithIDs, function(el){ return $(el).attr("id") });
+
+            //If there is at least one id in the EML...
+            if(allIDs && allIDs.length){
+              //Boil the array down to just the unique values
+              var uniqueIDs = _.uniq(allIDs);
+
+              //If the unique array is shorter than the array of all ids,
+              // then there is a duplicate somewhere
+              if(uniqueIDs.length < allIDs.length){
+
+                //For each element in the EML that has an id,
+                _.each(elementsWithIDs, function(el){
+
+                  //Get the id for this element
+                  var id = $(el).attr("id");
+
+                  //If there is more than one element in the EML with this id,
+                  if( $(eml).find("[id='" + id + "']").length > 1 ){
+                    //And if it is not a unit node, which we don't want to change,
+                    if( !$(el).is("unit") )
+                      //Then change the id attribute to a random uuid
+                      $(el).attr("id", "urn-uuid-" + uuid.v4());
+                  }
+
+                });
+
+              }
+            }
+
 	           	//Camel-case the XML
 		    	var emlString = "";
 		    	_.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
@@ -1369,7 +1402,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             		}
 
                 	//Create an XML-safe ID and set it on the Entity model
-                	entity.set("xmlID", dataONEObj.getXMLSafeID());
+                  var entityID = this.getUniqueEntityId(dataONEObj);
+                	entity.set("xmlID", entityID);
 
                 	//Save a reference to this entity so we don't have to refind it later
                 	dataONEObj.set("metadataEntity", entity);
@@ -1405,6 +1439,32 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 });
 
                 this.addEntity(entityModel);
+
+            },
+
+            /*
+            * Creates an XML-safe identifier that is unique to this EML document,
+            * based on the given DataONEObject model. It is intended for EML entity nodes in particular.
+            *
+            * @param {DataONEObject} - a DataONEObject model that this EML documents
+            * @return {string} - an identifier string unique to this EML document
+            */
+            getUniqueEntityId: function(dataONEObject){
+
+              var uniqueId = "";
+
+              uniqueId = dataONEObject.getXMLSafeID();
+
+              //Get the EML string, if there is one, to check if this id already exists
+              var emlString = this.get("objectXML");
+
+              //If this id already exists in the EML...
+              if(emlString && emlString.indexOf(' id="' + uniqueId + '"')){
+                //Create a random uuid to use instead
+                uniqueId = "urn-uuid-" + uuid.v4();
+              }
+
+              return uniqueId;
 
             },
 

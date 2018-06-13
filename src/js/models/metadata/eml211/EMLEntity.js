@@ -1,6 +1,6 @@
-define(["jquery", "underscore", "backbone", "models/DataONEObject",
+define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
         "models/metadata/eml211/EMLAttribute"],
-    function($, _, Backbone, DataONEObject, EMLAttribute) {
+    function($, _, Backbone, uuid, DataONEObject, EMLAttribute) {
 
         /*
          * EMLEntity represents an abstract data entity, corresponding
@@ -267,7 +267,20 @@ define(["jquery", "underscore", "backbone", "models/DataONEObject",
                 // update the id attribute
                 var xmlID = this.get("xmlID");
                 if ( xmlID ) {
-                    $(objectDOM).attr("id", xmlID);
+
+                   //Check if the physical section is using this object's id as the id attribute
+                   if( this.get("dataONEObject") && $(objectDOM).find("physical").attr("id") == this.get("dataONEObject").get("id") ){
+                     //Ideally, the EMLEntity will use the object's id in it's id attribute, so we wil switch them
+                     xmlID = this.get("dataONEObject").getXMLSafeID();
+
+                     //Set the xml-safe id on the model and use it as the id attribute
+                     $(objectDOM).attr("id", xmlID);
+                     this.set("xmlID", xmlID);
+
+                     //Use a random uuid as the id for the physical section
+                     $(objectDOM).find("physical").attr("id", "urn-uuid-" + uuid.v4());
+                   }
+
                 }
 
                 // Update the alternateIdentifiers
