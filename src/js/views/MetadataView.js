@@ -2183,12 +2183,10 @@ define(['jquery',
 						"value": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
 					}
 					],
-					"geo": {
-						"@type": "GeoShape",
-						"box": model.get("westBoundCoord") + ", " + model.get("southBoundCoord") +
-									" " + 
-									model.get("eastBoundCoord") + ", " + model.get("northBoundCoord")
-					},
+					"geo": this.generateSchemaOrgGeo(model.get("northBoundCoord"),
+																				   model.get("eastBoundCoord"),
+																				   model.get("southBoundCoord"),
+																				   model.get("westBoundCoord")),
 					"subjectOf": {
 						"@type": "CreativeWork",
 						"fileFormat": "application/vnd.geo+json",
@@ -2251,6 +2249,27 @@ define(['jquery',
 			} else {
 				var script = document.getElementById('jsonld');
 				script.text = JSON.stringify(json);
+			}
+		},
+
+		/**
+		 * Generate a Schema.org/Place/geo from bounding coordinates
+		 * 
+		 * Either generates a GeoCoordinates (when the north and east coords are 
+		 * the same) or a GeoShape otherwise.
+		 */
+		generateSchemaOrgGeo(north, east, south, west) {
+			if (north === south) {
+				return {
+					"@type": "GeoCoordinates",
+					"latitude" : north,
+					"longitude" : west
+				}
+			} else {
+				return {
+					"@type": "GeoShape",
+					"box": west + ", " + south + " " + east + ", " + north
+				}
 			}
 		},
 
