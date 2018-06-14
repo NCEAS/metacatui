@@ -2112,16 +2112,17 @@ define(['jquery',
 			}
 
 			// Citation
-			var citationText = [ 
-				authorText, 
-				new Date(datePublished).getFullYear(),
-				model.get("title"),
-				publisher,
-				model.get("id")].join(". ") + "."
+			var citationParts = [ 
+						authorText, 
+						new Date(datePublished).getFullYear(),
+						model.get("title"),
+						publisher,
+						model.get("id")],
+				  citationText = citationParts.join(". ") + ".";
 
 			// First: Create a minimal Schema.org Dataset with just the fields we
-			// know will come back from Solr. Add the rest in conditional on whether
-			// they are present
+			// know will come back from Solr (System Metadata fields). 
+			// Add the rest in conditional on whether they are present.
 			var elJSON = {
 				"@context": {
 					"@vocab": "http://schema.org",
@@ -2129,24 +2130,48 @@ define(['jquery',
 				"@type": "Dataset",
 				"@id": "https://dataone.org/dataset/" + 
 					encodeURIComponent(model.get("id")),
-				"creator": model.get("origin"),
 				"datePublished" : datePublished,
 				"publisher": publisher,
 				"identifier": model.get("id"),
-				"name": model.get("title"),
 				"url": "https://dataone.org/dataset/" + 
 					encodeURIComponent(model.get("id")),
-				"citation": citationText,
 				"schemaVersion": model.get("formatId"),
 			};
 			
-			// Second Add in optional fields
+			// Second: Add in optional fields
+
+			// Name
+			if (model.get("name")) {
+				elJSON["name"] = model.get("title")
+			}
+
+			// Creator
+			if (model.get("creator")) {
+				elJSON["creator"] = model.get("origin")
+			}
+
+			// Citation
+			//
+			// I made this optional because there are rare cases where a metadata
+			// standard doesn't have creators or titles
+			
+			// Returns 1 if all citationParts are non-zero-length
+			// Returns 0 if any are zero length
+			var isCitationValid = citationParts.map(function(p) { 
+				return (typeof p === "string" && p.length > 0 ? true : false)
+			}).reduce(function(acc, val) { 
+				return acc * val;
+			});
+
+			if (isCitationValid) {
+				elJSON['citation'] = citationText;
+			}
 
 			// Dataset/spatialCoverage
-			if (model.get("northBoundCoord") !== "" &&
-				model.get("eastBoundCoord") !== "" &&
-				model.get("southBoundCoord") !== "" &&
-				model.get("westBoundCoord") !== "") {
+			if (model.get("northBoundCoord") &&
+				model.get("eastBoundCoord") &&
+				model.get("southBoundCoord") &&
+				model.get("westBoundCoord")) {
 				
 				var spatialCoverage = {
 					"@type": "Place",
@@ -2180,24 +2205,24 @@ define(['jquery',
 			}
 
 			// Dataset/temporalCoverage
-			if (model.get("beginDate") !== "" && model.get("endDate") === "") {
+			if (model.get("beginDate") && !model.get("endDate")) {
 				elJSON.temporalCoverage = model.get("beginDate");
-			} else if (model.get("beginDate") !== "" && model.get("endDate") !== "") {
+			} else if (model.get("beginDate") && model.get("endDate")) {
 				elJSON.temporalCoverage = model.get("beginDate") + "/" + model.get("endDate");
 			}
 
 			// Dataset/variableMeasured
-			if (model.get("attributeName") !== "") {
+			if (model.get("attributeName")) {
 				elJSON.variableMeasured = model.get("attributeName");
 			}
 
 			// Dataset/description
-			if (model.get("abstract") !== "") {
+			if (model.get("abstract")) {
 				elJSON.description = model.get("abstract");
 			}
 
 			// Dataset/keywords
-			if (model.get("keywords") !== "") {
+			if (model.get("keywords")) {
 				elJSON.keywords = model.get("keywords");
 			}
 
