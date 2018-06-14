@@ -456,7 +456,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		// Creates an HTML element to display in front of the user identity/subject.
 		// Only used for the ORCID logo right now
 		createIdPrefix: function(){
-			if(this.model.get("orcid") || this.model.isOrcid())
+			if(this.model.isOrcid())
 				return $(document.createElement("img")).attr("src", "./img/orcid_64x64.png").addClass("orcid-logo");
 			else
 				return "";
@@ -836,6 +836,12 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 							'alert-warning', "#request-alert-container");
 					}
 					else{
+
+						//Make a more understandable error message when the account isn't found
+						if(xhr.responseText.indexOf("LDAP: error code 32 - No Such Object") > -1){
+							xhr.responseText = "The username " + equivalentIdentity + " does not exist in our system."
+						}
+
 						viewRef.showAlert(xhr.responseText, 'alert-error', "#request-alert-container");
 					}
 				};

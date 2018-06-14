@@ -378,8 +378,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			if((typeof orcid == "undefined") && (username == this.get("orcid"))) return true;
 
 			//Checks for ORCIDs using the orcid base URL as a prefix
-			if(username.indexOf("http://orcid.org/") == 0){
-				this.set("orcid", username);
+			if(username.indexOf("orcid.org/") > -1){
 				return true;
 			}
 
@@ -808,31 +807,52 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				success: function(data, textStatus, xhr) {
 					if(typeof onSuccess == "function")
 						onSuccess(data, textStatus, xhr);
-					
+
 					model.getInfo();
 				},
 				error: function(xhr, textStatus, error) {
-					if(typeof onError == "function")
-						onError(xhr, textStatus, error);
+
+					//Check if the username might have been spelled or formatted incorrectly
+					//ORCIDs, in particular, have different formats that we should account for
+					if(xhr.responseText.indexOf("LDAP: error code 32 - No Such Object") > -1 && model.isOrcid(otherUsername)){
+						if(otherUsername.length == 19)
+							model.addMap("http://orcid.org/" + otherUsername, onSuccess, onError);
+						else if(otherUsername.indexOf("https://orcid.org") == 0)
+							model.addMap(otherUsername.replace("https", "http"), onSuccess, onError);
+						else if(otherUsername.indexOf("orcid.org") == 0)
+							model.addMap("http://" + otherUsername, onSuccess, onError);
+						else if(otherUsername.indexOf("www.orcid.org") == 0)
+								model.addMap(otherUsername.replace("www.", "http://"), onSuccess, onError);
+						else if(otherUsername.indexOf("http://www.orcid.org") == 0)
+								model.addMap(otherUsername.replace("www.", ""), onSuccess, onError);
+						else if(otherUsername.indexOf("https://www.orcid.org") == 0)
+								model.addMap(otherUsername.replace("https://www.", "http://"), onSuccess, onError);
+						else if(typeof onError == "function")
+							onError(xhr, textStatus, error);
+					}
+					else{
+						if(typeof onError == "function")
+							onError(xhr, textStatus, error);
+					}
 				}
 			}
-			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));			
+			$.ajax(_.extend(requestSettings, appUserModel.createAjaxSettings()));
 		},
-		
+
 		removeMap: function(otherUsername, onSuccess, onError){
 			if(!otherUsername) return;
-			
+
 			var mapUrl = appModel.get("accountsMapsUrl") + encodeURIComponent(otherUsername),
 				model = this;
-						
+
 			// ajax call to remove mapping
 			var requestSettings = {
 				type: "DELETE",
 				url: mapUrl,
-				success: function(data, textStatus, xhr) {					
+				success: function(data, textStatus, xhr) {
 					if(typeof onSuccess == "function")
 						onSuccess(data, textStatus, xhr);
-					
+
 					model.getInfo();
 				},
 				error: function(xhr, textStatus, error) {
