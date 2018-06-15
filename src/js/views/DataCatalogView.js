@@ -249,8 +249,6 @@ define(['jquery',
 			// and go to a certain page if we have it
 			this.getResults();	
 
-			this.getLinkedData(this.searchModel);
-			
 			//Set a custom height on any elements that have the .auto-height class
 			if($(".auto-height").length > 0){
 				//Readjust the height whenever the window is resized
