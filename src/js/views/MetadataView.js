@@ -11,6 +11,7 @@ define(['jquery',
 		'models/PackageModel',
 		'models/SolrResult',
 		'models/metadata/ScienceMetadata',
+        'models/MetricsModel',
 		'views/DownloadButtonView',
 		'views/ProvChartView',
 		'views/MetadataIndexView',
@@ -37,7 +38,7 @@ define(['jquery',
         'views/MetricModalView'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
@@ -992,6 +993,9 @@ define(['jquery',
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
+			var metricsModel = new MetricsModel({pid: this.pid})
+			metricsModel.fetch()
+
 			var self = this;
 			// Retreive the model from the server for the given PID
 			// TODO: Create a Metric Request Object
@@ -1006,17 +1010,17 @@ define(['jquery',
 				var buttonToolbar = $(document.createElement("div")).addClass("metric-toolbar btn-toolbar");
 
 				if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-					var citationsMetricView = new MetricView({pid: this.pid, metricName: 'Citations'});
+					var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel});
 					buttonToolbar.append(citationsMetricView.render().el);
 				}
 
 				if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
-					var downloadsMetricView = new MetricView({pid: this.pid, metricName: 'Downloads'});
+					var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel});
 					buttonToolbar.append(downloadsMetricView.render().el);
 				}
 
 				if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
-					var viewsMetricView = new MetricView({pid: this.pid, metricName: 'Views'});
+					var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel});
 					buttonToolbar.append(viewsMetricView.render().el);
 				}
 

@@ -5,16 +5,15 @@ define(['jquery', 'underscore', 'backbone'],
 
     // Metric Model 
     // -------------
-    var Metric = Backbone.Model.extend({
+    var Metrics = Backbone.Model.extend({
         defaults: {
-            metricName: null,
-            metricValue: null,
             metricRequest: null,
             startDate: null,
             endDate: null,
             results: null,
             url: null,
             pid: '',
+            fetched: false,
 
             // metrics and metric Facets returned as response from the user
             // datatype: array
@@ -26,6 +25,13 @@ define(['jquery', 'underscore', 'backbone'],
             years: null,
             repository: null,
             award: null,
+
+
+            // Total counts for metrics
+            totalCitations: null,
+            totalViews: null,
+            totalDownloads: null,
+
 
             metricsRequiredFields: {
                 metricName: true,
@@ -71,8 +77,6 @@ define(['jquery', 'underscore', 'backbone'],
         initialize: function(options) {
             if(!(options.pid == 'undefined')) {
                 this.pid = options.pid;
-                
-                this.metricName = options.metricName;
             }
         },
 
@@ -80,10 +84,12 @@ define(['jquery', 'underscore', 'backbone'],
         fetch: function(){
           var fetchOptions = {};
 
+          this.metricRequest.filterBy[0].values = []
           this.metricRequest.filterBy[0].values.push(this.pid);
           
           // TODO: Set the startDate and endDate based on the datePublished and current date
           // respctively.
+          this.metricRequest.filterBy[1].values = []
           this.metricRequest.filterBy[1].values.push("01/01/2000");
           this.metricRequest.filterBy[1].values.push("06/10/2018");
 
@@ -105,10 +111,11 @@ define(['jquery', 'underscore', 'backbone'],
                 "views": response.results.views,
                 "downloads": response.results.downloads,
                 "months": response.results.month,
-                "country": response.results.country
+                "country": response.results.country,
+                "fetched": true
             }
         }
 
     });
-    return Metric;
+    return Metrics;
 });
