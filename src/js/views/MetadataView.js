@@ -2146,7 +2146,7 @@ define(['jquery',
 			}
 
 			// Creator
-			if (model.get("creator")) {
+			if (model.get("origin")) {
 				elJSON["creator"] = model.get("origin")
 			}
 
