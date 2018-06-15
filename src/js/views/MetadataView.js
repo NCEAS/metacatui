@@ -2114,7 +2114,7 @@ define(['jquery',
 			// Citation
 			var citationParts = [ 
 						authorText, 
-						new Date(datePublished).getFullYear(),
+						new Date(datePublished).getUTCFullYear().toString(),
 						model.get("title"),
 						publisher,
 						model.get("id")],
