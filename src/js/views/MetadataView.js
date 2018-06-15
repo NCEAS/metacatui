@@ -2141,7 +2141,7 @@ define(['jquery',
 			// Second: Add in optional fields
 
 			// Name
-			if (model.get("name")) {
+			if (model.get("title")) {
 				elJSON["name"] = model.get("title")
 			}
 
