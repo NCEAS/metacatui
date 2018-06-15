@@ -2128,12 +2128,12 @@ define(['jquery',
 					"@vocab": "http://schema.org",
 				},
 				"@type": "Dataset",
-				"@id": "https://dataone.org/dataset/" + 
+				"@id": "https://dataone.org/datasets/" + 
 					encodeURIComponent(model.get("id")),
 				"datePublished" : datePublished,
 				"publisher": publisher,
 				"identifier": model.get("id"),
-				"url": "https://dataone.org/dataset/" + 
+				"url": "https://dataone.org/datasets/" + 
 					encodeURIComponent(model.get("id")),
 				"schemaVersion": model.get("formatId"),
 			};
