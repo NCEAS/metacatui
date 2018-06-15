@@ -79,7 +79,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		bioportalExpand: function(term) {
 
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
 				response(null);
 				return;
 			}
@@ -87,7 +87,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			var terms = [];
 			var countdown = 0;
 
-			var query = appModel.get('bioportalSearchUrl') + term;
+			var query = MetacatUI.appModel.get('bioportalSearchUrl') + term;
 			$.ajax(
 			{
 				url: query,
@@ -116,7 +116,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 
 						$.ajax(
 						{
-						url: descendantsUrl + "?apikey=" + appModel.get("bioportalAPIKey"),
+						url: descendantsUrl + "?apikey=" + MetacatUI.appModel.get("bioportalAPIKey"),
 						method: "GET",
 						async: false,
 						success: function(data, textStatus, xhr) {
@@ -150,11 +150,11 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			}
 
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
 				return;
 			}
 
-			var query = appModel.get('bioportalSearchUrl') + encodeURIComponent(uri);
+			var query = MetacatUI.appModel.get('bioportalSearchUrl') + encodeURIComponent(uri);
 			var availableTags = [];
 			var model = this;
 			$.get(query, function(data, textStatus, xhr) {
@@ -187,7 +187,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		bioportalGetConceptsBatch: function(uris, callback) {
 
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalBatchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalBatchUrl')) {
 				return;
 			}
 			// prepare the request JSON
@@ -202,7 +202,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				batchData["http://www.w3.org/2002/07/owl#Class"]["collection"].push(item);
 			});
 
-			var url = appModel.get('bioportalBatchUrl');
+			var url = MetacatUI.appModel.get('bioportalBatchUrl');
 			var model = this;
 			$.ajax(url,
 					{
@@ -211,7 +211,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 					data: JSON.stringify(batchData),
 					contentType: "application/json",
 					headers: {
-						"Authorization": "apikey token="+ appModel.get("bioportalAPIKey")
+						"Authorization": "apikey token="+ MetacatUI.appModel.get("bioportalAPIKey")
 					},
 					error: function(e) {
 						console.log(e);
@@ -258,11 +258,11 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			}
 
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
 				return;
 			}
 
-			var query = appModel.get('orcidBaseUrl')  + uri.substring(uri.lastIndexOf("/"));
+			var query = MetacatUI.appModel.get('orcidBaseUrl')  + uri.substring(uri.lastIndexOf("/"));
 			var model = this;
 			$.get(query, function(data, status, xhr) {
 				// get the orcid info
@@ -289,7 +289,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		orcidSearch: function(request, response, more, ignore) {
 
 			// make sure we have something to lookup
-			if (!appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
 				response(more);
 				return;
 			}
@@ -298,7 +298,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 
 			if(!ignore) var ignore = [];
 
-			var query = appModel.get('orcidSearchUrl') + request.term;
+			var query = MetacatUI.appModel.get('orcidSearchUrl') + request.term;
 			$.get(query, function(data, status, xhr) {
 				// get the orcid info
 				var profile = $(data).find("orcid-profile");
@@ -336,7 +336,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				onError   = options.error   || function(){};
 
 			$.ajax({
-				url: appModel.get("orcidSearchUrl") + orcid,
+				url: MetacatUI.appModel.get("orcidSearchUrl") + orcid,
 				type: "GET",
 				//accepts: "application/orcid+json",
 				success: function(data, textStatus, xhr){
@@ -408,10 +408,10 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		},
 
 		getGrant: function(id, onSuccess, onError){
-			if(!id || !onSuccess || !appModel.get("grantsUrl")) return;
+			if(!id || !onSuccess || !MetacatUI.appModel.get("grantsUrl")) return;
 
 			var requestSettings = {
-					url: appModel.get("grantsUrl") + "?id=" + id,
+					url: MetacatUI.appModel.get("grantsUrl") + "?id=" + id,
 					success: function(data, textStatus, xhr){
 						if(!data || !data.response || !data.response.award || !data.response.award.length){
 							if(onError) onError();
