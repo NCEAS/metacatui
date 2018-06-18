@@ -138,6 +138,70 @@
 	.temporal-coverage .control-label {
     	height: 4em;
 	}
+    
+    /******************************************
+    * Metrics Controller Styling
+    ********************************************/
+    /* Style for the metric button */
+    a.btn.metrics {
+        float:none;
+        width: 150px;
+        margin: 1px;
+        padding-right: 0px;
+    }
+    .btn-group+.btn-group, .btn-toolbar>.btn+.btn,
+    .btn-toolbar>.btn+.btn-group, .btn-toolbar>.btn-group+.btn {
+        margin-left: 0px;
+    }
+
+    .metric-well {
+        float:none;
+        flex-wrap: wrap;
+        width: 100%;
+        height: auto;
+    }
+
+    /* Style for the toolbars that contains buttons in the well on either side. */
+    .metric-toolbar {
+        float:none;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        margin-top: 0px;
+    }
+    .edit-toolbar {
+        float:none;
+        border-left: none;
+        margin-top: none;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .edit-toolbar >
+    #metadata-controls-container >
+    .metadata-controls-container {
+        margin-left: 0px;
+        margin-top: 5px;
+        margin-right: 0px;
+        height: 38px;
+    }
+
+    .edit-toolbar >
+    #owner-controls-container >
+    .authority-controls {
+        width: auto;
+        height: 38px;
+        margin-top: -1px;
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+
+    .edit-toolbar >
+    #owner-controls-container >
+    .authority-controls >
+    #editMetadata {
+        margin-right: none;
+    }
 }
 
 /* Smartphones (landscape) ----------- */
@@ -146,7 +210,6 @@
 	.row-fluid .span6.pagination-left {
   		width: 100%;
 	}
-	
 }
  
 /* Smartphones (portrait) ----------- */
