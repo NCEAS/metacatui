@@ -542,20 +542,35 @@ define(['underscore',
          * When the data package collection fails to save, tell the user
          */
         saveError: function(errorMsg){
-        	var errorId = "error" + Math.round(Math.random()*100),
-        		message = $(document.createElement("div")).append("<p>Not all of your changes could be submitted.</p>");
 
-        	message.append($(document.createElement("a"))
-        						.text("See details")
+
+        	var errorId = "error" + Math.round(Math.random()*100),
+              messageContainer = $(document.createElement("div")).append(document.createElement("p")),
+              messageParagraph = messageContainer.find("p"),
+              messageClasses = "alert-error";
+
+          if( this.model.get("draftSaved") && MetacatUI.appModel.get("contentIsModerated") ){
+            messageParagraph.text("Not all of your changes could be submitted " +
+              "due to a technical error. But, we saved a draft of your edits and " +
+              "alerted our support team. Our team will contact " +
+              "you via email as soon as possible about getting your data package submitted. ");
+            messageClasses = "alert-warning"
+          }
+        	else{
+            messageParagraph.text($(document.createElement("div")).append("Not all of your changes could be submitted."));
+          }
+
+        	messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))
+        						.text("See technical details")
         						.attr("data-toggle", "collapse")
         						.attr("data-target", "#" + errorId)
-        						.addClass("pointer"),
+        						.addClass("pointer")),
         					$(document.createElement("div"))
         						.addClass("collapse")
         						.attr("id", errorId)
         						.append($(document.createElement("pre")).text(errorMsg)));
 
-        	MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, {
+        	MetacatUI.appView.showAlert(messageContainer, messageClasses, this.$el, null, {
         		emailBody: "Error message: Data Package save error: " + errorMsg,
         		remove: true
         		});

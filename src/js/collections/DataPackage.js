@@ -1140,7 +1140,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
                   ga("send", "exception", {
                     "exDescription": "DataPackage save error: " + errorMsg +
-                      " | Id: " + collection.packageModel.get("id"),
+                      " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
                     "exFatal": true
                   });
                 }
