@@ -11,9 +11,8 @@ define(['jquery', 'underscore', 'backbone'],
             startDate: null,
             endDate: null,
             results: null,
-            url: null,
             pid: '',
-            fetched: false,
+            url: null,
 
             // metrics and metric Facets returned as response from the user
             // datatype: array
@@ -70,26 +69,25 @@ define(['jquery', 'underscore', 'backbone'],
             ]
         },
 
-        // url for the model that is used to for the fetch() call
-        url: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics/filters',
-
         // Initializing the Model objects pid and gthe metricName variables.
         initialize: function(options) {
             if(!(options.pid == 'undefined')) {
                 this.pid = options.pid;
             }
+            // url for the model that is used to for the fetch() call
+            this.url = MetacatUI.appModel.get("metricsUrl")
         },
 
         // Overriding the Model's fetch function.
         fetch: function(){
           var fetchOptions = {};
 
-          this.metricRequest.filterBy[0].values = []
+          this.metricRequest.filterBy[0].values = [];
           this.metricRequest.filterBy[0].values.push(this.pid);
           
           // TODO: Set the startDate and endDate based on the datePublished and current date
           // respctively.
-          this.metricRequest.filterBy[1].values = []
+          this.metricRequest.filterBy[1].values = [];
           this.metricRequest.filterBy[1].values.push("01/01/2000");
           this.metricRequest.filterBy[1].values.push("06/10/2018");
 
@@ -111,8 +109,7 @@ define(['jquery', 'underscore', 'backbone'],
                 "views": response.results.views,
                 "downloads": response.results.downloads,
                 "months": response.results.month,
-                "country": response.results.country,
-                "fetched": true
+                "country": response.results.country
             }
         }
 

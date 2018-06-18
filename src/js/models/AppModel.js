@@ -96,6 +96,8 @@ define(['jquery', 'underscore', 'backbone'],
 			portalUrl: null,
 			mdqUrl: null,
 
+			// Metrics endpoint url
+			metricsUrl: null,
 
 			// set these flags to true if the metrics contents should be published on the 
 			// dataset landing page
@@ -203,6 +205,9 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			this.on("change:pid", this.changePid);
+
+			this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/metrics/filters');
+
 		},
 
 		changePid: function(model, name){
