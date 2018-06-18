@@ -26,17 +26,15 @@
       z-index: 10;
     }
     #Content {
-    	max-width: 100%;
+    	/* max-width: 100%;
     	width: 100%;
-    	margin-top: 20px;
+    	margin-top: 20px; */
     	padding-bottom: 260px; /* Keeps footer down */
     }		
     body > section > article {
       min-height: 800px;
       margin: auto;
       padding-bottom: 40px;  	
-      width: 90%;
-      max-width: 1024px;		
     }
     .mapMode > section > article{
     	padding-bottom: 0px;
@@ -3013,54 +3011,22 @@ iframe classes
 /******************************************
 * Metrics Controller Styling
 ********************************************/
-/* Style for the metric button */
-a.btn.metrics {
-    margin-top: 0px;
-}
-.metric-well.well.well-lg {
-    height: 55px;
-}
-
-/* Style for the toolbars that contains buttons in the well on either side. */
-.metric-toolbar {
-    float: left;
-    width: auto;
-}
-.edit-toolbar {
-    border-left: 1px solid #E3E3E3;
-    float: right;
-    margin-top: -15px;
-    padding-left: 0px;
-    height: 85px;
-}
-
-.edit-toolbar >
-#metadata-controls-container >
-.metadata-controls-container {
-    margin-top: 10px;
-    margin-left: 0px;
-    width: auto;
-    float: right;
-    margin-right: -35px;
-    position: relative;
-}
 
 .edit-toolbar >
 #metadata-controls-container >
 .metadata-controls-container >
 a {
-    margin-left: 15px;
+    margin-left: 0px;
+    margin-right: 15px;
     width: 138px;
 }
-
 
 .edit-toolbar >
 #owner-controls-container >
 .authority-controls {
-    float: right;
-    position: relative;
     width: auto;
-    margin-right: -25px;
-    margin-left: 0px;
-    margin-top: auto;
+    height: 38px;
+    margin-top: -38px;
+    margin-right: -15px;
+    margin-left: 375px;
 }
