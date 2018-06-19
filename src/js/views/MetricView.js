@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone',  'views/MetricModalView'],
-    function($, _, Backbone, MetricModalTemplate) {
+define(['jquery', 'underscore', 'backbone'],
+    function($, _, Backbone) {
     'use strict';
 
     var MetricView = Backbone.View.extend({
