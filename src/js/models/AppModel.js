@@ -128,7 +128,7 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 
 					if(typeof this.get("pendingMapsUrl") != "undefined")
-						this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap");
+						this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
 
 					if(typeof this.get("accountsMapsUrl") != "undefined")
 						this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
