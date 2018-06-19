@@ -34,15 +34,14 @@ define(['jquery',
 		'text!templates/map.html',
 		'text!templates/annotation.html',
 		'uuid',
-        'views/MetricView',
-        'views/MetricModalView'
+        'views/MetricView'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, uuid, MetricView, MetricModalView) {
+			 MapTemplate, AnnotationTemplate, uuid, MetricView) {
 	'use strict';
 
 
@@ -94,7 +93,6 @@ define(['jquery',
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData",
 			"click     #save-metadata-prov" : "saveProv",
-			'click     .metrics'         : 'showMetricModal'
 		},
 
 		initialize: function (options) {
@@ -954,6 +952,7 @@ define(['jquery',
 			var copyBtns = $(this.controlsContainer).find(".copy");
 			_.each(copyBtns, function(btn){
 				//Create a copy citation button
+				
 				var clipboard = new Clipboard(btn);
 				clipboard.on("success", function(e){
 					$(e.trigger).siblings(".copy-success").show().delay(1000).fadeOut();
@@ -993,8 +992,8 @@ define(['jquery',
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
-			var metricsModel = new MetricsModel({pid: this.pid})
-			metricsModel.fetch()
+            var metricsModel = new MetricsModel({pid: this.pid})
+            metricsModel.fetch()
 
 			var self = this;
 			// Retreive the model from the server for the given PID
@@ -1049,16 +1048,6 @@ define(['jquery',
 
 			self.$(self.tableContainer).before(metrics);
 		},
-
-		// Inserting Metric Modals
-		showMetricModal: function() {
-			if (MetacatUI.appModel.get("displayMetricModals")) {
-				console.log("Button Clicked");
-				var modalView = new MetricModalView();
-				modalView.show();
-			}
-		},
-
 
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {
