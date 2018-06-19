@@ -444,351 +444,355 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                //Serialize the basic text fields
                var basicText = ["alternateIdentifier", "title"];
                _.each(basicText, function(fieldName){
-                 var basicTextValues = this.get(fieldName);
+                var basicTextValues = this.get(fieldName);
 
-                 if(!Array.isArray(basicTextValues))
-                   basicTextValues = [basicTextValues];
+                if(!Array.isArray(basicTextValues))
+                  basicTextValues = [basicTextValues];
 
-          // Remove existing nodes
-                 datasetNode.find(fieldName.toLowerCase()).remove();
+                // Remove existing nodes
+                datasetNode.find(fieldName.toLowerCase()).remove();
 
-          // Create new nodes
-          var nodes = _.map(basicTextValues, function(value) {
+                // Create new nodes
+                var nodes = _.map(basicTextValues, function(value) {
 
-            if(value){
+                  if(value){
 
-              var node = document.createElement(fieldName.toLowerCase());
-              $(node).text(value);
-              return node;
+                    var node = document.createElement(fieldName.toLowerCase());
+                    $(node).text(value);
+                    return node;
 
-            }
-            else{
-              return "";
-            }
-          });
-
-          // Insert new nodes
-          if (fieldName.toLowerCase() === "alternateidentifier") {
-            datasetNode.prepend(nodes);
-          } else if (fieldName.toLowerCase() === "title") {
-            if (datasetNode.find("alternateidentifier").length > 0) {
-              datasetNode.find("alternateidentifier").last().after(nodes);
-            } else {
-              datasetNode.prepend(nodes);
-            }
-          }
-               }, this);
-
-        // Serialize pubDate
-        // This one is special because it has a default behavior, unlike
-        // the others: When no pubDate is set, it should be set to
-        // the current year
-        var pubDate = this.get('pubDate');
-
-        datasetNode.find('pubdate').remove();
-
-        if (pubDate != null && pubDate.length > 0) {
-
-          var pubDateEl = document.createElement('pubdate');
-
-          $(pubDateEl).text(pubDate);
-
-          this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
-        }
-
-
-               // Serialize the parts of EML that are eml-text modules
-               var textFields = ["abstract", "additionalInfo"];
-               _.each(textFields, function(field){
-
-                 var fieldName = this.nodeNameMap()[field] || field;
-
-                 // Get the EMLText model
-                 var emlTextModels = Array.isArray(this.get(field)) ? this.get(field) : [this.get(field)];
-                 if( ! emlTextModels.length ) return;
-
-                 // Get the node from the EML doc
-                 var nodes = datasetNode.find(fieldName);
-
-                 // Update the DOMs for each model
-                 _.each(emlTextModels, function(thisTextModel, i){
-                   //Don't serialize falsey values
-                   if(!thisTextModel) return;
-
-                   var node;
-
-                   //Get the existing node or create a new one
-                   if(nodes.length < i+1){
-                     node = document.createElement(fieldName);
-                            this.getEMLPosition(eml, fieldName).after(node);
-
-                   } else {
-                     node = nodes[i];
-
-                   }
-
-                   $(node).html( $(thisTextModel.updateDOM() ).html());
-
-                 }, this);
-
-                 // Remove the extra nodes
-                 this.removeExtraNodes(nodes, emlTextModels);
-
-               }, this);
-
-               //Serialize the geographic coverage
-        if ( typeof this.get('geoCoverage') !== 'undefined' && this.get('geoCoverage').length > 0) {
-
-          // Don't serialize if geoCoverage is invalid
-          var validCoverages = _.filter(this.get('geoCoverage'), function(cov) {
-            return cov.isValid();
-          });
-
-          if ( datasetNode.find('coverage').length === 0 && validCoverages.length ) {
-            var coveragePosition = this.getEMLPosition(eml, 'coverage');
-
-            if(coveragePosition)
-              coveragePosition.after(document.createElement('coverage'));
-            else
-              datasetNode.append(document.createElement('coverage'));
-          }
-
-          //Get the existing geo coverage nodes from the EML
-          var existingGeoCov = datasetNode.find("geographiccoverage");
-
-          //Update the DOM of each model
-          _.each(validCoverages, function(cov, position){
-
-            //Update the existing node if it exists
-            if(existingGeoCov.length-1 >= position){
-              $(existingGeoCov[position]).replaceWith(cov.updateDOM());
-            }
-            //Or, append new nodes
-            else{
-              var insertAfter = existingGeoCov.length? datasetNode.find("geographiccoverage").last() : null;
-
-              if(insertAfter)
-                insertAfter.after(cov.updateDOM());
-              else
-                datasetNode.find("coverage").append(cov.updateDOM());
-            }
-          }, this);
-
-          //Remove existing taxon coverage nodes that don't have an accompanying model
-          this.removeExtraNodes(datasetNode.find("geographiccoverage"), validCoverages);
-        }
-
-               //Serialize the taxonomic coverage
-        if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length > 0) {
-          // TODO: This nonEmptyCoverages business could be wrapped up in a empty()
-          // method on the model itself
-          var nonEmptyCoverages;
-
-          // Don't serialize if taxonCoverage is empty
-          nonEmptyCoverages = _.filter(this.get('taxonCoverage'), function(t) {
-            return _.flatten(t.get('taxonomicClassification')).length > 0;
-          });
-
-          if (nonEmptyCoverages.length > 0) {
-
-            //Create the <coverage> node if there isn't one already
-            if (datasetNode.find('coverage').length === 0) {
-              var insertAfter = this.getEMLPosition(eml, 'coverage');
-
-              if(insertAfter)
-                insertAfter.after(document.createElement('coverage'));
-              else
-                datasetNode.append(document.createElement("coverage"));
-            }
-
-            //Get the existing taxon coverage nodes from the EML
-            var existingTaxonCov = datasetNode.find("taxonomiccoverage");
-
-            //Update the DOM of each model
-            _.each(this.get("taxonCoverage"), function(taxonCoverage, position){
-
-              //Update the existing taxonCoverage node if it exists
-              if(existingTaxonCov.length-1 >= position){
-                $(existingTaxonCov[position]).replaceWith(taxonCoverage.updateDOM());
-              }
-              //Or, append new nodes
-              else{
-                datasetNode.find('coverage').append(taxonCoverage.updateDOM());
-              }
-            });
-
-            //Remove existing taxon coverage nodes that don't have an accompanying model
-            this.removeExtraNodes(existingTaxonCov, this.get("taxonCoverage"));
-
-          }
-        }
-
-            //Serialize the temporal coverage
-        var existingTemporalCoverages = datasetNode.find("temporalcoverage");
-
-              //Update the DOM of each model
-        _.each(this.get("temporalCoverage"), function(temporalCoverage, position){
-
-          //Update the existing temporalCoverage node if it exists
-          if(existingTemporalCoverages.length-1 >= position){
-            $(existingTemporalCoverages[position]).replaceWith(temporalCoverage.updateDOM());
-          }
-          //Or, append new nodes
-          else{
-            datasetNode.find('coverage').append(temporalCoverage.updateDOM());
-          }
-        });
-
-        //Remove existing taxon coverage nodes that don't have an accompanying model
-        this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
-
-                if(datasetNode.find("coverage").children().length == 0)
-                  datasetNode.find("coverage").remove();
-
-                //If there is no creator, create one from the user
-                if(!this.get("creator").length){
-                 var party = new EMLParty({ parentModel: this, type: "creator" });
-
-                 party.createFromUser();
-
-                 this.set("creator", [party]);
-                }
-
-            //Serialize the creators
-            this.serializeParties(eml, "creator");
-
-               //Serialize the metadata providers
-               this.serializeParties(eml, "metadataProvider");
-
-            //Serialize the associated parties
-               this.serializeParties(eml, "associatedParty");
-
-               //Serialize the contacts
-               this.serializeParties(eml, "contact");
-
-               //Serialize the publishers
-               this.serializeParties(eml, "publisher");
-
-        // Serialize methods
-        if(this.get('methods')) {
-
-          //If the methods model is empty, remove it from the EML
-          if( this.get("methods").isEmpty() )
-            datasetNode.find("methods").remove();
-          else{
-
-            //Serialize the methods model
-            var methodsEl = this.get('methods').updateDOM();
-
-            //If the methodsEl is an empty string or other falsey value, then remove the methods node
-            if( !methodsEl || !$(methodsEl).children().length ){
-              datasetNode.find("methods").remove();
-            }
-            else{
-
-              //Add the <methods> node to the EML
-              if (datasetNode.find('methods').length === 0){
-                var insertAfter = this.getEMLPosition(eml, "methods");
-
-                if(insertAfter)
-                  insertAfter.after(methodsEl);
-                else
-                  datasetNode.append(methodsEl);
-              }
-              else{
-
-                datasetNode.find("methods").replaceWith(methodsEl);
-
-              }
-            }
-          }
-        }
-        //If there are no methods, then remove the methods nodes
-        else{
-
-          if( datasetNode.find("methods").length > 0 ){
-            datasetNode.find("methods").remove();
-          }
-
-        }
-
-
-               //Serialize the keywords
-        this.serializeKeywords(eml, "keywordSets");
-
-            //Serialize the intellectual rights
-            if(this.get("intellectualRights")){
-              if(datasetNode.find("intellectualRights").length)
-                datasetNode.find("intellectualRights").html("<para>" + this.get("intellectualRights") + "</para>")
-              else{
-
-                this.getEMLPosition(eml, "intellectualrights").after(
-                    $(document.createElement("intellectualRights"))
-                      .html("<para>" + this.get("intellectualRights") + "</para>"));
-              }
-            }
-
-            //Serialize the project
-            if(datasetNode.find("project").length)
-              datasetNode.find("project").replaceWith(this.get("project").updateDOM());
-            else if(this.get("project"))
-              this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
-
-            //Get the existing taxon coverage nodes from the EML
-        var existingEntities = datasetNode.find("otherEntity, dataTable");
-
-            //Serialize the entities
-            _.each(this.get("entities"), function(entity, position) {
-
-          //Update the existing node if it exists
-          if(existingEntities.length - 1 >= position) {
-            $(existingEntities[position]).replaceWith(entity.updateDOM());
-          }
-          //Or, append new nodes
-          else {
-            this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());
-          }
-
-            }, this);
-
-            //Do a final check to make sure there are no duplicate ids in the EML
-            var elementsWithIDs = $(eml).find("[id]"),
-            //Get an array of all the ids in this EML doc
-                allIDs = _.map(elementsWithIDs, function(el){ return $(el).attr("id") });
-
-            //If there is at least one id in the EML...
-            if(allIDs && allIDs.length){
-              //Boil the array down to just the unique values
-              var uniqueIDs = _.uniq(allIDs);
-
-              //If the unique array is shorter than the array of all ids,
-              // then there is a duplicate somewhere
-              if(uniqueIDs.length < allIDs.length){
-
-                //For each element in the EML that has an id,
-                _.each(elementsWithIDs, function(el){
-
-                  //Get the id for this element
-                  var id = $(el).attr("id");
-
-                  //If there is more than one element in the EML with this id,
-                  if( $(eml).find("[id='" + id + "']").length > 1 ){
-                    //And if it is not a unit node, which we don't want to change,
-                    if( !$(el).is("unit") )
-                      //Then change the id attribute to a random uuid
-                      $(el).attr("id", "urn-uuid-" + uuid.v4());
                   }
-
+                  else{
+                    return "";
+                  }
                 });
 
+                // Insert new nodes
+                if (fieldName.toLowerCase() === "alternateidentifier") {
+                  datasetNode.prepend(nodes);
+                }
+                else if (fieldName.toLowerCase() === "title") {
+                  if (datasetNode.find("alternateidentifier").length > 0) {
+                    datasetNode.find("alternateidentifier").last().after(nodes);
+                  } else {
+                    datasetNode.prepend(nodes);
+                  }
+                }
+
+              }, this);
+
+              // Serialize pubDate
+              // This one is special because it has a default behavior, unlike
+              // the others: When no pubDate is set, it should be set to
+              // the current year
+              var pubDate = this.get('pubDate');
+
+              datasetNode.find('pubdate').remove();
+
+              if (pubDate != null && pubDate.length > 0) {
+
+                var pubDateEl = document.createElement('pubdate');
+
+                $(pubDateEl).text(pubDate);
+
+                this.getEMLPosition(eml, 'pubdate').after(pubDateEl);
               }
-            }
 
-               //Camel-case the XML
-          var emlString = "";
-          _.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
+              // Serialize the parts of EML that are eml-text modules
+              var textFields = ["abstract", "additionalInfo"];
 
-               return emlString;
+              _.each(textFields, function(field){
+
+                var fieldName = this.nodeNameMap()[field] || field;
+
+                // Get the EMLText model
+                var emlTextModels = Array.isArray(this.get(field)) ? this.get(field) : [this.get(field)];
+                if( ! emlTextModels.length ) return;
+
+                // Get the node from the EML doc
+                var nodes = datasetNode.find(fieldName);
+
+                // Update the DOMs for each model
+                _.each(emlTextModels, function(thisTextModel, i){
+                  //Don't serialize falsey values
+                  if(!thisTextModel) return;
+
+                  var node;
+
+                  //Get the existing node or create a new one
+                  if(nodes.length < i+1){
+                    node = document.createElement(fieldName);
+                    this.getEMLPosition(eml, fieldName).after(node);
+
+                  }
+                  else {
+                     node = nodes[i];
+                  }
+
+                  $(node).html( $(thisTextModel.updateDOM() ).html());
+
+                }, this);
+
+                // Remove the extra nodes
+                this.removeExtraNodes(nodes, emlTextModels);
+
+              }, this);
+
+              //Serialize the geographic coverage
+              if ( typeof this.get('geoCoverage') !== 'undefined' && this.get('geoCoverage').length > 0) {
+
+                // Don't serialize if geoCoverage is invalid
+                var validCoverages = _.filter(this.get('geoCoverage'), function(cov) {
+                  return cov.isValid();
+                });
+
+                if ( datasetNode.find('coverage').length === 0 && validCoverages.length ) {
+                  var coveragePosition = this.getEMLPosition(eml, 'coverage');
+
+                  if(coveragePosition)
+                    coveragePosition.after(document.createElement('coverage'));
+                  else
+                    datasetNode.append(document.createElement('coverage'));
+                }
+
+                //Get the existing geo coverage nodes from the EML
+                var existingGeoCov = datasetNode.find("geographiccoverage");
+
+                //Update the DOM of each model
+                _.each(validCoverages, function(cov, position){
+
+                  //Update the existing node if it exists
+                  if(existingGeoCov.length-1 >= position){
+                    $(existingGeoCov[position]).replaceWith(cov.updateDOM());
+                  }
+                  //Or, append new nodes
+                  else{
+                    var insertAfter = existingGeoCov.length? datasetNode.find("geographiccoverage").last() : null;
+
+                    if(insertAfter)
+                      insertAfter.after(cov.updateDOM());
+                    else
+                      datasetNode.find("coverage").append(cov.updateDOM());
+                  }
+                }, this);
+
+                //Remove existing taxon coverage nodes that don't have an accompanying model
+                this.removeExtraNodes(datasetNode.find("geographiccoverage"), validCoverages);
+              }
+
+              //Serialize the taxonomic coverage
+              if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length > 0) {
+                // TODO: This nonEmptyCoverages business could be wrapped up in a empty()
+                // method on the model itself
+                var nonEmptyCoverages;
+
+                // Don't serialize if taxonCoverage is empty
+                nonEmptyCoverages = _.filter(this.get('taxonCoverage'), function(t) {
+                  return _.flatten(t.get('taxonomicClassification')).length > 0;
+                });
+
+                if (nonEmptyCoverages.length > 0) {
+
+                  //Create the <coverage> node if there isn't one already
+                  if (datasetNode.find('coverage').length === 0) {
+                    var insertAfter = this.getEMLPosition(eml, 'coverage');
+
+                    if(insertAfter)
+                      insertAfter.after(document.createElement('coverage'));
+                    else
+                      datasetNode.append(document.createElement("coverage"));
+                  }
+
+                  //Get the existing taxon coverage nodes from the EML
+                  var existingTaxonCov = datasetNode.find("taxonomiccoverage");
+
+                  //Update the DOM of each model
+                  _.each(this.get("taxonCoverage"), function(taxonCoverage, position){
+
+                    //Update the existing taxonCoverage node if it exists
+                    if(existingTaxonCov.length-1 >= position){
+                      $(existingTaxonCov[position]).replaceWith(taxonCoverage.updateDOM());
+                    }
+                    //Or, append new nodes
+                    else{
+                      datasetNode.find('coverage').append(taxonCoverage.updateDOM());
+                    }
+                  });
+
+                  //Remove existing taxon coverage nodes that don't have an accompanying model
+                  this.removeExtraNodes(existingTaxonCov, this.get("taxonCoverage"));
+
+                }
+              }
+
+              //Serialize the temporal coverage
+              var existingTemporalCoverages = datasetNode.find("temporalcoverage");
+
+              //Update the DOM of each model
+              _.each(this.get("temporalCoverage"), function(temporalCoverage, position){
+
+                //Update the existing temporalCoverage node if it exists
+                if(existingTemporalCoverages.length-1 >= position){
+                  $(existingTemporalCoverages[position]).replaceWith(temporalCoverage.updateDOM());
+                }
+                //Or, append new nodes
+                else{
+                  datasetNode.find('coverage').append(temporalCoverage.updateDOM());
+                }
+              });
+
+              //Remove existing taxon coverage nodes that don't have an accompanying model
+              this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
+
+              if(datasetNode.find("coverage").children().length == 0)
+                datasetNode.find("coverage").remove();
+
+              //If there is no creator, create one from the user
+              if(!this.get("creator").length){
+               var party = new EMLParty({ parentModel: this, type: "creator" });
+
+               party.createFromUser();
+
+               this.set("creator", [party]);
+              }
+
+              //Serialize the creators
+              this.serializeParties(eml, "creator");
+
+              //Serialize the metadata providers
+              this.serializeParties(eml, "metadataProvider");
+
+              //Serialize the associated parties
+              this.serializeParties(eml, "associatedParty");
+
+              //Serialize the contacts
+              this.serializeParties(eml, "contact");
+
+              //Serialize the publishers
+              this.serializeParties(eml, "publisher");
+
+              // Serialize methods
+              if(this.get('methods')) {
+
+                //If the methods model is empty, remove it from the EML
+                if( this.get("methods").isEmpty() )
+                  datasetNode.find("methods").remove();
+                else{
+
+                  //Serialize the methods model
+                  var methodsEl = this.get('methods').updateDOM();
+
+                  //If the methodsEl is an empty string or other falsey value, then remove the methods node
+                  if( !methodsEl || !$(methodsEl).children().length ){
+                    datasetNode.find("methods").remove();
+                  }
+                  else{
+
+                    //Add the <methods> node to the EML
+                    if (datasetNode.find('methods').length === 0){
+                      var insertAfter = this.getEMLPosition(eml, "methods");
+
+                      if(insertAfter)
+                        insertAfter.after(methodsEl);
+                      else
+                        datasetNode.append(methodsEl);
+                    }
+                    else{
+
+                      datasetNode.find("methods").replaceWith(methodsEl);
+
+                    }
+                  }
+                }
+              }
+              //If there are no methods, then remove the methods nodes
+              else{
+
+                if( datasetNode.find("methods").length > 0 ){
+                  datasetNode.find("methods").remove();
+                }
+
+              }
+
+              //Serialize the keywords
+              this.serializeKeywords(eml, "keywordSets");
+
+              //Serialize the intellectual rights
+              if(this.get("intellectualRights")){
+                if(datasetNode.find("intellectualRights").length)
+                  datasetNode.find("intellectualRights").html("<para>" + this.get("intellectualRights") + "</para>")
+                else{
+
+                  this.getEMLPosition(eml, "intellectualrights").after(
+                      $(document.createElement("intellectualRights"))
+                        .html("<para>" + this.get("intellectualRights") + "</para>"));
+                }
+              }
+
+              //Serialize the project
+              if(datasetNode.find("project").length)
+                datasetNode.find("project").replaceWith(this.get("project").updateDOM());
+              else if(this.get("project"))
+                this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
+
+              //Get the existing taxon coverage nodes from the EML
+              var existingEntities = datasetNode.find("otherEntity, dataTable");
+
+              //Serialize the entities
+              _.each(this.get("entities"), function(entity, position) {
+
+                //Update the existing node if it exists
+                if(existingEntities.length - 1 >= position) {
+                  $(existingEntities[position]).replaceWith(entity.updateDOM());
+                }
+                //Or, append new nodes
+                else {
+                  this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());
+                }
+
+              }, this);
+
+              //Do a final check to make sure there are no duplicate ids in the EML
+              var elementsWithIDs = $(eml).find("[id]"),
+              //Get an array of all the ids in this EML doc
+                  allIDs = _.map(elementsWithIDs, function(el){ return $(el).attr("id") });
+
+              //If there is at least one id in the EML...
+              if(allIDs && allIDs.length){
+                //Boil the array down to just the unique values
+                var uniqueIDs = _.uniq(allIDs);
+
+                //If the unique array is shorter than the array of all ids,
+                // then there is a duplicate somewhere
+                if(uniqueIDs.length < allIDs.length){
+
+                  //For each element in the EML that has an id,
+                  _.each(elementsWithIDs, function(el){
+
+                    //Get the id for this element
+                    var id = $(el).attr("id");
+
+                    //If there is more than one element in the EML with this id,
+                    if( $(eml).find("[id='" + id + "']").length > 1 ){
+                      //And if it is not a unit node, which we don't want to change,
+                      if( !$(el).is("unit") )
+                        //Then change the id attribute to a random uuid
+                        $(el).attr("id", "urn-uuid-" + uuid.v4());
+                    }
+
+                  });
+
+                }
+              }
+
+              //Camel-case the XML
+              var emlString = "";
+              _.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
+
+              //Remove any HTML symbol codes from the EML string
+              emlString = emlString.replace(/&\S+;/g, "");
+
+              return emlString;
             },
 
             /*
