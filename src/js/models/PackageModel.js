@@ -1343,7 +1343,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			this.trigger("complete", this);
 		},
 
-		// A utility function for converting XML to JSON
+
+		    /*
+		    * function xmlToJson - A utility function for converting XML to JSON
+		    *
+		    * @param xml {DOM Element} - An XML or HTML DOM element to convert to json
+		    * @returns {object} - A literal JS object that represents the given XML
+		    */
         toJson: function(xml) {
 
         	// Create the return object

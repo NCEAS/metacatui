@@ -103,7 +103,8 @@ define(['jquery',
 			objectDOM = $(objectDOM);
 
 			var methodStepsFromModel = this.get('methodStepDescription'),
-					methodStepsFromDOM   = $(objectDOM).find("methodstep");
+					methodStepsFromDOM   = $(objectDOM).find("methodstep"),
+					numMethods           = methodStepsFromModel.length;
 
 			//If there are no method steps or they are all empty...
 			if ( methodStepsFromModel.length == 0 || _.every(methodStepsFromModel, function(step){ return step.isEmpty(); }) ){
@@ -114,8 +115,13 @@ define(['jquery',
 				}
 
 				// If there are no method steps but there is sampling metadata, then insert an empty method step
-				if( this.get('samplingDescription') || this.get('studyExtentDescription') )
-					objectDOM.prepend("<methodStep><description><para>No method step description provided.</para></description></methodStep>");
+				if( (this.get('samplingDescription') && !this.get('samplingDescription').isEmpty()) ||
+						(this.get('studyExtentDescription') && !this.get('studyExtentDescription').isEmpty()) ){
+
+					objectDOM.prepend("<methodstep><description><para>No method step description provided.</para></description></methodstep>");
+					numMethods = 0;
+
+				}
 			}
 			else{
 				//Update the method step descriptions
@@ -134,11 +140,19 @@ define(['jquery',
 
 					}
 					//Otherwise, create a new method step node
-					else{
+					else if( !stepDescription.isEmpty() ){
 						var lastMethodStep = objectDOM.find("methodstep").last();
 
-						lastMethodStep.after( $(document.createElement('methodStep'))
-																.append( stepDescription.updateDOM() ) );
+						//If there is already one method step, insert this one after it
+						if( lastMethodStep.length ){
+							lastMethodStep.after( $(document.createElement('methodStep'))
+																	.append( stepDescription.updateDOM() ) );
+						}
+						//Otherwise if there is no existing method step, append it to the parent DOM element
+						else{
+							objectDOM.append( $(document.createElement('methodStep'))
+																	.append( stepDescription.updateDOM() ) );
+						}
 					}
 
 				});
@@ -148,27 +162,60 @@ define(['jquery',
 			if (this.get('samplingDescription') || this.get('studyExtentDescription')) {
 
 				var samplingEl    = $(document.createElement('sampling')),
-				    studyExtentEl = $(document.createElement('studyExtent'));
+				    studyExtentEl = $(document.createElement('studyExtent')),
+						missingStudyExtent = false,
+						missingDescription = false;
 
+				//If there is a study extent description, then create a DOM element for it and append it to the parent node
 				if (this.get('studyExtentDescription') && !this.get('studyExtentDescription').isEmpty()) {
 					$(studyExtentEl).append(this.get('studyExtentDescription').updateDOM());
-				} else {
+
+					//If the text matches the default "filler" text, then mark it as missing
+					if( this.get('studyExtentDescription').get("text")[0] == "No study extent description provided."){
+						missingStudyExtent = true;
+					}
+
+				}
+				//If there isn't a study extent description, then mark it as missing and append the default "filler" text
+				else {
+					missingStudyExtent = true;
 					$(studyExtentEl).append($(document.createElement('description')).html("<para>No study extent description provided.</para>"));
 				}
 
+
+				//Add the study extent element to the sampling element
 				$(samplingEl).append(studyExtentEl);
 
+				//If there is a sampling description, then create a DOM element for it and append it to the parent node
 				if (this.get('samplingDescription') && !this.get('samplingDescription').isEmpty()) {
 					$(samplingEl).append(this.get('samplingDescription').updateDOM());
-				} else {
+
+					//If the text matches the default "filler" text, then mark it as missing
+					if( this.get('samplingDescription').get("text")[0] == "No sampling description provided."){
+						missingDescription = true;
+					}
+
+				}
+				//If there isn't a study extent description, then mark it as missing and append the default "filler" text
+				else {
+					missingDescription = true;
 					$(samplingEl).append($(document.createElement('samplingDescription')).html("<para>No sampling description provided.</para>"));
 				}
 
 				//Find the existing <sampling> element
 				var existingSampling = objectDOM.find("sampling");
 
+				//Remove all the sampling nodes if there is no study extent and no description
+				if(missingStudyExtent && missingDescription){
+					existingSampling.remove();
+
+					//If there are no method steps either, make sure their DOM elements are removed
+					if(numMethods == 0){
+						objectDOM.find("methodstep").remove();
+					}
+				}
 				//Replace the existing sampling element, if it exists
-				if( existingSampling.length > 0 ){
+				else if( existingSampling.length > 0 ){
 					existingSampling.replaceWith(samplingEl);
 				}
 				//Or append a new one
@@ -215,38 +262,51 @@ define(['jquery',
 		*/
 		isEmpty: function(){
 
-			if( !this.get("methodStepDescription").length || !this.get("methodStepDescription") ){
+			var methodsStepsEmpty = false,
+					studyExtentEmpty = false,
+					samplingEmpty = false;
 
-					if( this.get("studyExtentDescription") == this.defaults().studyExtentDescription ||
-						!this.get("studyExtentDescription") ){
+			if( !this.get("methodStepDescription").length || !this.get("methodStepDescription") ||
+					(this.get("methodStepDescription").length == 1 &&
+					 this.get("methodStepDescription")[0].get("text").length == 1 &&
+					 this.get("methodStepDescription")[0].get("text")[0] == "No method step description provided.") ||
+					 (this.get("methodStepDescription").length && _.every(this.get("methodStepDescription"), function(emlText){
+		 					return emlText.isEmpty();
+		 				})) ){
 
-							if( this.get("samplingDescription") == this.defaults().samplingDescription ||
-								!this.get("samplingDescription")){
-									return true;
-							}
-
-						}
-
-			}
-			else if( this.get("methodStepDescription").length == 1 &&
-				this.get("methodStepDescription")[0].get("text").length == 1 &&
-				this.get("methodStepDescription")[0].get("text")[0] == "No method step description provided." &&
-				this.get("samplingDescription").length == 1 &&
-				this.get("samplingDescription")[0].get("text").length == 1 &&
-				this.get("samplingDescription")[0].get("text")[0] == "No sampling description provided." &&
-				this.get("studyExtentDescription").length == 1 &&
-				this.get("studyExtentDescription")[0].get("text").length == 1 &&
-				this.get("studyExtentDescription")[0].get("text")[0] == "No study extent description provided."){
-
-					return true;
-
-			}
-			else{
-
-				return false;
+						methodsStepsEmpty = true;
 
 			}
 
+			if( this.get("studyExtentDescription") == this.defaults().studyExtentDescription ||
+					!this.get("studyExtentDescription") ||
+					(this.get("studyExtentDescription").isEmpty && this.get("studyExtentDescription").isEmpty()) ||
+					(Array.isArray(this.get("studyExtentDescription")) && !this.get("studyExtentDescription").length ) ||
+					(Array.isArray(this.get("studyExtentDescription")) &&
+					 this.get("studyExtentDescription").length == 1 &&
+					 this.get("studyExtentDescription")[0].get("text").length == 1 &&
+					 this.get("studyExtentDescription")[0].get("text")[0] == "No study extent description provided.") ){
+
+					studyExtentEmpty = true;
+
+			}
+
+			if( this.get("samplingDescription") == this.defaults().samplingDescription ||
+					!this.get("samplingDescription") ||
+					(this.get("samplingDescription").isEmpty && this.get("samplingDescription").isEmpty()) ||
+					(Array.isArray(this.get("samplingDescription")) && !this.get("samplingDescription").length ) ||
+					(Array.isArray(this.get("samplingDescription")) &&
+					 this.get("samplingDescription").length == 1 &&
+					 this.get("samplingDescription")[0].get("text").length == 1 &&
+					 this.get("samplingDescription")[0].get("text")[0] == "No sampling description provided.") ){
+
+					samplingEmpty = true;
+
+			}
+
+			if( methodsStepsEmpty && studyExtentEmpty && samplingEmpty )
+				return true;
+				
 		},
 
 		trickleUpChange: function(){

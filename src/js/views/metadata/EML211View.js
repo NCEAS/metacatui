@@ -1087,10 +1087,16 @@ define(['underscore', 'jquery', 'backbone',
 	    updateFunding: function(e){
 	    	if(!e) return;
 
-	    	var newValue = $(e.target).siblings("input.hidden").val() || $(e.target).val(),
-	    		row      = $(e.target).parent(".funding-row").first(),
-	    		rowNum   = this.$(".funding-row").index(row),
-	    		input    = $(row).find("input");
+	    	var row      = $(e.target).parent(".funding-row").first(),
+  	    		rowNum   = this.$(".funding-row").index(row),
+  	    		input    = $(row).find("input"),
+            isNew    = $(row).is(".new");
+
+        var newValue = isNew? $(e.target).siblings("input.hidden").val() : $(e.target).val();
+
+        if( typeof newValue == "string" ){
+          newValue = newValue.trim();
+        }
 
 	    	//If there is no project model
 	    	if(!this.model.get("project")){
@@ -1100,14 +1106,21 @@ define(['underscore', 'jquery', 'backbone',
 	    	else
 	    		var model = this.model.get("project");
 
-	    	var currentFundingValues = model.get("funding")
-	    	currentFundingValues[rowNum] = newValue;
+	    	var currentFundingValues = model.get("funding");
 
-	    	if($(row).is(".new") && newValue != ''){
+        //If the new value is an empty string, then remove that index in the array
+        if( typeof newValue == "string" && newValue.trim().length == 0 ){
+          currentFundingValues = currentFundingValues.splice(rowNum, 1);
+        }
+        else{
+	    	  currentFundingValues[rowNum] = newValue;
+        }
+
+	    	if(isNew && newValue != ''){
 	    		$(row).removeClass("new");
 
-				// Add in a remove button
-				$(e.target).parent().append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+  				// Add in a remove button
+  				$(e.target).parent().append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 
 	    		this.addFunding();
 	    	}

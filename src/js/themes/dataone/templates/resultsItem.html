@@ -19,7 +19,7 @@
 	</div>    		      
 	<div class="on-map icons stop-route">
 		<% if (typeof southBoundCoord != "undefined"){
-	          print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
+	          print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This data set has ' + geohash_9.length + ' geographic region' + (geohash_9.length > 1 ? 's' : '') + ' on the map."></i>');
 	       }
 	       else{
 	          print('<i class="icon icon-map-marker inactive stop-route"></i>');

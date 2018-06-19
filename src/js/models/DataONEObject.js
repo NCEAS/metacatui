@@ -465,6 +465,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
               this.set("uploadProgress", 2);
               this.set("uploadStatus", "p");
 
+              //Check if the checksum has been calculated yet.
+              if( !this.get("checksum") ){
+                //When it is calculated, restart this function
+                this.on("checksumCalculated", this.save);
+                //Calculate the checksum for this file
+                this.calculateChecksum();
+                //Exit this function until the checksum is done
+                return;
+              }
+
               //Create a FormData object to send data with our XHR
               var formData = new FormData();
 
@@ -560,7 +570,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                       if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
                         ga("send", "exception", {
                           "exDescription": "DataONEObject save error: " + parsedResponse +
-                            " | Id: " + model.get("id"),
+                            " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
                           "exFatal": true
                         });
                       }
@@ -629,9 +639,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	xml.find("identifier").text((this.get("newPid") || this.get("id")));
 	        	xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
 	        	xml.find("formatid").text(this.get("formatId") || this.getFormatId());
-	        	xml.find("size").text(this.get("size"));
+
+            //If there is no size, get it
+            if( !this.get("size") && this.get("uploadFile")){
+              this.set("size", this.get("uploadFile").size);
+            }
+
+            xml.find("size").text(this.get("size"));
+
+            //Update the checksum and checksum algorithm
 	        	xml.find("checksum").text(this.get("checksum"));
             xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
+
+            //Update the rightsholder
 	        	xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
 
 	        	//Write the access policy
@@ -971,15 +991,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                 }
                 if ( typeof documentedModel !== "undefined" ) {
                     // Find the oldPid in the array
-                    index = documentedModel.get("isDocumentedBy").indexOf("oldPid");
-                    if ( index > -1 ) {
-                        // Remove it
-                        documentedModel.get("isDocumentedBy").splice(index, 1);
+                    if( Array.isArray(documentedModel.get("isDocumentedBy")) ){
+                      index = documentedModel.get("isDocumentedBy").indexOf("oldPid");
 
+                      if ( index > -1 ) {
+                          // Remove it
+                          documentedModel.get("isDocumentedBy").splice(index, 1);
+
+                      }
+                      // And add the new pid in
+                      documentedModel.get("isDocumentedBy").push(this.get("id"));
                     }
-                    // And add the new pid in
-                    documentedModel.get("isDocumentedBy").push(this.get("id"));
-
                 }
             }, this);
 
