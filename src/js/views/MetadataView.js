@@ -220,7 +220,7 @@ define(['jquery',
 			this.insertDataSource();
 			// is this the latest version? (includes DOI link when needed)
 			this.showLatestVersion();
-			
+
 
             // If we're displaying the metrics well then display copy citation and edit button
             // inside the well
@@ -231,13 +231,13 @@ define(['jquery',
             else {
                 // Copy Citation button
                 this.insertControls();
-                
+
                 // Edit button and the publish button
                 this.insertOwnerControls();
             }
 
 
-			
+
 
 			//Show loading icon in metadata section
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
@@ -955,8 +955,22 @@ define(['jquery',
 			_.each(copyBtns, function(btn){
 				//Create a copy citation button
 				var clipboard = new Clipboard(btn);
+
 				clipboard.on("success", function(e){
-					$(e.trigger).siblings(".copy-success").show().delay(1000).fadeOut();
+
+					var originalWidth = $(e.trigger).width();
+
+					$(e.trigger).html( $(document.createElement("span")).addClass("icon icon-ok success") )
+											.append(" Copied")
+											.addClass("success")
+											.css("width", originalWidth + "px");
+
+					setTimeout(function() {
+						$(e.trigger).html("<i class='icon icon-copy icon-on-left'></i> Copy Citation")
+												.removeClass("success")
+												.css("width", "auto");
+					}, 500)
+
 				});
 
 				clipboard.on("error", function(e){
@@ -1026,24 +1040,24 @@ define(['jquery',
 
 				metrics.append(buttonToolbar);
 			}
-            
-            
+
+
             if(MetacatUI.appModel.get("displayDatasetControls")) {
                 var controlsToolbar = $(document.createElement("div")).addClass("edit-toolbar btn-toolbar");
                 var copyCitationToolbar = this.$(this.controlsContainer);
-                
+
                 //Insert controls
                 this.insertControls();
                 controlsToolbar.append(copyCitationToolbar)
 
                 if(MetacatUI.appModel.get("displayDatasetEditButton")) {
                     var editToolbar = this.$(this.ownerControlsContainer);
-                    
+
                     // Insert Owner Controls
                     this.insertOwnerControls();
                     controlsToolbar.append(editToolbar)
                 }
-                
+
 				metrics.append(controlsToolbar);
             }
 
