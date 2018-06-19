@@ -752,6 +752,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
               }, this);
 
+              //Remove extra entities that have been removed
+              var numExtraEntities = existingEntities.length - this.get("entities").length;
+              for( var i = (existingEntities.length - numExtraEntities); i<existingEntities.length; i++){
+                $(existingEntities)[i].remove();
+              }
+
               //Do a final check to make sure there are no duplicate ids in the EML
               var elementsWithIDs = $(eml).find("[id]"),
               //Get an array of all the ids in this EML doc
