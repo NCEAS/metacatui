@@ -481,6 +481,9 @@ define(['underscore', 'jquery', 'backbone',
 
                 // Hard-code the numberType for now
                 this.model.set("numericDomain", {numberType: "real"});
+
+                //Trickle up the change to the most parent-level metadata model
+                this.model.trickleUpChange();
             	}
             	//Update the datetime format
             	else if(updatedInput.is(".datetime")){

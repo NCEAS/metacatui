@@ -210,11 +210,11 @@ define(["jquery", "underscore", "backbone",
                 var unitTypeNode;
                 if ( unit ) {
                     // Remove any existing unit
-                    if ( $(objectDOM).find("unit").length ) {
-                        $(objectDOM).find("unit").remove();
-                    }
+                    $(objectDOM).find("unit").remove();
+
                     // Build a unit element, and populate a standard or custom child
                     unitNode = document.createElement("unit");
+                    
                     if ( typeof unit.standardUnit !== "undefined") {
                         unitTypeNode = document.createElement("standardUnit");
                         $(unitTypeNode).text(unit.standardUnit);
