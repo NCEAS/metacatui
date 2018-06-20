@@ -324,6 +324,10 @@ define(['underscore', 'jquery', 'backbone',
 
             		//Add a new attribute view and menu item
             		this.addNewAttribute();
+
+                //Scroll the attribute menu to the bottom so that the "Add New" button is always visible
+                var attrMenuHeight = this.$(".attribute-menu").scrollTop() + this.$(".attribute-menu").height();
+                this.$(".attribute-menu").scrollTop( attrMenuHeight );
             	}
 
             	//Get the attribute view
