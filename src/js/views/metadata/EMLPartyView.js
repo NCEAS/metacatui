@@ -64,24 +64,25 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 
 	        		//Send all the EMLParty info to the template
 	        		this.$el.html(this.editTemplate({
-	        			givenName  : fullGivenName || "",
-	        			surName    : name.surName || "",
-	        			salutation : name.salutation || "",
-	        			orgName    : this.model.get("organizationName") || "",
-	        			posName    : this.model.get("positionName") || "",
-	        			addressOne : address.deliveryPoint && address.deliveryPoint.length? address.deliveryPoint[0] : "",
-	        			addressTwo : address.deliveryPoint && address.deliveryPoint.length > 1? address.deliveryPoint[1] : "",
-	        			city       : address.city || "",
-	        			adminArea  : address.administrativeArea || "",
-	        			country    : address.country || "",
-	        			postalCode : address.postalCode || "",
-	        			phone      : this.model.get("phone").length? this.model.get("phone")[0] : "",
-	        			fax        : this.model.get("fax").length? this.model.get("fax")[0] : "",
-	        			email      : this.model.get("email").length? this.model.get("email")[0] : "",
-	        			website    : this.model.get("onlineUrl").length? this.model.get("onlineUrl")[0] : "",
-	        			userId     : Array.isArray(this.model.get("userId"))? this.model.get("userId")[0] : this.model.get("userId") || "",
 	        			uniqueId   : this.model.cid
 	        		}));
+
+              //Populate the form with all the EMLParty values
+              this.$("#" + this.model.cid + "-givenName").val(fullGivenName || "");
+              this.$("#" + this.model.cid + "-surName").val(name.surName || "");
+              this.$("#" + this.model.cid + "-position").val(this.model.get("positionName") || "");
+              this.$("#" + this.model.cid + "-organizationName").val(this.model.get("organizationName") || "");
+              this.$("#" + this.model.cid + "-email").val(this.model.get("email").length? this.model.get("email")[0] : "");
+              this.$("#" + this.model.cid + "-website").val(this.model.get("onlineUrl").length? this.model.get("onlineUrl")[0] : "");
+              this.$("#" + this.model.cid + "-phone").val(this.model.get("phone").length? this.model.get("phone")[0] : "");
+              this.$("#" + this.model.cid + "-fax").val(this.model.get("fax").length? this.model.get("fax")[0] : "");
+              this.$("#" + this.model.cid + "-orcid").val(Array.isArray(this.model.get("userId"))? this.model.get("userId")[0] : this.model.get("userId") || "");
+              this.$("#" + this.model.cid + "-address").val(address.deliveryPoint && address.deliveryPoint.length? address.deliveryPoint[0] : "");
+              this.$("#" + this.model.cid + "-address2").val(address.deliveryPoint && address.deliveryPoint.length > 1? address.deliveryPoint[1] : "");
+              this.$("#" + this.model.cid + "-city").val(address.city || "");
+              this.$("#" + this.model.cid + "-state").val(address.administrativeArea || "");
+              this.$("#" + this.model.cid + "-zip").val(address.postalCode || "");
+              this.$("#" + this.model.cid + "-country").val(address.country || "");
         		}
 
         		//If this EML Party is new/empty, then add the new class
