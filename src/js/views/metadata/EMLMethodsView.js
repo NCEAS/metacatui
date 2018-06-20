@@ -115,7 +115,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
           else{
             //Create a new EMLText model
             var newTextModel = new EMLText({
-              type: textType
+              type: textType,
+              parentModel: this.model
             });
 
             //Update the model with the textarea value
@@ -144,7 +145,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
 
             //Create a new EMLText model
             var newTextModel = new EMLText({
-              type: textType
+              type: textType,
+              parentModel: this.model
             });
 
             //Update the model with the textarea value

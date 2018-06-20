@@ -50,24 +50,29 @@ define(['jquery',
 
 			if (!objectDOM) var objectDOM = this.get("objectDOM");
 
+			var model = this;
+
 			this.set('methodStepDescription', _.map($(objectDOM).find('methodstep description'), function(el, i) {
 				return new EMLText({
 					objectDOM: el,
-					type: 'description'
+					type: 'description',
+					parentModel: model
 				 });
 			}));
 
 			if ($(objectDOM).find('sampling studyextent description').length > 0) {
 				this.set('studyExtentDescription', new EMLText({
 					objectDOM: $(objectDOM).find('sampling studyextent description').get(0),
-					type: 'description'
+					type: 'description',
+					parentModel: model
 				}));
 			}
 
 			if ($(objectDOM).find('sampling samplingdescription').length > 0) {
 				this.set('samplingDescription', new EMLText({
 					objectDOM: $(objectDOM).find('sampling samplingdescription').get(0),
-					type: 'samplingDescription'
+					type: 'samplingDescription',
+					parentModel: model
 			 	}));
 			}
 
@@ -306,7 +311,28 @@ define(['jquery',
 
 			if( methodsStepsEmpty && studyExtentEmpty && samplingEmpty )
 				return true;
-				
+
+		},
+
+		/*
+		* Climbs up the model heirarchy until it finds the EML model
+		*
+		* @return {EML211 or false} - Returns the EML 211 Model or false if not found
+		*/
+		getParentEML: function(){
+			var emlModel = this.get("parentModel"),
+					tries = 0;
+
+			while (emlModel.type !== "EML" && tries < 6){
+				emlModel = emlModel.get("parentModel");
+				tries++;
+			}
+
+			if( emlModel && emlModel.type == "EML")
+				return emlModel;
+			else
+				return false;
+
 		},
 
 		trickleUpChange: function(){

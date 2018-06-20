@@ -49,6 +49,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     */
     setText: function(text){
 
+      if( typeof text !== "string" )
+        return "";
+
+      //Get the EML model and use the cleanXMLText function to clean up the text
+      var emlModel = this.getParentEML();
+      if( typeof emlModel == "object" && emlModel.type == "EML"){
+        text = emlModel.cleanXMLText(text);
+      }
+
       //Get the list of paragraphs - checking for carriage returns and line feeds
       var paragraphsCR = text.split(String.fromCharCode(13));
       var paragraphsLF = text.split(String.fromCharCode(10));
@@ -150,6 +159,27 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       });
 
       return objectDOM;
+    },
+
+    /*
+    * Climbs up the model heirarchy until it finds the EML model
+    *
+    * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+    */
+    getParentEML: function(){
+      var emlModel = this.get("parentModel"),
+          tries = 0;
+
+      while (emlModel.type !== "EML" && tries < 6){
+        emlModel = emlModel.get("parentModel");
+        tries++;
+      }
+
+      if( emlModel && emlModel.type == "EML")
+        return emlModel;
+      else
+        return false;
+
     },
 
     trickleUpChange: function(){

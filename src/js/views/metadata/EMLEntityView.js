@@ -185,7 +185,10 @@ define(['underscore', 'jquery', 'backbone',
 
             	if(!changedAttr) return;
 
-            	this.model.set(changedAttr, $(e.target).val());
+              var emlModel = this.model.getParentEML(),
+                  newValue = emlModel? emlModel.cleanXMLText($(e.target).val()) : $(e.target).val();
+
+            	this.model.set(changedAttr, newValue);
 
               this.model.trickleUpChange();
 

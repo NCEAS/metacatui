@@ -795,9 +795,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               var emlString = "";
               _.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
 
-              //Remove any HTML symbol codes from the EML string
-              emlString = emlString.replace(/&\S+;/g, "");
-
               return emlString;
             },
 
@@ -1607,6 +1604,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                   });
 
               return plainTextEML;
+            },
+
+            /*
+            * Cleans up the given text so that it is XML-valid by escaping reserved characters, trimming white space, etc.
+            *
+            * @param {string} textString - The string to clean up
+            * @return {string} - The cleaned up string
+            */
+            cleanXMLText: function(textString){
+
+              if( typeof textString != "string" )
+                return;
+
+              textString = textString.trim();
+
+              textString = textString.replace(/&(?!(?:apos|quot|[gl]t|amp);)/g, '&amp;')
+                                     .replace(/</g, '&lt;')
+                                     .replace(/>/g, '&gt;')
+                                     .replace(/"/g, '&quot;')
+                                     .replace(/'/g, '&apos;');
+
+              return textString;
+
             },
 
             /*

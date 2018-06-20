@@ -154,8 +154,16 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
                 currentValue.splice(position, 1);
               }
               else{
+
+                var emlModel = this.model.getParentEML(),
+                    value = $(e.target).val();
+
+                if( emlModel ){
+                  value = emlModel.cleanXMLText(value);
+                }
+
                 //Put the new value in the array at the correct position
-                currentValue[position] = $(e.target).val();
+                currentValue[position] = value;
               }
 
         			this.model.set(changedAttr, currentValue);
@@ -169,7 +177,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
                 this.model.set(changedAttr, this.model.defaults()[changedAttr]);
               }
               else{
-                this.model.set(changedAttr, $(e.target).val());
+
+                var emlModel = this.model.getParentEML(),
+                    value = $(e.target).val();
+
+                if( emlModel ){
+                  value = emlModel.cleanXMLText(value);
+                }
+
+                this.model.set(changedAttr, value);
               }
             }
 
@@ -196,20 +212,29 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         		var address = this.model.get("address")[0] || {},
         			currentValue = address[changedAttr];
 
+            //Get the parent EML model and the value from the input element
+            var emlModel = this.model.getParentEML(),
+                value = $(e.target).val();
+
+            //If there is a parent EML model, clean up the text for XML
+            if( emlModel ){
+              value = emlModel.cleanXMLText(value);
+            }
+
         		//Update the address
         		if(Array.isArray(currentValue)){
 	        		//Get the position that this new value should go in
-	    			var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
+	    			  var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
 
-	    			//Put the new value in the array at the correct position
-	    			currentValue[position] = $(e.target).val();
+	    			  //Put the new value in the array at the correct position
+	    			  currentValue[position] = value;
         		}
         		//Make sure delivery points are saved as arrays
         		else if(changedAttr == "deliveryPoint"){
-        			address[changedAttr] = [$(e.target).val()];
+        			address[changedAttr] = [value];
         		}
         		else
-        			address[changedAttr] = $(e.target).val();
+        			address[changedAttr] = value;
 
         		//Update the model
     			var allAddresses = this.model.get("address");
@@ -242,21 +267,30 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
             var name = this.model.get("individualName") || {},
             currentValue = String.prototype.trim(name[changedAttr]);
 
+            //Get the parent EML model and the value from the input element
+            var emlModel = this.model.getParentEML(),
+                value = $(e.target).val().trim();
+
+            //If there is a parent EML model, clean up the text for XML
+            if( emlModel ){
+              value = emlModel.cleanXMLText(value);
+            }
+
             //Update the name
             if(Array.isArray(currentValue)){
 
-            //Get the position that this new value should go in
-            var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
+              //Get the position that this new value should go in
+              var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
 
-            //Put the new value in the array at the correct position
-            currentValue[position] = $(e.target).val();
+              //Put the new value in the array at the correct position
+              currentValue[position] = value;
 
             }
             else if(changedAttr == "givenName"){
-              name.givenName =$(e.target).val().trim();
+              name.givenName = value;
             }
             else
-              name[changedAttr] = $(e.target).val().trim();
+              name[changedAttr] = value;
 
             //Update the value on the model
             this.model.set("individualName", name);
