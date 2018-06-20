@@ -74,9 +74,9 @@
       font-size: 14px;
       line-height: 1.5;
     }
-    article, aside, figure, footer, header, hgroup, menu, nav, section { 
-      display:block; 
-      
+    article, aside, figure, footer, header, hgroup, menu, nav, section {
+      display:block;
+
     }
     body > section, footer {
       margin: 0;
@@ -85,76 +85,76 @@
     #Content {
     	max-width: 100%;
     	width: 100%;
-    }		
+    }
     body > section > article {
       margin: auto;
-      padding-bottom: 40px;  			
+      padding-bottom: 40px;
     }
     .mapMode > section > article{
     	padding-bottom: 0px;
     }
-    
+
     a {
-		color: #323D90; 
+		color: #323D90;
 		transition: color .5s;
 		-webkit-transition: color .5s;
     }
-    
+
     a:hover{
     	text-decoration:none;
     	color: #146660;
     }
-    
+
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
       text-decoration: none;
       z-index: 20; /*keeps hidden anchor tags from blocking content*/
     }
-    
+
     /* make sure the anchors render with padding-top */
     h1 > a[name]:before, h2 > a[name]:before, h3 > a[name]:before,
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
     	padding-top: 115px;
     }
-    
+
     h4{
     	font-size: 20px;
     	font-weight: 400;
     }
-    
+
     h2{
     	font-weight: 300;
     }
-    
+
     h1{
     	font-weight: bold;
-    	
+
     }
-    
+
     .bold-header{
           font-size: 18px;
           line-height: 30px;
           color: #555555;
           text-transform: uppercase;
     }
-    
+
     .pointer{
     	cursor: pointer;
     }
-    
+
     .hidden,
     #clear-all.hidden,
     a [class^="icon-"].hidden{
     	display: none;
     }
-    
+
     .webmaster-email{
     	display: block;
-    	margin-top: 1em;   	
+    	margin-top: 1em;
     }
-    
+
     .webmaster-email i{
     	margin-right: 5px;
     }
@@ -162,36 +162,36 @@
     .mapMode .collapse-me:hover{
     	cursor: pointer;
     }
-    
+
     .row-fluid{
     	min-height: 0px;
     }
     code, .code_example{
     	color: #009E94;
     }
-    
+
     /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
 	.ellipsis{
 		text-overflow: ellipsis;
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	
+
 	/* Offsets the anchor links by the same height as the fixed header */
 	#About a[name],
 	#Tools a[name],
-	#external .book a[name] { /*for eml parser docs */	
+	#external .book a[name] { /*for eml parser docs */
 		position:relative;
 		top: -95px;
 		display: block;
 	}
-    
+
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
-    
+
 /* FORM/INPUT CUSTOMIZATIONS
--------------------------------------------------- */ 
+-------------------------------------------------- */
 	.controls-well {
 	    border: 1px solid #E3E3E3;
 	    border-radius: 4px 4px 4px 4px;
@@ -214,23 +214,23 @@
 
 
 /* HEADER CSS
--------------------------------------------------- */    
-  
-  
+-------------------------------------------------- */
+
+
 #Header > img{
  	-webkit-transition: all 2s;
  	transition: all 2s;
 }
- 
+
 
 .header #inner-header{
 	max-width: 1024px;
 	margin: 0 auto;
 }
-.header nav{	
+.header nav{
 	display: none;
 	box-sizing: border-box;
-	padding: 0px 10px;	
+	padding: 0px 10px;
 }
 .header .nav-trigger.close{
 	display: none;
@@ -238,7 +238,6 @@
 .header .nav li{
 	float: left;
 	position: relative;
-	width: 100%;
 	border-bottom: 1px solid #DDD;
 }
 .header .nav li a {
@@ -257,18 +256,11 @@
 }
 .header .dropdown-menu li a{
 	background-color: #1F254F;
-	background-image: none;
 	color: #FFF;
-	font-weight: lighter;
-	font-family: "AllerLight";
-	font-size: 1em;
-	border-bottom: 1px solid #CCC;
-  	text-align: left;
-  	padding: .75em;
-  	box-sizing: border-box;
-  	text-align: center;
+  text-align: center;
+  min-width: 180px;
 }
-  	
+
 .header .nav > li >  a:hover{
 	color: #146660;
 }
@@ -333,11 +325,11 @@
     display: inline-block;
     font-family: AllerLight, Helvetica, sans-serif;
 }
-  
-  
+
+
 /* FOOTER CSS
--------------------------------------------------- */    
-    
+-------------------------------------------------- */
+
 footer {
      padding: 0px 20px 20px 20px;
  margin-top: 0px;
@@ -396,7 +388,7 @@ footer .sign-up .btn-primary {
 footer .show-in-map-mode a{
 	margin-left: 40%;
 	display: inline-block;
-} 
+}
 footer .show-in-map-mode a > h3{
 	color: #FFF;
 	font-weight: lighter;
@@ -418,7 +410,7 @@ footer .footnote{
 footer .logos{
 	margin-top: 2em;
 }
-footer .logos a{ 
+footer .logos a{
 	background-image: url('../img/footer-logos.png');
 	background-repeat: no-repeat;
 	height: 73px;
@@ -455,10 +447,10 @@ footer .logos a:hover, a:focus{
 	width: 65px;
 	background-position: 100% 0px;
 }
- 
+
  /* BUTTONS CSS
--------------------------------------------------- */    
-    
+-------------------------------------------------- */
+
     .btn, .btn-primary, .btn-large, .btn-small, .btn-mini {
       font-weight: 400;
       background-image: none;
@@ -483,30 +475,30 @@ footer .logos a:hover, a:focus{
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
-      color: #FFFFFF; 
-      text-decoration:none;     
+      color: #FFFFFF;
+      text-decoration:none;
     }
-    
+
     .btn-primary {
        background-color: #19B36A;
        border: 0px;
 	  color: #FFFFFF;
 	  background-image: none;
-	  box-shadow: none;  
+	  box-shadow: none;
 	  padding: .6em .8em;
     }
-    
+
     button.btn-primary a {
       color: #FFFFFF;
       text-decoration: none;
     }
-      
-      
+
+
     .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active{
-    	background-color: #1F254F;	
+    	background-color: #1F254F;
     	border: 0px;
-    } 
-    
+    }
+
     .btn-primary:hover,
     .nav > li > a.btn-primary:hover{
       background-color: #146660;
@@ -514,21 +506,21 @@ footer .logos a:hover, a:focus{
       color: #FDFDFD;
       background-image: none;
       background-repeat: none;
-      
+
     }
-    
+
     #search_btn.btn {
       background-color: #992222;
       color: #FFFFFF;
-      
+
     }
-    
+
     #search_btn.btn:hover {
       background-color: #882222;
       color: #FFFFFF;
-      
+
     }
-    
+
     .btn-group > .dropdown-toggle{
 		-webkit-border-top-right-radius: 4px;
 		border-top-right-radius: 4px;
@@ -538,8 +530,8 @@ footer .logos a:hover, a:focus{
     #clear-all{
     	background-color: #19B36A;
     }
-    
-/* EDITOR 
+
+/* EDITOR
 ----------------------- */
 #data-package-table .dropdown-menu li {
     float: left;
@@ -569,7 +561,7 @@ footer .logos a:hover, a:focus{
 	color: #146660;
 }
 #data-package-table td:last-of-type ul li{
-	background-color: #FFF;	
+	background-color: #FFF;
 }
 .data-package-item .bar{
 	background-color: #1E254F;
@@ -583,8 +575,8 @@ footer .logos a:hover, a:focus{
 .eml-party .party-menu .dropdown-menu>li>a:hover {
     color: #12238e;
 }
-    
-/* MAPS 
+
+/* MAPS
 --------------------------------- */
 #map-container{
 	display: none;
@@ -682,7 +674,7 @@ footer .logos a:hover, a:focus{
 .gmaps-infowindow{
 	max-height: 400px;
 	overflow-y:scroll;
-	-webkit-transform: translate3d(0,0,0); 	
+	-webkit-transform: translate3d(0,0,0);
 }
 
 /* Fixes Infowindow popup problem - interaction with bootstrap? */
@@ -710,8 +702,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-top: 0px;
 	padding-left: 10px;
 }
- 
-    
+
+
 /* NAVIGATION
 -------------------------------------------------- */
 	.breadcrumb{
@@ -730,14 +722,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       float: none;
       margin: 0 auto;
     }
-    
+
     .show-new-search{
     	cursor: pointer;
     }
-    
+
     .navbar {
       position: relative;
-      border: none;   
+      border: none;
     }
 
     .navbar-inner {
@@ -745,7 +737,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       z-index: 220;
       height: 50px;
     }
-  
+
     .navbar .nav > li > * {
       margin: 0px 5px 7px 5px;
     }
@@ -758,12 +750,12 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	    margin-top: 15px;
 	    text-shadow: none;
     }
-    
+
     .navbar .nav > li > a.btn-primary{
     	color: #FFF;
     	text-shadow: none;
     }
-    
+
     .navbar .nav > li form{
     	margin-top: 15px;
     }
@@ -776,7 +768,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       text-decoration: none;
       text-shadow: none;
     }
-    
+
     .navbar .nav > .active > a,
     .navbar .nav > .active > a:hover,
     .navbar .nav > .active > a:focus {
@@ -815,13 +807,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .navbar .nav {
       margin-top: 8px;
     }
-    
+
     #Content > .nav-tabs{
         padding-left: 25px;
     	width: calc(100% - 50px);
     	padding-right: 25px;
     }
-    
+
     .dropdown-header {
 		display: block;
 		padding: 3px 20px;
@@ -829,14 +821,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		line-height: 1.42857143;
 		color: #666;
 	}
-	
+
 	.header .nav .icon{
 		margin-right: 5px;
 	}
 	.header .login-container{
 		margin-left: 20px;
 	}
-    
+
     .dropdown-menu{
     	top: 83%;
 	    position: relative;
@@ -844,16 +836,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	    box-shadow: none;
 	    width: 100%;
     }
-	
+
 	.navbar .nav li.dropdown.open > .dropdown-toggle{
 		color: #555555;
 		background-color: transparent;
 	}
-	
+
 	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
 	    margin-top: 0;
 	}
-	
+
 	.navbar .sub-menu:before {
 	    border-bottom: 7px solid transparent;
 	    border-left: none;
@@ -871,7 +863,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	    top: 11px;
 	    left: -6px;
 	}
-	
+
 	/** Inputs in the navbar **/
 	.nav .input > form > input[type="text"]{
 		border: 1px solid #CCC;
@@ -890,14 +882,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     .main-body-padded {
       padding-top: 90px;
     }
-    
+
 	.subset-choice.keyword-search-link {
 		background-color: #115E95;
 		color: white;
 		text-shadow: none;
 		margin-bottom: 10px;
 	}
-	
+
 	.keyword-search-link.active{
 		background-color: #1981CC;
 	}
@@ -905,17 +897,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     h2.nav-header {
       margin: 20px 10px 10px 15px;
       padding: 3px 0px 3px 0px;
-      color: #555555;      
+      color: #555555;
     }
 
-/* User profile  
-  -------------------------------------------------- */ 
+/* User profile
+  -------------------------------------------------- */
 .user-view-section > section{
 	width: 100%;
-}  
+}
 
-/* Stats styles 
-  -------------------------------------------------- */ 
+/* Stats styles
+  -------------------------------------------------- */
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
@@ -923,11 +915,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	padding: 20px;
   	    max-width: 960px;
   }
-  
+
   .profile .stripe{
     	min-height: 350px;
   }
-  
+
   .profile h1{
 	width: 900px;
 	line-height: 90px;
@@ -940,11 +932,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 .user-info .icon-circle-badge {
     background-color: #146660;
 }
-  
+
 .profile .charts-container .stripe:nth-child(even){
 	background-image: url("../img/sos.png");
 }
-  
+
 .profile .charts > svg{
   	margin-left: auto;
   	margin-right: auto;
@@ -966,7 +958,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-left: 20px;
 	margin-top: 30px;
 }
- 
+
   /* The universal color for data */
 svg .data,
 .fallback.data{
@@ -974,7 +966,7 @@ svg .data,
   	stroke: #1f254f;
   	fill: #1f254f;
   }
-  
+
   /* The universal color for metadata */
 svg .metadata,
 .fallback.metadata{
@@ -994,13 +986,13 @@ svg .packages,
 	fill: inherit;
 }
 
-  
-  /* Donut charts */  
+
+  /* Donut charts */
   #metadata-chart,
 #data-chart{
 	height: 300px;
 	width: 420px;
-	margin:0px;	
+	margin:0px;
 }
 
 #metadata-chart{
@@ -1015,7 +1007,7 @@ svg .packages,
  .format-charts{
 	margin-left: auto;
 	margin-right: auto;
-	width: 100%;	
+	width: 100%;
 }
 
 
@@ -1056,7 +1048,7 @@ svg .title{
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
-	fill: #91bf0a;	
+	fill: #91bf0a;
 }
 .donut.metadata > g:nth-child(odd) .donut-arc,
 .donut.metadata > g:nth-child(odd) .donut-arc-label{
@@ -1065,7 +1057,7 @@ svg .title{
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #1f254f;	
+	fill: #1f254f;
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
@@ -1223,7 +1215,7 @@ svg .no-activity,
 	fill: #CCCCCC;
 }
 
-/* Other Navigation 
+/* Other Navigation
 ----------------------------------------------------- */
 .breadcrumb{
   margin-top: 0px;
@@ -1248,38 +1240,38 @@ MDQ items
     #Metadata {
 		min-height: 800px;
     }
-    
+
     #Metadata > .container{
 		width: 100%;
 	}
-	
+
 	#Metadata > a[href="#data"]{
 		display: block;
 		margin-bottom: 20px;
 		font-size: 13px;
 	}
-	
+
 	.controls-well img{
 		max-width: 90%;
 		max-height: 900px;
 		margin: 0 auto;
 		display: block;
 	}
-	
+
 	.controls-well > .btn{
 		margin-left: 180px;
 	}
 	.entitydetails > h4 > .title{
 		font-weight: 100;
-	}	
+	}
 	.nav-list>.active>a, .nav-list>.active>a:hover, .nav-list>.active>a:focus{
 		background-color: #1f254f;
 	}
-	
+
 	.service-table td.service-endpoint input{
 		border-color: #146660;
 	}
-	
+
 	.prov-chart,
 	.prov-chart .node
 	.prov-chart .connecter{
@@ -1289,10 +1281,10 @@ MDQ items
 		color: #1f254f;
 		stroke: #1f254f;
 	}
-    
-   #article-container.hasProvLeft, 
-   #article-container.hasProvRight, 
-   #article-container.hasProvLeft, 
+
+   #article-container.hasProvLeft,
+   #article-container.hasProvRight,
+   #article-container.hasProvLeft,
    #article-container.hasProvRight{
 		border-color: #323D90;
 	}
@@ -1307,26 +1299,26 @@ MDQ items
     	-moz-border-radius: 4px;
     	-webkit-border-radius: 4px;
     }
-    
+
     /* Download  and Publish buttons */
      #downloadPackage a.btn {
     	width: 100px;
     	margin-bottom: 8px;
-    } 
-    
+    }
+
     .download-this-package{
     	clear: both;
     	margin-left: 5px;
     }
-    
+
     .download-this-package a.metadata{
     	margin-top: 0px;
     }
-    
+
     .download-this-package i{
     	margin-left: 5px;
     }
-    
+
     /* Resource map contents table */
     .table tr > th{
     	background-color: #DEDEDE;
@@ -1372,7 +1364,7 @@ MDQ items
     	margin-top: 0px;
     	margin-bottom: 20px;
     }
-   
+
 /* MDQ CSS
 -------------------------------------------------- */
 
@@ -1390,26 +1382,26 @@ MDQ items
 
 	/* Registry CSS
 	-------------------------------------------------- */
-    
-    #RegistryEntryForm label.inline, 
-    #RegistryLogin label.inline, 
-    #RegistryResponse label.inline, 
-    #RegistryEntryReview label.inline, 
+
+    #RegistryEntryForm label.inline,
+    #RegistryLogin label.inline,
+    #RegistryResponse label.inline,
+    #RegistryEntryReview label.inline,
     #RegistryGuide label.inline {
     	width: 40%;
     }
-    
+
     /* Larger modal for guide content */
     .modal.large {
     	width: 80%;
     	margin-left: -40%;
     }
-    
+
     /* Inherit for these registry labels */
-	#RegistryEntryForm .label, 
-    #RegistryLogin .label, 
-    #RegistryResponse .label, 
-    #RegistryEntryReview .label, 
+	#RegistryEntryForm .label,
+    #RegistryLogin .label,
+    #RegistryResponse .label,
+    #RegistryEntryReview .label,
     #RegistryGuide .label {
 	  display: inherit;
 	  padding: inherit;
@@ -1426,7 +1418,7 @@ MDQ items
 	#entryForm .accordion-heading .accordion-toggle{
 		display: inline-block;
 	}
-	
+
 /* Combobox styles, overlay text input on select
 <!-- example here -->
 <div class="select-editable">
@@ -1436,34 +1428,34 @@ MDQ items
   </select>
   <input type="text" name="keyword" value=""/>
 </div>
--------------------------------------------------- */     
+-------------------------------------------------- */
 	.select-editable {
-		position: relative; 
-		height: 45px; 
+		position: relative;
+		height: 45px;
 	}
-	.select-editable select { 
-		position:absolute; 
-		top: 0px; 
-		left: 0px; 
-		width: 220px; 
+	.select-editable select {
+		position:absolute;
+		top: 0px;
+		left: 0px;
+		width: 220px;
 		height: 29px;
 	}
 	.select-editable input {
-		position:absolute; 
+		position:absolute;
 		top: 0px;
-		left: 0px; 
-		width: 193px; 
+		left: 0px;
+		width: 193px;
 		padding: 1px;
 		padding-left: 5px;
 		height: 25px;
 	}
-	.select-editable select:focus, 
-	.select-editable input:focus { 
-		outline:none; 
-	}	
-	
+	.select-editable select:focus,
+	.select-editable input:focus {
+		outline:none;
+	}
+
   /* EDITOR CSS
-  -------------------------------------------------- */	
+  -------------------------------------------------- */
 	.side-nav-item a{
 		color: #1E254F;
 	}
@@ -1473,11 +1465,11 @@ MDQ items
 		transition: none;
 		color: #FFFFFF;
 	}
-	
+
 	.side-nav-item a:focus{
 		text-decoration: none;
 	}
-	
+
 	.side-nav-item a:hover{
 		background-color: #313d81;
 		transition: none;
@@ -1486,17 +1478,17 @@ MDQ items
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-  
-    
+
+
    aside > div{
    	margin: 0px 0px 10px 0px;
 	display: block;
 	clear: both;
-	height: auto; 
+	height: auto;
 	}
-	
 
-	
+
+
     /*-- Search buttons next to text inputs --*/
     .filter.btn{
     	background-color: #ffffff;
@@ -1510,16 +1502,16 @@ MDQ items
     	display: inline-block;
     	padding: 0px 8px 0px 8px;
     }
-    
+
     .filter.btn > i{
     	margin-bottom: 2px;
     	display: block;
     }
-    
+
     .filter.btn > i:hover{
     	color: #3399CC;
     }
-    
+
     /*-- Inputs for search filters --*/
     .clear{
     	clear: both;
@@ -1527,7 +1519,7 @@ MDQ items
     	margin: 0px;
     	padding:0px;
     }
-    
+
     input.filter{
     	border-radius: 5px 0px 0px 5px;
     	-webkit-border-radius: 5px 0px 0px 5px;
@@ -1537,12 +1529,12 @@ MDQ items
     	height: 20px;
     	width: 75%;
     }
-    
+
     /* Filter checkboxes */
     input.filter[type="checkbox"]{
     	display: none;
-    } 
-    
+    }
+
    .filter-contain .checkbox-list{
     	margin-left: 0px;
     }
@@ -1554,7 +1546,7 @@ MDQ items
     	margin-right: 10px;
     }
     .checkbox-list > li > input{
-    	float: left; 	
+    	float: left;
     }
     .checkbox-list label{
     	font-size: .9em;
@@ -1562,17 +1554,17 @@ MDQ items
     .checkbox-list .more-link{
   		font-weight: normal;
   		font-size: .9em;
-  	} 
-	
+  	}
+
 	label.ui-state-active i.icon-check-empty,
 	label.ui-state-default i.icon-check{
 		display: none;
 	}
-	
+
 	label.ui-state-active i.icon-check{
 		display: inline;
 	}
-	
+
 	.current-filters > li > i:hover{
     	cursor: pointer;
     	color: #FFFFFF;
@@ -1581,12 +1573,12 @@ MDQ items
 
 
 	/*-- Currently applied filters --*/
-	
+
 	.current-filters .alert{
 		width: 100%;
 		margin-top: 10px;
 	}
-	
+
 	.current-filters,
 	.current-filters[class*="span"]{
 		list-style: none;
@@ -1600,7 +1592,7 @@ MDQ items
 		background-color: #1f254f;
 		color: #FFF;
 	}
-	
+
 	.current-filters .current-filter{
 		color: #FFFFFF;
 		font-size: 14px;
@@ -1613,13 +1605,13 @@ MDQ items
 		transition: color .5s;
 		-webkit-transition: color .5s;
 	}
-	
+
 	.current-filters > li > i:hover{
 		color: #FFF;
 	}
-    
+
     	/*-- The 'Year' filter elements --*/
-   
+
     #filter-year > input[type="number"]{
    		color: #115E95;
    		background: none;
@@ -1631,22 +1623,22 @@ MDQ items
    		top: -5px;
    		position: relative;
    		margin-bottom: 0px;
-   
+
     }
-    
+
     #filter-year > input[type="number"]:focus{
     	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
     }
-    
+
     #max_year{
     	float: right;
     	margin-right: 3%;
     }
-    
+
     #min_year{
     	float: left;
     }
-    
+
         #year-range{
     	min-height: 6px;
     	border-radius: 4px;
@@ -1656,13 +1648,13 @@ MDQ items
     	margin-bottom: 5px;
     	width: 85%;
     }
-    
+
     #year-range.disabled,
     #min_year.disabled,
     #max_year.disabled{
     	opacity: 0.6;
     }
-    
+
     .ui-slider-range{
     	top: 0;
     	height: 100%;
@@ -1672,7 +1664,7 @@ MDQ items
     	border: 0;
     	background-color: #1f254f;
    }
-    
+
     .ui-slider-handle{
     	border: 1px solid #999999;
     	background-color: #EFEFEF;
@@ -1686,7 +1678,7 @@ MDQ items
     	-moz-border-radius: 1.2em;
     	-webkit-border-radius: 1.2em;
     }
-    
+
         #filter-year  input[type="number"]{
    			background: #FFF;
 			border: 1px solid #ccc;
@@ -1704,16 +1696,16 @@ MDQ items
 			line-height: 14px;
 			padding: 2px;
     }
-    
-    
+
+
     /** for showing "my packages" filter */
 	.current-filters > li.keyword-search-link.active {
 		background-color: #1f254f; /*IE 8 fallback */
 		background-color: rgba(0, 102, 153, .8);
 	}
-	
+
     /*-- Headers in sidebar --*/
-    h2.nav-header {  
+    h2.nav-header {
       display: block;
       padding: 0px;
       margin: 0px;
@@ -1725,7 +1717,7 @@ MDQ items
       font-weight: normal;
       float: left;
     }
-    
+
     h3.nav-header{
     	text-transform: none;
     	margin: 0px;
@@ -1735,44 +1727,44 @@ MDQ items
     	padding-left: 0px;
     }
 
-    
+
     h3.nav-header > input{
     	height: 20px;
     }
-    
+
     .nav-header > i{
     	margin-right: 5px;
     	font-size: 23px;
     }
-    
+
     li.nav-header{
     	text-transform: none;
 		color: #7F7F7F;
     }
-    
+
     /*-- Your Collections area --*/
     ul.collections{
     	margin-left: 0px;
     	list-style: none;
     }
-    
+
     a.collections {
     	color: #555555;
     }
-    
+
     a.collections:hover{
     	color: #3399CC;
     }
-    
+
     a.collections > i{
     	margin-right: 5px;
     }
-    
+
    input[class*="span"].left,
    .row-fluid input[class*="span"].left{
    		float: left;
    }
-    
+
          /* Autocomplete */
     ul.ui-autocomplete{
     	width: 246px;
@@ -1781,11 +1773,11 @@ MDQ items
     	padding: 10px;
     	list-style: none;
     	overflow-y: scroll;
-    	-webkit-transform: translate3d(0,0,0); 
+    	-webkit-transform: translate3d(0,0,0);
     	max-height: 150px;
     	z-index: 100;
     }
-    
+
     li.ui-menu-item{
     	width: 100%;
     	overflow: hidden;
@@ -1793,12 +1785,12 @@ MDQ items
     	text-overflow: ellipsis;
     	background-color:#FFFFFF;
     }
-    
+
     li.ui-menu-item > a{
     	color: #555555;
     	width: 100%;
     }
-    
+
     li.ui-menu-item > a:hover,
     .ui-state-focus
      {
@@ -1819,21 +1811,21 @@ MDQ items
 		height: auto;
 		float: left;
 		margin-left: 20px;
-	}	
+	}
 	.mapMode #results-container{
 		width: 40%; /* IE fallback */
 		width: calc((100% - 216px) / 2);
 		overflow-x: hidden;
 		overflow-y: scroll;
-		-webkit-transform: translate3d(0,0,1); 
+		-webkit-transform: translate3d(0,0,1);
 		height: 700px;
 		margin-left: 0px;
 	}
-	
+
 	#results{
 		margin-bottom: 10px;
 	}
-	
+
     /*-- Results header --*/
     #results-view{
     	background-color: #FFF;
@@ -1841,37 +1833,37 @@ MDQ items
     	-moz-border-radius: 5px;
     	-webkit-border-radius: 5px;
     }
-    
+
     .result-header{
     	height: auto;
     }
-    
+
 	.result-header-count{
 		padding: 0px 10px;
-	}   
-    
+	}
+
     h5.result-header-count{
     	padding-left: 0px;
     }
-    
+
     .result-header-count > .result-header-count:after{
     	content: " data packages";
     }
-    
+
     #countstats:before{
 		content: "Datasets ";
 	}
-    
+
     .map-pointer{
     	display: none;
     }
 
-   
+
    /*-- Results rows --*/
    #results.loading > .notification{
    	min-height: 500px;
    }
-    
+
     .result-row:nth-child(odd){
     	background-color: #F4F6F8;
     }
@@ -1895,27 +1887,27 @@ MDQ items
  	   color: #146660;
  	   transition: color .5s;
 	}
-    
+
     /*-- Popovers --*/
     .popover{
     	font-size: 13px;
     }
-    
+
     .popover-title {
     	word-break: break-word;
     }
-    
+
     .popover-content {
     	word-break: break-word;
     }
-    
+
     /* Drop-down menus in the search results */
     .result-row .dropdown-menu a:hover {
 	    color: #FFFFFF;
 	    background-color: #1f254f;
 	    background-image: none;
 	}
-    
+
      .abstract-popover{
     	max-height: 500px;
     	min-height: 10px;
@@ -1924,17 +1916,17 @@ MDQ items
     	word-break: keep-all;
     	text-overflow: ellipsis;
     }
-	/** Download button **/   
+	/** Download button **/
 
-    
+
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
-    } 
+    }
     .result-row .info-icons .download{
     	cursor: pointer;
     	color: #1f254f;
     }
-    
+
     /*-- Pagination widget --*/
 	.pagination{
 		padding-left: 10px;
@@ -1945,11 +1937,11 @@ MDQ items
 		border: none;
 		float: left;
 	}
-	
+
 	.pagination ul > li{
 		cursor: pointer;
 	}
-	
+
 	.pagination ul > li > a.unactive,
 	.pagination ul > li > a.unactive:hover{
     	font-size: 20px;
@@ -1965,7 +1957,7 @@ MDQ items
 		color: #FFF;
 		background-color: #00AAFF;
 	}
-  
+
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 
@@ -2012,9 +2004,9 @@ MDQ items
 
 #metacatDocs .related > ul > li.right > a{
 	color: #FFFFFF;
-	font: 300 30px/30px Lato;	
+	font: 300 30px/30px Lato;
 	text-decoration: none;
-	text-transform: capitalize;	
+	text-transform: capitalize;
 }
 
 #metacatDocs .related > ul > li.right{
@@ -2079,7 +2071,7 @@ MDQ items
 
 #metacatDocs .footerNav > .related li.right{
 
-	
+
 }
 
 #metacatDocs .footerNav > .related li.breadcrumb:last-child{
@@ -2164,10 +2156,10 @@ MDQ items
 	color: #115E95;
 }
 
-    
-/* TABLES 
+
+/* TABLES
  -----------------------------------------------*/
- #metacatDocs table, 
+ #metacatDocs table,
  #metacatDocs tr,
  #metacatDocs th,
  #metacatDocs td,
@@ -2177,25 +2169,25 @@ MDQ items
     	border-collapse: collapse;
     	padding: 8px;
     }
-    
+
 #metacatDocs table{
 		background-color: #FFFFFF;
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
-    	
+
     }
-    
+
 #metacatDocs thead,
 #metacatDocs th{
     	background-color: #555555;
     	color: #FFFFFF;
     	font: 300 16px/20px;
     }
-    
+
 #metacatDocs td{
     	font: 400 15px/20px;
     }
-    
+
 #metacatDocs tr.row-odd{
     	background: rgba(103, 184, 229, 0.2);
     }
@@ -2211,13 +2203,13 @@ MDQ items
  	background: none;
  	clear: right;
  }
- 
+
 #metacatDocs .highlight-python{
  	word-wrap: break-word;
  	color: #FFFFFF;
  	clear: right;
  }
- 
+
  pre{
 	 padding: 10px;
 	font-size: 15px;
@@ -2226,15 +2218,15 @@ MDQ items
 	-webkit-border-radius: 5px;
 	margin: 20px auto;
  }
- 
+
  #metacatDocs  #license pre{
  	width: 700px;
  	margin: 0 auto;
  }
- 
- /* FIGURES 
+
+ /* FIGURES
  ----------------------------------------------- */
-  
+
  .figure{
  	max-width: 50%;
  	background-color: #FFFFFF;
@@ -2243,13 +2235,13 @@ MDQ items
  	border: 1px solid #666666;
  	margin: 20px auto;
  }
- 
+
  .figure > img{
  	max-width: 90%;
  	margin: 10px auto;
  	display: block;
  }
- 
+
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
@@ -2257,25 +2249,25 @@ MDQ items
 	color: #666;
 	padding-top: 10px;
  }
- 
-    
+
+
  /* MISC
  -----------------------------------------------*/
  #external > .container{
  	width: 80%;
  }
- 
+
  #external dt{
  	line-height: 34px;
  	font-size: 16px;
  }
- 
+
  .align-center{
  	margin-left: auto;
  	margin-right: auto;
  }
 
- 
+
 #metacatDocs .topic{
  	background: rgba(255,255,255,0.5);
  	padding: 20px;
@@ -2283,25 +2275,25 @@ MDQ items
  	-webkit-border-radius: 20px;
  	-moz-border-radius: 20px;
  }
- 
+
  #metacatDocs .topic > ul{
  	margin-left: 20px;
  }
- 
+
  #metacatDocs .topic-title{
  	font: 300 24px/24px Lato;
 	margin-top: 0;
  }
- 
- 
+
+
  #installing-the-registry .sidebar{
  	max-width: 100%;
  }
- 
+
     dt{
    		font: 300 18px/24px Lato;
    }
-   
+
    #metacatDocs input {
 		-webkit-appearance: none;
 		background-color: white;
@@ -2311,44 +2303,44 @@ MDQ items
 		box-shadow: none;
 		border: 0;
     }
-    
+
     #metacatDocs input[type="submit"]{
     	width: auto;
     }
-    
+
     #metacatDocs h3 {
 		font: 400 24.5px/40px;
 	}
-	
+
 	#metacatDocs h2{
 		font: 300 27.5px/40px "Lato" sans-serif;
 	}
-		
+
 	#metacatDocs h1{
 		font: 300 32px/40px "Lato" sans-serif;
 	}
-	
-	#metacatDocs h1 > a, 
+
+	#metacatDocs h1 > a,
 	#metacatDocs h2 > a,
 	#metacatDocs h3 > a,
 	#metacatDocs h4 > a{
 		color: #333333;
 	}
-	
+
 	#metacatDocs ul ul{
 		margin-left:20px;
 	}
-	
+
 	#metacatDocs .note{
 		 margin-left: 20px;
 		 color: #555555;
 	}
-	
+
 	#metacatDocs blockquote p{
 		font-size: inherit;
 		font-weight: inherit;
 	}
- 
+
  	#metacatDocs #contents{
  		background: rgba(255, 255, 255, 0.5);
 		border-radius: 20px;
@@ -2358,14 +2350,14 @@ MDQ items
 		clear: both;
 		padding: 10px 10px 10px 40px;
  	}
- 	
+
  	#metacatDocs p{
  		font-weight: 400;
  	}
  	#metacatDocs .section{
  		margin-top: 0px;
  	}
- 	
+
  	#metacatDocs .section {
       color: #555555;
       text-decoration: none;
@@ -2374,14 +2366,14 @@ MDQ items
     div.row-fluid > .section {
       margin: 35px auto auto auto;
     }
-    
+
 /*** SIGN IN *****/
 .sign-in .btn{
 	margin-bottom: 1em;
     padding: 1em;
 }
-    
- 
+
+
 
 
 /* -----  CSS FOR emlparser -----
@@ -2400,7 +2392,7 @@ MDQ items
 #content_wrapper {
 	margin:                     0px 10px 10px 10px;
 }
-                                                               
+
 
 
 /* these classes to be children of div "content" */
@@ -2420,7 +2412,7 @@ MDQ items
       border:             0.1px solid #006666;
       margin:             8px;
       /* width: 		  50%; */
-      width:              300px; 
+      width:              300px;
      /* height:             20px; */
       font-size:          12px;
   }
@@ -2447,7 +2439,7 @@ div.content-area {
     background-color:   #FFFFFF;
     color:              #003366;
     text-align:         left;
-   padding:            30px 40px 15px 40px; 
+   padding:            30px 40px 15px 40px;
    /*padding:            0px 0px 0px 0px; */
 
 }
@@ -2458,7 +2450,7 @@ div.content-area-dense {
     color:              #003366;
     text-align:         left;
   /*  padding:            30px 40px 15px 40px; */
-   padding:            0px 0px 0px 0px; 
+   padding:            0px 0px 0px 0px;
 
 }
 
@@ -2483,7 +2475,7 @@ div.left-padding {
 	padding-left:		10px;
 }
 
-#search-box { 
+#search-box {
   /* background and text style set by table .group */
   position:           relative;
   margin-left:        50%;
@@ -2525,14 +2517,14 @@ ul,ol {
 
 
 
-.ol-lower-alpha { 
+.ol-lower-alpha {
     list-style-type: lower-alpha;
     margin-top:       2px;
 
   }
 
 
-.ul-bulleted-list { 
+.ul-bulleted-list {
     list-style-type:  disc;
     margin-top:       2px;
     margin-bottom:    10px;
@@ -2541,7 +2533,7 @@ ul,ol {
 
 
 
-/* to emphasize words, use it inline with a <span> class*/ 
+/* to emphasize words, use it inline with a <span> class*/
 big {
     font-size:                  larger;
   }
@@ -2549,7 +2541,7 @@ big {
 /* to shrink words, use it inline with a <span> class*/
 small {
     font-size:                  smaller;
-  }  
+  }
 
 /* New horizontal rule. Netscape 4.x should render this fine.
  * apply this class to a <div> tag for the desired effect.
@@ -2558,12 +2550,12 @@ small {
 .rule {
     border-top-width:           2px;
     border-top-style:           solid;
-    border-color:               #003366; 
+    border-color:               #003366;
     margin:                     4px 4px
   }
-                                                            
 
-img.vtop {  
+
+img.vtop {
     vertical-align:             top;
   }
 
@@ -2583,13 +2575,13 @@ img.headshot {
     margin-bottom:              40px;
   }
 
-/* Format the headshot images in the who section 
+/* Format the headshot images in the who section
  * that have alot of text aligned to the right */
 img.headshot_long {
     margin-right:               20px;
     margin-bottom:              80px;
   }
-  
+
 /* Format inline images justified to the left in the text*/
 
 img.inlineleft {
@@ -2614,7 +2606,7 @@ img.inlineright {
 
 
 
- 
+
 
 /* This selector causes the 'section' tables to indent under the overarching div
  * tags */
@@ -2690,7 +2682,7 @@ th.rowheader {
     padding-left:               2px;
     padding-right:              2px;
     text-align:                 left;
-}    
+}
 
 .onehundred_percent {
     width:                      100%;
@@ -2748,7 +2740,7 @@ input.view.data-button{
 iframe classes
 ****/
 .iframeheaderclass {
-    height:   85px; 
+    height:   85px;
     width:    100%;
     border:   0px;
     /*margin-bottom:   10px;*/
@@ -2756,28 +2748,28 @@ iframe classes
 }
 
 .iframesearchboxclass {
-    height:   450px; 
+    height:   450px;
     width:    100%;
     border:   0px;
     margin:   0px;
 }
 
 .iframeadvancedsearchboxclass {
-    height:   1250px; 
+    height:   1250px;
     width:    100%;
     border:   0px;
     margin:   0px;
 }
 
 .iframemapclass {
-    height:   570px; 
+    height:   570px;
     width:    100%;
     border:   0px;
     margin:   0px;
 }
 
 .iframeloginboxclass {
-    height:   305px; 
+    height:   305px;
     width:    100%;
     border:   0px;
     margin:   0px;
@@ -2789,9 +2781,9 @@ iframe classes
 
 /**
  *  set the size and alignment etc of the top-level layout table
- */  
+ */
 .templatetableclass {
-    width:   100%; 
+    width:   100%;
     border:   0px;
     padding:  0px;
     margin:   0px;
@@ -2799,7 +2791,7 @@ iframe classes
 
 /**
  *  set the style of the main content area and its contents
- */ 
+ */
 .templatecontentareaclass {
     border:   0px;
     padding:  0px;
@@ -2807,14 +2799,14 @@ iframe classes
 }
 
 /**
- *  set the correct <td> sizes to accomodate the 
+ *  set the correct <td> sizes to accomodate the
  *  header, footer, left and right iframes.
- *  NOTE: these styles apply only to each 
+ *  NOTE: these styles apply only to each
  *  container frame, *NOT* to the document in
  *  the iframe within it!
- */  
+ */
 .templateheaderrowclass {
-    height:   80px; 
+    height:   80px;
     /*
       no width allowed - uses same width as table class
     */
@@ -2824,7 +2816,7 @@ iframe classes
 }
 
 .templateleftcolclass {
-    height:   100%; 
+    height:   100%;
     width:    0px;
     border:   0px;
     padding:  0px;
@@ -2832,7 +2824,7 @@ iframe classes
 }
 
 .templaterightcolclass {
-    height:   100%; 
+    height:   100%;
     width:    0px;
     border:   0px;
     padding:  0px;
@@ -2840,7 +2832,7 @@ iframe classes
 }
 
 .templatefooterrowclass {
-    height:   0px; 
+    height:   0px;
     /*
       no width allowed - uses same width as
       table class
@@ -2869,7 +2861,7 @@ iframe classes
 }
 
 
-    
+
 #loading-app{
 	display: none;
 }
