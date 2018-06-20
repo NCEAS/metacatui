@@ -115,9 +115,7 @@ define(['jquery',
 			if ( methodStepsFromModel.length == 0 || _.every(methodStepsFromModel, function(step){ return step.isEmpty(); }) ){
 
 				//Remove all existing method steps from the EML
-				if(methodStepsFromDOM.length){
-					methodStepsFromDOM.remove();
-				}
+				methodStepsFromDOM.remove();
 
 				// If there are no method steps but there is sampling metadata, then insert an empty method step
 				if( (this.get('samplingDescription') && !this.get('samplingDescription').isEmpty()) ||
@@ -256,6 +254,18 @@ define(['jquery',
 
 			}
 
+			//If there is more than one method step, remove any that have the default filler text
+			if( objectDOM.find("methodstep").length > 1 ){
+				objectDOM.find("methodstep:contains('No method step description provided.')").remove();
+			}
+
+			//If there are sampling nodes but no method nodes, make method nodes
+			if( objectDOM.find("samplingdescription").length > 0 &&
+					objectDOM.find("studyextent").length > 0 &&
+					objectDOM.find("methodstep").length == 0){
+						objectDOM.prepend("<methodstep><description><para>No method step description provided.</para></description></methodstep>");
+			}
+
 			 return objectDOM;
 		},
 
@@ -276,7 +286,14 @@ define(['jquery',
 					 this.get("methodStepDescription")[0].get("text").length == 1 &&
 					 this.get("methodStepDescription")[0].get("text")[0] == "No method step description provided.") ||
 					 (this.get("methodStepDescription").length && _.every(this.get("methodStepDescription"), function(emlText){
-		 					return emlText.isEmpty();
+		 					if(emlText.isEmpty()){
+								return true;
+							}
+							else if(_.every(emlText.get("text"), function(text){
+									return (text.trim() == "No method step description provided." || text.trim().length == 0);
+								})){
+								return true;
+							}
 		 				})) ){
 
 						methodsStepsEmpty = true;
