@@ -338,6 +338,9 @@ define(['underscore', 'jquery', 'backbone',
             	//Show the new attribute view
             	attrView.$el.show();
 
+              //Scroll to the top of the attribute view
+              this.$(".attribute-list").scrollTop(0);
+
             	attrView.postRender();
             },
 
