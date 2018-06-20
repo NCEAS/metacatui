@@ -205,13 +205,25 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
             },
 
             /*
-             * Remove an attribute from the attributeList
+             * Remove an EMLAttribute model from the attributeList array
+             *
+             * @param {EMLAttribute} - The EMLAttribute model to remove from this model's attributeList
              */
-            removeAttribute: function(attribute, index) {
-            	if(!index)
-            		var attrIndex = this.get("attributeList").indexOf(attribute);
+            removeAttribute: function(attribute) {
 
+              //Get the index of the EMLAttribute in the array
+            	var attrIndex = this.get("attributeList").indexOf(attribute);
+
+              //If this attribute model does not exist in the attribute list, don't do anything
+              if( attrIndex == -1 ){
+                return;
+              }
+
+              //Remove that index from the array
             	this.get("attributeList").splice(attrIndex, 1);
+
+              //Trickle the change up the model chain
+              this.trickleUpChange();
             },
 
             /* Validate the top level EMLEntity fields */
