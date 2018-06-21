@@ -837,6 +837,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	    width: 100%;
     }
 
+    /* Make sure the last dropdown menu in the nav bar doesn't go off the side of the page */
+    .top-nav .dropdown:last-child .dropdown-menu{
+      left: -53px;
+    }
+
 	.navbar .nav li.dropdown.open > .dropdown-toggle{
 		color: #555555;
 		background-color: transparent;
