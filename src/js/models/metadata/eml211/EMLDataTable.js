@@ -178,15 +178,29 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
             /* Validate the datable's required fields */
             validate: function(){
 
-                // Require the entity name
-                if( !this.get("entityName") ) {
-                    return "Please specify an data table name.";
-                }
+              var errors = {};
 
-                // Require the attribute list
-                if( !this.get("attributeList").length ) {
-                    return "Please describe the table attributes (columns).";
-                }
+              // Require the entity name
+              if( !this.get("entityName") ) {
+                  errors.entityName = "Please specify an data table name.";
+              }
+
+              //Validate the attributes
+              var attributeErrors = this.validateAttributes();
+              if(attributeErrors.length)
+                errors.attributeList = errors;
+
+              // Require the attribute list
+              /*if( !this.get("attributeList").length ) {
+                  errors.attributeList = "Please describe the table attributes (columns).";
+              }*/
+
+              if( Object.keys(errors).length ){
+                return errors;
+              }
+              else{
+                return false;
+              }
             },
 
             /*

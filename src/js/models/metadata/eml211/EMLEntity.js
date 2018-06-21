@@ -235,17 +235,10 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                     errors.entityName = "An entity name is required.";
                 }
 
-                //Validate each of the EMLAttributes
-                _.each( this.get("attributeList"), function(attribute){
-
-                  if( !attribute.isValid() ){
-                    if( !errors.attributeList )
-            					errors.attributeList = [attribute.validationError];
-            				else
-            					errors.attributeList.push(attribute.validationError);
-            		  }
-
-                });
+                //Validate the attributes
+                var attributeErrors = this.validateAttributes();
+                if(attributeErrors.length)
+                  errors.attributeList = errors;
 
                 if( Object.keys(errors).length )
                   return errors;
@@ -254,6 +247,26 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                   return false;
                 }
 
+            },
+
+            /*
+            * Validates each of the EMLAttribute models in the attributeList
+            *
+            * @return {Array} - Returns an array of error messages for all the EMlAttribute models
+            */
+            validateAttributes: function(){
+              var errors = [];
+
+              //Validate each of the EMLAttributes
+              _.each( this.get("attributeList"), function(attribute){
+
+                if( !attribute.isValid() ){
+                  errors.push(attribute.validationError);
+                }
+
+              });
+
+              return errors;
             },
 
             /* Copy the original XML and update fields in a DOM object */
