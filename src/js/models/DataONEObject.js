@@ -1255,17 +1255,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
 	        	_.each(Object.keys(nodeNameMap), function(name, i){
 	        		var originalXMLString = xmlString;
 
-	        		//Camel case node names
+	        		//Check for this node name whe it's an opening XML node, e.g. `<name>`
 	        		var regEx = new RegExp("<" + name + ">", "g");
 	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name] + ">");
 
+              //Check for this node name when it's an opening XML node, e.g. `<name `
 	        		regEx = new RegExp("<" + name + " ", "g");
 	        		xmlString = xmlString.replace(regEx, "<" + nodeNameMap[name] + " ");
 
+              //Check for this node name when it's preceeded by a namespace, e.g. `:name `
+              regEx = new RegExp(":" + name + " ", "g");
+	        		xmlString = xmlString.replace(regEx, ":" + nodeNameMap[name] + " ");
+
+              //Check for this node name when it's a closing tag preceeded by a namespace, e.g. `:name>`
+              regEx = new RegExp(":" + name + ">", "g");
+	        		xmlString = xmlString.replace(regEx, ":" + nodeNameMap[name] + ">");
+
+              //Check for this node name when it's a closing XML tag, e.g. `</name>`
 	        		regEx = new RegExp("</" + name + ">", "g");
 	        		xmlString = xmlString.replace(regEx, "</" + nodeNameMap[name] + ">");
 
-	        		//If node names haven't been changed, then find an attribute
+	        		//If node names haven't been changed, then find an attribute, e.g. ` name=`
 	        		if(xmlString == originalXMLString){
 	        			regEx = new RegExp(" " + name + "=", "g");
 	        			xmlString = xmlString.replace(regEx, " " + nodeNameMap[name] + "=");
