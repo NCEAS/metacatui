@@ -54,6 +54,7 @@ define(['underscore', 'jquery', 'backbone',
             	this.renderAttributes();
 
               this.listenTo(this.model, "invalid", this.showValidation);
+              this.listenTo(this.model, "valid", this.showValidation);
 
             },
 
@@ -85,7 +86,9 @@ define(['underscore', 'jquery', 'backbone',
 	       		  	});
        		  	});
 
-
+              this.$el.on("hidden", function(){
+                view.showValidation();
+              });
 
             },
 
@@ -388,7 +391,51 @@ define(['underscore', 'jquery', 'backbone',
             */
             showValidation: function(){
 
+              //Reset the error messages and styling
+              //Only change elements inside the overview-container which contains only the
+              // EMLEntity metadata. The Attributes will be changed by the EMLAttributeView.
+    					this.$(".overview-container .notification").text("");
+              this.$(".overview-tab .icon.error, .attributes-tab .icon.error").remove();
+              this.$(".overview-container, .overview-tab a, .attributes-tab a, .overview-container .error").removeClass("error");
 
+              var overviewTabErrorIcon  = false,
+                  attributeTabErrorIcon = false;
+
+              _.each( this.model.validationError, function(errorMsg, category){
+
+                if( category == "attributeList" ){
+
+                  //Create an error icon for the Attributes tab
+                  if( !attributeTabErrorIcon ){
+                    var errorIcon = $(document.createElement("i"))
+                                      .addClass("icon icon-on-left icon-exclamation-sign error")
+                                      .attr("title", "There is missing information in this tab");
+
+                    //Add the icon to the Overview tab
+                    this.$(".attributes-tab a").prepend(errorIcon).addClass("error");
+                  }
+
+                  return;
+                }
+
+                //Get all the elements for this category and add the error class
+                this.$(".overview-container [data-category='" + category + "']").addClass("error");
+                //Get the notification element for this category and add the error message
+                this.$(".overview-container .notification[data-category='" + category + "']").text(errorMsg);
+
+                //Create an error icon for the Overview tab
+                if( !overviewTabErrorIcon ){
+                  var errorIcon = $(document.createElement("i"))
+                                    .addClass("icon icon-on-left icon-exclamation-sign error")
+                                    .attr("title", "There is missing information in this tab");
+
+                  //Add the icon to the Overview tab
+                  this.$(".overview-tab a").prepend(errorIcon).addClass("error");
+
+                  overviewTabErrorIcon = true;
+                }
+
+              }, this);
 
             },
 

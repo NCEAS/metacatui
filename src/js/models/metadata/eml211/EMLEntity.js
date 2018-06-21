@@ -249,8 +249,10 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
 
                 if( Object.keys(errors).length )
                   return errors;
-                else
+                else{
+                  this.trigger("valid");
                   return false;
+                }
 
             },
 
