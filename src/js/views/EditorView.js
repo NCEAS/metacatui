@@ -557,7 +557,7 @@ define(['underscore',
             messageClasses = "alert-warning"
           }
         	else{
-            messageParagraph.text($(document.createElement("div")).append("Not all of your changes could be submitted."));
+            messageParagraph.text("Not all of your changes could be submitted.");
           }
 
         	messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))
