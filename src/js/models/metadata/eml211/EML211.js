@@ -439,6 +439,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                  eml = $.parseHTML(xmlString),
                  datasetNode = $(eml).filter("eml\\:eml").find("dataset");
 
+              //Update the packageId on the eml node with the EML id
+              $(eml).attr("packageId", this.get("id"));
+
                var nodeNameMap = this.nodeNameMap();
 
                //Serialize the basic text fields
