@@ -305,7 +305,7 @@ define(['underscore', 'jquery', 'backbone',
 
             	if(e.target){
                    	var clickedEl = $(e.target),
-                   		menuItem = clickedEl.is(".attribute-menu-item") || clickedEl.parents(".attribute-menu-item");
+                   		  menuItem = clickedEl.is(".attribute-menu-item") || clickedEl.parents(".attribute-menu-item");
 
                 	if(clickedEl.is(".remove"))
                 		return;
@@ -316,6 +316,30 @@ define(['underscore', 'jquery', 'backbone',
 
             	if(!menuItem)
             		return;
+
+              //Validate the previously edited attribute
+              //Get the current active attribute
+              var activeAttrTab = this.$(".attribute-menu-item.active");
+
+              //If there is a currently-active attribute tab,
+              if( activeAttrTab.length ){
+                //Get the attribute list from this view's model
+                var emlAttributes = this.model.get("attributeList");
+
+                //If there is an EMLAttribute list,
+                if( emlAttributes && emlAttributes.length ){
+
+                  //Get the active EMLAttribute
+                  var activeEMLAttribute = _.findWhere(emlAttributes, { cid: activeAttrTab.attr("data-attribute-id") });
+
+                  //If there is an active EMLAttribute model, validate it
+                  if( activeEMLAttribute ){
+                    activeEMLAttribute.isValid();
+                  }
+
+                }
+
+              }
 
             	//If the user clicked on the add attribute link
             	if( menuItem.is(".new") && this.$(".new.attribute-menu-item").length < 2 ){
@@ -446,7 +470,7 @@ define(['underscore', 'jquery', 'backbone',
             showTab: function(e){
             	e.preventDefault();
 
-            	//Get hte clicked link
+            	//Get the clicked link
        		  	var link = $(e.target);
 
        		  	//Remove the active class from all links and add it to the new active link
