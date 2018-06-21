@@ -245,17 +245,21 @@ define(["jquery", "underscore", "backbone",
                                 // Populate the minimum element
                                 if ( typeof minBound !== "undefined" ) {
                                     minBoundNode = document.createElement("minimum");
-                                    minBoundNode.text(minBound);
+                                    minBoundNode.textContent = minBound;
+                                    $(boundsNode).append(minBoundNode);
                                 }
 
                                 // Populate the maximum element
                                 if ( typeof maxBound !== "undefined" ) {
                                     maxBoundNode = document.createElement("maximum");
-                                    maxBoundNode.text(maxBound);
+                                    maxBoundNode.textContent = maxBound;
+                                    $(boundsNode).append(maxBoundNode);
                                 }
-                                $(boundsNode).append(minBoundNode);
-                                $(boundsNode).append(maxBoundNode);
-                                $(dateTimeDomainNode).append(boundsNode);
+
+                                //If the bounds are populated, append it to the date time domain node
+                                if( $(boundsNode).children().length > 0 )
+                                  $(dateTimeDomainNode).append(boundsNode);
+
                             } else {
                                 // Do nothing. Content is missing, don't append the node
                             }
