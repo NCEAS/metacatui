@@ -1523,18 +1523,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }, this);
             },
 
+            /*
+            * Adds the given EMLParty model to this EML211 model in the
+            * appropriate role array in the given position
+            *
+            * @param {EMLParty} - The EMLParty model to add
+            * @param {number} - The position in the role array in which to insert this EMLParty
+            * @return {boolean} - Returns true if the EMLParty was successfully added, false if it was cancelled
+            */
             addParty: function(partyModel, position){
 
               //If the EMLParty model is empty, don't add it to the EML211 model
               if(partyModel.isEmpty())
-                return;
+                return false;
 
               //Get the role of this EMLParty
               var role = partyModel.get("type") || "associatedParty";
 
               //If this model already contains this EMLParty, then exit
               if( _.contains(this.get(role), partyModel) )
-                return;
+                return false;
 
               if( typeof position == "undefined" ){
                 this.get(role).push(partyModel);
@@ -1543,6 +1551,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 this.get(role).splice(position, 0, partyModel);
               }
 
+              this.trigger("change:" + role);
+
+              return true;
             },
 
             createUnits: function(){

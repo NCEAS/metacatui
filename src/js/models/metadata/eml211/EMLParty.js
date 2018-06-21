@@ -585,21 +585,31 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 return objectDOM;
 		},
 
+      /*
+      * Adds this EMLParty model to it's parent EML211 model in the appropriate role array
+      *
+      * @return {boolean} - Returns true if the merge was successful, false if the merge was cancelled
+      */
     	mergeIntoParent: function(){
     		//Get the type of EML Party, in relation to the parent model
-			if(this.get("type") && this.get("type") != "associatedParty")
-				var type = this.get("type");
-			else
-				var type = "associatedParty";
+  			if(this.get("type") && this.get("type") != "associatedParty")
+  				var type = this.get("type");
+  			else
+  				var type = "associatedParty";
 
-			//Update the list of EMLParty models in the parent model
-			var currentModels = this.get("parentModel").get(type);
-			currentModels.push(this);
-			this.get("parentModel").set(type, currentModels);
-			this.get("parentModel").trigger("change");
+  			//Update the list of EMLParty models in the parent model
+        var parentEML = this.getParentEML();
 
-			//Trigger a custom event that marks the model as valid
-			this.isValid();
+        if(parentEML.type != "EML")
+          return false;
+
+        //Add this model to the EML model
+        var successfulAdd = parentEML.addParty(this);
+
+  			//Validate the model
+  			this.isValid();
+
+        return successfulAdd;
     	},
 
       isEmpty: function(){

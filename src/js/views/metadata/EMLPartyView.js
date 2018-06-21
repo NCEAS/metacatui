@@ -106,8 +106,11 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 
         		//If this is a new EML Party, add it to the parent EML211 model
         		if(this.isNew){
-        			this.model.mergeIntoParent();
-        			this.notNew();
+        			var mergeSuccess = this.model.mergeIntoParent();
+
+              //If the merge was sucessfull, mark this as not new
+              if( mergeSuccess  )
+        			   this.notNew();
         		}
 
         		//Get the attribute that was changed
