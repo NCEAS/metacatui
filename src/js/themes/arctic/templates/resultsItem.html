@@ -1,14 +1,14 @@
 <div class="citation">
 </div>
 <div class="clear"></div>
-<div class="info-icons  stop-route"> 
+<div class="info-icons  stop-route">
 	<% if(!isPublic){ %>
-		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-container="#results-container" data-toggle="tooltip" data-placement="right" title="This is private content."></i></div>		
+		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-container="#results-container" data-toggle="tooltip" data-placement="right" title="This is private content."></i></div>
 	<% } %>
-	<div class="icons stop-route">             
+	<div class="icons stop-route">
            <%
            if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
-           	  
+
            	  // handle multiple resourceMaps
 				print('<a class="dropdown-toggle stop-route" data-toggle="dropdown" title="Download">');
 				print('<i class="icon icon-cloud-download stop-route tooltip-this" data-title="There are multiple packages of data associated with this metadata document. Download each individually." data-trigger="hover" data-placement="right" data-container="#results"></i><i class="icon-caret-down icon stop-route"></i>');
@@ -18,25 +18,25 @@
 				_.each(resourceMap, function(resourceMapId) {
 					print('<li class="stop-route">');
 					print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" data-id="' + resourceMapId + '" class="stop-route download">', 'Dataset ', cnt, '</a>');
-					print('</li>'); 
-					cnt++;	 
+					print('</li>');
+					cnt++;
 				});
-				print('</ul>'); 
+				print('</ul>');
 			}
 			else{
 				var URLid = resourceMap || id;
 				print('<a class="download stop-route tooltip-this" download data-id="' + URLid + '" title="Click to Download" href="', MetacatUI.appModel.get('objectServiceUrl'), URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right" data-container="#results"><i class="icon icon-cloud-download stop-route"></i></a>');
-			}			
-          	%>          
+			}
+          	%>
       </div>
 	<div class="stats icons stop-route">
-		<% 
-		
-		if (typeof read_count_i !== "undefined"){ 
+		<%
+
+		if (typeof read_count_i !== "undefined"){
 			var readableCount = MetacatUI.appView.commaSeparateNumber(read_count_i); %>
 			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
 		<% }
-		else{ 
+		else{
 		%>
 			<span></span>
 		<% }
@@ -44,18 +44,18 @@
 	</div>
     <% if(typeof abstract != "undefined"){  %>
 		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
-	<% } %>    		      
-    <div class="resource-map icons stop-route">             
+	<% } %>
+    <div class="resource-map icons stop-route">
            <%
            if (resourceMap) {
 				print('<img src="img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
 			}
             %>
-          
+
     </div>
       	<div class="on-map icons  stop-route">
-		<% 
-		if (typeof southBoundCoord != "undefined"){
+		<%
+		if (typeof southBoundCoord != "undefined" && geohash_9){
         	print('<i class="icon icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body"  title="This data set has ' + geohash_9.length + ' geographic region' + (geohash_9.length > 1 ? 's' : '') + ' on the map."></i>');
         }
         else{
@@ -72,6 +72,6 @@
       			print('<i class="icon icon-code-fork inactive stop-route"></i>');
       		}
       	%>
-      	</div>  
+      	</div>
       	<div class="clear"></div>
   </div><!-- END info-icons -->

@@ -7,7 +7,7 @@
 		    return val;
 		 }
 %>
-<% 
+<%
 	if (typeof southBoundCoord != "undefined"){
 		print('<div class="result-row pointer" data-id="'+id+'">');
 	}
@@ -16,26 +16,26 @@
 	}
 %>
         <div class="span2 info-icons">
-			
+
         	<div class="row-fluid">
-        		            
-	            <% if((typeof abstract == 'undefined') || (abstract == "")){ 
+
+	            <% if((typeof abstract == 'undefined') || (abstract == "")){
            			print('<div class="show-abstract span6 stop-route">');
            			print('<i class="icon-info-sign inactive stop-route"></i>');
            			print('</div>');
-           		} 
-           		else{	        
-           			var safeAbstract = abstract.replace(/\"/g, "'");  
-           			safeAbstract = "<div class='abstract-popover stop-route'>"+safeAbstract+"</div>"; 
-           					
+           		}
+           		else{
+           			var safeAbstract = abstract.replace(/\"/g, "'");
+           			safeAbstract = "<div class='abstract-popover stop-route'>"+safeAbstract+"</div>";
+
            			print('<div class="show-abstract span6 popover-this stop-route prevent-popover-runoff" data-placement="left" data-trigger="hover" data-title="Abstract" data-container="#Content" data-html="true" data-content="' + safeAbstract + '">');
            			print('<i class="icon-info-sign show-abstract more-info stop-route"></i>');
            			print('</div>');
-           		 } 
+           		 }
               %>
         		<div class="on-map span6 stop-route">
-					<% 
-						if (typeof southBoundCoord != "undefined"){
+					<%
+						if (typeof southBoundCoord != "undefined" && geohash_9){
 		               		print('<i class="icon-map-marker on-map open-marker stop-route" data-id="'+id+'" data-geohash="' + geohash_9 + '"></i>');
 		               }
 		               else{
@@ -43,48 +43,48 @@
 		               }
 		            %>
 	            </div>
-            </div>  
-              <div class="row-fluid stop-route download">             
+            </div>
+              <div class="row-fluid stop-route download">
 	               <%
 		           if (resourceMap) {
-		           	  
+
 		           	  // handle multiple resourceMaps
 		           	 if(resourceMap.length > 1){
 				      	print('<a class="dropdown-toggle download stop-route" data-toggle="dropdown" title="Download">');
-				      }	
+				      }
 				      else{
 				        print('<a class="download stop-route" title="Download" href="', package_service, resourceMap, '">');
-					 } 
+					 }
 						print('<i class="icon-folder-open download stop-route"></i>');
-					
+
 					if(resourceMap.length > 1){ print('<i class="icon-caret-down stop-route"></i>'); }
-					
+
 						print('<label class="stop-route">Download</label>');
 						print('</a>');
-							
+
 						if(resourceMap.length > 1){
 						    print('<ul class="dropdown-menu download stop-route">');
 						    var cnt = 1;
 						    _.each(resourceMap, function(resourceMapId) {
 								print('<li class="stop-route">');
 								print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="stop-route">', 'Package ', cnt, '</a>');
-								print('</li>'); 	 
+								print('</li>');
 							});
 						    print('</ul>');
 						}
 					}
 	           		%>
-	           
+
         	</div>
-	       
-	   </div>      
+
+	   </div>
         <div class="result-citation span9">
-              
+
         </div>
-        
+
 		<div class="span1 stats">
-			<% 
-			
+			<%
+
 			if (typeof read_count_i != "undefined"){
 				print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
 			}
