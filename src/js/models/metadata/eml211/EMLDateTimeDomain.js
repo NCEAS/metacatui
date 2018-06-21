@@ -185,6 +185,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when formatstrings are better supported
+                else{
+                  $(objectDOM).find("formatstring").remove();
+                }
+                */
 
                 // Update the dateTimePrecision
                 if ( this.get("dateTimePrecision") ) {
@@ -204,6 +209,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when datetimeprecision if better supported
+                else{
+                  $(objectDOM).find("datetimeprecision").remove();
+                }
+                */
 
                 // Update the dateTimeDomain
                 var dateTimeDomain = this.get("dateTimeDomain");

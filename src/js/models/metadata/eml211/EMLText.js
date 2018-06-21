@@ -145,6 +145,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         return objectDOM;
       }
 
+      //If there is no text, return an empty string
+      if( this.isEmpty() ){
+        return "";
+      }
+
       //Empty the DOM
       $(objectDOM).empty();
 
@@ -191,8 +196,20 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     },
 
     isEmpty: function() {
+
+      //If the text is an empty array, this is empty
+      if( Array.isArray(this.get("text")) && this.get("text").length == 0 ){
+        return true;
+      }
+      //If the text is a falsey value, it is empty
+      else if( !this.get("text") ){
+        return true;
+      }
+
+      //Iterate over each paragraph in the text array and check if it's an empty string
       for (var i = 0; i < this.get('text').length; i++) {
-        if (this.get('text')[i].trim().length > 0) return false;
+        if (this.get('text')[i].trim().length > 0)
+          return false;
       }
 
       return true;

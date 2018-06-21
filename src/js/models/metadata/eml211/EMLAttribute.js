@@ -175,7 +175,7 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Update the attributeName
-                if ( this.get("attributeName") ) {
+                if ( typeof this.get("attributeName") == "string" && this.get("attributeName").trim().length ) {
                     if ( $(objectDOM).find("attributename").length ) {
                         $(objectDOM).find("attributename").text(this.get("attributeName"));
                     } else {
@@ -190,6 +190,11 @@ define(["jquery", "underscore", "backbone",
                             );
                         }
                     }
+                }
+                //If there is no attribute name, return an empty string because it
+                // is invalid
+                else{
+                  return "";
                 }
 
                 // Update the attributeLabels
@@ -237,6 +242,14 @@ define(["jquery", "underscore", "backbone",
                             });
                         }
                     }
+                    //If the label array is empty, remove all the labels from the DOM
+                    else{
+                      $(objectDOM).find("attributelabel").remove();
+                    }
+                }
+                //If there is no attribute label, remove them from the DOM
+                else{
+                  $(objectDOM).find("attributelabel").remove();
                 }
 
                 // Update the attributeDefinition
@@ -255,6 +268,11 @@ define(["jquery", "underscore", "backbone",
                                 .text(this.get("attributeDefinition"))[0]);
                         }
                     }
+                }
+                //If there is no attirbute definition, then return an empty String
+                // because it is invalid
+                else{
+                  return "";
                 }
 
                 // Update the storageTypes
@@ -293,6 +311,12 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /*If there are no storage types, remove them all from the DOM.
+                TODO: Uncomment this out when storage type is supported in editor
+                else{
+                  $(objectDOM).find("storagetype").remove();
+                }
+                */
 
                 // Update the measurementScale
                 nodeToInsertAfter = undefined;

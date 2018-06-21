@@ -66,6 +66,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		updateDOM: function(){
 			 var objectDOM = this.get("objectDOM") ? this.get("objectDOM").cloneNode(true) : document.createElement("keywordset");
 
+       //Return an empty string if there are no keywords
+       if( !this.get("keywords") || this.get("keywords").length == 0 ){
+         return "";
+       }
+
 			 //Remove the keywords and thesaurus
 			 $(objectDOM).empty();
 
@@ -103,7 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         return false;
 
     },
-    
+
 		trickleUpChange: function(){
 			MetacatUI.rootDataPackage.packageModel.set("changed", true);
 		},
