@@ -901,7 +901,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 this.trigger("valid");
               }
 
-              // Set missing file names before saving
+              // Update the file name to match the title
+              if( Array.isArray(this.get("title")) ){
+                this.set("fileName", this.get("title")[0]);
+              }
+              else if( typeof this.get("title") == "string" ){
+                this.set("fileName", this.get("title"));
+              }
+
+              //If that doesn't work for some reason, set the missing file name via the
+              // DataONEObject inherited function setMissingFileName()
               if ( ! this.get("fileName") ) {
                   this.setMissingFileName();
               }
