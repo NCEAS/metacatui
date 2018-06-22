@@ -73,11 +73,14 @@ define(['jquery', 'underscore', 'backbone'],
 			mdqUrl: null,
 
 
+			// Metrics endpoint url
+			metricsUrl: null,
+
 			// set these flags to true if the metrics contents should be published on the 
 			// dataset landing page
 			displayMetricWell: true,
 			displayDatasetMetrics: true,
-			displayDatasetMetricsTooltip: false,
+			displayDatasetMetricsTooltip: true,
 			displayDatasetCitationMetric: true,
 			displayDatasetDownloadMetric: true,
 			displayDatasetViewMetric: true,
@@ -154,6 +157,9 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("bioportalSearchUrl", "https://data.bioontology.org/search?ontologies=ECSO&apikey=" + this.get("bioportalAPIKey") + "&pagesize=1000&suggest=true&q=")
 
 			this.on("change:pid", this.changePid);
+
+
+			this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/metrics/filters');
 		},
 
 		changePid: function(model, name){

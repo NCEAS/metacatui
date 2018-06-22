@@ -46,10 +46,18 @@ define(['jquery', 'underscore', 'backbone'],
             // TODO: Change to 'Show metricName', once you've the modals working.
             if (MetacatUI.appModel.get("displayDatasetMetricsTooltip")) {
                 this.$el.addClass("tooltip-this")
-                        .attr("data-title", "Dataset " + this.metricName)
                         .attr("data-placement", "top")
                         .attr("data-trigger", "hover")
                         .attr("data-container", "body");
+                if  (this.metricName == 'Citations') {
+                    this.$el.attr("data-title", "For all the versions of this dataset, the number of times that all or part of this dataset was cited.");
+                } else if (this.metricName == 'Downloads') {
+                    this.$el.attr("data-title", "For all the versions of this dataset, the number of times that all or part of this dataset was downloaded.");
+                } else if (this.metricName == 'Views') {
+                    this.$el.attr("data-title", "For all the versions of this dataset, the number of times that all or part of this dataset was viewed.");
+                } else {
+                    this.$el.attr("data-title", "");
+                }
             };
 
             // waiting for the fetch() call to succeed.

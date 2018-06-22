@@ -1720,17 +1720,6 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     margin-right: 15px;
 }
 
-#metadata-controls-container > 
-.metadata-controls-container > 
-.copy-success{
-	position: absolute;
-    display: inline-block;
-    z-index: 1000;
-    top: -24px;
-    left: 17px;
-    font-size: .9em;
-}
-
 /* Style for the toolbars that contains buttons in the well on either side. */
 .metric-toolbar {
     float: left;

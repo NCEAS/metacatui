@@ -83,7 +83,7 @@ define(['jquery', 'underscore', 'backbone'],
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
 			formatsServiceUrl: null,
-      formatsUrl: "/formats",
+			formatsUrl: "/formats",
 			resolveServiceUrl: null,
 			//bioportalSearchUrl: null,
 			orcidBaseUrl: "https:/orcid.org",
@@ -102,11 +102,14 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
 
+			// Metrics endpoint url
+			metricsUrl: null,
+			
 			// set these flags to true if the metrics contents should be published on the 
 			// dataset landing page
 			displayMetricWell: true,
 			displayDatasetMetrics: true,
-			displayDatasetMetricsTooltip: false,
+			displayDatasetMetricsTooltip: true,
 			displayDatasetCitationMetric: true,
 			displayDatasetDownloadMetric: true,
 			displayDatasetViewMetric: true,
@@ -151,7 +154,7 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 
 					if(typeof this.get("pendingMapsUrl") != "undefined")
-						this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
+						this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap");
 
 					if(typeof this.get("accountsMapsUrl") != "undefined")
 						this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
@@ -193,12 +196,17 @@ define(['jquery', 'underscore', 'backbone'],
 				if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
 					this.set("signOutUrl", this.get('portalUrl') + "logout");
 
+
+
+				this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/metrics/filters');
 			}
 
 			//The package service for v2 DataONE API
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			this.on("change:pid", this.changePid);
+
+
 		},
 
 		changePid: function(model, name){
