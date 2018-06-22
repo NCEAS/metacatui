@@ -49,6 +49,15 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     */
     setText: function(text){
 
+      if( typeof text !== "string" )
+        return "";
+
+      //Get the EML model and use the cleanXMLText function to clean up the text
+      var emlModel = this.getParentEML();
+      if( typeof emlModel == "object" && emlModel.type == "EML"){
+        text = emlModel.cleanXMLText(text);
+      }
+
       //Get the list of paragraphs - checking for carriage returns and line feeds
       var paragraphsCR = text.split(String.fromCharCode(13));
       var paragraphsLF = text.split(String.fromCharCode(10));
@@ -136,6 +145,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         return objectDOM;
       }
 
+      //If there is no text, return an empty string
+      if( this.isEmpty() ){
+        return "";
+      }
+
       //Empty the DOM
       $(objectDOM).empty();
 
@@ -152,6 +166,27 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       return objectDOM;
     },
 
+    /*
+    * Climbs up the model heirarchy until it finds the EML model
+    *
+    * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+    */
+    getParentEML: function(){
+      var emlModel = this.get("parentModel"),
+          tries = 0;
+
+      while (emlModel.type !== "EML" && tries < 6){
+        emlModel = emlModel.get("parentModel");
+        tries++;
+      }
+
+      if( emlModel && emlModel.type == "EML")
+        return emlModel;
+      else
+        return false;
+
+    },
+
     trickleUpChange: function(){
       MetacatUI.rootDataPackage.packageModel.set("changed", true);
     },
@@ -161,8 +196,20 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     },
 
     isEmpty: function() {
+
+      //If the text is an empty array, this is empty
+      if( Array.isArray(this.get("text")) && this.get("text").length == 0 ){
+        return true;
+      }
+      //If the text is a falsey value, it is empty
+      else if( !this.get("text") ){
+        return true;
+      }
+
+      //Iterate over each paragraph in the text array and check if it's an empty string
       for (var i = 0; i < this.get('text').length; i++) {
-        if (this.get('text')[i].trim().length > 0) return false;
+        if (this.get('text')[i].trim().length > 0)
+          return false;
       }
 
       return true;

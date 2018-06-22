@@ -1,14 +1,15 @@
 /* Tablets and large screens ----------- */
 @media only screen and (min-width : 768px){
-    
+
     #Header {
 	    overflow: hidden;
-	    opacity: 0.8;   
+	    opacity: 0.8;
   	}
-  	
+
   	.mapMode #Header{
   		opacity: 1;
   	}
+
   	.DataCatalog #Content{
   		max-width: 100%;
   	}
@@ -63,20 +64,20 @@
 	    visibility: hidden;
 	    margin-top: -1px;
 	}
-	
+
 	.dropdown-menu li:hover .sub-menu {
 	    visibility: visible;
 	}
-	
+
 	.dropdown:hover .dropdown-menu {
 	    display: block;
 	}
-	
+
 	.dropdown:hover .dropdown-menu.hidden,
 	.dropdown-menu.hidden{
 		display: none;
 	}
-	
+
   	/*Dropdown menus - only appear on non-mobile*/
 	.nav .dropdown-toggle .caret{
 		margin-top: 14px;
@@ -87,15 +88,10 @@
    		border: 0px;
     	background-color: transparent;
   	}  	
-  	.nav .dropdown-menu li{
-  		width: 100%;
-    	display: block;
-    	float: none;
-    }
   	.nav .dropdown-menu li a:hover,
   	.nav .dropdown-menu li a:focus{
   		background-color: #19B36A;
-  		background-image: none;	
+  		background-image: none;
   		color: #FFF;
   	}
   	.nav .dropdown-menu li:first-child a{
@@ -113,7 +109,7 @@
 		border-bottom-right-radius: 4px;
 		-moz-border-bottom-right-radius: 4px;
 		-webkit-border-bottom-right-radius: 4px;
-		
+
 		border-bottom: 0px;
   	}
 }
@@ -143,7 +139,7 @@
 		padding-bottom: 785px; /* Keeps footer down */
 		margin-top: 0px;
 	}
-	
+
 	/************** Footer ****************/
 	#Footer{
 		height: 775px; /* Keeps footer down */
@@ -173,15 +169,15 @@
     }
 }
 
-@media only screen and (max-width : 768px){ 	
+@media only screen and (max-width : 768px){
   	footer .show-in-map-mode a {
   		margin-left: 25%;
   	}
-  	
+
   	 #nav-trigger{
   		display: block;
   	}
-  	
+
   	/* Take nav out of mobile-style */
 	nav{
 		float: right;

@@ -89,7 +89,15 @@ define(['underscore', 'jquery', 'backbone',
             updateModel: function(e){
             	if(!e) return;
 
-            	var newValue = $(e.target).val(),
+              var emlModel = this.model.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+            	var newValue = emlModel? emlModel.cleanXMLText( $(e.target).val() ) : $(e.target).val(),
             		category  = $(e.target).attr("data-category"),
             		currentValue = this.model.get(category);
 

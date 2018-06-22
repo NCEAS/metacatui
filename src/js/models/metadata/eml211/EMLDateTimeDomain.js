@@ -185,6 +185,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when formatstrings are better supported
+                else{
+                  $(objectDOM).find("formatstring").remove();
+                }
+                */
 
                 // Update the dateTimePrecision
                 if ( this.get("dateTimePrecision") ) {
@@ -204,6 +209,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when datetimeprecision if better supported
+                else{
+                  $(objectDOM).find("datetimeprecision").remove();
+                }
+                */
 
                 // Update the dateTimeDomain
                 var dateTimeDomain = this.get("dateTimeDomain");
@@ -288,6 +298,27 @@ define(["jquery", "underscore", "backbone",
                         return $(objectDOM).find(nodeOrder[i]).last()[0];
                     }
                 }
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
             },
 
             /* Let the top level package know of attribute changes from this object */

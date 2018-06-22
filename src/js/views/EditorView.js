@@ -551,8 +551,8 @@ define(['underscore',
 
           if( this.model.get("draftSaved") && MetacatUI.appModel.get("contentIsModerated") ){
             messageParagraph.text("Not all of your changes could be submitted " +
-              "due to a technical error. But, we saved a draft of your edits and " +
-              "alerted our support team. Our team will contact " +
+              "due to a technical error. But, we sent a draft of your edits to " +
+              "our support team, who will contact " +
               "you via email as soon as possible about getting your data package submitted. ");
             messageClasses = "alert-warning"
           }

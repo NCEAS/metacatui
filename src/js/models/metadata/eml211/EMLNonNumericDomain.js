@@ -339,9 +339,22 @@ define(["jquery", "underscore", "backbone",
                       } else if( this.get("nonNumericDomain").length == $(objectDOM).children("nonnumericdomain").length
                           && $(objectDOM).children("nonnumericdomain").length >= i){
 
-                            //If this is a text domain, update the textdomain elements
-                            if(typeof domain.textDomain === "object"){
-                              this.updateTextDomain(domain.textDomain, $($(objectDOM).children("nonnumericdomain")[i]).find("textdomain"));
+                            //If this is a text domain,
+                            if( typeof domain.textDomain === "object" ){
+
+                                //If there are existing textDomain nodes in the DOM, update them
+                                if( $($(objectDOM).children("nonnumericdomain")[i]).find("textdomain").length > 0 ){
+                                  this.updateTextDomain(domain.textDomain, $($(objectDOM).children("nonnumericdomain")[i]).find("textdomain"));
+                                }
+                                //If there are no textDomain nodes in the DOM, create new ones
+                                else{
+                                  //Create new textDomain nodes
+                                  var newTextDomainNodes = this.createTextDomain(domain.textDomain);
+
+                                  //Insert the new textDomain nodes into the nonNumericDomain node
+                                  $( $(objectDOM).children("nonnumericdomain")[i] ).html( newTextDomainNodes );
+                                }
+
                             }
                             else if(typeof domain.enumeratedDomain === "object"){
                               //Get the nonNumericDomain node from the DOM
@@ -654,11 +667,12 @@ define(["jquery", "underscore", "backbone",
              *  will update all the DOM elements with the textDomain object values
              *
              * @param {object} textDomain - A literal object representing an EML text domain
-             * @return {DOM Element} textDomainEl - An <textdomain> DOM element tree to update
+             * @param {DOM Element} textDomainEl - The <textDomain> DOM Element to update
+             * @return {DOM Element} - An <textdomain> DOM element tree to update
              */
             updateTextDomain: function(textDomain, textDomainEl){
 
-              if( typeof textDomainEl === "undefined" )
+              if( typeof textDomainEl === "undefined" || (typeof textDomainEl == "object" && textDomainEl.length == 0) )
                 var textDomainEl = document.createElement("textdomain");
 
               //Create a shortcut to the jQuery object of the text domain element
@@ -718,6 +732,21 @@ define(["jquery", "underscore", "backbone",
               }
 
               return textDomainEl;
+            },
+
+            /*
+             * Creates a textDomain DOM object with the textDomain object values
+             *
+             * @param {object} textDomain - A literal object representing an EML text domain
+             * @return {DOM Element} - An <textdomain> DOM element tree to update
+             */
+            createTextDomain: function(textDomain){
+              var textDomainEl = document.createElement("textdomain");
+
+              this.updateTextDomain(textDomain, textDomainEl);
+
+              return textDomainEl;
+
             },
 
             /*
@@ -801,6 +830,27 @@ define(["jquery", "underscore", "backbone",
 
             		return;
             	}
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
             },
 
             removeCode: function(index){

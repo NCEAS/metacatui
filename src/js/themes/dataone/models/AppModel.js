@@ -115,7 +115,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
 				this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
 
-				this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap");
+				this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
 				this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
 			}
 

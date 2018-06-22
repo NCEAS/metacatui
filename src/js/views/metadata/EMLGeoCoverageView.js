@@ -4,7 +4,7 @@ define(['underscore', 'jquery', 'backbone',
     'text!templates/metadata/EMLGeoCoverage.html'],
     function (_, $, Backbone, EMLGeoCoverage, EMLGeoCoverageTemplate) {
 
-        /* 
+        /*
             The EMLGeoCoverage renders the content of an EMLGeoCoverage model
         */
         var EMLGeoCoverageView = Backbone.View.extend({
@@ -56,10 +56,10 @@ define(['underscore', 'jquery', 'backbone',
             },
 
             /**
-             * Updates the model. 
+             * Updates the model.
              * If this is called from the user switching between latitude and longitude boxes,
              * we check to see if the input was valid and display any errors if we need to.
-             * 
+             *
              * @function updateModel
              * @param e The event
              */
@@ -75,6 +75,11 @@ define(['underscore', 'jquery', 'backbone',
 
                 //Get the attribute that was changed
                 if (!attribute) return false;
+
+                var emlModel = this.model.getParentEML();
+                if(emlModel){
+                  value = emlModel.cleanXMLText(value);
+                }
 
                 //Are the NW and SE points the same? i.e. is this a single point and not a box?
                 var isSinglePoint = (this.model.get("north") != null && this.model.get("north") == this.model.get("south")) &&
@@ -92,8 +97,8 @@ define(['underscore', 'jquery', 'backbone',
 
                 //If the NW and SE points are the same point...
                 if (isSinglePoint && hasEmptyInputs) {
-                    /* If the user updates one of the empty number inputs, then we can assume they do not 
-                    *   want a single point and are attempting to enter a second point. So we should empty the 
+                    /* If the user updates one of the empty number inputs, then we can assume they do not
+                    *   want a single point and are attempting to enter a second point. So we should empty the
                     *   value from the model for the corresponding coordinate
                     *   For example, if the UI shows a lat,long pair of NW: [10] [30] SE: [ ] [ ] then the model
                     *     values would be N: 10, W: 30, S: 10, E: 30
@@ -124,8 +129,8 @@ define(['underscore', 'jquery', 'backbone',
                         this.model.set("north", null);
                         this.model.set("west", null);
                     }
-	        		/* Otherwise, if the non-empty number inputs are updated, 
-	        		 *  we simply update the corresponding value in the other point 
+	        		/* Otherwise, if the non-empty number inputs are updated,
+	        		 *  we simply update the corresponding value in the other point
 	        		 */
                     else if (attribute == "north" && this.model.get("north") != null)
                         this.model.set("south", value);
@@ -162,18 +167,18 @@ define(['underscore', 'jquery', 'backbone',
                 //If this model is part of the EML inside the root data package, mark the package as changed
                 if (this.model.get("parentModel")) {
                     if (this.model.get("parentModel").type == "EML" && _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel"))) {
-                        MetacatUI.rootDataPackage.packageModel.set("changed", true);                        
+                        MetacatUI.rootDataPackage.packageModel.set("changed", true);
                     }
                 }
-                
+
                 this.validate();
             },
 
             /**
-             * Checks to see if any error messages need to be removed. If not, then it performs validation 
-             * across the row and displays any errors. This id called when the user clicks out of an edit box 
+             * Checks to see if any error messages need to be removed. If not, then it performs validation
+             * across the row and displays any errors. This id called when the user clicks out of an edit box
              * on to the page.
-             * 
+             *
              * @function validate
              * @param e The event
              * @param options
@@ -193,17 +198,17 @@ define(['underscore', 'jquery', 'backbone',
                 	this.$el.removeClass("error");
                 	this.$(".notification").empty();
                 	this.model.trigger("valid");
-                                            
+
                     return;
                 }
                 else{
-                	
+
                 	this.showValidation();
 
                 }
-                    
+
             },
-            
+
             /*
              * Resets the error messaging and displays the current error messages for this model
              * This function is used by the EditorView during the package validation process
@@ -212,12 +217,12 @@ define(['underscore', 'jquery', 'backbone',
             	this.$(".error").removeClass("error");
             	this.$el.removeClass("error");
             	this.$(".notification").empty();
-                
+
             	var errorMessages = "";
-            	
+
             	for( field in this.model.validationError ){
             		this.$("[data-attribute='" + field + "']").addClass("error");
-            		
+
             		errorMessages += this.model.validationError[field] + " ";
             	}
 
@@ -226,7 +231,7 @@ define(['underscore', 'jquery', 'backbone',
 
             /**
              * Highlight what will be removed when the remove icon is hovered over
-             * 
+             *
              * @function toggleRemoveClass
              */
             toggleRemoveClass: function () {
@@ -235,7 +240,7 @@ define(['underscore', 'jquery', 'backbone',
 
             /**
              * Unmarks this view as new
-             * 
+             *
              * @function notNew
              */
             notNew: function () {

@@ -1110,19 +1110,23 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
   							//Update the object XML
   							collection.objectXML = mapXML;
   							collection.packageModel.set("sysMetaXML", collection.packageModel.serializeSysMeta());
-  							collection.trigger("successSaving", collection);
-                collection.packageModel.fetch({merge: true});
-                // Reset the content changes status
-                collection.packageModel.set("hasContentChanges", false);
 
                 //Reset the upload status for all members
                 _.each(collection.where({ uploadStatus: "c" }), function(m){
-                	m.set("uploadStatus", m.defaults().uploadStatus);
+                  m.set("uploadStatus", m.defaults().uploadStatus);
                 });
 
                 //Reset the upload status for the package
                 collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
-						  },
+
+                // Reset the content changes status
+                collection.packageModel.set("hasContentChanges", false);
+
+  							collection.trigger("successSaving", collection);
+
+                collection.packageModel.fetch({merge: true});
+
+          	  },
 						  error: function(data){
 
   							//Reset the id back to its original state

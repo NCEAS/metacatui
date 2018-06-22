@@ -261,19 +261,9 @@ define(['underscore', 'jquery', 'backbone',
             	//Create a dropdown menu
             	var select = $(document.createElement("select"))
             					.addClass("units full-width input")
-            					.attr("data-category", "unit"),
-            		eml    = this.model.get("parentModel") ? this.model.get("parentModel").get("parentModel") : null,
-            		i 	   = 0;
+            					.attr("data-category", "unit");
 
-            	//Find the EML model
-            	if( eml ){
-
-            		while(eml.type != "EML" && i<6){
-	            		eml = eml.get("parentModel");
-	            		i++;
-	            	}
-
-            	}
+              var eml = this.model.getParentEML();
 
             	//Get the units collection or wait until it has been fetched
             	if(!eml.units.length){
@@ -475,6 +465,8 @@ define(['underscore', 'jquery', 'backbone',
 
             	var updatedInput = $(e.target);
 
+              var emlModel = this.model.getParentEML();
+
             	//Update the standard unit
             	if(updatedInput.is(".units")){
             		var chosenUnit = updatedInput.val(),
@@ -489,13 +481,16 @@ define(['underscore', 'jquery', 'backbone',
 
                 // Hard-code the numberType for now
                 this.model.set("numericDomain", {numberType: "real"});
+
+                //Trickle up the change to the most parent-level metadata model
+                this.model.trickleUpChange();
             	}
             	//Update the datetime format
             	else if(updatedInput.is(".datetime")){
-            		var format = updatedInput.val();
+            		var format = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
 
             		if(format == "custom"){
-            			format = this.$(".datetime-string-custom").val();
+            			format = emlModel? emlModel.cleanXMLText( this.$(".datetime-string-custom").val() ) : this.$(".datetime-string-custom").val();
             		}
 
                 //If no format string was provided, then set the default value
@@ -505,7 +500,7 @@ define(['underscore', 'jquery', 'backbone',
                   this.model.set("formatString", format);
             	}
             	else if(updatedInput.is(".possible-text")){
-            		var possibleText = updatedInput.val();
+            		var possibleText = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
 
             		if(possibleText == "enumeratedDomain"){
 
@@ -528,6 +523,9 @@ define(['underscore', 'jquery', 'backbone',
                     //Get the value of the text input fields for the definition and pattern
                     var definition = this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='definition']").val(),
                         pattern = this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='pattern']").val();
+
+                    definition = emlModel? emlModel.cleanXMLText( definition ) : definition;
+                    pattern = emlModel? emlModel.cleanXMLText( pattern ) : pattern;
 
                     // If the pattern is an empty string, then set an empty array on the model
                     if( typeof pattern == "string" && !pattern.trim().length ){
@@ -575,7 +573,7 @@ define(['underscore', 'jquery', 'backbone',
             		if(updatedInput.attr("data-category") == "definition"){
 
                   //Get the value that was input by the user
-                  var definition = updatedInput.val();
+                  var definition = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
 
                   // If the definition is a string of space characters, then set it to an empty string
                   if( typeof definition == "string" && !definition.trim().length ){
@@ -588,7 +586,7 @@ define(['underscore', 'jquery', 'backbone',
                 //If the text pattern was updated...
             		else if(updatedInput.attr("data-category") == "pattern"){
                   //Get the value that was input by the user
-                  var pattern = updatedInput.val();
+                  var pattern = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
 
                   // If the pattern is a string of space characters, then set it to an empty string
                   if( typeof pattern == "string" && !pattern.trim().length ){
@@ -602,7 +600,7 @@ define(['underscore', 'jquery', 'backbone',
 
                 //Manually trigger a change on the nonNumericDomain attribute
                 this.model.trigger("change:nonNumericDomain");
-                
+
             	}
             	else if(updatedInput.is(".codelist")){
             		var row = updatedInput.parents(".code-row"),
@@ -621,51 +619,59 @@ define(['underscore', 'jquery', 'backbone',
             updateCodeList: function(rowNum){
 
             	//If the model is not set as an enumerated domain yet
-    			if(!this.model.get("nonNumericDomain").length ||
-    					!this.model.get("nonNumericDomain")[0] ||
-    					!this.model.get("nonNumericDomain")[0].enumeratedDomain){
+        			if(!this.model.get("nonNumericDomain").length ||
+        					!this.model.get("nonNumericDomain")[0] ||
+        					!this.model.get("nonNumericDomain")[0].enumeratedDomain){
 
-    				var isEmpty = false;
+      				var isEmpty = false;
 
-    				//Go through each code row in this view and grab the values
-    				_.each(this.$("." + this.model.get("measurementScale") + "-options .code-row"), function(row, i, rows){
-    					var $row = $(row),
-    						code = $row.find(".code").val(),
-    						def  = $row.find(".definition").val();
+              var emlModel = this.model.getParentEML();
 
-    					//Update the enumerated domain with this code
+      				//Go through each code row in this view and grab the values
+      				_.each(this.$("." + this.model.get("measurementScale") + "-options .code-row"), function(row, i, rows){
+      					var $row = $(row),
+      						code = $row.find(".code").val(),
+      						def  = $row.find(".definition").val();
+
+                code = emlModel? emlModel.cleanXMLText( code ) : code;
+                def  = emlModel? emlModel.cleanXMLText( def ) : def;
+
+      					//Update the enumerated domain with this code
+      					if(code || def){
+          					this.model.updateEnumeratedDomain(code, def, i);
+      					}
+      					//If there is only one row and it has no code or definition,
+      					//then this is an empty code list
+      					else if( rows.length == 1 && i == 0){
+      						isEmpty = true;
+      					}
+
+      				}, this);
+
+      				//If there are no codes in the list, update the enumerated domain with blank values
+      				if( isEmpty ){
+      					this.model.updateEnumeratedDomain(null, null, rowNum);
+      				}
+      			}
+      			else if(rowNum > -1){
+      				var $row = $(this.$("." + this.model.get("measurementScale") + "-options .code-row")[rowNum]),
+      						code = $row.find(".code").val(),
+      						def  = $row.find(".definition").val();
+
+              code = emlModel? emlModel.cleanXMLText( code ) : code;
+              def  = emlModel? emlModel.cleanXMLText( def ) : def;
+
     					if(code || def){
-        					this.model.updateEnumeratedDomain(code, def, i);
+    						this.model.updateEnumeratedDomain(code, def, rowNum);
     					}
-    					//If there is only one row and it has no code or definition,
-    					//then this is an empty code list
-    					else if( rows.length == 1 && i == 0){
-    						isEmpty = true;
-    					}
-
-    				}, this);
-
-    				//If there are no codes in the list, update the enumerated domain with blank values
-    				if( isEmpty ){
-    					this.model.updateEnumeratedDomain(null, null, rowNum);
-    				}
-    			}
-    			else if(rowNum > -1){
-    				var $row = $(this.$("." + this.model.get("measurementScale") + "-options .code-row")[rowNum]),
-						code = $row.find(".code").val(),
-						def  = $row.find(".definition").val();
-
-					if(code || def){
-						this.model.updateEnumeratedDomain(code, def, rowNum);
-					}
-    			}
+      			}
 
 
-            },
+          },
 
-            previewCodeRemove: function(e){
-            	$(e.target).parents(".code-row").toggleClass("remove-preview");
-            }
+          previewCodeRemove: function(e){
+          	$(e.target).parents(".code-row").toggleClass("remove-preview");
+          }
 
         });
 

@@ -928,7 +928,7 @@ define(['underscore', 'jquery', 'backbone',
 					var event = argument;
 
 					// Don't add a new funding row if the current one is empty
-					if ($(event.target).val().trim() === "") return;
+					if ( $(event.target).val().trim() === "") return;
 				}
 
 		    	var fundingInput       = $(document.createElement("input"))
@@ -1094,6 +1094,8 @@ define(['underscore', 'jquery', 'backbone',
 
         var newValue = isNew? $(e.target).siblings("input.hidden").val() : $(e.target).val();
 
+        newValue = this.model.cleanXMLText(newValue);
+
         if( typeof newValue == "string" ){
           newValue = newValue.trim();
         }
@@ -1137,8 +1139,8 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//Get all the keywords in the view
 	    	_.each(this.$(".keyword-row"), function(thisRow){
-	    		var thesaurus = $(thisRow).find("select").val(),
-	    			keyword   = $(thisRow).find("input").val();
+	    		var thesaurus = this.model.cleanXMLText( $(thisRow).find("select").val() ),
+	    			keyword     = this.model.cleanXMLText( $(thisRow).find("input").val() );
 
 	    		if(!keyword) return;
 
@@ -1303,7 +1305,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	var category  = $(e.target).attr("data-category"),
 	    		currentValue = this.model.get(category),
 	    		textModel = $(e.target).data("model"),
-	    		value     = $(e.target).val().trim();
+	    		value     = this.model.cleanXMLText($(e.target).val());
 
 	    	//We can't update anything without a category
 	    	if(!category) return false;
@@ -1428,7 +1430,7 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//Get the category, new value, and model
 	    	var category = $(e.target).attr("data-category"),
-	    		value    = $(e.target).val().trim(),
+	    		value    = this.model.cleanXMLText($(e.target).val()),
 	    		model    = $(e.target).data("model") || this.model;
 
 	    	//We can't update anything without a category
@@ -1734,7 +1736,7 @@ define(['underscore', 'jquery', 'backbone',
 					classificationEl = $(e.target).parents(".root-taxonomic-classification"),
 		    		model =  $(coverage).data("model") || this.model,
 					category = $(e.target).attr("data-category"),
-					value = $(e.target).val().trim();
+					value = this.model.cleanXMLText($(e.target).val());
 
 		    	//We can't update anything without a coverage, or
 		    	//classification
@@ -1778,8 +1780,8 @@ define(['underscore', 'jquery', 'backbone',
 
 				for (var j = 0; j < rows.length; j++) {
 
-					currentRank = $(rows[j]).find("select").val() || "";
-					currentValue = $(rows[j]).find("input").val() || "";
+					currentRank = this.model.cleanXMLText($(rows[j]).find("select").val()) || "";
+					currentValue = this.model.cleanXMLText($(rows[j]).find("input").val()) || "";
 
 					// Skip over rows with empty Rank or Value
 					if (!currentRank.length || !currentValue.length) {

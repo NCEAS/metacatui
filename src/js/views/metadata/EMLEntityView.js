@@ -54,6 +54,7 @@ define(['underscore', 'jquery', 'backbone',
             	this.renderAttributes();
 
               this.listenTo(this.model, "invalid", this.showValidation);
+              this.listenTo(this.model, "valid", this.showValidation);
 
             },
 
@@ -85,7 +86,9 @@ define(['underscore', 'jquery', 'backbone',
 	       		  	});
        		  	});
 
-
+              this.$el.on("hidden", function(){
+                view.showValidation();
+              });
 
             },
 
@@ -185,7 +188,10 @@ define(['underscore', 'jquery', 'backbone',
 
             	if(!changedAttr) return;
 
-            	this.model.set(changedAttr, $(e.target).val());
+              var emlModel = this.model.getParentEML(),
+                  newValue = emlModel? emlModel.cleanXMLText($(e.target).val()) : $(e.target).val();
+
+            	this.model.set(changedAttr, newValue);
 
               this.model.trickleUpChange();
 
@@ -299,7 +305,7 @@ define(['underscore', 'jquery', 'backbone',
 
             	if(e.target){
                    	var clickedEl = $(e.target),
-                   		menuItem = clickedEl.is(".attribute-menu-item") || clickedEl.parents(".attribute-menu-item");
+                   		  menuItem = clickedEl.is(".attribute-menu-item") || clickedEl.parents(".attribute-menu-item");
 
                 	if(clickedEl.is(".remove"))
                 		return;
@@ -311,6 +317,30 @@ define(['underscore', 'jquery', 'backbone',
             	if(!menuItem)
             		return;
 
+              //Validate the previously edited attribute
+              //Get the current active attribute
+              var activeAttrTab = this.$(".attribute-menu-item.active");
+
+              //If there is a currently-active attribute tab,
+              if( activeAttrTab.length ){
+                //Get the attribute list from this view's model
+                var emlAttributes = this.model.get("attributeList");
+
+                //If there is an EMLAttribute list,
+                if( emlAttributes && emlAttributes.length ){
+
+                  //Get the active EMLAttribute
+                  var activeEMLAttribute = _.findWhere(emlAttributes, { cid: activeAttrTab.attr("data-attribute-id") });
+
+                  //If there is an active EMLAttribute model, validate it
+                  if( activeEMLAttribute ){
+                    activeEMLAttribute.isValid();
+                  }
+
+                }
+
+              }
+
             	//If the user clicked on the add attribute link
             	if( menuItem.is(".new") && this.$(".new.attribute-menu-item").length < 2 ){
 
@@ -321,6 +351,10 @@ define(['underscore', 'jquery', 'backbone',
 
             		//Add a new attribute view and menu item
             		this.addNewAttribute();
+
+                //Scroll the attribute menu to the bottom so that the "Add New" button is always visible
+                var attrMenuHeight = this.$(".attribute-menu").scrollTop() + this.$(".attribute-menu").height();
+                this.$(".attribute-menu").scrollTop( attrMenuHeight );
             	}
 
             	//Get the attribute view
@@ -334,6 +368,9 @@ define(['underscore', 'jquery', 'backbone',
             	this.$(".eml-attribute").hide();
             	//Show the new attribute view
             	attrView.$el.show();
+
+              //Scroll to the top of the attribute view
+              this.$(".attribute-list").scrollTop(0);
 
             	attrView.postRender();
             },
@@ -378,7 +415,51 @@ define(['underscore', 'jquery', 'backbone',
             */
             showValidation: function(){
 
+              //Reset the error messages and styling
+              //Only change elements inside the overview-container which contains only the
+              // EMLEntity metadata. The Attributes will be changed by the EMLAttributeView.
+    					this.$(".overview-container .notification").text("");
+              this.$(".overview-tab .icon.error, .attributes-tab .icon.error").remove();
+              this.$(".overview-container, .overview-tab a, .attributes-tab a, .overview-container .error").removeClass("error");
 
+              var overviewTabErrorIcon  = false,
+                  attributeTabErrorIcon = false;
+
+              _.each( this.model.validationError, function(errorMsg, category){
+
+                if( category == "attributeList" ){
+
+                  //Create an error icon for the Attributes tab
+                  if( !attributeTabErrorIcon ){
+                    var errorIcon = $(document.createElement("i"))
+                                      .addClass("icon icon-on-left icon-exclamation-sign error")
+                                      .attr("title", "There is missing information in this tab");
+
+                    //Add the icon to the Overview tab
+                    this.$(".attributes-tab a").prepend(errorIcon).addClass("error");
+                  }
+
+                  return;
+                }
+
+                //Get all the elements for this category and add the error class
+                this.$(".overview-container [data-category='" + category + "']").addClass("error");
+                //Get the notification element for this category and add the error message
+                this.$(".overview-container .notification[data-category='" + category + "']").text(errorMsg);
+
+                //Create an error icon for the Overview tab
+                if( !overviewTabErrorIcon ){
+                  var errorIcon = $(document.createElement("i"))
+                                    .addClass("icon icon-on-left icon-exclamation-sign error")
+                                    .attr("title", "There is missing information in this tab");
+
+                  //Add the icon to the Overview tab
+                  this.$(".overview-tab a").prepend(errorIcon).addClass("error");
+
+                  overviewTabErrorIcon = true;
+                }
+
+              }, this);
 
             },
 
@@ -389,7 +470,7 @@ define(['underscore', 'jquery', 'backbone',
             showTab: function(e){
             	e.preventDefault();
 
-            	//Get hte clicked link
+            	//Get the clicked link
        		  	var link = $(e.target);
 
        		  	//Remove the active class from all links and add it to the new active link
