@@ -119,11 +119,13 @@ define(["jquery", "underscore", "backbone",
                     var min = $(bound).find("minimum").text();
                     if ( min ) {
                         bnd.minimum = min;
+                        bnd.exclusive = $(bound).find("minimum").attr("exclusive");
                     }
                     // Get the maximum if available
                     var max = $(bound).find("maximum").text();
                     if ( max ) {
                         bnd.maximum = max;
+                        bnd.exclusive = $(bound).find("maximum").attr("exclusive");
                     }
                     domain.bounds.push(bnd);
 
@@ -244,15 +246,27 @@ define(["jquery", "underscore", "backbone",
                             if ( hasBounds ) {
                                 // Populate the minimum element
                                 if ( typeof minBound !== "undefined" ) {
-                                    minBoundNode = document.createElement("minimum");
-                                    minBoundNode.textContent = minBound;
+                                    minBoundNode = $(document.createElement("minimum"));
+                                    minBoundNode.text(minBound);
+
+                                    if(bound.exclusive === true || bound.exclusive == "true")
+                                      minBoundNode.attr("exclusive", "true");
+                                    else
+                                      minBoundNode.attr("exclusive", "false");
+
                                     $(boundsNode).append(minBoundNode);
                                 }
 
                                 // Populate the maximum element
                                 if ( typeof maxBound !== "undefined" ) {
-                                    maxBoundNode = document.createElement("maximum");
-                                    maxBoundNode.textContent = maxBound;
+                                    maxBoundNode = $(document.createElement("maximum"));
+                                    maxBoundNode.text(maxBound);
+
+                                    if(bound.exclusive === true || bound.exclusive == "true")
+                                      maxBoundNode.attr("exclusive", "true");
+                                    else
+                                      maxBoundNode.attr("exclusive", "false");
+
                                     $(boundsNode).append(maxBoundNode);
                                 }
 
