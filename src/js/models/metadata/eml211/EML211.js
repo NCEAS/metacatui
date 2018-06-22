@@ -746,11 +746,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         //Update the existing node if it exists
         if(existingEntities.length - 1 >= position) {
-          $(existingEntities[position]).replaceWith(entity.updateDOM());
-        }
+          //Remove the entity from the EML
+          $(existingEntities[position]).detach();
+          //Insert it into the correct position
+          this.getEMLPosition(eml, entity.get("type").toLowerCase()).after(entity.updateDOM());        }
         //Or, append new nodes
         else {
-          this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());
+          //Inser the entity into the correct position
+          this.getEMLPosition(eml, entity.get("type").toLowerCase()).after(entity.updateDOM());
         }
 
       }, this);
