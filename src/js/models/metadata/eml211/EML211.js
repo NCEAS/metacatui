@@ -1478,6 +1478,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           return matchingTypes[0];
         }
 
+        //If this EML is in a DataPackage with only one other DataONEObject,
+        // and there is only one entity in the EML, then we can assume they are the same entity
+        if( this.get("entities").length == 1 ){
+
+          if( this.get("collections")[0] && this.get("collections")[0].type == "DataPackage" &&
+              this.get("collections")[0].length == 2 && _.contains(this.get("collections")[0].models, dataONEObj)){
+                return this.get("entities")[0];
+          }
+
+        }
+
         return false;
 
       },
