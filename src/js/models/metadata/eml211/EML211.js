@@ -693,19 +693,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           else{
 
             //Add the <methods> node to the EML
-            if (datasetNode.find('methods').length === 0){
-              var insertAfter = this.getEMLPosition(eml, "methods");
+            datasetNode.find("methods").detach();
 
-              if(insertAfter)
-                insertAfter.after(methodsEl);
-              else
-                datasetNode.append(methodsEl);
-            }
-            else{
+            var insertAfter = this.getEMLPosition(eml, "methods");
 
-              datasetNode.find("methods").replaceWith(methodsEl);
-
-            }
+            if(insertAfter)
+              insertAfter.after(methodsEl);
+            else
+              datasetNode.append(methodsEl);
           }
         }
       }
@@ -733,11 +728,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
       }
 
-      //Serialize the project
-      if(datasetNode.find("project").length)
-        datasetNode.find("project").replaceWith(this.get("project").updateDOM());
-      else if(this.get("project"))
+      //Detach the project elements from the DOM
+      if(datasetNode.find("project").length){
+
+        datasetNode.find("project").detach();
+
+      }
+
+      //If there is an EMLProject, update its DOM
+      if(this.get("project")){
+
         this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
+
+      }
 
       //Get the existing taxon coverage nodes from the EML
       var existingEntities = datasetNode.find("otherEntity, dataTable");
