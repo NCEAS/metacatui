@@ -228,11 +228,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				errors.endDate = "The end date must be formatted as YYYY-MM-DD or YYYY.";
 			}
 
-      if( beginDate <= 0 ){
+      if( typeof endDate == "string" && endDate.length && beginDate <= 0 ){
         errors.beginDate = "The begin date must be greater than zero.";
       }
 
-      if( endDate <= 0 ){
+      if( typeof endDate == "string" && endDate.length && endDate <= 0 ){
         errors.endDate = "The end date must be greater than zero.";
       }
 
