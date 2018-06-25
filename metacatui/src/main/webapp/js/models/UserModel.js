@@ -78,7 +78,19 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					var ids = [];
 
 				_.each(this.get("identities"), function(equivalentUser){
-					ids.push(equivalentUser.get("username"));
+
+					var equivalentUserName = equivalentUser.get("username");
+
+					//If this is a DN username, make sure it is in lowercase
+					if(equivalentUserName.indexOf("=") > 0){
+						//Replace all uppercase letters followed by the '=' character with lowercase characters
+						equivalentUserName = equivalentUserName.replace(/[A-Z]{1,}=/g, function(match) {
+						    return match.toLowerCase();
+						});
+					}
+
+					ids.push(equivalentUserName);
+
 				});
 				this.get("searchModel").set("username", ids);
 			}
