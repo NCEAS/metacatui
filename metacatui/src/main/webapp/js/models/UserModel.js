@@ -67,8 +67,15 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				this.get("searchModel").set("username", []);
 			}
 			else{
+
 				//Get all the identities for this person
-				var ids = [this.get("username")];
+				if(this.get("username")){
+					var username = this.get("username");
+
+					var ids = [username];
+				}
+				else
+					var ids = [];
 
 				_.each(this.get("identities"), function(equivalentUser){
 					ids.push(equivalentUser.get("username"));
@@ -140,24 +147,34 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				if(!this.get("basicUser")){
 					//Get all the equivalent identities for this user
 					var equivalentIds = $(userNode).find("equivalentIdentity");
+
 					if(equivalentIds.length > 0)
 						var allPersons = $(data).find("person subject");
 
 					_.each(equivalentIds, function(identity, i){
 						//push onto the list
 						var username = $(identity).text(),
-							equivUserNode;
+							  equivUserNode,
+								equivUsername;
 
 						//Find the matching person node in the response
 						_.each(allPersons, function(person){
 							if($(person).text().toLowerCase() == username.toLowerCase()){
 								equivUserNode = $(person).parent().first();
+								equivUsername = $(person).text();
 								allPersons = _.without(allPersons, person);
 							}
 						});
 
-						var equivalentUser = new UserModel({ username: username, basicUser: true, rawData: equivUserNode });
-						identities.push(equivalentUser);
+						if( equivUserNode ){
+							var equivalentUser = new UserModel({
+								username: equivUsername,
+								basicUser: true,
+								rawData: equivUserNode
+							});
+
+							identities.push(equivalentUser);
+						}
 					});
 				}
 
