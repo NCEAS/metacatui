@@ -910,10 +910,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         // Update the file name to match the title
         if( Array.isArray(this.get("title")) ){
-          this.set("fileName", this.get("title")[0]);
+          this.set("fileName", this.get("title")[0] + ".xml");
         }
         else if( typeof this.get("title") == "string" ){
-          this.set("fileName", this.get("title"));
+          this.set("fileName", this.get("title") + ".xml");
         }
 
         //If that doesn't work for some reason, set the missing file name via the

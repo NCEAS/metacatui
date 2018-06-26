@@ -1090,7 +1090,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           this.packageModel.set("checksumAlgorithm", "MD5");
 
           //Set the file name based on the id
-          this.packageModel.set("fileName", "resourceMap_" + this.packageModel.get("id") + ".xml");
+          this.packageModel.set("fileName", "resourceMap_" + this.packageModel.get("id") + ".rdf.xml");
 
           //Create the system metadata
           var sysMetaXML = this.packageModel.serializeSysMeta();
