@@ -1074,7 +1074,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
 
             //When there is no network connection (status == 0), there will be no response text
-            if(!errorMsg)
+            if(!errorMsg || (response.status == 408 || response.status == 0))
               errorMsg = "There was a network issue that prevented your metadata from uploading. " +
                      "Make sure you are connected to a reliable internet connection.";
 

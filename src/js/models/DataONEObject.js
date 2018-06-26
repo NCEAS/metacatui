@@ -571,7 +571,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/ObjectFormats',
                       model.set("errorMessage", parsedResponse);
 
                       model.set("uploadStatus", "e");
-                      model.trigger("errorSaving", response.responseText);
+                      model.trigger("errorSaving", parsedResponse);
 
                       //Send this exception to Google Analytics
                       if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){

@@ -549,26 +549,64 @@ define(['underscore',
               messageParagraph = messageContainer.find("p"),
               messageClasses = "alert-error";
 
-          if( this.model.get("draftSaved") && MetacatUI.appModel.get("contentIsModerated") ){
-            messageParagraph.text("Not all of your changes could be submitted " +
-              "due to a technical error. But, we sent a draft of your edits to " +
-              "our support team, who will contact " +
-              "you via email as soon as possible about getting your data package submitted. ");
-            messageClasses = "alert-warning"
-          }
-        	else{
-            messageParagraph.text("Not all of your changes could be submitted.");
-          }
+          //Get all the models that have an error
+          var failedModels = MetacatUI.rootDataPackage.where({ uploadStatus: "e" });
 
-        	messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))
-        						.text("See technical details")
-        						.attr("data-toggle", "collapse")
-        						.attr("data-target", "#" + errorId)
-        						.addClass("pointer")),
-        					$(document.createElement("div"))
-        						.addClass("collapse")
-        						.attr("id", errorId)
-        						.append($(document.createElement("pre")).text(errorMsg)));
+          //If every failed model is a DataONEObject data file that failed
+          // because of a slow network, construct a specific error message that
+          // is more informative than the usual message
+          if( failedModels.length &&
+               _.every(failedModels, function(m){ return m.get("type") == "Data" &&
+                                                         m.get("errorMessage").indexOf("network issue") > -1 }) ){
+
+            //Create a list of file names for the files that failed to upload
+            var failedFileList = $(document.createElement("ul"));
+
+            _.each(failedModels, function(failedModel){
+
+              failedFileList.append( $(document.createElement("li")).text( failedModel.get("fileName") ) );
+
+            }, this);
+
+            //Make the error message
+            messageParagraph.text("The following files could not be uploaded due to a network issue. Make sure you are connected to a reliable internet connection. ");
+            messageParagraph.after(failedFileList);
+          }
+          //If one of the failed models is this package's metadata model or the
+          // resource map model and it failed to upload due to a network issue,
+          // show a more specific error message
+          else if( _.find(failedModels, function(m){
+                    return (m == this.model && m.get("errorMessage").indexOf("network issue") > -1)
+                  }, this) ||
+                  ( MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "e" &&
+                    MetacatUI.rootDataPackage.packageModel.get("errorMessage").indexOf("network issue") > -1) ){
+
+            messageParagraph.text("Your changes could not be submitted due to a network issue. Make sure you are connected to a reliable internet connection. ");
+
+          }
+          else{
+
+            if( this.model.get("draftSaved") && MetacatUI.appModel.get("contentIsModerated") ){
+              messageParagraph.text("Not all of your changes could be submitted " +
+                "due to a technical error. But, we sent a draft of your edits to " +
+                "our support team, who will contact " +
+                "you via email as soon as possible about getting your data package submitted. ");
+              messageClasses = "alert-warning"
+            }
+          	else{
+              messageParagraph.text("Not all of your changes could be submitted.");
+            }
+
+          	messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))
+          						.text("See technical details")
+          						.attr("data-toggle", "collapse")
+          						.attr("data-target", "#" + errorId)
+          						.addClass("pointer")),
+          					$(document.createElement("div"))
+          						.addClass("collapse")
+          						.attr("id", errorId)
+          						.append($(document.createElement("pre")).text(errorMsg)));
+          }
 
         	MetacatUI.appView.showAlert(messageContainer, messageClasses, this.$el, null, {
         		emailBody: "Error message: Data Package save error: " + errorMsg,
@@ -751,7 +789,7 @@ define(['underscore',
 
         handleSaveCancel: function(){
         	if(this.model.get("uploadStatus") == "e"){
-        		this.saveError("There was a caught exception during your submission, so the submission was cancelled.");
+        		this.saveError("Your submission was cancelled due to an error.");
         	}
         },
 

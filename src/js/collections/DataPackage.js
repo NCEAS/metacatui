@@ -1137,9 +1137,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 	m.set("uploadStatus", m.defaults().uploadStatus);
                 });
 
-                //Reset the upload status for the package
-                collection.packageModel.set("uploadStatus", "e");
-
                 //Send this exception to Google Analytics
                 if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
                   ga("send", "exception", {
@@ -1149,7 +1146,22 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   });
                 }
 
-							  collection.trigger("error", data.responseText);
+                //When there is no network connection (status == 0), there will be no response text
+                if( data.status == 408 || data.status == 0 ){
+                  var parsedResponse = "There was a network issue that prevented this file from uploading. " +
+                           "Make sure you are connected to a reliable internet connection.";
+                }
+                else {
+                  var parsedResponse = $(data.responseText).not("style, title").text();
+                }
+
+                //Save the error message in the model
+                collection.packageModel.set("errorMessage", parsedResponse);
+
+                //Reset the upload status for the package
+                collection.packageModel.set("uploadStatus", "e");
+
+                collection.trigger("errorSaving", parsedResponse);
 						  }
 				  }
 				  $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
