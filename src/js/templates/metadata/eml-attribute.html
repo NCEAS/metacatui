@@ -1,42 +1,58 @@
 <h4>Attribute</h4>
-<p class="subtle">A 'field' or 'variable' in this data file (e.g. species, site).</p>
+<p class="subtle">
+	Describe the attributes (i.e., fields or variables) of this file.
+	An attribute is often the column header in a tabular data file.
+</p>
 
 <div class="container" data-category="attribute">
-	
+
 	<p class="notification" data-category="attribute"></p>
-    	
+
    	<div class="attribute-name basic-text-container" data-category="attributeName">
 		<h5>Attribute Name <span class="required-icon"></span></h5>
-		<p class="subtle">The official name of the attribute as it appears in the data.
-		 It is usually found in the header of a data table.</p>
-             <p class="notification" data-category="attributeName"></p>
+		<p class="subtle">
+			The name of the attribute as it appears in the data.
+		  It is usually found in the column header of a tabular data table.
+		</p>
+		<p class="subtle">
+			Example: “species,” “site,” "temp"
+		</p>
+    <p class="notification" data-category="attributeName"></p>
 		<div class="text-container">
-			<input type="text" data-category="attributeName" class="basic-text input" 
-			placeholder="e.g. spden, temp" value="<%=attributeName%>" >
+			<input type="text" data-category="attributeName" class="basic-text input"
+			placeholder="e.g. species, site, temp" value="<%=attributeName%>" >
 		</div>
 	</div>
-	
+
 	<div class="attribute-label basic-text-container" data-category="attributeLabel">
 		<h5>Attribute Label</h5>
-		<p class="subtle">A short, descriptive label that is used to display
-             the name of this attribute.</p>
-             <p class="notification" data-category="attributeLabel"></p>
+		<p class="subtle">
+			Label this attribute with a descriptive display name.
+		</p>
+		<p class="subtle">
+			Example: an attribute might have the attribute name ‘Temp_P2’ and a corresponding attribute label ‘Temperature, probe 2.’
+		</p>
+    <p class="notification" data-category="attributeLabel"></p>
 		<div class="text-container">
-			<input type="text" data-category="attributeLabel" class="basic-text input" 
-			placeholder="e.g. Species Density, Temperature" value="<%=attributeLabel[0]%>" >
+			<input type="text" data-category="attributeLabel" class="basic-text input"
+			placeholder="e.g. Temperature, Probe 2" value="<%=attributeLabel[0]%>" >
 		</div>
 	</div>
-	
+
 	<div class="row-fluid" data-category="attributeDefinition">
 		<h5>Definition <span class="required-icon"></span></h5>
-		<p class="subtle">Explain the contents of the attribute fully so
-             that a data user could interpret the attribute accurately.</p>
-             <p class="notification" data-category="attributeDefinition"></p>
+		<p class="subtle">
+			Define this attribute (i.e. variable). Be as specific and complete as possible so the data can be interpreted and reused by other scientists not familiar with your research or field of study.
+		</p>
+		<p class="subtle">
+			Example: ‘Water temperature in degrees Kelvin, measured with the backup of two [manufacturer name] probes.
+		</p>
+    <p class="notification" data-category="attributeDefinition"></p>
 		<div class="text-container">
-			<textarea data-category="attributeDefinition" placeholder="e.g. 'spden' is the number of individuals of all macro invertebrate species found in the plot" class="input"><%=attributeDefinition%></textarea>
+			<textarea data-category="attributeDefinition" placeholder="e.g. ‘Water temperature in degrees Kelvin, measured with the backup of two [manufacturer name] probes" class="input"><%=attributeDefinition%></textarea>
 		</div>
 	</div>
-	
+
 	<div class="measurement-scale-container"></div>
-    	
+
 </div>

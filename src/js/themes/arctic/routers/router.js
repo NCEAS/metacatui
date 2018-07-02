@@ -1,7 +1,7 @@
 /*global Backbone */
 'use strict';
 
-define(['jquery', 'underscore', 'backbone'], 				
+define(['jquery', 'underscore', 'backbone'],
 function ($, _, Backbone) {
 
 	// MetacatUI Router
@@ -167,7 +167,7 @@ function ($, _, Backbone) {
 
 			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
 			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
-			
+
 			var seriesId;
 
 			//Check for a seriesId
@@ -238,7 +238,7 @@ function ($, _, Backbone) {
 					MetacatUI.appView.showView(MetacatUI.appView.userView, viewOptions);
 			}
 		},
-		
+
 		renderMyProfile: function(section, subsection){
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
 				this.renderSignIn();
@@ -254,26 +254,47 @@ function ($, _, Backbone) {
 				this.renderProfile(MetacatUI.appUserModel.get("username"), section, subsection);
 			}
 		},
-		
+
 		/*
-          Renders the editor view given a root package identifier,
-          or a metadata identifier.  If the latter, the corresponding
-          package identifier will be queried and then rendered.
-        */
+    * Renders the editor view given a root package identifier,
+    * or a metadata identifier.  If the latter, the corresponding
+    * package identifier will be queried and then rendered.
+    */
 		renderEditor: function (pid) {
-			this.routeHistory.push("submit");
-			
+
+			//If there is no EditorView yet, create one
 			if( ! MetacatUI.appView.editorView ){
+
+				var router = this;
+
+				//Load the EditorView file
 				require(['views/EditorView'], function(EditorView) {
+					//Add the submit route to the router history
+					router.routeHistory.push("submit");
+
+					//Create a new EditorView
 					MetacatUI.appView.editorView = new EditorView({pid: pid});
+
+					//Set the pid from the pid given in the URL
 					MetacatUI.appView.editorView.pid = pid;
+
+					//Render the EditorView
 					MetacatUI.appView.showView(MetacatUI.appView.editorView);
 				});
-                
-			} else {
-				MetacatUI.appView.editorView.pid = pid;
-				MetacatUI.appView.showView(MetacatUI.appView.editorView);
-                
+
+			}
+			else {
+
+
+					//Set the pid from the pid given in the URL
+					MetacatUI.appView.editorView.pid = pid;
+
+					//Add the submit route to the router history
+					this.routeHistory.push("submit");
+
+					//Render the Editor View
+					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+
 			}
 		},
 
@@ -301,22 +322,22 @@ function ($, _, Backbone) {
 			if(((typeof MetacatUI.appModel.get("tokenUrl") == "undefined") || !MetacatUI.appModel.get("tokenUrl")) && !MetacatUI.appView.registryView){
 				require(['views/RegistryView'], function(RegistryView){
 					MetacatUI.appView.registryView = new RegistryView();
-					
+
 					if(MetacatUI.appView.currentView && MetacatUI.appView.currentView.onClose)
 						MetacatUI.appView.currentView.onClose();
-					
+
 					MetacatUI.appUserModel.logout();
 				});
 			}
 			else{
 				if(MetacatUI.appView.currentView && MetacatUI.appView.currentView.onClose)
 					MetacatUI.appView.currentView.onClose();
-				
+
 				MetacatUI.appUserModel.logout();
 			}
 		},
 
-		
+
 		renderSignIn: function(){
 
 			var router = this;
@@ -327,10 +348,10 @@ function ($, _, Backbone) {
 					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
 					router.renderSignIn();
 				});
-				
+
 				return;
 			}
-			
+
 			//If the user status has been checked and they are already logged in, we will forward them to their profile
 			if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
 				this.navigate("my-profile", { trigger: true });

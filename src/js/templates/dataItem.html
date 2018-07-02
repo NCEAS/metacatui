@@ -47,7 +47,7 @@
 
 <% } %>
 <!-- Guide or Status column -->
-<td class="status">		
+<td class="status">
 	<%  if( uploadStatus == "p" ){ %>
 		<div class="progress progress-striped active">
 			<div class="bar" style="width: <%=uploadProgress%>%;"></div>
@@ -55,7 +55,7 @@
 	<% } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ) { %>
 		<i class="icon icon-circle-blank warning icon-large"></i>
 	<% } else if( type != "Metadata" && numAttributes > 0 && hasInvalidAttribute ) { %>
-		<i class="icon icon-circle-blank danger icon-large"></i>
+		<i class="icon icon-exclamation-sign danger icon-large"></i>
 	<% } else if( type != "Metadata" && numAttributes > 0 && !hasInvalidAttribute && entityIsValid ) { %>
 		<i class="icon icon-ok-circle success icon-large"></i>
 	<% } else if( type != "Metadata" && !entityIsValid ) { %>
@@ -68,31 +68,38 @@
 		<i class="icon icon-circle-blank icon-large"></i>
 	<% } %>
 </td>
+
 <!-- Button column -->
 <td class="controls">
         <% if ( typeof formatType !== "undefined" && formatType !== null && formatType.toLowerCase() === "metadata" ) { %>
-    		<input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
-            <button type="button" class="addFiles btn btn-primary" title="Add Files">
-                <i class="icon icon-large icon-plus icon-on-left"></i>
-                <span>Add Files</span>
-            </button>
 
-        <% } else { %>
+          <input class="file-upload" type="file" multiple style="display:none; height: 0px; width: 0px" / >
 
-            <div class="btn-group">
-            <% if( hasInvalidAttribute ){ %>
-            	<button class="btn edit error">Describe</button>
-            <%  } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ){ %>
-			  <button class="btn edit warning">Describe</button>
-			 <% } else { %>
-			 	<button class="btn edit">Describe</button>
-			 <% } %>
-			  <button class="btn dropdown-toggle" data-toggle="dropdown">
-			    <span class="caret"></span>
-			  </button>
-			  <ul class="dropdown-menu">
-			    <li><a href="" class="remove removeFiles" title="Remove this file">Remove</a></li>
-			  </ul>
-			</div>
+          <button type="button" class="addFiles btn btn-primary" title="Add Files to this dataset">
+              <i class="icon icon-large icon-plus icon-on-left"></i>
+              <span>Add Files</span>
+          </button>
+
+        <% }
+        else { %>
+
+         <div class="btn-group">
+           <% if( hasInvalidAttribute || !entityIsValid ){ %>
+             <button class="btn edit error">Describe</button>
+           <%  } else if( (!uploadStatus || uploadStatus == "c" || uploadStatus == "q") && type != "Metadata" && numAttributes == 0 ){ %>
+    			  <button class="btn edit warning" title="Describe this file and the data in it">Describe</button>
+    			 <% } else { %>
+    			 	<button class="btn edit" title="Describe this file and the data in it">Describe</button>
+    			 <% } %>
+
+    			 <button class="btn dropdown-toggle" data-toggle="dropdown">
+             <span class="caret"></span>
+    			 </button>
+
+    			 <ul class="dropdown-menu">
+    			   <li><a href="" class="remove removeFiles" title="Remove this file from the dataset">Remove</a></li>
+    			 </ul>
+			   </div>
+
         <% } %>
 </td>

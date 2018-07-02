@@ -461,8 +461,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					 .attr("data-id", provEntity.get("id"));
 			
 			//Display images in the prov chart node
-			if(type == "image"){
-				$(nodeEl).css("background-image", "url('" + provEntity.get("url") + "')");
+			if(provEntity.getType() == "image"){
+				$(nodeEl).css("background-image", "url('" + MetacatUI.appModel.get("objectServiceUrl") + provEntity.get("id") + "')");
 			} 
 			//Create an icon inside the node for other format types
 			else {
@@ -536,8 +536,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				$(headerContainer).prepend(nameEl);
 			
 			//Display images in the prov chart node popover 
-			if(type == "image"){
-				var img = $(document.createElement("img")).attr("src", provEntity.get("url")).addClass("thumbnail");
+			if(provEntity.getType() == "image"){
+				var img = $(document.createElement("img")).attr("src", MetacatUI.appModel.get("objectServiceUrl") + provEntity.get("id")).addClass("thumbnail");
+                
 				$(citationEl).after(img);
 			}
 
@@ -1016,6 +1017,21 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			} else {
 				values = selectedValues;
 			}
+            
+            // If the user has selected items in a 'program' editor icon, then ensure
+            // that they will be recognized as a program when they are drawn.
+            // If the MIME-type of the entity is something generic like 'octet-stream'
+            // then it may be mistaken as data, so set the provenance object type to avoid
+            // confusion - this will take precedence over the MIME-type by DataONEObject.getType().
+            // Note that this attribute is set when a package is first read in, but has to be
+            // set manually during prov editing.
+            if(entityType == "program") {
+                for (var i = 0; i < values.length; i++) { 
+                    var pid = values[i];
+                    var member = this.dataPackage.get(pid);
+                    member.setProvClass("program");
+                }
+            }
             
             // Add the selected values to this prov graph.
 			this.addProv(values, entityType);	

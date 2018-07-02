@@ -14,7 +14,7 @@ Bold 700
     	padding: 0;
     	height: 100%;
     }
-    
+
     body {
       min-height: 100%;
       position: relative;
@@ -30,36 +30,36 @@ Bold 700
       color: #166194;
       font-weight: 600;
     }
-       
+
     a:hover{
     	color: #3399CC;
     	text-decoration: none;
     }
-    
+
     .obvious-link{
     	border-bottom: 1px dotted #166194;
     }
-    
+
     body, h1, h2, h3, h4, h5, h6{
     	color: #555;
     }
-    
+
 	h3 {
 		font-size: 25px;
 		font-weight: 400;
 	}
-	
+
 	h2{
 		font-size: 27px;
 		font-weight: 600;
 	}
-	
+
 	strong{
 		font-weight: 600;
 	}
-	
+
 	p:empty{ display: none; }
-	
+
     /*.bold-header{
     	background-color: #333;
     	color: #DDD;
@@ -67,65 +67,65 @@ Bold 700
     	text-transform: uppercase;
     	text-shadow: none;
     }*/
-    
+
     .pointer{
     	cursor: pointer;
     }
-    
+
     .lead{
     	font-weight: 400;
     }
-    
+
     .hidden,
     #clear-all.hidden,
     .list-only #clear-all{
     	display: none;
     }
-    
-    
-    article, aside, figure, footer, header, hgroup, menu, nav, section { 
-      display:block;   
+
+
+    article, aside, figure, footer, header, hgroup, menu, nav, section {
+      display:block;
     }
 
-		
+
     body > section > article {
       background-color: #FFFFFF; /* Fallback for IE8 and earlier, will be solid white */
       background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 4px;		
+      border-radius: 4px;
       -webkit-border-radius: 4px;
-	  -moz-border-radius: 4px;			
+	  -moz-border-radius: 4px;
     }
-    
+
      .container{
     	width: 100%;
-    } 
+    }
     .center{
     	margin: 0 auto;
     	float: none;
     }
-    
+
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555;
       text-decoration: none;
       z-index: 20; /*keeps hidden anchor tags from blocking content*/
     }
-    
+
     /* make sure the anchors render with padding-top */
     h1 > a[name]:before, h2 > a[name]:before, h3 > a[name]:before,
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
     padding-top: 115px;
     }
-    
+
     ul, ol{
     	margin: 0px;
     }
-    
+
     ul.indent > li{
     	margin-left: 15px;
     }
-    
+
     ul.plain-list > li{
     	line-height: 25px;
     	list-style: none;
@@ -138,7 +138,7 @@ Bold 700
     .clear{
     	clear: both;
     }
-    
+
     thead{
     	background-color: #f3f3f3;
     	border-bottom: 1px solid #999;
@@ -146,7 +146,7 @@ Bold 700
     thead a{
     	color: #FFFFFF;
     }
-    .table td, 
+    .table td,
     .table thead th{
     	vertical-align: middle;
     	border: 0px;
@@ -154,7 +154,7 @@ Bold 700
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
-     
+
     /* For full-screen background image */
 	img.bg{
 		min-height: 100%;
@@ -167,11 +167,11 @@ Bold 700
 		display: block;
 		z-index: -1; /* So that right-clicking on background image will behave like right-clicking on background */
 	}
-	
+
 	.mapMode img.bg{
 		display: none;
 	}
-	
+
 	@media screen and (max-width: 1024px) {
 	  img.bg {
 	    left: 50%;
@@ -179,7 +179,7 @@ Bold 700
 	  }
 	}
 
-	
+
 	/** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
 	.ellipsis{
 		text-overflow: ellipsis;
@@ -195,34 +195,34 @@ Bold 700
 		content:"";
 		float: left;
 		width: 5px; height: 50px; }
-	
+
 	.multi-line-ellipsis > *:first-child {
 		float: right;
 		width: 100%;
-		margin-left: -5px; }		
-	
+		margin-left: -5px; }
+
 	.multi-line-ellipsis:after {
-		content: "\02026";  
-	
+		content: "\02026";
+
 		box-sizing: content-box;
 		-webkit-box-sizing: content-box;
 		-moz-box-sizing: content-box;
-	
+
 		float: right; position: relative;
-		top: -25px; left: 100%; 
+		top: -25px; left: 100%;
 		width: 3em; margin-left: -3em;
 		padding-right: 5px;
-		
+
 		text-align: right;
-	
-	  
+
+
 	  	background-size: 100% 100%;
 	  	/* 512x1 image, gradient for IE9. Transparent at 0% -> white at 50% -> white at 100%.*/
 		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAABCAMAAACfZeZEAAAABGdBTUEAALGPC/xhBQAAAwBQTFRF////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wDWRdwAAAP90Uk5TgsRjMZXhS30YrvDUP3Emow1YibnM9+ggOZxrBtpRRo94gxItwLOoX/vsHdA2yGgL8+TdKUK8VFufmHSGgAQWJNc9tk+rb5KMCA8aM0iwpWV6dwP9+fXuFerm3yMs0jDOysY8wr5FTldeoWKabgEJ8RATG+IeIdsn2NUqLjQ3OgBDumC3SbRMsVKsValZplydZpZpbJOQco2KdYeEe36BDAL8/vgHBfr2CvTyDu8R7esU6RcZ5ecc4+Af3iLcJSjZ1ivT0S/PMs3LNck4x8U7wz7Bv0G9RLtHuEq1TbJQr1OtVqqnWqRdoqBhnmSbZ5mXapRtcJGOc4t2eYiFfH9AS7qYlgAAARlJREFUKM9jqK9fEGS7VNrDI2+F/nyB1Z4Fa5UKN4TbbeLY7FW0Tatkp3jp7mj7vXzl+4yrDsYoVx+JYz7mXXNSp/a0RN25JMcLPP8umzRcTZW77tNyk63tdprzXdmO+2ZdD9MFe56Y9z3LUG96mcX02n/CW71JH6Qmf8px/cw77ZvVzB+BCj8D5vxhn/vXZh6D4uzf1rN+Cc347j79q/zUL25TPrJMfG/5LvuNZP8rixeZz/mf+vU+Vut+5NL5gPOeb/sd1dZbTs03hBuvmV5JuaRyMfk849nEM7qnEk6IHI8/qn049hB35QGHiv0yZXuMdkXtYC3ebrglcqvYxoj1muvC1nDlrzJYGbpcdHHIMo2FwYv+j3QAAOBSfkZYITwUAAAAAElFTkSuQmCC);
-	  
+
 		background: -webkit-gradient(linear, left top, right top,
 			from(rgba(255, 255, 255, 0)), to(white), color-stop(50%, white));
-		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);			
+		background: -moz-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
 		background: -o-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
 		background: -ms-linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
 		background: linear-gradient(to right, rgba(255, 255, 255, 0), white 50%, white);
@@ -242,14 +242,14 @@ Bold 700
 		transition: .5s;
 		display: inline-block;
 	}
-	
+
 	.expand-collapse.expanded .teaser{
 		color: #597F99;
 	}
 
-    
+
 /* FORM/INPUT CUSTOMIZATIONS
--------------------------------------------------- */ 
+-------------------------------------------------- */
 	.depth {
   display: block;
   border: 1px solid silver;
@@ -264,7 +264,7 @@ Bold 700
 }
 .controls-well {
 	padding: 4px;
-    background-color: #FFFFFF; 
+    background-color: #FFFFFF;
    	border: 1px solid #DEE1EA;
 	border-radius: 3px;
 	-webkit-border-radius: 3px;
@@ -284,8 +284,8 @@ select{
 		width: 220px;
 }
 
- /* EDITOR 
--------------------------------------------------- */ 	
+ /* EDITOR
+-------------------------------------------------- */
 .Editor #Content{
 	padding-top: 45px;
 }
@@ -293,47 +293,51 @@ select{
     height: 50px;
     border-width: 0px;
 }
+.side-nav-item .active {
+    background-color: #08c;
+    color: #FFF;
+}
 
 
-/* CUSTOMIZE THE ACCORDIAN 
+/* CUSTOMIZE THE ACCORDIAN
 -------------------------------------------------- */
 .accordion-heading a.accordion-toggle {
-	display: inline-block; 
-} 
+	display: inline-block;
+}
 
-/* SHARE/UPLOAD, AND LOGIN FEATURES 
+/* SHARE/UPLOAD, AND LOGIN FEATURES
 * Choose to hide these features
 * -----------------------------------------------------*/
 .share-feature{
-	/* display: none; */ 
+	/* display: none; */
 }
 
 /* NOTIFICATION AREA CSS
- * -------------------------------------------------- */    
+ * -------------------------------------------------- */
   /*.notification {
     position: relative;
     top: 95px;
     margin: 50px auto;
     font-size: 40px;
   }*/
-  
+
   .notification i{
   	font-size: 40px;
   	margin-left: 43%;
   }
-  
+
   .notification i.loading{
   	font-size: 2em;
   	color: #FFFFFF;
   }
-  
+
   .notification p{
   	font-size: 20px;
   	width: 350px;
   	margin: 20px auto;
   	display: block;
   	color: #FFFFFF;
-  }  
+  }
   .filter-contain .notification i{
   	color: #999;
   	font-size: .5em;
@@ -347,10 +351,10 @@ select{
 		margin: 0;
   }
 
-  
+
 /* FOOTER CSS
--------------------------------------------------- */    
-    
+-------------------------------------------------- */
+
     #Footer {
 		background: #222;
 		background-color: rgba(0,0,0,0.8);
@@ -360,7 +364,7 @@ select{
 		color: #DDD;
 		display: block;
     }
-    
+
     .mapMode #Footer{
 		height: 20px;
   		overflow: hidden;
@@ -378,32 +382,32 @@ select{
       display: inline;
       margin-left: 2%;
     }
-    
+
     footer#Footer .helpitems {
       list-style: none;
     }
-    
+
     footer#Footer .helpitems li{
-      margin: 0px 0px 0px 5px;                 
+      margin: 0px 0px 0px 5px;
     }
-    
+
     ul.helpitems a {
       color: #CCC;
       font-weight: 400;
       font-size: 13px;
-           
+
     }
-    
+
     ul.helpitems a:hover{
     	color: #3399CC;
-    	text-decoration: none; 
+    	text-decoration: none;
     }
-    
+
 
     #Footer img {
       opacity: .6;
     }
-    
+
     #Footer img:hover{
     	opacity: 1;
     	transition: opacity 1s;
@@ -415,25 +419,25 @@ select{
     	width: 60px;
     	margin-left: 10px;
     }
-    
+
     .dataone{
     	width: 100px;
     	margin-left: 10px;
     }
-    
-    
+
+
  /* BUTTONS CSS
--------------------------------------------------- */   
+-------------------------------------------------- */
     .metro.three-d {
   position: relative;
-  box-shadow: 
+  box-shadow:
     1px 1px #53A7EA,
     2px 2px #53A7EA,
     3px 3px #53A7EA;
   transition: all 0.1s ease-in;
 }
 
-.metro.three-d:active { 
+.metro.three-d:active {
   box-shadow: none;
 
 }
@@ -461,8 +465,8 @@ select{
 }
 
 .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
-  color: #FFFFFF; 
-  text-decoration:none;     
+  color: #FFFFFF;
+  text-decoration:none;
 }
 .btn-primary[disabled], .btn-primary[disabled]:hover, .btn[disabled], .btn[disabled]:hover {
 	background-color: #999999;
@@ -478,7 +482,7 @@ select{
 	-moz-border-bottom-right-radius: 4px;
 	border-radius: 4px;
 }
-	
+
 /* Download  and Publish buttons */
 #downloadPackage a.btn {
   	width: 100px;
@@ -487,23 +491,23 @@ select{
 .download-this-package{
   	clear: both;
   	margin-left: 5px;
-} 
+}
 .download-this-package i{
   	margin-left: 10px;
-}  
+}
 #downloadPackage .dropdown-toggle {
 	font: 400 20px/20px "Oswald", Arial, sans-serif;
-}  
+}
 .btn-group.open .btn.dropdown-toggle{
   	color: #166194;
 	background: rgba(22, 97, 148, 0.2);
-}    
+}
 .dropdown-menu > li > a.btn{
   	background-color: #FFFFFF;
   	font: 300 18px/18px "Oswald", Arial, sans-serif;
 }
-   
-    
+
+
 /* NAVIGATION
 -------------------------------------------------- */
    .breadcrumb{
@@ -522,16 +526,16 @@ select{
 	    background-position: center;
 	    transition: background 500ms;
     }
-    
+
 .btn.direct-search {
 	padding: 4px 8px;
 }
-    
+
     /*Share Your Data button */
     #share-data-view{
     	display: none;
     }
-    
+
     #share{
     	position: fixed;
     	top: 60px;
@@ -549,37 +553,37 @@ select{
 		box-shadow:         3px -1px 15px rgba(50, 50, 50, 0.51);
 		transition: all .5s;
     }
-    
+
     #share > i{
     	margin-left: 10px;
     	font-size: 24px;
     	color: #EEE;
     }
-    
+
     #share:hover{
     	left: 0px;
     }
-    
+
     .show-new-dataCatalogView{
     	cursor: pointer;
     }
 
-    
+
     /* Depending on the headerType, these classes apply */
 
     .navbar {
       position: relative;
-      border: none;  
-      margin: 0px;  
+      border: none;
+      margin: 0px;
     }
-    
+
     .navbar .nav{
     	float: right;
     	margin: 0px;
     	z-index: 999;
     }
-    
-    
+
+
     .mapMode .navbar .nav{
     	z-index: 999;
     }
@@ -593,8 +597,8 @@ select{
       zoom: 1; /* For IE */
       min-height: 0px;
       box-shadow: none;
-	} 
-    
+	}
+
     .navbar-inner > ul{
     	margin: 0px;
     }
@@ -610,18 +614,18 @@ select{
       font: normal normal 400 25px/20px "Oswald", Arial, sans-serif;
       text-transform: uppercase;
     }
-    
+
     .navbar .nav > li  i{
       color: #FFFFFF; /*IE fallback */
       color: rgba(255, 255, 255, 0.8);
       text-shadow: none;
     }
-    
+
     .mapMode .navbar .nav > li > a{
       text-shadow: 0 1px 8px #333;
       color: #FFF;
     }
-    
+
 
     .navbar .nav > li > a:focus,
     .navbar .nav > li > a:hover {
@@ -629,8 +633,8 @@ select{
       text-decoration: none;
       text-shadow: none;
       transition: all .5s;
-    }   
-    
+    }
+
     .navbar .nav > .active > a,
     .navbar .nav > .active > a:hover,
     .navbar .nav > .active > a:focus {
@@ -645,7 +649,7 @@ select{
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
-    
+
     .mapMode .navbar .nav > li > a:focus,
     .mapMode .navbar .nav > li > a:hover{
     	text-shadow: none;
@@ -657,40 +661,40 @@ select{
       margin: 0px 0px 0px 0px;
       padding: 0px 0px 0px 0px;
     }
-    
+
     /* Logged-in view and user controls in navbar */
     #Navbar i .user {
       opacity: .6;
     }
-    
+
     #Navbar .dropdown-toggle > .icon-sort-down{
     	font-size: 15px;
     	width: 5px;
     }
-    
+
     #Navbar .dropdown-menu{
     	left: -90px;
     }
-    
+
     #Navbar .dropdown-menu:before,
     #Navbar .dropdown-menu:after{
     	left: 80%;
     }
-    
+
     #Navbar .dropdown-menu > li > a:hover{
     	background-color: #166194;
     	background-image: none;
     }
-    
+
     #SignIn {
       float: right;
     }
-    
+
     .list-group .list-group-item.active{
     	border-left-color: #90AB05;
     }
- 
-    
+
+
     /* Search/ID Input bar in nav bar */
     .nav > .input > form > input[type="text"],
     .nav > .input > form > .btn{
@@ -698,7 +702,7 @@ select{
     	top: 5px;
     }
     .nav > .input > form > .btn{
-    	background-color: #CCC;	
+    	background-color: #CCC;
     }
     .nav > .input > form > label{
     	position: relative;
@@ -706,7 +710,7 @@ select{
     	font-weight: bold;
     	color: white;
     }
-    
+
     /** Backbone override for dropdowns so they dsplay on hover rather than click **/
     .dropdown-menu .sub-menu {
 	    left: 100%;
@@ -715,31 +719,31 @@ select{
 	    visibility: hidden;
 	    margin-top: -1px;
 	}
-	
+
 	.dropdown-menu li:hover .sub-menu {
 	    visibility: visible;
 	}
-	
+
 	.dropdown:hover .dropdown-menu {
 	    display: block;
 	}
-	
+
 	.dropdown:hover .dropdown-menu.hidden,
 	.dropdown-menu.hidden{
 		display: none;
 	}
-	
+
 	.navbar .nav li.dropdown.open > .dropdown-toggle{
 		color: #FFF;
 		background-color: transparent;
 	}
-	
+
 	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
 	    margin-top: 0;
 	}
 	.nav-tabs{
 		margin-bottom: 0px;
-	}	
+	}
 	.nav-tab > a{
 	    background-color: rgba(255,255,255, .5);
 	    border-radius: 5px 5px 0px 0px;
@@ -762,13 +766,13 @@ select{
 	    top: 11px;
 	    left: -6px;
 	}
-	
+
 	.dropdown-header{
 	margin-left: 20px;
 	font-size: 12px;
 	text-transform: uppercase;
 }
-    
+
 
 /* METADATA VIEW CSS
 -------------------------------------------------- */
@@ -789,33 +793,33 @@ select{
 		margin: 0 auto;
 		display: block;
 	}
-	
+
 	.copy-success .icon {
     	font-size: 1em;
 	}
-	
+
 	#Metadata h4{
 		font-weight: 600;
 	}
-	
+
 	#Metadata .nav-header{
 		text-transform: none;
 	}
-	
+
 	#Metadata .nav-list > .active > a{
 		font-weight: 700;
 		background-color: #166194;
 		text-shadow: none;
 	}
-	
+
 	#Metadata .nav > li > a:hover{
 		text-shadow: none;
 	}
-	
+
 	.fancybox.btn{
 		margin-left:180px;
 	}
-	
+
 	/* Prov charts */
 	.entityDetails,
 	.prov-chart .node,
@@ -832,7 +836,7 @@ select{
 		background-color: #0377DD;
 		color: white;
 	}
-	
+
 	/* Resource map contents table */
 	#downloadContents{
 	}
@@ -840,12 +844,12 @@ select{
 		font-weight: 600;
 		font-size: 1.1em;
 	}
-	
+
 	i.file-type{
 		font-size: 1.2em;
 		font-weight: 600;
 	}
-	
+
 	.download-contents.container{
 		width: 100%;
 		background-color: #FFFFFF;
@@ -854,15 +858,15 @@ select{
 		overflow: hidden;
 		margin-bottom: 20px;
 	}
-	 
+
     table.download-contents {
     	margin-bottom: 0px;
     }
-    
+
     .download-contents .id{
     	max-width: 200px;
     }
-    
+
     .download-contents .download .btn{
     	width: 130px;
     }
@@ -871,7 +875,7 @@ select{
 		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 		font-size: 1.6em;
     }
-    
+
     .download-contents td{
     	overflow-wrap: break-word;
     }
@@ -885,17 +889,17 @@ select{
     	text-transform: capitalize;
     	text-align: center;
     }
-    
+
     .file-type i {
   		  color: #999;
   		  margin-left: 5px;
     }
-    
+
     th.id {
     	min-width: 180px;
     	overflow-wrap: break-word;
     }
-    
+
     /*Details link*/
     .download-contents .more-info{
     	padding-left: 20px;
@@ -903,18 +907,18 @@ select{
     	color: #999;
     	font-size: 12px;
     }
-    
+
     .download-contents .more-info i{
     	margin-left: 3px;
     	font-size: 14px;
     }
-	
-	
+
+
 	.metadata-index {
 		padding: 2%;
 		width: 96%;
 	}
-	
+
 	/** Data Display & Thumbnails **/
 	.entitydetails{
 		background-color: #FFFFFF;
@@ -965,22 +969,22 @@ select{
 		float: left;
 		width: 87%;
 	}
-	
-    
+
+
 /* Registry CSS
 -------------------------------------------------- */
 
-    
+
     label.inline {
     	width: 40%;
     }
-    
+
     /* Larger modal for guide content */
     .modal.large {
     	width: 80%;
     	margin-left: -40%;
     }
-    
+
 	/* Inherit for these registry labels */
 	.label {
 	  display: inherit;
@@ -994,8 +998,8 @@ select{
 	  -webkit-border-radius: inherit;
 	     -moz-border-radius: inherit;
 	          border-radius: inherit;
-	}  
-	
+	}
+
 /* Combobox styles, overlay text input on select
 <!-- example here -->
 <div class="select-editable">
@@ -1005,39 +1009,39 @@ select{
   </select>
   <input type="text" name="keyword" value=""/>
 </div>
--------------------------------------------------- */     
+-------------------------------------------------- */
 	.select-editable {
-		position: relative; 
-		height: 45px; 
+		position: relative;
+		height: 45px;
 	}
-	.select-editable select { 
-		position:absolute; 
-		top: 0px; 
-		left: 0px; 
-		width: 220px; 
+	.select-editable select {
+		position:absolute;
+		top: 0px;
+		left: 0px;
+		width: 220px;
 		height: 29px;
 	}
 	.select-editable input {
-		position:absolute; 
+		position:absolute;
 		top: 0px;
-		left: 0px; 
-		width: 193px; 
+		left: 0px;
+		width: 193px;
 		padding: 1px;
 		padding-left: 5px;
 		height: 25px;
 	}
-	.select-editable select:focus, 
-	.select-editable input:focus { 
-		outline:none; 
-	}	  
+	.select-editable select:focus,
+	.select-editable input:focus {
+		outline:none;
+	}
 
-    
+
   /* SIDEBAR CSS
   -------------------------------------------------- */
  	aside > div{
- 		margin-bottom: 10px;		
+ 		margin-bottom: 10px;
  	}
-    
+
     .subset-choice{
     background-color: #190000;
     background-color: rgba(23, 97, 146, 0.46);
@@ -1050,19 +1054,19 @@ select{
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	}
-	
+
 	.subset-choice:hover,
 	.subset-choice:hover > i{
 		color: #166194;
 	}
-	
+
 	.subset-choice > i{
 		position:absolute;
 		right: 0;
 		margin-right: 10px;
 		top: 20%;
 	}
-    
+
  /***Filters ***/
 #sidebar{
   	background-color: rgba(255, 255, 255, 0.8);
@@ -1090,14 +1094,14 @@ select{
  .filter-contain label i{
  		font-size: 15px;
  		margin-left: 3px;
-top: 2px;	
+top: 2px;
 position: relative;
  }
  .filter-contain input[type="checkbox"].filter{
  		width: 20px;
   	float: left;
  }
-  
+
   .filter-contain i.more-info{
   	font-size: 14px;
   	line-height: 23px;
@@ -1111,19 +1115,19 @@ position: relative;
   	padding: 0px;
   	width: 35px;
   }
-  
+
   .filter.btn > i:hover{
   	color: #08c;
   	transition: color .5s;
   }
-  
+
   /*-- Inputs for search filters --*/
-   
+
    #all_input{
    	margin-left: 0px;
    	width: calc(100% - 61px);
    }
-   
+
    input.filter::-webkit-input-placeholder{
 	color: #999;
 	font-weight: normal;
@@ -1161,7 +1165,7 @@ ul.checkbox-list{
 	margin-right: 10px;
 }
 .checkbox-list > li > input{
-	float: left; 	
+	float: left;
 }
 .checkbox-list label{
 	font-size: .9em;
@@ -1169,13 +1173,13 @@ ul.checkbox-list{
 .checkbox-list .more-link{
 font-weight: normal;
 font-size: .9em;
-} 
-   
+}
+
 /*-- The 'Year' filter elements --*/
 #filter-year .left-padding{
 	padding-left: 10px;
 }
-   
+
 #data-year-label{
   	margin-left: 10px;
 }
@@ -1204,7 +1208,7 @@ font-size: .9em;
 	color: #888;
 	line-height: 14px;
 	padding: 2px;
-}   
+}
 #filter-year  input[type="number"]:focus{
 	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
 }
@@ -1228,7 +1232,7 @@ font-size: .9em;
 #min_year.disabled,
 #max_year.disabled{
 	opacity: 0.6;
-}   
+}
 .ui-slider-range{
 	top: 0;
 	height: 100%;
@@ -1312,7 +1316,7 @@ label.ui-state-active i.icon-check{
 	display: inline-block;
 	width: auto;
 }
-   
+
 
    /*-- Headers in sidebar --*/
   h2.nav-header {
@@ -1327,7 +1331,7 @@ font-size: 18px;
 text-transform: none;
 color: #666;
   }
-  
+
   h2.nav-header > i{
   	font-size: 18px;
   	float: right;
@@ -1337,7 +1341,7 @@ color: #666;
   	cursor: pointer;
   }
 
-  
+
   h3.nav-header,
   h3.nav-header > label{
 margin: 0px;
@@ -1348,48 +1352,48 @@ padding: 0px;
 text-shadow: none;
 padding-left: 10px;
   }
-  
+
   h3.nav-header > label{
   	display: inline-block;
   	padding: 0px;
   }
-  
+
   h3.nav-header > input{
   	height: 20px;
   }
-  
+
   .nav-header > i{
   	margin-right: 5px;
   	font-size: 23px;
   }
-  
+
   li.nav-header{
   	text-transform: none;
 color: #7F7F7F;
   }
-  
+
   /*-- Your Collections area --*/
  ul.collections{
  	margin-left: 0px;
  	list-style: none;
  }
- 
+
  a.collections {
  	color: #555555;
  }
- 
+
  a.collections:hover{
  	color: #3399CC;
  }
- 
+
  a.collections > i{
  	margin-right: 5px;
  }
- 
+
 input[class*="span"].left,
 .row-fluid input[class*="span"].left{
 		float: left;
-}  
+}
 
  /* Autocomplete */
 ul.ui-autocomplete{
@@ -1399,7 +1403,7 @@ ul.ui-autocomplete{
 	padding: 10px;
 	list-style: none;
 	overflow-y: scroll;
-	-webkit-transform: translate3d(0,0,0); 
+	-webkit-transform: translate3d(0,0,0);
 	max-height: 150px;
 	z-index: 2;
 }
@@ -1423,7 +1427,7 @@ li.ui-menu-item > a:hover,
 	font-weight: bold;
 	color: #166194;
 }
-    
+
 
 /* SEARCH PAGE CSS
 -------------------------------------------------- */
@@ -1432,8 +1436,8 @@ li.ui-menu-item > a:hover,
 		padding-top: 44px;
 		padding-left: 0px;
 	}
-	
-    /*-- Results header --*/  
+
+    /*-- Results header --*/
     .result-header{
     	height: auto;
     	width: 90%;
@@ -1457,7 +1461,7 @@ li.ui-menu-item > a:hover,
  		height: 2em;
  		margin-bottom: 0px;
  	}
-   
+
    /*-- Results rows --*/
    #results-container {
 	  width: 75%;
@@ -1492,14 +1496,14 @@ li.ui-menu-item > a:hover,
 	}
 	.mapMode #map-container {
 	  position: relative;
-	}   
+	}
     .search-results > p{
     	display: block;
 		width: 9%;
 		min-width: 115px;
 		margin: 0px auto;
     }
-    
+
     .mapMode #collapse-content{
     	position: absolute;
     	top: 5px;
@@ -1508,7 +1512,7 @@ li.ui-menu-item > a:hover,
     	color: #DDD;
     	cursor: pointer;
     }
-    
+
     #results.loading *{
     	    color: #333;
 	    background-color: #DDDDDD;
@@ -1524,7 +1528,7 @@ li.ui-menu-item > a:hover,
     .result-row:nth-child(odd){
     	background-color: #f1f1f19e;
     }
-    
+
     .result-row .result-row,
     .result-row:hover .result-row{
     	background-color: transparent;
@@ -1532,11 +1536,11 @@ li.ui-menu-item > a:hover,
     .result-author {
       font-weight: normal;
     }
-    
+
     .row-fluid .result-citation{
     	padding-left: 0px;
     }
-    
+
      .result-row .citation .title{
     	color: #166194;
     }
@@ -1549,11 +1553,11 @@ li.ui-menu-item > a:hover,
   	.result-row .tooltip{
   		z-index: 999999999;
   	}
-    
+
     /*-- Results List Icons --*/
     .info-icons i.more-info{
     	cursor: pointer;
-    }   
+    }
 	.info-icons .icons{
     	float: left;
     	margin-right: 1em;
@@ -1567,12 +1571,12 @@ li.ui-menu-item > a:hover,
     .result-row:hover .info-icons .inactive{
     	color: rgba(178, 202, 221, 1);
     }
-    
+
     .popover{
     	font-size: 13px;
     }
-    
-   
+
+
   	/** View count **/
     .result-row .stats .count{
       font-size: .8em;
@@ -1584,8 +1588,8 @@ li.ui-menu-item > a:hover,
     	font-size: 12px;
     	text-align: center;
     }
-    
-	/** Download button **/   
+
+	/** Download button **/
 
     .info-icons .btn {
 		height: 1em;
@@ -1613,7 +1617,7 @@ li.ui-menu-item > a:hover,
     	margin: 10px 0px 0px 0px;
     	text-align: left;
     	clear: both;
-    } 
+    }
     .search-results ~ .pagination {
   		margin-left: 10px;
   		width: calc(100% - 10px);
@@ -1627,7 +1631,7 @@ li.ui-menu-item > a:hover,
 	.pagination ul > li > a{
 		font-size: 12px;
 	}
-	
+
 	.pagination ul > li > a.unactive,
 	.pagination ul > li > a.unactive:hover{
     	font-size: 20px;
@@ -1635,23 +1639,23 @@ li.ui-menu-item > a:hover,
     	background-color: transparent;
     	cursor: default;
     }
-	
+
 	.pagination ul > li > a:hover{
 		background-color: #DDD;
 		color: #166194;
 	}
-	
-	
+
+
 	.pagination ul > .active > a,
 	.pagination ul > .active > a:hover{
 		color: #FFF;
 		background-color: #166194;
 	}
-	
-	    
-/* Stats styles 
-  -------------------------------------------------- */ 
-  
+
+
+/* Stats styles
+  -------------------------------------------------- */
+
   #Profile{
   	max-width: 1200px;
   	margin: auto;
@@ -1689,7 +1693,7 @@ section.user-view-section > .section.active {
   	margin-right: auto;
   	width: 900px;
   	clear: both;
-}  
+}
 .stripe{
 	min-height: 350px;
 	margin-top: 20px;
@@ -1711,11 +1715,11 @@ section.user-view-section > .section.active {
 	color: #555;
 	font-weight: normal;
 }
- 
+
 .profile-title:empty{
  	display: none;
 }
-  
+
 .profile .charts > svg{
   	margin-left: auto;
   	margin-right: auto;
@@ -1744,7 +1748,7 @@ svg .data,
   	stroke: #90AB05;
   	fill: #90AB05;
   }
-  
+
   /* The universal color for metadata */
 svg .metadata,
 .fallback.metadata{
@@ -1752,9 +1756,9 @@ svg .metadata,
   	stroke: #0E69A1;
   	fill: #0E69A1;
   }
-  
+
 /* The universal color for packages */
-  
+
 .profile .packages,
 svg .packages{
 	color: #05ab8f;
@@ -1769,13 +1773,13 @@ svg .default{
 	stroke: #CCCCCC;
 	color: #CCCCCC;
 }
-  
-  /* Donut charts */  
+
+  /* Donut charts */
 #metadata-chart,
 #data-chart{
 	height: 300px;
 	width: 420px;
-	margin:0px;	
+	margin:0px;
 }
 
 #metadata-chart{
@@ -1790,7 +1794,7 @@ svg .default{
  .format-charts{
 	margin-left: auto;
 	margin-right: auto;
-	width: 100%;	
+	width: 100%;
 }
 
 .donut-title-count{
@@ -1830,7 +1834,7 @@ svg .title{
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
-	fill: #118AD5;	
+	fill: #118AD5;
 }
 .donut.metadata > g:nth-child(odd) .donut-arc,
 .donut.metadata > g:nth-child(odd) .donut-arc-label{
@@ -1839,7 +1843,7 @@ svg .title{
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #6E8302;	
+	fill: #6E8302;
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
@@ -1964,7 +1968,7 @@ svg .point:hover ~ .line-chart-label{
 	font-size: 20px;
 }
 .circle-badge .default{
-	
+
 }
 
 /** Bar charts ***/
@@ -1984,16 +1988,16 @@ svg .point:hover ~ .line-chart-label{
 .profile .circle-badge circle{
 	stroke: #05ab8f;
 }
-	
 
-/* MAPS 
+
+/* MAPS
 --------------------------------- */
 
 
 .gmaps-infowindow{
 	max-height: 400px;
-	overflow-y:scroll;	
-	-webkit-transform: translate3d(0,0,0); 
+	overflow-y:scroll;
+	-webkit-transform: translate3d(0,0,0);
 }
 
 .map-toggle-container{
@@ -2030,7 +2034,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 
-/* MAIN CONTENT 
+/* MAIN CONTENT
 --------------------------------- */
 #mainContent{
 	height: 0px;
@@ -2139,9 +2143,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .related > ul > li.right > a{
 	color: #FFFFFF;
-	font: 400 30px/30px "Oswald", sans-serif;	
+	font: 400 30px/30px "Oswald", sans-serif;
 	text-decoration: none;
-	text-transform: uppercase;	
+	text-transform: uppercase;
 }
 
 #metacatDocs .related > ul > li.right{
@@ -2204,7 +2208,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .footerNav > .related li.right{
 
-	
+
 }
 
 #metacatDocs .footerNav > .related li.breadcrumb:last-child{
@@ -2271,7 +2275,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
 	padding: 10px;
-	
+
 }
 
 #metacatDocs > .footer > .small-print{
@@ -2290,10 +2294,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	margin-bottom: 10px;
 }
 
-    
-/* TABLES 
+
+/* TABLES
  -----------------------------------------------*/
- #metacatDocs table, 
+ #metacatDocs table,
  #metacatDocs tr,
  #metacatDocs th,
  #metacatDocs td,
@@ -2303,28 +2307,28 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	border-collapse: collapse;
     	padding: 8px;
     }
-    
+
 #metacatDocs table{
 		background-color: #FFFFFF; /*IE 8 fallback */
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
-    	
+
     }
-    
+
 #metacatDocs thead,
 #metacatDocs th{
     	background-color: #555555;
     	color: #FFFFFF;
     }
-    
+
 #metacatDocs td{
     }
-    
+
 #metacatDocs tr.row-odd{
 		background-color: #BAD6E6; /*IE8 fallback*/
     	background: rgba(103, 184, 229, 0.2);
     }
-    
+
  .table .table-header{
  	background-color: #D8E3EF;
  	color: #333;
@@ -2348,16 +2352,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	background: none;
  	clear: right;
  }
- 
+
 #metacatDocs .highlight-python{
  	word-wrap: break-word;
  	color: #FFFFFF;
  	clear: right;
  }
- 
+
  pre{
 	 padding: 10px;
-	 background-color: #166194; /*IE 8 fallback*/ 
+	 background-color: #166194; /*IE 8 fallback*/
 	background: rgba(22,97,148,0.7);
 	color: #FFFFFF;
 	font-size: 15px;
@@ -2366,15 +2370,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 5px;
 	margin: 20px auto;
  }
- 
-    
+
+
  /* MISC
  -----------------------------------------------*/
  .align-center{
  	margin-left: auto;
  	margin-right: auto;
  }
- 
+
  .figure{
  	max-width: 80%;
  	background-color: #FFFFFF;
@@ -2383,21 +2387,21 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	border: 1px solid #666666;
  	margin: 20px auto;
  }
- 
+
  .figure > img{
  	max-width: 90%;
  	margin: 10px auto;
  	display: block;
  }
- 
+
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
 	color: #666;
 	padding-top: 10px;
  }
- 
- 
+
+
 #metacatDocs .topic{
 	background-color: #FFFFFF; /*iE 8 fallback */
  	background: rgba(255,255,255,0.5);
@@ -2406,29 +2410,29 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  	-webkit-border-radius: 20px;
  	-moz-border-radius: 20px;
  }
- 
+
  #metacatDocs .topic > ul{
  	margin-left: 20px;
  }
- 
+
  #metacatDocs .topic-title{
  	font: 300 24px/24px "Oswald", sans-serif;
 	margin-top: 0;
  }
- 
+
 #metacatDocs  #license pre{
  	width: 700px;
  	margin: 0 auto;
  }
- 
+
  #installing-the-registry .sidebar{
  	max-width: 100%;
  }
- 
+
     dt{
    		font: 300 18px/24px "Oswald", sans-serif;
    }
-   
+
    #metacatDocs input {
 		-webkit-appearance: none;
 		background-color: white;
@@ -2438,43 +2442,43 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		box-shadow: none;
 		border: 0;
     }
-    
+
     #metacatDocs input[type="submit"]{
     	width: auto;
     }
-    
+
     #metacatDocs h3 {
 	}
-	
+
 	#metacatDocs h2{
 		font: 400 27.5px/40px "Oswald", sans-serif;
 	}
-		
+
 	#metacatDocs h1{
 		font: 400 32px/40px "Oswald", sans-serif;
 	}
-	
-	#metacatDocs h1 > a, 
+
+	#metacatDocs h1 > a,
 	#metacatDocs h2 > a,
 	#metacatDocs h3 > a,
 	#metacatDocs h4 > a{
 		color: #333333;
 	}
-	
+
 	#metacatDocs ul ul{
 		margin-left:20px;
 	}
-	
+
 	#metacatDocs .note{
 		 margin-left: 20px;
 		 color: #555555;
 	}
-	
+
 	#metacatDocs blockquote p{
 		font-size: inherit;
 		font-weight: inherit;
 	}
- 
+
  	#metacatDocs #contents{
  		background: rgba(255, 255, 255, 0.5);
 		border-radius: 20px;
@@ -2484,7 +2488,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		clear: both;
 		padding: 10px 10px 10px 40px;
  	}
- 	
+
  /* CSS for emplparser ------
  ------------------------------------ */
  .tablehead{

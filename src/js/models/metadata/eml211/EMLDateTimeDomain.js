@@ -15,17 +15,18 @@ define(["jquery", "underscore", "backbone",
             /* Attributes of an EMLDateTimeDomain object */
             el: "datetime",
 
-            defaults: {
-
-                /* Attributes from EML */
-                formatString: null, // Required format string (e.g. YYYY)
-                dateTimePrecision: null, // The precision of the date time value
-                dateTimeDomain: null, // Zero or more bounds, or a references object
-                /* Attributes not from EML */
-                type: "dateTime",
-                parentModel: null, // The parent model this attribute belongs to
-                objectXML: null, // The serialized XML of this EML measurement scale
-                objectDOM: null  // The DOM of this EML measurement scale
+            defaults: function(){
+                return {
+                  /* Attributes from EML */
+                  formatString: null, // Required format string (e.g. YYYY)
+                  dateTimePrecision: null, // The precision of the date time value
+                  dateTimeDomain: null, // Zero or more bounds, or a references object
+                  /* Attributes not from EML */
+                  type: "dateTime",
+                  parentModel: null, // The parent model this attribute belongs to
+                  objectXML: null, // The serialized XML of this EML measurement scale
+                  objectDOM: null  // The DOM of this EML measurement scale
+                }
             },
 
             /*
@@ -172,7 +173,7 @@ define(["jquery", "underscore", "backbone",
                         $(objectDOM).find("formatstring").text(this.get("formatString"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "formatString");
-                        
+
                         if( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("formatstring"))
                                 .text(this.get("formatString"))[0]);
@@ -184,6 +185,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when formatstrings are better supported
+                else{
+                  $(objectDOM).find("formatstring").remove();
+                }
+                */
 
                 // Update the dateTimePrecision
                 if ( this.get("dateTimePrecision") ) {
@@ -191,7 +197,7 @@ define(["jquery", "underscore", "backbone",
                         $(objectDOM).find("datetimeprecision").text(this.get("dateTimePrecision"));
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "dateTimePrecision");
-                        
+
                         if( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("datetimeprecision"))
                                 .text(this.get("dateTimePrecision"))[0]);
@@ -203,6 +209,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when datetimeprecision if better supported
+                else{
+                  $(objectDOM).find("datetimeprecision").remove();
+                }
+                */
 
                 // Update the dateTimeDomain
                 var dateTimeDomain = this.get("dateTimeDomain");
@@ -213,18 +224,18 @@ define(["jquery", "underscore", "backbone",
                 var minBoundNode;
                 var maxBoundNode;
                 if ( dateTimeDomain ) {
-                    
+
                     // Remove the existing dateTimeDomain node
                     if ( typeof dateTimeDomainNode !== "undefined" ) {
                         dateTimeDomainNode.remove();
-                    } 
-                    
+                    }
+
                     // Do we have bounds?
                     if ( typeof dateTimeDomain.bounds !== "undefined" &&
                          dateTimeDomain.bounds.length ) {
                         // Build the new dateTimeDomain node
                         dateTimeDomainNode = document.createElement("datetimedomain");
-                        
+
                         _.each(dateTimeDomain.bounds, function(bound) {
                             minBound = bound.minimum;
                             maxBound = bound.maximum;
@@ -252,10 +263,10 @@ define(["jquery", "underscore", "backbone",
                     } else {
                         // Basically do nothing. Don't append the dateTimeDomain element
                         // TODO: handle dateTimeDomain.references
-                        
+
                     }
                     nodeToInsertAfter = this.getEMLPosition(objectDOM, "dateTimeDomain");
-                    
+
                     if( ! nodeToInsertAfter ) {
                         $(objectDOM).append(dateTimeDomainNode);
                     } else {
@@ -289,20 +300,41 @@ define(["jquery", "underscore", "backbone",
                 }
             },
 
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
+            },
+
             /* Let the top level package know of attribute changes from this object */
             trickleUpChange: function(){
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
             },
-            
+
             /* Validate the values of this model */
             validate: function(){
-            	if( !this.get("formatString") ) 
+            	if( !this.get("formatString") )
             		return { formatString: "Choose a date-time format." }
             	else{
-            		
+
             		this.trigger("valid");
             		return;
-            		
+
             	}
             }
 

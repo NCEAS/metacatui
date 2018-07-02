@@ -24,7 +24,9 @@ function ($, _, Backbone) {
 			'signout'                   : 'logout',    		// logout the user
 			'signin'                    : 'renderSignIn',    		// logout the user
 			"signinsuccess"             : "renderSignInSuccess",
-			"signinldaperror"			: "renderLdapSignInError",
+			"signinldaperror"           : "renderLdapSignInError",
+			"signinLdap"                : "renderLdapSignIn",
+			"signinSuccessLdap"         : "renderLdapSignInSuccess",
 			'share(/*pid)'              : 'renderEditor', // registry page
 			'submit(/*pid)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
@@ -133,26 +135,46 @@ function ($, _, Backbone) {
 
 			this.renderText(options);
 		},
-		
+
 		/*
-          Renders the editor view given a root package identifier,
-          or a metadata identifier.  If the latter, the corresponding
-          package identifier will be queried and then rendered.
-        */
+    * Renders the editor view given a root package identifier,
+    * or a metadata identifier.  If the latter, the corresponding
+    * package identifier will be queried and then rendered.
+    */
 		renderEditor: function (pid) {
-			this.routeHistory.push("submit");
-			
+
+			//If there is no EditorView yet, create one
 			if( ! MetacatUI.appView.editorView ){
+
+				var router = this;
+
+				//Load the EditorView file
 				require(['views/EditorView'], function(EditorView) {
+					//Add the submit route to the router history
+					router.routeHistory.push("submit");
+
+					//Create a new EditorView
 					MetacatUI.appView.editorView = new EditorView({pid: pid});
+
+					//Set the pid from the pid given in the URL
 					MetacatUI.appView.editorView.pid = pid;
+
+					//Render the EditorView
 					MetacatUI.appView.showView(MetacatUI.appView.editorView);
 				});
-                
-			} else {
-				MetacatUI.appView.editorView.pid = pid;
-				MetacatUI.appView.showView(MetacatUI.appView.editorView);
-                
+
+			}
+			else {
+
+					//Set the pid from the pid given in the URL
+					MetacatUI.appView.editorView.pid = pid;
+
+					//Add the submit route to the router history
+					this.routeHistory.push("submit");
+
+					//Render the Editor View
+					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+
 			}
 		},
 
@@ -265,6 +287,9 @@ function ($, _, Backbone) {
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
 
+			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
+			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
+
 			var seriesId;
 
 			//Check for a seriesId
@@ -335,7 +360,7 @@ function ($, _, Backbone) {
 					MetacatUI.appView.showView(MetacatUI.appView.userView, viewOptions);
 			}
 		},
-		
+
 		renderMyProfile: function(section, subsection){
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
 				this.renderSignIn();
@@ -370,7 +395,7 @@ function ($, _, Backbone) {
 				MetacatUI.appUserModel.logout();
 			}
 		},
-		
+
 		renderSignIn: function(){
 
 			var router = this;
@@ -381,10 +406,10 @@ function ($, _, Backbone) {
 					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
 					router.renderSignIn();
 				});
-				
+
 				return;
 			}
-			
+
 			//If the user status has been checked and they are already logged in, we will forward them to their profile
 			if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
 				this.navigate("my-profile", { trigger: true });
@@ -402,13 +427,26 @@ function ($, _, Backbone) {
 		},
 
 		renderSignInSuccess: function(){
+
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
 		},
-		
+
+		renderLdapSignInSuccess: function(){
+
+			//If there is an LDAP sign in error message
+			if(window.location.hash.indexOf("error=Unable%20to%20authenticate%20LDAP%20user") > -1){
+				this.renderLdapOnlySignInError();
+			}
+			else{
+				this.renderSignInSuccess();
+			}
+
+		},
+
 		renderLdapSignInError: function(){
 			this.routeHistory.push("signinldaperror");
-			
+
 			if(!MetacatUI.appView.signInView){
 				require(['views/SignInView'], function(SignInView){
 					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
@@ -420,6 +458,52 @@ function ($, _, Backbone) {
 				MetacatUI.appView.signInView.ldapError = true;
 				MetacatUI.appView.showView(MetacatUI.appView.signInView);
 			}
+		},
+
+		renderLdapOnlySignInError: function(){
+			this.routeHistory.push("signinldaponlyerror");
+
+			if(!MetacatUI.appView.signInView){
+
+				require(['views/SignInView'], function(SignInView){
+					var signInView = new SignInView({ el: "#Content"});
+					signInView.ldapError = true;
+					signInView.ldapOnly = true;
+					signInView.fullPage = true;
+					MetacatUI.appView.showView(signInView);
+				});
+
+			}
+			else{
+
+				var signInView = new SignInView({ el: "#Content"});
+				signInView.ldapError = true;
+				signInView.ldapOnly = true;
+				signInView.fullPage = true;
+				MetacatUI.appView.showView(signInView);
+
+			}
+		},
+
+		renderLdapSignIn: function(){
+
+			this.routeHistory.push("signinLdap");
+
+			if(!MetacatUI.appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
+					MetacatUI.appView.signInView.ldapOnly = true;
+					MetacatUI.appView.signInView.fullPage = true;
+					MetacatUI.appView.showView(MetacatUI.appView.signInView);
+				});
+			}
+			else{
+				var signInLdapView = new SignInView({ el: "#Content"});
+				MetacatUI.appView.signInView.ldapOnly = true;
+				MetacatUI.appView.signInView.fullPage = true;
+				MetacatUI.appView.showView(signInLdapView);
+			}
+
 		},
 
 		renderExternal: function(url) {

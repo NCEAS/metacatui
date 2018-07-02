@@ -1,5 +1,5 @@
 /**
- *   MetacatUI v2.0.0RC1
+ *   MetacatUI
  *   https://github.com/NCEAS/metacatui
  *   MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.
  **/
@@ -12,7 +12,7 @@ MetacatUI.mapKey = document.getElementById("loader").getAttribute("data-map-key"
 if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
     MetacatUI.mapKey = null;
 }
-MetacatUI.useD3 = true; 
+MetacatUI.useD3 = true;
 
 // Find out of MetacatUI is deployed in a sub-directory off the top level of
 // the domain
@@ -21,7 +21,7 @@ MetacatUI.root = "/metacatui"
 console.log("MetacatUI deployment root is", MetacatUI.root);
 
 //This version of Metacat UI - used for cache busting
-MetacatUI.metacatUIVersion = "2.0.0RC4";
+MetacatUI.metacatUIVersion = "2.0.0RC15";
 
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");
@@ -38,7 +38,7 @@ MetacatUI.loadTheme = function(theme) {
 	    else MetacatUI.initApp();
     }
 }
-MetacatUI.initApp = function () {			
+MetacatUI.initApp = function () {
     var script = document.createElement("script");
     script.setAttribute("data-main", MetacatUI.root + "/js/app.js?v=" + MetacatUI.metacatUIVersion);
     script.src = MetacatUI.root + "/components/require.js";
@@ -48,23 +48,23 @@ MetacatUI.initApp = function () {
 
 // Fix compatibility issues with mainly IE 8 and earlier. Do this before the rest of the app loads since even common
 // functions are missing, such as console.log
-MetacatUI.preventCompatibilityIssues = function(){	
+MetacatUI.preventCompatibilityIssues = function(){
 	// Detecting IE
 	function isIE () {
 		  var myNav = navigator.userAgent.toLowerCase();
 		  return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
-	}	
+	}
 	//If IE 8 or earlier, don't use D3
 	if (isIE() && (isIE() < 9)) MetacatUI.useD3 = false;
-    
-	
+
+
 	/* Add trim() function for IE*/
 	if(typeof String.prototype.trim !== 'function') {
 		  String.prototype.trim = function() {
-		    return this.replace(/^\s+|\s+$/g, ''); 
+		    return this.replace(/^\s+|\s+$/g, '');
 		  }
 	}
-	
+
 	/* Polyfill for startsWith() - IE 8 and earlier */
 	if (!String.prototype.startsWith) {
 		  String.prototype.startsWith = function(searchString, position) {
@@ -72,7 +72,7 @@ MetacatUI.preventCompatibilityIssues = function(){
 		    return this.indexOf(searchString, position) === position;
 		  };
 	}
-	
+
 	/* Polyfill for endsWith() - IE 8 and earlier */
 	if (!String.prototype.endsWith) {
 		  String.prototype.endsWith = function(searchString, position) {
@@ -85,14 +85,14 @@ MetacatUI.preventCompatibilityIssues = function(){
 		      return lastIndex !== -1 && lastIndex === position;
 		  };
 	}
-	
+
 	/* POlyfill for Array.isArray() - IE 8 and earlier */
 	if (!Array.isArray) {
 		  Array.isArray = function(arg) {
 		    return Object.prototype.toString.call(arg) === '[object Array]';
 		  };
 	}
-	
+
 	/**
 	 * Protect window.console method calls, e.g. console is not defined on IE
 	 * unless dev tools are open, and IE doesn't define console.debug
@@ -111,10 +111,10 @@ MetacatUI.preventCompatibilityIssues = function(){
 	  for (var i = 0; i < m.length; i++) {
 	    if (!window.console[m[i]]) {
 	      window.console[m[i]] = function() {};
-	    }    
-	  } 
+	    }
+	  }
 	})();
-	
+
 	//Add a polyfill for the .map() function for arrays for IE 8. Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
 	// Production steps of ECMA-262, Edition 5, 15.4.4.19
 	// Reference: http://es5.github.io/#x15.4.4.19
@@ -128,11 +128,11 @@ MetacatUI.preventCompatibilityIssues = function(){
 	      throw new TypeError(" this is null or not defined");
 	    }
 
-	    // 1. Let O be the result of calling ToObject passing the |this| 
+	    // 1. Let O be the result of calling ToObject passing the |this|
 	    //    value as the argument.
 	    var O = Object(this);
 
-	    // 2. Let lenValue be the result of calling the Get internal 
+	    // 2. Let lenValue be the result of calling the Get internal
 	    //    method of O with the argument "length".
 	    // 3. Let len be ToUint32(lenValue).
 	    var len = O.length >>> 0;
@@ -148,8 +148,8 @@ MetacatUI.preventCompatibilityIssues = function(){
 	      T = thisArg;
 	    }
 
-	    // 6. Let A be a new array created as if by the expression new Array(len) 
-	    //    where Array is the standard built-in constructor with that name and 
+	    // 6. Let A be a new array created as if by the expression new Array(len)
+	    //    where Array is the standard built-in constructor with that name and
 	    //    len is the value of len.
 	    A = new Array(len);
 
@@ -163,35 +163,35 @@ MetacatUI.preventCompatibilityIssues = function(){
 
 	      // a. Let Pk be ToString(k).
 	      //   This is implicit for LHS operands of the in operator
-	      // b. Let kPresent be the result of calling the HasProperty internal 
+	      // b. Let kPresent be the result of calling the HasProperty internal
 	      //    method of O with argument Pk.
 	      //   This step can be combined with c
 	      // c. If kPresent is true, then
 	      if (k in O) {
 
-	        // i. Let kValue be the result of calling the Get internal 
+	        // i. Let kValue be the result of calling the Get internal
 	        //    method of O with argument Pk.
 	        kValue = O[k];
 
-	        // ii. Let mappedValue be the result of calling the Call internal 
-	        //     method of callback with T as the this value and argument 
+	        // ii. Let mappedValue be the result of calling the Call internal
+	        //     method of callback with T as the this value and argument
 	        //     list containing kValue, k, and O.
 	        mappedValue = callback.call(T, kValue, k, O);
 
 	        // iii. Call the DefineOwnProperty internal method of A with arguments
-	        // Pk, Property Descriptor 
-	        // { Value: mappedValue, 
-	        //   Writable: true, 
-	        //   Enumerable: true, 
+	        // Pk, Property Descriptor
+	        // { Value: mappedValue,
+	        //   Writable: true,
+	        //   Enumerable: true,
 	        //   Configurable: true },
 	        // and false.
 
 	        // In browsers that support Object.defineProperty, use the following:
-	        // Object.defineProperty(A, k, { 
-	        //   value: mappedValue, 
-	        //   writable: true, 
-	        //   enumerable: true, 
-	        //   configurable: true 
+	        // Object.defineProperty(A, k, {
+	        //   value: mappedValue,
+	        //   writable: true,
+	        //   enumerable: true,
+	        //   configurable: true
 	        // });
 
 	        // For best browser support, use the following:
@@ -205,7 +205,7 @@ MetacatUI.preventCompatibilityIssues = function(){
 	    return A;
 	  };
 	}
-	
+
 	// Polyfill for Array function foreach() - from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach#Polyfill
 	// Production steps of ECMA-262, Edition 5, 15.4.4.18
 	// Reference: http://es5.github.io/#x15.4.4.18
@@ -265,7 +265,7 @@ MetacatUI.preventCompatibilityIssues = function(){
 	    // 8. return undefined
 	  };
 	}
-	
+
 	// Polyfill for Object.keys()
 	// From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
 	if (!Object.keys) {
@@ -308,7 +308,7 @@ MetacatUI.preventCompatibilityIssues = function(){
 	    };
 	  }());
 	}
-    
+
     // Polyfill for Array.indexOf
     // Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf#Polyfill
     // Production steps of ECMA-262, Edition 5, 15.4.4.14
@@ -376,4 +376,3 @@ MetacatUI.preventCompatibilityIssues = function(){
 
 MetacatUI.preventCompatibilityIssues();
 MetacatUI.loadTheme(MetacatUI.theme);
-
