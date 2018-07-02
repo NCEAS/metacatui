@@ -21,6 +21,8 @@ define(['underscore',
 
     var EditorView = Backbone.View.extend({
 
+        type: "Editor",
+
         el: "#Content",
 
         /* The initial editor layout */
@@ -102,16 +104,16 @@ define(['underscore',
 	        this.listenToOnce(this.model, "change:notFound", this.showNotFound);
 
         	//If we checked for authentication already
-        	if(MetacatUI.appUserModel.get("checked"))
+        	if(MetacatUI.appUserModel.get("checked")){
         		this.fetchModel();
+          }
         	//If we haven't checked for authentication yet,
         	//wait until the user info is loaded before we request the Metadata
-        	else
+        	else{
 	            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
+          }
 
-        	//When the user tries to navigate away, confirm with the user
-        	var view = this;
-        	window.onbeforeunload = function(){ view.confirmClose() };
+          window.onbeforeunload = this.confirmClose;
 
           // When the user mistakenly drops a file into an area in the window
           // that isn't a proper drop-target, prevent navigating away from the
@@ -132,28 +134,31 @@ define(['underscore',
 
         fetchModel: function(){
         	//If we checked for authentication and the user is not logged in
-        	if(!MetacatUI.appUserModel.get("loggedIn"))
+        	if(!MetacatUI.appUserModel.get("loggedIn")){
         		this.showSignIn();
-            //If the user is logged in, fetch the Metadata
+          }
         	else{
-        		//If the user hasn't provided an id, then don't check the authority and mark as synced already
+
+            //If the user hasn't provided an id, then don't check the authority and mark as synced already
 	        	if(!this.pid){
 	        		this.model.set("isAuthorized", true);
-	    			this.model.trigger("sync");
+	    			  this.model.trigger("sync");
 	        	}
-	    		else {
-	    			//Get the data package when we find out the user is authorized to edit it
-	    	        this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
-	    	        //Let a user know when they are not authorized to edit this data set
-	    	        this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
+	    		  else {
+	    			  //Get the data package when we find out the user is authorized to edit it
+	    	      this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
+	    	      //Let a user know when they are not authorized to edit this data set
+	    	      this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
 
-	    	        //Fetch the model
-	    			this.model.fetch();
+	    	      //Fetch the model
+	    			  this.model.fetch();
 
-	    			//Check the authority of this user
-	    			this.model.checkAuthority();
-	    		}
+	    			  //Check the authority of this user
+	    			  this.model.checkAuthority();
+	    		  }
+
         	}
+
         },
 
         /* Get the data package associated with the EML */
@@ -178,6 +183,9 @@ define(['underscore',
                 // Create a new Data packages
                 MetacatUI.rootDataPackage = new DataPackage([this.model]);
                 MetacatUI.rootDataPackage.packageModel.set("synced", true);
+
+                //Handle the add of the metadata model
+                MetacatUI.rootDataPackage.handleAdd(this.model);
 
                 // Associate the science metadata with the resource map
                 if ( this.model.get && Array.isArray(this.model.get("resourceMap")) ) {
@@ -205,13 +213,19 @@ define(['underscore',
                 // Create a new data package with this id
                 MetacatUI.rootDataPackage = new DataPackage([this.model], {id: resourceMapIds[0]});
 
+                //Handle the add of the metadata model
+                MetacatUI.rootDataPackage.saveReference(this.model);
+
                 // If there is more than one resource map, we need to make sure we fetch the most recent one
                 if ( resourceMapIds.length > 1 ) {
 
             		//Now, find the latest version
             		this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "change:latestVersion", function(model) {
                         //Create a new data package for the latest version package
-            			MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+            			      MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+
+                        //Handle the add of the metadata model
+                        MetacatUI.rootDataPackage.saveReference(this.model);
 
                          //Fetch the data package
                          MetacatUI.rootDataPackage.fetch();
@@ -354,6 +368,7 @@ define(['underscore',
                 	//Replace the old ScienceMetadata model in the collection
                 	MetacatUI.rootDataPackage.remove(model);
                 	MetacatUI.rootDataPackage.add(EMLmodel, { silent: true });
+                  MetacatUI.rootDataPackage.handleAdd(EMLmodel);
                 	model.trigger("replace", EMLmodel);
 
                 	//Fetch the EML and render it
@@ -433,7 +448,10 @@ define(['underscore',
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", this.toggleControls);
                 this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:changed", function(event) {
                     if (MetacatUI.rootDataPackage.packageModel.get("changed") ) {
-                        this.model.set("uploadStatus", "q"); // Clears the error status
+                        // Put this metadata model in the queue when the package has been changed
+                        // Don't put it in the queue if it's in the process of saving already
+                        if( this.model.get("uploadStatus") != "p" )
+                          this.model.set("uploadStatus", "q");
                     }
                 });
 
@@ -486,59 +504,73 @@ define(['underscore',
         	//Change the URL to the new id
         	MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
 
-            this.toggleControls();
+          this.toggleControls();
 
-            // Review message for themes that have contentIsModerated==true in the app config.
-            if (MetacatUI.appModel.get("contentIsModerated")) {
-                var message = this.editorSubmitMessageTemplate({
-                    	themeTitle: MetacatUI.themeTitle,
-                    	viewURL: "#view/" + this.model.get("id")
-                	}),
-                	timeout = null;
+          // Review message for themes that have contentIsModerated==true in the app config.
+          if (MetacatUI.appModel.get("contentIsModerated")) {
+              var message = this.editorSubmitMessageTemplate({
+                  	themeTitle: MetacatUI.themeTitle,
+                  	viewURL: "#view/" + this.model.get("id")
+              	}),
+              	timeout = null;
 
-            }
-            else {
-                var message = $(document.createElement("div")).append(
-                		$(document.createElement("span")).text("Your changes have been submitted. "),
-                		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
-                	timeout = 4000;
-            }
+          }
+          else {
+              var message = $(document.createElement("div")).append(
+              		$(document.createElement("span")).text("Your changes have been submitted. "),
+              		$(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
+              	timeout = 4000;
+          }
 
+          MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
 
-            MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
+          //Rerender the CitationView
+          var citationView = _.where(this.subviews, { type: "Citation" });
+          if(citationView.length){
+            citationView[0].createTitleLink = true;
+            citationView[0].render();
+          }
 
-            //Rerender the CitationView
-            var citationView = _.where(this.subviews, { type: "Citation" });
-            if(citationView.length){
-	            citationView[0].createTitleLink = true;
-	            citationView[0].render();
-            }
+          // Reset the state to clean
+          MetacatUI.rootDataPackage.packageModel.set("changed", false);
+          this.model.set("hasContentChanges", false);
 
-            // Reset the state to clean
-            MetacatUI.rootDataPackage.packageModel.set("changed", false);
-            this.model.set("hasContentChanges", false);
-
-            this.setListeners();
+          this.setListeners();
         },
 
         /*
          * When the data package collection fails to save, tell the user
          */
         saveError: function(errorMsg){
-        	var errorId = "error" + Math.round(Math.random()*100),
-        		message = $(document.createElement("div")).append("<p>Not all of your changes could be submitted.</p>");
 
-        	message.append($(document.createElement("a"))
-        						.text("See details")
+
+        	var errorId = "error" + Math.round(Math.random()*100),
+              messageContainer = $(document.createElement("div")).append(document.createElement("p")),
+              messageParagraph = messageContainer.find("p"),
+              messageClasses = "alert-error";
+
+          if( this.model.get("draftSaved") && MetacatUI.appModel.get("contentIsModerated") ){
+            messageParagraph.text("Not all of your changes could be submitted " +
+              "due to a technical error. But, we sent a draft of your edits to " +
+              "our support team, who will contact " +
+              "you via email as soon as possible about getting your data package submitted. ");
+            messageClasses = "alert-warning"
+          }
+        	else{
+            messageParagraph.text($(document.createElement("div")).append("Not all of your changes could be submitted."));
+          }
+
+        	messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))
+        						.text("See technical details")
         						.attr("data-toggle", "collapse")
         						.attr("data-target", "#" + errorId)
-        						.addClass("pointer"),
+        						.addClass("pointer")),
         					$(document.createElement("div"))
         						.addClass("collapse")
         						.attr("id", errorId)
         						.append($(document.createElement("pre")).text(errorMsg)));
 
-        	MetacatUI.appView.showAlert(message, "alert-error", this.$el, null, {
+        	MetacatUI.appView.showAlert(messageContainer, messageClasses, this.$el, null, {
         		emailBody: "Error message: Data Package save error: " + errorMsg,
         		remove: true
         		});
@@ -786,7 +818,7 @@ define(['underscore',
     			//First clear all the error messaging
     			this.$(".notification.error").empty();
     			this.$(".side-nav-item .icon").hide();
-    			this.$(".error").removeClass("error");
+    			this.$("#metadata-container .error").removeClass("error");
     			$(".alert-container").remove();
 
 
@@ -795,7 +827,7 @@ define(['underscore',
     			_.each(errors, function(errorMsg, category){
 
     				var categoryEls = this.$("[data-category='" + category + "']"),
-    					dataItemRow = categoryEls.parents(".data-package-item");
+    					  dataItemRow = categoryEls.parents(".data-package-item");
 
     				//If this field is in a DataItemView, then delegate to that view
     				if(dataItemRow.length && dataItemRow.data("view")){
@@ -860,39 +892,32 @@ define(['underscore',
     		},
 
         /*
-        * Determine if a confirmation alert should be displayed, and if so, will display it and return the user's response.
-        *
-        * This function will be called by the onBeforeUnload window event
-        *
-        * When the router is navigating to the EditorView when already on the EditorView, the window object will not
-        * fire an beforeUnload event. An example is when the user is already on the EditorView and clicks a link to the EditorView.
-        * So to catch these routing events, the app Router will watch for this specific situation.
+        * This function is called whenever the user is about to leave the webpage
         */
         confirmClose: function(){
 
           //If the user isn't logged in, we can leave this view without confirmation
           if(!MetacatUI.appUserModel.get("loggedIn"))
-            return true;
+            return;
 
           //If the form hasn't been edited, we can close this view without confirmation
-    			if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
-    				return true;
+          if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
+            return;
 
-          //Show the confirm alert to the user and if they click "OK", return true
-          if( MetacatUI.appView.confirmLeave() )
-            return true;
-          //If the user clicks "Cancel", return false
-          else {
-            return false;
-          }
+          return "Are you sure you want to leave this page? All of your changes will be lost.";
 
         },
 
         /* Close the view and its sub views */
         onClose: function() {
 
-        	//Stop listening to the "add" event so that new package members aren't rendered
-        	this.stopListening(MetacatUI.rootDataPackage, "add" );
+        	//Stop listening to the "add" event so that new package members aren't rendered.
+          //Check first if the DataPackage has been intialized. An easy check is to see is
+          // the 'models' attribute is undefined. If the DataPackage collection has been intialized,
+          // then it would be an empty array.
+          if( typeof MetacatUI.rootDataPackage.models !== "undefined" ){
+        	  this.stopListening(MetacatUI.rootDataPackage, "add");
+          }
 
         	//Remove all the other events
           this.off();    // remove callbacks, prevent zombies
@@ -910,7 +935,9 @@ define(['underscore',
           });
 
           this.subviews = [];
-			    window.onbeforeunload = null;
+
+          //Remove the click listener on the onbeforeunload event
+          window.onbeforeunload = null;
 
         },
 

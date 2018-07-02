@@ -8,25 +8,25 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
          * @see https://github.com/NCEAS/eml/blob/master/eml-dataTable.xsd
          */
         var EMLDataTable = EMLEntity.extend({
-            
+
             //The class name for this model
             type: "EMLDataTable",
 
             /* Attributes of any entity */
             defaults: function(){
                 return    _.extend({
-    
+
                         /* Attributes from EML */
                         caseSensitive: null, // The case sensitivity of the table records
                         numberOfRecords: null, // the number of records in the table
-        
+
                         /* Attributes not from EML */
                         nodeOrder: [ // The order of the top level XML element nodes
                             "caseSensitive",
                             "numberOfRecords",
                             "references"
                         ],
-    
+
                     }, EMLEntity.prototype.defaults());
             },
 
@@ -126,7 +126,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "caseSensitive");
-                        
+
                         if ( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("casesensitive"))
                                 .text(this.get("caseSensitive"))[0]);
@@ -144,7 +144,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
                     } else {
                         nodeToInsertAfter = this.getEMLPosition(objectDOM, "numberOfRecords");
-                        
+
                         if ( ! nodeToInsertAfter ) {
                             $(objectDOM).append($(document.createElement("numberofrecords"))
                                 .text(this.get("numberOfRecords"))[0]);
@@ -154,7 +154,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                         }
                     }
                 }
-                
+
                 return objectDOM;
             },
 
@@ -177,16 +177,51 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 
             /* Validate the datable's required fields */
             validate: function(){
-                
-                // Require the entity name
-                if( !this.get("entityName") ) {
-                    return "Please specify an data table name.";
-                }
-                
-                // Require the attribute list
-                if( !this.get("attributeList").length ) {
-                    return "Please describe the table attributes (columns).";
-                }
+
+              var errors = {};
+
+              // Require the entity name
+              if( !this.get("entityName") ) {
+                  errors.entityName = "Please specify an data table name.";
+              }
+
+              //Validate the attributes
+              var attributeErrors = this.validateAttributes();
+              if(attributeErrors.length)
+                errors.attributeList = errors;
+
+              // Require the attribute list
+              /*if( !this.get("attributeList").length ) {
+                  errors.attributeList = "Please describe the table attributes (columns).";
+              }*/
+
+              if( Object.keys(errors).length ){
+                return errors;
+              }
+              else{
+                return false;
+              }
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
             }
 
         });

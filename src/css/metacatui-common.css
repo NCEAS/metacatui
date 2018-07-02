@@ -18,6 +18,9 @@ a:hover{
 .footnote{
 	font-size: .7em;
 }
+.underline{
+	text-decoration: underline;
+}
 .alert .footnote{
 	font-size: .9em;
 	margin-top: 10px;
@@ -256,6 +259,9 @@ header .citation {
 #Content > .login > * {
     font-size: 2em;
     margin-right: 10px;
+}
+#Content > .login > .alert-container{
+	font-size: inherit;
 }
 
 
@@ -1369,6 +1375,9 @@ img.icon{
 #signInPopup .orcid-signin {
     margin-top: 10%;
 }
+.sign-in-ldap select{
+	width: 220px;
+}
 .modal.container{
 	padding: 20px 20px 40px 20px;
 }
@@ -1434,6 +1443,10 @@ img.icon{
 #metadata-index-details .Other [class^="geohash_"]
 {
 	display: none;
+}
+.metadata-view{
+  padding-left: 20px;
+  padding-right: 20px;
 }
 #metadata-index-details .entitydetails .size{
 	display: inherit;
@@ -1511,8 +1524,8 @@ body > .alert-container {
     transform: translateX(-50%);
 }
 /* Hide the elements from the view service that we don't need to display */
-#metadata-container .citation,
-#metadata-container #downloadPackage{
+#Metadata form > .citation,
+#Metadata #downloadPackage{
 	display: none;
 }
 /* Used in metadata view for metadata format types without stylesheet */
@@ -1522,6 +1535,9 @@ body > .alert-container {
     color: #333;
     font-family: inherit;
     font-size: 1em;
+}
+#Metadata table .copy{
+	min-width: 50px;
 }
 #Content.no-stylesheet.container{
 	width: 86%;
@@ -3674,6 +3690,11 @@ textarea.xlarge{
 }
 .attribute-menu.side-nav-items{
 	overflow-y: overlay;
+	transform: translate3d(0,0,0);
+	-webkit-transform: translate3d(0,0,0);
+	-moz-transform: translate3d(0,0,0);
+
+	overflow-y: auto;
 	position: fixed;
 	height: 400px;
 	background-color: #EEE;
@@ -3681,8 +3702,9 @@ textarea.xlarge{
 }
 .attribute-list{
 	width: calc(100% - 170px - 60px);
-    float: right;
-    padding: 0px 20px;
+  float: right;
+  padding: 0px 20px;
+	overflow: scroll;
 }
 .eml-attribute .title{
 	margin-bottom: 20px;
@@ -4061,6 +4083,7 @@ textarea.xlarge{
 	max-height: calc(100% - 110px);
 	height: calc(100% - 110px);
 	padding: 0px;
+	overflow-y: hidden;
 }
 .eml-entity .nav-tabs{
 	position: fixed;
@@ -4205,15 +4228,17 @@ table.api tr td:nth-child(even) {
 	word-break: break-word;
 }
 .slaask-widget-container{
-	bottom: 170px !important;
 }
 /*******************************************
 CSS library fixes
 ******************************************/
 /* overflow-y:scroll fix for webkit browsers */
 .pre-scrollable, /*Bootstrap */
-.fancybox-lock .fancybox-overlay{ /* Fancybox */
+.fancybox-lock .fancybox-overlay,
+.modal-body{ /* Fancybox */
+	transform: translate3d(0,0,0);
 	-webkit-transform: translate3d(0,0,0);
+	-moz-transform: translate3d(0,0,0);
 }
 
 /** Progress Bars from Bootstrap 3.3.6 **/

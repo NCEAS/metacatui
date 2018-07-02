@@ -684,13 +684,13 @@ define(['underscore', 'jquery', 'backbone',
 	    			//Create a new EMLParty model
     				var newPerson = new EMLParty();
 
-    				//Add this new EMLParty to the EML model
-	    			this.model.get("associatedParty").push(newPerson);
-
 	    			//Create all the attributes for the new person. We're only changing the role
-	    			newPerson.set( partyToCopy.toJSON() );
+	    			newPerson.set( partyToCopy.copyValues() );
 	    			newPerson.set("type", "associatedParty");
 	    			newPerson.set("role", role);
+
+            //Add this new EMLParty to the EML model
+            this.model.addParty(newPerson);
 
 	    			//Render this new person
 		    		this.renderPerson(newPerson, role);
@@ -705,14 +705,14 @@ define(['underscore', 'jquery', 'backbone',
 	    			//Create a new EMLParty model
     				var newPerson = new EMLParty();
 
-    				//Add this new EMLParty to the EML model
-	    			this.model.get(role).push(newPerson);
-
     				// Copy the attributes from the original person
     				// and set it on the new person
-    				newPerson.set(partyToCopy.toJSON());
+    				newPerson.set(partyToCopy.copyValues());
     				newPerson.set("type", role);
     				newPerson.set("role", newPerson.defaults().role);
+
+            //Add this new EMLParty to the EML model
+            this.model.addParty(newPerson);
 
 	    			//Render this new person
 		    		this.renderPerson(newPerson, role);
@@ -928,7 +928,7 @@ define(['underscore', 'jquery', 'backbone',
 					var event = argument;
 
 					// Don't add a new funding row if the current one is empty
-					if ($(event.target).val().trim() === "") return;
+					if ( $(event.target).val().trim() === "") return;
 				}
 
 		    	var fundingInput       = $(document.createElement("input"))
@@ -1087,10 +1087,18 @@ define(['underscore', 'jquery', 'backbone',
 	    updateFunding: function(e){
 	    	if(!e) return;
 
-	    	var newValue = $(e.target).siblings("input.hidden").val() || $(e.target).val(),
-	    		row      = $(e.target).parent(".funding-row").first(),
-	    		rowNum   = this.$(".funding-row").index(row),
-	    		input    = $(row).find("input");
+	    	var row      = $(e.target).parent(".funding-row").first(),
+  	    		rowNum   = this.$(".funding-row").index(row),
+  	    		input    = $(row).find("input"),
+            isNew    = $(row).is(".new");
+
+        var newValue = isNew? $(e.target).siblings("input.hidden").val() : $(e.target).val();
+
+        newValue = this.model.cleanXMLText(newValue);
+
+        if( typeof newValue == "string" ){
+          newValue = newValue.trim();
+        }
 
 	    	//If there is no project model
 	    	if(!this.model.get("project")){
@@ -1100,14 +1108,21 @@ define(['underscore', 'jquery', 'backbone',
 	    	else
 	    		var model = this.model.get("project");
 
-	    	var currentFundingValues = model.get("funding")
-	    	currentFundingValues[rowNum] = newValue;
+	    	var currentFundingValues = model.get("funding");
 
-	    	if($(row).is(".new") && newValue != ''){
+        //If the new value is an empty string, then remove that index in the array
+        if( typeof newValue == "string" && newValue.trim().length == 0 ){
+          currentFundingValues = currentFundingValues.splice(rowNum, 1);
+        }
+        else{
+	    	  currentFundingValues[rowNum] = newValue;
+        }
+
+	    	if(isNew && newValue != ''){
 	    		$(row).removeClass("new");
 
-				// Add in a remove button
-				$(e.target).parent().append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
+  				// Add in a remove button
+  				$(e.target).parent().append(this.createRemoveButton('project', 'funding', '.funding-row', 'div.funding-container'));
 
 	    		this.addFunding();
 	    	}
@@ -1124,8 +1139,8 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//Get all the keywords in the view
 	    	_.each(this.$(".keyword-row"), function(thisRow){
-	    		var thesaurus = $(thisRow).find("select").val(),
-	    			keyword   = $(thisRow).find("input").val();
+	    		var thesaurus = this.model.cleanXMLText( $(thisRow).find("select").val() ),
+	    			keyword     = this.model.cleanXMLText( $(thisRow).find("input").val() );
 
 	    		if(!keyword) return;
 
@@ -1290,7 +1305,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	var category  = $(e.target).attr("data-category"),
 	    		currentValue = this.model.get(category),
 	    		textModel = $(e.target).data("model"),
-	    		value     = $(e.target).val().trim();
+	    		value     = this.model.cleanXMLText($(e.target).val());
 
 	    	//We can't update anything without a category
 	    	if(!category) return false;
@@ -1339,7 +1354,7 @@ define(['underscore', 'jquery', 'backbone',
 		    		textModel.trigger("change:text");
 
 	    			//Is this text model set on the EML model?
-	    			if( !_.contains(currentValue, textModel) ){
+	    			if( Array.isArray(currentValue) && !_.contains(currentValue, textModel) ){
 
 	    				//Push this text model into the array of EMLText models
 	    				currentValue.push(textModel);
@@ -1347,7 +1362,6 @@ define(['underscore', 'jquery', 'backbone',
 		    			this.model.trigger("change");
 
 	    			}
-
 
 	    		}
 
@@ -1416,7 +1430,7 @@ define(['underscore', 'jquery', 'backbone',
 
 	    	//Get the category, new value, and model
 	    	var category = $(e.target).attr("data-category"),
-	    		value    = $(e.target).val().trim(),
+	    		value    = this.model.cleanXMLText($(e.target).val()),
 	    		model    = $(e.target).data("model") || this.model;
 
 	    	//We can't update anything without a category
@@ -1722,7 +1736,7 @@ define(['underscore', 'jquery', 'backbone',
 					classificationEl = $(e.target).parents(".root-taxonomic-classification"),
 		    		model =  $(coverage).data("model") || this.model,
 					category = $(e.target).attr("data-category"),
-					value = $(e.target).val().trim();
+					value = this.model.cleanXMLText($(e.target).val());
 
 		    	//We can't update anything without a coverage, or
 		    	//classification
@@ -1766,8 +1780,8 @@ define(['underscore', 'jquery', 'backbone',
 
 				for (var j = 0; j < rows.length; j++) {
 
-					currentRank = $(rows[j]).find("select").val() || "";
-					currentValue = $(rows[j]).find("input").val() || "";
+					currentRank = this.model.cleanXMLText($(rows[j]).find("select").val()) || "";
+					currentValue = this.model.cleanXMLText($(rows[j]).find("input").val()) || "";
 
 					// Skip over rows with empty Rank or Value
 					if (!currentRank.length || !currentValue.length) {

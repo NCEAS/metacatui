@@ -461,8 +461,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 					 .attr("data-id", provEntity.get("id"));
 			
 			//Display images in the prov chart node
-			if(type == "image"){
-				$(nodeEl).css("background-image", "url('" + provEntity.get("url") + "')");
+			if(provEntity.getType() == "image"){
+				$(nodeEl).css("background-image", "url('" + MetacatUI.appModel.get("objectServiceUrl") + provEntity.get("id") + "')");
 			} 
 			//Create an icon inside the node for other format types
 			else {
@@ -536,8 +536,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 				$(headerContainer).prepend(nameEl);
 			
 			//Display images in the prov chart node popover 
-			if(type == "image"){
-				var img = $(document.createElement("img")).attr("src", provEntity.get("url")).addClass("thumbnail");
+			if(provEntity.getType() == "image"){
+				var img = $(document.createElement("img")).attr("src", MetacatUI.appModel.get("objectServiceUrl") + provEntity.get("id")).addClass("thumbnail");
+                
 				$(citationEl).after(img);
 			}
 

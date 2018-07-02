@@ -5,12 +5,13 @@ define(['jquery',
 		'views/AltHeaderView',
 		'views/NavbarView',
 		'views/FooterView',
+		'views/SignInView',
 		'text!templates/alert.html',
 		'text!templates/appHead.html',
 		'text!templates/app.html',
 		'text!templates/loading.html'
 	    ],
-	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, AlertTemplate, AppHeadTemplate, AppTemplate, LoadingTemplate) {
+	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, SignInView, AlertTemplate, AppHeadTemplate, AppTemplate, LoadingTemplate) {
 	'use strict';
 
 	var app = app || {};
@@ -47,6 +48,7 @@ define(['jquery',
 
 		initialize: function () {
 
+			//Check for the LDAP sign in error message
 			if(window.location.search.indexOf("error=Unable%20to%20authenticate%20LDAP%20user") > -1){
 				window.location = window.location.origin + window.location.pathname + "#signinldaperror";
 			}
@@ -82,6 +84,7 @@ define(['jquery',
 			this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
 
 			this.listenForActivity();
+			this.listenForTimeout();
 
 			this.initializeWidgets();
 		},
@@ -111,15 +114,18 @@ define(['jquery',
 			// Change the background image if there is one
 			MetacatUI.navbarView.changeBackground();
 
-
 			// close the current view
 			if (this.currentView){
 
-				//Check if the view will need to cancel the close
-				if((typeof this.currentView.confirmClose == "function") && (this.currentView != view)){
-					if(!this.currentView.confirmClose()){
-						MetacatUI.uiRouter.undoLastRoute();
-						return;
+				if( typeof this.currentView.confirmClose == "function" ){
+					var confirmMsg = this.currentView.confirmClose();
+
+					if(confirmMsg){
+						var leave = confirm(confirmMsg);
+						if( !leave ){
+							MetacatUI.uiRouter.undoLastRoute();
+							return;
+						}
 					}
 				}
 
@@ -286,20 +292,106 @@ define(['jquery',
 			MetacatUI.appUserModel.on("change:loggedIn", function(){
 				if(!MetacatUI.appUserModel.get("loggedIn")) return;
 
-				//Check the user's token on focus
+				//When the user re-focuses back on the window
 				$(window).focus(function(){
+					//If the user has logged out in the meantime, then exit
 					if(!MetacatUI.appUserModel.get("loggedIn")) return;
 
-					if(MetacatUI.appModel.get("tokenUrl")){
-						//If the user's token is no longer valid, then refresh the page
-						MetacatUI.appUserModel.checkToken();
-					}
-					else{
-						MetacatUI.appUserModel.checkStatus();
-					}
+						//If the expiration date of the token has passed, then allow the user to sign back in
+						if( MetacatUI.appUserModel.get("expires") <= new Date() ){
+							MetacatUI.appView.showTimeoutSignIn();
+						}
+
 				});
 			});
 		},
+
+		/*
+		* Will determine the length of time until the user's current token expires,
+		* and will set a window timeout for that length of time. When the timeout
+		* is triggered, the sign in modal window will be displayed so that the user
+		* can sign in again (which happens in AppView.showTimeoutSignIn())
+		*/
+		listenForTimeout: function(){
+
+			//Only proceed if the user is logged in
+			if( !MetacatUI.appUserModel.get("checked") ){
+
+				//When the user logged back in, listen again for the next timeout
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+					//If the user is logged in, then listen call this function again
+					if(MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn"))
+						this.listenForTimeout();
+				});
+
+				return;
+			}
+			else if( !MetacatUI.appUserModel.get("loggedIn") ){
+
+				//When the user logged back in, listen again for the next timeout
+				this.listenToOnce(MetacatUI.appUserModel, "change:loggedIn", function(){
+					//If the user is logged in, then listen call this function again
+					if(MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn"))
+						this.listenForTimeout();
+				});
+
+				return;
+
+			}
+
+			var view = this,
+					expires = MetacatUI.appUserModel.get("expires"),
+					timeLeft = expires - new Date();
+
+			//If there is no time left until expiration, then show the sign in view now
+			if( timeLeft < 0 ){
+				this.showTimeoutSignIn();
+			}
+			//Otherwise, set a timeout for a expiration time, then show the Sign In View
+			else{
+				var timeoutId = setTimeout(function(){
+													view.showTimeoutSignIn.call(view);
+												}, timeLeft);
+
+				//Save the timeout id in case we want to destroy the timeout later
+				MetacatUI.appUserModel.set("timeoutId", timeoutId);
+			}
+		},
+
+		/*
+		* If the user's auth token has expired, a new SignInView model window is
+		* displayed so the user can sign back in. A listener is set on the appUserModel
+		* so that when they do successfully sign back in, we set another timeout listener
+		* via AppView.listenForTimeout()
+		*/
+		showTimeoutSignIn: function(){
+			if(MetacatUI.appUserModel.get("expires") <= new Date()){
+				MetacatUI.appUserModel.set("loggedIn", false);
+
+				 var signInView = new SignInView({
+						 inPlace: true,
+						 closeButtons: false,
+						 topMessage: "Your session has timed out. Click Sign In to open a " +
+						 						 "new window to sign in again. Make sure your browser settings allow pop-ups."
+				 })
+				 var signInForm = signInView.render().el;
+
+				 if(this.subviews && Array.isArray(this.subviews))
+					 this.subviews.push(signInView);
+				 else
+					 this.subviews = [signInView];
+
+				$("body").append(signInForm);
+				$(signInForm).modal();
+
+				//When the user logged back in, listen again for the next timeout
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+					if(MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn"))
+						this.listenForTimeout();
+				});
+			}
+		},
+
 
 		openChatWithMessage: function(){
 			if(!_slaask) return;

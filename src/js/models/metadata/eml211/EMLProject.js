@@ -99,11 +99,18 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 
 					_.each(this.get("parentModel").get("creator"), function(creator){
 
+            var individualName = (typeof creator.get("individualName") == "object") ?
+                                    Object.assign({}, creator.get("individualName")) : null,
+                organizationName = creator.get("organizationName"),
+                positionName = creator.get("positionName");
+
 						var newPersonnel = new EMLParty({
 							role: "principalInvestigator",
 							parentModel: this,
 							type: "personnel",
-							individualName: Object.assign({}, creator.get("individualName"))
+							individualName: individualName,
+              organizationName: organizationName,
+              positionName: positionName
 						});
 
 						personnel.push(newPersonnel);
@@ -162,6 +169,27 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 
 			return objectDOM;
 		},
+
+    /*
+    * Climbs up the model heirarchy until it finds the EML model
+    *
+    * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+    */
+    getParentEML: function(){
+      var emlModel = this.get("parentModel"),
+          tries = 0;
+
+      while (emlModel.type !== "EML" && tries < 6){
+        emlModel = emlModel.get("parentModel");
+        tries++;
+      }
+
+      if( emlModel && emlModel.type == "EML")
+        return emlModel;
+      else
+        return false;
+
+    },
 
 		trickleUpChange: function(){
 			MetacatUI.rootDataPackage.packageModel.set("changed", true);

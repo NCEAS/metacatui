@@ -128,7 +128,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			//Set the NSF Award API proxy
 			if(typeof this.get("grantsUrl") != "undefined")
-				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+				this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");
 
 			//DataONE CN API
 			if(this.get("d1CNBaseUrl")){
