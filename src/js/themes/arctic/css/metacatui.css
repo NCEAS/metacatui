@@ -1364,7 +1364,10 @@ MDQ items
     	box-sizing: border-box;
     	min-width: 100%;
     }
-
+    .downloads-this-version{
+        font-weight: lighter;
+        font-size: 12px;
+    }
     .citation ~ .metadata-controls-container .btn.copy{
     	margin-top: 0px;
     	margin-bottom: 20px;

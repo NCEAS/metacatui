@@ -1522,6 +1522,10 @@ svg .no-activity,
         border: 1px solid #8EB6CA;
         background-color: #C5D7E0;
     }
+    .downloads-this-version{
+        font-weight: lighter;
+        font-size: 12px;
+    }
     /**----------------------------------------**/
 
 	.metadata-index {

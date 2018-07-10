@@ -1047,6 +1047,9 @@ img.icon{
 	min-width: 100px;
 	max-width: 250px;
 }
+.downloads-this-version{
+    font-size: 12px;
+}
 /*The metadata gets narrowed even more when there are two prov charts next to it */
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
