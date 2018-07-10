@@ -17,7 +17,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 	            return	_.extend({
 
 		                /* Attributes from EML */
-		                entityType: null, // The type of the entity
+		                entityType: "otherEntity", // The type of the entity
 
 		                /* Attributes not from EML */
 		                nodeOrder: [ // The order of the top level XML element nodes
