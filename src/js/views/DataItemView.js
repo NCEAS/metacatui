@@ -252,7 +252,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 		html: true,
                 		title: function(){
                 			if(model.get("numSaveAttempts") > 0){
-                				return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + model.get("numSaveAttempts") + " of 3)</div>";
+                				return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + (model.get("numSaveAttempts") + 1) + " of 3)</div>";
                 			}
                 			else if(model.get("uploadProgress")){
                 				var percentDone = model.get("uploadProgress").toString();

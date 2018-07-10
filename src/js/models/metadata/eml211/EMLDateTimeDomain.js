@@ -119,11 +119,13 @@ define(["jquery", "underscore", "backbone",
                     var min = $(bound).find("minimum").text();
                     if ( min ) {
                         bnd.minimum = min;
+                        bnd.exclusive = $(bound).find("minimum").attr("exclusive");
                     }
                     // Get the maximum if available
                     var max = $(bound).find("maximum").text();
                     if ( max ) {
                         bnd.maximum = max;
+                        bnd.exclusive = $(bound).find("maximum").attr("exclusive");
                     }
                     domain.bounds.push(bnd);
 
@@ -244,18 +246,34 @@ define(["jquery", "underscore", "backbone",
                             if ( hasBounds ) {
                                 // Populate the minimum element
                                 if ( typeof minBound !== "undefined" ) {
-                                    minBoundNode = document.createElement("minimum");
+                                    minBoundNode = $(document.createElement("minimum"));
                                     minBoundNode.text(minBound);
+
+                                    if(bound.exclusive === true || bound.exclusive == "true")
+                                      minBoundNode.attr("exclusive", "true");
+                                    else
+                                      minBoundNode.attr("exclusive", "false");
+
+                                    $(boundsNode).append(minBoundNode);
                                 }
 
                                 // Populate the maximum element
                                 if ( typeof maxBound !== "undefined" ) {
-                                    maxBoundNode = document.createElement("maximum");
+                                    maxBoundNode = $(document.createElement("maximum"));
                                     maxBoundNode.text(maxBound);
+
+                                    if(bound.exclusive === true || bound.exclusive == "true")
+                                      maxBoundNode.attr("exclusive", "true");
+                                    else
+                                      maxBoundNode.attr("exclusive", "false");
+
+                                    $(boundsNode).append(maxBoundNode);
                                 }
-                                $(boundsNode).append(minBoundNode);
-                                $(boundsNode).append(maxBoundNode);
-                                $(dateTimeDomainNode).append(boundsNode);
+
+                                //If the bounds are populated, append it to the date time domain node
+                                if( $(boundsNode).children().length > 0 )
+                                  $(dateTimeDomainNode).append(boundsNode);
+
                             } else {
                                 // Do nothing. Content is missing, don't append the node
                             }

@@ -21,7 +21,7 @@ MetacatUI.root = "/metacatui"
 console.log("MetacatUI deployment root is", MetacatUI.root);
 
 //This version of Metacat UI - used for cache busting
-MetacatUI.metacatUIVersion = "2.0.0RC15";
+MetacatUI.metacatUIVersion = "2.0.0";
 
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");

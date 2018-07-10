@@ -259,15 +259,17 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				$(nameNode).empty();
 
 				 // salutation[s]
-				 if(!Array.isArray(name.salutation) && name.salutation) name.salutation = [name.salutation];
-				 _.each(name.salutation, function(salutation) {
-					 $(nameNode).append("<salutation>" + salutation + "</salutation>");
+				 if(!Array.isArray(name.salutation) && name.salutation)
+          name.salutation = [name.salutation];
+
+         _.each(name.salutation, function(salutation) {
+					 $(nameNode).prepend("<salutation>" + salutation + "</salutation>");
 				 });
 
 				 //Given name
 				 if(!Array.isArray(name.givenName) && name.givenName) name.givenName = [name.givenName];
 				 _.each(name.givenName, function(givenName) {
-					 $(nameNode).prepend("<givenname>" + givenName + "</givenname>");
+					 $(nameNode).append("<givenname>" + givenName + "</givenname>");
 				 });
 
 				 // surname

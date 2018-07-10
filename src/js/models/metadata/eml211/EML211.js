@@ -127,6 +127,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "changehistory" : "changeHistory",
                 "changedate" : "changeDate",
                 "changescope" : "changeScope",
+                "characterencoding" : "characterEncoding",
                 "codedefinition" : "codeDefinition",
                 "codeexplanation" : "codeExplanation",
                 "codesetname" : "codesetName",
@@ -692,19 +693,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           else{
 
             //Add the <methods> node to the EML
-            if (datasetNode.find('methods').length === 0){
-              var insertAfter = this.getEMLPosition(eml, "methods");
+            datasetNode.find("methods").detach();
 
-              if(insertAfter)
-                insertAfter.after(methodsEl);
-              else
-                datasetNode.append(methodsEl);
-            }
-            else{
+            var insertAfter = this.getEMLPosition(eml, "methods");
 
-              datasetNode.find("methods").replaceWith(methodsEl);
-
-            }
+            if(insertAfter)
+              insertAfter.after(methodsEl);
+            else
+              datasetNode.append(methodsEl);
           }
         }
       }
@@ -732,11 +728,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
       }
 
-      //Serialize the project
-      if(datasetNode.find("project").length)
-        datasetNode.find("project").replaceWith(this.get("project").updateDOM());
-      else if(this.get("project"))
+      //Detach the project elements from the DOM
+      if(datasetNode.find("project").length){
+
+        datasetNode.find("project").detach();
+
+      }
+
+      //If there is an EMLProject, update its DOM
+      if(this.get("project")){
+
         this.getEMLPosition(eml, "project").after(this.get("project").updateDOM());
+
+      }
 
       //Get the existing taxon coverage nodes from the EML
       var existingEntities = datasetNode.find("otherEntity, dataTable");
@@ -746,11 +750,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         //Update the existing node if it exists
         if(existingEntities.length - 1 >= position) {
-          $(existingEntities[position]).replaceWith(entity.updateDOM());
-        }
+          //Remove the entity from the EML
+          $(existingEntities[position]).detach();
+          //Insert it into the correct position
+          this.getEMLPosition(eml, entity.get("type").toLowerCase()).after(entity.updateDOM());        }
         //Or, append new nodes
         else {
-          this.getEMLPosition(eml, "otherentity").after(entity.updateDOM());
+          //Inser the entity into the correct position
+          this.getEMLPosition(eml, entity.get("type").toLowerCase()).after(entity.updateDOM());
         }
 
       }, this);
@@ -903,10 +910,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         // Update the file name to match the title
         if( Array.isArray(this.get("title")) ){
-          this.set("fileName", this.get("title")[0]);
+          this.set("fileName", this.get("title")[0] + ".xml");
         }
         else if( typeof this.get("title") == "string" ){
-          this.set("fileName", this.get("title"));
+          this.set("fileName", this.get("title") + ".xml");
         }
 
         //If that doesn't work for some reason, set the missing file name via the
@@ -1067,7 +1074,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 errorMsg       = msgContainer.length? msgContainer.text() : errorDOM;
 
             //When there is no network connection (status == 0), there will be no response text
-            if(!errorMsg)
+            if(!errorMsg || (response.status == 408 || response.status == 0))
               errorMsg = "There was a network issue that prevented your metadata from uploading. " +
                      "Make sure you are connected to a reliable internet connection.";
 
@@ -1472,6 +1479,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           matchingTypes[0].set("xmlID", dataONEObj.getXMLSafeID());
 
           return matchingTypes[0];
+        }
+
+        //If this EML is in a DataPackage with only one other DataONEObject,
+        // and there is only one entity in the EML, then we can assume they are the same entity
+        if( this.get("entities").length == 1 ){
+
+          if( this.get("collections")[0] && this.get("collections")[0].type == "DataPackage" &&
+              this.get("collections")[0].length == 2 && _.contains(this.get("collections")[0].models, dataONEObj)){
+                return this.get("entities")[0];
+          }
+
         }
 
         return false;
