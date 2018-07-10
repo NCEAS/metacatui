@@ -1273,7 +1273,7 @@ define(['jquery',
 
             this.saveProvPending = false;
             this.hideSaving();
-            this.stopListening(this.dataPackage, "error", this.saveError);
+            this.stopListening(this.dataPackage, "errorSaving", this.saveError);
 
             // Turn off "save" footer
             this.hideEditorControls();
@@ -1338,7 +1338,7 @@ define(['jquery',
             if(this.dataPackage.provEditsPending()) {
                 this.saveProvPending = true;
                 // If the Data Package failed saving, display an error message
-                this.listenToOnce(this.dataPackage, "error", this.saveError);
+                this.listenToOnce(this.dataPackage, "errorSaving", this.saveError);
                 // Listen for when the package has been successfully saved
                 this.listenToOnce(this.dataPackage, "successSaving", this.saveSuccess);
                 this.showSaving();
