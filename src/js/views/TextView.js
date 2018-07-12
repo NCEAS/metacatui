@@ -43,7 +43,7 @@ define(['jquery', 'underscore', 'backbone',
 			if(!template){
 				this.$el.html(this.alert({
 					classes: "alert-error",
-					msg: "Whoops, this page does not exist! Did you want to <a href='#data'>search for data</a> or learn <a href='#about'>more about this site</a>?"
+					msg: "Whoops, this page does not exist! Did you want to <a href='#data'>search for data</a> or learn <a href='about'>more about this site</a>?"
 				}));
 			}
 			

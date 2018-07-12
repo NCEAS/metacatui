@@ -467,7 +467,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				  target = Backbone.history.location.href;
 
 			// DO NOT include the route otherwise we have an infinite redirect
-			target  = target.split("#")[0];
+			// target  = target.split("#")[0];
+			target = target.slice(0, -8);
 
 			// make sure to include the target
 			signOutUrl += "?target=" + target;

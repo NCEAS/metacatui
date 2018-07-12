@@ -192,6 +192,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 			//The ID
 			var idEl = this.createIDElement();
+			var model = this.metadata || this.model,
+				id = model.get("id"),
+				seriesId = model.get("seriesId");
 
 			if ((typeof title !== "undefined") && title){
 				if(title.trim().charAt(title.length-1) != ".")
