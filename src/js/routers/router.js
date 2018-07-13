@@ -65,7 +65,7 @@ function ($, _, Backbone) {
 		undoLastRoute: function(){
 			this.routeHistory.pop();
 
-			Remove the last route and hash from the history
+			// Remove the last route and hash from the history
 			if(_.last(this.hashHistory) == window.location.hash)
 				this.hashHistory.pop();
 
