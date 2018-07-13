@@ -9,6 +9,7 @@ define(['jquery',
 		'collections/DataPackage',
 		'models/DataONEObject',
 		'models/PackageModel',
+		'models/NodeModel',
 		'models/SolrResult',
 		'models/metadata/ScienceMetadata',
         'models/MetricsModel',
@@ -52,6 +53,7 @@ define(['jquery',
 		pid: null,
 		seriesId: null,
         saveProvPending: false,
+		nodeModel: new NodeModel(),
 
 		model: new SolrResult(),
 		packageModels: new Array(),
@@ -102,7 +104,9 @@ define(['jquery',
 
 			if(typeof options.el !== "undefined")
 				this.setElement(options.el);
+
 		},
+
 
 		// Render the main metadata view
 		render: function () {
@@ -198,6 +202,7 @@ define(['jquery',
 			});
 			this.listenToOnce(model, "404", this.showNotFound);
 			model.getInfo();
+
 		},
 
 		renderMetadata: function(){
@@ -209,6 +214,8 @@ define(['jquery',
 			this.$(this.tableContainer).html(this.loadingTemplate({
 					msg: "Retrieving data set details..."
 				}));
+			
+
 
 			//Insert the breadcrumbs
 			this.insertBreadcrumbs();
@@ -301,6 +308,12 @@ define(['jquery',
 				$.ajax(_.extend(loadSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
 			else this.renderMetadataFromIndex();
+			
+			// Insert the Linked Data into the header of the page.
+			if (MetacatUI.appModel.get("isJSONLDEnabled")) {
+				var json = this.generateJSONLD();
+				this.insertJSONLD(json);
+			}
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
@@ -566,6 +579,7 @@ define(['jquery',
 				packageModel.complete = true;
 				viewRef.insertPackageTable(packageModel);
 			}
+            
 
 			//Insert the data details sections
 			this.insertDataDetails();
@@ -2105,6 +2119,333 @@ define(['jquery',
 			this.$el.removeClass("container no-stylesheet");
 
 			this.$el.empty();
+		},
+
+		/**
+		 * Generate Schema.org-compliant JSONLD for the model bound to the view into
+		 *  the head tag of the page by `insertJSONLD`.
+		 * 
+		 * Note: `insertJSONLD` should be called to do the actual inserting into the
+		 * DOM.
+		 */
+		generateJSONLD: function () {
+			var model = this.model;
+
+			// Determine the path (either #view or view, depending on router
+			// configuration) for use in the 'url' property
+			var href = document.location.href,
+					route = href.replace(document.location.origin + "/", "")
+					            .split("/")[0];
+
+			// Logic for formatting Author's text for the citation
+			// Copied and re-formatted from CitationView.js
+			// TODO: Maybe put this in a shared helper function somewhere
+			var authors = model.get("origin"),
+				count = 0,
+				authorText = "";
+
+			_.each(authors, function (author) {
+				count++;
+
+				if (count == 6) {
+					authorText += ", et al. ";
+					return;
+				} else if (count > 6) {
+					return;
+				}
+
+				if (count > 1) {
+					if (authors.length > 2) {
+						authorText += ",";
+					}
+
+					if (count == authors.length) {
+						authorText += " and";
+					}
+
+					if (authors.length > 1) {
+						authorText += " ";
+					}
+				}
+
+				authorText += author;
+			});
+
+			// Dataset/datePublished
+			// Prefer pubDate, fall back to dateUploaded so we have something to show
+			var datePublished = null;
+
+			if (model.get("pubDate") !== "") {
+				datePublished = model.get("pubDate")
+			} else {
+				datePublished = model.get("dateUploaded")
+			}
+			
+			// Dataset/publisher
+			// Copied and lightly modified from CitationView
+			var publisher = "",
+				datasource = this.model.get("datasource"),
+				memberNode = MetacatUI.nodeModel.getMember(datasource);
+							
+			if (memberNode) {
+				publisher = memberNode.name;
+			} else {
+				publisher = datasource;
+			}
+
+			// Citation
+			var citationParts = [ 
+						authorText, 
+						new Date(datePublished).getUTCFullYear().toString(),
+						model.get("title"),
+						publisher,
+						model.get("id")],
+				  citationText = citationParts.join(". ") + ".";
+
+			// First: Create a minimal Schema.org Dataset with just the fields we
+			// know will come back from Solr (System Metadata fields). 
+			// Add the rest in conditional on whether they are present.
+			var elJSON = {
+				"@context": {
+					"@vocab": "http://schema.org",
+				},
+				"@type": "Dataset",
+				"@id": "https://dataone.org/datasets/" + 
+					encodeURIComponent(model.get("id")),
+				"datePublished" : datePublished,
+				"publisher": publisher,
+				"identifier": model.get("id"),
+				"url": "https://dataone.org/datasets/" + 
+					encodeURIComponent(model.get("id")),
+				"schemaVersion": model.get("formatId"),
+			};
+			
+			// Second: Add in optional fields
+
+			// Name
+			if (model.get("title")) {
+				elJSON["name"] = model.get("title")
+			}
+
+			// Creator
+			if (model.get("origin")) {
+				elJSON["creator"] = model.get("origin")
+			}
+
+			// Citation
+			//
+			// I made this optional because there are rare cases where a metadata
+			// standard doesn't have creators or titles
+			
+			// Returns 1 if all citationParts are non-zero-length
+			// Returns 0 if any are zero length
+			var isCitationValid = citationParts.map(function(p) { 
+				return (typeof p === "string" && p.length > 0 ? true : false)
+			}).reduce(function(acc, val) { 
+				return acc * val;
+			});
+
+			if (isCitationValid) {
+				elJSON['citation'] = citationText;
+			}
+
+			// Dataset/spatialCoverage
+			if (model.get("northBoundCoord") &&
+				model.get("eastBoundCoord") &&
+				model.get("southBoundCoord") &&
+				model.get("westBoundCoord")) {
+				
+				var spatialCoverage = {
+					"@type": "Place",
+					"additionalProperty": [
+					{
+						"@type": "PropertyValue",
+						"additionalType": "http://dbpedia.org/resource/Coordinate_reference_system",
+						"name": "Coordinate Reference System",
+						"value": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+					}
+					],
+					"geo": this.generateSchemaOrgGeo(model.get("northBoundCoord"),
+																				   model.get("eastBoundCoord"),
+																				   model.get("southBoundCoord"),
+																				   model.get("westBoundCoord")),
+					"subjectOf": {
+						"@type": "CreativeWork",
+						"fileFormat": "application/vnd.geo+json",
+						"text": this.generateGeoJSONString(model.get("northBoundCoord"),
+																							 model.get("eastBoundCoord"),
+																							 model.get("southBoundCoord"),
+																							 model.get("westBoundCoord"))
+					}
+
+						
+				};
+
+				elJSON.spatialCoverage = spatialCoverage;
+			}
+
+			// Dataset/temporalCoverage
+			if (model.get("beginDate") && !model.get("endDate")) {
+				elJSON.temporalCoverage = model.get("beginDate");
+			} else if (model.get("beginDate") && model.get("endDate")) {
+				elJSON.temporalCoverage = model.get("beginDate") + "/" + model.get("endDate");
+			}
+
+			// Dataset/variableMeasured
+			if (model.get("attributeName")) {
+				elJSON.variableMeasured = model.get("attributeName");
+			}
+
+			// Dataset/description
+			if (model.get("abstract")) {
+				elJSON.description = model.get("abstract");
+			}
+
+			// Dataset/keywords
+			if (model.get("keywords")) {
+				elJSON.keywords = model.get("keywords");
+			}
+
+			return elJSON;
+		},
+		
+		/** 
+		 * Insert Schema.org-compliant JSONLD for the model bound to the view into 
+		 * the head tag of the page (at the end).
+		 * 
+		 * @param {object} json - JSON-LD to insert into the page
+		 * 
+		 * Some notes:
+		 * 
+		 * - Checks if the JSONLD already exists from the previous data view
+		 * - If not create a new script tag and append otherwise replace the text 
+		 *   for the script
+		 */
+		insertJSONLD: function(json) {
+			if (!document.getElementById('jsonld')) {
+				var el = document.createElement('script');
+				el.type = 'application/ld+json';
+				el.id = 'jsonld';
+				el.text = JSON.stringify(json);
+				document.querySelector('head').appendChild(el);
+			} else {
+				var script = document.getElementById('jsonld');
+				script.text = JSON.stringify(json);
+			}
+		},
+
+		/**
+		 * Generate a Schema.org/Place/geo from bounding coordinates
+		 * 
+		 * Either generates a GeoCoordinates (when the north and east coords are 
+		 * the same) or a GeoShape otherwise.
+		 */
+		generateSchemaOrgGeo(north, east, south, west) {
+			if (north === south) {
+				return {
+					"@type": "GeoCoordinates",
+					"latitude" : north,
+					"longitude" : west
+				}
+			} else {
+				return {
+					"@type": "GeoShape",
+					"box": west + ", " + south + " " + east + ", " + north
+				}
+			}
+		},
+
+		/**
+		 * Creates a (hopefully) valid geoJSON string from the a set of bounding
+		 * coordinates from the Solr index (north, east, south, west).
+		 * 
+		 * This function produces either a GeoJSON Point or Polygon depending on
+		 * whether the north and south bounding coordinates are the same.
+		 * 
+		 * Part of the reason for factoring this out, in addition to code 
+		 * organization issues, is that the GeoJSON spec requires us to modify
+		 * the raw result from Solr when the coverage crosses -180W which is common
+		 * for datasets that cross the Pacific Ocean. In this case, We need to 
+		 * convert the east bounding coordinate from degrees west to degrees east.
+		 * 
+		 * e.g., if the east bounding coordinate is 120 W and west bounding 
+		 * coordinate is 140 E, geoJSON requires we specify 140 E as 220
+		 *  
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 * @param {number} south - South bounding coordinate
+		 * @param {number} west - West bounding coordinate
+		 */
+		generateGeoJSONString(north, east, south, west) {
+			if (north === south) {
+				return this.generateGeoJSONPoint(north, east);
+			} else {
+				return this.generateGeoJSONPolygon(north, east, south, west);
+			}
+		},
+
+		/**
+		 * Generate a GeoJSON Point object
+		 * 
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 * 
+		 * Example:
+		 * {
+		 *	"type": "Point",
+		 *	"coordinates": [
+		 *			-105.01621,
+		 *			39.57422
+		 * ]}
+
+		*/
+		generateGeoJSONPoint(north, east) {
+			var preamble = "{\"type\":\"Point\",\"coordinates\":",
+		   		inner = "[" + east + "," + north + "]",
+				  postamble = "}";
+
+			return preamble + inner + postamble;
+		},
+
+		/**
+		 * Generate a GeoJSON Polygon object from
+		 * 
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 * @param {number} south - South bounding coordinate
+		 * @param {number} west - West bounding coordinate
+		 * 
+		 * 
+		 * Example:
+		 * 
+		 * {
+     *   "type": "Polygon",
+     *   "coordinates": [[
+     *     [ 100, 0 ],
+     *     [ 101, 0 ],
+     *     [ 101, 1 ],
+		 *     [ 100, 1 ],
+     *     [ 100, 0 ]
+		 * ]}
+		 * 
+		 */
+		generateGeoJSONPolygon(north, east, south, west) {
+			var preamble = "{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\"\:\"Polygon\",\"coordinates\":[[";
+			
+			// Handle the case when the polygon wraps across the 180W/180E boundary
+			if (east  < west) {
+				east = 360 - east
+			}
+
+			var inner = "[" + west + "," + south + "]," + 
+									"[" + east + "," + south + "]," + 
+									"[" + east + "," + north + "]," +
+									"[" + west + "," + north + "]," +
+									"[" + west + "," + south + "]";
+			
+			var postamble = "]]}}";
+
+			return preamble + inner + postamble;
 		}
 
 	});

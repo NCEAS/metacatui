@@ -7,6 +7,7 @@ define(['jquery',
 				'collections/SolrResults',
 				'models/Search',
 				'models/Stats',
+				'models/NodeModel',
 				'views/SearchResultView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
@@ -17,7 +18,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				], 				
-	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, NodeModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 	
 	var DataCatalogView = Backbone.View.extend({
@@ -31,6 +32,7 @@ define(['jquery',
 		searchModel: null,		
 		searchResults: null,
 		statsModel: new StatsModel(),
+		nodeModel: new NodeModel(),
 		
 		//Templates
 		template: _.template(CatalogTemplate),		
@@ -246,7 +248,7 @@ define(['jquery',
 			
 			// and go to a certain page if we have it
 			this.getResults();	
-			
+
 			//Set a custom height on any elements that have the .auto-height class
 			if($(".auto-height").length > 0){
 				//Readjust the height whenever the window is resized
@@ -259,6 +261,54 @@ define(['jquery',
 			}
 			
 			return this;
+		},
+
+
+		// Linked Data Object for appending the jsonld into the browser DOM
+		getLinkedData: function () {
+				// Find the MN info from the CN Node list
+				var  members = this.nodeModel.get("members")
+				for (var i = 0; i < members.length; i++) {
+					if(members[i].identifier == this.nodeModel.get("currentMemberNode")) {
+						var nodeModelObject = members[i];
+					}
+				}
+
+				// JSON Linked Data Object
+				let elJSON = {
+					"@context": {
+						"@vocab": "http://schema.org/"
+					},
+					"@type": "DataCatalog",
+				};
+				if(nodeModelObject) {
+					// "keywords": "",
+					// "provider": "",
+					let conditionalData = {
+						"description": nodeModelObject.description,
+						"identifier": nodeModelObject.identifier,
+						"image": nodeModelObject.logo,
+						"name": nodeModelObject.name,
+						"url": nodeModelObject.url
+					}
+					$.extend(elJSON,conditionalData)
+				}
+
+
+				// Check if the jsonld already exists from the previous data view
+				// If not create a new script tag and append otherwise replace the text for the script
+				if (!document.getElementById('jsonld')) {
+						var el = document.createElement('script');
+						el.type = 'application/ld+json';
+						el.id = 'jsonld';
+						el.text = JSON.stringify(elJSON);
+						document.querySelector('head').appendChild(el);
+				}
+				else {
+						var script = document.getElementById('jsonld');
+						script.text = JSON.stringify(elJSON);
+				}
+			return;
 		},
 		
 		setUpTree : function() {

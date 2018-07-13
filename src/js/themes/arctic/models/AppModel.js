@@ -121,7 +121,9 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetQualityMetric: false,
 			displayDatasetAnalyzeButton: false,
 			displayMetricModals: false,
-			displayDatasetControls: true
+			displayDatasetControls: true,
+
+			isJSONLDEnabled: true
 		},
 
 		defaultView: "data",

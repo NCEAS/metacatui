@@ -34,8 +34,8 @@
            		 }
               %>
         		<div class="on-map span6 stop-route">
-					<%
-						if (typeof southBoundCoord != "undefined" && geohash_9){
+					<% 
+						if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
 		               		print('<i class="icon-map-marker on-map open-marker stop-route" data-id="'+id+'" data-geohash="' + geohash_9 + '"></i>');
 		               }
 		               else{
