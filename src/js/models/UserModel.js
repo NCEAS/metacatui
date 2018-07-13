@@ -474,7 +474,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			signOutUrl += "?target=" + target;
 
 			// do it!
-			window.location = signOutUrl;
+			window.location.replace(signOutUrl);
 		},
 
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name

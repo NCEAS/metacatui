@@ -625,7 +625,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			});
 
 			if(this.model.get("username") == MetacatUI.appUserModel.get("username")){
-				var link = $(document.createElement("a")).attr("href", "#profile/" + MetacatUI.appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
+				var link = $(document.createElement("a")).attr("href", "profile/" + MetacatUI.appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
 					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-plus"),
 					listItem = $(document.createElement("li")).addClass("list-group-item create-group").append( $(link).prepend(icon) );
 
