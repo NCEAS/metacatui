@@ -89,7 +89,7 @@ define(['jquery', 'underscore', 'backbone'],
           // respctively.
           this.metricRequest.filterBy[1].values = [];
           this.metricRequest.filterBy[1].values.push("01/01/2000");
-          this.metricRequest.filterBy[1].values.push("06/10/2018");
+          this.metricRequest.filterBy[1].values.push(this.getCurrentDate());
 
           // HTTP GET
           fetchOptions = _.extend({data:"metricsRequest="+JSON.stringify(this.metricRequest)});
@@ -99,6 +99,22 @@ define(['jquery', 'underscore', 'backbone'],
 
           //This calls the Backbone fetch() function but with our custom fetch options.
           return Backbone.Model.prototype.fetch.call(this, fetchOptions);
+        },
+        
+        getCurrentDate: function() {
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth()+1; //January is 0!
+
+            var yyyy = today.getFullYear();
+            if(dd<10){
+                dd='0'+dd;
+            } 
+            if(mm<10){
+                mm='0'+mm;
+            } 
+            var today = mm+'/'+dd+'/'+yyyy;
+            return today;
         },
 
         // Parsing the response for setting the Model's member variables.
