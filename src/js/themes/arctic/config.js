@@ -4,23 +4,23 @@ MetacatUI.themeMap =
 {
 	'*': {
 		// Templates include extension
-		'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
-		'templates/featuredData.html' : 'themes/' + MetacatUI.theme + '/templates/featuredData.html',
-		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
-		'templates/mainContent.html' : 'themes/' + MetacatUI.theme + '/templates/mainContent.html',
-		'templates/altHeader.html' : 'themes/' + MetacatUI.theme + '/templates/altHeader.html',
-		'templates/defaultHeader.html' : 'themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
-		'templates/userProfileMenu.html' : 'themes/' + MetacatUI.theme + '/templates/userProfileMenu.html',
-		'templates/publishDOI.html' : 'themes/' + MetacatUI.theme + '/templates/publishDOI.html',
-		'templates/resultsItem.html' : 'themes/' + MetacatUI.theme + '/templates/resultsItem.html',
-		'templates/noResults.html' : 'themes/' + MetacatUI.theme + '/templates/noResults.html',
-		'templates/loginButtons.html' : 'themes/' + MetacatUI.theme + '/templates/loginButtons.html',
-		'templates/metadata.html' : 'themes/' + MetacatUI.theme + '/templates/metadata.html',
-		'templates/insertProgress.html' : 'themes/' + MetacatUI.theme + '/templates/insertProgress.html',
-		'models/AppModel' : 'js/themes/' + MetacatUI.theme + '/models/AppModel.js',
-		'models/Map' : 'js/themes/' + MetacatUI.theme + '/models/Map.js',
-		'models/Search' : 'js/themes/' + MetacatUI.theme + '/models/Search.js',
-		'routers/router' : 'js/themes/' + MetacatUI.theme + '/routers/router.js'
+		'templates/navbar.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/navbar.html',
+		'templates/featuredData.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/featuredData.html',
+		'templates/footer.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/footer.html',
+		'templates/mainContent.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/mainContent.html',
+		'templates/altHeader.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/altHeader.html',
+		'templates/defaultHeader.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
+		'templates/userProfileMenu.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/userProfileMenu.html',
+		'templates/publishDOI.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/publishDOI.html',
+		'templates/resultsItem.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/resultsItem.html',
+		'templates/noResults.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/noResults.html',
+		'templates/loginButtons.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/loginButtons.html',
+		'templates/metadata.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/metadata.html',
+		'templates/insertProgress.html' : MetacatUI.root + '/themes/' + MetacatUI.theme + '/templates/insertProgress.html',
+		'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js',
+		'models/Map' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/Map.js',
+		'models/Search' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/Search.js',
+		'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router.js'
 		}
 };
 
