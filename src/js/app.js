@@ -227,29 +227,56 @@ function(Bootstrap, AppView, AppModel) {
 		// 		e.preventDefault();
 		// 	}
 		// });
+		// 
+		// 
+		// 
+		// 
+		// 
+		// 
+		// var domainRoot = (document.location.protocol + "//" + document.location.host) + MetacatUI.root;
+		// console.log("domainRoot", domainRoot);
+		// $(document).on("click", "a:not([data-bypass])", function(event) {
+		// 	// Get the *absolute* href from the anchor (not the attribute value)
+		// 	var href = $(this).prop("href");
+        // 
+		// 	// Make sure we do have a link and that this link is located within 
+		// 	// our Backbone application.
+		// 	if(href && href.indexOf(domainRoot) === 0) {
+		// 			// Stop the default event to ensure the link will not cause a page refresh.
+		// 			console.log('preventing default action');
+		// 			event.preventDefault();
+        // 
+		// 			// Get the path, relative to the application root. `Backbone.history.navigate`
+		// 			// will work with the full url, however, `Backbone.history.loadUrl`, which is 
+		// 			// called by `navigate`, will not.
+		// 			var fragment = href.slice(domainRoot.length);
+		// 			console.log("navigating to fragment '" + fragment + "'");
+		// 			// `Backbone.history.navigate` is sufficient for all Routers and will
+		// 			// trigger the correct events. The Router's internal `navigate` method
+		// 			// calls this anyway. `root` is required since we stripped out the `root`
+		// 			// when we created the `fragment `.
+		// 			Backbone.history.navigate(fragment, {"root": MetacatUI.root, "trigger": true});
+		// 	}
+		// }
+		
 		var domainRoot = (document.location.protocol + "//" + document.location.host) + MetacatUI.root;
 		console.log("domainRoot", domainRoot);
-		$(document).on("click", "a:not([data-bypass])", function(event) {
+		$(document).on("click", "a", function(event) {
 			// Get the *absolute* href from the anchor (not the attribute value)
 			var href = $(this).prop("href");
+			// Getting the current target element
+			// This helps in solving the appending route problem
+			var currentTarget = $(event.currentTarget).attr('href');
 
 			// Make sure we do have a link and that this link is located within 
 			// our Backbone application.
 			if(href && href.indexOf(domainRoot) === 0) {
 					// Stop the default event to ensure the link will not cause a page refresh.
-					console.log('preventing default action');
 					event.preventDefault();
-
-					// Get the path, relative to the application root. `Backbone.history.navigate`
-					// will work with the full url, however, `Backbone.history.loadUrl`, which is 
-					// called by `navigate`, will not.
-					var fragment = href.slice(domainRoot.length);
-					console.log("navigating to fragment '" + fragment + "'");
 					// `Backbone.history.navigate` is sufficient for all Routers and will
 					// trigger the correct events. The Router's internal `navigate` method
-					// calls this anyway. `root` is required since we stripped out the `root`
-					// when we created the `fragment `.
-					Backbone.history.navigate(fragment, {"root": MetacatUI.root, "trigger": true});
+					// calls this anyway.
+					Backbone.history.navigate(currentTarget, {"root": MetacatUI.root, "trigger": true});
 			}
 	});
 	
