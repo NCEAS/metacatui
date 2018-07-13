@@ -192,6 +192,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 			//The ID
 			var idEl = this.createIDElement();
+			var model = this.metadata || this.model,
+				id = model.get("id"),
+				seriesId = model.get("seriesId");
 
 			if ((typeof title !== "undefined") && title){
 				if(title.trim().charAt(title.length-1) != ".")
@@ -211,16 +214,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if (this.createLink){
 				var linkEl = $(document.createElement("a"))
 								.addClass("route-to-metadata")
-								.attr("data-id", this.metadata.get("id"))
-								.attr("href", "#view/" + this.metadata.get("id"))
+								.attr("data-id", id)
+								.attr("href", "view/" + id)
 								.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
 				this.$el.append(linkEl);
 			}
 			else if(this.createTitleLink){
 				var linkEl = $(document.createElement("a"))
 								.addClass("route-to-metadata")
-								.attr("data-id", this.metadata.get("id"))
-								.attr("href", "#view/" + this.metadata.get("id"))
+								.attr("data-id", id)
+								.attr("href", "view/" + id)
 								.append(titleEl);
 				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
 			}

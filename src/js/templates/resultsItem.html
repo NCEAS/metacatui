@@ -1,6 +1,6 @@
 <% if(memberNode && memberNode.logo){ %>
-	<a href="#profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" /></a>
-<% } %>
+	<a href="profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" /></a>
+<% } %>	     
 <div class="citation">
 </div>
 <div class="clear"></div>
@@ -47,14 +47,12 @@
 	</div>
     <% if(typeof abstract != "undefined"){  %>
 		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
-	<% } %>
-    <div class="resource-map icons stop-route">
-           <%
-           if (resourceMap) {
-				print('<img src="img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>');
-			}
-            %>
-
+	<% } %>    		      
+    <div class="resource-map icons stop-route">             
+			<% if (resourceMap) { %>
+				<i src="<% MetacatUI.root %>/img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>
+			<% } %>
+          
     </div>
       	<div class="on-map icons  stop-route">
 		<% 

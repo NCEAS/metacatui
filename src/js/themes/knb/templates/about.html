@@ -12,7 +12,7 @@
           repository intended to facilitate ecological and environmental
           research.
         </p>
-        <img class="pull-right" style="height: 150px;width: 150px; margin: 10px 40px 10px 20px" alt="Data underlies metadata" src="./js/themes/knb/img/data-metadata-graphic.png?v=<%=MetacatUI.metacatUIVersion%>">
+        <img class="pull-right" style="height: 150px;width: 150px; margin: 10px 40px 10px 20px" alt="Data underlies metadata" src="<%= MetacatUI.root %>/js/themes/knb/img/data-metadata-graphic.png?v=<%=MetacatUI.metacatUIVersion%>">
 		<h3>Powered by rich, detailed metadata.</h3>
         <p>
           For scientists, the KNB is an efficient way to share, discover, access and
@@ -27,7 +27,7 @@
         </p>
         
         <h3>Open-source software.</h3>
-        <h5><a href="#api">Learn about the KNB Developer Tools and API</a></h5>
+        <h5><a href="api">Learn about the KNB Developer Tools and API</a></h5>
         <p>
           As part of the KNB effort, data management software is developed in a
           free and open source manner, so other groups can build upon the tools.
@@ -73,7 +73,7 @@
         <div class="row-fluid">
           <figure class="thumbnail span5">
           	<a href="#submit">
-          		<img src="./img/about-editor.png" alt="KNB Online Data Registry Form"/>
+          		<img src="<%= MetacatUI.root %>/img/about-editor.png" alt="KNB Online Data Registry Form"/>
           	</a>
           	<figcaption class="caption">
           	    <h3>On the web</h3>
@@ -83,12 +83,12 @@
           </figure>
           <figure class="thumbnail span5">
           	<a href="#tools/morpho">
-          		<img src="./img/about-morpho.png" alt="Morpho Desktop Application"/>
+          		<img src="<%= MetacatUI.root %>/img/about-morpho.png" alt="Morpho Desktop Application"/>
           	</a>
           	<figcaption class="caption">
           		<h3>On your desktop</h3>
-          		<p>Download the <a href="#tools/morpho">Morpho desktop application</a>, which features a "wizard"-style step-by-step process to describe and package up your data.</p>
-          		<p><a href="#tools/morpho" class="btn btn-primary">Download Morpho</a></p>
+          		<p>Download the <a href="tools#morpho">Morpho desktop application</a>, which features a "wizard"-style step-by-step process to describe and package up your data.</p>
+          		<p><a href="tools#morpho" class="btn btn-primary">Download Morpho</a></p>
           	</figcaption>
           </figure>
           <div class="clear"></div>
@@ -104,7 +104,7 @@
         <a id="file-format"></a>
         <h3>Use any file format.</h3>
         <figure>
-        	<img src="./img/about-fileformats.png" alt="File formats" />
+        	<img src="<%= MetacatUI.root %>/img/about-fileformats.png" alt="File formats" />
         	<figcaption class="footnote">Credit: Blugraphic.com</figcaption>
         </figure>
         <p>
@@ -140,7 +140,7 @@
           Search for Data
         </h3>
         <p>
-        	Search for data <a href="#data">here</a> and get helpful search tips on our <a href="#help">help page</a>.
+        	Search for data <a href="#data">here</a> and get helpful search tips on our <a href="help">help page</a>.
         </p>
         <h2>
           <a name="dois" id="dois"></a>
@@ -148,7 +148,7 @@
         </h2>
       	<div class="row-fluid">
 	        <figure class="thumbnail span5">
-	        	<img src="./img/about-doi.png" alt="DOI Example" />
+	        	<img src="<%= MetacatUI.root %>/img/about-doi.png" alt="DOI Example" />
 				<figcaption class="caption">
 					Publish your data with a DOI and it will display on the metadata page for your dataset.
 				</figcaption>

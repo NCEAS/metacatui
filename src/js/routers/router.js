@@ -65,7 +65,7 @@ function ($, _, Backbone) {
 		undoLastRoute: function(){
 			this.routeHistory.pop();
 
-			//Remove the last route and hash from the history
+			// Remove the last route and hash from the history
 			if(_.last(this.hashHistory) == window.location.hash)
 				this.hashHistory.pop();
 
@@ -286,9 +286,6 @@ function ($, _, Backbone) {
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
-
-			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
-			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
 
 			var seriesId;
 

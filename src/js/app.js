@@ -29,31 +29,31 @@ if ( MetacatUI.useD3 ) {
    directory location (.js is ommitted). Shim libraries that don't natively 
    support requirejs. */
 require.config({
-  baseUrl: 'js/',
+  baseUrl: MetacatUI.root + '/js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: MetacatUI.themeMap,
   urlArgs: "v=" + MetacatUI.metacatUIVersion,
   paths: {
-    jquery: '../components/jquery-1.9.1.min',
-    jqueryui: '../components/jquery-ui.min',
-    jqueryform: '../components/jquery.form',
-    underscore: '../components/underscore-min',
-    backbone: '../components/backbone-min',
-    bootstrap: '../components/bootstrap.min',
-    text: '../components/require-text',
-    jws: '../components/jws-3.2.min',
-    jsrasign: '../components/jsrsasign-4.9.0.min',    
-    async: '../components/async',
+    jquery: 'https://code.jquery.com/jquery-1.9.1.min',
+    jqueryui: MetacatUI.root + '/components/jquery-ui.min',
+    jqueryform: MetacatUI.root + '/components/jquery.form',
+    underscore: MetacatUI.root + '/components/underscore-min',
+    backbone: MetacatUI.root + '/components/backbone-min',
+    bootstrap: MetacatUI.root + '/components/bootstrap.min',
+    text: MetacatUI.root + '/components/require-text',
+    jws: MetacatUI.root + '/components/jws-3.2.min',
+    jsrasign: MetacatUI.root + '/components/jsrsasign-4.9.0.min',    
+    async: MetacatUI.root + '/components/async',
     recaptcha: [MetacatUI.recaptchaURL, 'scripts/placeholder'],
-	nGeohash: '../components/geohash/main',
-	fancybox: '../components/fancybox/jquery.fancybox.pack', //v. 2.1.5
-    annotator: '../components/annotator/v1.2.10/annotator-full',
-    bioportal: '../components/bioportal/jquery.ncbo.tree-2.0.2',
-    clipboard: '../components/clipboard.min',
-    uuid: '../components/uuid',
-    md5: '../components/md5',
-    rdflib: '../components/rdflib.min',
-    x2js: '../components/xml2json',
+	nGeohash: MetacatUI.root + '/components/geohash/main',
+	fancybox: MetacatUI.root + '/components/fancybox/jquery.fancybox.pack', //v. 2.1.5
+    annotator: MetacatUI.root + '/components/annotator/v1.2.10/annotator-full',
+    bioportal: MetacatUI.root + '/components/bioportal/jquery.ncbo.tree-2.0.2',
+    clipboard: MetacatUI.root + '/components/clipboard.min',
+    uuid: MetacatUI.root + '/components/uuid',
+    md5: MetacatUI.root + '/components/md5',
+    rdflib: MetacatUI.root + '/components/rdflib.min',
+    x2js: MetacatUI.root + '/components/xml2json',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
@@ -197,8 +197,62 @@ function(Bootstrap, AppView, AppModel) {
 		//Make the router and begin the Backbone history
 		//The router will figure out which view to load first based on window location
 		MetacatUI.uiRouter = new UIRouter();
-		Backbone.history.start();
-	  
+		//Backbone.history.start();
+		Backbone.history.start({ 
+			pushState: true,
+			root: MetacatUI.root
+		});
+
+		// // TODO: Test against external links
+		// $(document).on("click", "a", function(e)
+		// {
+		// 	console.log('hi', $(e.currentTarget).attr("href"), $(this).prop("href"));
+		// 	var href = $(e.currentTarget).attr('href');
+
+		// 	var res = Backbone.history.navigate(href,true);
+		// 	//if we have an internal route don't call the server
+		// 	if(res)
+		// 		e.preventDefault();
+
+		// 	});
+
+		// $(document).on("click", "a[href^='/']", function(e) {
+		// 	href = $(e.currentTarget).attr("href");
+
+		// 	console.log('hi', $(e.currentTarget).attr("href"), $(this).prop("href"));
+
+		// 	var res = Backbone.history.navigate(href, { trigger: true });
+
+		// 	if (res) {
+		// 		e.preventDefault();
+		// 	}
+		// });
+		var domainRoot = (document.location.protocol + "//" + document.location.host) + MetacatUI.root;
+		console.log("domainRoot", domainRoot);
+		$(document).on("click", "a:not([data-bypass])", function(event) {
+			// Get the *absolute* href from the anchor (not the attribute value)
+			var href = $(this).prop("href");
+
+			// Make sure we do have a link and that this link is located within 
+			// our Backbone application.
+			if(href && href.indexOf(domainRoot) === 0) {
+					// Stop the default event to ensure the link will not cause a page refresh.
+					console.log('preventing default action');
+					event.preventDefault();
+
+					// Get the path, relative to the application root. `Backbone.history.navigate`
+					// will work with the full url, however, `Backbone.history.loadUrl`, which is 
+					// called by `navigate`, will not.
+					var fragment = href.slice(domainRoot.length);
+					console.log("navigating to fragment '" + fragment + "'");
+					// `Backbone.history.navigate` is sufficient for all Routers and will
+					// trigger the correct events. The Router's internal `navigate` method
+					// calls this anyway. `root` is required since we stripped out the `root`
+					// when we created the `fragment `.
+					Backbone.history.navigate(fragment, {"root": MetacatUI.root, "trigger": true});
+			}
+	});
+	
 	});
     	
 });
