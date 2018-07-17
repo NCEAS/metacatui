@@ -32,6 +32,14 @@ function ($, _, Backbone) {
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 
+			// Add in a second /view/ route handler to catch requests to /view
+			// for PIDs with ? in them. Backbone's '*pid* router pattern catches
+			// everything until the ? and some DataONE PIDs use ? marks. This
+			// second handler should catch those and redirect to the same place.
+			// The need for this was introduced with the change to stop using
+			// fragments and switch to path-based routing.
+			this.route(/^view\/(.*)$/, "renderMetadata")
+			
 			//Track the history of hashes
 			this.on("route", this.trackHash);
 		},
