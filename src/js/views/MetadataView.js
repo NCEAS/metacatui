@@ -2303,7 +2303,7 @@ define(['jquery',
 
 			// Dataset/keywords
 			if (model.get("keywords")) {
-				elJSON.keywords = model.get("keywords");
+				elJSON.keywords = model.get("keywords").join(", ");
 			}
 
 			return elJSON;
