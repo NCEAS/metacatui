@@ -261,7 +261,7 @@ function(Bootstrap, AppView, AppModel) {
 		
 		var domainRoot = (document.location.protocol + "//" + document.location.host) + MetacatUI.root;
 		console.log("domainRoot", domainRoot);
-		$(document).on("click", "a", function(event) {
+		$(document).on("click", "a:not([data-toggle])", function(event) {
 			// Get the *absolute* href from the anchor (not the attribute value)
 			var href = $(this).prop("href");
 			// Getting the current target element
