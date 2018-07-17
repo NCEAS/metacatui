@@ -12,7 +12,6 @@ function ($, _, Backbone) {
 			'help(/:page)(/:anchorId)'  : 'renderHelp',
 			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
@@ -35,6 +34,13 @@ function ($, _, Backbone) {
 			MetacatUI.appModel.set('ldapwebServiceUrl', 'https://knb.ecoinformatics.org/knb/cgi-bin/ldapweb.cgi');
 
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			// This route handler replaces the route handler we had in the
+			// routes table before which was "view/*pid". The * only finds URL
+			// parts until the ? but DataONE PIDs can have ? in them so we need
+			// to make this route more inclusive.
+			this.route(/^view\/(.*)$/, "renderMetadata");
+
 			this.on("route", this.trackHash);
 		},
 

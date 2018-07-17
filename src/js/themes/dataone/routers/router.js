@@ -13,7 +13,6 @@ function ($, _, Backbone) {
 			'help(/:page)(/:anchorId)'  : 'renderHelp',
 			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'view/*pid'                 : 'renderMetadata',     // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			'my-account'                   : 'renderUserSettings',
@@ -31,14 +30,12 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-
-			// Add in a second /view/ route handler to catch requests to /view
-			// for PIDs with ? in them. Backbone's '*pid* router pattern catches
-			// everything until the ? and some DataONE PIDs use ? marks. This
-			// second handler should catch those and redirect to the same place.
-			// The need for this was introduced with the change to stop using
-			// fragments and switch to path-based routing.
-			this.route(/^view\/(.*)$/, "renderMetadata")
+			
+			// This route handler replaces the route handler we had in the
+			// routes table before which was "view/*pid". The * only finds URL
+			// parts until the ? but DataONE PIDs can have ? in them so we need
+			// to make this route more inclusive.
+			this.route(/^view\/(.*)$/, "renderMetadata");
 			
 			//Track the history of hashes
 			this.on("route", this.trackHash);

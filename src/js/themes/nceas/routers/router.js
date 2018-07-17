@@ -9,7 +9,6 @@ function ($, _, Backbone) {
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'navigateToDefault',    // the default route
-			'view/*pid'                 : 'renderMetadata', // metadata page
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
 			'signup'          			: 'renderTokenSignIn',     // use ldapweb for registration
@@ -21,6 +20,13 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			// This route handler replaces the route handler we had in the
+			// routes table before which was "view/*pid". The * only finds URL
+			// parts until the ? but DataONE PIDs can have ? in them so we need
+			// to make this route more inclusive.
+			this.route(/^view\/(.*)$/, "renderMetadata");
+
 			//Track the history of hashes
 			this.on("route", this.trackHash);
 		},
