@@ -393,13 +393,13 @@ define(['jquery',
 						      .append($(document.createElement("li"))
 						    		  .addClass("home")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#")
+						    				  .attr("href", MetacatUI.root)
 						    				  .addClass("home")
 						    				  .text("Home")))
 		    				  .append($(document.createElement("li"))
 		    						  .addClass("search")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
+						    				  .attr("href", MetacatUI.root + "/data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
 						    				  .addClass("search")
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
@@ -532,7 +532,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 
 					_.each(nestedPckgs, function(nestedPackage, i, list){
-						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root + '/view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 				}
@@ -645,7 +645,7 @@ define(['jquery',
 			_.each(parentPackageMetadata, function(m, i){
 				var title = m.get("title"),
 					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-level-up"),
-					link = $(document.createElement("a")).attr("href", "#view/" + m.get("id"))
+					link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + m.get("id"))
 														 .addClass("parent-link")
 														 .text("Parent dataset: " + title)
 														 .prepend(icon);
@@ -1273,7 +1273,7 @@ define(['jquery',
             if(savedObject.type != "DataPackage") return;
 
             //Change the URL to the new id
-            MetacatUI.uiRouter.navigate("#view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
+            MetacatUI.uiRouter.navigate("view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
 
             var message = $(document.createElement("div")).append($(document.createElement("span")).text("Your changes have been saved. "));
 

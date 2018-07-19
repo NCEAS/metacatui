@@ -2539,7 +2539,7 @@ define(['jquery',
 							for(var i=0; i < doc[geohashName].length; i++){
 								if(doc[geohashName][i] == tile.geohash){
 									//Add this doc to the infoWindow content
-									infoWindowContent += "<a href='#view/" + doc.id + "'>" + doc.title +"</a> (" + doc.id +") <br/>"
+									infoWindowContent += "<a href='" + MetacatUI.root + "/view/" + doc.id + "'>" + doc.title +"</a> (" + doc.id +") <br/>"
 									break;
 								}	
 							}							

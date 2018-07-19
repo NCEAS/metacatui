@@ -510,7 +510,7 @@ define(['underscore',
           if (MetacatUI.appModel.get("contentIsModerated")) {
               var message = this.editorSubmitMessageTemplate({
                     themeTitle: MetacatUI.themeTitle,
-                    viewURL: "#view/" + this.model.get("id")
+                    viewURL: MetacatUI.root + "/view/" + this.model.get("id")
                 }),
                 timeout = null;
 
@@ -518,7 +518,7 @@ define(['underscore',
           else {
               var message = $(document.createElement("div")).append(
                   $(document.createElement("span")).text("Your changes have been submitted. "),
-                  $(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
+                  $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + this.model.get("id")).text("View your dataset.")),
                 timeout = 4000;
           }
 
