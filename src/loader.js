@@ -17,9 +17,9 @@ MetacatUI.useD3 = true;
 // Find out of MetacatUI is deployed in a sub-directory off the top level of
 // the domain
 // TODO: Make this more bulletproof
-MetacatUI.root = "/metacatui"
+MetacatUI.root = "/"
 // Remove trailing slash if one is present
-MetacatUI.root = MetacatUI.root.replace(/\/&/, "");
+MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
 
 //This version of Metacat UI - used for cache busting
 MetacatUI.metacatUIVersion = "2.0.0";
