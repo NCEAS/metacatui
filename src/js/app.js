@@ -203,86 +203,24 @@ function(Bootstrap, AppView, AppModel) {
 			root: MetacatUI.root
 		});
 
-		// // TODO: Test against external links
-		// $(document).on("click", "a", function(e)
-		// {
-		// 	console.log('hi', $(e.currentTarget).attr("href"), $(this).prop("href"));
-		// 	var href = $(e.currentTarget).attr('href');
+		$(document).on("click", "a:not([data-toggle])", function(evt) {
+			var href = { prop: $(this).prop("href"), attr: $(this).attr("href") };
 
-		// 	var res = Backbone.history.navigate(href,true);
-		// 	//if we have an internal route don't call the server
-		// 	if(res)
-		// 		e.preventDefault();
+			// Stop if the click happened on an a w/o an href
+			// This is kind of a weird edge case where. This could be removed if
+			// we remove these instances from the codebase
+			if (typeof href === "undefined") { return; }
 
-		// 	});
+			var root = location.protocol + "//" + location.host + Backbone.history.options.root;
+			var route = href.attr.replace(MetacatUI.root + "/", "")
+			
+			// Catch routes hrefs that start with # and don't do anything with them
+			if(href.attr.indexOf("#") == 0) { return; }
 
-		// $(document).on("click", "a[href^='/']", function(e) {
-		// 	href = $(e.currentTarget).attr("href");
-
-		// 	console.log('hi', $(e.currentTarget).attr("href"), $(this).prop("href"));
-
-		// 	var res = Backbone.history.navigate(href, { trigger: true });
-
-		// 	if (res) {
-		// 		e.preventDefault();
-		// 	}
-		// });
-		// 
-		// 
-		// 
-		// 
-		// 
-		// 
-		// var domainRoot = (document.location.protocol + "//" + document.location.host) + MetacatUI.root;
-		// console.log("domainRoot", domainRoot);
-		// $(document).on("click", "a:not([data-bypass])", function(event) {
-		// 	// Get the *absolute* href from the anchor (not the attribute value)
-		// 	var href = $(this).prop("href");
-        // 
-		// 	// Make sure we do have a link and that this link is located within 
-		// 	// our Backbone application.
-		// 	if(href && href.indexOf(domainRoot) === 0) {
-		// 			// Stop the default event to ensure the link will not cause a page refresh.
-		// 			console.log('preventing default action');
-		// 			event.preventDefault();
-        // 
-		// 			// Get the path, relative to the application root. `Backbone.history.navigate`
-		// 			// will work with the full url, however, `Backbone.history.loadUrl`, which is 
-		// 			// called by `navigate`, will not.
-		// 			var fragment = href.slice(domainRoot.length);
-		// 			console.log("navigating to fragment '" + fragment + "'");
-		// 			// `Backbone.history.navigate` is sufficient for all Routers and will
-		// 			// trigger the correct events. The Router's internal `navigate` method
-		// 			// calls this anyway. `root` is required since we stripped out the `root`
-		// 			// when we created the `fragment `.
-		// 			Backbone.history.navigate(fragment, {"root": MetacatUI.root, "trigger": true});
-		// 	}
-		// }
-		
-		var domainRoot = (document.location.protocol + "//" + document.location.host) + MetacatUI.root;
-		console.log("domainRoot", domainRoot);
-		$(document).on("click", "a:not([data-toggle])", function(event) {
-			// Get the *absolute* href from the anchor (not the attribute value)
-			var href = $(this).prop("href");
-			// Getting the current target element
-			// This helps in solving the appending route problem
-			var currentTarget = $(event.currentTarget).attr('href');
-
-			// Make sure we do have a link and that this link is located within 
-			// our Backbone application.
-			if(href && href.indexOf(domainRoot) === 0) {
-					// Stop the default event to ensure the link will not cause a page refresh.
-					event.preventDefault();
-					// `Backbone.history.navigate` is sufficient for all Routers and will
-					// trigger the correct events. The Router's internal `navigate` method
-					// calls this anyway.
-					Backbone.history.navigate(currentTarget, {"root": MetacatUI.root, "trigger": true});
+			if (href.prop && href.prop.slice(0, root.length) === root) {
+			evt.preventDefault();
+			Backbone.history.navigate(route, true);
 			}
+		});
 	});
-	
-	});
-    	
 });
-
-
-

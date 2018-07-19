@@ -18,6 +18,8 @@ MetacatUI.useD3 = true;
 // the domain
 // TODO: Make this more bulletproof
 MetacatUI.root = "/metacatui"
+// Remove trailing slash if one is present
+MetacatUI.root = MetacatUI.root.replace(/\/&/, "");
 
 //This version of Metacat UI - used for cache busting
 MetacatUI.metacatUIVersion = "2.0.0";

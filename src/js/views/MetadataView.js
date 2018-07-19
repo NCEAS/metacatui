@@ -806,7 +806,7 @@ define(['jquery',
 								content += '<h5>Exact copies hosted by ' + replicaMNs.length + ' repositories: </h5><ul class="unstyled">';
 
 								_.each(replicaMNs, function(node){
-									content += '<li><a href="https://search.dataone.org/#profile/' +
+									content += '<li><a href="https://search.dataone.org/profile/' +
 												node.shortIdentifier +
 												'" class="pointer">' +
 												node.name +

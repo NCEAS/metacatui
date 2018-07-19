@@ -29,7 +29,7 @@
 			<%
 				var creator = annotation.name || annotation.user;
 			%>
-			Added by <a href="profile/<%=annotation.user%>"><%=creator%></a>
+			Added by <a href="<%= MetacatUI.root %>/profile/<%=annotation.user%>"><%=creator%></a>
 			<span class="subtle smaller tag-date"><%=created.toDateString()%></span>
 		</p>
 		<p>
