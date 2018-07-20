@@ -218,8 +218,8 @@ function(Bootstrap, AppView, AppModel) {
 			if(href.attr.indexOf("#") == 0) { return; }
 
 			if (href.prop && href.prop.slice(0, root.length) === root) {
-			evt.preventDefault();
-			Backbone.history.navigate(route, true);
+				evt.preventDefault();
+				Backbone.history.navigate(route, true);
 			}
 		});
 	});
