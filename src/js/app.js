@@ -215,7 +215,7 @@ function(Bootstrap, AppView, AppModel) {
 			var route = href.attr.replace(MetacatUI.root + "/", "")
 			
 			// Catch routes hrefs that start with # and don't do anything with them
-			if(href.attr.indexOf("#") == 0) { return; }
+			if (href.attr.indexOf("#") == 0) { return; }
 
 			if (href.prop && href.prop.slice(0, root.length) === root) {
 				evt.preventDefault();
