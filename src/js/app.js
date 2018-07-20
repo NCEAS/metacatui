@@ -214,8 +214,12 @@ function(Bootstrap, AppView, AppModel) {
 			}
 
 			var root = location.protocol + "//" + location.host + Backbone.history.options.root;
-			var route = href.attr.replace(MetacatUI.root + "/", "")
-			
+			// Remove the MetacatUI (plus a trailing /) from the value in the 'href'
+			// attribute of the clicked element so Backbone.history.navigate works.
+			// Note that a RegExp was used here to anchor the .replace call to the
+			// front of the string so that this code works when MetacatUI.root is "".
+			var route = href.attr.replace(new RegExp("^" + MetacatUI.root + "/"), "")
+
 			// Catch routes hrefs that start with # and don't do anything with them
 			if (href.attr.indexOf("#") == 0) { return; }
 
