@@ -209,7 +209,9 @@ function(Bootstrap, AppView, AppModel) {
 			// Stop if the click happened on an a w/o an href
 			// This is kind of a weird edge case where. This could be removed if
 			// we remove these instances from the codebase
-			if (typeof href === "undefined") { return; }
+			if (typeof href === "undefined" || typeof href.attr === "undefined") { 
+				return; 
+			}
 
 			var root = location.protocol + "//" + location.host + Backbone.history.options.root;
 			var route = href.attr.replace(MetacatUI.root + "/", "")
