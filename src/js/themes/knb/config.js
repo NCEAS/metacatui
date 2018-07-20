@@ -8,7 +8,7 @@ MetacatUI.themeMap =
 		// Resources (js) omit extension
 		//'views/AboutView' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/views/AboutView',
 		//'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router',
-		'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel',
+		'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js',
 		
 		// Templates include extension
 		'templates/app.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/app.html',
