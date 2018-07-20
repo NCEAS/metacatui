@@ -502,7 +502,7 @@ define(['underscore',
           if(savedObject.type != "DataPackage") return;
 
           //Change the URL to the new id
-          MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
+          MetacatUI.uiRouter.navigate("submit/" + this.model.get("id"), { trigger: false, replace: true });
 
           this.toggleControls();
 
@@ -637,7 +637,7 @@ define(['underscore',
             var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
               "<ul class='indent'>" +
                   "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-                '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+                '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
                 "<li>The content was removed because it was invalid.</li>" +
               "</ul>";
             this.hideLoading();
@@ -660,7 +660,7 @@ define(['underscore',
               view.model = null;
 
               //Update the URL
-              MetacatUI.uiRouter.navigate("#submit/" + view.pid, { trigger: false, replace: true });
+              MetacatUI.uiRouter.navigate("submit/" + view.pid, { trigger: false, replace: true });
 
               //Render the new model
               view.render();

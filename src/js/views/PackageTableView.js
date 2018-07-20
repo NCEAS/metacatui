@@ -113,7 +113,7 @@ define(['jquery', 'underscore', 'backbone',
 			}
 			
 			if(!this.title && metadata){
-				this.title = '<a href="#view/' + metadata.get("id") + 
+				this.title = '<a href="<%= MetacatUI.root %>/view/' + metadata.get("id") + 
 					'">Files in this dataset';
 				
 				if(this.model.get("id"))

@@ -71,7 +71,7 @@ define(['jquery',
 						var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 								  "<ul class='indent'>" +
 								  	  "<li>The ID '" + view.pid  + "' does not exist.</li>" +
-									  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+									  '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
 									  "<li>The content was removed because it was invalid.</li>" +
 								  "</ul>";
 						view.$el.html(view.alertTemplate({msg: msg, classes: "alert-danger"}));

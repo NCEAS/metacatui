@@ -1421,10 +1421,11 @@ svg .no-activity,
 		width: 100%;
 	}
 	
-	#Metadata > a[href="#data"]{
+	#Metadata > a[href="data"]{
 		display: block;
 		margin-bottom: 20px;
-		font-size: 13px;
+    font-size: 13px;
+    border: 5px solid red;
 	}
 	
 	.controls-well img{
