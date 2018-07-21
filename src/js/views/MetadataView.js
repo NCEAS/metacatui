@@ -410,7 +410,7 @@ define(['jquery',
 
 			if(MetacatUI.uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
-						         .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
+						         .attr("href", MetacatUI.root + "/data/page/" + MetacatUI.appModel.get("page"))
 						         .attr("title", "Back")
 						         .addClass("back")
 						         .text(" Back to search")
@@ -1916,7 +1916,7 @@ define(['jquery',
 
 							if (identifier) {
 								viewRef.hideLoading();
-								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='#view/" + identifier + "'>published data package here</a>";
+								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetcatUI.root + "/view/" + identifier + "'>published data package here</a>";
 								viewRef.$el.find('.container').prepend(
 										viewRef.alertTemplate({
 											msg: msg,
