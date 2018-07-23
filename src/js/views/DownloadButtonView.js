@@ -45,42 +45,50 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						.attr("data-placement", "top")
 						.attr("data-trigger", "hover")
 						.attr("data-container", "body");
+
+				// Removing pointer as cursor and setting to default
+				this.$el.css("cursor","default");
 			}		
 		},
 		
 		download: function(e){
 			e.preventDefault();
 						
-			if(this.$el.is(".in-progress"))
-				return true;
-			
-			//Show that the download has started
-			this.$el.addClass("in-progress");
-			var buttonHTML = this.$el.html();
-			this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
-			
-			//If we found a model, fire the download event
-			this.model.downloadWithCredentials();
-			
-			this.listenTo(this.model, "downloadComplete", function(){
+			// Checking if the Download All button is disabled because the package is too large
+			var isDownloadDisabled = (this.$el.attr("disabled") == "disabled") ? true : false;
+
+			// Downlading only if the Download button is enabled else do noting.
+			if(!isDownloadDisabled) {
+				if(this.$el.is(".in-progress"))
+					return true;
 				
-				//Show that the download is complete
-				this.$el.html("Complete <i class='icon icon-on-right icon-ok'></i>")
-						.addClass("complete")
-						.removeClass("in-progress");
+				//Show that the download has started
+				this.$el.addClass("in-progress");
+				var buttonHTML = this.$el.html();
+				this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
 				
-				var view = this;
+				//If we found a model, fire the download event
+				this.model.downloadWithCredentials();
 				
-				//Put the download button back to normal
-				setTimeout(function(){
+				this.listenTo(this.model, "downloadComplete", function(){
 					
-					//After one second, change the background color with an animation
-					view.$el.removeClass("complete")
-							.html(buttonHTML);
+					//Show that the download is complete
+					this.$el.html("Complete <i class='icon icon-on-right icon-ok'></i>")
+							.addClass("complete")
+							.removeClass("in-progress");
 					
-				}, 2000);
-			});
-				
+					var view = this;
+					
+					//Put the download button back to normal
+					setTimeout(function(){
+						
+						//After one second, change the background color with an animation
+						view.$el.removeClass("complete")
+								.html(buttonHTML);
+						
+					}, 2000);
+				});
+			}
 		}
 	});
 	
