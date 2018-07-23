@@ -55,40 +55,43 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			e.preventDefault();
 						
 			// Checking if the Download All button is disabled because the package is too large
-			var isDownloadDisabled = (this.$el.attr("disabled") == "disabled") ? true : false;
+			var isDownloadDisabled = (this.$el.attr("disabled") === "disabled") ? true : false;
 
-			// Downlading only if the Download button is enabled else do noting.
-			if(!isDownloadDisabled) {
-				if(this.$el.is(".in-progress"))
-					return true;
-				
-				//Show that the download has started
-				this.$el.addClass("in-progress");
-				var buttonHTML = this.$el.html();
-				this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
-				
-				//If we found a model, fire the download event
-				this.model.downloadWithCredentials();
-				
-				this.listenTo(this.model, "downloadComplete", function(){
-					
-					//Show that the download is complete
-					this.$el.html("Complete <i class='icon icon-on-right icon-ok'></i>")
-							.addClass("complete")
-							.removeClass("in-progress");
-					
-					var view = this;
-					
-					//Put the download button back to normal
-					setTimeout(function(){
-						
-						//After one second, change the background color with an animation
-						view.$el.removeClass("complete")
-								.html(buttonHTML);
-						
-					}, 2000);
-				});
+			// Do nothing if the `disabled` attribute is set!.
+			if(isDownloadDisabled) {
+				return;
 			}
+			
+			
+			// Perform the download procedure otherwise
+			if(this.$el.is(".in-progress"))
+				return true;
+			
+			//Show that the download has started
+			this.$el.addClass("in-progress");
+			var buttonHTML = this.$el.html();
+			this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
+			
+			//If we found a model, fire the download event
+			this.model.downloadWithCredentials();
+			
+			this.listenTo(this.model, "downloadComplete", function(){
+				
+				//Show that the download is complete
+				this.$el.html("Complete <i class='icon icon-on-right icon-ok'></i>")
+						.addClass("complete")
+						.removeClass("in-progress");
+				
+				var view = this;
+				
+				//Put the download button back to normal
+				setTimeout(function(){
+					
+					//After one second, change the background color with an animation
+					view.$el.removeClass("complete")
+						.html(buttonHTML);
+				}, 2000);
+			});
 		}
 	});
 	
