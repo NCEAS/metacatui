@@ -404,7 +404,7 @@ define(['jquery',
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#" + Backbone.history.fragment)
+						    				  .attr("href", MetacatUI.root + "/view/" + this.pid)
 						    				  .addClass("inactive")
 						    				  .text("Metadata")));
 
