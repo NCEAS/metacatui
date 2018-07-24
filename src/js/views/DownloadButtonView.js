@@ -46,6 +46,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						.attr("data-trigger", "hover")
 						.attr("data-container", "body");
 
+				// Removing the `href` attribute while disabling the download button.
+				this.$el.removeAttr("href");
+
 				// Removing pointer as cursor and setting to default
 				this.$el.css("cursor","default");
 			}		
