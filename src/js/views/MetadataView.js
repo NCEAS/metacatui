@@ -2131,12 +2131,6 @@ define(['jquery',
 		generateJSONLD: function () {
 			var model = this.model;
 
-			// Determine the path (either #view or view, depending on router
-			// configuration) for use in the 'url' property
-			var href = document.location.href,
-					route = href.replace(document.location.origin + "/", "")
-					            .split("/")[0];
-
 			// Logic for formatting Author's text for the citation
 			// Copied and re-formatted from CitationView.js
 			// TODO: Maybe put this in a shared helper function somewhere
