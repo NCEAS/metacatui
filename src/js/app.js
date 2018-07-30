@@ -236,6 +236,11 @@ function(Bootstrap, AppView, AppModel) {
 		});
 
 		$(document).on("click", "a:not([data-toggle])", function(evt) {
+			// Don't hijack the event if the user had Control or Command held down
+			if (evt.ctrlKey || evt.metaKey) {
+				return;
+			}
+			
 			var href = { prop: $(this).prop("href"), attr: $(this).attr("href") };
 
 			// Stop if the click happened on an a w/o an href
