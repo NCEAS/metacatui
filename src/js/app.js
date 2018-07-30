@@ -7,26 +7,26 @@ var MetacatUI = MetacatUI || {};
 MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if( MetacatUI.mapKey ){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + MetacatUI.mapKey;
-	define('gmaps', 
-			['async!' + gmapsURL], 
+	define('gmaps',
+			['async!' + gmapsURL],
 			function() {
 				return google.maps;
 			});
-            
+
 } else {
 	define('gmaps', null);
-    
+
 }
 if ( MetacatUI.useD3 ) {
     MetacatUI.d3URL = '../components/d3.v3.min';
-    
+
 } else {
     MetacatUI.d3URL = null;
-    
+
 }
 
 /* Configure the app to use requirejs, and map dependency aliases to their
-   directory location (.js is ommitted). Shim libraries that don't natively 
+   directory location (.js is ommitted). Shim libraries that don't natively
    support requirejs. */
 require.config({
   baseUrl: MetacatUI.root + '/js/',
@@ -42,7 +42,7 @@ require.config({
     bootstrap: MetacatUI.root + '/components/bootstrap.min',
     text: MetacatUI.root + '/components/require-text',
     jws: MetacatUI.root + '/components/jws-3.2.min',
-    jsrasign: MetacatUI.root + '/components/jsrsasign-4.9.0.min',    
+    jsrasign: MetacatUI.root + '/components/jsrsasign-4.9.0.min',
     async: MetacatUI.root + '/components/async',
     recaptcha: [MetacatUI.recaptchaURL, 'scripts/placeholder'],
 	nGeohash: MetacatUI.root + '/components/geohash/main',
@@ -69,7 +69,7 @@ require.config({
       deps: ['underscore', 'jquery'],
       exports: 'Backbone'
     },
-    bootstrap: { 
+    bootstrap: {
     	deps: ['jquery'],
     	exports: 'Bootstrap'
     },
@@ -113,45 +113,45 @@ MetacatUI.appUserModel = MetacatUI.appUserModel || {};
 /* Setup the application scaffolding first  */
 require(['bootstrap', 'views/AppView', 'models/AppModel'],
 function(Bootstrap, AppView, AppModel) {
-	'use strict';  
-    		
+	'use strict';
+
 	// initialize the application
 	MetacatUI.appModel = new AppModel({context: '/' + MetacatUI.metacatContext});
-	
+
 	//Check for custom settings in the theme config file
 	if(typeof MetacatUI.customAppConfig == "function") MetacatUI.customAppConfig();
-	
+
 	/* Now require the rest of the libraries for the application */
-	require(['underscore', 'backbone', 'routers/router', 'collections/SolrResults', 'models/Search', 
-             'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel', 
+	require(['underscore', 'backbone', 'routers/router', 'collections/SolrResults', 'models/Search',
+             'models/Stats', 'models/Map', 'models/LookupModel', 'models/NodeModel',
              'models/UserModel', 'models/DataONEObject', 'collections/DataPackage'
 	         ],
 	function(_, Backbone, UIRouter, SolrResultList, Search, Stats, MapModel, LookupModel, NodeModel, UserModel, DataONEObject, DataPackage) {
-		'use strict';  
-	    		
+		'use strict';
+
 		//Create all the other models and collections first
 		MetacatUI.appSearchResults = new SolrResultList([], {});
-		
+
 		MetacatUI.appSearchModel = new Search();
-				
+
 		MetacatUI.statsModel = new Stats();
-		
+
 		MetacatUI.mapModel = (typeof customMapModelOptions == "object")? new MapModel(customMapModelOptions) : new MapModel();
-		
+
 		MetacatUI.appLookupModel = new LookupModel();
-		
+
 		MetacatUI.nodeModel = new NodeModel();
-		
+
 		MetacatUI.appUserModel = new UserModel();
-		
-        /* Create a general event dispatcher to enable 
-           communication across app components 
+
+        /* Create a general event dispatcher to enable
+           communication across app components
         */
         MetacatUI.eventDispatcher = _.clone(Backbone.Events);
-        
+
 		//Load the App View now
 		MetacatUI.appView = new AppView();
-			
+
 		// Initialize routing and start Backbone.history()
 		(function() {
 		  /**
@@ -179,7 +179,7 @@ function(Bootstrap, AppView, AppModel) {
 		            return true;
 		          }
 		        });
-		       
+
 		       if(!match) this.trigger("routeNotFound");
 		       return match;
 		    },
@@ -193,14 +193,46 @@ function(Bootstrap, AppView, AppModel) {
 		        }
 		  });
 		}).call(this);
-		
+
 		//Make the router and begin the Backbone history
 		//The router will figure out which view to load first based on window location
 		MetacatUI.uiRouter = new UIRouter();
-		//Backbone.history.start();
-		Backbone.history.start({ 
+
+		//Take the protocol and origin out of the root URL when sending it to Backbone.history.
+		// The root URL sent to Backbone.history should be either `/` or `/directory/...`
+		var historyRoot = MetacatUI.root;
+
+		//If there is a protocol
+		if( historyRoot.indexOf("://") > -1 ){
+			//Get the substring after the ``://``
+			historyRoot = historyRoot.substring(historyRoot.indexOf("://") + 3);
+
+			//If there is no `/`, this must be the root directory
+			if( historyRoot.indexOf("/") == -1 )
+				historyRoot = "/";
+			//Otherwise get the substring after the first /
+			else
+				historyRoot = historyRoot.substring( historyRoot.indexOf("/") );
+		}
+		//If there are no colons, periods, or slashes, this is a directory name
+		else if( historyRoot.indexOf(":") == -1 &&
+						 historyRoot.indexOf(".") == -1 &&
+						 historyRoot.indexOf("/") == -1 ){
+			//So the root is a leading slash and the directory name
+			historyRoot = "/" + historyRoot;
+		}
+		//If there is a slash, get the path name starting with the slash
+		else if( historyRoot.indexOf("/") > -1 ){
+			historyRoot = historyRoot.substring( historyRoot.indexOf("/") );
+		}
+		//All other strings are the root directory
+		else{
+			historyRoot = "/";
+		}
+
+		Backbone.history.start({
 			pushState: true,
-			root: MetacatUI.root
+			root: historyRoot
 		});
 
 		$(document).on("click", "a:not([data-toggle])", function(evt) {
@@ -209,8 +241,8 @@ function(Bootstrap, AppView, AppModel) {
 			// Stop if the click happened on an a w/o an href
 			// This is kind of a weird edge case where. This could be removed if
 			// we remove these instances from the codebase
-			if (typeof href === "undefined" || typeof href.attr === "undefined") { 
-				return; 
+			if (typeof href === "undefined" || typeof href.attr === "undefined") {
+				return;
 			}
 
 			var root = location.protocol + "//" + location.host + Backbone.history.options.root;
