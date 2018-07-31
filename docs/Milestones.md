@@ -4,10 +4,11 @@
 - JSON-LD (Bryce / Rushiraj)
 - Routing changes (Bryce/ Rushiraj)
 - Make Data Count MVP (with flag default off, test both ways) (Rushiraj/ Dave)
+- This version will be updated in DataONE Search production only. ADC and KNB will wait until v2.2.0
 
 ## Milestone 2.2.0 (August 1, 2018)
-- Save emergency draft for manual recovery (MVP) (Chris)
-- Add public/private toggle in editor
+- Save emergency draft for manual recovery (MVP) (Chris) - Allows for Arctic Data Center production deployment (yay!)
+- Add public/private toggle in editor - Allows for KNB production deployment (yay!)
 
 ## Milestone 3.0.0 (August 15 2018?)
 - Configuration refactor (Lauren)
