@@ -35,6 +35,31 @@ To run MetacatUI, you will need to first install a web server such as [Apache](h
     DocumentRoot "/Users/walker/Sites"
     <Directory "/Users/walker/Sites">
     ```
+- Set the FallbackResource attribute for the directory. With this we define the default url in case when the requests made to Apache does not map with the files. Example:
+    ```
+    <Directory "/Users/walker/Sites">
+        ...
+        ...
+
+        FallbackResource /index.html
+    </Directory>
+    ```
+    - The FallbackResource directive requires your Apache version to be `2.2.16` and above. If you're using the earlier versions of Apache, you'll require `mod_rewrite` in your configuration. Example:
+    ```
+        <Directory "/Users/walker/Sites">
+        ...
+        ...
+
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteBase /
+            RewriteRule ^index\.html$ - [L]
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteRule . /index.html [L]
+        </IfModule>
+    </Directory>
+    ```
 
 #### Step 2. Configure MetacatUI
 - Download the [latest MetacatUI release .zip file](https://github.com/NCEAS/metacatui/releases) and unzip it
@@ -45,6 +70,10 @@ To run MetacatUI, you will need to first install a web server such as [Apache](h
 - Open `src/js/models/AppModel.js`, or if using a theme other than the default theme, `src/js/themes/{theme name}/models/AppModel.js` and change the following values:
     - Set `baseUrl` to the URL where the remote Metacat is (e.g. `https://dev.nceas.ucsb.edu`)
     - Set `d1CNBaseUrl` to the URL of the DataONE Coordinating Node that the Metacat Member Node is a part of. (e.g. the Member Node `urn:node:mnTestKNB` is in the `urn:node:cnStage` Coordinating Node, so this attribute would be set to `https://cn-stage.test.dataone.org/`)
+- Open `src/loader.js` and set the value for the following property:
+    - Set `MetacatUI.root` based on the location off of it's top directory. Example:
+        - If the source code is located at `/Users/walker/Sites` (as configured in Apache), set the `MetacatUI.root = "/"`.
+        - If the source code is located inside some directory (say `metacatui`) at `/Users/walker/Sites`, set the `MetacatUI.root = "/metacatui"`.
 
 #### Step 3. Install MetacatUI in Apache
 - Copy the contents of the MetacatUI `src` directory to your Sites directory.
@@ -70,6 +99,10 @@ To run MetacatUI, you will need to first install a web server such as [Apache](h
     - Optional: Replace `YOUR-GOOGLE-MAPS-API-KEY` with your [Google Maps API key](https://developers.google.com/maps/documentation/javascript/get-api-key) to enable the Google Map features of MetacatUI. If no API key is given, MetacatUI will still work, it just will not include the map features.
 - Open `src/js/themes/dataone/models/AppModel.js` and change the following values:
     - Set `baseUrl` and `d1CNBaseUrl` to the URL where the remote DataONE CN is (e.g. `https://cn-stage.test.dataone.org`)
+- Open `src/loader.js` and set the value for the following property:
+    - Set `MetacatUI.root` based on the location off of its top directory. Example:
+        - If the source code is located at `/Users/walker/Sites` (as configured in Apache), set the `MetacatUI.root = "/"`.
+        - If the source code is located inside some directory (say `metacatui`) at `/Users/walker/Sites`, set the `MetacatUI.root = "/metacatui"`.
 
 #### Step 3.
 - Follow Step 3 above to install MetacatUI in Apache.
