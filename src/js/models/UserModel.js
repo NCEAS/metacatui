@@ -287,8 +287,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 								},
 								error: function(){
 									//Set some blank values and flag as checked
-									model.set("username", "");
-									model.set("fullName", "");
+									//model.set("username", "");
+									//model.set("fullName", "");
 									model.set("notFound", true);
 									model.set("checked", true);
 								}

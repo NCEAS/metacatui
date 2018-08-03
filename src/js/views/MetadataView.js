@@ -34,16 +34,16 @@ define(['jquery',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html',
 		'text!templates/annotation.html',
-		'uuid',
-				'views/MetricView',
 		'text!templates/metaTagsHighwirePress.html',
+		'uuid',
+		'views/MetricView'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, NodeModel, SolrResult, ScienceMetadata,
 			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, uuid, MetricView, metaTagsHighwirePressTemplate) {
+			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
 	'use strict';
 
 
@@ -2127,7 +2127,7 @@ define(['jquery',
 
 		/**
 		 * Generate a string appropriate to go into the author/creator portion of
-		 * a dataset citation from the value stored in the underlying model's 
+		 * a dataset citation from the value stored in the underlying model's
 		 * origin field.
 		 */
 		getAuthorText: function() {
@@ -2166,7 +2166,7 @@ define(['jquery',
 		},
 
 		/**
-		 * Generate a string appropriate to be used in the publisher portion of a 
+		 * Generate a string appropriate to be used in the publisher portion of a
 		 * dataset citation. This method falls back to the node ID when the proper
 		 * node name cannot be fetched from the app's NodeModel instance.
 		 */
@@ -2182,7 +2182,7 @@ define(['jquery',
 		},
 
 		/**
-		 * Generate a string appropriate to be used as the publication date in a 
+		 * Generate a string appropriate to be used as the publication date in a
 		 * dataset citation.
 		 */
 		getDatePublishedText() {
@@ -2467,8 +2467,8 @@ define(['jquery',
 
 		/**
 		 * Insert citation information as meta tags into the head of the page
-		 * 
-		 * Currently supports Highwire Press style tags (citation_) which is 
+		 *
+		 * Currently supports Highwire Press style tags (citation_) which is
 		 * supposedly what Google (Scholar), Mendeley, and Zotero support.
 		 */
 		insertCitationMetaTags: function() {
@@ -2491,7 +2491,7 @@ define(['jquery',
 			$("meta[name='citation_authors']").remove();
 			$("meta[name='citation_publisher']").remove();
 			$("meta[name='citation_date']").remove();
-			
+
 			// Insert
 			document.head.insertAdjacentHTML("beforeend", hwpt);
 		}
