@@ -29,6 +29,10 @@ function ($, _, Backbone) {
 
 			//Track the history of hashes
 			this.on("route", this.trackHash);
+
+			// Clear stale JSONLD and meta tags
+			this.on("route", this.clearJSONLD);
+			this.on("route", this.clearHighwirePressMetaTags);
 		},
 
 		//Keep track of navigation movements
@@ -227,6 +231,17 @@ function ($, _, Backbone) {
 		closeLastView: function(){
 			//Get the last route and close the view
 			var lastRoute = _.last(this.routeHistory);
+		},
+
+		clearJSONLD: function() {
+			$("#jsonld").remove();
+		},
+
+		clearHighwirePressMetaTags: function() {
+			$("head > meta[name='citation_title']").remove()
+			$("head > meta[name='citation_authors']").remove()
+			$("head > meta[name='citation_publisher']").remove()
+			$("head > meta[name='citation_date']").remove()
 		}
 
 	});

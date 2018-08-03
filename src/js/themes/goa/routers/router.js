@@ -42,6 +42,10 @@ function ($, _, Backbone) {
 			this.route(/^view\/(.*)$/, "renderMetadata");
 
 			this.on("route", this.trackHash);
+			
+			// Clear stale JSONLD and meta tags
+			this.on("route", this.clearJSONLD);
+			this.on("route", this.clearHighwirePressMetaTags);
 		},
 
 		//Keep track of navigation movements
@@ -408,6 +412,17 @@ function ($, _, Backbone) {
 				MetacatUI.appView.statsView.onClose();
 			else if(lastRoute == "profile")
 				MetacatUI.appView.userView.onClose();
+		},
+
+		clearJSONLD: function() {
+			$("#jsonld").remove();
+		},
+
+		clearHighwirePressMetaTags: function() {
+			$("head > meta[name='citation_title']").remove()
+			$("head > meta[name='citation_authors']").remove()
+			$("head > meta[name='citation_publisher']").remove()
+			$("head > meta[name='citation_date']").remove()
 		}
 
 	});

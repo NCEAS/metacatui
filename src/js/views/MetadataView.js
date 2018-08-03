@@ -35,14 +35,15 @@ define(['jquery',
 		'text!templates/map.html',
 		'text!templates/annotation.html',
 		'uuid',
-        'views/MetricView'
+				'views/MetricView',
+		'text!templates/metaTagsHighwirePress.html',
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, NodeModel, SolrResult, ScienceMetadata,
 			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, uuid, MetricView) {
+			 MapTemplate, AnnotationTemplate, uuid, MetricView, metaTagsHighwirePressTemplate) {
 	'use strict';
 
 
@@ -85,6 +86,7 @@ define(['jquery',
 		editMetadataTemplate: _.template(EditMetadataTemplate),
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
 		mapTemplate: _.template(MapTemplate),
+		metaTagsHighwirePressTemplate: _.template(metaTagsHighwirePressTemplate),
 
 		objectIds: [],
 
@@ -314,6 +316,8 @@ define(['jquery',
 				var json = this.generateJSONLD();
 				this.insertJSONLD(json);
 			}
+
+			this.insertCitationMetaTags();
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
@@ -2122,19 +2126,12 @@ define(['jquery',
 		},
 
 		/**
-		 * Generate Schema.org-compliant JSONLD for the model bound to the view into
-		 *  the head tag of the page by `insertJSONLD`.
-		 *
-		 * Note: `insertJSONLD` should be called to do the actual inserting into the
-		 * DOM.
+		 * Generate a string appropriate to go into the author/creator portion of
+		 * a dataset citation from the value stored in the underlying model's 
+		 * origin field.
 		 */
-		generateJSONLD: function () {
-			var model = this.model;
-
-			// Logic for formatting Author's text for the citation
-			// Copied and re-formatted from CitationView.js
-			// TODO: Maybe put this in a shared helper function somewhere
-			var authors = model.get("origin"),
+		getAuthorText: function() {
+			var authors = this.model.get("origin"),
 				count = 0,
 				authorText = "";
 
@@ -2165,34 +2162,60 @@ define(['jquery',
 				authorText += author;
 			});
 
-			// Dataset/datePublished
-			// Prefer pubDate, fall back to dateUploaded so we have something to show
-			var datePublished = null;
+			return authorText;
+		},
 
-			if (model.get("pubDate") !== "") {
-				datePublished = model.get("pubDate")
-			} else {
-				datePublished = model.get("dateUploaded")
-			}
-
-			// Dataset/publisher
-			// Copied and lightly modified from CitationView
-			var publisher = "",
-				datasource = this.model.get("datasource"),
+		/**
+		 * Generate a string appropriate to be used in the publisher portion of a 
+		 * dataset citation. This method falls back to the node ID when the proper
+		 * node name cannot be fetched from the app's NodeModel instance.
+		 */
+		getPublisherText: function() {
+			var datasource = this.model.get("datasource"),
 				memberNode = MetacatUI.nodeModel.getMember(datasource);
 
 			if (memberNode) {
-				publisher = memberNode.name;
+				return memberNode.name;
 			} else {
-				publisher = datasource;
+				return datasource;
 			}
+		},
 
+		/**
+		 * Generate a string appropriate to be used as the publication date in a 
+		 * dataset citation.
+		 */
+		getDatePublishedText() {
+			// Dataset/datePublished
+			// Prefer pubDate, fall back to dateUploaded so we have something to show
+			if (this.model.get("pubDate") !== "") {
+				return this.model.get("pubDate")
+			} else {
+				return this.model.get("dateUploaded")
+			}
+		},
+
+		/**
+		 * Generate Schema.org-compliant JSONLD for the model bound to the view into
+		 *  the head tag of the page by `insertJSONLD`.
+		 *
+		 * Note: `insertJSONLD` should be called to do the actual inserting into the
+		 * DOM.
+		 */
+		generateJSONLD: function () {
+			var model = this.model;
+
+			// Determine the path (either #view or view, depending on router
+			// configuration) for use in the 'url' property
+			var href = document.location.href,
+					route = href.replace(document.location.origin + "/", "")
+					            .split("/")[0];
 			// Citation
 			var citationParts = [
-						authorText,
-						new Date(datePublished).getUTCFullYear().toString(),
+						this.getAuthorText(),
+						new Date(this.getDatePublishedText()).getUTCFullYear().toString(),
 						model.get("title"),
-						publisher,
+						this.getPublisherText(),
 						model.get("id")],
 				  citationText = citationParts.join(". ") + ".";
 
@@ -2206,8 +2229,8 @@ define(['jquery',
 				"@type": "Dataset",
 				"@id": "https://dataone.org/datasets/" +
 					encodeURIComponent(model.get("id")),
-				"datePublished" : datePublished,
-				"publisher": publisher,
+				"datePublished" : this.getDatePublishedText(),
+				"publisher": this.getPublisherText(),
 				"identifier": model.get("id"),
 				"url": "https://dataone.org/datasets/" +
 					encodeURIComponent(model.get("id")),
@@ -2440,8 +2463,38 @@ define(['jquery',
 			var postamble = "]]}}";
 
 			return preamble + inner + postamble;
-		}
+		},
 
+		/**
+		 * Insert citation information as meta tags into the head of the page
+		 * 
+		 * Currently supports Highwire Press style tags (citation_) which is 
+		 * supposedly what Google (Scholar), Mendeley, and Zotero support.
+		 */
+		insertCitationMetaTags: function() {
+			// Generate template data to use for all templates
+			var title = this.model.get("title"),
+				authors = this.getAuthorText(),
+				publisher = this.getPublisherText(),
+				date = new Date(this.getDatePublishedText()).getUTCFullYear().toString();
+
+			// Generate HTML strings from each template
+			var hwpt = this.metaTagsHighwirePressTemplate({
+				title: title,
+				authors: authors,
+				publisher: publisher,
+				date: date
+			});
+
+			// Clear any that are already in the document.
+			$("meta[name='citation_title']").remove();
+			$("meta[name='citation_authors']").remove();
+			$("meta[name='citation_publisher']").remove();
+			$("meta[name='citation_date']").remove();
+			
+			// Insert
+			document.head.insertAdjacentHTML("beforeend", hwpt);
+		}
 	});
 
 	return MetadataView;
