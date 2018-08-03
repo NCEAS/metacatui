@@ -576,7 +576,8 @@ define(['underscore',
           // resource map model and it failed to upload due to a network issue,
           // show a more specific error message
           else if( _.find(failedModels, function(m){
-                    return (m == this.model && m.get("errorMessage").indexOf("network issue") > -1)
+                    var errorMsg = m.get("errorMessage") || "";
+                    return (m == this.model && errorMsg.indexOf("network issue") > -1)
                   }, this) ||
                   ( MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "e" &&
                     MetacatUI.rootDataPackage.packageModel.get("errorMessage").indexOf("network issue") > -1) ){
