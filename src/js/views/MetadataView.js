@@ -408,7 +408,7 @@ define(['jquery',
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#" + Backbone.history.fragment)
+						    				  .attr("href", MetacatUI.root + "/view/" + this.pid)
 						    				  .addClass("inactive")
 						    				  .text("Metadata")));
 
@@ -2357,7 +2357,7 @@ define(['jquery',
 		 * Either generates a GeoCoordinates (when the north and east coords are
 		 * the same) or a GeoShape otherwise.
 		 */
-		generateSchemaOrgGeo(north, east, south, west) {
+		generateSchemaOrgGeo: function(north, east, south, west) {
 			if (north === south) {
 				return {
 					"@type": "GeoCoordinates",
@@ -2393,7 +2393,7 @@ define(['jquery',
 		 * @param {number} south - South bounding coordinate
 		 * @param {number} west - West bounding coordinate
 		 */
-		generateGeoJSONString(north, east, south, west) {
+		generateGeoJSONString: function(north, east, south, west) {
 			if (north === south) {
 				return this.generateGeoJSONPoint(north, east);
 			} else {
@@ -2416,7 +2416,7 @@ define(['jquery',
 		 * ]}
 
 		*/
-		generateGeoJSONPoint(north, east) {
+		generateGeoJSONPoint: function(north, east) {
 			var preamble = "{\"type\":\"Point\",\"coordinates\":",
 		   		inner = "[" + east + "," + north + "]",
 				  postamble = "}";
@@ -2446,7 +2446,7 @@ define(['jquery',
 		 * ]}
 		 *
 		 */
-		generateGeoJSONPolygon(north, east, south, west) {
+		generateGeoJSONPolygon: function(north, east, south, west) {
 			var preamble = "{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\"\:\"Polygon\",\"coordinates\":[[";
 
 			// Handle the case when the polygon wraps across the 180W/180E boundary

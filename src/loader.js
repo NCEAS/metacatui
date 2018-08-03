@@ -15,9 +15,11 @@ if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
 MetacatUI.useD3 = true;
 
 // Find out of MetacatUI is deployed in a sub-directory off the top level of
-// the domain
-// TODO: Make this more bulletproof
-MetacatUI.root = "/"
+// the domain. This value is used throughout the app to determin the location
+// of assets and, if not set correctly, a lot of things break. Your web server
+// should also set a FallbackResource directive accordingly in order to support
+// users entering MetacatUI from URLs other than the root
+MetacatUI.root = "/metacatui"
 // Remove trailing slash if one is present
 MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
 
