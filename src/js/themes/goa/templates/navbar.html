@@ -1,7 +1,7 @@
 <div class="navbar row-fluid">
   <div class="navbar-inner center">
   	<div class="span3">
-  		<img src="./js/themes/goa/img/aoos-logo.png" />
+  		<img src="<%= MetacatUI.root %>/js/themes/goa/img/aoos-logo.png" />
   		<header>Gulf of Alaska <br/> Data Portal</header>
   	</div>
   	<div class="span4">
@@ -28,8 +28,8 @@
 	    	<li class="dropdown">
 	        	<a class="dropdown-toggle" data-toggle="dropdown">Data Portal</a>
 	        	<ul class="dropdown-menu">
-	        		<li><a class="show-new-search" href="#data">Search</a></li>
-	        		<li><a href="#profile">Summary</a></li>
+	        		<li><a class="show-new-search" href="<%= MetacatUI.root %>/data">Search</a></li>
+	        		<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
 	        	</ul>
         	</li>
 	        
@@ -42,16 +42,16 @@
 					'<ul class="dropdown-menu">',
 						'<li>', formattedName, '</li>',
 						'<li class="divider"></li>',  
-						'<li><a href="#data/my-data">My datasets</a></li>',
+						'<li><a href="' + MetacatUI.root + '/data/my-data">My datasets</a></li>',
 						//'<li><a href="#">My account</a></li>',
 						'<li class="divider"></li>',
-						'<li><a href="#signout">Sign out</a></li>',
+						'<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>',
 					'</ul>',
 				'</li>'
 	        	);
 	        }
 	        else{ %>
-	        	<li><a href="#signin">Sign in</a></li>
+	        	<li><a href="<%= MetacatUI.root %>/signin">Sign in</a></li>
 	        <% } %>
 	        	
 	      </ul>

@@ -4,7 +4,7 @@
 	<span class="notification success copy-success hidden"><i class="icon icon-ok"></i> Copied</span>
 
 	<% if (mdqUrl){ %>
-		<a href="#quality/s=knb.suite.1/<%=encodeURIComponent(model.id)%>" class="btn"><i class="icon icon-dashboard"></i> Quality report</a>
+		<a href="<%= MetacatUI.root %>/quality/s=knb.suite.1/<%=encodeURIComponent(model.id)%>" class="btn"><i class="icon icon-dashboard"></i> Quality report</a>
 	<% } %>
 
 	<% if(!model.isPublic){ %>

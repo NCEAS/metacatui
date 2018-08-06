@@ -512,7 +512,6 @@ select{
 -------------------------------------------------- */
    .breadcrumb{
    		margin-bottom: 20px;
-   		width: 97%;
    }
     nav#Navbar {
       top: 0px;
@@ -779,7 +778,7 @@ select{
 	#Content.no-stylesheet.container > .breadcrumb {
     	width: calc(100% - 40px);
 	}
-	#Metadata > a[href="#data"]{
+	#Metadata > a[href="data"]{
 		display: block;
 		margin-bottom: 20px;
 		font-size: 13px;

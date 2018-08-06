@@ -1,6 +1,6 @@
 /*global define */
 define(['jquery',
-        'jqueryui',
+		'jqueryui',
 		'underscore',
 		'backbone',
 		'gmaps',
@@ -9,8 +9,10 @@ define(['jquery',
 		'collections/DataPackage',
 		'models/DataONEObject',
 		'models/PackageModel',
+		'models/NodeModel',
 		'models/SolrResult',
 		'models/metadata/ScienceMetadata',
+        'models/MetricsModel',
 		'views/DownloadButtonView',
 		'views/ProvChartView',
 		'views/MetadataIndexView',
@@ -31,15 +33,17 @@ define(['jquery',
 		'text!templates/editMetadata.html',
 		'text!templates/dataDisplay.html',
 		'text!templates/map.html',
-    'text!templates/annotation.html',
-    'uuid'
+		'text!templates/annotation.html',
+		'text!templates/metaTagsHighwirePress.html',
+		'uuid',
+		'views/MetricView'
 		],
-	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-			 DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, NodeModel, SolrResult, ScienceMetadata,
+			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, uuid) {
+			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
 	'use strict';
 
 
@@ -50,6 +54,7 @@ define(['jquery',
 		pid: null,
 		seriesId: null,
         saveProvPending: false,
+		nodeModel: new NodeModel(),
 
 		model: new SolrResult(),
 		packageModels: new Array(),
@@ -59,6 +64,7 @@ define(['jquery',
 		citationContainer: "#citation-container",
 		tableContainer:    "#table-container",
 		controlsContainer: "#metadata-controls-container",
+		metricsContainer: "#metrics-controls-container",
 		ownerControlsContainer: "#owner-controls-container",
 		breadcrumbContainer: "#breadcrumb-container",
 		parentLinkContainer: "#parent-link-container",
@@ -80,6 +86,7 @@ define(['jquery',
 		editMetadataTemplate: _.template(EditMetadataTemplate),
 		dataDisplayTemplate: _.template(DataDisplayTemplate),
 		mapTemplate: _.template(MapTemplate),
+		metaTagsHighwirePressTemplate: _.template(metaTagsHighwirePressTemplate),
 
 		objectIds: [],
 
@@ -89,7 +96,7 @@ define(['jquery',
 			"mouseover .highlight-node"  : "highlightNode",
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData",
-			"click     #save-metadata-prov" : "saveProv"
+			"click     #save-metadata-prov" : "saveProv",
 		},
 
 		initialize: function (options) {
@@ -99,7 +106,9 @@ define(['jquery',
 
 			if(typeof options.el !== "undefined")
 				this.setElement(options.el);
+
 		},
+
 
 		// Render the main metadata view
 		render: function () {
@@ -195,6 +204,7 @@ define(['jquery',
 			});
 			this.listenToOnce(model, "404", this.showNotFound);
 			model.getInfo();
+
 		},
 
 		renderMetadata: function(){
@@ -207,6 +217,8 @@ define(['jquery',
 					msg: "Retrieving data set details..."
 				}));
 
+
+
 			//Insert the breadcrumbs
 			this.insertBreadcrumbs();
 			//Insert the citation
@@ -215,9 +227,24 @@ define(['jquery',
 			this.insertDataSource();
 			// is this the latest version? (includes DOI link when needed)
 			this.showLatestVersion();
-			//Insert controls
-			this.insertControls();
-			this.insertOwnerControls();
+
+
+            // If we're displaying the metrics well then display copy citation and edit button
+            // inside the well
+			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
+				//Insert Metrics Stats into the dataset landing pages
+				this.insertMetricsControls();
+			}
+            else {
+                // Copy Citation button
+                this.insertControls();
+
+                // Edit button and the publish button
+                this.insertOwnerControls();
+            }
+
+
+
 
 			//Show loading icon in metadata section
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
@@ -283,6 +310,14 @@ define(['jquery',
 				$.ajax(_.extend(loadSettings, MetacatUI.appUserModel.createAjaxSettings()));
 			}
 			else this.renderMetadataFromIndex();
+
+			// Insert the Linked Data into the header of the page.
+			if (MetacatUI.appModel.get("isJSONLDEnabled")) {
+				var json = this.generateJSONLD();
+				this.insertJSONLD(json);
+			}
+
+			this.insertCitationMetaTags();
 		},
 
 		/* If there is no view service available, then display the metadata fields from the index */
@@ -362,24 +397,24 @@ define(['jquery',
 						      .append($(document.createElement("li"))
 						    		  .addClass("home")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#")
+						    				  .attr("href", MetacatUI.root)
 						    				  .addClass("home")
 						    				  .text("Home")))
 		    				  .append($(document.createElement("li"))
 		    						  .addClass("search")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
+						    				  .attr("href", MetacatUI.root + "/data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
 						    				  .addClass("search")
 						    				  .text("Search")))
 		    				  .append($(document.createElement("li"))
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", "#" + Backbone.history.fragment)
+						    				  .attr("href", MetacatUI.root + "/view/" + this.pid)
 						    				  .addClass("inactive")
 						    				  .text("Metadata")));
 
 			if(MetacatUI.uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
-						         .attr("href", "#data/page/" + MetacatUI.appModel.get("page"))
+						         .attr("href", MetacatUI.root + "/data/page/" + ((MetacatUI.appModel.get("page") > 0)? (parseInt(MetacatUI.appModel.get("page"))+1) : ""))
 						         .attr("title", "Back")
 						         .addClass("back")
 						         .text(" Back to search")
@@ -403,7 +438,7 @@ define(['jquery',
 			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
 					  "<ul class='indent'>" +
 					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-						  '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+						  '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
 						  "<li>The content was removed because it was invalid.</li>" +
 					  "</ul>";
 			this.hideLoading();
@@ -501,7 +536,7 @@ define(['jquery',
 					viewRef.insertPackageTable(packageModel, { title: title });
 
 					_.each(nestedPckgs, function(nestedPackage, i, list){
-						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="#view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+						var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root + '/view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 						viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
 					});
 				}
@@ -548,6 +583,7 @@ define(['jquery',
 				packageModel.complete = true;
 				viewRef.insertPackageTable(packageModel);
 			}
+
 
 			//Insert the data details sections
 			this.insertDataDetails();
@@ -613,7 +649,7 @@ define(['jquery',
 			_.each(parentPackageMetadata, function(m, i){
 				var title = m.get("title"),
 					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-level-up"),
-					link = $(document.createElement("a")).attr("href", "#view/" + m.get("id"))
+					link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + m.get("id"))
 														 .addClass("parent-link")
 														 .text("Parent dataset: " + title)
 														 .prepend(icon);
@@ -774,7 +810,7 @@ define(['jquery',
 								content += '<h5>Exact copies hosted by ' + replicaMNs.length + ' repositories: </h5><ul class="unstyled">';
 
 								_.each(replicaMNs, function(node){
-									content += '<li><a href="https://search.dataone.org/#profile/' +
+									content += '<li><a href="https://search.dataone.org/profile/' +
 												node.shortIdentifier +
 												'" class="pointer">' +
 												node.name +
@@ -934,9 +970,24 @@ define(['jquery',
 			var copyBtns = $(this.controlsContainer).find(".copy");
 			_.each(copyBtns, function(btn){
 				//Create a copy citation button
+
 				var clipboard = new Clipboard(btn);
+
 				clipboard.on("success", function(e){
-					$(e.trigger).siblings(".copy-success").show().delay(1000).fadeOut();
+
+					var originalWidth = $(e.trigger).width();
+
+					$(e.trigger).html( $(document.createElement("span")).addClass("icon icon-ok success") )
+											.append(" Copied")
+											.addClass("success")
+											.css("width", originalWidth + "px");
+
+					setTimeout(function() {
+						$(e.trigger).html("<i class='icon icon-copy icon-on-left'></i> Copy Citation")
+												.removeClass("success")
+												.css("width", "auto");
+					}, 500)
+
 				});
 
 				clipboard.on("error", function(e){
@@ -968,9 +1019,68 @@ define(['jquery',
 					});
 				});
 			});
-
 			this.$(".tooltip-this").tooltip();
 		},
+
+		// Inserting the Metric Stats
+		insertMetricsControls: function() {
+            var metricsModel = new MetricsModel({pid: this.pid})
+            metricsModel.fetch()
+
+			var self = this;
+			// Retreive the model from the server for the given PID
+			// TODO: Create a Metric Request Object
+
+			if (MetacatUI.appModel.get("displayMetricWell")) {
+				var metrics = $(document.createElement("div")).addClass("metric-well well well-lg");
+			} else {
+				var metrics = $(document.createElement("div")).addClass("metric-well");
+			}
+
+			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
+				var buttonToolbar = $(document.createElement("div")).addClass("metric-toolbar btn-toolbar");
+
+				if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
+					var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel});
+					buttonToolbar.append(citationsMetricView.render().el);
+				}
+
+				if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
+					var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel});
+					buttonToolbar.append(downloadsMetricView.render().el);
+				}
+
+				if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
+					var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel});
+					buttonToolbar.append(viewsMetricView.render().el);
+				}
+
+				metrics.append(buttonToolbar);
+			}
+
+
+            if(MetacatUI.appModel.get("displayDatasetControls")) {
+                var controlsToolbar = $(document.createElement("div")).addClass("edit-toolbar btn-toolbar");
+                var copyCitationToolbar = this.$(this.controlsContainer);
+
+                //Insert controls
+                this.insertControls();
+                controlsToolbar.append(copyCitationToolbar)
+
+                if(MetacatUI.appModel.get("displayDatasetEditButton")) {
+                    var editToolbar = this.$(this.ownerControlsContainer);
+
+                    // Insert Owner Controls
+                    this.insertOwnerControls();
+                    controlsToolbar.append(editToolbar)
+                }
+
+				metrics.append(controlsToolbar);
+            }
+
+			self.$(self.tableContainer).before(metrics);
+		},
+
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {
             // Show the provenance trace for this package
@@ -1167,7 +1277,7 @@ define(['jquery',
             if(savedObject.type != "DataPackage") return;
 
             //Change the URL to the new id
-            MetacatUI.uiRouter.navigate("#view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
+            MetacatUI.uiRouter.navigate("view/" + this.dataPackage.packageModel.get("id"), { trigger: false, replace: true });
 
             var message = $(document.createElement("div")).append($(document.createElement("span")).text("Your changes have been saved. "));
 
@@ -1810,7 +1920,7 @@ define(['jquery',
 
 							if (identifier) {
 								viewRef.hideLoading();
-								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='#view/" + identifier + "'>published data package here</a>";
+								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetcatUI.root + "/view/" + identifier + "'>published data package here</a>";
 								viewRef.$el.find('.container').prepend(
 										viewRef.alertTemplate({
 											msg: msg,
@@ -2013,8 +2123,378 @@ define(['jquery',
 			this.$el.removeClass("container no-stylesheet");
 
 			this.$el.empty();
-		}
+		},
 
+		/**
+		 * Generate a string appropriate to go into the author/creator portion of
+		 * a dataset citation from the value stored in the underlying model's
+		 * origin field.
+		 */
+		getAuthorText: function() {
+			var authors = this.model.get("origin"),
+				count = 0,
+				authorText = "";
+
+			_.each(authors, function (author) {
+				count++;
+
+				if (count == 6) {
+					authorText += ", et al. ";
+					return;
+				} else if (count > 6) {
+					return;
+				}
+
+				if (count > 1) {
+					if (authors.length > 2) {
+						authorText += ",";
+					}
+
+					if (count == authors.length) {
+						authorText += " and";
+					}
+
+					if (authors.length > 1) {
+						authorText += " ";
+					}
+				}
+
+				authorText += author;
+			});
+
+			return authorText;
+		},
+
+		/**
+		 * Generate a string appropriate to be used in the publisher portion of a
+		 * dataset citation. This method falls back to the node ID when the proper
+		 * node name cannot be fetched from the app's NodeModel instance.
+		 */
+		getPublisherText: function() {
+			var datasource = this.model.get("datasource"),
+				memberNode = MetacatUI.nodeModel.getMember(datasource);
+
+			if (memberNode) {
+				return memberNode.name;
+			} else {
+				return datasource;
+			}
+		},
+
+		/**
+		 * Generate a string appropriate to be used as the publication date in a
+		 * dataset citation.
+		 */
+		getDatePublishedText() {
+			// Dataset/datePublished
+			// Prefer pubDate, fall back to dateUploaded so we have something to show
+			if (this.model.get("pubDate") !== "") {
+				return this.model.get("pubDate")
+			} else {
+				return this.model.get("dateUploaded")
+			}
+		},
+
+		/**
+		 * Generate Schema.org-compliant JSONLD for the model bound to the view into
+		 *  the head tag of the page by `insertJSONLD`.
+		 *
+		 * Note: `insertJSONLD` should be called to do the actual inserting into the
+		 * DOM.
+		 */
+		generateJSONLD: function () {
+			var model = this.model;
+
+			// Determine the path (either #view or view, depending on router
+			// configuration) for use in the 'url' property
+			var href = document.location.href,
+					route = href.replace(document.location.origin + "/", "")
+					            .split("/")[0];
+			// Citation
+			var citationParts = [
+						this.getAuthorText(),
+						new Date(this.getDatePublishedText()).getUTCFullYear().toString(),
+						model.get("title"),
+						this.getPublisherText(),
+						model.get("id")],
+				  citationText = citationParts.join(". ") + ".";
+
+			// First: Create a minimal Schema.org Dataset with just the fields we
+			// know will come back from Solr (System Metadata fields).
+			// Add the rest in conditional on whether they are present.
+			var elJSON = {
+				"@context": {
+					"@vocab": "http://schema.org",
+				},
+				"@type": "Dataset",
+				"@id": "https://dataone.org/datasets/" +
+					encodeURIComponent(model.get("id")),
+				"datePublished" : this.getDatePublishedText(),
+				"publisher": this.getPublisherText(),
+				"identifier": model.get("id"),
+				"url": "https://dataone.org/datasets/" +
+					encodeURIComponent(model.get("id")),
+				"schemaVersion": model.get("formatId"),
+			};
+
+			// Second: Add in optional fields
+
+			// Name
+			if (model.get("title")) {
+				elJSON["name"] = model.get("title")
+			}
+
+			// Creator
+			if (model.get("origin")) {
+				elJSON["creator"] = model.get("origin")
+			}
+
+			// Citation
+			//
+			// I made this optional because there are rare cases where a metadata
+			// standard doesn't have creators or titles
+
+			// Returns 1 if all citationParts are non-zero-length
+			// Returns 0 if any are zero length
+			var isCitationValid = citationParts.map(function(p) {
+				return (typeof p === "string" && p.length > 0 ? true : false)
+			}).reduce(function(acc, val) {
+				return acc * val;
+			});
+
+			if (isCitationValid) {
+				elJSON['citation'] = citationText;
+			}
+
+			// Dataset/spatialCoverage
+			if (model.get("northBoundCoord") &&
+				model.get("eastBoundCoord") &&
+				model.get("southBoundCoord") &&
+				model.get("westBoundCoord")) {
+
+				var spatialCoverage = {
+					"@type": "Place",
+					"additionalProperty": [
+					{
+						"@type": "PropertyValue",
+						"additionalType": "http://dbpedia.org/resource/Coordinate_reference_system",
+						"name": "Coordinate Reference System",
+						"value": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+					}
+					],
+					"geo": this.generateSchemaOrgGeo(model.get("northBoundCoord"),
+																				   model.get("eastBoundCoord"),
+																				   model.get("southBoundCoord"),
+																				   model.get("westBoundCoord")),
+					"subjectOf": {
+						"@type": "CreativeWork",
+						"fileFormat": "application/vnd.geo+json",
+						"text": this.generateGeoJSONString(model.get("northBoundCoord"),
+																							 model.get("eastBoundCoord"),
+																							 model.get("southBoundCoord"),
+																							 model.get("westBoundCoord"))
+					}
+
+
+				};
+
+				elJSON.spatialCoverage = spatialCoverage;
+			}
+
+			// Dataset/temporalCoverage
+			if (model.get("beginDate") && !model.get("endDate")) {
+				elJSON.temporalCoverage = model.get("beginDate");
+			} else if (model.get("beginDate") && model.get("endDate")) {
+				elJSON.temporalCoverage = model.get("beginDate") + "/" + model.get("endDate");
+			}
+
+			// Dataset/variableMeasured
+			if (model.get("attributeName")) {
+				elJSON.variableMeasured = model.get("attributeName");
+			}
+
+			// Dataset/description
+			if (model.get("abstract")) {
+				elJSON.description = model.get("abstract");
+			}
+
+			// Dataset/keywords
+			if (model.get("keywords")) {
+				elJSON.keywords = model.get("keywords").join(", ");
+			}
+
+			return elJSON;
+		},
+
+		/**
+		 * Insert Schema.org-compliant JSONLD for the model bound to the view into
+		 * the head tag of the page (at the end).
+		 *
+		 * @param {object} json - JSON-LD to insert into the page
+		 *
+		 * Some notes:
+		 *
+		 * - Checks if the JSONLD already exists from the previous data view
+		 * - If not create a new script tag and append otherwise replace the text
+		 *   for the script
+		 */
+		insertJSONLD: function(json) {
+			if (!document.getElementById('jsonld')) {
+				var el = document.createElement('script');
+				el.type = 'application/ld+json';
+				el.id = 'jsonld';
+				el.text = JSON.stringify(json);
+				document.querySelector('head').appendChild(el);
+			} else {
+				var script = document.getElementById('jsonld');
+				script.text = JSON.stringify(json);
+			}
+		},
+
+		/**
+		 * Generate a Schema.org/Place/geo from bounding coordinates
+		 *
+		 * Either generates a GeoCoordinates (when the north and east coords are
+		 * the same) or a GeoShape otherwise.
+		 */
+		generateSchemaOrgGeo: function(north, east, south, west) {
+			if (north === south) {
+				return {
+					"@type": "GeoCoordinates",
+					"latitude" : north,
+					"longitude" : west
+				}
+			} else {
+				return {
+					"@type": "GeoShape",
+					"box": west + ", " + south + " " + east + ", " + north
+				}
+			}
+		},
+
+		/**
+		 * Creates a (hopefully) valid geoJSON string from the a set of bounding
+		 * coordinates from the Solr index (north, east, south, west).
+		 *
+		 * This function produces either a GeoJSON Point or Polygon depending on
+		 * whether the north and south bounding coordinates are the same.
+		 *
+		 * Part of the reason for factoring this out, in addition to code
+		 * organization issues, is that the GeoJSON spec requires us to modify
+		 * the raw result from Solr when the coverage crosses -180W which is common
+		 * for datasets that cross the Pacific Ocean. In this case, We need to
+		 * convert the east bounding coordinate from degrees west to degrees east.
+		 *
+		 * e.g., if the east bounding coordinate is 120 W and west bounding
+		 * coordinate is 140 E, geoJSON requires we specify 140 E as 220
+		 *
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 * @param {number} south - South bounding coordinate
+		 * @param {number} west - West bounding coordinate
+		 */
+		generateGeoJSONString: function(north, east, south, west) {
+			if (north === south) {
+				return this.generateGeoJSONPoint(north, east);
+			} else {
+				return this.generateGeoJSONPolygon(north, east, south, west);
+			}
+		},
+
+		/**
+		 * Generate a GeoJSON Point object
+		 *
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 *
+		 * Example:
+		 * {
+		 *	"type": "Point",
+		 *	"coordinates": [
+		 *			-105.01621,
+		 *			39.57422
+		 * ]}
+
+		*/
+		generateGeoJSONPoint: function(north, east) {
+			var preamble = "{\"type\":\"Point\",\"coordinates\":",
+		   		inner = "[" + east + "," + north + "]",
+				  postamble = "}";
+
+			return preamble + inner + postamble;
+		},
+
+		/**
+		 * Generate a GeoJSON Polygon object from
+		 *
+		 * @param {number} north - North bounding coordinate
+		 * @param {number} east - East bounding coordinate
+		 * @param {number} south - South bounding coordinate
+		 * @param {number} west - West bounding coordinate
+		 *
+		 *
+		 * Example:
+		 *
+		 * {
+     *   "type": "Polygon",
+     *   "coordinates": [[
+     *     [ 100, 0 ],
+     *     [ 101, 0 ],
+     *     [ 101, 1 ],
+		 *     [ 100, 1 ],
+     *     [ 100, 0 ]
+		 * ]}
+		 *
+		 */
+		generateGeoJSONPolygon: function(north, east, south, west) {
+			var preamble = "{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\"\:\"Polygon\",\"coordinates\":[[";
+
+			// Handle the case when the polygon wraps across the 180W/180E boundary
+			if (east  < west) {
+				east = 360 - east
+			}
+
+			var inner = "[" + west + "," + south + "]," +
+									"[" + east + "," + south + "]," +
+									"[" + east + "," + north + "]," +
+									"[" + west + "," + north + "]," +
+									"[" + west + "," + south + "]";
+
+			var postamble = "]]}}";
+
+			return preamble + inner + postamble;
+		},
+
+		/**
+		 * Insert citation information as meta tags into the head of the page
+		 *
+		 * Currently supports Highwire Press style tags (citation_) which is
+		 * supposedly what Google (Scholar), Mendeley, and Zotero support.
+		 */
+		insertCitationMetaTags: function() {
+			// Generate template data to use for all templates
+			var title = this.model.get("title"),
+				authors = this.getAuthorText(),
+				publisher = this.getPublisherText(),
+				date = new Date(this.getDatePublishedText()).getUTCFullYear().toString();
+
+			// Generate HTML strings from each template
+			var hwpt = this.metaTagsHighwirePressTemplate({
+				title: title,
+				authors: authors,
+				publisher: publisher,
+				date: date
+			});
+
+			// Clear any that are already in the document.
+			$("meta[name='citation_title']").remove();
+			$("meta[name='citation_authors']").remove();
+			$("meta[name='citation_publisher']").remove();
+			$("meta[name='citation_date']").remove();
+
+			// Insert
+			document.head.insertAdjacentHTML("beforeend", hwpt);
+		}
 	});
 
 	return MetadataView;

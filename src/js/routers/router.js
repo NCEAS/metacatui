@@ -15,7 +15,6 @@ function ($, _, Backbone) {
 			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
 			'data/my-data'              : 'renderMyData',
-			'view/*pid'                 : 'renderMetadata', // metadata page
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			//'my-account'                   : 'renderUserSettings',
@@ -40,7 +39,18 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+
+			// This route handler replaces the route handler we had in the
+			// routes table before which was "view/*pid". The * only finds URL
+			// parts until the ? but DataONE PIDs can have ? in them so we need
+			// to make this route more inclusive.
+			this.route(/^view\/(.*)$/, "renderMetadata");
+
 			this.on("route", this.trackHash);
+			
+			// Clear stale JSONLD and meta tags
+			this.on("route", this.clearJSONLD);
+			this.on("route", this.clearHighwirePressMetaTags);
 		},
 
 		//Keep track of navigation movements
@@ -65,7 +75,7 @@ function ($, _, Backbone) {
 		undoLastRoute: function(){
 			this.routeHistory.pop();
 
-			//Remove the last route and hash from the history
+			// Remove the last route and hash from the history
 			if(_.last(this.hashHistory) == window.location.hash)
 				this.hashHistory.pop();
 
@@ -286,9 +296,6 @@ function ($, _, Backbone) {
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
-
-			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
-			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
 
 			var seriesId;
 
@@ -536,6 +543,17 @@ function ($, _, Backbone) {
 				MetacatUI.appView.statsView.onClose();
 			else if(lastRoute == "profile")
 				MetacatUI.appView.userView.onClose();
+		},
+
+		clearJSONLD: function() {
+			$("#jsonld").remove();
+		},
+
+		clearHighwirePressMetaTags: function() {
+			$("head > meta[name='citation_title']").remove()
+			$("head > meta[name='citation_authors']").remove()
+			$("head > meta[name='citation_publisher']").remove()
+			$("head > meta[name='citation_date']").remove()
 		}
 
 	});

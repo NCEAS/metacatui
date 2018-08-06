@@ -9,7 +9,6 @@ function ($, _, Backbone) {
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'navigateToDefault',    // the default route
-			'view/*pid'                 : 'renderMetadata', // metadata page
 			'logout'                    : 'logout',    		// logout the user
 			'signout'                   : 'logout',    		// logout the user
 			'signup'          			: 'renderTokenSignIn',     // use ldapweb for registration
@@ -21,8 +20,19 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			// This route handler replaces the route handler we had in the
+			// routes table before which was "view/*pid". The * only finds URL
+			// parts until the ? but DataONE PIDs can have ? in them so we need
+			// to make this route more inclusive.
+			this.route(/^view\/(.*)$/, "renderMetadata");
+
 			//Track the history of hashes
 			this.on("route", this.trackHash);
+
+			// Clear stale JSONLD and meta tags
+			this.on("route", this.clearJSONLD);
+			this.on("route", this.clearHighwirePressMetaTags);
 		},
 
 		//Keep track of navigation movements
@@ -71,9 +81,6 @@ function ($, _, Backbone) {
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
-
-			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
-			pid = window.location.hash.substring(window.location.hash.indexOf("/")+1);
 
 			var seriesId;
 
@@ -224,6 +231,17 @@ function ($, _, Backbone) {
 		closeLastView: function(){
 			//Get the last route and close the view
 			var lastRoute = _.last(this.routeHistory);
+		},
+
+		clearJSONLD: function() {
+			$("#jsonld").remove();
+		},
+
+		clearHighwirePressMetaTags: function() {
+			$("head > meta[name='citation_title']").remove()
+			$("head > meta[name='citation_authors']").remove()
+			$("head > meta[name='citation_publisher']").remove()
+			$("head > meta[name='citation_date']").remove()
 		}
 
 	});

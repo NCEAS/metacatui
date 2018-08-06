@@ -502,7 +502,7 @@ define(['underscore',
           if(savedObject.type != "DataPackage") return;
 
           //Change the URL to the new id
-          MetacatUI.uiRouter.navigate("#submit/" + this.model.get("id"), { trigger: false, replace: true });
+          MetacatUI.uiRouter.navigate("submit/" + this.model.get("id"), { trigger: false, replace: true });
 
           this.toggleControls();
 
@@ -510,7 +510,7 @@ define(['underscore',
           if (MetacatUI.appModel.get("contentIsModerated")) {
               var message = this.editorSubmitMessageTemplate({
                     themeTitle: MetacatUI.themeTitle,
-                    viewURL: "#view/" + this.model.get("id")
+                    viewURL: MetacatUI.root + "/view/" + this.model.get("id")
                 }),
                 timeout = null;
 
@@ -518,7 +518,7 @@ define(['underscore',
           else {
               var message = $(document.createElement("div")).append(
                   $(document.createElement("span")).text("Your changes have been submitted. "),
-                  $(document.createElement("a")).attr("href", "#view/" + this.model.get("id")).text("View your dataset.")),
+                  $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + this.model.get("id")).text("View your dataset.")),
                 timeout = 4000;
           }
 
@@ -576,7 +576,8 @@ define(['underscore',
           // resource map model and it failed to upload due to a network issue,
           // show a more specific error message
           else if( _.find(failedModels, function(m){
-                    return (m == this.model && m.get("errorMessage").indexOf("network issue") > -1)
+                    var errorMsg = m.get("errorMessage") || "";
+                    return (m == this.model && errorMsg.indexOf("network issue") > -1)
                   }, this) ||
                   ( MetacatUI.rootDataPackage.packageModel.get("uploadStatus") == "e" &&
                     MetacatUI.rootDataPackage.packageModel.get("errorMessage").indexOf("network issue") > -1) ){
@@ -637,7 +638,7 @@ define(['underscore',
             var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
               "<ul class='indent'>" +
                   "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-                '<li>This may be private content. (Are you <a href="#signin">signed in?</a>)</li>' +
+                '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
                 "<li>The content was removed because it was invalid.</li>" +
               "</ul>";
             this.hideLoading();
@@ -660,7 +661,7 @@ define(['underscore',
               view.model = null;
 
               //Update the URL
-              MetacatUI.uiRouter.navigate("#submit/" + view.pid, { trigger: false, replace: true });
+              MetacatUI.uiRouter.navigate("submit/" + view.pid, { trigger: false, replace: true });
 
               //Render the new model
               view.render();

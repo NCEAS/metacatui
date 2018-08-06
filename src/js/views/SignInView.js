@@ -73,7 +73,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 				//Remove the accordion widget from the ldap login so it gets displayed as a popup window instead
 				if( this.$("#signinLdap").length ){
-					this.$("[href='#signinLdap']").addClass("signin");
+					this.$("[href='" + MetacatUI.root + "/signinLdap']").addClass("signin");
 					this.$(".accordion").removeClass("accordion");
 				}
 

@@ -4,17 +4,17 @@ MetacatUI.themeMap =
 {
 	'*': {
 		// example overrides are provided here
-		'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
-		'templates/footer.html' : 'themes/' + MetacatUI.theme + '/templates/footer.html',
-		'templates/about.html' : 'themes/' + MetacatUI.theme + '/templates/about.html',
-		'templates/alert.html' : 'themes/' + MetacatUI.theme + '/templates/alert.html',
-		'templates/dataSource.html' : 'themes/' + MetacatUI.theme + '/templates/dataSource.html',
-		'templates/login.html' : 'themes/' + MetacatUI.theme + '/templates/login.html',
-		'templates/resultsItem.html' : 'themes/' + MetacatUI.theme + '/templates/resultsItem.html',
-		'templates/noResults.html' : 'themes/' + MetacatUI.theme + '/templates/noResults.html',
-		'models/AppModel' : 'js/themes/' + MetacatUI.theme + '/models/AppModel.js',
-		'models/Search' : 'js/themes/' + MetacatUI.theme + '/models/Search.js',
-		'routers/router' : 'js/themes/' + MetacatUI.theme + '/routers/router.js'
+		'templates/navbar.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/navbar.html',
+		'templates/footer.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/footer.html',
+		'templates/about.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/about.html',
+		'templates/alert.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/alert.html',
+		'templates/dataSource.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/dataSource.html',
+		'templates/login.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/login.html',
+		'templates/resultsItem.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/resultsItem.html',
+		'templates/noResults.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/noResults.html',
+		'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js',
+		'models/Search' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/Search.js',
+		'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router.js'
 		}
 };
 

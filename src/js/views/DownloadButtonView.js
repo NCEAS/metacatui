@@ -45,12 +45,28 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						.attr("data-placement", "top")
 						.attr("data-trigger", "hover")
 						.attr("data-container", "body");
+
+				// Removing the `href` attribute while disabling the download button.
+				this.$el.removeAttr("href");
+
+				// Removing pointer as cursor and setting to default
+				this.$el.css("cursor","default");
 			}		
 		},
 		
 		download: function(e){
 			e.preventDefault();
 						
+			// Checking if the Download All button is disabled because the package is too large
+			var isDownloadDisabled = (this.$el.attr("disabled") === "disabled") ? true : false;
+
+			// Do nothing if the `disabled` attribute is set!.
+			if(isDownloadDisabled) {
+				return;
+			}
+			
+			
+			// Perform the download procedure otherwise
 			if(this.$el.is(".in-progress"))
 				return true;
 			
@@ -76,11 +92,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					
 					//After one second, change the background color with an animation
 					view.$el.removeClass("complete")
-							.html(buttonHTML);
-					
+						.html(buttonHTML);
 				}, 2000);
 			});
-				
 		}
 	});
 	

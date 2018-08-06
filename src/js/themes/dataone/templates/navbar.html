@@ -2,7 +2,7 @@
   <div class="navbar-upper">
   	<ul class="nav">
 	  	<li>
-	  		<a href="https://www.dataone.org" class="logo"><img alt="DataONE" class="dataone logo" src="./js/themes/<%=MetacatUI.theme%>/img/dataone-logo-color-small.jpg?v=<%=MetacatUI.metacatUIVersion%>" height="43px"></a>
+	  		<a href="https://www.dataone.org" class="logo"><img alt="DataONE" class="dataone logo" src="<%= MetacatUI.root %>/js/themes/<%=MetacatUI.theme%>/img/dataone-logo-color-small.jpg?v=<%=MetacatUI.metacatUIVersion%>" height="43px"></a>
 	  	</li>
 	 </ul>
   </div>
@@ -128,7 +128,7 @@
   <div class="block-inner clearfix">
                 
     <div class="content clearfix">
-       <p><a href="https://www.dataone.org/what-dataone" class="mega-group-title">What is DataONE?</a><a href="https://www.dataone.org/what-dataone"><img src="js/themes/dataone/img/d1-logo-v3_aligned_left.jpeg" class="float-left-80">Data Observation Network for Earth (DataONE) is the foundation of new innovative environmental science through a distributed framework and sustainable cyberinfrastructure that meets the needs of science and society for open, persistent, robust, and secure access to well-described and easily discovered Earth observational data.read more</a></p>
+       <p><a href="https://www.dataone.org/what-dataone" class="mega-group-title">What is DataONE?</a><a href="https://www.dataone.org/what-dataone"><img src="<%= MetacatUI.root %>/js/themes/dataone/img/d1-logo-v3_aligned_left.jpeg" class="float-left-80">Data Observation Network for Earth (DataONE) is the foundation of new innovative environmental science through a distributed framework and sustainable cyberinfrastructure that meets the needs of science and society for open, persistent, robust, and secure access to well-described and easily discovered Earth observational data.read more</a></p>
      </div>
   </div>
 </div>  </div>
@@ -485,10 +485,10 @@
   			DataONE Search:
   		</li>
        <li>
-        	<a href="#data" class="show-new-search">Search</a>
+        	<a href="<%= MetacatUI.root %>/data" class="show-new-search">Search</a>
         </li>
         <li>
-        	<a href="#profile">Summary</a>
+        	<a href="<%= MetacatUI.root %>/profile">Summary</a>
         </li> 
         <li class="input input-append">
         	<form id="direct-search" action="#">
@@ -503,11 +503,11 @@
 				<ul class="dropdown-menu">
 					<li class="dropdown-header"><%=formattedName%></li>
 					<li class="divider"></li>
-					<li><a href="#profile/<%=username%>">My profile</a></li>
-					<li><a href="#profile/<%=username%>/s=settings/s=groups">My groups</a></li>
-					<li><a href="#data/my-data">My data sets</a></li>
+					<li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li>
+					<li><a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=groups">My groups</a></li>
+					<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
 					<li class="divider"></li>
-					<li><a href="#signout">Sign out</a></li>
+					<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
 				</ul>
 			</li>
 		<% } else { %>

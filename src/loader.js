@@ -14,13 +14,22 @@ if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
 }
 MetacatUI.useD3 = true;
 
+// Find out of MetacatUI is deployed in a sub-directory off the top level of
+// the domain. This value is used throughout the app to determin the location
+// of assets and, if not set correctly, a lot of things break. Your web server
+// should also set a FallbackResource directive accordingly in order to support
+// users entering MetacatUI from URLs other than the root
+MetacatUI.root = "/metacatui"
+// Remove trailing slash if one is present
+MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
+
 //This version of Metacat UI - used for cache busting
-MetacatUI.metacatUIVersion = "2.0.0";
+MetacatUI.metacatUIVersion = "2.1.0";
 
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");
     script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", "js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
+    script.setAttribute("src", MetacatUI.root + "/js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
     document.getElementsByTagName("body")[0].appendChild(script);
 
     script.onload = function(){
@@ -34,8 +43,8 @@ MetacatUI.loadTheme = function(theme) {
 }
 MetacatUI.initApp = function () {
     var script = document.createElement("script");
-    script.setAttribute("data-main", "js/app.js?v=" + MetacatUI.metacatUIVersion);
-    script.src = "components/require.js";
+    script.setAttribute("data-main", MetacatUI.root + "/js/app.js?v=" + MetacatUI.metacatUIVersion);
+    script.src = MetacatUI.root + "/components/require.js";
     document.getElementsByTagName("body")[0].appendChild(script);
 }
 
@@ -366,6 +375,36 @@ MetacatUI.preventCompatibilityIssues = function(){
         return -1;
       };
     }
+}
+
+if (typeof Object.assign != 'function') {
+  // Must be writable: true, enumerable: false, configurable: true
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target, varArgs) { // .length of function is 2
+      'use strict';
+      if (target == null) { // TypeError if undefined or null
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource != null) { // Skip over if undefined or null
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
 }
 
 MetacatUI.preventCompatibilityIssues();

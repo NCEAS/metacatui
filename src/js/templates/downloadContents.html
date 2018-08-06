@@ -9,12 +9,12 @@
 		<% if(nested && metadata){ %>
 			<tr class="table-header title">
 				<th colspan="<%=colspan%>" class="table-header">
-					<a href="#view/<%=metadata.get('id')%>"><strong><%=metadata.get("title")%></strong></a>
+					<a href="<%= MetacatUI.root %>/view/<%=metadata.get('id')%>"><strong><%=metadata.get("title")%></strong></a>
 				</th>
 			</tr>
 		<% } %>
 		<tr class="table-header">
-			<th colspan="<%=colspan%>" class="table-header">
+			<th colspan="<%=colspan%>" class="table-header"> 
 				<%=title%>
 			</th>
 		</tr>
@@ -23,7 +23,10 @@
 			<th class="id wrap-contents more-info-header" colspan="2">Name</th>
 			<th class="formatId wrap-contents">File type</th>
 			<th>Size</th>
-			<th><% if(readsEnabled){ print("Downloads"); } %></th>
+			<th><% if(readsEnabled){ print("Downloads");%>
+                 <br /> <span class="downloads-this-version"> (this version) </span> </span>
+                 <%  } %>
+             </th>
 			<th class="download-container"></th>
 		</tr>
 	</thead>	

@@ -424,7 +424,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			if(!this.model.get("fullName")) return;
 
 			//Insert the name into this page
-			var usernameLink = $(document.createElement("a")).attr("href", "#profile/" + this.model.get("username")).text(this.model.get("fullName"));
+			var usernameLink = $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + this.model.get("username")).text(this.model.get("fullName"));
 			this.$(".insert-fullname").append(usernameLink);
 
 			//Insert the username
@@ -458,7 +458,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		// Only used for the ORCID logo right now
 		createIdPrefix: function(){
 			if(this.model.isOrcid())
-				return $(document.createElement("img")).attr("src", "./img/orcid_64x64.png").addClass("orcid-logo");
+				return $(document.createElement("img")).attr("src", MetacatUI.root + "/img/orcid_64x64.png").addClass("orcid-logo");
 			else
 				return "";
 		},
@@ -619,13 +619,13 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			_.each(groups, function(group, i){
 				var name = group.name || "Group",
 					listItem = $(document.createElement("li")).addClass("list-group-item"),
-					groupLink = group.groupId? $(document.createElement("a")).attr("href", "#profile/" + group.groupId).text(name).appendTo(listItem) : "<a></a>";
+					groupLink = group.groupId? $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + group.groupId).text(name).appendTo(listItem) : "<a></a>";
 
 				$(list).append(listItem);
 			});
 
 			if(this.model.get("username") == MetacatUI.appUserModel.get("username")){
-				var link = $(document.createElement("a")).attr("href", "#profile/" + MetacatUI.appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
+				var link = $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + MetacatUI.appUserModel.get("username") + "/s=settings/s=groups").text("Create New Group"),
 					icon = $(document.createElement("i")).addClass("icon icon-on-left icon-plus"),
 					listItem = $(document.createElement("li")).addClass("list-group-item create-group").append( $(link).prepend(icon) );
 
@@ -787,7 +787,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			var view = this,
 				group = this.pendingGroup;
 			var success = function(data){
-				view.showAlert("Success! Your group has been saved. View it <a href='#profile/" + group.groupId + "'>here</a>", "alert-success", "#add-group-alert-container");
+				view.showAlert("Success! Your group has been saved. View it <a href='" + MetacatUI.root + "/profile/" + group.groupId + "'>here</a>", "alert-success", "#add-group-alert-container");
 				view.refreshGroupLists();
 			}
 			var error = function(xhr){
@@ -825,7 +825,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			//Show notifications after the identity map request is a success or failure
 			var viewRef = this,
 				success = function(){
-					var message = "A username map request has been sent to <a href='#profile/" + equivalentIdentity + "'>" + equivalentIdentity + "</a>"
+					var message = "A username map request has been sent to <a href=" + MetacatUI.root + "'/profile/" + equivalentIdentity + "'>" + equivalentIdentity + "</a>"
 					  "<h4>Next step:</h4><p>Login with this other account and approve this request.</p>"
 					viewRef.showAlert(message, null, "#request-alert-container");
 				},
@@ -1004,7 +1004,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			    fullName = user.get("fullName") || username;
 
 			var listItem = $(document.createElement("li")).addClass("list-group-item identity"),
-				link     = $(document.createElement("a")).attr("href", "#profile/" + username).attr("data-identity", username).text(fullName),
+				link     = $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + username).attr("data-identity", username).text(fullName),
 				details  = $(document.createElement("span")).addClass("subtle details").text(username);
 
 			listItem.append(link, details);

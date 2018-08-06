@@ -287,8 +287,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 								},
 								error: function(){
 									//Set some blank values and flag as checked
-									model.set("username", "");
-									model.set("fullName", "");
+									//model.set("username", "");
+									//model.set("fullName", "");
 									model.set("notFound", true);
 									model.set("checked", true);
 								}
@@ -467,13 +467,14 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				  target = Backbone.history.location.href;
 
 			// DO NOT include the route otherwise we have an infinite redirect
-			target  = target.split("#")[0];
+			// target  = target.split("#")[0];
+			target = target.slice(0, -8);
 
 			// make sure to include the target
 			signOutUrl += "?target=" + target;
 
 			// do it!
-			window.location = signOutUrl;
+			window.location.replace(signOutUrl);
 		},
 
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name

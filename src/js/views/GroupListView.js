@@ -62,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			
 			if(this.showGroupName){
 				if(!this.collection.pending){
-					var link       = $(document.createElement("a")).attr("href", "#profile/" + group.groupId).attr("data-subject", group.groupId),
+					var link       = $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + group.groupId).attr("data-subject", group.groupId),
 						groupName  = $(document.createElement("span")).text(group.name);
 				}
 				else{
@@ -127,7 +127,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 			var memberListItem = $(document.createElement("li")).addClass("list-group-item member").attr("data-username", username),
 				memberNameContainer = $(document.createElement("div")).addClass("name-container"),
 				memberIcon     = $(document.createElement("i")).addClass("icon icon-user"),	
-				memberLink     = $(document.createElement("a")).attr("href", "#profile/" + username).attr("data-username", username).prepend(memberIcon, name),
+				memberLink     = $(document.createElement("a")).attr("href", MetacatUI.root + "/profile/" + username).attr("data-username", username).prepend(memberIcon, name),
 				memberName     = $(document.createElement("span")).addClass("details ellipsis").attr("data-username", username).text(member.get("usernameReadable"));
 						
 			memberIcon.tooltip({

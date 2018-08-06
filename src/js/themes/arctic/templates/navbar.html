@@ -3,7 +3,7 @@
 	<div class="border-image" role="img"></div>
 
 		<div id="inner-header" class="wrap cf">
-			<a href="/" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
+			<a href="<%= MetacatUI.root %>/" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
 
 			<a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
 
@@ -12,8 +12,8 @@
 					<li class="dropdown">
 						<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
 						<ul class="dropdown-menu sub-menu">
-			        		<li><a href="#data" class="show-new-search">Search</a></li>
-			        		<li><a href="#profile">Summary</a></li>
+			        		<li><a href="<%= MetacatUI.root %>/data" class="show-new-search">Search</a></li>
+			        		<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
 			        		<li><a href="/publications">Publications</a></li>
 			        	</ul>
 		        	</li>
@@ -46,21 +46,21 @@
 			        <li><a href="/synthesis-working-groups">Synthesis Working Groups</a></li>
 			       </ul>
 					</li>
-			       <li><a href="#submit" class="btn btn-primary">Submit Data</a></li>
+			       <li><a href="<%= MetacatUI.root %>/submit" class="btn btn-primary">Submit Data</a></li>
 					<% if (loggedIn) { %>
         				<li class="dropdown">
 							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
 							<ul class="dropdown-menu">
-								<li><a href="#submit">Submit data</a></li>
-								<li><a href="#profile/<%=username%>">My profile</a></li>
-								<li><a href="#profile/<%=username%>/s=settings/s=groups">My groups</a></li>
-								<li><a href="#data/my-data">My data sets</a></li>
-								<li><a href="#signout">Sign out</a></li>
+								<li><a href="<%= MetacatUI.root %>/submit">Submit data</a></li>
+								<li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li>
+								<li><a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=groups">My groups</a></li>
+								<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
+								<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
 							</ul>
 						</li>
 			        <% } else { %>
 			        		<li>
-			        			<a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="login btn redirect"><img src="img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>
+			        			<a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="login btn redirect"><img src="<%= MetacatUI.root %>/img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>
 			        		</li>
 			       <%  } %>
 				</ul>

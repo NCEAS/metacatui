@@ -10,9 +10,6 @@
   		opacity: 1;
   	}
 
-  	#Content{
-  		max-width: 1024px;
-  	}
   	.DataCatalog #Content{
   		max-width: 100%;
   	}

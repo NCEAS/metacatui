@@ -109,47 +109,47 @@
 									<tr>
 										<td><code>/object/&lt;pid&gt;</code></td>
 										<td>GET</td>
-										<td><a href="#api/get">Get an Object</a></td>
+										<td><a href="#get">Get an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/object</code></td>
 										<td>POST</td>
-										<td><a href="#api/create">Create an Object</a></td>
+										<td><a href="#create">Create an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/object/&lt;pid&gt;</code></td>
 										<td>PUT</td>
-										<td><a href="#api/update">Update an Object</a></td>
+										<td><a href="#update">Update an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/archive/&lt;pid&gt;</code></td>
 										<td>PUT</td>
-										<td><a href="#api/archive">Archive an Object</a></td>
+										<td><a href="#archive">Archive an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/meta/&lt;pid&gt;</code></td>
 										<td>GET</td>
-										<td><a href="#api/getSystemMetadata">Get System Metadata for an Object</a></td>
+										<td><a href="#getSystemMetadata">Get System Metadata for an Object</a></td>
 									</tr>
 									<tr>
 										<td><code>/generate</code></td>
 										<td>POST</td>
-										<td><a href="#api/generateId">Generate an Identifier</a></td>
+										<td><a href="#generateId">Generate an Identifier</a></td>
 									</tr>
 									<tr>
                                         <td><code>/query/solr/&lt;query&gt;</code></td>
 										<td>GET</td>
-										<td><a href="#api/query">Search the metadata index</a></td>
+										<td><a href="#query">Search the metadata index</a></td>
 									</tr>
 									<tr>
 										<td><code>/object</code></td>
 										<td>GET</td>
-										<td><a href="#api/listObjects">List objects</a></td>
+										<td><a href="#listObjects">List objects</a></td>
 									</tr>
 									<tr>
 										<td><code>/object/&lt;pid&gt;</code></td>
 										<td>DELETE</td>
-										<td><a href="#api/delete">Delete an Object</a></td>
+										<td><a href="#delete">Delete an Object</a></td>
 									</tr>
 								</tbody>
 							</table>
@@ -183,13 +183,13 @@
                                 <li>Client-side SSL certificates</li>
                             </ul></p>
                             <p><strong>Using Authentication Tokens</strong>.
-                            In this scenario, users sign in to the <a href="#signin"><%=window.themeTitle%></a>, and copy an
+                            In this scenario, users sign in to the <a href="<%= MetacatUI.root %>/signin"><%=window.themeTitle%></a>, and copy an
                             <strong>authentication token</strong> from their
-                            <a href="#my-profile/s=settings/s=token">profile page</a> which can then be included
+                            <a href="<%= MetacatUI.root %>/my-profile/s=settings/s=token">profile page</a> which can then be included
                             in HTTPS requests in the HTTP header "Authorization:".</p>
 
                             <div>
-                            	<a href="img/token-example.gif"><img src="img/token-example.gif" class="img-polaroid figure" /></a>
+                            	<a href="<%= MetacatUI.root %>/img/token-example.gif"><img src="<%= MetacatUI.root %>/img/token-example.gif" class="img-polaroid figure" /></a>
                             	<p>Users copy an authentication token from their profile page.</p>
                             </div>
 

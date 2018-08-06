@@ -104,7 +104,30 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsMapsUrl: null,
 			groupsUrl: null,
 			portalUrl: null,
-			mdqUrl: "https://quality.nceas.ucsb.edu/quality/"
+			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
+
+			// Metrics endpoint url
+			metricsUrl: null,
+			
+			// Metrics flags for the Dataset Landing Page
+			// Enable these flags to enable metrics display
+			displayMetricWell: false,
+			displayDatasetMetrics: false,
+
+			// Controlling individual functionality
+			// Only works if the parent flags:
+			// displayDatasetMetrics and displayMetricWell are enabled
+			displayDatasetMetricsTooltip: true,
+			displayDatasetCitationMetric: true,
+			displayDatasetDownloadMetric: true,
+			displayDatasetViewMetric: true,
+			displayDatasetEditButton: true,
+			displayDatasetQualityMetric: false,
+			displayDatasetAnalyzeButton: false,
+			displayMetricModals: false,
+			displayDatasetControls: true,
+
+			isJSONLDEnabled: true
 		},
 
 		defaultView: "data",
@@ -183,6 +206,9 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
 
+
+
+				this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/metrics/filters');
 			}
 
 			this.on("change:pid", this.changePid);

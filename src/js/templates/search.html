@@ -76,7 +76,7 @@
 						<label class="expand-collapse-control">
 							<i class="icon icon-caret-right expand"></i>					
 							<i class="icon icon-caret-down collapse"></i>
-							<img src="img/data-table.png" class="icon" />
+							<img src="<%= MetacatUI.root %>/img/data-table.png" class="icon" />
 							<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
 								Data files
 							</span>
@@ -224,7 +224,7 @@
 			<div id="results-view">
 				<% if((typeof gmaps !== "undefined") && (gmaps)){ %>
 					<div class="map-toggle-container">
-						<a class="toggle-map" href="#data/mode=list"><i class="icon icon-double-angle-left"></i> Show Map</a>
+						<a class="toggle-map" href="<%= MetacatUI.root %>/data/mode=list"><i class="icon icon-double-angle-left"></i> Show Map</a>
 					</div>
 				<% } %>
 				<div id="results-header" class="row-fluid result-header">
@@ -261,7 +261,7 @@
 		
 		<div id="map-container" class="auto-height">
 			<div class="map-toggle-container">
-				<a class="toggle-map" href="#data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
+				<a class="toggle-map" href="<%= MetacatUI.root %>/data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
 				
 				<% var checked = useMapBounds ? 'checked="checked"' : ''; %>
 				<label class="toggle-map-filter">Limit my search to the map area</label>
