@@ -104,11 +104,11 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// Metrics endpoint url
 			metricsUrl: null,
-			
+
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
-			displayMetricWell: false,
-			displayDatasetMetrics: false,
+			displayMetricWell: true,
+			displayDatasetMetrics: true,
 
 			// Controlling individual functionality
 			// Only works if the parent flags:
