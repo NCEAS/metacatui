@@ -414,7 +414,7 @@ define(['jquery',
 
 			if(MetacatUI.uiRouter.lastRoute() == "data"){
 				$(breadcrumbs).prepend($(document.createElement("a"))
-						         .attr("href", MetacatUI.root + "/data/page/" + MetacatUI.appModel.get("page"))
+						         .attr("href", MetacatUI.root + "/data/page/" + ((MetacatUI.appModel.get("page") > 0)? (parseInt(MetacatUI.appModel.get("page"))+1) : ""))
 						         .attr("title", "Back")
 						         .addClass("back")
 						         .text(" Back to search")
