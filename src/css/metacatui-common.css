@@ -1689,14 +1689,14 @@ a.btn.metrics {
     cursor: default;
     border: none;
     box-shadow: none;
-    
+
 }
 .metric-value.badge {
     float: right;
     color: #F3F3F3;
     background-color: #555;
     margin-top: 2px;
-} 
+}
 .metric-icon {
     margin-right: 10px;
     float: left;
@@ -3127,18 +3127,21 @@ body.mapMode{
  	float: left;
  	width: auto;
 }
-.ui-buttonset input[type="checkbox"]{
+.ui-checkboxradio-label input[type="checkbox"]{
    	display: none;
 }
-.ui-buttonset .icon-check-empty,
-.ui-buttonset .icon-check{
+.ui-checkboxradio-label .icon-check-empty,
+.ui-checkboxradio-label .icon-check{
 	margin-right: 5px;
 }
-label.ui-state-active i.icon-check-empty,
-label.ui-state-default i.icon-check {
+.ui-checkboxradio-label .icon{
+	margin-right: 5px;
+}
+label.ui-state-active .icon-check-empty,
+label .icon-check {
   display: none;
 }
-label.ui-state-active i.icon-check{
+label.ui-state-active .icon-check{
 	display: inline;
 }
 /** Filter icons **/
