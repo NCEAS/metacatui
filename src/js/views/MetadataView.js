@@ -1031,11 +1031,7 @@ define(['jquery',
 			// Retreive the model from the server for the given PID
 			// TODO: Create a Metric Request Object
 
-			if (MetacatUI.appModel.get("displayMetricWell")) {
-				var metrics = $(document.createElement("div")).addClass("metric-well well well-lg");
-			} else {
-				var metrics = $(document.createElement("div")).addClass("metric-well");
-			}
+			var metrics = $(document.createElement("div")).addClass("metric-well well well-lg");
 
 			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
 				var buttonToolbar = $(document.createElement("div")).addClass("metric-toolbar btn-toolbar");
