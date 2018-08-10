@@ -41,12 +41,12 @@ with the following attributes:
 The values of these attributes will be serialized to the system metadata of each object uploaded via the MetacatUI editor.
 Example access policy that makes all objects publicly readable:
 ```Javascript
-{
+[{
 	subject: "public",
 	read: true,
 	write: false,
 	changePermission: false
-}
+}]
 ```
 
 This access policy will be serialized into the system metadata as:
