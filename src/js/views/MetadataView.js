@@ -9,7 +9,6 @@ define(['jquery',
 		'collections/DataPackage',
 		'models/DataONEObject',
 		'models/PackageModel',
-		'models/NodeModel',
 		'models/SolrResult',
 		'models/metadata/ScienceMetadata',
         'models/MetricsModel',
@@ -36,14 +35,15 @@ define(['jquery',
 		'text!templates/annotation.html',
 		'text!templates/metaTagsHighwirePress.html',
 		'uuid',
-		'views/MetricView'
+		'views/MetricView',
+		'views/MetricModalView'
 		],
-	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, NodeModel, SolrResult, ScienceMetadata,
+	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
+			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView,MetricModalView) {
 	'use strict';
 
 
@@ -53,8 +53,7 @@ define(['jquery',
 
 		pid: null,
 		seriesId: null,
-        saveProvPending: false,
-		nodeModel: new NodeModel(),
+		saveProvPending: false,
 
 		model: new SolrResult(),
 		packageModels: new Array(),
@@ -97,7 +96,9 @@ define(['jquery',
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData",
 			"click     #save-metadata-prov" : "saveProv",
+			"click     .metrics" : "showMetricModal",
 		},
+
 
 		initialize: function (options) {
 			if((options === undefined) || (!options)) var options = {};
@@ -1076,6 +1077,15 @@ define(['jquery',
 
 			self.$(self.tableContainer).before(metrics);
 		},
+
+		showMetricModal: function(e) {	
+			var metric = $(e.currentTarget.innerHTML);
+			if (MetacatUI.appModel.get("displayMetricModals")) {		
+				var modalView = new MetricModalView({metricName: metric[1].innerHTML.trim(),metricCount: metric[2].innerHTML.trim()});	
+				modalView.show();	
+			}	
+		},
+
 
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {
