@@ -1646,21 +1646,16 @@ body > .alert-container {
 /***********
 Defult button styling for Metrics views
 ***********/
-/* a.btn.metrics {
+a.btn.metrics {
     display: inline-block;
     width: 164px;
     padding-right: 0px;
     margin-top: -14px;
     margin-left: -5px;
-    color: #555;
-    border-color: #C3C3C3;
-    background-color: #FFFFFF;
-    cursor: default;
 }
 .metric-value.badge {
     float: right;
-    color: #FFFFFF;
-    background-color: #555;
+    background-color: #1C6E84;
     margin-top: 2px;
 }
 .metric-icon {
@@ -1672,13 +1667,13 @@ Defult button styling for Metrics views
 }
 .metric-value {
     float: right;
-} */
+}
 
 
 /***********
 Non-clickable button styling for metrics views
 ***********/
-a.btn.metrics {
+/* a.btn.metrics {
     display: inline-block;
     width: auto;
     padding-right: 0px;
@@ -1707,7 +1702,7 @@ a.btn.metrics {
 }
 .metric-value {
     float: right;
-}
+}*/
 
 i.icon.icon-cloud-download {
     font-size: 1.2em; !important;
@@ -1788,16 +1783,41 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 }
 
 /* Disabling the hover features of the button for a while. Once, the Modals are ready, we'll enable
-these effects
+these effects*/
 a.btn.metrics:hover .metric-value.badge {
     float: right;
     color: #1C6E84;
     background-color: #FFFFFF;
-}*/
+}
 a.btn.metrics:hover, a.btn.metrics:click {
     color: #888888;
     background-color: #FFFFFF;
     border-color: #C3C3C3;
+}
+
+#metric-modal {
+    z-index: 1050;
+    top: 15%;
+    width: 930px;
+    height: 500px;
+    left: 40%;
+}
+#metric-modal .modal-content {
+    width: auto;
+    
+}
+#metric-modal .modal-header {
+    width: 900px;
+    height: 25px;
+}
+#metric-modal .modal-body {
+    width: 900px;
+    height: 400px;
+    max-height: 400px;
+}
+#metric-modal .modal-footer {
+    width: 900px;
+    height: 25px;
 }
 
 /******************************************
