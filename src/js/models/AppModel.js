@@ -112,7 +112,7 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetEditButton: true,
 			displayDatasetQualityMetric: false,
 			displayDatasetAnalyzeButton: false,
-			displayMetricModals: false,
+			displayMetricModals: true,
 			displayDatasetControls: true,
 
 			isJSONLDEnabled: true
