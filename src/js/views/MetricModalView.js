@@ -23,7 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.
 
           this.metricName = options.metricName;
           this.metricCount = options.metricCount;
-          this.render();
+
         },
 
         show: function() {

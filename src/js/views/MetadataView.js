@@ -1026,7 +1026,9 @@ define(['jquery',
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
             var metricsModel = new MetricsModel({pid: this.pid})
-            metricsModel.fetch()
+            metricsModel.fetch();
+
+			this.metricsModel = metricsModel;
 
 			var self = this;
 			// Retreive the model from the server for the given PID
@@ -1078,12 +1080,15 @@ define(['jquery',
 			self.$(self.tableContainer).before(metrics);
 		},
 
-		showMetricModal: function(e) {	
+		showMetricModal: function(e) {
 			var metric = $(e.currentTarget.innerHTML);
-			if (MetacatUI.appModel.get("displayMetricModals")) {		
-				var modalView = new MetricModalView({metricName: metric[1].innerHTML.trim(),metricCount: metric[2].innerHTML.trim()});	
-				modalView.show();	
-			}	
+
+			if (MetacatUI.appModel.get("displayMetricModals")) {
+				var modalView = new MetricModalView({metricName: metric[1].innerHTML.trim(),metricCount: metric[2].innerHTML.trim()});
+				modalView.render();
+				modalView.show();
+			}
+
 		},
 
 
