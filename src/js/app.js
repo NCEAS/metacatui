@@ -59,7 +59,8 @@ require.config({
 	LineChart: ['views/LineChartView', null],
 	BarChart: ['views/BarChartView', null],
 	CircleBadge: ['views/CircleBadgeView', null],
-	DonutChart: ['views/DonutChartView', null]
+	DonutChart: ['views/DonutChartView', null],
+	MetricsChart: ['views/MetricsChartView', null],
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
@@ -240,7 +241,7 @@ function(Bootstrap, AppView, AppModel) {
 			if (evt.ctrlKey || evt.metaKey) {
 				return;
 			}
-			
+
 			var href = { prop: $(this).prop("href"), attr: $(this).attr("href") };
 
 			// Stop if the click happened on an a w/o an href

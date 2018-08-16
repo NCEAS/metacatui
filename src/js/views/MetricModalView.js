@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.html'],
-    function($, _, Backbone, MetricModalTemplate) {
+define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html'],
+    function($, _, Backbone, MetricsChart, MetricModalTemplate) {
     'use strict';
 
     var MetricModalView = Backbone.View.extend({
@@ -43,8 +43,21 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.
         renderView: function() {
           this.$el.html(this.template({metricValue:this.metricCount, metricIcon:'icon-quote-right', metricName:this.metricName}));
           this.$el.modal({show:false}); // dont show modal on instantiation
-        }
-     });
-     
-     return MetricModalView;
+          this.drawMetricsChart();
+        },
+
+        drawMetricsChart: function(){
+
+            var metricCount = this.metricCount;
+
+			//Draw a metric chart
+			var mychart = new MetricsChart({
+							id: "metadata-chart",
+						});
+
+			this.$('.metric-chart').html(mychart.render().el);
+		},
+
+    });
+    return MetricModalView;
   });
