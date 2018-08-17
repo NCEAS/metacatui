@@ -30,16 +30,16 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-			
+
 			// This route handler replaces the route handler we had in the
 			// routes table before which was "view/*pid". The * only finds URL
 			// parts until the ? but DataONE PIDs can have ? in them so we need
 			// to make this route more inclusive.
 			this.route(/^view\/(.*)$/, "renderMetadata");
-			
+
 			//Track the history of hashes
 			this.on("route", this.trackHash);
-			
+
 			// Clear stale JSONLD and meta tags
 			this.on("route", this.clearJSONLD);
 			this.on("route", this.clearHighwirePressMetaTags);
@@ -144,9 +144,9 @@ function ($, _, Backbone) {
 
 			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
-				var customQuery = appSearchModel.get('additionalCriteria');
+				var customQuery = MetacatUI.appSearchModel.get('additionalCriteria');
 				customQuery.push(query);
-				appSearchModel.set('additionalCriteria', customQuery);
+				MetacatUI.appSearchModel.set('additionalCriteria', customQuery);
 			}
 
 			if(!MetacatUI.appView.dataCatalogView){
@@ -210,7 +210,7 @@ function ($, _, Backbone) {
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
-			
+
 			var seriesId;
 
 			//Check for a seriesId
@@ -281,7 +281,7 @@ function ($, _, Backbone) {
 					MetacatUI.appView.showView(MetacatUI.appView.userView, viewOptions);
 			}
 		},
-		
+
 		renderMyProfile: function(section, subsection){
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
 				this.renderTokenSignIn();
