@@ -173,7 +173,7 @@ define(['jquery',
 		sendAnalytics: function(){
 			if(!MetacatUI.appModel.get("googleAnalyticsKey") || (typeof ga === "undefined")) return;
 
-			var page = window.location.hash || "/";
+			var page = window.location.pathname || "/";
 			page = page.replace("#", ""); //remove the leading pound sign
 
 			ga('send', 'pageview', {'page':  page});
