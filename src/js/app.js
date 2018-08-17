@@ -252,7 +252,7 @@ function(Bootstrap, AppView, AppModel) {
 
 			//Don't route to URLs with the DataONE API, which are sometimes proxied
 			// via Apache ProxyPass so start with the MetacatUI origin
-			if( href.attr.indexOf("/cn/v2/") || href.attr.indexof("/mn/v2/") ){
+			if( href.attr.indexOf("/cn/v2/") > 0 || href.attr.indexOf("/mn/v2/") > 0 ){
 				return;
 			}
 
