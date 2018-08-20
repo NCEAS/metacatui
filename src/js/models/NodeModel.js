@@ -141,9 +141,22 @@ define(['jquery', 'underscore', 'backbone'],
 						node.memberSince = node.CN_date_operational;
 					
 					node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
+
 					
-					if(node.type == "mn") memberList.push(node);
-					if(node.type == "cn") coordList.push(node);
+					// Push only if the node is not present in the list
+					if ( node.type == "mn" ) {
+						if ( !thisModel.containsObject(node, memberList) ) {
+							memberList.push(node);
+						}
+					} 
+
+					// Push only if the node is not present in the list
+					if ( node.type == "cn" ) {
+						if ( !thisModel.containsObject(node, coordList) ) {
+							coordList.push(node);
+						}
+					} 
+
 				});
 				
 				//Save the cn and mn lists in the model when all members have been added
@@ -174,6 +187,13 @@ define(['jquery', 'underscore', 'backbone'],
 				}
 			});
 		},
+
+		// Checks if the node already exists in the List
+		containsObject: function (obj, list) {
+			var res = _.find(list, function(val){ return _.isEqual(obj, val)});
+			return (_.isObject(res))? true:false;
+		},
+
 		
 		/*
 		 * Returns true if the given nodeId is a Coordinating Node
