@@ -48,11 +48,15 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
         drawMetricsChart: function(){
 
-            var metricCount = this.metricCount;
+            // test pid: doi:10.18739/A2HT2GB23
+            var metricY         = MetacatUI.appView.currentView.metricsModel.get(this.metricName.toLowerCase());
+            var metricMonths    = MetacatUI.appView.currentView.metricsModel.get("months");
 
 			//Draw a metric chart
 			var mychart = new MetricsChart({
 							id: "metadata-chart",
+                            metricY: metricY,
+                            metricMonths: metricMonths,
 						});
 
 			this.$('.metric-chart').html(mychart.render().el);

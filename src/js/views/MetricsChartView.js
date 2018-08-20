@@ -17,7 +17,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           //Set the model on this view when it is passed as an option
           this.model        = options.model || null;
           this.id           = options.id    || "bar-chart";
-          this.metricCount  = options.metricCount || 999;
+          this.metricY      = options.metricY || "0";
+          this.metricMonths = options.metricMonths;
 
         }
       },
@@ -46,11 +47,18 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         //Start rendering the D3 chart
 
         d3.select(this.el).append("text")
-            .text(this.metricCount)
+            .text(this.metricY)
             .attr("width", 100)
             .attr("height", 100)
             .attr("x", 50)
             .attr("y", 50)
+
+        d3.select(this.el).append("text")
+            .text(this.metricMonths)
+            .attr("width", 100)
+            .attr("height", 100)
+            .attr("x", 50)
+            .attr("y", 100)
 
         return this;
 
