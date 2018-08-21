@@ -1,28 +1,24 @@
 # Milestones from MetacatUI prioritization
 
-## Milestone 2.1.0 (July 15ish 2018)
-- JSON-LD (Bryce / Rushiraj)
-- Routing changes (Bryce/ Rushiraj)
-- Make Data Count MVP (with flag default off, test both ways) (Rushiraj/ Dave)
-- This version will be updated in DataONE Search production only. ADC and KNB will wait until v2.2.0
-
-## Milestone 2.2.0 (August 1, 2018)
-- Save emergency draft for manual recovery (MVP) (Chris) - Allows for Arctic Data Center production deployment (yay!)
-- Add public/private toggle in editor - Allows for KNB production deployment (yay!)
-
-## Milestone 3.0.0 (August 15 2018?)
-- Configuration refactor (Lauren)
-- People graph with disambiguated user profile pages (linking Creator metadata to accounts) (Bryce)
-- Search Page aggregated metrics (Citations, Downloads, Views) (Rushiraj)
+## Milestone 2.2.0 (Friday August 17, 2018)
 - Citation List modal (Rushiraj)
 
+## Milestone 2.3.0 (Friday August 24, 2018)
+- Add public/private toggle in editor - Allows for KNB production deployment (yay!)
+- Save emergency draft for manual recovery (MVP) (Chris) - Allows for Arctic Data Center production deployment (yay!)
+
+## Milestone 3.0.0 (August 31 2018)
+- Configuration refactor (Lauren)
+
 ## Milestone 3.1.0 (September 15, 2018)
-- Copy entity and attribute metadata in Editor (Dominic)
 - Replace entity
 - Metric time series (Rushiraj)
+- People graph with disambiguated user profile pages (linking Creator metadata to accounts) (Bryce)
+- Search Page aggregated metrics (Citations, Downloads, Views) (Rushiraj)
 
 ## Milestone 3.2.0 (November 1, 2018)
-- Project view MVP (Lauren)
+- Copy entity and attribute metadata in Editor (Dominic)
+- Project view MVP (Lauren and Jared)
 - Repository Profile Metrics (Rushiraj)
 - Editing hierarchical packages in editor (Chris)
 

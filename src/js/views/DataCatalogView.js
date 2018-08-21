@@ -7,7 +7,6 @@ define(['jquery',
 				'collections/SolrResults',
 				'models/Search',
 				'models/Stats',
-				'models/NodeModel',
 				'views/SearchResultView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
@@ -18,7 +17,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				],
-	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, NodeModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 
 	var DataCatalogView = Backbone.View.extend({
@@ -32,7 +31,6 @@ define(['jquery',
 		searchModel: null,
 		searchResults: null,
 		statsModel: new StatsModel(),
-		nodeModel: new NodeModel(),
 
 		//Templates
 		template: _.template(CatalogTemplate),
@@ -267,9 +265,9 @@ define(['jquery',
 		// Linked Data Object for appending the jsonld into the browser DOM
 		getLinkedData: function () {
 				// Find the MN info from the CN Node list
-				var  members = this.nodeModel.get("members")
+				var  members = MetacatUI.nodeModel.get("members")
 				for (var i = 0; i < members.length; i++) {
-					if(members[i].identifier == this.nodeModel.get("currentMemberNode")) {
+					if(members[i].identifier == MetacatUI.nodeModel.get("currentMemberNode")) {
 						var nodeModelObject = members[i];
 					}
 				}
