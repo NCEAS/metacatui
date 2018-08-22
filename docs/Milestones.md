@@ -1,16 +1,14 @@
 # Milestones from MetacatUI prioritization
 
-## Milestone 2.2.0 (Friday August 17, 2018)
+## Milestone 2.2.0 (Friday August 24, 2018)
 - Citation List modal (Rushiraj)
-
-## Milestone 2.3.0 (Friday August 24, 2018)
 - Add public/private toggle in editor - Allows for KNB production deployment (yay!)
 - Save emergency draft for manual recovery (MVP) (Chris) - Allows for Arctic Data Center production deployment (yay!)
 
-## Milestone 3.0.0 (August 31 2018)
+## Milestone 3.0.0 (September 14, 2018)
 - Configuration refactor (Lauren)
 
-## Milestone 3.1.0 (September 15, 2018)
+## Milestone 3.1.0 (September 21, 2018)
 - Replace entity
 - Metric time series (Rushiraj)
 - People graph with disambiguated user profile pages (linking Creator metadata to accounts) (Bryce)
