@@ -69,23 +69,26 @@ define(['jquery', 'underscore', 'backbone'],
         renderResults: function() {
             var metric = this.metricName
             var results = this.model.get(metric.toLowerCase());
-
             // Check if the metric object exists in results obtained from the service 
             // If it does, get its total value else set the total count to 0
             if (typeof results !== 'undefined') {
                 var total = 0
                 if (results.length > 0) {
-                    var total = results.reduce(function(acc, val) { return acc + val; });
+                    
+                    if(metric == 'Citations') {
+                        total = results.reduce(function(acc, val) { return acc + val; });
+                        this.model.set('totalCitations', total);
+                    }
+                    if(metric == 'Views') {
+                        total = results.reduce(function(acc, val) { return acc + val; });
+                        this.model.set('totalViews', total);
+                    }
+                    if(metric == 'Downloads') {
+                        total = results.reduce(function(acc, val) { return acc + val; });
+                        this.model.set('totalDownloads', total);
+                    }
                 }
-                if(metric == 'Citations') {
-                    this.model.set('totalCitations', total);
-                }
-                if(metric == 'Views') {
-                    this.model.set('totalViews', total);
-                }
-                if(metric == 'Downloads') {
-                    this.model.set('totalDownloads', total);
-                }
+                
             } else {
                 if(metric == 'Citations') {
                     this.model.set('totalCitations', 0);
