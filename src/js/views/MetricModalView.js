@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.html'],
-    function($, _, Backbone, MetricModalTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView'],
+    function($, _, Backbone, MetricModalTemplate, Citations, CitationList) {
     'use strict';
 
     var MetricModalView = Backbone.View.extend({
@@ -9,7 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.
         className: 'modal fade hide',
         template: _.template(MetricModalTemplate),
         metricName: null,
-        metricCount: null,
+        metricsModel: null,
 
         events: {
           'hidden': 'teardown'
@@ -22,8 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.
           }
 
           this.metricName = options.metricName;
-          this.metricCount = options.metricCount;
-
+          this.metricsModel = options.metricsModel;
         },
 
         show: function() {
@@ -41,10 +40,28 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.
         },
 
         renderView: function() {
-          this.$el.html(this.template({metricValue:this.metricCount, metricIcon:'icon-quote-right', metricName:this.metricName}));
-          this.$el.modal({show:false}); // dont show modal on instantiation
+            var self = this;
+            
+            if ( this.metricName === "Citations") { 
+                var resultDetails = this.metricsModel.get("resultDetails")
+                var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+                
+                this.citationCollection = citationCollection;
+                
+                var citationList = new CitationList({citations: this.citationCollection});
+                this.citationList = citationList;
+                
+                this.$el.html(this.template({metricName:this.metricName, metricBody:this.citationList.render().$el.html()}));
+            }
+            else {
+                this.$el.html(this.template({metricName:this.metricName, metricBody:""}));
+            }
+
+            
+            this.$el.modal({show:false}); // dont show modal on instantiation
+
         }
-     });
+    });
      
      return MetricModalView;
   });

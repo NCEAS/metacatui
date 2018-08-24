@@ -1,6 +1,10 @@
 <% if(metricName != 'undefined') {
         var metrics = ['Citations', 'Downloads', 'Views'];
         var metricIndex = metrics.indexOf(metricName);
+        var iconArrays = ['icon-quote-right', 'icon-cloud-download', 'icon-eye-open'];
+        var metricIcon = iconArrays[metricIndex];
+        
+        // Implementing a circular queue for the modal footer
         var prevMetricName = metrics[((metricIndex + metrics.length - 1) % metrics.length)];
         var nextMetricName = metrics[((metricIndex + metrics.length + 1) % metrics.length)];
 }
@@ -10,7 +14,7 @@
   <div class="modal-content">
     <div class="modal-header">
         <div class="left-header-section">
-            <%=metricValue%>
+
             <i class='icon <%=metricIcon%>'></i>
             <%=metricName%>
         </div>
@@ -20,6 +24,7 @@
     </div>
     <div class="modal-body">
       Basic Metric Text ..!
+      <%=metricBody%>
     </div>
     
     <div class="modal-footer" >
