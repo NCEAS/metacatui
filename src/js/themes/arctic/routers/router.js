@@ -37,9 +37,9 @@ function ($, _, Backbone) {
 			// to make this route more inclusive.
 			this.route(/^view\/(.*)$/, "renderMetadata");
 
-			//Track the history of hashes
-			this.on("route", this.trackHash);
-			
+			//Track the history of pathnames
+			this.on("route", this.trackPathName);
+
 			// Clear stale JSONLD and meta tags
 			this.on("route", this.clearJSONLD);
 			this.on("route", this.clearHighwirePressMetaTags);
@@ -47,7 +47,7 @@ function ($, _, Backbone) {
 
 		//Keep track of navigation movements
 		routeHistory: new Array(),
-		hashHistory: new Array(),
+		pathHistory: new Array(),
 
 		// Will return the last route, which is actually the second to last item in the route history,
 		// since the last item is the route being currently viewed
@@ -58,21 +58,21 @@ function ($, _, Backbone) {
 				return this.routeHistory[this.routeHistory.length-2];
 		},
 
-		trackHash: function(e){
-			if(_.last(this.hashHistory) != window.location.hash)
-				this.hashHistory.push(window.location.hash);
+		trackPathName: function(e){
+			if(_.last(this.pathHistory) != window.location.pathname)
+				this.pathHistory.push(window.location.pathname);
 		},
 
-		//If the user or app cancelled the last route, call this function to revert the window location hash back to the correct value
+		//If the user or app cancelled the last route, call this function to revert the window location pathname back to the correct value
 		undoLastRoute: function(){
 			this.routeHistory.pop();
 
-			// Remove the last route and hash from the history
-			if(_.last(this.hashHistory) == window.location.hash)
-				this.hashHistory.pop();
+			// Remove the last route and pathname from the history
+			if(_.last(this.pathHistory) == window.location.pathname)
+				this.pathHistory.pop();
 
-			//Change the hash in the window location back
-			this.navigate(_.last(this.hashHistory), {replace: true});
+			//Change the pathname in the window location back
+			this.navigate(_.last(this.pathHistory), {replace: true});
 		},
 
 		renderAPI: function (anchorId) {

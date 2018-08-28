@@ -251,6 +251,12 @@ function(Bootstrap, AppView, AppModel) {
 				return;
 			}
 
+			//Don't route to URLs with the DataONE API, which are sometimes proxied
+			// via Apache ProxyPass so start with the MetacatUI origin
+			if( href.attr.indexOf("/cn/v2/") > 0 || href.attr.indexOf("/mn/v2/") > 0 ){
+				return;
+			}
+
 			var root = location.protocol + "//" + location.host + Backbone.history.options.root;
 			// Remove the MetacatUI (plus a trailing /) from the value in the 'href'
 			// attribute of the clicked element so Backbone.history.navigate works.

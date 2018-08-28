@@ -11,7 +11,8 @@ define(['jquery', 'underscore', 'backbone'],
             startDate: null,
             endDate: null,
             results: null,
-            pid: '',
+            resultDetails: null,
+            pid_list: null,
             url: null,
 
             // metrics and metric Facets returned as response from the user
@@ -34,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 
             metricsRequiredFields: {
                 metricName: true,
-                pid: true
+                pid_list: true
             }
         },
 
@@ -46,11 +47,9 @@ define(['jquery', 'underscore', 'backbone'],
                 "count": 0
             },
             "metrics": [
-                "Citations",
-                "Unique_Dataset_Requests",
-                "Total_Dataset_Requests",
-                "Total_Dataset_Investigations",
-                "Unique_Dataset_Investigations"
+                "citations",
+                "downloads",
+                "views"
             ],
             "filterBy": [
                 {
@@ -72,18 +71,17 @@ define(['jquery', 'underscore', 'backbone'],
         // Initializing the Model objects pid and the metricName variables.
         initialize: function(options) {
             if(!(options.pid == 'undefined')) {
-                this.pid = options.pid;
+                this.pid_list = options.pid_list;
             }
             // url for the model that is used to for the fetch() call
-            this.url = MetacatUI.appModel.get("metricsUrl")
+            this.url = MetacatUI.appModel.get("metricsUrl");
         },
 
         // Overriding the Model's fetch function.
         fetch: function(){
           var fetchOptions = {};
 
-          this.metricRequest.filterBy[0].values = [];
-          this.metricRequest.filterBy[0].values.push(this.pid);
+          this.metricRequest.filterBy[0].values = this.pid_list;
 
           // TODO: Set the startDate and endDate based on the datePublished and current date
           // respctively.
@@ -93,7 +91,6 @@ define(['jquery', 'underscore', 'backbone'],
 
           // HTTP GET
           fetchOptions = _.extend({data:"metricsRequest="+JSON.stringify(this.metricRequest)});
-
           // Uncomment to set it as a HTTP POST
           // fetchOptions = _.extend({data:JSON.stringify(this.metricRequest), type="POST"});
 
@@ -125,7 +122,8 @@ define(['jquery', 'underscore', 'backbone'],
                 "views": response.results.views,
                 "downloads": response.results.downloads,
                 "months": response.results.months,
-                "country": response.results.country
+                "country": response.results.country,
+                "resultDetails": response.resultDetails
             }
         }
 

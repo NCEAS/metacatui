@@ -1804,7 +1804,7 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 #metric-modal .modal-content {
     width: auto;
-    
+
 }
 #metric-modal .modal-header {
     width: 900px;
@@ -1819,6 +1819,50 @@ a.btn.metrics:hover, a.btn.metrics:click {
     width: 900px;
     height: 25px;
 }
+
+/******************************************
+* Metric Modal Chart (Views, Downloads, Citations)
+********************************************/
+
+
+#metric-modal .metric-chart text {
+	fill: #565656;
+	font-size: 9px;
+	font-family: Helvetica, Arial, "sans serif";
+}
+
+#metric-modal .metric-chart path.line {
+	   fill: none;
+	   stroke: #417DD6; /* change in each theme ? */
+	   stroke-width: 1.5px;
+}
+
+#metric-modal .metric-chart path.area {
+	fill: #d4e2f6; /* change in each theme ? */
+}
+
+#metric-modal .metric-chart .axis {
+	shape-rendering: crispEdges;
+}
+
+#metric-modal .metric-chart .x.axis .domain{
+	display:none;
+}
+
+#metric-modal .metric-chart .y.axis .domain{
+	fill:none;
+	stroke: #565656;
+	stroke-width: 1px;
+}
+
+#metric-modal .metric-chart .x.axis line {
+	stroke: white;
+}
+
+#metric-modal .metric-chart .y.axis .tick line {
+	stroke: #565656;
+}
+
 
 /******************************************
 * The Data Details box in the Metadata View

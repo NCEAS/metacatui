@@ -59,7 +59,7 @@ To run MetacatUI, you will need to first install a web server such as [Apache](h
       CustomLog "/private/var/log/apache2/metacatui-access_log" common
 
      <Directory "/Users/walker/Sites/metacatui">
-      FallbackResource /index.html
+      FallbackResource /metacatui/index.html
     </Directory>
   </VirtualHost>
   ```

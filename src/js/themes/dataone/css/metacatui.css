@@ -1721,9 +1721,9 @@ svg .packages,
 .profile .bar-label.packages{
 	fill: inherit;
 }
-.profile .download-chart .bar-chart .bar.packages,
-.profile .download-chart .bar-chart text.packages{
+.profile .download-chart .bar-chart .bar.packages{
 	fill: #32887F;
+  stroke: #32887F;
 }
   /* Donut charts */
   #metadata-chart,

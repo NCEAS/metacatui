@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html'],
-    function($, _, Backbone, MetricsChart, MetricModalTemplate) {
+define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView'],
+    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList) {
     'use strict';
 
     var MetricModalView = Backbone.View.extend({
@@ -9,7 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         className: 'modal fade hide',
         template: _.template(MetricModalTemplate),
         metricName: null,
-        metricCount: null,
+        metricsModel: null,
 
         events: {
           'hidden': 'teardown'
@@ -22,8 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
           }
 
           this.metricName = options.metricName;
-          this.metricCount = options.metricCount;
-
+          this.metricsModel = options.metricsModel;
         },
 
         show: function() {
@@ -37,31 +36,49 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
         render: function() {
           this.renderView();
+          this.drawMetricsChart();
           return this;
         },
 
         renderView: function() {
-          this.$el.html(this.template({metricValue:this.metricCount, metricIcon:'icon-quote-right', metricName:this.metricName}));
-          this.$el.modal({show:false}); // dont show modal on instantiation
-          this.drawMetricsChart();
+            var self = this;
+
+            if ( this.metricName === "Citations") {
+                var resultDetails = this.metricsModel.get("resultDetails")
+                var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+
+                this.citationCollection = citationCollection;
+
+                var citationList = new CitationList({citations: this.citationCollection});
+                this.citationList = citationList;
+
+                this.$el.html(this.template({metricName:this.metricName, metricBody:this.citationList.render().$el.html()}));
+            }
+            else {
+                this.$el.html(this.template({metricName:this.metricName, metricBody:"<div class='metric-chart'></div>"}));
+            }
+
+            this.drawMetricsChart();
+            this.$el.modal({show:false}); // dont show modal on instantiation
+
         },
 
         drawMetricsChart: function(){
 
-            // test pid: doi:10.18739/A2HT2GB23
             var metricY         = MetacatUI.appView.currentView.metricsModel.get(this.metricName.toLowerCase());
             var metricMonths    = MetacatUI.appView.currentView.metricsModel.get("months");
 
-			//Draw a metric chart
-			var mychart = new MetricsChart({
-							id: "metadata-chart",
+            //Draw a metric chart
+            var mychart = new MetricsChart({
+                            id: "thisistheidofthechart",
                             metricY: metricY,
                             metricMonths: metricMonths,
-						});
+                        });
 
-			this.$('.metric-chart').html(mychart.render().el);
-		},
+            this.$('.metric-chart').html(mychart.render().el);
+        }
 
     });
-    return MetricModalView;
+
+     return MetricModalView;
   });

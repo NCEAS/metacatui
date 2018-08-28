@@ -15,10 +15,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           if(typeof options !== "undefined"){
 
           //Set the model on this view when it is passed as an option
-          this.model        = options.model || null;
-          this.id           = options.id    || "bar-chart";
-          this.metricY      = options.metricY || "0";
+          this.model        = options.model         || null;
+          this.id           = options.id            || "metrics-chart";
+          this.metricY      = options.metricY       || "0";
           this.metricMonths = options.metricMonths;
+          this.width        = options.width         || 900;
+          this.height       = options.height        || 360;
 
         }
       },
@@ -41,24 +43,125 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
       tagName: "svg",
 
       render: function(){
+        // test pid: doi:10.18739/A2HT2GB23
 
-        var viewRef = this;
+        /*
+        * ========================================================================
+        *  Prepare Data
+        * ========================================================================
+        */
 
-        //Start rendering the D3 chart
+        // Better to have the model passed into the chart as data.
+        // For now, combine the months and count array .
+        var dataset = [];
+        for(var i=0; i<this.metricY.length; i++){
+            var obj = {count: this.metricY[i], month: this.metricMonths[i]};
+            dataset.push(obj);
+        }
 
-        d3.select(this.el).append("text")
-            .text(this.metricY)
-            .attr("width", 100)
-            .attr("height", 100)
-            .attr("x", 50)
-            .attr("y", 50)
+        // format month as a date
+        dataset.forEach(function(d) {
+            d.month = d3.time.format("%Y-%m").parse(d.month);
+        });
 
-        d3.select(this.el).append("text")
-            .text(this.metricMonths)
-            .attr("width", 100)
-            .attr("height", 100)
-            .attr("x", 50)
-            .attr("y", 100)
+        // sort dataset by month
+        dataset.sort(function(x, y){
+           return d3.ascending(x.month, y.month);
+        });
+
+        var margin	= {top: 20, right: 20, bottom: 20, left: 20},
+            width	= 900 - margin.left - margin.right,
+            height	= 360 - margin.top - margin.bottom;
+
+        /*
+        * ========================================================================
+        *  X & Y vars
+        * ========================================================================
+        */
+
+        function getTickFormat(){
+            //var timeSpan = (dataset[dataset.length-1].month) - (dataset[0].month);
+            //var oneMonthMs = 2628000000*13;
+            //if(timeSpan <= oneMonthMs) return d3.time.format("%b");
+            //else return d3.time.format("%b %Y");
+            return d3.time.format("%b %Y")
+        }
+
+        var xTickFormat	  =  getTickFormat();
+
+        var x = d3.time.scale()
+        	.range([margin.left, width-margin.right])
+        	.domain(d3.extent(dataset, function(d) { return d.month; }));
+
+    	var y = d3.scale.linear()
+        	.range([height-margin.bottom, margin.top])
+            .domain(d3.extent(dataset, function(d) { return d.count; }));
+
+        var xAxis = d3.svg.axis()
+        	.scale(x)
+        	.ticks(10)
+       		.tickSize(-(height-margin.top-margin.bottom))
+        	.tickFormat(xTickFormat);
+
+        var yAxis = d3.svg.axis()
+        	.scale(y)
+        	.ticks(4)
+        	.tickSize(5)
+        	.orient("right");
+
+        /*
+        * ========================================================================
+        *  Line and Area vars
+        * ========================================================================
+        */
+
+        var line = d3.svg.line()
+        	//.interpolate("monotone")
+        	.x(function(d) { return x(d.month); })
+        	.y(function(d) { return y(d.count); });
+
+        var area = d3.svg.area()
+          //.interpolate("monotone")
+          .x(function(d) { return x(d.month); })
+          .y0((height-margin.bottom))
+          .y1(function(d) { return y(d.count); });
+
+        /*
+        * ========================================================================
+        *  Define SVG vis and append
+        * ========================================================================
+        */
+
+        // append everything to this
+        var vis = d3.select(this.el)
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+          	.attr("class", "line-chart")
+      		.append("g")
+      		.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+          	.datum(dataset);
+
+        // plot area
+        vis.append("path")
+            .attr("class", "area")
+      		.attr("d", area);
+
+        // x-axis
+        vis.append("g")
+           	.call(xAxis)
+          	.attr("class", "x axis")
+           	.attr("transform", "translate(" + 0 + "," + (height - margin.bottom) +")");
+
+        // plot line
+        vis.append("path")
+           	.attr("class", "line")
+            .attr("d", line);
+
+        // y-axis
+        vis.append("g")
+           	.call(yAxis)
+           	.attr("class", "y axis")
+           	.attr("transform", "translate(" + (width - margin.right) + ", 0)");
 
         return this;
 

@@ -150,7 +150,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
 			//The package service for v2 DataONE API
-			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+			this.set('packageServiceUrl', this.get('baseUrl') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			//Only use these settings in production
 			if(this.get("baseUrl").indexOf("search.dataone.org") > -1)
