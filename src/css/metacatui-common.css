@@ -2052,6 +2052,9 @@ hr.project{
 .project-tabs{
 	width: 100%;
 }
+#project-nav-tabs ul.nav.nav-tabs>li:first-child {
+	margin-left: 245px;
+}
 /******************************************
 * Download / Resource Map contents table
 ********************************************/
