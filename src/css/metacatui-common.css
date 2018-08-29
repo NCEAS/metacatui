@@ -1806,18 +1806,52 @@ a.btn.metrics:hover, a.btn.metrics:click {
     width: auto;
 
 }
+
 #metric-modal .modal-header {
     width: 900px;
     height: 25px;
 }
+
 #metric-modal .modal-body {
     width: 900px;
     height: 400px;
     max-height: 400px;
 }
+
 #metric-modal .modal-footer {
     width: 900px;
     height: 25px;
+}
+
+#metric-modal .modal-header .left-header-section {
+	float: left;
+	width: 90%;
+}
+
+#metric-modal .modal-header .right-header-section {
+	float: right;
+	width: 10%;
+}
+
+#metric-modal .modal-body .modal-description {
+	float: left;
+	width: 230px;
+	padding: 12px;
+}
+
+#metric-modal .modal-body .modal-description p {
+	margin: 0 0 25px;
+}
+
+#metric-modal .modal-body .modal-description p#slider-instructions {
+	margin-top: 120px;
+}
+
+
+#metric-modal .modal-body .metric-chart {
+	float: right;
+	width: 600px;
+	padding: 10px 12px 0 10px;
 }
 
 /******************************************
@@ -1861,6 +1895,11 @@ a.btn.metrics:hover, a.btn.metrics:click {
 	stroke-width: 1px; */
 }
 
+#metric-modal .metric-chart .y.axis.title{
+	font-size: 13px;
+	font-weight: 100;
+}
+
 #metric-modal .metric-chart .y.axis line {
 	stroke: #565656;
 	stroke-dasharray: 2,2;
@@ -1869,6 +1908,7 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart .x.axis line {
 	stroke: white;
+	opacity: 0.8;
 }
 
 

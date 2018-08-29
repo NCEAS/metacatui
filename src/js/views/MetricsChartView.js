@@ -102,7 +102,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         var xAxis = d3.svg.axis()
         	.scale(x)
-        	.ticks(10)
+        	.ticks(5)
             .orient("bottom")
        		.tickSize(-(height))
         	.tickFormat(xTickFormat);
@@ -134,7 +134,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         /* ZOOM? */
         var zoom = d3.behavior.zoom()
             .x(x)
-            .scaleExtent([1, 10])
+            .scaleExtent([0.5, 5])
             .on("zoom", zoomed);
 
         /*
@@ -174,13 +174,23 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         vis.append("g")
            	.call(xAxis)
           	.attr("class", "x axis")
-           	.attr("transform", "translate(" + 0 + "," + (height) +")")
-            .selectAll(".tick:last-of-type text, .tick:first-of-type text").attr("display", "none");
+           	.attr("transform", "translate(" + 0 + "," + (height) +")");
+            //.selectAll(".tick:last-of-type text, .tick:first-of-type text").attr("display", "none");
 
         // plot line
         vis.append("path")
            	.attr("class", "line")
             .attr("d", line);
+
+        // y axis title
+        vis.append("text")
+            .attr("class", "y axis title")
+            .text("Monthly " + this.metricName)
+            .attr("x", (0-(height/2)))
+            .attr("y", (0 - margin.left))
+            .attr("dy", "1em")
+            .attr("transform", "rotate(-90)")
+            .style("text-anchor", "middle");
 
         function zoomed() {
             vis.select(".x.axis").call(xAxis);

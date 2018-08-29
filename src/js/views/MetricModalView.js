@@ -55,7 +55,8 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 this.$el.html(this.template({metricName:this.metricName, metricBody:this.citationList.render().$el.html()}));
             }
             else {
-                this.$el.html(this.template({metricName:this.metricName, metricBody:"<div class='metric-chart'></div>"}));
+                this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricBody:"<div class='metric-chart'></div>"}));
             }
 
             this.$el.modal({show:false}); // dont show modal on instantiation
