@@ -54,8 +54,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         * ========================================================================
         */
 
-        // Better to have the model passed into the chart as data.
-        // For now, combine the months and count array .
+        // Combine the months and count array to make "data".
         var dataset = [];
         for(var i=0; i<this.metricCount.length; i++){
             var obj = {count: this.metricCount[i], month: this.metricMonths[i]};
@@ -72,9 +71,17 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
            return d3.ascending(x.month, y.month);
         });
 
-        var margin	= {top: 20, right: 30, bottom: 20, left: 20},
+        /*
+        * ========================================================================
+        *  Sizing
+        * ========================================================================
+        */
+
+        var margin	= {top: 0, right: 30, bottom: 100, left: 20},
+            margin2 = {top: 320, right: 30, bottom: 20, left: 20},
             width	= this.width - margin.left - margin.right,
-            height	= this.height - margin.top - margin.bottom;
+            height	= this.height - margin.top - margin.bottom,
+            height2 = this.height - margin2.top - margin2.bottom;
 
         /*
         * ========================================================================
@@ -82,23 +89,17 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         * ========================================================================
         */
 
-        function getTickFormat(){
-            //var timeSpan = (dataset[dataset.length-1].month) - (dataset[0].month);
-            //var oneMonthMs = 2628000000*13;
-            //if(timeSpan <= oneMonthMs) return d3.time.format("%b");
-            //else return d3.time.format("%b %Y");
-            return d3.time.format("%b %Y")
-        }
+        // === MAIN CHART ==
 
-        var xTickFormat	  =  getTickFormat();
+        var xTickFormat	  =  d3.time.format("%b %Y");
 
         var x = d3.time.scale()
-        	.range([0, width])
+        	.range([0, (width)])
             .domain(d3.extent(dataset, function(d) { return d.month; }));
 
     	var y = d3.scale.linear()
         	.range([height, 0])
-            .domain(d3.extent(dataset, function(d) { return d.count; }));
+            .domain([0, d3.max(dataset, function(d) { return d.count; })]);
 
         var xAxis = d3.svg.axis()
         	.scale(x)
@@ -111,8 +112,26 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         	.scale(y)
             .tickSize(-(width))
         	.ticks(4)
-        	//.tickSize(5)
         	.orient("right");
+
+        // === SLIDER CHART ('brush') ===
+
+        // define maximum domain for the slider chart
+        var mindate = new Date(2013,0,1), // ? start year?
+            maxdate = new Date(); // today
+
+        var x2 = d3.time.scale()
+            .range([0, width])
+            .domain([mindate, maxdate]);
+
+        var y2 = d3.scale.linear()
+        	.range([height2, 0])
+            .domain(y.domain());
+
+        var xAxis2 = d3.svg.axis()
+            .scale(x2)
+            .orient("bottom");
+
 
         /*
         * ========================================================================
@@ -120,22 +139,46 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         * ========================================================================
         */
 
+        // === MAIN CHART ==
+
         var line = d3.svg.line()
-        	//.interpolate("monotone")
         	.x(function(d) { return x(d.month); })
         	.y(function(d) { return y(d.count); });
 
         var area = d3.svg.area()
-          //.interpolate("monotone")
           .x(function(d) { return x(d.month); })
           .y0((height))
           .y1(function(d) { return y(d.count); });
 
-        /* ZOOM? */
+        // === SLIDER CHART ==
+
+        var area2 = d3.svg.area()
+            .x(function(d) { return x2(d.month); })
+            .y0((height2))
+            .y1(function(d) { return y2(d.count); });
+
+        var line2 = d3.svg.line()
+            .x(function(d) { return x2(d.month); })
+            .y(function(d) { return y2(d.count); });
+
+        /*
+        * ========================================================================
+        *  Vars for zooming/brushing variables
+        * ========================================================================
+        */
+
+        var brush = d3.svg.brush()
+            .x(x2)
+            .on("brush", brushed);
+
         var zoom = d3.behavior.zoom()
-            .x(x)
-            .scaleExtent([0.5, 5])
-            .on("zoom", zoomed);
+            .on("zoom", draw);
+
+        // brush handles
+        var arc = d3.svg.arc()
+            .outerRadius(height2 / 2)
+            .startAngle(0)
+            .endAngle(function(d, i) { return i ? -Math.PI : Math.PI; });
 
         /*
         * ========================================================================
@@ -147,56 +190,130 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         var vis = d3.select(this.el)
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-          	.attr("class", "line-chart")
-      		.append("g")
-      		.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-          	.datum(dataset)
-            .call(zoom);
+          	.attr("class", "line-chart");
 
-        // background rectangle needed for zoom behaviour
-        vis.append("rect")
-            .attr("class", "plot-background")
+        // to keep line and area from going outside of plot area
+        vis.append("defs").append("clipPath")
+            .attr("id", "clip")
+            .append("rect")
             .attr("width", width)
             .attr("height", height);
 
-        // y-axis
-        vis.append("g")
-           	.call(yAxis)
-           	.attr("class", "y axis")
+        // focus = main chart
+        var focus = vis.append("g")
+            .attr("class", "focus")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // context = mini slider chart
+        var context = vis.append("g")
+            .attr("class", "context")
+            .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+        var rect = vis.append("svg:rect")
+            .attr("class", "pane")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .call(zoom)
+            .call(draw);
+
+        zoom.x(x);
+
+        // focus main chart
+
+        focus.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
            	.attr("transform", "translate(" + (width) + ", 0)");
 
-        // plot area
-        vis.append("path")
+        focus.append("path")
+            .datum(dataset)
             .attr("class", "area")
-      		.attr("d", area);
+            .attr("d", area);
 
-        // x-axis
-        vis.append("g")
-           	.call(xAxis)
-          	.attr("class", "x axis")
-           	.attr("transform", "translate(" + 0 + "," + (height) +")");
-            //.selectAll(".tick:last-of-type text, .tick:first-of-type text").attr("display", "none");
+        focus.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
 
-        // plot line
-        vis.append("path")
-           	.attr("class", "line")
+        focus.append("path")
+            .datum(dataset)
+            .attr("class", "line")
             .attr("d", line);
+
+
+        // context slider chart
+
+        context.append("path")
+            .datum(dataset)
+            .attr("class", "area")
+            .attr("d", area2);
+
+        context.append("path")
+            .datum(dataset)
+            .attr("class", "line")
+            .attr("d", line2);
+
+        context.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height2 + ")")
+            .call(xAxis2);
 
         // y axis title
         vis.append("text")
             .attr("class", "y axis title")
             .text("Monthly " + this.metricName)
-            .attr("x", (0-(height/2)))
-            .attr("y", (0 - margin.left))
+            .attr("x", (-(height/2)))
+            .attr("y", 0)
             .attr("dy", "1em")
             .attr("transform", "rotate(-90)")
             .style("text-anchor", "middle");
 
-        function zoomed() {
-            vis.select(".x.axis").call(xAxis);
-            vis.select(".line").attr("d",line);
-            vis.select(".area").attr("d",area);
-            //vis.select(".y.axis").call(yAxis);
+        var brushg = context.append("g")
+            .attr("class", "x brush")
+            .call(brush);
+
+        // extend handles
+        brushg.selectAll(".resize")
+            .append("rect")
+            .attr("class", "handle")
+            .attr("transform", "translate(0," +  -3 + ")")
+            .attr('rx', 2)
+			.attr('ry', 2)
+            .attr("height", height2 + 6)
+            .attr("width", 3);
+
+        brushg.selectAll(".resize")
+            .append("rect")
+            .attr("class", "handle-mini")
+            .attr("transform", "translate(-2,10)")
+            .attr('rx', 3)
+            .attr('ry', 3)
+            .attr("height", (height2/2))
+            .attr("width", 7);
+
+        // extent 'window'
+        brushg.selectAll(".extent")
+           .attr("y", -6)
+           .attr("height", height2 + 8);
+
+         //functions
+        function brushed() {
+            x.domain(brush.empty() ? x2.domain() : brush.extent());
+            focus.select(".area").attr("d", area);
+            focus.select(".line").attr("d", line);
+            focus.select(".x.axis").call(xAxis);
+            // Reset zoom scale's domain
+            zoom.x(x);
+        }
+
+        function draw() {
+            focus.select(".area").attr("d", area);
+            focus.select(".line").attr("d", line);
+            focus.select(".x.axis").call(xAxis);
+            // Force changing brush range
+            brush.extent(x.domain());
+            vis.select(".brush").call(brush);
         }
 
         return this;

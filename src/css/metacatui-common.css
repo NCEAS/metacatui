@@ -1873,11 +1873,13 @@ a.btn.metrics:hover, a.btn.metrics:click {
 	   fill: none;
 	   stroke: #417DD6; /* change in each theme ? */
 	   stroke-width: 1.5px;
+	   clip-path: url(#clip);
 }
 
 #metric-modal .metric-chart path.area {
 	fill: #417DD6; /* change in each theme ? */
 	opacity: 0.35;
+	clip-path: url(#clip);
 }
 
 #metric-modal .metric-chart .axis {
@@ -1911,10 +1913,28 @@ a.btn.metrics:hover, a.btn.metrics:click {
 	opacity: 0.8;
 }
 
+#metric-modal .metric-chart .brush .extent {
+  fill-opacity: .10;
+  shape-rendering: crispEdges;
+  clip-path: url(#clip);
+}
 
-/* #metric-modal .metric-chart .y.axis .tick line {
-	stroke: #565656;
-} */
+#metric-modal .metric-chart rect.pane {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
+/* brush handles  */
+#metric-modal .metric-chart .resize .handle {
+	    fill: #555;
+}
+
+#metric-modal .metric-chart .resize .handle-mini {
+	fill: white;
+    stroke-width: 1px;
+    stroke: #555;
+}
+
 
 
 /******************************************
