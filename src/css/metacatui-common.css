@@ -1831,6 +1831,10 @@ a.btn.metrics:hover, a.btn.metrics:click {
 	font-family: Helvetica, Arial, "sans serif";
 }
 
+#metric-modal .metric-chart rect.plot-background{
+	fill: white;
+}
+
 #metric-modal .metric-chart path.line {
 	   fill: none;
 	   stroke: #417DD6; /* change in each theme ? */
@@ -1838,7 +1842,8 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 
 #metric-modal .metric-chart path.area {
-	fill: #d4e2f6; /* change in each theme ? */
+	fill: #417DD6; /* change in each theme ? */
+	opacity: 0.35;
 }
 
 #metric-modal .metric-chart .axis {
@@ -1850,18 +1855,26 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 
 #metric-modal .metric-chart .y.axis .domain{
-	fill:none;
+	display: none;
+	/* fill:none;
 	stroke: #565656;
-	stroke-width: 1px;
+	stroke-width: 1px; */
+}
+
+#metric-modal .metric-chart .y.axis line {
+	stroke: #565656;
+	stroke-dasharray: 2,2;
+	stroke-opacity: 0.3;
 }
 
 #metric-modal .metric-chart .x.axis line {
 	stroke: white;
 }
 
-#metric-modal .metric-chart .y.axis .tick line {
+
+/* #metric-modal .metric-chart .y.axis .tick line {
 	stroke: #565656;
-}
+} */
 
 
 /******************************************

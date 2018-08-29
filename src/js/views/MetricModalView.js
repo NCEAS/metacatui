@@ -58,24 +58,27 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 this.$el.html(this.template({metricName:this.metricName, metricBody:"<div class='metric-chart'></div>"}));
             }
 
-            this.drawMetricsChart();
             this.$el.modal({show:false}); // dont show modal on instantiation
 
         },
 
         drawMetricsChart: function(){
 
-            var metricY         = MetacatUI.appView.currentView.metricsModel.get(this.metricName.toLowerCase());
-            var metricMonths    = MetacatUI.appView.currentView.metricsModel.get("months");
+            var metricCount         = MetacatUI.appView.currentView.metricsModel.get(this.metricName.toLowerCase());
+            var metricMonths        = MetacatUI.appView.currentView.metricsModel.get("months");
+            var metricName          = this.metricName;
 
             //Draw a metric chart
-            var mychart = new MetricsChart({
-                            id: "thisistheidofthechart",
-                            metricY: metricY,
+            var modalMetricChart = new MetricsChart({
+                            id: "metrics-chart",
+                            metricCount: metricCount,
                             metricMonths: metricMonths,
+                            metricName: metricName,
+                            width: 600,
+                            height: 360
                         });
 
-            this.$('.metric-chart').html(mychart.render().el);
+            this.$('.metric-chart').html(modalMetricChart.render().el);
         }
 
     });

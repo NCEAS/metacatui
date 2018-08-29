@@ -17,10 +17,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           //Set the model on this view when it is passed as an option
           this.model        = options.model         || null;
           this.id           = options.id            || "metrics-chart";
-          this.metricY      = options.metricY       || "0";
-          this.metricMonths = options.metricMonths;
-          this.width        = options.width         || 900;
+          this.metricCount  = options.metricCount   || "0";
+          this.metricMonths = options.metricMonths  || "0";
+          this.width        = options.width         || 600;
           this.height       = options.height        || 360;
+          this.metricName   = options.metricName;
 
         }
       },
@@ -45,6 +46,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
       render: function(){
         // test pid: doi:10.18739/A2HT2GB23
 
+        console.log(this.metricName)
+
         /*
         * ========================================================================
         *  Prepare Data
@@ -54,8 +57,8 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         // Better to have the model passed into the chart as data.
         // For now, combine the months and count array .
         var dataset = [];
-        for(var i=0; i<this.metricY.length; i++){
-            var obj = {count: this.metricY[i], month: this.metricMonths[i]};
+        for(var i=0; i<this.metricCount.length; i++){
+            var obj = {count: this.metricCount[i], month: this.metricMonths[i]};
             dataset.push(obj);
         }
 
@@ -69,9 +72,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
            return d3.ascending(x.month, y.month);
         });
 
-        var margin	= {top: 20, right: 20, bottom: 20, left: 20},
-            width	= 900 - margin.left - margin.right,
-            height	= 360 - margin.top - margin.bottom;
+        var margin	= {top: 20, right: 30, bottom: 20, left: 20},
+            width	= this.width - margin.left - margin.right,
+            height	= this.height - margin.top - margin.bottom;
 
         /*
         * ========================================================================
@@ -90,23 +93,25 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         var xTickFormat	  =  getTickFormat();
 
         var x = d3.time.scale()
-        	.range([margin.left, width-margin.right])
-        	.domain(d3.extent(dataset, function(d) { return d.month; }));
+        	.range([0, width])
+            .domain(d3.extent(dataset, function(d) { return d.month; }));
 
     	var y = d3.scale.linear()
-        	.range([height-margin.bottom, margin.top])
+        	.range([height, 0])
             .domain(d3.extent(dataset, function(d) { return d.count; }));
 
         var xAxis = d3.svg.axis()
         	.scale(x)
         	.ticks(10)
-       		.tickSize(-(height-margin.top-margin.bottom))
+            .orient("bottom")
+       		.tickSize(-(height))
         	.tickFormat(xTickFormat);
 
         var yAxis = d3.svg.axis()
         	.scale(y)
+            .tickSize(-(width))
         	.ticks(4)
-        	.tickSize(5)
+        	//.tickSize(5)
         	.orient("right");
 
         /*
@@ -123,8 +128,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         var area = d3.svg.area()
           //.interpolate("monotone")
           .x(function(d) { return x(d.month); })
-          .y0((height-margin.bottom))
+          .y0((height))
           .y1(function(d) { return y(d.count); });
+
+        /* ZOOM? */
+        var zoom = d3.behavior.zoom()
+            .x(x)
+            .scaleExtent([1, 10])
+            .on("zoom", zoomed);
 
         /*
         * ========================================================================
@@ -139,7 +150,20 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           	.attr("class", "line-chart")
       		.append("g")
       		.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-          	.datum(dataset);
+          	.datum(dataset)
+            .call(zoom);
+
+        // background rectangle needed for zoom behaviour
+        vis.append("rect")
+            .attr("class", "plot-background")
+            .attr("width", width)
+            .attr("height", height);
+
+        // y-axis
+        vis.append("g")
+           	.call(yAxis)
+           	.attr("class", "y axis")
+           	.attr("transform", "translate(" + (width) + ", 0)");
 
         // plot area
         vis.append("path")
@@ -150,18 +174,20 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         vis.append("g")
            	.call(xAxis)
           	.attr("class", "x axis")
-           	.attr("transform", "translate(" + 0 + "," + (height - margin.bottom) +")");
+           	.attr("transform", "translate(" + 0 + "," + (height) +")")
+            .selectAll(".tick:last-of-type text, .tick:first-of-type text").attr("display", "none");
 
         // plot line
         vis.append("path")
            	.attr("class", "line")
             .attr("d", line);
 
-        // y-axis
-        vis.append("g")
-           	.call(yAxis)
-           	.attr("class", "y axis")
-           	.attr("transform", "translate(" + (width - margin.right) + ", 0)");
+        function zoomed() {
+            vis.select(".x.axis").call(xAxis);
+            vis.select(".line").attr("d",line);
+            vis.select(".area").attr("d",area);
+            //vis.select(".y.axis").call(yAxis);
+        }
 
         return this;
 
