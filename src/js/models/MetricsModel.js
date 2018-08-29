@@ -64,7 +64,7 @@ define(['jquery', 'underscore', 'backbone'],
                 }
             ],
             "groupBy": [
-                "month"//, "country"
+                "month"
             ]
         },
 

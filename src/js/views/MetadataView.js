@@ -1027,7 +1027,6 @@ define(['jquery',
 			pid_list.push(this.pid);
 			var metricsModel = new MetricsModel({pid_list: pid_list});
 			metricsModel.fetch();
-
 			this.metricsModel = metricsModel;
 
 			var self = this;
