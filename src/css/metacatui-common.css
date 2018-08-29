@@ -1845,8 +1845,8 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .modal-body .modal-description p#slider-instructions {
 	margin-top: 120px;
+	margin-bottom: 0;
 }
-
 
 #metric-modal .modal-body .metric-chart {
 	float: right;

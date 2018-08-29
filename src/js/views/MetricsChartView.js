@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           this.metricCount  = options.metricCount   || "0";
           this.metricMonths = options.metricMonths  || "0";
           this.width        = options.width         || 600;
-          this.height       = options.height        || 360;
+          this.height       = options.height        || 390;
           this.metricName   = options.metricName;
 
         }

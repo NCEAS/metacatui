@@ -76,7 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                             metricMonths: metricMonths,
                             metricName: metricName,
                             width: 600,
-                            height: 360
+                            height: 380
                         });
 
             this.$('.metric-chart').html(modalMetricChart.render().el);
