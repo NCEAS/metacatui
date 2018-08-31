@@ -11,14 +11,18 @@
 - Configuration refactor (Lauren)
 - Code minimization/optimization (Lauren)
 
-## Milestone 3.1.0 (October 2018)
-- Replace entity
+## Milestone 3.1.0 (October 31, 2018)
 - Metric time series (Rushiraj)
 - People graph with disambiguated user profile pages (linking Creator metadata to accounts) (Bryce)
 - Search Page aggregated metrics (Citations, Downloads, Views) (Rushiraj)
+- Semantic Search
+- Annotation Display in MetadataView
+- Tabular attribute editor mockup
 
 ## Milestone 3.2.0 (November 2018)
-- Copy entity and attribute metadata in Editor (Dominic)
+- Tabular attribute UX review
+- Replace entity
+- Copy attribute metadata in Editor (Dominic)
 - Project view MVP (Lauren and Jared)
 - Repository Profile Metrics (Rushiraj)
 - Editing hierarchical packages in editor (Chris)
@@ -28,12 +32,12 @@
 
 ## Milestone 3.4.0 (January 2019)
 - Aggregated metric views (Rushiraj)
-- Entity parsing prototype - parsing file and populating models (Lauren)
-- Save drafts to local IndexedDB (Chris)
+- Ability to edit local drafts (Chris)
+- Parsing data files and prepopulating metadata (Lauren)
+- New attribute editor, including semantic annotations
 
 ## Milestone 3.5.0 (February 2019)
 - Data paper views MVP (New hire?)
-- Tabular attribute editing (Dominic)
 - Funder views
 - Award views (automatic view based on award #)
 
