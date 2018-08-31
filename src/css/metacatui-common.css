@@ -1837,6 +1837,8 @@ a.btn.metrics:hover, a.btn.metrics:click {
 	float: left;
 	width: 230px;
 	padding: 12px;
+	background: #efefef;
+	border-radius: 2px;
 }
 
 #metric-modal .modal-body .modal-description p {
@@ -1844,7 +1846,7 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 
 #metric-modal .modal-body .modal-description p#slider-instructions {
-	margin-top: 120px;
+	margin-top: 109px;
 	margin-bottom: 0;
 }
 
@@ -1870,10 +1872,10 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 
 #metric-modal .metric-chart path.line {
-	   fill: none;
-	   stroke: #417DD6; /* change in each theme ? */
-	   stroke-width: 1.5px;
-	   clip-path: url(#clip);
+	fill: none;
+	stroke: #417DD6; /* change in each theme ? */
+	stroke-width: 1.5px;
+	clip-path: url(#clip);
 }
 
 #metric-modal .metric-chart path.area {
@@ -1888,6 +1890,15 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart .x.axis .domain{
 	display:none;
+}
+
+#metric-modal .metric-chart .x.axis line {
+	stroke: white;
+	opacity: 0.8;
+}
+
+#metric-modal .metric-chart .context .x.axis line {
+	display: none;
 }
 
 #metric-modal .metric-chart .y.axis .domain{
@@ -1908,25 +1919,20 @@ a.btn.metrics:hover, a.btn.metrics:click {
 	stroke-opacity: 0.3;
 }
 
-#metric-modal .metric-chart .x.axis line {
-	stroke: white;
-	opacity: 0.8;
-}
-
 #metric-modal .metric-chart .brush .extent {
-  fill-opacity: .10;
+  fill-opacity: .07;
   shape-rendering: crispEdges;
   clip-path: url(#clip);
 }
 
 #metric-modal .metric-chart rect.pane {
-  cursor: move;
-  fill: none;
-  pointer-events: all;
+	cursor: move;
+	fill: none;
+	pointer-events: all;
 }
 /* brush handles  */
 #metric-modal .metric-chart .resize .handle {
-	    fill: #555;
+	fill: #555;
 }
 
 #metric-modal .metric-chart .resize .handle-mini {
@@ -1935,7 +1941,21 @@ a.btn.metrics:hover, a.btn.metrics:click {
     stroke: #555;
 }
 
+#metric-modal .metric-chart .scale_button {
+	cursor: pointer;
+}
 
+#metric-modal .metric-chart .scale_button rect {
+	fill: #eaeaea;
+}
+#metric-modal .metric-chart .scale_button:hover text {
+	fill: #417DD6;
+	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
+}
+
+#metric-modal .metric-chart text#displayDates  {
+	font-weight: bold;
+}
 
 /******************************************
 * The Data Details box in the Metadata View

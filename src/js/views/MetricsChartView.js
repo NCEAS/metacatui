@@ -14,11 +14,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
           if(typeof options !== "undefined"){
 
-          //Set the model on this view when it is passed as an option
-          this.model        = options.model         || null;
-          this.id           = options.id            || "metrics-chart";
-          this.metricCount  = options.metricCount   || "0";
+          this.model        = options.model         || null;    // TODO: figure out how to set the model on this view
+          this.metricCount  = options.metricCount   || "0";     // for now, use individual arrays
           this.metricMonths = options.metricMonths  || "0";
+          this.id           = options.id            || "metrics-chart";
           this.width        = options.width         || 600;
           this.height       = options.height        || 390;
           this.metricName   = options.metricName;
@@ -43,18 +42,26 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
       tagName: "svg",
 
-      render: function(){
-        // test pid: doi:10.18739/A2HT2GB23
-
-        console.log(this.metricName)
+    render: function(){
 
         /*
         * ========================================================================
-        *  Prepare Data
+        *  NAMING CONVENTIONS:
+
+        CONTEXT: Context refers to the mini slider chart at the bottom, that includes the d3 "brush"
+        FOCUS: Focus refers to the larger main chart at the top
+        BRUSH: The rectangle in the context chart that highlights what is currently in focus in the focus chart.
+
         * ========================================================================
         */
 
-        // Combine the months and count array to make "data".
+        /*
+        * ========================================================================
+        *  Prepare data
+        * ========================================================================
+        */
+
+        // Combine the months and count array to make "data"
         var dataset = [];
         for(var i=0; i<this.metricCount.length; i++){
             var obj = {count: this.metricCount[i], month: this.metricMonths[i]};
@@ -71,75 +78,89 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
            return d3.ascending(x.month, y.month);
         });
 
+
         /*
         * ========================================================================
-        *  Sizing
+        *  sizing
         * ========================================================================
         */
 
-        var margin	= {top: 0, right: 30, bottom: 100, left: 20},
-            margin2 = {top: 320, right: 30, bottom: 20, left: 20},
+        /* === Focus chart === */
+
+        var margin	= {top: 20, right: 30, bottom: 100, left: 20},
             width	= this.width - margin.left - margin.right,
-            height	= this.height - margin.top - margin.bottom,
-            height2 = this.height - margin2.top - margin2.bottom;
+            height	= this.height - margin.top - margin.bottom;
+
+        /* === Context chart === */
+
+        var margin_context = {top: 320, right: 30, bottom: 20, left: 20},
+            height_context = this.height - margin_context.top - margin_context.bottom;
 
         /*
         * ========================================================================
-        *  X & Y vars
+        *  x and y coordinates
         * ========================================================================
         */
 
-        // === MAIN CHART ==
+        // maximum date range allowed to display
+        var mindate = new Date(2012,6,1),
+            maxdate = new Date();
 
-        var xTickFormat	  =  d3.time.format("%b %Y");
+        // the date range of available data:
+        var dataXrange = d3.extent(dataset, function(d) { return d.month; });
+        var dataYrange = [0, d3.max(dataset, function(d) { return d.count; })];
+
+        var DateFormat	  =  d3.time.format("%b %Y");
+        var dynamicDateFormat = timeFormat([
+            [DateFormat, function() { return true; }],
+            [DateFormat, function(d) { return d.getMonth(); }],
+            [function(){return "";}, function(d) { return d.getDate() != 1; }]
+        ]);
+
+        /* === Focus Chart === */
 
         var x = d3.time.scale()
         	.range([0, (width)])
-            .domain(d3.extent(dataset, function(d) { return d.month; }));
+            .domain(dataXrange);
 
     	var y = d3.scale.linear()
         	.range([height, 0])
-            .domain([0, d3.max(dataset, function(d) { return d.count; })]);
+            .domain(dataYrange);
 
         var xAxis = d3.svg.axis()
         	.scale(x)
-        	.ticks(5)
             .orient("bottom")
        		.tickSize(-(height))
-        	.tickFormat(xTickFormat);
+            .ticks(customTickFunction)
+            .tickFormat(dynamicDateFormat);
 
         var yAxis = d3.svg.axis()
         	.scale(y)
+            .ticks(4)
             .tickSize(-(width))
-        	.ticks(4)
         	.orient("right");
 
-        // === SLIDER CHART ('brush') ===
-
-        // define maximum domain for the slider chart
-        var mindate = new Date(2013,0,1), // ? start year?
-            maxdate = new Date(); // today
+        /* === Context Chart === */
 
         var x2 = d3.time.scale()
             .range([0, width])
             .domain([mindate, maxdate]);
 
         var y2 = d3.scale.linear()
-        	.range([height2, 0])
+        	.range([height_context, 0])
             .domain(y.domain());
 
-        var xAxis2 = d3.svg.axis()
+        var xAxis_context = d3.svg.axis()
             .scale(x2)
             .orient("bottom");
 
-
         /*
         * ========================================================================
-        *  Line and Area vars
+        *  Plotted line and area variables
         * ========================================================================
         */
 
-        // === MAIN CHART ==
+        /* === Focus Chart === */
 
         var line = d3.svg.line()
         	.x(function(d) { return x(d.month); })
@@ -150,64 +171,62 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           .y0((height))
           .y1(function(d) { return y(d.count); });
 
-        // === SLIDER CHART ==
+        /* === Context Chart === */
 
-        var area2 = d3.svg.area()
+        var area_context = d3.svg.area()
             .x(function(d) { return x2(d.month); })
-            .y0((height2))
+            .y0((height_context))
             .y1(function(d) { return y2(d.count); });
 
-        var line2 = d3.svg.line()
+        var line_context = d3.svg.line()
             .x(function(d) { return x2(d.month); })
             .y(function(d) { return y2(d.count); });
 
         /*
         * ========================================================================
-        *  Vars for zooming/brushing variables
+        *  Variables for brushing and zooming behaviour
         * ========================================================================
         */
 
         var brush = d3.svg.brush()
             .x(x2)
-            .on("brush", brushed);
+            .on("brush", brushed)
+            .on("brushend", brushend);
 
         var zoom = d3.behavior.zoom()
-            .on("zoom", draw);
-
-        // brush handles
-        var arc = d3.svg.arc()
-            .outerRadius(height2 / 2)
-            .startAngle(0)
-            .endAngle(function(d, i) { return i ? -Math.PI : Math.PI; });
+            .on("zoom", draw)
+            .on("zoomend", brushend);
 
         /*
         * ========================================================================
-        *  Define SVG vis and append
+        *  Define the SVG area ("vis") and append all the layers
         * ========================================================================
         */
 
-        // append everything to this
+        // === the main components === //
+
         var vis = d3.select(this.el)
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
           	.attr("class", "line-chart");
 
-        // to keep line and area from going outside of plot area
         vis.append("defs").append("clipPath")
             .attr("id", "clip")
             .append("rect")
             .attr("width", width)
             .attr("height", height);
+            // clipPath is used to keep line and area from moving outside of plot area when user zooms/scrolls/brushes
 
-        // focus = main chart
+        var context = vis.append("g")
+            .attr("class", "context")
+            .attr("transform", "translate(" + margin_context.left + "," + margin_context.top + ")");
+
         var focus = vis.append("g")
             .attr("class", "focus")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        // context = mini slider chart
-        var context = vis.append("g")
-            .attr("class", "context")
-            .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+        var tempor = vis.append("g")
+            .attr("class","deleteme");
 
         var rect = vis.append("svg:rect")
             .attr("class", "pane")
@@ -217,9 +236,53 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             .call(zoom)
             .call(draw);
 
-        zoom.x(x);
+        // === current date range text & zoom buttons === //
 
-        // focus main chart
+        var display_range_group = vis.append("g")
+            .attr("id", "buttons_group")
+            .attr("transform", "translate(" + 0 + ","+ 0 +")");
+
+        var expl_text = display_range_group.append("text")
+            .text("Showing data from: ")
+            .style("text-anchor", "start")
+            .attr("transform", "translate(" + 0 + ","+ 10 +")");
+
+        display_range_group.append("text")
+            .attr("id", "displayDates")
+            .text(DateFormat(dataXrange[0]) + " - " + DateFormat(dataXrange[1]))
+            .style("text-anchor", "start")
+            .attr("transform", "translate(" + 82 + ","+ 10 +")");
+
+        var expl_text = display_range_group.append("text")
+            .text("Zoom to: ")
+            .style("text-anchor", "start")
+            .attr("transform", "translate(" + 180 + ","+ 10 +")");
+
+        // === the zooming/scaling buttons === //
+
+        var button_width = 40;
+        var button_height = 14;
+
+        var button = display_range_group.selectAll("g")
+            .data(["year","month","data"])
+            .enter().append("g")
+            .attr("class", "scale_button")
+            .attr("transform", function(d, i) { return "translate(" + (220 + i*button_width + i*10) + ",0)"; })
+            .on("click", scaleDate);
+
+        button.append("rect")
+            .attr("width", button_width)
+            .attr("height", button_height)
+            .attr("rx", 1)
+            .attr("ry", 1);
+
+        button.append("text")
+            .attr("dy", (button_height/2 + 3))
+            .attr("dx", button_width/2)
+            .style("text-anchor", "middle")
+            .text(function(d) { return d; });
+
+        /* === focus chart === */
 
         focus.append("g")
             .attr("class", "y axis")
@@ -241,25 +304,56 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             .attr("class", "line")
             .attr("d", line);
 
-
-        // context slider chart
+        /* === context chart === */
 
         context.append("path")
             .datum(dataset)
             .attr("class", "area")
-            .attr("d", area2);
+            .attr("d", area_context);
 
         context.append("path")
             .datum(dataset)
             .attr("class", "line")
-            .attr("d", line2);
+            .attr("d", line_context);
 
         context.append("g")
             .attr("class", "x axis")
-            .attr("transform", "translate(0," + height2 + ")")
-            .call(xAxis2);
+            .attr("transform", "translate(0," + height_context + ")")
+            .call(xAxis_context);
 
-        // y axis title
+        /* === brush (part of context chart)  === */
+
+        var brushg = context.append("g")
+            .attr("class", "x brush")
+            .call(brush);
+
+        brushg.selectAll(".extent")
+           .attr("y", -6)
+           .attr("height", height_context + 8);
+           // .extent is the actual window/rectangle showing what's in focus
+
+        brushg.selectAll(".resize")
+            .append("rect")
+            .attr("class", "handle")
+            .attr("transform", "translate(0," +  -3 + ")")
+            .attr('rx', 2)
+			.attr('ry', 2)
+            .attr("height", height_context + 6)
+            .attr("width", 3);
+
+        brushg.selectAll(".resize")
+            .append("rect")
+            .attr("class", "handle-mini")
+            .attr("transform", "translate(-2,10)")
+            .attr('rx', 3)
+            .attr('ry', 3)
+            .attr("height", (height_context/2))
+            .attr("width", 7);
+            // .resize are the handles on either size
+            // of the 'window' (each is made of a set of rectangles)
+
+        /* === y axis title === */
+
         vis.append("text")
             .attr("class", "y axis title")
             .text("Monthly " + this.metricName)
@@ -269,43 +363,61 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             .attr("transform", "rotate(-90)")
             .style("text-anchor", "middle");
 
-        var brushg = context.append("g")
-            .attr("class", "x brush")
-            .call(brush);
+        // allows zooming before any brush action
+        zoom.x(x);
 
-        // extend handles
-        brushg.selectAll(".resize")
-            .append("rect")
-            .attr("class", "handle")
-            .attr("transform", "translate(0," +  -3 + ")")
-            .attr('rx', 2)
-			.attr('ry', 2)
-            .attr("height", height2 + 6)
-            .attr("width", 3);
+        /*
+        * ========================================================================
+        *  Functions
+        * ========================================================================
+        */
 
-        brushg.selectAll(".resize")
-            .append("rect")
-            .attr("class", "handle-mini")
-            .attr("transform", "translate(-2,10)")
-            .attr('rx', 3)
-            .attr('ry', 3)
-            .attr("height", (height2/2))
-            .attr("width", 7);
+        // === tick/date formatting functions ===
+        // from: https://stackoverflow.com/questions/20010864/d3-axis-labels-become-too-fine-grained-when-zoomed-in
 
-        // extent 'window'
-        brushg.selectAll(".extent")
-           .attr("y", -6)
-           .attr("height", height2 + 8);
+        function timeFormat(formats) {
+          return function(date) {
+            var i = formats.length - 1, f = formats[i];
+            while (!f[1](date)) f = formats[--i];
+            return f[0](date);
+          };
+      };
 
-         //functions
+        function customTickFunction(t0, t1, dt)  {
+            var labelSize = 42; //
+            var maxTotalLabels = Math.floor(width / labelSize);
+
+            function step(date, offset)
+            {
+                date.setMonth(date.getMonth() + offset);
+            }
+
+            var time = d3.time.month.ceil(t0), times = [], monthFactors = [2,3,4,6];
+
+            while (time < t1) times.push(new Date(+time)), step(time, 1);
+            var timesCopy = times;
+            var i;
+            for(i=0 ; times.length > maxTotalLabels ; i++)
+                times = _.filter(timesCopy, function(d){
+                    return (d.getMonth()) % monthFactors[i] == 0;
+                });
+
+            return times;
+        };
+
+        // === brush and zoom functions ===
+
         function brushed() {
+
             x.domain(brush.empty() ? x2.domain() : brush.extent());
             focus.select(".area").attr("d", area);
             focus.select(".line").attr("d", line);
             focus.select(".x.axis").call(xAxis);
             // Reset zoom scale's domain
             zoom.x(x);
-        }
+            updateDisplayDates();
+
+        };
 
         function draw() {
             focus.select(".area").attr("d", area);
@@ -314,7 +426,96 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             // Force changing brush range
             brush.extent(x.domain());
             vis.select(".brush").call(brush);
-        }
+            // and update the text showing range of dates.
+            updateDisplayDates();
+        };
+
+        function brushend() {
+        // when brush stops moving:
+
+            // check whether chart was scrolled out of bounds and fix,
+            var b = brush.extent();
+            var out_of_bounds = brush.extent().some(function(e) { return e < mindate | e > maxdate; });
+            if (out_of_bounds){ b = moveInBounds(b) };
+
+        };
+
+        function updateDisplayDates() {
+
+            var b = brush.extent();
+            // update the text that shows the range of displayed dates
+            var localBrushDateStart = (brush.empty()) ? DateFormat(dataXrange[0]) : DateFormat(b[0]),
+                localBrushDateEnd   = (brush.empty()) ? DateFormat(dataXrange[1]) : DateFormat(b[1]);
+
+            // Update start and end dates in upper right-hand corner
+            d3.select("#displayDates")
+                .text(localBrushDateStart == localBrushDateEnd ? localBrushDateStart : localBrushDateStart + " - " + localBrushDateEnd);
+        };
+
+        function moveInBounds(b) {
+        // move back to boundaries if user pans outside min and max date.
+
+            var ms_in_year = 31536000000,
+                brush_start_new,
+                brush_end_new;
+
+            if       (b[0] < mindate)   { brush_start_new = mindate; }
+            else if  (b[0] > maxdate)   { brush_start_new = new Date(maxdate.getTime() - ms_in_year); }
+            else                        { brush_start_new = b[0]; };
+
+            if       (b[1] > maxdate)   { brush_end_new = maxdate; }
+            else if  (b[1] < mindate)   { brush_end_new = new Date(mindate.getTime() + ms_in_year); }
+            else                        { brush_end_new = b[1]; };
+
+            brush.extent([brush_start_new, brush_end_new]);
+
+            brush(d3.select(".brush").transition());
+            brushed();
+            draw();
+
+            return(brush.extent())
+        };
+
+        function scaleDate(d,i) {
+        // action for buttons that scale focus to certain time interval
+
+            var b = brush.extent(),
+                interval_ms,
+                brush_end_new,
+                brush_start_new;
+
+            if      (d == "year")   { interval_ms = 31536000000}
+            else if (d == "month")  { interval_ms = 2592000000 };
+
+            if ( d == "year" | d == "month" )  {
+
+                if((maxdate.getTime() - b[1].getTime()) < interval_ms){
+                // if brush is too far to the right that increasing the right-hand brush boundary would make the chart go out of bounds....
+                    brush_start_new = new Date(maxdate.getTime() - interval_ms); // ...then decrease the left-hand brush boundary...
+                    brush_end_new = maxdate; //...and set the right-hand brush boundary to the maxiumum limit.
+                } else {
+                // otherwise, increase the right-hand brush boundary.
+                    brush_start_new = b[0];
+                    brush_end_new = new Date(b[0].getTime() + interval_ms);
+                };
+
+            } else if ( d == "data")  {
+                brush_start_new = dataXrange[0];
+                brush_end_new = dataXrange[1]
+            } else {
+                brush_start_new = b[0];
+                brush_end_new = b[1];
+            };
+
+            brush.extent([brush_start_new, brush_end_new]);
+
+            // now draw the brush to match our extent
+            brush(d3.select(".brush").transition());
+            // now fire the brushstart, brushmove, and brushend events
+            brush.event(d3.select(".brush").transition());
+        };
+
+        // that's it!
 
         return this;
 
