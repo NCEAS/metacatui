@@ -25,7 +25,6 @@
 - Copy attribute metadata in Editor (Dominic)
 - Project view (Jared)
 - Repository Profile Metrics (Rushiraj)
-- Editing hierarchical packages in editor (Chris)
 
 ## Milestone 3.3.0 (December 2018)
 - Project search view (Lauren)
@@ -33,7 +32,6 @@
 ## Milestone 3.4.0 (January 2019)
 - Aggregated metric views (Rushiraj)
 - Ability to edit local drafts (Chris)
-- Parsing data files and prepopulating metadata (Lauren)
 - New attribute editor, including semantic annotations and custom units
 
 ## Milestone 3.5.0 (February 2019)
@@ -43,3 +41,5 @@
 
 ## Milestone 3.6.0 (Summer 2019)
 - Project editor
+- Parsing data files and prepopulating metadata (Lauren)
+- Editing hierarchical packages in editor (Chris)
