@@ -51,10 +51,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.
                 var citationList = new CitationList({citations: this.citationCollection});
                 this.citationList = citationList;
                 
-                this.$el.html(this.template({metricName:this.metricName, metricBody:this.citationList.render().$el.html()}));
+                this.$el.html(this.template({metricName:this.metricName, metricValue: self.metricsModel.get("totalCitations") ,metricBody:this.citationList.render().$el.html()}));
             }
             else {
-                this.$el.html(this.template({metricName:this.metricName, metricBody:""}));
+                this.$el.html(this.template({metricName:this.metricName, metricBody:'<h5> Basic Metric Text ..! </h5>'}));
             }
 
             

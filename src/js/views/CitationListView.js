@@ -14,19 +14,19 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         },
 
         initialize: function(options) {
-          if((typeof options == "undefined")){
-              var options = {};
-          }
+            if((typeof options == "undefined")){
+                var options = {};
+            }
 
-          // Initializing the Citation collection
-          this.citationsCollection = options.citations;
+            // Initializing the Citation collection
+            this.citationsCollection = options.citations;
         },
 
 
         // retrun the DOM object to the calling view.
         render: function() {
-          this.renderView();
-          return this;
+            this.renderView();
+            return this;
         },
 
 
@@ -35,17 +35,24 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         renderView: function() {
             var self = this;
             
-            this.$el.append($(document.createElement("table"))
-                                        .addClass("table"));
+            var $table = $(document.createElement("table"))
+                                        .addClass("metric-table table table-striped table-condensed");
                                         
-            this.$el.append($(document.createElement("tbody")));
+            var $tableBody = $(document.createElement("tbody"));
 
             this.citationsCollection.each(
                 function(model) {
                     var citationView = new CitationView({model:model});
-                    self.$el.append($(document.createElement("tr"))).append(citationView.render().$el);
+                    citationView.createLink = true;
+                    var $tableRow = $(document.createElement("tr"));
+                    var $tableCell = $(document.createElement("td"));
+                    $tableCell.append(citationView.render().$el);
+                    $tableRow.append($tableCell);
+                    $tableBody.append($tableRow);
                 }
             );
+            $table.append($tableBody);
+            this.$el.append($table);
         }
     });
      
