@@ -15,15 +15,11 @@ define(['jquery', 'underscore', 'backbone','models/CitationModel'],
         
         //The name of this type of collection
         type: "Citations",
-
         
-        /* Parse the JSON response from the metrics-service */
-        parse: function(data, options) {
-            
-            // If the collection is already parsed, just return it
-            // Since the response from Metrics Service is JSON objcet we'll
-            // simply return it to calling object.
-            if ( typeof data === "object" ) return data;
+        
+        // Used for sorting the year in the reverse Chronological order
+        comparator : function(model) {
+            return -model.get("year_of_publishing"); // Note the minus!
         }
 
     });
