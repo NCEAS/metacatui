@@ -1772,12 +1772,14 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 #metric-modal .modal-content {
     width: auto;
-    
+
 }
+
 #metric-modal .modal-header {
     width: 900px;
     height: 25px;
 }
+
 #metric-modal .modal-body {
     width: 930px;
     height: 400px;
@@ -1785,9 +1787,145 @@ a.btn.metrics:hover, a.btn.metrics:click {
     padding-left: 0px;
     padding-right: 0px;
 }
+
 #metric-modal .modal-footer {
     width: 900px;
     height: 25px;
+}
+
+
+#metric-modal .modal-header .left-header-section {
+	float: left;
+	width: 90%;
+}
+
+#metric-modal .modal-header .right-header-section {
+	float: right;
+	width: 10%;
+}
+
+#metric-modal .modal-body .modal-description {
+	float: left;
+	width: 230px;
+	padding: 12px;
+	background: #efefef;
+	border-radius: 2px;
+}
+
+#metric-modal .modal-body .modal-description p {
+	margin: 0 0 25px;
+}
+
+#metric-modal .modal-body .modal-description p#slider-instructions {
+	margin-top: 109px;
+	margin-bottom: 0;
+}
+
+#metric-modal .modal-body .metric-chart {
+	float: right;
+	width: 600px;
+	padding: 10px 12px 0 10px;
+}
+
+/******************************************
+* Metric Modal Chart (Views, Downloads, Citations)
+********************************************/
+
+
+#metric-modal .metric-chart text {
+	fill: #565656;
+	font-size: 9px;
+	font-family: Helvetica, Arial, "sans serif";
+}
+
+#metric-modal .metric-chart rect.plot-background{
+	fill: white;
+}
+
+#metric-modal .metric-chart path.line {
+	fill: none;
+	stroke: #417DD6; /* change in each theme ? */
+	stroke-width: 1.5px;
+	clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart path.area {
+	fill: #417DD6; /* change in each theme ? */
+	opacity: 0.35;
+	clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart .axis {
+	shape-rendering: crispEdges;
+}
+
+#metric-modal .metric-chart .x.axis .domain{
+	display:none;
+}
+
+#metric-modal .metric-chart .x.axis line {
+	stroke: white;
+	opacity: 0.8;
+}
+
+#metric-modal .metric-chart .context .x.axis line {
+	display: none;
+}
+
+#metric-modal .metric-chart .y.axis .domain{
+	display: none;
+	/* fill:none;
+	stroke: #565656;
+	stroke-width: 1px; */
+}
+
+#metric-modal .metric-chart .y.axis.title{
+	font-size: 13px;
+	font-weight: 100;
+}
+
+#metric-modal .metric-chart .y.axis line {
+	stroke: #565656;
+	stroke-dasharray: 2,2;
+	stroke-opacity: 0.3;
+}
+
+#metric-modal .metric-chart .brush .extent {
+  fill-opacity: .07;
+  shape-rendering: crispEdges;
+  clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart rect.pane {
+	cursor: move;
+	fill: none;
+	pointer-events: all;
+}
+/* brush handles  */
+#metric-modal .metric-chart .resize .handle {
+	fill: #555;
+}
+
+#metric-modal .metric-chart .resize .handle-mini {
+	fill: white;
+    stroke-width: 1px;
+    stroke: #555;
+}
+
+#metric-modal .metric-chart .scale_button {
+	cursor: pointer;
+}
+
+#metric-modal .metric-chart .scale_button rect {
+	fill: #eaeaea;
+}
+#metric-modal .metric-chart .scale_button:hover text {
+	fill: #417DD6;
+	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
+}
+
+#metric-modal .metric-chart text#displayDates  {
+	font-weight: bold;
 }
 
 .metric.close {

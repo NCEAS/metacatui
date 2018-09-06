@@ -3,7 +3,7 @@ define(['jquery', 'underscore', 'backbone'],
     function($, _, Backbone) {
     'use strict';
 
-    // Metric Model 
+    // Metric Model
     // -------------
     var Metrics = Backbone.Model.extend({
         defaults: {
@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone'],
                 pid_list: true
             }
         },
-        
+
 
         metricRequest: {
             "metricsPage": {
@@ -68,7 +68,7 @@ define(['jquery', 'underscore', 'backbone'],
             ]
         },
 
-        // Initializing the Model objects pid and gthe metricName variables.
+        // Initializing the Model objects pid and the metricName variables.
         initialize: function(options) {
             if(!(options.pid == 'undefined')) {
                 this.pid_list = options.pid_list;
@@ -82,7 +82,7 @@ define(['jquery', 'underscore', 'backbone'],
           var fetchOptions = {};
 
           this.metricRequest.filterBy[0].values = this.pid_list;
-          
+
           // TODO: Set the startDate and endDate based on the datePublished and current date
           // respctively.
           this.metricRequest.filterBy[1].values = [];
@@ -97,7 +97,7 @@ define(['jquery', 'underscore', 'backbone'],
           //This calls the Backbone fetch() function but with our custom fetch options.
           return Backbone.Model.prototype.fetch.call(this, fetchOptions);
         },
-        
+
         getCurrentDate: function() {
             var today = new Date();
             var dd = today.getDate();
@@ -106,10 +106,10 @@ define(['jquery', 'underscore', 'backbone'],
             var yyyy = today.getFullYear();
             if(dd<10){
                 dd='0'+dd;
-            } 
+            }
             if(mm<10){
                 mm='0'+mm;
-            } 
+            }
             var today = mm+'/'+dd+'/'+yyyy;
             return today;
         },
@@ -121,7 +121,7 @@ define(['jquery', 'underscore', 'backbone'],
                 "citations": response.results.citations,
                 "views": response.results.views,
                 "downloads": response.results.downloads,
-                "months": response.results.month,
+                "months": response.results.months,
                 "country": response.results.country,
                 "resultDetails": response.resultDetails
             }

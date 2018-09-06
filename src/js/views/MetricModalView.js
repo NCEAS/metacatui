@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView'],
-    function($, _, Backbone, MetricModalTemplate, Citations, CitationList) {
+define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView'],
+    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList) {
     'use strict';
 
     var MetricModalView = Backbone.View.extend({
@@ -36,32 +36,55 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/metricModalTemplate.
 
         render: function() {
           this.renderView();
+          this.drawMetricsChart();
           return this;
         },
 
         renderView: function() {
             var self = this;
+          
+            this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             
-            if ( this.metricName === "Citations") { 
+            if ( this.metricName === "Citations") {
                 var resultDetails = this.metricsModel.get("resultDetails")
                 var citationCollection = new Citations(resultDetails["citations"], {parse:true});
-                
+
                 this.citationCollection = citationCollection;
-                
+
                 var citationList = new CitationList({citations: this.citationCollection});
                 this.citationList = citationList;
-                
-                this.$el.html(this.template({metricName:this.metricName, metricValue: self.metricsModel.get("totalCitations") ,metricBody:this.citationList.render().$el.html()}));
+
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalCitations") ,metricBody:this.citationList.render().$el.html()}));
             }
             else {
-                this.$el.html(this.template({metricName:this.metricName, metricBody:'<h5> Basic Metric Text ..! </h5>'}));
+                
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricBody:"<div class='metric-chart'></div>"}));
             }
 
-            
             this.$el.modal({show:false}); // dont show modal on instantiation
 
+        },
+
+        drawMetricsChart: function(){
+
+            var metricCount         = MetacatUI.appView.currentView.metricsModel.get(this.metricName.toLowerCase());
+            var metricMonths        = MetacatUI.appView.currentView.metricsModel.get("months");
+            var metricName          = this.metricName;
+
+            //Draw a metric chart
+            var modalMetricChart = new MetricsChart({
+                            id: "metrics-chart",
+                            metricCount: metricCount,
+                            metricMonths: metricMonths,
+                            metricName: metricName,
+                            width: 600,
+                            height: 380
+                        });
+
+            this.$('.metric-chart').html(modalMetricChart.render().el);
         }
+
     });
-     
+
      return MetricModalView;
   });
