@@ -42,7 +42,9 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
         renderView: function() {
             var self = this;
-
+          
+            this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
+            
             if ( this.metricName === "Citations") {
                 var resultDetails = this.metricsModel.get("resultDetails")
                 var citationCollection = new Citations(resultDetails["citations"], {parse:true});
@@ -52,10 +54,10 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 var citationList = new CitationList({citations: this.citationCollection});
                 this.citationList = citationList;
 
-                this.$el.html(this.template({metricName:this.metricName, metricBody:this.citationList.render().$el.html()}));
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalCitations") ,metricBody:this.citationList.render().$el.html()}));
             }
             else {
-                this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
+                
                 this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricBody:"<div class='metric-chart'></div>"}));
             }
 

@@ -1643,6 +1643,8 @@ body > .alert-container {
 /* Style for the metric button */
 
 
+
+
 /***********
 Defult button styling for Metrics views
 ***********/
@@ -1670,39 +1672,7 @@ a.btn.metrics {
 }
 
 
-/***********
-Non-clickable button styling for metrics views
-***********/
-/* a.btn.metrics {
-    display: inline-block;
-    width: auto;
-    padding-right: 0px;
-    margin-top: -14px;
-    margin-left: -5px;
-    color: #555;
-    background-color: #F3F3F3;
-    cursor: default;
-    border: none;
-    box-shadow: none;
 
-}
-.metric-value.badge {
-    float: right;
-    color: #F3F3F3;
-    background-color: #555;
-    margin-top: 2px;
-}
-.metric-icon {
-    margin-right: 10px;
-    float: left;
-}
-.metric-name {
-    float: left;
-    margin-right: 10px;
-}
-.metric-value {
-    float: right;
-}*/
 
 i.icon.icon-cloud-download {
     font-size: 1.2em; !important;
@@ -1782,8 +1752,6 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     width: 138px;
 }
 
-/* Disabling the hover features of the button for a while. Once, the Modals are ready, we'll enable
-these effects*/
 a.btn.metrics:hover .metric-value.badge {
     float: right;
     color: #1C6E84;
@@ -1813,15 +1781,18 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 
 #metric-modal .modal-body {
-    width: 900px;
+    width: 930px;
     height: 400px;
     max-height: 400px;
+    padding-left: 0px;
+    padding-right: 0px;
 }
 
 #metric-modal .modal-footer {
     width: 900px;
     height: 25px;
 }
+
 
 #metric-modal .modal-header .left-header-section {
 	float: left;
@@ -1955,6 +1926,71 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart text#displayDates  {
 	font-weight: bold;
+}
+
+.metric.close {
+    margin-top: -18px;
+}
+
+.metric-table.table.table-striped.table-condensed {
+    width: 930px;
+}
+.metric-table.table.table-striped.table-condensed td {
+    padding: 5px 15px 5px 15px;
+}
+
+.metrics-route-to-metadata > span.author {
+    color: #888;
+    font-weight: normal;
+}
+
+.metrics-route-to-metadata > span.pubdate {
+    color: #888;
+    font-weight: normal;
+}
+
+.metrics-route-to-metadata > span.publisher {
+    color: #888;
+}
+
+/***********
+Non-clickable (Disabled) button styling for metrics views
+***********/
+a.btn.metrics-button-disabled {
+    display: inline-block;
+    width: auto;
+    padding-right: 0px;
+    margin-top: -14px;
+    margin-left: -5px;
+    color: #555;
+    background-color: #F3F3F3;
+    cursor: default;
+    border: none;
+    box-shadow: none;
+
+}
+.metrics-button-disabled> .metric-value.badge {
+    float: right;
+    color: #FFF;
+    margin-left: 20px;
+    background-color: #555;
+    margin-top: 2px;
+}
+.metrics-button-disabled.metric-icon {
+    margin-right: 10px;
+    float: left;
+}
+.metrics-button-disabled.metric-name {
+    float: left;
+    margin-right: 10px;
+}
+.metrics-button-disabled.metric-value {
+    float: right;
+}
+.metrics-button-disabled:hover, .metrics-button-disabled:click {
+    color: #888888;
+    background-color: #F5F5F5;
+    border-color: #C3C3C3;
 }
 
 /******************************************

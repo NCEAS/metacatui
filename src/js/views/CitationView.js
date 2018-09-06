@@ -61,6 +61,37 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					sourceUrl = this.model.get("source_url"),
 					sourceId = this.model.get("source_id"),
 					title = this.model.get("title");
+			
+			// Formatting the Author text.
+				if (authorText.length > 0) {
+					var authors = authorText.split(" and "),
+						count = 0,
+						authorText = "";
+				
+					_.each(authors, function (author) {
+						count++;
+
+						if(count == 6){
+							authorText += ", et al. ";
+							return;
+						}
+						else if(count > 6)
+							return;
+
+						if(count > 1){
+							if(authors.length > 2) authorText += ",";
+
+							if (count == authors.length) authorText += " and";
+
+							if (authors.length > 1) authorText += " ";
+						}
+
+						authorText += author;
+
+						if (count == authors.length) authorText += ". ";
+					});
+				
+				}
 			}
  			else if(this.metadata && this.metadata.get("archived")){
  				this.$el.append('<span class="danger">This content has been archived. </span>');
@@ -168,7 +199,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if (!isNaN(pubDateFormatted)) pubDateText += pubDateFormatted;
 			}
 			if (dateUploaded && (isNaN(pubDateFormatted) || !pubDate)) {
-				var dateUploadedFormatted = new Date(dateUploaded).getFullYear();
+				var dateUploadedFormatted = dateUploaded;
 				if (!isNaN(dateUploadedFormatted)) pubDateText += dateUploadedFormatted;
 			}
 			var pubDateEl = $(document.createElement("span")).addClass("pubdate")
@@ -239,11 +270,22 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 			//Create a link and put all the citation parts together
 			if (this.createLink){
-				var linkEl = $(document.createElement("a"))
-								.addClass("route-to-metadata")
-								.attr("data-id", id)
-								.attr("href", MetacatUI.root + "/view/" + id)
-								.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+				if(this.model.type == "CitationModel") {
+					var linkEl = $(document.createElement("a"))
+									.addClass("metrics-route-to-metadata")
+									.attr("data-id", id)
+									.attr("href", sourceUrl)
+									.attr("target", "_blank")
+									.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+				}
+				else {
+					var linkEl = $(document.createElement("a"))
+									.addClass("route-to-metadata")
+									.attr("data-id", id)
+									.attr("href", MetacatUI.root + "/view/" + id)
+									.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+				}
+
 				this.$el.append(linkEl);
 			}
 			else if(this.createTitleLink){
