@@ -163,7 +163,7 @@ define(['jquery',
 
 			this.listenToOnce(model, "sync", function(){
 
-				if(this.model.get("formatType") == "METADATA"){
+				if(this.model.get("formatType") == "METADATA" || !this.model.get("formatType")){
 					this.model = model;
 					this.renderMetadata();
 				}
