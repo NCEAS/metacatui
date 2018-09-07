@@ -1793,7 +1793,6 @@ a.btn.metrics:hover, a.btn.metrics:click {
     height: 25px;
 }
 
-
 #metric-modal .modal-header .left-header-section {
 	float: left;
 	width: 90%;
@@ -1844,13 +1843,13 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart path.line {
 	fill: none;
-	stroke: #417DD6; /* change in each theme ? */
+	stroke: black; /* default, changed in each theme */
 	stroke-width: 1.5px;
 	clip-path: url(#clip);
 }
 
 #metric-modal .metric-chart path.area {
-	fill: #417DD6; /* change in each theme ? */
+	fill: black; /* default, changed in each theme */
 	opacity: 0.35;
 	clip-path: url(#clip);
 }

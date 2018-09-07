@@ -2499,3 +2499,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #loading-app{
 	display: none;
 }
+
+/******************************************
+* Metric Modal Chart (Views, Downloads, Citations)
+********************************************/
+
+#metric-modal .metric-chart path.line {
+	stroke: #0E69A1;
+}
+
+#metric-modal .metric-chart path.area {
+	fill: #0E69A1;
+}
