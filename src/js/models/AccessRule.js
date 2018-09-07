@@ -18,6 +18,11 @@ define(['jquery', 'underscore', 'backbone'],
 
 		},
 
+		/*
+		* Translates the access rule XML DOM into a JSON object to be set on the model.
+		* @param {DOM Element} Either an <allow> or <deny> DOM element that contains a single access rule
+		* @return {JSON} The Access Rule values to be set on this model
+		*/
 		parse: function( accessRuleXML ){
 			//If there is no access policy, do not attempt to parse anything
 			if( typeof accessRuleXML == "undefined" || !accessRuleXML)
@@ -40,6 +45,11 @@ define(['jquery', 'underscore', 'backbone'],
 
 		},
 
+		/*
+		* Takes the values set on this model's attributes and creates an XML string
+		* to be inserted into a DataONEObject's system metadata access policy.
+		* @return {string} The access rule XML string
+		*/
 		serialize: function(){
 
 				var xml = "";

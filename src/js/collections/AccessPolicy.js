@@ -11,6 +11,12 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           model: AccessRule,
 
+          /*
+          * Parses the given access policy XML and creates AccessRule models for
+          * each rule in the access policy XML. Adds these models to this collection.
+          * @param {DOM Element} The <accessPolicy> XML DOM that contains a set of
+          *   access rules.
+          */
           parse: function(accessPolicyXML){
 
             //Parse each "allow" access rule
@@ -105,6 +111,11 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           },
 
+          /*
+          * Returns true if this access policy specifies that it is accessible to
+          * the public in any way
+          * @return {boolean}
+          */
           isPublic: function(){
 
             var isPublic = false;
