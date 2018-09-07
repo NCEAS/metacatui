@@ -62,9 +62,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					sourceId = this.model.get("source_id"),
 					title = this.model.get("title");
 			
-			// Formatting the Author text.
+				// Format the Author textarea				else if (this.model.type == "CitationModel") {
 				if (authorText.length > 0) {
-					var authors = authorText.split(" and "),
+                	var authors = authorText.split(" and "),
 						count = 0,
 						authorText = "";
 				

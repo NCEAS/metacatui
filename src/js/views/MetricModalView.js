@@ -44,6 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
             var self = this;
           
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
+            console.log(this.metricNameLemma);
             
             if ( this.metricName === "Citations") {
                 var resultDetails = this.metricsModel.get("resultDetails")
@@ -54,11 +55,16 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 var citationList = new CitationList({citations: this.citationCollection});
                 this.citationList = citationList;
 
-                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalCitations") ,metricBody:this.citationList.render().$el.html()}));
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
             }
             else {
+                if (this.metricName === "Views") {
+                    this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalViews"), metricBody:"<div class='metric-chart'></div>"}));
+                }
+                if (this.metricName === "Downloads") {
+                    this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalDownloads"), metricBody:"<div class='metric-chart'></div>"}));
+                }
                 
-                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricBody:"<div class='metric-chart'></div>"}));
             }
 
             this.$el.modal({show:false}); // dont show modal on instantiation
