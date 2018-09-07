@@ -38,7 +38,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "click .cancel"        : "handleCancel",      // Cancel a file load
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
                 "mouseover .remove"    : "previewRemove",
-                "mouseout  .remove"    : "previewRemove"
+                "mouseout  .remove"    : "previewRemove",
+                "change .private"      : "changeAccessPolicy"
             },
 
             /* Initialize the object - post constructor */
@@ -166,15 +167,24 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
 
                 this.$el.html( this.template(attributes) );
+
+                //Initialize dropdowns
                 this.$el.find(".dropdown-toggle").dropdown();
 
-                //Add the title data-attribute attribute to the name cell
                 if(this.model.get("type") == "Metadata"){
+                  //Add the title data-attribute attribute to the name cell
                 	this.$el.find(".name").attr("data-attribute", "title");
                 	this.$el.addClass("folder");
                 }
                 else{
                 	this.$el.addClass("data");
+
+                  //Check the public/private toggle
+                  var accessPolicy = this.model.get("accessPolicy");
+                  if( accessPolicy && !accessPolicy.isPublic() ){
+                    this.$(".sharing input").prop("checked", true);
+                  }
+
                 }
 
                 //Check if the data package is in progress of being uploaded
@@ -699,6 +709,59 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             							editableCell.text(editableCell.attr("data-original-text")).removeClass("empty");
             					});
             	}
+            },
+
+            /*
+            * Changes the access policy of a data object based on user input.
+            *
+            * @param {HTML DOM Event} e - The event that triggered this function as a callback
+            */
+            changeAccessPolicy: function(e){
+
+              console.log("---Before----")
+              console.log(this.model.get("accessPolicy").serialize());
+
+              if( typeof e === "undefined" || !e )
+                return;
+
+              var dataModel   = this.model,
+                  makePrivate = $(e.target).prop("checked");
+
+              //If the user has chosen to make this object private
+              if(makePrivate){
+
+                //Get the existing access policy
+                var accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  //Make the access policy private
+                  accessPolicy.makePrivate();
+                }
+                else{
+                  //Create an access policy from the default settings
+                  this.model.createAccessPolicy();
+                  //Make the access policy private
+                  this.model.get("accessPolicy").makePrivate();
+                }
+
+              }
+              else{
+                //Get the existing access policy
+                var accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  //Make the access policy public
+                  accessPolicy.makePublic();
+                }
+                else{
+                  //Create an access policy from the default settings
+                  this.model.createAccessPolicy();
+                  //Make the access policy public
+                  this.model.get("accessPolicy").makePublic();
+                }
+              }
+
+              console.log("--After---")
+              console.log(this.model.get("accessPolicy").serialize());
+
             },
 
             showValidation: function(attr, errorMsg){
