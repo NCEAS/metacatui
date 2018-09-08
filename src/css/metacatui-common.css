@@ -1663,6 +1663,7 @@ a.btn.metrics {
 .metric-icon {
     margin-right: 10px;
     float: left;
+	padding-top: 1px;
 }
 .metric-name {
     float: left;
