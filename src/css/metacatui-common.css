@@ -1781,21 +1781,26 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 
 #metric-modal .modal-body {
-    width: 930px;
+    width: 100%;
     height: 400px;
     max-height: 400px;
-    padding-left: 0px;
-    padding-right: 0px;
+    padding: 0px;
 }
 
 #metric-modal .modal-footer {
     width: 900px;
     height: 25px;
+	padding-top: 18px;
+}
+
+#metric-modal .modal-header .icon {
+	padding: 0px 9px;
 }
 
 #metric-modal .modal-header .left-header-section {
 	float: left;
 	width: 90%;
+	margin-top: 3px;
 }
 
 #metric-modal .modal-header .right-header-section {
@@ -1805,10 +1810,9 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .modal-body .modal-description {
 	float: left;
-	width: 230px;
-	padding: 12px;
-	background: #efefef;
-	border-radius: 2px;
+	width: 236px;
+	padding-left: 30px;
+	padding-top: 33px;
 }
 
 #metric-modal .modal-body .modal-description p {
@@ -1823,7 +1827,8 @@ a.btn.metrics:hover, a.btn.metrics:click {
 #metric-modal .modal-body .metric-chart {
 	float: right;
 	width: 600px;
-	padding: 10px 12px 0 10px;
+	padding-right: 18px;
+	padding-top: 22px;
 }
 
 /******************************************
@@ -1925,10 +1930,6 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart text#displayDates  {
 	font-weight: bold;
-}
-
-.metric.close {
-    margin-top: -18px;
 }
 
 .metric-table.table.table-striped.table-condensed {
