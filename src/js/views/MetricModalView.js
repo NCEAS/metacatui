@@ -44,7 +44,6 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
             var self = this;
 
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
-            console.log(this.metricNameLemma);
 
             if ( this.metricName === "Citations") {
                 var resultDetails = this.metricsModel.get("resultDetails")
