@@ -42,10 +42,10 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
         renderView: function() {
             var self = this;
-          
+
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             console.log(this.metricNameLemma);
-            
+
             if ( this.metricName === "Citations") {
                 var resultDetails = this.metricsModel.get("resultDetails")
                 var citationCollection = new Citations(resultDetails["citations"], {parse:true});
@@ -64,7 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 if (this.metricName === "Downloads") {
                     this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalDownloads"), metricBody:"<div class='metric-chart'></div>"}));
                 }
-                
+
             }
 
             this.$el.modal({show:false}); // dont show modal on instantiation
@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                             metricMonths: metricMonths,
                             metricName: metricName,
                             width: 600,
-                            height: 380
+                            height: 370
                         });
 
             this.$('.metric-chart').html(modalMetricChart.render().el);

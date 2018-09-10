@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           this.metricMonths = options.metricMonths  || "0";
           this.id           = options.id            || "metrics-chart";
           this.width        = options.width         || 600;
-          this.height       = options.height        || 390;
+          this.height       = options.height        || 370;
           this.metricName   = options.metricName;
 
         }

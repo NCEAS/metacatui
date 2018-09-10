@@ -2468,3 +2468,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #loading-app{
 	display: none;
 }
+
+/******************************************
+* Metric Modal Chart (Views, Downloads, Citations)
+********************************************/
+
+#metric-modal .metric-chart path.line {
+	stroke: #1C6E84;
+}
+
+#metric-modal .metric-chart path.area {
+	fill: #1C6E84;
+}
