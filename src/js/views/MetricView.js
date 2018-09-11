@@ -71,8 +71,7 @@ define(['jquery', 'underscore', 'backbone'],
             var results = this.model.get(metric.toLowerCase());
             // Check if the metric object exists in results obtained from the service 
             // If it does, get its total value else set the total count to 0
-            console.log(results);
-            console.log(this.model.get("resultDetails"));
+
             if (typeof results !== 'undefined') {
                 var total = 0
                 if (results.length > 0) {
@@ -105,12 +104,6 @@ define(['jquery', 'underscore', 'backbone'],
                     this.model.set('totalDownloads', total);
                 }
             };
-
-            if(total == 0) {
-                this.$el.removeClass("metrics");
-                this.$el.addClass("metrics-button-disabled");
-                console.log(this.$el);
-            }
 
             // Replacing the metric total count with the spinning icon.
             this.$('.metric-value').addClass("badge");

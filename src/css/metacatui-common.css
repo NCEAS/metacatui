@@ -1833,10 +1833,27 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 
 /******************************************
-* Metric Modal Chart (Views & Downloads)
+* Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/
 
 /* When there is no data ...*/
+
+.empty-citation-list {
+    background-color: #f5f5f5;
+    width: 850px;
+    height: 150px;
+    margin: 25px 40px 25px 40px;
+    border-radius: 6px;
+}
+.empty-citation-list-text {
+    font-size: 18px;
+    font-weight: 100;
+    color:  #d0d0d0;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 150px;
+    
+}
 
 #metric-modal .metric-chart text.no-data {
 	font-size: 16px;
@@ -1847,8 +1864,6 @@ a.btn.metrics:hover, a.btn.metrics:click {
 #metric-modal .metric-chart rect.no-data {
 	fill: #f5f5f5;
 }
-
-/* When there is data ...*/
 
 #metric-modal .metric-chart text {
 	fill: #565656;
@@ -1950,9 +1965,15 @@ a.btn.metrics:hover, a.btn.metrics:click {
     width: 930px;
 }
 .metric-table.table.table-striped.table-condensed td {
-    padding: 5px 15px 5px 15px;
+    padding: 5px 15px 5px 85px;
 }
-
+.metric-table.table.table-striped.table-condensed td > .citation {
+    margin-left: -70px;
+}
+button.modal-btn.btn.btn-default {
+    all: unset;
+    cursor: pointer;
+}
 .metrics-route-to-metadata > span.author {
     color: #888;
     font-weight: normal;
