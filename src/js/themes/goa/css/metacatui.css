@@ -10,83 +10,83 @@
       font-weight: 400;
       line-height: 1.5;
     }
-    
+
     a{
     	color: #006699;
     	font-weight: 700;
     }
 
-    article, aside, figure, footer, header, hgroup, menu, nav, section { 
-      display:block; 
-      
+    article, aside, figure, footer, header, hgroup, menu, nav, section {
+      display:block;
+
     }
-    
+
     select{
     	width: auto;
     }
-    
+
     body > section, footer {
       min-height: 800px;
       margin: 0;
       z-index: 10;
     }
-        
 
-		
+
+
     body > section > article {
       min-height: 800px;
       font-weight: 400;
       font-size: 110%;
       line-height: 1.5;
-      padding: 0px 0px 40px 0px;  			
+      padding: 0px 0px 40px 0px;
     }
-    
+
     h1 > a[name], h2 > a[name], h3 > a[name],
     h4 > a[name], h5 > a[name], h6 > a[name] {
       color: #555555;
       text-decoration: none;
       z-index: 20; /*keeps hidden anchor tags from blocking content*/
     }
-    
+
     /* make sure the anchors render with padding-top */
     h1 > a[name]:before, h2 > a[name]:before, h3 > a[name]:before,
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
     padding-top: 115px;
     }
-    
-    
+
+
     div.row-fluid > a[name] {
       margin: 35px auto auto auto;
     }
-    
+
     .subfooter{
     	margin-top:20px;
     }
-    
+
      .footnote {
     	font-size: 0.85em;
     	margin-top:20px;
      }
-     
+
      .footnote a{
      	color: #FFFFFF;
      	text-decoration: underline;
      }
-     
+
      .pointer{
      	cursor: pointer;
      }
-     
+
      .clear{
      	clear:both;
      }
-     
+
      .hidden,
      #clear-all.hidden{
     	display: none;
     }
-     
+
      .ellipsis{
 		text-overflow: ellipsis;
 		overflow: hidden;
@@ -106,13 +106,13 @@
 		transition: .5s;
 		display: inline-block;
 	}
-	
+
 	.expand-collapse.expanded .teaser{
 		color: #597F99;
 	}
-    
+
 /* FORM/INPUT CUSTOMIZATIONS
--------------------------------------------------- */ 
+-------------------------------------------------- */
 	.controls-well {
 	    border: 1px solid #E3E3E3;
 	    border-radius: 4px 4px 4px 4px;
@@ -136,7 +136,7 @@
 -------------------------------------------------- */
 .btn{
 	background-image: none;
-}	
+}
 .btn.subtle {
     color: #333;
     font-weight: normal;
@@ -146,7 +146,7 @@
     border-width: 0px;
 }
 
-/* EDITOR 
+/* EDITOR
 * --------------------------------------------------- */
 .data-package-item.message-row button {
     margin-left: auto;
@@ -158,24 +158,24 @@
 }
 
 /* HEADER CSS
--------------------------------------------------- */    
+-------------------------------------------------- */
   header#Header {
     position: absolute;
     top: 0px;
-    height: 0px;  
-    display: none;  
+    height: 0px;
+    display: none;
   }
-  
+
   header#altHeader {
     position: relative;
     top: 0px;
     z-index: 100;
-    min-height: 400px;      
+    min-height: 400px;
   }
 
 /* NOTIFICATIONS CSS
- * -------------------------------------------------- */    
-  
+ * -------------------------------------------------- */
+
     .filter-contain .notification i{
   	color: #999;
   	font-size: .5em;
@@ -189,9 +189,9 @@
 		margin: 0;
   }
 
-  
+
 /* FOOTER CSS
--------------------------------------------------- */    
+-------------------------------------------------- */
 
     footer#Footer {
       position: relative;
@@ -203,41 +203,41 @@
       min-height: 100px;
     }
 
-    
+
     footer a{
     	color: #FFFFFF;
     	text-decoration: none;
     }
-    
+
     footer a:hover{
     	color: #FFFFFF;
     	text-decoration: underline;
     }
 
-    
- 
-/* CUSTOMIZE THE ACCORDIAN 
+
+
+/* CUSTOMIZE THE ACCORDIAN
 -------------------------------------------------- */
 
 	.accordion-heading a.accordion-toggle {
-		display: inline-block; 
-	}    
-    
+		display: inline-block;
+	}
+
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
-    
+
     .center {
       float: none;
       margin: 0 auto;
     }
-    
+
     nav#Navbar {
       position: relative;
       top: 0px;
       margin: 0 auto;
       background-image: none;
     }
-    
+
     .navbar {
       border: none;
       background-color: #000000;
@@ -254,34 +254,34 @@
       box-shadow: none;
       -moz-box-shadow: none;
       margin: 0px auto;
-      filter: none;    
+      filter: none;
     }
-    
+
     .navbar-inner > div:first-child > img{
     	float: left;
     	margin: 12px 0px 0px 12px;
     }
-    
+
     nav header{
     	color: #FFFFFF;
     	width: auto;
-    	float: left;	
+    	float: left;
     	font-style: italic;
     	margin: 8px 0px 0px 8px;
     	line-height: 1em;
     }
-    
+
     nav > .alert{
     	border-radius: 0px;
     	-webkit-border-radius: 0px;
     	-moz-border-radius: 0px;
     	margin-bottom: 0px;
     }
-    
+
     .navbar-inner .btn-group{
     	float: left;
     }
-    
+
     .navbar .nav > li a {
       margin: 7px 5px 7px 5px;
     }
@@ -300,7 +300,7 @@
       font-size: 16px;
       text-decoration: underline;
     }
-    
+
     .navbar .nav > .active > a,
     .navbar .nav > .active > a:hover,
     .navbar .nav > .active > a:focus {
@@ -332,11 +332,11 @@
 	.pagetitle {
 	  margin: 55px 0px 10px 0px;
 	}
-	
+
 	.pagetitle span{
 	  font-size: 60px;
 	}
-	
+
 	/** Backbone override for dropdowns so they dsplay on hover rather than click **/
     .dropdown-menu .sub-menu {
 	    left: 100%;
@@ -345,29 +345,29 @@
 	    visibility: hidden;
 	    margin-top: -1px;
 	}
-	
+
 	.dropdown-menu li:hover .sub-menu {
 	    visibility: visible;
 	}
-	
+
 	.dropdown:hover .dropdown-menu {
 	    display: block;
 	}
-	
+
 	.dropdown:hover .dropdown-menu.hidden,
 	.dropdown-menu.hidden{
 		display: none;
 	}
-	
+
 	.navbar .nav li.dropdown.open > .dropdown-toggle{
 		color: #FFF;
 		background-color: transparent;
 	}
-	
+
 	.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
 	    margin-top: 0;
 	}
-	
+
 	.navbar .sub-menu:before {
 	    border-bottom: 7px solid transparent;
 	    border-left: none;
@@ -392,21 +392,21 @@
     .main-body-padded {
       padding-top: 90px;
     }
-    
+
     #search_txt_side{
       width: 70%;
     }
 
-    
+
     .nav-list{
     	width: 100%;
     }
-	   
+
     #refine .nav-list {
       margin: 20px auto auto auto;
     }
-    
-    
+
+
     ul#refine .nav-list .input-append {
       max-width: 200px;
     }
@@ -415,11 +415,11 @@
       margin: 20px auto auto auto;
       border: 1px solid #CCCCCC;
     }
-    
+
     ul#browse a i {
       margin-right: 7px;
     }
-    
+
     ul#browse a {
       font: 400 15px/15px;
       color: #555555;
@@ -428,7 +428,7 @@
     ul#browse a:hover, ul#browse a:focus  {
       color: #3F3F3F;
     }
-    
+
     .result-citation{
        width: 82%;
     }
@@ -438,21 +438,21 @@
     #About {
 		min-height: 800px;
     }
-    
-    /* Stats styles 
-  -------------------------------------------------- */ 
+
+    /* Stats styles
+  -------------------------------------------------- */
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
   	width: 1000px;
   	clear: both;
   }
-  
+
   .profile .stripe{
     	min-height: 350px;
     	margin-top: 20px;
   }
-  
+
   .profile h1{
     margin: 20px auto;
 	width: 900px;
@@ -463,11 +463,11 @@
     .profile-title:empty{
   	display: none;
   }
-  
+
 .profile .charts-container .stripe:nth-child(even){
 	background-image: url("../img/sos.png");
 }
-  
+
 .profile .charts > svg{
   	margin-left: auto;
   	margin-right: auto;
@@ -490,7 +490,7 @@
 	margin-left: 20px;
 	margin-top: 30px;
 }
-  
+
   /* The universal color for data */
 svg .data,
 .fallback.data{
@@ -498,7 +498,7 @@ svg .data,
   	stroke: #2B8282;
   	fill: #2B8282;
   }
-  
+
   /* The universal color for metadata */
 svg .metadata,
 .fallback.metadata{
@@ -506,7 +506,7 @@ svg .metadata,
   	stroke: #006dcc;
   	fill: #006dcc;
   }
-  
+
 svg .packages,
 .profile .packages{
 	color: #5EB3D7;
@@ -522,13 +522,13 @@ svg .default,
 	stroke: #CCCCCC;
 	color: #CCCCCC;
 }
-  
-  /* Donut charts */  
+
+  /* Donut charts */
   #metadata-chart,
 #data-chart{
 	height: 300px;
 	width: 420px;
-	margin:0px;	
+	margin:0px;
 }
 
 #metadata-chart{
@@ -543,7 +543,7 @@ svg .default,
  .format-charts{
 	margin-left: auto;
 	margin-right: auto;
-	width: 100%;	
+	width: 100%;
 }
 
 
@@ -597,7 +597,7 @@ svg .title{
 .donut.metadata > g:nth-child(even) .donut-arc,
 .donut.metadata > g:nth-child(even) .donut-arc-label
 {
-	fill: #006dcc;	
+	fill: #006dcc;
 }
 .donut.metadata > g:nth-child(odd) .donut-arc,
 .donut.metadata > g:nth-child(odd) .donut-arc-label{
@@ -606,7 +606,7 @@ svg .title{
 .donut.data > g:nth-child(even) .donut-arc,
 .donut.data > g:nth-child(even) .donut-arc-label
 {
-	fill: #2B8282;	
+	fill: #2B8282;
 }
 .donut.data > g:nth-child(odd) .donut-arc,
 .donut.data > g:nth-child(odd) .donut-arc-label{
@@ -713,7 +713,7 @@ svg .point:hover ~ .line-chart-label{
 	font-size: 20px;
 }
 .circle-badge .default{
-	
+
 }
 
 /** Bar charts ***/
@@ -746,39 +746,39 @@ svg .point:hover ~ .line-chart-label{
     #Metadata {
 		min-height: 800px;
     }
-   
+
    .metadata-view {
     	padding: 0px 40px;
 	}
    .attributeList div.span2{
    		width: 23.404255319148934%; /*Effectively make it span3 */
    	}
-   	
+
    	.attributeList div.span2 li>a{
    		text-overflow: ellipsis;
    		overflow: hidden;
    		text-decoration: none;
    	}
-   	
+
    	.attributeList div.span10{
    		width: 74.46808510638297%; /*Effectively make it span 9 */
    	}
-   	
+
    	.result-pubdate{
    		color: #777777;
    	}
-   	
+
    .controls-well img{
 		max-width: 90%;
 		max-height: 900px;
 		margin: 0 auto;
 		display: block;
 	}
-	
+
 	.fancybox.btn{
 		margin-left:180px;
 	}
-	
+
 	#Metadata .citation{
 		font-size: 1.3em;
 		font-weight: normal;
@@ -787,10 +787,10 @@ svg .point:hover ~ .line-chart-label{
 		padding: 2%;
 		width: 96%;
 	}
-	
-   	
+
+
     /**----------------------------------------**/
-    
+
 	/** Package Contents Table **/
 	.table-header .subtle{
     	margin-left: 20px;
@@ -849,18 +849,18 @@ svg .point:hover ~ .line-chart-label{
 		float: left;
 		width: 87%;
 	}
-	
+
 	/* Registry CSS
 	-------------------------------------------------- */
-    #RegistryEntryForm, 
-    #RegistryLogin, 
-    #RegistryResponse, 
-    #RegistryEntryReview, 
+    #RegistryEntryForm,
+    #RegistryLogin,
+    #RegistryResponse,
+    #RegistryEntryReview,
     #RegistryGuide {
 		/*margin-top: 110px;*/
 		min-height: 800px;
     }
-    
+
     #RegistryLogin > .container,
     #RegistryEntryForm > .container,
     #RegistryResponse > .container,
@@ -871,17 +871,17 @@ svg .point:hover ~ .line-chart-label{
 		border: 1px solid #D1D3D4;
 		padding: 20px;
     }
-    
+
     label.inline {
     	width: 40%;
     }
-    
+
     /* Larger modal for guide content */
     .modal.large {
     	width: 80%;
     	margin-left: -40%;
     }
-    
+
 	/* Inherit for these registry labels */
 	.label {
 	  display: inherit;
@@ -895,8 +895,8 @@ svg .point:hover ~ .line-chart-label{
 	  -webkit-border-radius: inherit;
 	     -moz-border-radius: inherit;
 	          border-radius: inherit;
-	} 
-         
+	}
+
      /* Download  and Publish buttons */
      #downloadPackage a.btn {
      color: #FFFFFF;
@@ -913,12 +913,12 @@ svg .point:hover ~ .line-chart-label{
 		margin-bottom: 10px;
 		width: 80%;
     }
-    
+
     #downloadPackage a.btn:hover{
     	background-color: #0044cc;
     	backgorund-image: none;
     }
-    
+
 /* Combobox styles, overlay text input on select
 <!-- example here -->
 <div class="select-editable">
@@ -928,39 +928,39 @@ svg .point:hover ~ .line-chart-label{
   </select>
   <input type="text" name="keyword" value=""/>
 </div>
--------------------------------------------------- */     
+-------------------------------------------------- */
 	.select-editable {
-		position: relative; 
-		height: 45px; 
+		position: relative;
+		height: 45px;
 	}
-	.select-editable select { 
-		position:absolute; 
-		top: 0px; 
-		left: 0px; 
-		width: 220px; 
+	.select-editable select {
+		position:absolute;
+		top: 0px;
+		left: 0px;
+		width: 220px;
 		height: 29px;
 	}
 	.select-editable input {
-		position:absolute; 
+		position:absolute;
 		top: 0px;
-		left: 0px; 
-		width: 193px; 
+		left: 0px;
+		width: 193px;
 		padding: 1px;
 		padding-left: 5px;
 		height: 25px;
 	}
-	.select-editable select:focus, 
-	.select-editable input:focus { 
-		outline:none; 
-	}   
-    
+	.select-editable select:focus,
+	.select-editable input:focus {
+		outline:none;
+	}
+
   /* Data Catalog CSS
   -------------------------------------------------- */
-	
+
 	#attributeTabs li > a:hover{
 		color: #1388b7;
 	}
-	
+
 	#attributeTabs li.active > a:hover{
 		color: #FFFFFF;
 	}
@@ -972,7 +972,7 @@ svg .point:hover ~ .line-chart-label{
 }
 aside.well{
   	padding: 10px 0px 0px 0px;
-}  
+}
 .filter-contain h2.nav-header{
 	margin-top: 0px;
 }
@@ -989,11 +989,11 @@ aside.well{
 }
 .filter-contain input[type="checkbox"] ~ label {
   text-transform: capitalize;
-}  
+}
 .filter-contain .nav-header .popover{
 	text-transform: none;
 }
-	    
+
 /*-- Data categories --*/
 .category-nav{
 	width: 100%;
@@ -1014,7 +1014,7 @@ aside.well{
 .category-nav > li.my-packages > a{
 	color: #08c;
 }
-   
+
 .category-nav > li.nav-item:hover,
 .category-nav > li.nav-item:hover > a,
 .category-nav > li.nav-item.active:hover,
@@ -1030,7 +1030,7 @@ aside.well{
 .category-nav  i.icon-remove{
   	padding-top: 5px;
   	visibility: hidden;
-}  
+}
 .category-nav  > li.nav-item.active i.icon-remove{
   	visibility: visible;
 }
@@ -1062,7 +1062,7 @@ aside.well{
  	margin-right: 10px;
  }
  .checkbox-list > li > input{
- 	float: left; 	
+ 	float: left;
  }
  .checkbox-list label{
  	font-size: .9em;
@@ -1070,11 +1070,11 @@ aside.well{
  .checkbox-list .more-link{
 	font-weight: normal;
 	font-size: .9em;
-} 
+}
 .ui-checkboxradio-label .icon-check {
     display: none;
 }
-  	
+
 /*-- Inputs for search filters --*/
 
 /*-- The 'Year' filter elements --*/
@@ -1139,7 +1139,7 @@ aside.well{
 }
 
 /*-- Currently applied filters --*/
-	
+
 .current-filter{
 	background-color: #3399CC;
 	color: #FFF;
@@ -1167,7 +1167,7 @@ aside.well{
 	word-break: break-all;
 	white-space: normal;
 }
-   
+
 
    /*-- Headers in sidebar --*/
 
@@ -1181,45 +1181,45 @@ aside.well{
   	color: #777777;
   	padding: 0px;
   }
-  
+
   h3.nav-header > label{
   	display: inline-block;
   	font: 400 14px/18px inherit, Arial, sans-serif;
   }
-  
+
   h3.nav-header > input{
   	height: 20px;
   }
-  
+
   .nav-header > .icon{
   	margin-right: 5px;
   	font-size: 16px;
   }
-  
+
   li.nav-header{
   	text-transform: none;
 font: 600 13px/13px inherit;
 color: #7F7F7F;
   }
-   
+
    /*-- Your Collections area --*/
  ul.collections{
  	margin-left: 0px;
  	list-style: none;
  }
- 
+
  a.collections {
  	color: #555555;
  }
- 
+
  a.collections:hover{
  	color: #3399CC;
  }
- 
+
  a.collections > i{
  	margin-right: 5px;
  }
- 
+
 input[class*="span"].left,
 .row-fluid input[class*="span"].left{
 		float: left;
@@ -1230,7 +1230,7 @@ input[class*="span"].left,
  	margin-bottom: 10px;
  	clear: both;
  }
- 
+
   /* Autocomplete */
 ul.ui-autocomplete{
 	width: 246px;
@@ -1239,7 +1239,7 @@ ul.ui-autocomplete{
 	padding: 10px;
 	list-style: none;
 	overflow-y: scroll;
-	-webkit-transform: translate3d(0,0,0); 
+	-webkit-transform: translate3d(0,0,0);
 	max-height: 150px;
 	z-index: 10;
 }
@@ -1262,7 +1262,7 @@ li.ui-menu-item .ui-state-focus {
 	cursor: pointer;
 	text-decoration: none;
 	font-weight: bold;
-} 
+}
 
 /* RESULT CSS
 -------------------------------------------------- */
@@ -1270,38 +1270,38 @@ li.ui-menu-item .ui-state-focus {
       font-weight: bold;
       border-bottom: thin solid;
     }
-    
+
     .result-header-count {
       font-style: italic;
     }
-    
+
     #results-view{
     	margin-top: 10px;
     }
-    
+
     .search-results > p{
     	text-align: center;
     	padding-top: 5px;
     }
-    
+
     #results.loading *{
     	color: #DDD;
     	border: 0px;
     }
-    
+
     .result-row {
       display: block;
         border-bottom: thin solid;
         padding: 5px 1%;
         width: 98%;
     }
-    
+
     .result-row .result-row{
     	border-bottom:0px;
     	padding: 0px;
     }
-    
-    .result-row:hover { 
+
+    .result-row:hover {
     background-color: #eee;
   }
 
@@ -1315,7 +1315,7 @@ li.ui-menu-item .ui-state-focus {
  	   color: #006699;
     	text-decoration: underline;
 	}
-    
+
     /*-- Results List Icons --*/
     .info-icons > .icons {
   		float: left;
@@ -1325,13 +1325,13 @@ li.ui-menu-item .ui-state-focus {
 	 }
     .info-icons .more-info{
     	cursor: help;
-    }   
+    }
 
     .info-icons .on-map > i{
     	font-size: 19px;
     	visibility: hidden;
     }
-    
+
     .info-icons .on-map > i.on-map{
     	color: #DA4D3A;
     	cursor: default;
@@ -1346,15 +1346,15 @@ li.ui-menu-item .ui-state-focus {
 		font-size: .9em;
 		color: #555;
 	}
-    
+
     i.inactive{
     	visibility: hidden;
     }
-    
+
     .popover{
     	font-size: 13px;
     }
-    
+
      .abstract-popover{
     	max-height: 500px;
     	min-height: 10px;
@@ -1363,41 +1363,41 @@ li.ui-menu-item .ui-state-focus {
     	word-break: keep-all;
     	text-overflow: ellipsis;
     }
-    
+
     .result-row .dropdown-menu{
   		left: -100%;
   	}
-    
+
     .pagination {
     	cursor: pointer;
     	margin: 10px auto;
     }
-    
+
     .pagination > ul{
     	float: left;
     }
-    
+
     .pagination  ul > li > a.unactive{
     	cursor: default;
     	color: #999999;
     }
-    
+
      /** View count **/
     .result-row .stats label{
     	font-size: 12px;
     	text-align: center;
     }
 
-	/** Download button **/   
+	/** Download button **/
 
-    
+
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
-    } 
+    }
     .result-row a.download:hover{
     	background-color: #e6e6e6;
     }
-    
+
 	.result-row i.download{
 		font-size: 16px;
 		cursor: pointer;
@@ -1406,7 +1406,7 @@ li.ui-menu-item .ui-state-focus {
 		-webkit-transition: all 0.3s;
 		margin-right: 0px;
 	}
-	
+
 	.result-row .download label{
 		font-size: 12px;
 		line-height: 17px;
@@ -1418,18 +1418,18 @@ li.ui-menu-item .ui-state-focus {
 		transition: all 0.3s;
 		-webkit-transition: all 0.3s;
 	}
-	
+
 	.result-row:hover .download label{
 		opacity: 1;
 	}
 
-  	
+
   	.result-row .download:hover i{
   		text-decoration: none;
   	}
-  	
-    
-    
+
+
+
     /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 
@@ -1476,8 +1476,8 @@ li.ui-menu-item .ui-state-focus {
 
 #metacatDocs .related > ul > li.right > a{
 	color: #FFFFFF;
-	font: 400 20px/30px Muli, Arial;	
-	text-decoration: none;	
+	font: 400 20px/30px Muli, Arial;
+	text-decoration: none;
 	text-transform: capitalize;
 }
 
@@ -1621,10 +1621,10 @@ li.ui-menu-item .ui-state-focus {
 	color: #333333;
 }
 
-    
-/* TABLES 
+
+/* TABLES
  -----------------------------------------------*/
- #metacatDocs table, 
+ #metacatDocs table,
  #metacatDocs tr,
  #metacatDocs th,
  #metacatDocs td,
@@ -1634,24 +1634,24 @@ li.ui-menu-item .ui-state-focus {
     	border-collapse: collapse;
     	padding: 8px;
     }
-    
+
 #metacatDocs table{
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
-    	
+
     }
-    
+
 #metacatDocs thead,
 #metacatDocs th{
     	background-color: #555555;
     	color: #FFFFFF;
     	font: 300 16px/20px Muli, Arial;
     }
-    
+
 #metacatDocs td{
     	font: 400 15px/20px inherit;
     }
-    
+
 #metacatDocs tr.row-odd{
     	background: rgba(103, 184, 229, 0.2);
     }
@@ -1667,13 +1667,13 @@ li.ui-menu-item .ui-state-focus {
  	background: none;
  	clear: right;
  }
- 
+
 #metacatDocs .highlight-python{
  	word-wrap: break-word;
  	color: #FFFFFF;
  	clear: right;
  }
- 
+
  #metacatDocs pre{
 	 padding: 10px;
 	background: rgba(0, 153, 153, 0.8);
@@ -1684,15 +1684,15 @@ li.ui-menu-item .ui-state-focus {
 	-webkit-border-radius: 5px;
 	margin: 20px auto;
  }
- 
-    
+
+
  /* MISC
  -----------------------------------------------*/
  .align-center{
  	margin-left: auto;
  	margin-right: auto;
  }
- 
+
  .figure{
  	max-width: 80%;
  	background-color: #FFFFFF;
@@ -1701,13 +1701,13 @@ li.ui-menu-item .ui-state-focus {
  	border: 1px solid #666666;
  	margin: 20px auto;
  }
- 
+
  .figure > img{
  	max-width: 90%;
  	margin: 10px auto;
  	display: block;
  }
- 
+
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
@@ -1715,8 +1715,8 @@ li.ui-menu-item .ui-state-focus {
 	color: #666;
 	padding-top: 10px;
  }
- 
- 
+
+
 #metacatDocs .topic{
  	background: rgba(255,255,255,0.5);
  	padding: 20px;
@@ -1724,29 +1724,29 @@ li.ui-menu-item .ui-state-focus {
  	-webkit-border-radius: 20px;
  	-moz-border-radius: 20px;
  }
- 
+
  #metacatDocs .topic > ul{
  	margin-left: 20px;
  }
- 
+
  #metacatDocs .topic-title{
  	font: 300 24px/24px inherit;
 	margin-top: 0;
  }
- 
+
 #metacatDocs  #license pre{
  	width: 700px;
  	margin: 0 auto;
  }
- 
+
  #installing-the-registry .sidebar{
  	max-width: 100%;
  }
- 
+
     dt{
    		font: 300 18px/24px inherit;
    }
-   
+
    #metacatDocs input {
 		-webkit-appearance: none;
 		background-color: white;
@@ -1756,44 +1756,44 @@ li.ui-menu-item .ui-state-focus {
 		box-shadow: none;
 		border: 0;
     }
-    
+
     #metacatDocs input[type="submit"]{
     	width: auto;
     }
-    
+
     #metacatDocs h3 {
 		font: 400 24.5px/40px inherit;
 	}
-	
+
 	#metacatDocs h2{
 		font: 400 27.5px/40px inherit;
 	}
-		
+
 	#metacatDocs h1{
 		font: 400 32px/40px inherit;
 	}
-	
-	#metacatDocs h1 > a, 
+
+	#metacatDocs h1 > a,
 	#metacatDocs h2 > a,
 	#metacatDocs h3 > a,
 	#metacatDocs h4 > a{
 		color: #333333;
 	}
-	
+
 	#metacatDocs ul ul{
 		margin-left:20px;
 	}
-	
+
 	#metacatDocs .note{
 		 margin-left: 20px;
 		 color: #555555;
 	}
-	
+
 	#metacatDocs blockquote p{
 		font-size: inherit;
 		font-weight: inherit;
 	}
- 
+
  	#metacatDocs #contents{
  		background: rgba(255, 255, 255, 0.5);
 		border-radius: 20px;
@@ -1803,14 +1803,26 @@ li.ui-menu-item .ui-state-focus {
 		clear: both;
 		padding: 10px 10px 10px 40px;
  	}
- 	
+
  /* CSS for emlparser -------
  ----------------------------- */
  .tablehead{
  	padding-top: 10px;
  	border-bottom: 1px solid #CCCCCC;
  }
- 
+
  #loading-app{
  	display: none;
+ }
+
+ /******************************************
+ * Metric Modal Chart (Views, Downloads, Citations)
+ ********************************************/
+
+ #metric-modal .metric-chart path.line {
+ 	stroke: #006dcc;
+ }
+
+ #metric-modal .metric-chart path.area {
+ 	fill: #006dcc;
  }

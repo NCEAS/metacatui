@@ -35,14 +35,15 @@ define(['jquery',
 		'text!templates/annotation.html',
 		'text!templates/metaTagsHighwirePress.html',
 		'uuid',
-		'views/MetricView'
+		'views/MetricView',
+		'views/MetricModalView'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
+			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView, MetricModalView) {
 	'use strict';
 
 
@@ -95,7 +96,9 @@ define(['jquery',
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData",
 			"click     #save-metadata-prov" : "saveProv",
+			"click     .metrics" : "showMetricModal",
 		},
+
 
 		initialize: function (options) {
 			if((options === undefined) || (!options)) var options = {};
@@ -214,8 +217,6 @@ define(['jquery',
 			this.$(this.tableContainer).html(this.loadingTemplate({
 					msg: "Retrieving data set details..."
 				}));
-
-
 
 			//Insert the breadcrumbs
 			this.insertBreadcrumbs();
@@ -1022,8 +1023,11 @@ define(['jquery',
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
-            var metricsModel = new MetricsModel({pid: this.pid})
-            metricsModel.fetch()
+			var pid_list = [];
+			pid_list.push(this.pid);
+			var metricsModel = new MetricsModel({pid_list: pid_list});
+			metricsModel.fetch();
+			this.metricsModel = metricsModel;
 
 			var self = this;
 			// Retreive the model from the server for the given PID
@@ -1074,6 +1078,16 @@ define(['jquery',
 
 			self.$(self.tableContainer).before(metrics);
 		},
+
+		showMetricModal: function(e) {
+			var metric = $(e.currentTarget.innerHTML);
+			if (MetacatUI.appModel.get("displayMetricModals")) {
+				var modalView = new MetricModalView({metricName: metric[1].innerHTML.trim(), metricsModel: this.metricsModel});
+				modalView.render();
+				modalView.show();
+			}
+		},
+
 
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function() {

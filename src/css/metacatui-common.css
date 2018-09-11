@@ -1643,71 +1643,37 @@ body > .alert-container {
 /* Style for the metric button */
 
 
+
+
 /***********
 Defult button styling for Metrics views
 ***********/
-/* a.btn.metrics {
+a.btn.metrics {
     display: inline-block;
     width: 164px;
     padding-right: 0px;
     margin-top: -14px;
     margin-left: -5px;
-    color: #555;
-    border-color: #C3C3C3;
-    background-color: #FFFFFF;
-    cursor: default;
 }
 .metric-value.badge {
     float: right;
-    color: #FFFFFF;
-    background-color: #555;
+    background-color: #1C6E84;
     margin-top: 2px;
 }
 .metric-icon {
     margin-right: 10px;
     float: left;
+	padding-top: 1px;
 }
 .metric-name {
     float: left;
 }
 .metric-value {
     float: right;
-} */
+}
 
 
-/***********
-Non-clickable button styling for metrics views
-***********/
-a.btn.metrics {
-    display: inline-block;
-    width: auto;
-    padding-right: 0px;
-    margin-top: -14px;
-    margin-left: -5px;
-    color: #555;
-    background-color: #F3F3F3;
-    cursor: default;
-    border: none;
-    box-shadow: none;
 
-}
-.metric-value.badge {
-    float: right;
-    color: #F3F3F3;
-    background-color: #555;
-    margin-top: 2px;
-}
-.metric-icon {
-    margin-right: 10px;
-    float: left;
-}
-.metric-name {
-    float: left;
-    margin-right: 10px;
-}
-.metric-value {
-    float: right;
-}
 
 i.icon.icon-cloud-download {
     font-size: 1.2em; !important;
@@ -1787,16 +1753,278 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     width: 138px;
 }
 
-/* Disabling the hover features of the button for a while. Once, the Modals are ready, we'll enable
-these effects
 a.btn.metrics:hover .metric-value.badge {
     float: right;
     color: #1C6E84;
     background-color: #FFFFFF;
-}*/
+}
 a.btn.metrics:hover, a.btn.metrics:click {
     color: #888888;
     background-color: #FFFFFF;
+    border-color: #C3C3C3;
+}
+
+#metric-modal {
+    z-index: 1050;
+    top: 15%;
+    width: 930px;
+    height: 500px;
+    left: 40%;
+}
+#metric-modal .modal-content {
+    width: auto;
+
+}
+
+#metric-modal .modal-header {
+    width: 900px;
+    height: 25px;
+}
+
+#metric-modal .modal-body {
+    width: 100%;
+    height: 400px;
+    max-height: 400px;
+    padding: 0px;
+}
+
+#metric-modal .modal-footer {
+    width: 900px;
+    height: 25px;
+	padding-top: 18px;
+}
+
+#metric-modal .modal-header .icon {
+	padding: 0px 9px;
+}
+
+#metric-modal .modal-header .left-header-section {
+	float: left;
+	width: 90%;
+	margin-top: 3px;
+}
+
+#metric-modal .modal-header .right-header-section {
+	float: right;
+	width: 10%;
+}
+
+#metric-modal .modal-body .modal-description {
+	float: left;
+	width: 236px;
+	padding-left: 30px;
+	padding-top: 33px;
+}
+
+#metric-modal .modal-body .modal-description p {
+	margin: 0 0 25px;
+}
+
+#metric-modal .modal-body .modal-description p#slider-instructions {
+	margin-top: 109px;
+	margin-bottom: 0;
+}
+
+#metric-modal .modal-body .metric-chart {
+	float: right;
+	width: 600px;
+	padding-right: 18px;
+	padding-top: 22px;
+}
+
+/******************************************
+* Metric Modal Chart (Views, Downloads, Citations)
+********************************************/
+
+/* When there is no data ...*/
+
+.empty-citation-list {
+    background-color: #f5f5f5;
+    width: 850px;
+    height: 150px;
+    margin: 25px 40px 25px 40px;
+    border-radius: 6px;
+}
+.empty-citation-list-text {
+    font-size: 18px;
+    font-weight: 100;
+    color:  #d0d0d0;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 150px;
+    
+}
+
+#metric-modal .metric-chart text.no-data {
+	font-size: 16px;
+	font-weight: 100;
+	fill:#d0d0d0;
+}
+
+#metric-modal .metric-chart rect.no-data {
+	fill: #f5f5f5;
+}
+
+#metric-modal .metric-chart text {
+	fill: #565656;
+	font-size: 9px;
+	font-family: Helvetica, Arial, "sans serif";
+}
+
+#metric-modal .metric-chart rect.plot-background{
+	fill: white;
+}
+
+#metric-modal .metric-chart path.line {
+	fill: none;
+	stroke: black; /* default, changed in each theme */
+	stroke-width: 1.5px;
+	clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart path.area {
+	fill: black; /* default, changed in each theme */
+	opacity: 0.35;
+	clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart .axis {
+	shape-rendering: crispEdges;
+}
+
+#metric-modal .metric-chart .x.axis .domain{
+	display:none;
+}
+
+#metric-modal .metric-chart .x.axis line {
+	stroke: white;
+	opacity: 0.8;
+}
+
+#metric-modal .metric-chart .context .x.axis line {
+	display: none;
+}
+
+#metric-modal .metric-chart .y.axis .domain{
+	display: none;
+	/* fill:none;
+	stroke: #565656;
+	stroke-width: 1px; */
+}
+
+#metric-modal .metric-chart .y.axis.title{
+	font-size: 13px;
+	font-weight: 100;
+}
+
+#metric-modal .metric-chart .y.axis line {
+	stroke: #565656;
+	stroke-dasharray: 2,2;
+	stroke-opacity: 0.3;
+}
+
+#metric-modal .metric-chart .brush .extent {
+  fill-opacity: .07;
+  shape-rendering: crispEdges;
+  clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart rect.pane {
+	cursor: move;
+	fill: none;
+	pointer-events: all;
+}
+/* brush handles  */
+#metric-modal .metric-chart .resize .handle {
+	fill: #555;
+}
+
+#metric-modal .metric-chart .resize .handle-mini {
+	fill: white;
+    stroke-width: 1px;
+    stroke: #555;
+}
+
+#metric-modal .metric-chart .scale_button {
+	cursor: pointer;
+}
+
+#metric-modal .metric-chart .scale_button rect {
+	fill: #eaeaea;
+}
+#metric-modal .metric-chart .scale_button:hover text {
+	fill: #417DD6;
+	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
+}
+
+#metric-modal .metric-chart text#displayDates  {
+	font-weight: bold;
+}
+
+.metric-table.table.table-striped.table-condensed {
+    width: 930px;
+}
+.metric-table.table.table-striped.table-condensed td {
+    padding: 5px 15px 5px 85px;
+}
+.metric-table.table.table-striped.table-condensed td > .citation {
+    margin-left: -70px;
+}
+button.modal-btn.btn.btn-default {
+    all: unset;
+    cursor: pointer;
+}
+.metrics-route-to-metadata > span.author {
+    color: #888;
+    font-weight: normal;
+}
+
+.metrics-route-to-metadata > span.pubdate {
+    color: #888;
+    font-weight: normal;
+}
+
+.metrics-route-to-metadata > span.publisher {
+    color: #888;
+}
+
+/***********
+Non-clickable (Disabled) button styling for metrics views
+***********/
+a.btn.metrics-button-disabled {
+    display: inline-block;
+    width: auto;
+    padding-right: 0px;
+    margin-top: -14px;
+    margin-left: -5px;
+    color: #555;
+    background-color: #F3F3F3;
+    cursor: default;
+    border: none;
+    box-shadow: none;
+
+}
+.metrics-button-disabled> .metric-value.badge {
+    float: right;
+    color: #FFF;
+    margin-left: 20px;
+    background-color: #555;
+    margin-top: 2px;
+}
+.metrics-button-disabled.metric-icon {
+    margin-right: 10px;
+    float: left;
+}
+.metrics-button-disabled.metric-name {
+    float: left;
+    margin-right: 10px;
+}
+.metrics-button-disabled.metric-value {
+    float: right;
+}
+.metrics-button-disabled:hover, .metrics-button-disabled:click {
+    color: #888888;
+    background-color: #F5F5F5;
     border-color: #C3C3C3;
 }
 

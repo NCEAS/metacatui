@@ -51,6 +51,48 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
  				this.model.getCitationInfo();
  				return;
 			}
+			// If the model is retreived from the Metrics Service
+			// and of type CitationModel, simply set the fields as
+			//  retrieved from the response
+			else if(this.model.type == "CitationModel") {
+				var authorText = this.model.get("origin") || "",
+					datasource = this.model.get("publisher"),
+					dateUploaded = this.model.get("year_of_publishing"),
+					sourceUrl = this.model.get("source_url"),
+					sourceId = this.model.get("source_id"),
+					title = this.model.get("title");
+			
+				// Format the Author textarea				else if (this.model.type == "CitationModel") {
+				if (authorText.length > 0) {
+                	var authors = authorText.split(", "),
+						count = 0,
+						authorText = "";
+				
+					_.each(authors, function (author) {
+						count++;
+
+						if(count == 6){
+							authorText += ", et al. ";
+							return;
+						}
+						else if(count > 6)
+							return;
+
+						if(count > 1){
+							if(authors.length > 2) authorText += ",";
+
+							if (count == authors.length) authorText += " and";
+
+							if (authors.length > 1) authorText += " ";
+						}
+
+						authorText += author;
+
+						if (count == authors.length) authorText += ". ";
+					});
+				
+				}
+			}
  			else if(this.metadata && this.metadata.get("archived")){
  				this.$el.append('<span class="danger">This content has been archived. </span>');
 
@@ -141,9 +183,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//If there is no metadata doc, then this is probably a data doc without science metadata.
 			//So create the citation from the index values
 			else {
+
 				var authorText = this.model.get("rightsHolder") || this.model.get("submitter") || "",
-					  dateUploaded = this.model.get("dateUploaded"),
-					  datasource = this.model.get("datasource");
+					dateUploaded = this.model.get("dateUploaded"),
+					datasource = this.model.get("datasource");
 			}
 
 			//The author
@@ -156,7 +199,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if (!isNaN(pubDateFormatted)) pubDateText += pubDateFormatted;
 			}
 			if (dateUploaded && (isNaN(pubDateFormatted) || !pubDate)) {
-				var dateUploadedFormatted = new Date(dateUploaded).getFullYear();
+				var dateUploadedFormatted = dateUploaded;
 				if (!isNaN(dateUploadedFormatted)) pubDateText += dateUploadedFormatted;
 			}
 			var pubDateEl = $(document.createElement("span")).addClass("pubdate")
@@ -190,8 +233,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				publisherEl.text(publisherText);
 			}
 
-			//The ID
-			var idEl = this.createIDElement();
+			if(this.model.type == "CitationModel") {
+				var idEl = $(document.createElement("span")).addClass("id");
+				idEl.append(sourceUrl, $(document.createElement("span")).text(". "));
+			}
+			else {
+				//The ID
+				var idEl = this.createIDElement();
+			}
 			var model = this.metadata || this.model,
 				id = model.get("id"),
 				seriesId = model.get("seriesId");
@@ -202,21 +251,41 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				else
 					title = title.trim() + " ";
 
-				var titleEl = $(document.createElement("span"))
-											.addClass("title")
-											.attr("data-id", this.metadata.get("id"))
-											.text(title);
+				if(this.model.type == "CitationModel") {
+					var titleEl = $(document.createElement("span"))
+												.addClass("title")
+												.attr("data-id", sourceId)
+												.text(title);
+				}
+				else {
+					var titleEl = $(document.createElement("span"))
+												.addClass("title")
+												.attr("data-id", this.metadata.get("id"))
+												.text(title);
+				}
+				
 			}
 			else
 				var titleEl = document.createElement("span");
 
 			//Create a link and put all the citation parts together
 			if (this.createLink){
-				var linkEl = $(document.createElement("a"))
-								.addClass("route-to-metadata")
-								.attr("data-id", id)
-								.attr("href", MetacatUI.root + "/view/" + id)
-								.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+				if(this.model.type == "CitationModel") {
+					var linkEl = $(document.createElement("a"))
+									.addClass("metrics-route-to-metadata")
+									.attr("data-id", id)
+									.attr("href", sourceUrl)
+									.attr("target", "_blank")
+									.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+				}
+				else {
+					var linkEl = $(document.createElement("a"))
+									.addClass("route-to-metadata")
+									.attr("data-id", id)
+									.attr("href", MetacatUI.root + "/view/" + id)
+									.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+				}
+
 				this.$el.append(linkEl);
 			}
 			else if(this.createTitleLink){
@@ -238,10 +307,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 		createIDElement: function(){
 
-			var model    = this.metadata || this.model,
-					id 			 = model.get("id"),
-					seriesId = model.get("seriesId"),
-          datasource = model.get("datasource");
+			var model 		 = this.metadata || this.model,
+				id 			 = model.get("id"),
+				seriesId     = model.get("seriesId"),
+				datasource   = model.get("datasource");
 
 			var idEl = $(document.createElement("span")).addClass("id");
 			if(seriesId){
@@ -252,20 +321,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 													.attr("href", doiURL)
 													.text(seriesId);
 
-          // Begin PANGAEA-specific override 1 (this is temporary)
+			// Begin PANGAEA-specific override 1 (this is temporary)
 					// If this is a PENGAEA dataset with a seriesId, then don't show the pid.
-				  if (typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA") {
-            idEl.append(doiLink, $(document.createElement("span")).text(". "));
-          }
-          // End PANGAEA-specific override 1
-          else{
-					  idEl.append(doiLink, $(document.createElement("span")).text(", version: "));
-          }
+					if (typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA") {
+						idEl.append(doiLink, $(document.createElement("span")).text(". "));
+					}
+					// End PANGAEA-specific override 1
+					else{
+						idEl.append(doiLink, $(document.createElement("span")).text(", version: "));
+					}
 				}
 				else{
 					// Begin PANGAEA-specific override 2 (this is temporary)
 					// If this is a PENGAEA dataset with a seriesId, then don't show the pid.
-				  if (typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA") {
+					if (typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA") {
 					  idEl.html($(document.createElement("span")).text(seriesId + ". "));
 					}
 					// End PANGAEA-specific override 2
@@ -275,12 +344,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				}
 			}
 
-      // Begin PANGAEA-specific override 3 (this is temporary)
+			// Begin PANGAEA-specific override 3 (this is temporary)
 			// If this is a PENGAEA dataset with a seriesId, then don't show the pid. Return now.
-      if(typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA" && seriesId){
-        return idEl;
-      }
-      // End PANGAEA-specific override 3
+			if(typeof datasource !== "undefined" && datasource === "urn:node:PANGAEA" && seriesId){
+				return idEl;
+			}
+			// End PANGAEA-specific override 3
 			else if( id.indexOf("doi:") == 0 && !this.createLink ){
 				var doiURL  = (id.indexOf("doi:") == 0)? "https://doi.org/" + id.substring(4) : id,
 						doiLink = $(document.createElement("a"))
