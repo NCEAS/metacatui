@@ -410,7 +410,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                 while (!f[1](date)) f = formats[--i];
                 return f[0](date);
               };
-          };
+            };
 
             function customTickFunction(t0, t1, dt)  {
                 var labelSize = 42; //
@@ -445,13 +445,16 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                 // Reset zoom scale's domain
                 zoom.x(x);
                 updateDisplayDates();
+                setYdomain();
 
             };
 
             function draw() {
+                setYdomain();
                 focus.select(".area").attr("d", area);
                 focus.select(".line").attr("d", line);
                 focus.select(".x.axis").call(xAxis);
+                //focus.select(".y.axis").call(yAxis);
                 // Force changing brush range
                 brush.extent(x.domain());
                 vis.select(".brush").call(brush);
@@ -503,6 +506,64 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                 draw();
 
                 return(brush.extent())
+            };
+
+            function setYdomain(){
+            // this function dynamically changes the y-axis to fit the data in focus
+
+                // get the min and max date in focus
+                var xleft = new Date(x.domain()[0]);
+                var xright = new Date(x.domain()[1]);
+
+                // a function that finds the nearest point to the right of a point
+                var bisectDate = d3.bisector(function(d) { return d.month; }).right;
+
+                // get the y value of the line at the left edge of view port:
+                var iL = bisectDate(dataset, xleft);
+
+                if (dataset[iL] !== undefined && dataset[iL-1] !== undefined) {
+
+                    var left_dateBefore = dataset[iL-1].month,
+                        left_dateAfter = dataset[iL].month;
+
+                    var intfun = d3.interpolateNumber(dataset[iL-1].count, dataset[iL].count);
+                    var yleft = intfun((xleft-left_dateBefore)/(left_dateAfter-left_dateBefore));
+                } else {
+                    var yleft = 0;
+                }
+
+                // get the x value of the line at the right edge of view port:
+                var iR = bisectDate(dataset, xright);
+
+                if (dataset[iR] !== undefined && dataset[iR-1] !== undefined) {
+
+                    var right_dateBefore = dataset[iR-1].month,
+                        right_dateAfter = dataset[iR].month;
+
+                    var intfun = d3.interpolateNumber(dataset[iR-1].count, dataset[iR].count);
+                    var yright = intfun((xright-right_dateBefore)/(right_dateAfter-right_dateBefore));
+                } else {
+                    var yright = 0;
+                }
+
+                // get the y values of all the actual data points that are in view
+                var dataSubset = dataset.filter(function(d){ return d.month >= xleft && d.month <= xright; });
+                var countSubset = [];
+                dataSubset.map(function(d) {countSubset.push(d.count);});
+
+                // add the edge values of the line to the array of counts in view, get the max y;
+                countSubset.push(yleft);
+                countSubset.push(yright);
+                var ymax_new = d3.max(countSubset);
+
+                if(ymax_new == 0){
+                    ymax_new = dataYrange[1];
+                }
+
+                // reset and redraw the yaxis
+                y.domain([0, ymax_new*1.05]);
+                focus.select(".y.axis").call(yAxis);
+
             };
 
             function scaleDate(d,i) {
