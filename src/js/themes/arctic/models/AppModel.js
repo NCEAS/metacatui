@@ -103,7 +103,7 @@ define(['jquery', 'underscore', 'backbone'],
 			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
 
 			// Metrics endpoint url
-			metricsUrl: null,
+			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 			
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
@@ -200,9 +200,6 @@ define(['jquery', 'underscore', 'backbone'],
 				if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
 					this.set("signOutUrl", this.get('portalUrl') + "logout");
 
-
-
-				this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/test/metrics');
 			}
 
 			//The package service for v2 DataONE API

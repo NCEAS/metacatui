@@ -74,7 +74,15 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
                 this.citationCollection = citationCollection;
 
-                var citationList = new CitationList({citations: this.citationCollection});
+
+                // Checking if there are any citations available for the List display.
+                if(this.metricsModel.get("totalCitations") == 0) {
+                    var citationList = new CitationList();
+                }
+                else {
+                    var citationList = new CitationList({citations: this.citationCollection});
+                }
+
                 this.citationList = citationList;
 
                 this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));

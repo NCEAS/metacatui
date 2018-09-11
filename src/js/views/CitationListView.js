@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         id: 'table',
         className: 'table',
         citationsCollection: null,
+        emptyCitations: null,
 
         events: {
 
@@ -16,6 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         initialize: function(options) {
             if((typeof options == "undefined")){
                 var options = {};
+                this.emptyCitations = true;
             }
 
             // Initializing the Citation collection
@@ -35,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         renderView: function() {
             var self = this;
 
-            if ($.isEmptyObject(this.citationsCollection.get("models"))) {
+            if (this.emptyCitations) {
                 var $emptyList = $(document.createElement("div"))
                                             .addClass("empty-citation-list");
                                             

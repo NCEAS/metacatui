@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: false,
 
-			baseUrl: "https://cn.dataone.org",
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '',
 			d1Service: "/cn/v2",
@@ -74,7 +74,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 
 			// Metrics endpoint url
-			metricsUrl: null,
+			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 			
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
@@ -162,8 +162,6 @@ define(['jquery', 'underscore', 'backbone'],
 
 			this.on("change:pid", this.changePid);
 
-
-			this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/test/metrics');
 		},
 
 		changePid: function(model, name){

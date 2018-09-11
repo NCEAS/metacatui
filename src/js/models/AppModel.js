@@ -97,7 +97,7 @@ define(['jquery', 'underscore', 'backbone'],
 			mdqUrl: null,
 
 			// Metrics endpoint url
-			metricsUrl: null,
+			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 			
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
@@ -210,7 +210,6 @@ define(['jquery', 'underscore', 'backbone'],
 
 			this.on("change:pid", this.changePid);
 
-			this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/test/metrics');
 
 		},
 
