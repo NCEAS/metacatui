@@ -10,9 +10,15 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         template: _.template(MetricModalTemplate),
         metricName: null,
         metricsModel: null,
+        metrics: ['Citations', 'Downloads', 'Views'],
+        metricIndex: null,
+        prevMetricName: null,
+        nextMetricName: null,
 
         events: {
-          'hidden': 'teardown'
+          'hidden': 'teardown',
+          'click .left-modal-footer' : 'showPreviousMetricModal',
+          'click .right-modal-footer' : 'showNextMetricModal'
         },
 
         initialize: function(options) {
@@ -23,6 +29,25 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
           this.metricName = options.metricName;
           this.metricsModel = options.metricsModel;
+
+        },
+        
+        getPreviousMetric : function(currentMetricName) {
+            if(currentMetricName != 'undefined') {
+                    this.metricIndex = this.metrics.indexOf(currentMetricName);
+            }
+            
+            // Implementing a circular queue to get the previous metric
+            return(this.metrics[((this.metricIndex + this.metrics.length - 1) % this.metrics.length)]);
+        },
+        
+        getNextMetric : function(currentMetricName) {
+            if(currentMetricName != 'undefined') {
+                    this.metricIndex = this.metrics.indexOf(currentMetricName);
+            }
+            
+            // Implementing a circular queue to get the next metric
+            return(this.metrics[((this.metricIndex + this.metrics.length + 1) % this.metrics.length)]);
         },
 
         show: function() {
@@ -41,10 +66,41 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         },
 
         renderView: function() {
-            var self = this;
-
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
 
+            if ( this.metricName === "Citations") {
+                var resultDetails = this.metricsModel.get("resultDetails");
+                var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+
+                this.citationCollection = citationCollection;
+
+                var citationList = new CitationList({citations: this.citationCollection});
+                this.citationList = citationList;
+
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
+            }
+            else {
+                if (this.metricName === "Views") {
+                    this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalViews"), metricBody:"<div class='metric-chart'></div>"}));
+                }
+                if (this.metricName === "Downloads") {
+                    this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalDownloads"), metricBody:"<div class='metric-chart'></div>"}));
+                }
+
+            }
+
+            this.$el.modal({show:false}); // dont show modal on instantiation
+
+        },
+
+        showPreviousMetricModal: function() {
+            
+            this.nextMetricName = this.metricName;
+            this.metricName = this.getPreviousMetric(this.metricName);
+            this.nextMetricName = this.getPreviousMetric(this.metricName);
+            
+
+            this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             if ( this.metricName === "Citations") {
                 var resultDetails = this.metricsModel.get("resultDetails")
                 var citationCollection = new Citations(resultDetails["citations"], {parse:true});
@@ -54,20 +110,45 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 var citationList = new CitationList({citations: this.citationCollection});
                 this.citationList = citationList;
 
-                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
             }
-            else {
-                if (this.metricName === "Views") {
-                    this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalViews"), metricBody:"<div class='metric-chart'></div>"}));
-                }
-                if (this.metricName === "Downloads") {
-                    this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: self.metricsModel.get("totalDownloads"), metricBody:"<div class='metric-chart'></div>"}));
-                }
-
+            if (this.metricName === "Views") {
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalViews"), metricBody:"<div class='metric-chart'></div>"}));
+                this.drawMetricsChart();
             }
+            if (this.metricName === "Downloads") {
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalDownloads"), metricBody:"<div class='metric-chart'></div>"}));
+                this.drawMetricsChart();
+            }
+        },
 
-            this.$el.modal({show:false}); // dont show modal on instantiation
 
+        showNextMetricModal: function() {
+            this.prevMetricName = this.metricName;
+            this.metricName = this.getNextMetric(this.metricName);
+            this.nextMetricName = this.getNextMetric(this.metricName);
+            
+
+            this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
+            if ( this.metricName === "Citations") {
+                var resultDetails = this.metricsModel.get("resultDetails")
+                var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+
+                this.citationCollection = citationCollection;
+
+                var citationList = new CitationList({citations: this.citationCollection});
+                this.citationList = citationList;
+
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
+            }
+            if (this.metricName === "Views") {
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalViews"), metricBody:"<div class='metric-chart'></div>"}));
+                this.drawMetricsChart();
+            }
+            if (this.metricName === "Downloads") {
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalDownloads"), metricBody:"<div class='metric-chart'></div>"}));
+                this.drawMetricsChart();
+            }
         },
 
         drawMetricsChart: function(){

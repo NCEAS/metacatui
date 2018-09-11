@@ -64,7 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			
 				// Format the Author textarea				else if (this.model.type == "CitationModel") {
 				if (authorText.length > 0) {
-                	var authors = authorText.split(" and "),
+                	var authors = authorText.split(", "),
 						count = 0,
 						authorText = "";
 				
