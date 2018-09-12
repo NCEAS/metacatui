@@ -52,6 +52,9 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           */
           serialize: function(){
 
+            if( this.length == 0 )
+              return "";
+
             //Create the access policy node which will contain all the rules
             var xml = "<accessPolicy>\n";
 
