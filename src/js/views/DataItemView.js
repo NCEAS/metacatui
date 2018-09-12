@@ -193,21 +193,21 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                   if( !accessPolicy.isAuthorized("changePermission") ){
                     checkbox.prop("disabled", "disabled")
                             .addClass("disabled");
-                    checkbox.tooltip({
+
+                    this.$(".sharing").tooltip({
                       title: "You are not authorized to edit the privacy of this data file",
                       placement: "top",
-                      container: "body",
+                      container: this.el,
                       trigger: "hover",
-                      delay: { show: 500 }
+                      delay: { show: 800 }
                     });
                   }
                   else{
                     checkbox.tooltip({
                       title: "Check to make this data file private",
                       placement: "top",
-                      container: "body",
                       trigger: "hover",
-                      delay: { show: 500 }
+                      delay: { show: 800 }
                     });
                   }
 
