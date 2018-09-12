@@ -98,7 +98,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/AccessPolicy', 
           initialize: function(attrs, options) {
             if(typeof attrs == "undefined") var attrs = {};
 
-            this.createAccessPolicy();
+            this.set("accessPolicy", this.createAccessPolicy());
 
             this.on("change:size", this.bytesToSize);
             if(attrs.size)
@@ -295,10 +295,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/AccessPolicy', 
                 }
               }, this);
 
+
               //Create a new AccessPolicy collection
-              sysMetaValues.accessPolicy = new AccessPolicy();
-              //Parse the access policy XML from the system metadata XML
-              sysMetaValues.accessPolicy.parse($(systemMetadata).find("accesspolicy"));
+              sysMetaValues.accessPolicy = this.createAccessPolicy($(systemMetadata).find("accesspolicy"));
 
               return sysMetaValues;
 
@@ -862,25 +861,38 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/AccessPolicy', 
           /*
           * Create an access policy for this DataONEObject using the default access
           * policy set in the AppModel.
+          *
+          * @param {DOM Element} [accessPolicyXML] - An <accessPolicy> XML node
+          *   that contains a list of access rules.
+          * @return {AccessPolicy} - an AccessPolicy collection that represents the
+          *   given XML or the default policy set in the AppModel.
           */
-          createAccessPolicy: function(){
-            //Set the default access policy using the AppModel configuration
-            var accessPolicy = this.get("accessPolicy");
+          createAccessPolicy: function(accessPolicyXML){
+            //Create a new AccessPolicy collection
+            var accessPolicy = new AccessPolicy();
 
-            //For each access policy in the AppModel, create an AccessRule model
-            // and set it on this DataONEObect model
-            _.each(MetacatUI.appModel.get("defaultAccessPolicy"), function(accessRule){
+            accessPolicy.dataONEObject = this;
 
-               accessPolicy.push( new AccessRule(accessRule) );
+            //If there is no access policy XML sent,
+            if( !accessPolicyXML ){
+              //Set the default access policy using the AppModel configuration
+              accessPolicy.createDefaultPolicy();
+            }
+            else{
+              //Parse the access policy XML to create AccessRule models from the XML
+              accessPolicy.parse(accessPolicyXML);
+            }
 
-            }, this);
-
-            this.set("accessPolicy", accessPolicy);
-
+            //Listen to changes on the collection and trigger a change on this model
             var self = this;
-            this.listenTo(accessPolicy, "change", function(){
+            this.listenTo(accessPolicy, "change update", function(){
               self.trigger("change");
+              this.set("hasContentChanges", true);
+              this.updateUploadStatus();
+
             });
+
+            return accessPolicy;
           },
 
           updateID: function(id){
@@ -1036,7 +1048,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/AccessPolicy', 
 
               if ( changedContentAttrs.length > 0 && !this.get("hasContentChanges") && model.get("synced") ) {
                 this.set("hasContentChanges", true);
-                  this.updateUploadStatus(model, options);
+                this.updateUploadStatus();
               }
 
             },

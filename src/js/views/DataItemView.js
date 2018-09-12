@@ -179,10 +179,36 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 else{
                 	this.$el.addClass("data");
 
-                  //Check the public/private toggle
-                  var accessPolicy = this.model.get("accessPolicy");
+                  //Get the AccessPolicy for this object
+                  var accessPolicy = this.model.get("accessPolicy"),
+                      checkbox = this.$(".sharing input");
+
+                  //Check the public/private toggle if this object is private
                   if( accessPolicy && !accessPolicy.isPublic() ){
-                    this.$(".sharing input").prop("checked", true);
+                    checkbox.prop("checked", true);
+                  }
+
+                  //If the user is not authorized to change the permissions of
+                  // this object, then disable the checkbox
+                  if( !accessPolicy.isAuthorized("changePermission") ){
+                    checkbox.prop("disabled", "disabled")
+                            .addClass("disabled");
+                    checkbox.tooltip({
+                      title: "You are not authorized to edit the privacy of this data file",
+                      placement: "top",
+                      container: "body",
+                      trigger: "hover",
+                      delay: { show: 500 }
+                    });
+                  }
+                  else{
+                    checkbox.tooltip({
+                      title: "Check to make this data file private",
+                      placement: "top",
+                      container: "body",
+                      trigger: "hover",
+                      delay: { show: 500 }
+                    });
                   }
 
                 }
@@ -718,9 +744,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             */
             changeAccessPolicy: function(e){
 
-              console.log("---Before----")
-              console.log(this.model.get("accessPolicy").serialize());
-
               if( typeof e === "undefined" || !e )
                 return;
 
@@ -759,8 +782,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
               }
 
-              console.log("--After---")
-              console.log(this.model.get("accessPolicy").serialize());
+              //Close the tooltips
+              this.$(".sharing").tooltip("hide");
 
             },
 

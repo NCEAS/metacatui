@@ -3546,6 +3546,9 @@ ul.side-nav-items {
 	margin-left: 30%;
 	height: auto;
 }
+.data-package-item .sharing .disabled{
+	opacity: .5;
+}
 
 /* Editor package table column 5 */
 .data-package-item td:last-of-type {
