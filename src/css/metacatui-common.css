@@ -1852,7 +1852,7 @@ a.btn.metrics:hover, a.btn.metrics:click {
     text-align: center;
     vertical-align: middle;
     line-height: 150px;
-    
+
 }
 
 #metric-modal .metric-chart text.no-data {
@@ -1884,7 +1884,7 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart path.area {
 	fill: black; /* default, changed in each theme */
-	opacity: 0.35;
+	opacity: 0.6;
 	clip-path: url(#clip);
 }
 
@@ -1898,7 +1898,7 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart .x.axis line {
 	stroke: white;
-	opacity: 0.8;
+	opacity: 0.4;
 }
 
 #metric-modal .metric-chart .context .x.axis line {
@@ -1907,9 +1907,6 @@ a.btn.metrics:hover, a.btn.metrics:click {
 
 #metric-modal .metric-chart .y.axis .domain{
 	display: none;
-	/* fill:none;
-	stroke: #565656;
-	stroke-width: 1px; */
 }
 
 #metric-modal .metric-chart .y.axis.title{

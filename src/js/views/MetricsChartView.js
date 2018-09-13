@@ -191,7 +191,6 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             	.range([height_context, 0])
                 .domain(y.domain());
 
-                //doi:10.18739/A2QR4NQ1J
             var xAxis_context = d3.svg.axis()
                 .scale(x2)
                 .orient("bottom")
