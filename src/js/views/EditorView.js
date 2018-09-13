@@ -813,12 +813,17 @@ define(['underscore',
               .html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
               .addClass("btn-disabled");
 
-          this.$("input, textarea, select, button").prop("disabled", true);
+          this.$("input, textarea, select, button")
+              .filter(":not(:disabled)")
+              .addClass("disabled-saving")
+              .prop("disabled", true);
 
         },
 
         hideSaving: function(){
-          this.$("input, textarea, select, button").prop("disabled", false);
+          this.$(".disabled-saving")
+              .prop("disabled", false)
+              .removeClass("disabled-saving");
 
             //When the package is saved, revert the Save button back to normal
             this.$("#save-editor").html("Submit dataset").removeClass("btn-disabled");
