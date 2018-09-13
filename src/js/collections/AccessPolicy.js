@@ -202,13 +202,14 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
             //Find the access rules that match the given action and user subjects
             var applicableRules = this.filter(function(accessRule){
-              if( (accessRule.get(action) && _.contains(allSubjects, accessRule.get("subject"))) ||
-                  _.contains(allSubjects, this.dataONEObject.get("rightsHolder")) ) {
+              if( accessRule.get(action) && _.contains(allSubjects, accessRule.get("subject")) ) {
                 return true;
               }
             }, this);
 
             if( applicableRules.length )
+              return true;
+            else if( _.contains(allSubjects, this.dataONEObject.get("rightsHolder")) )
               return true;
             else
               return false;
