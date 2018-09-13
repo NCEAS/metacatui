@@ -38,21 +38,21 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
             if ($.isEmptyObject(this.citationsCollection.get("models"))) {
                 var $emptyList = $(document.createElement("div"))
                                             .addClass("empty-citation-list");
-                                            
+
                 var $emptyDataElement = $(document.createElement("p"))
-                                            .text("No data to display yet.")
+                                            .text("This data hasn't been cited yet.")
                                             .addClass("empty-citation-list-text");
-                
+
                 $emptyList.append($emptyDataElement);
                 this.$el.append($emptyList);
             }
             else {
-                
+
                 var $table = $(document.createElement("table"))
                                             .addClass("metric-table table table-striped table-condensed");
-                                            
+
                 var $tableBody = $(document.createElement("tbody"));
-                
+
                 this.citationsCollection.each(
                     function(model) {
                         var citationView = new CitationView({model:model});
@@ -64,13 +64,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                         $tableBody.append($tableRow);
                     }
                 );
-                
+
                 $table.append($tableBody);
                 this.$el.append($table);
             }
-            
+
         }
     });
-     
+
      return CitationListView;
   });

@@ -55,8 +55,17 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         * ========================================================================
         */
 
-        // when there's no downloads or view data, just show some text:
-        if(this.metricCount.length == 0 || this.metricCount == 0){
+        // check if there have been any views/citations
+        var sumMetricCount = 0;
+        for (var i = 0; i < this.metricCount.length; i++) {
+            sumMetricCount += this.metricCount[i]
+        }
+
+        // when ther no data or no views/citations yet, just show some text:
+        if(this.metricCount.length == 0 || this.metricCount == 0 || sumMetricCount ==0){
+
+            var metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
+            var textMessage = "This dataset hasn’t been " + metricNameLemma + "ed yet."
 
             var margin	= {top: 25, right: 40, bottom: 40, left: 40},
                 width	= this.width - margin.left - margin.right,
@@ -77,7 +86,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
             var msg = vis.append("text")
                 .attr("class", "no-data")
-                .text("No data to display yet.")
+                .text(textMessage)
                 .attr("text-anchor", "middle")
                 .attr("font-size", "20px")
                 .attr("x", width/2)
@@ -134,13 +143,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             * ========================================================================
             */
 
-            // maximum date range allowed to display
-            var mindate = new Date(2012,6,1),
-                maxdate = new Date();
-
             // the date range of available data:
             var dataXrange = d3.extent(dataset, function(d) { return d.month; });
             var dataYrange = [0, d3.max(dataset, function(d) { return d.count; })];
+
+            // maximum date range allowed to display
+            var mindate = dataXrange[0],  // use the range of the data
+                maxdate = dataXrange[1];
 
             var DateFormat	  =  d3.time.format("%b %Y");
             var dynamicDateFormat = timeFormat([
@@ -182,9 +191,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             	.range([height_context, 0])
                 .domain(y.domain());
 
+                //doi:10.18739/A2QR4NQ1J
             var xAxis_context = d3.svg.axis()
                 .scale(x2)
-                .orient("bottom");
+                .orient("bottom")
+                .ticks(customTickFunction)
+                .tickFormat(DateFormat);
 
             /*
             * ========================================================================
@@ -292,8 +304,18 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             var button_width = 40;
             var button_height = 14;
 
+            // don't show year button if < 1 year of data
+            var dateRange  = dataXrange[1] - dataXrange[0],
+                ms_in_year = 31540000000;
+
+            if (dateRange < ms_in_year)   {
+                var button_data =["month","data"];
+            } else {
+                var button_data =["year","month","data"];
+            };
+
             var button = display_range_group.selectAll("g")
-                .data(["year","month","data"])
+                .data(button_data)
                 .enter().append("g")
                 .attr("class", "scale_button")
                 .attr("transform", function(d, i) { return "translate(" + (220 + i*button_width + i*10) + ",0)"; })
