@@ -35,15 +35,14 @@ define(['jquery',
 		'text!templates/annotation.html',
 		'text!templates/metaTagsHighwirePress.html',
 		'uuid',
-		'views/MetricView',
-		'views/MetricModalView'
+		'views/MetricView'
 		],
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
 			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
-			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView, MetricModalView) {
+			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
 	'use strict';
 
 
@@ -96,7 +95,6 @@ define(['jquery',
 			"mouseout  .highlight-node"  : "highlightNode",
 			"click     .preview" 	     : "previewData",
 			"click     #save-metadata-prov" : "saveProv",
-			"click     .metrics" : "showMetricModal",
 		},
 
 
@@ -1077,15 +1075,6 @@ define(['jquery',
             }
 
 			self.$(self.tableContainer).before(metrics);
-		},
-
-		showMetricModal: function(e) {
-			var metric = $(e.currentTarget.innerHTML);
-			if (MetacatUI.appModel.get("displayMetricModals")) {
-				var modalView = new MetricModalView({metricName: metric[1].innerHTML.trim(), metricsModel: this.metricsModel});
-				modalView.render();
-				modalView.show();
-			}
 		},
 
 

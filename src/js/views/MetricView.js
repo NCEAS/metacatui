@@ -1,12 +1,13 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone'],
-    function($, _, Backbone) {
+define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
+    function($, _, Backbone, MetricModalView) {
     'use strict';
 
     var MetricView = Backbone.View.extend({
 
         tagName: 'a',
-        className: 'btn metrics ',
+        // id: 'metrics-button',
+        className: 'btn metrics',
         metricName: null,
         model: null,
 
@@ -18,7 +19,7 @@ define(['jquery', 'underscore', 'backbone'],
                             "</i> </span>"),
 
         events: {
-
+            "click" : "showMetricModal",
         },
 
         initialize: function(options){
@@ -64,6 +65,17 @@ define(['jquery', 'underscore', 'backbone'],
             this.listenTo(this.model, "sync", this.renderResults);
 
             return this;
+        },
+
+
+        // Handling the Click function
+        // Displaying the metric modal on Click
+        showMetricModal: function(e) {
+            if (MetacatUI.appModel.get("displayMetricModals")) {
+                var modalView = new MetricModalView({metricName: this.metricName, metricsModel: this.model});
+                modalView.render();
+                modalView.show();
+            }
         },
 
         renderResults: function() {
