@@ -808,21 +808,29 @@ define(['underscore',
 
         showSaving: function(){
 
-            //Change the style of the save button
-            this.$("#save-editor")
-              .html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
-              .addClass("btn-disabled");
+          //Change the style of the save button
+          this.$("#save-editor")
+            .html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
+            .addClass("btn-disabled");
 
-          this.$("input, textarea, select, button")
-              .filter(":not(:disabled)")
-              .addClass("disabled-saving")
-              .prop("disabled", true);
+          //Get all the inputs in the Editor
+          var allInputs = this.$("input, textarea, select, button");
+
+          //Mark the disabled inputs so we can re-disable them later
+          allInputs.filter(":disabled")
+                   .addClass("disabled-saving");
+
+          //Disable all the inputs
+          allInputs.prop("disabled", true);
 
         },
 
         hideSaving: function(){
-          this.$(".disabled-saving")
-              .prop("disabled", false)
+          this.$("input, textarea, select, button")
+              .prop("disabled", false);
+
+          this.$(".disabled-saving, input.disabled")
+              .prop("disabled", true)
               .removeClass("disabled-saving");
 
             //When the package is saved, revert the Save button back to normal
