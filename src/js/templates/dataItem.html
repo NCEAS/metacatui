@@ -46,6 +46,17 @@
     <td class="type"></td>
 
 <% } %>
+
+<!-- Privacy/Sharing column -->
+<% if( MetacatUI.appModel.get("allowAccessPolicyChanges") && (type && type != "Metadata") ){ %>
+  <td class="sharing">
+    <input type="checkbox" name="Make data private" value="true" class="private" />
+  </td>
+<% }
+   else if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
+  <td></td>
+<% } %>
+
 <!-- Guide or Status column -->
 <td class="status">
 	<%  if( uploadStatus == "p" ){ %>

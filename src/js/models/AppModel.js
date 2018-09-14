@@ -60,6 +60,7 @@ define(['jquery', 'underscore', 'backbone'],
 			defaultAccessPolicy: [],
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			allowAccessPolicyChanges: true,
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',

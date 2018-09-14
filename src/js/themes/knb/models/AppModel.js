@@ -69,6 +69,8 @@ define(['jquery', 'underscore', 'backbone'],
 				read: true
 			}],
 
+			allowAccessPolicyChanges: true,
+
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
@@ -108,7 +110,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// Metrics endpoint url
 			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
-			
+
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
 			displayDatasetMetrics: true,

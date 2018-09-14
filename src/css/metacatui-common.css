@@ -3744,25 +3744,38 @@ ul.side-nav-items {
     width: 100px;
 }
 
-/* Editor package table column 2 */
-.data-package-item td:nth-of-type(2) {
+/* Editor package table file name column */
+.data-package-item td.name {
     white-space: normal;
 }
 
-/* Editor package table column 3 */
-.data-package-item td:nth-of-type(3) {
+/* Editor package table size column */
+.data-package-item td.size {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100px;
 }
 
-/* Editor package table column 4 */
-.data-package-item td:nth-of-type(4) {
+/* Editor package table type column */
+.data-package-item td.type {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100px;
+}
+
+/* Editor package table sharing column */
+.data-package-item td.sharing {
+    width: 60px;
+}
+
+.data-package-item td input[type='checkbox']{
+	margin-left: 30%;
+	height: auto;
+}
+.data-package-item .sharing .disabled{
+	opacity: .5;
 }
 
 /* Editor package table column 5 */
