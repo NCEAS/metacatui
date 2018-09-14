@@ -49,6 +49,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
                 this.$el.addClass("tooltip-this")
                         .attr("data-placement", "top")
                         .attr("data-trigger", "hover")
+                        .attr("data-delay", "700")
                         .attr("data-container", "body");
                 if  (this.metricName == 'Citations') {
                     this.$el.attr("data-title", "For all the versions of this dataset, the number of times that all or part of this dataset was cited.");
