@@ -63,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 				signInBtnsContainer.find("a.signin").each(function(i, a){
 					var url = $(a).attr("href");
-					url = url.substring(0, url.indexOf("target=")+7) + window.location.origin + window.location.pathname + encodeURIComponent("#") + "signinsuccess";
+					url = url.substring(0, url.indexOf("target=")+7) + MetacatUI.root + "/signinsuccess";
 					$(a).attr("href", url);
 				});
 
@@ -149,7 +149,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 					if( this.ldapOnly ){
 
-						var redirectUrl = window.location.origin + window.location.pathname + encodeURIComponent("#") + "signinSuccessLdap";
+						var redirectUrl = window.location.origin + window.location.pathname;
+						redirectUrl = redirectUrl.substring(0, redirectUrl.lastIndexOf("/"));
+						redirectUrl + "/signinSuccessLdap";
 
 						$(container).append(this.ldapTemplate({
 							redirectUrl:  redirectUrl
@@ -169,7 +171,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 					if( this.ldapOnly ){
 
-						var redirectUrl = window.location.origin + window.location.pathname + encodeURIComponent("#") + "signinSuccessLdap";
+						var redirectUrl = MetacatUI.root + "/signinSuccessLdap";
 
 						this.$el.append(this.ldapTemplate({
 							redirectUrl: redirectUrl
@@ -188,8 +190,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 					var signInUrl = MetacatUI.appModel.get('signInUrl')? MetacatUI.appModel.get('signInUrl') + target : null;
 					var signInUrlOrcid = MetacatUI.appModel.get('signInUrlOrcid') ? MetacatUI.appModel.get('signInUrlOrcid') + target : null;
 					var signInUrlLdap = MetacatUI.appModel.get('signInUrlLdap') ? MetacatUI.appModel.get('signInUrlLdap') + target : null,
-							redirectUrl = (window.location.href.indexOf("#signinldaperror") > -1) ?
-									window.location.href.replace("#signinldaperror", "") : window.location.href;
+							redirectUrl = (window.location.href.indexOf("signinldaperror") > -1) ?
+									window.location.href.replace("signinldaperror", "") : window.location.href;
 
 					$("body").append(this.template({
 						signInUrl:  signInUrl,

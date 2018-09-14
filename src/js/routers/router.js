@@ -459,11 +459,15 @@ function ($, _, Backbone) {
 				require(['views/SignInView'], function(SignInView){
 					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
 					MetacatUI.appView.signInView.ldapError = true;
+					MetacatUI.appView.signInView.ldapOnly = true;
+					MetacatUI.appView.signInView.fullPage = true;
 					MetacatUI.appView.showView(MetacatUI.appView.signInView);
 				});
 			}
 			else{
 				MetacatUI.appView.signInView.ldapError = true;
+				MetacatUI.appView.signInView.ldapOnly = true;
+				MetacatUI.appView.signInView.fullPage = true;
 				MetacatUI.appView.showView(MetacatUI.appView.signInView);
 			}
 		},
