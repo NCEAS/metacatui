@@ -593,12 +593,13 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 -------------------------------------------------- */
 
     #mainContent {
-      margin-top: -115px;
-      position: relative;
       background-color: #899CA6;
       padding-top: 20px;
       color: #FDFDFD;
-			min-height: 400px;
+			min-height: 420px;
+			width: calc(100% + 80px);
+			margin-left: -40px;
+			margin-top: -40px;
     }
 
     section#mainContent h4 {
@@ -630,10 +631,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 -------------------------------------------------- */
 
     #FeaturedData {
-      position: relative;
       background-color: #878787;
       color: #FDFDFD;
-      /*min-height: 1200px;*/
+			width: calc(100% + 80px);
+			margin-left: -40px;
+			margin-top: -40px;
     }
 
     #FeaturedData > section.row {
