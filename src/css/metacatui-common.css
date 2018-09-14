@@ -1657,7 +1657,7 @@ a.btn.metrics {
 }
 .metric-value.badge {
     float: right;
-    background-color: #1C6E84;
+    background-color: #333;
     margin-top: 2px;
 }
 .metric-icon {
@@ -1753,17 +1753,6 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     width: 138px;
 }
 
-a.btn.metrics:hover .metric-value.badge {
-    float: right;
-    color: #1C6E84;
-    background-color: #FFFFFF;
-}
-a.btn.metrics:hover, a.btn.metrics:click {
-    color: #888888;
-    background-color: #FFFFFF;
-    border-color: #C3C3C3;
-}
-
 #metric-modal {
     z-index: 1050;
     top: 15%;
@@ -1773,7 +1762,6 @@ a.btn.metrics:hover, a.btn.metrics:click {
 }
 #metric-modal .modal-content {
     width: auto;
-
 }
 
 #metric-modal .modal-header {
@@ -1852,7 +1840,7 @@ a.btn.metrics:hover, a.btn.metrics:click {
     text-align: center;
     vertical-align: middle;
     line-height: 150px;
-    
+
 }
 
 #metric-modal .metric-chart text.no-data {

@@ -2480,3 +2480,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 #metric-modal .metric-chart path.area {
 	fill: #1C6E84;
 }
+
+.metrics .metric-value.badge{
+  background-color: #1C6E84;
+}
+.metrics:hover .metric-value.badge{
+  background-color: #FFFFFF;
+  color: #1C6E84;
+}

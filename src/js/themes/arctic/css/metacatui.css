@@ -2960,14 +2960,22 @@ a {
     margin-left: 355px;
 }
 
+.metrics .metric-value.badge{
+  background-color: #146660;
+}
+.metrics:hover .metric-value.badge{
+  background-color: #FFFFFF;
+  color: #146660;
+}
+
 /******************************************
 * Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/
 
 #metric-modal .metric-chart path.line {
-	stroke: #19B36A;
+	stroke: #146660;
 }
 
 #metric-modal .metric-chart path.area {
-	fill: #19B36A;
+	fill: #146660;
 }
