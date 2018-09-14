@@ -1724,6 +1724,7 @@ svg .packages,
 .profile .download-chart .bar-chart .bar.packages,
 .profile .download-chart .bar-chart text.packages{
 	fill: #32887F;
+  stroke: #32887F;
 }
   /* Donut charts */
   #metadata-chart,
