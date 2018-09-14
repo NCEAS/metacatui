@@ -69,6 +69,8 @@ define(['jquery', 'underscore', 'backbone'],
 				read: true
 			}],
 
+			allowAccessPolicyChanges: true,
+
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
@@ -107,8 +109,8 @@ define(['jquery', 'underscore', 'backbone'],
 			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
 
 			// Metrics endpoint url
-			metricsUrl: null,
-			
+			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
+
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
 			displayDatasetMetrics: true,
@@ -204,9 +206,6 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("d1LogServiceUrl") != "undefined")
 					this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
 
-
-
-				this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/test/metrics');
 			}
 
 			this.on("change:pid", this.changePid);

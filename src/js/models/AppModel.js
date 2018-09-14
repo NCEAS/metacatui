@@ -60,6 +60,7 @@ define(['jquery', 'underscore', 'backbone'],
 			defaultAccessPolicy: [],
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			allowAccessPolicyChanges: true,
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
@@ -97,7 +98,7 @@ define(['jquery', 'underscore', 'backbone'],
 			mdqUrl: null,
 
 			// Metrics endpoint url
-			metricsUrl: null,
+			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 			
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
@@ -210,7 +211,6 @@ define(['jquery', 'underscore', 'backbone'],
 
 			this.on("change:pid", this.changePid);
 
-			this.set("metricsUrl", 'https://logproc-stage-ucsb-1.test.dataone.org/test/metrics');
 
 		},
 

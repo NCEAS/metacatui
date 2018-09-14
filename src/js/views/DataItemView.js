@@ -38,7 +38,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "click .cancel"        : "handleCancel",      // Cancel a file load
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
                 "mouseover .remove"    : "previewRemove",
-                "mouseout  .remove"    : "previewRemove"
+                "mouseout  .remove"    : "previewRemove",
+                "change .private"      : "changeAccessPolicy"
             },
 
             /* Initialize the object - post constructor */
@@ -166,15 +167,50 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
 
                 this.$el.html( this.template(attributes) );
+
+                //Initialize dropdowns
                 this.$el.find(".dropdown-toggle").dropdown();
 
-                //Add the title data-attribute attribute to the name cell
                 if(this.model.get("type") == "Metadata"){
+                  //Add the title data-attribute attribute to the name cell
                 	this.$el.find(".name").attr("data-attribute", "title");
                 	this.$el.addClass("folder");
                 }
                 else{
                 	this.$el.addClass("data");
+
+                  //Get the AccessPolicy for this object
+                  var accessPolicy = this.model.get("accessPolicy"),
+                      checkbox = this.$(".sharing input");
+
+                  //Check the public/private toggle if this object is private
+                  if( accessPolicy && !accessPolicy.isPublic() ){
+                    checkbox.prop("checked", true);
+                  }
+
+                  //If the user is not authorized to change the permissions of
+                  // this object, then disable the checkbox
+                  if( !accessPolicy.isAuthorized("changePermission") ){
+                    checkbox.prop("disabled", "disabled")
+                            .addClass("disabled");
+
+                    this.$(".sharing").tooltip({
+                      title: "You are not authorized to edit the privacy of this data file",
+                      placement: "top",
+                      container: this.el,
+                      trigger: "hover",
+                      delay: { show: 800 }
+                    });
+                  }
+                  else{
+                    checkbox.tooltip({
+                      title: "Check to make this data file private",
+                      placement: "top",
+                      trigger: "hover",
+                      delay: { show: 800 }
+                    });
+                  }
+
                 }
 
                 //Check if the data package is in progress of being uploaded
@@ -699,6 +735,56 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             							editableCell.text(editableCell.attr("data-original-text")).removeClass("empty");
             					});
             	}
+            },
+
+            /*
+            * Changes the access policy of a data object based on user input.
+            *
+            * @param {HTML DOM Event} e - The event that triggered this function as a callback
+            */
+            changeAccessPolicy: function(e){
+
+              if( typeof e === "undefined" || !e )
+                return;
+
+              var dataModel   = this.model,
+                  makePrivate = $(e.target).prop("checked");
+
+              //If the user has chosen to make this object private
+              if(makePrivate){
+
+                //Get the existing access policy
+                var accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  //Make the access policy private
+                  accessPolicy.makePrivate();
+                }
+                else{
+                  //Create an access policy from the default settings
+                  this.model.createAccessPolicy();
+                  //Make the access policy private
+                  this.model.get("accessPolicy").makePrivate();
+                }
+
+              }
+              else{
+                //Get the existing access policy
+                var accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  //Make the access policy public
+                  accessPolicy.makePublic();
+                }
+                else{
+                  //Create an access policy from the default settings
+                  this.model.createAccessPolicy();
+                  //Make the access policy public
+                  this.model.get("accessPolicy").makePublic();
+                }
+              }
+
+              //Close the tooltips
+              this.$(".sharing").tooltip("hide");
+
             },
 
             showValidation: function(attr, errorMsg){

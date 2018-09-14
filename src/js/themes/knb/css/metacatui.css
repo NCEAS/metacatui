@@ -3047,9 +3047,9 @@ a {
 ********************************************/
 
 #metric-modal .metric-chart path.line {
-   stroke: #38B0B0;
+   stroke: #006699;
 }
 
 #metric-modal .metric-chart path.area {
-   fill: #38B0B0;
+   fill: #006699;
 }
