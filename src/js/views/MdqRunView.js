@@ -38,7 +38,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 
 			var suiteId = $(select).val();
 
-			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: true});
+			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: false});
+
+			this.suiteId = suiteId;
+			this.render();
 
 			return false;
 		},
