@@ -556,18 +556,24 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		 */
 		insertReplicas: function(statsModel){
 
-			var view = this;
+			var view = this,
+					memberNodeID = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier));
 
 			var requestSettings = {
 					url: MetacatUI.appModel.get("queryServiceUrl") +
-						"q=replicaMN:" +
-						MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier)) +
+						"q=replicaMN:" + memberNodeID +
+						 " -datasource:" + memberNodeID +
 						"&wt=json&rows=0",
 					type: "GET",
 					dataType: "json",
 					success: function(data, textStatus, xhr){
-						view.$("#total-replicas-container").html(MetacatUI.appView.commaSeparateNumber(data.response.numFound));
-						view.$("#total-replicas-wrapper").show();
+						if( data.response.numFound > 0 ){
+							view.$("#total-replicas-container").html(MetacatUI.appView.commaSeparateNumber(data.response.numFound));
+							view.$("#total-replicas-wrapper").show();
+						}
+						else{
+							view.$("#total-replicas-wrapper").hide();
+						}
 					}
 			}
 
