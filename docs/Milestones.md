@@ -1,15 +1,10 @@
 # Milestones from MetacatUI prioritization
 
-## Milestone 2.2.0 (Friday September 14, 2018)
-- Citation List modal (Rushiraj)
-- Metric time series in the MetadataView (Robyn)
-- Add public/private toggle in editor - Allows for KNB production deployment (yay!)
-
-## Milestone 2.3.0 (Friday September 21, 2018)
+## Milestone 2.3.0 (October 5, 2018)
 - Save emergency draft for manual recovery (MVP) (Chris) - Allows for Arctic Data Center production deployment (yay!)
 - Semantic search UI mockups (Lauren)
 
-## Milestone 3.0.0 (October 5, 2018)
+## Milestone 3.0.0 (October 12, 2018)
 - Configuration refactor (Lauren)
 - Code minimization/optimization (Lauren)
 
@@ -29,7 +24,6 @@
 - Repository Profile Metrics (Rushiraj)
 
 ## Milestone 3.3.0 (December 2018)
-
 
 ## Milestone 3.4.0 (January 2019)
 - Aggregated metric views (metrics on user profiles, repo profiles, etc) (Rushiraj)
