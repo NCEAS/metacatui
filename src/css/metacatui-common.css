@@ -3088,7 +3088,6 @@ body.mapMode{
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#b3000000',GradientType=0 ); /* IE6-9 */
   padding: 5px;
   top: 0px;
-  z-index: 1;
   height: auto;
   position: relative;
   display: block;
@@ -3113,7 +3112,7 @@ body.mapMode{
 	margin-right: 5px;
 }
 .map-toggle-container > label{
-	color: yellow;
+	color: #FFF;
 	float: right;
 }
 .map-toggle-container > input[type="checkbox"]{
