@@ -1661,12 +1661,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         textString = textString.trim();
 
-        textString = textString.replace(/&(?!(?:apos|quot|[gl]t|amp);)/g, '&amp;')
-                               .replace(/</g, '&lt;')
-                               .replace(/>/g, '&gt;')
-                               .replace(/"/g, '&quot;')
-                               .replace(/'/g, '&apos;');
-
         return textString;
 
       },

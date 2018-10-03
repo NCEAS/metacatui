@@ -1,6 +1,6 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/AccessPolicy', 'collections/ObjectFormats', 'md5'],
-    function($, _, Backbone, uuid, AccessPolicy, ObjectFormats, md5){
+define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPolicy', 'collections/ObjectFormats', 'md5'],
+    function($, _, Backbone, uuid, he, AccessPolicy, ObjectFormats, md5){
 
         /*
          A DataONEObject represents a DataONE object that has a format
@@ -1239,6 +1239,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'collections/AccessPolicy', 
               }
 
             }, this);
+
+            //Take each XML node text value and decode any XML entities
+            var regEx = new RegExp("\&[0-9a-zA-Z]+\;", "g");
+            xmlString = xmlString.replace(regEx, function(match){ return he.encode(he.decode(match)); });
 
             return xmlString;
           },
