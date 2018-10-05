@@ -54,6 +54,7 @@ require.config({
     md5: MetacatUI.root + '/components/md5',
     rdflib: MetacatUI.root + '/components/rdflib.min',
     x2js: MetacatUI.root + '/components/xml2json',
+    he: MetacatUI.root + '/components/he',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
