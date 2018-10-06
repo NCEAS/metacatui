@@ -32,18 +32,13 @@
 			}
           	%>
       </div>
-	<div class="stats icons stop-route">
-		<%
-
-		if (typeof read_count_i !== "undefined"){
-			var readableCount = MetacatUI.appView.commaSeparateNumber(read_count_i); %>
-			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
-		<% }
-		else{
-		%>
-			<span></span>
-		<% }
-		%>
+	<div class="metrics">
+		<span id="resultItem-DownloadCount" class='metric-stat'>
+        	<i class='icon metric-icon icon-spinner icon-spin'></i>
+        </span>
+       	<span id="resultItem-ViewCount" class='metric-stat'>
+        	<i class='icon metric-icon icon-spinner icon-spin'></i>
+        </span>
 	</div>
     <% if(typeof abstract != "undefined"){  %>
 		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>

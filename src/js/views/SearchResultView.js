@@ -15,6 +15,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		// Cache the template function for a single item.
 		//template: _.template($('#result-template').html()),
 		template: _.template(ResultItemTemplate),
+		//Templates
+        metricStatTemplate:  _.template( "<span class='metric-stat'> <i class='icon" + 
+                            " <%=metricIcon%>'></i> <%=metricValue %> </span>"),
 
 		// The DOM events specific to an item.
 		events: {
@@ -26,20 +29,24 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		// The SearchResultView listens for changes to its model, re-rendering. Since there's
 		// a one-to-one correspondence between a **SolrResult** and a **SearchResultView** in this
 		// app, we set a direct reference on the model for convenience.
-		initialize: function () {
+		initialize: function (options) {
 			this.listenTo(this.model, 'change', this.render);
 			this.listenTo(this.model, 'reset', this.render);
 			//this.listenTo(this.model, 'destroy', this.remove);
 			//this.listenTo(this.model, 'visible', this.toggleVisible);
+
+			if(typeof options.metricsModel !== "undefined")
+				this.metricsModel = options.metricsModel;
 		},
 
 		// Re-render the citation of the result item.
 		render: function () {
+
 			//Convert the model to JSON and create the result row from the template
 			var json = this.model.toJSON();
 			json.hasProv  = this.model.hasProvTrace();
 			json.memberNode = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: this.model.get("datasource")});
-				
+
 			var resultRow = this.template(json);
 			this.$el.html(resultRow);
 			
@@ -100,8 +107,27 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				this.$(".popover-this.abstract").addClass("inactive");
 				this.$(".icon.abstract").addClass("inactive");
 			}
+
+			// waiting for the fetch() call to succeed.
+            this.listenTo(this.metricsModel, "sync", this.displayMetrics);
 			
 			return this;
+		},
+
+		displayMetrics: function() {
+			var datasets = this.metricsModel.get("datasets");
+			var downloads = this.metricsModel.get("downloads");
+			var views = this.metricsModel.get("views");
+
+			var index = datasets.indexOf(this.model.get("id"));
+			var viewCount = views[index];
+			var downloadCount = downloads[index];
+
+			// Replacing the metric total count with the spinning icon.
+            this.$('#resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}));
+
+            this.$('#resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}));
+
 		},
 
 		// Toggle the `"selected"` state of the model.

@@ -1820,6 +1820,14 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	padding-top: 22px;
 }
 
+
+/******************************************
+* Search Page Metrics
+******************************************/
+.metric-stat{
+	padding-right: 5px;
+}
+
 /******************************************
 * Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/

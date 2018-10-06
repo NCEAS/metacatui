@@ -7,6 +7,7 @@ define(['jquery',
 				'collections/SolrResults',
 				'models/Search',
 				'models/Stats',
+				'models/MetricsModel',
 				'views/SearchResultView',
 				'text!templates/search.html',
 				'text!templates/statCounts.html',
@@ -17,7 +18,7 @@ define(['jquery',
 				'gmaps',
 				'nGeohash'
 				],
-	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
+	function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, MetricsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate, MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
 	'use strict';
 
 	var DataCatalogView = Backbone.View.extend({
@@ -39,6 +40,10 @@ define(['jquery',
 		mainContentTemplate: _.template(MainContentTemplate),
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
 		loadingTemplate: _.template(LoadingTemplate),
+		metricStatTemplate:  _.template( "<span class='metric-icon'> <i class='icon" + 
+                            " <%=metricIcon%>'></i> </span>" +
+                            "<span class='metric-value'> <i class='icon metric-icon'>" +
+                            "</i> </span>"),
 
 		//Search mode
 		mode: "map",
@@ -2732,11 +2737,22 @@ define(['jquery',
 				//Remove the loading styles from the map
 				$("#map-container").removeClass("loading");
 			}
+			
+			var pid_list = new Array();
+
+			//--- Add all the results to the list ---
+			for (i = 0; i < this.searchResults.length; i++) {
+				pid_list.push(this.searchResults.models[i].get("id"));
+			};
+			// console.log(pid_list);
+			var metricsModel = new MetricsModel({pid_list: pid_list, type: "catalog"});
+			metricsModel.fetch();
+			this.metricsModel = metricsModel;
 
 			//--- Add all the results to the list ---
 			for (i = 0; i < this.searchResults.length; i++) {
 				var element = this.searchResults.models[i];
-				if(typeof element !== "undefined") this.addOne(element);
+				if(typeof element !== "undefined") this.addOne(element, this.metricsModel);
 			};
 
 			// Initialize any tooltips within the result item
@@ -2757,7 +2773,7 @@ define(['jquery',
 			result.set( {view_service: this.$view_service, package_service: this.$package_service} );
 
 			//Create a new result item
-			var view = new SearchResultView({ model: result });
+			var view = new SearchResultView({ model: result, metricsModel: this.metricsModel });
 
 			//Add this item to the list
 			this.$results.append(view.render().el);
@@ -2778,6 +2794,7 @@ define(['jquery',
 				}
 			}
 		},
+
 
 		/**
 		 * ==================================================================================================
