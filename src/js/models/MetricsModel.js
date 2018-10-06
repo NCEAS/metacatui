@@ -14,6 +14,7 @@ define(['jquery', 'underscore', 'backbone'],
             resultDetails: null,
             pid_list: null,
             url: null,
+            filterType: null,
 
             // metrics and metric Facets returned as response from the user
             // datatype: array
@@ -25,6 +26,7 @@ define(['jquery', 'underscore', 'backbone'],
             years: null,
             repository: null,
             award: null,
+            datasets: null,
 
 
             // Total counts for metrics
@@ -53,7 +55,7 @@ define(['jquery', 'underscore', 'backbone'],
             ],
             "filterBy": [
                 {
-                    "filterType": "dataset",
+                    "filterType": "",
                     "values": [],
                     "interpretAs": "list"
                 },
@@ -72,6 +74,7 @@ define(['jquery', 'underscore', 'backbone'],
         initialize: function(options) {
             if(!(options.pid == 'undefined')) {
                 this.pid_list = options.pid_list;
+                this.filterType = options.type;
             }
             // url for the model that is used to for the fetch() call
             this.url = MetacatUI.appModel.get("metricsUrl");
@@ -80,7 +83,7 @@ define(['jquery', 'underscore', 'backbone'],
         // Overriding the Model's fetch function.
         fetch: function(){
           var fetchOptions = {};
-
+          this.metricRequest.filterBy[0].filterType = this.filterType;
           this.metricRequest.filterBy[0].values = this.pid_list;
 
           // TODO: Set the startDate and endDate based on the datePublished and current date
@@ -116,6 +119,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         // Parsing the response for setting the Model's member variables.
         parse: function(response){
+
             return {
                 "metricRequest": response.metricsRequest,
                 "citations": response.results.citations,
@@ -123,7 +127,8 @@ define(['jquery', 'underscore', 'backbone'],
                 "downloads": response.results.downloads,
                 "months": response.results.months,
                 "country": response.results.country,
-                "resultDetails": response.resultDetails
+                "resultDetails": response.resultDetails,
+                "datasets": response.results.datasets
             }
         }
 

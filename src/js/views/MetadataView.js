@@ -1023,7 +1023,7 @@ define(['jquery',
 		insertMetricsControls: function() {
 			var pid_list = [];
 			pid_list.push(this.pid);
-			var metricsModel = new MetricsModel({pid_list: pid_list});
+			var metricsModel = new MetricsModel({pid_list: pid_list, type: "dataset"});
 			metricsModel.fetch();
 			this.metricsModel = metricsModel;
 
