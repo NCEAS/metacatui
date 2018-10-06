@@ -340,25 +340,26 @@ define(['jquery', 'underscore', 'backbone',
 			$(sizeCell).text(size);
 			$(tr).append(sizeCell);
 	
-			//The number of reads/downloads cell
-			var reads = memberModel.get("read_count_i") || memberModel.get("reads");
-			var readsCell = $(document.createElement("td")).addClass("downloads");		
-			this.readsEnabled = false;
-			$(tr).append(readsCell);
-			if((typeof reads !== "undefined") && reads){ 
-				
-				if(formatType == "METADATA" && reads == 1) 
-					reads += " view";
-				else if(formatType == "METADATA")
-					reads += " views";
-				else if(reads == 1)
-					reads += " download";
-				else
-					reads += " downloads";
-								
-				$(readsCell).text(reads);
-				this.readsEnabled = true;
-			}
+			// //The number of reads/downloads cell
+			// // Removing the downloads (this version) from the package table
+			// var reads = memberModel.get("read_count_i") || memberModel.get("reads");
+			// var readsCell = $(document.createElement("td")).addClass("downloads");		
+			// this.readsEnabled = false;
+			// $(tr).append(readsCell);
+			// if((typeof reads !== "undefined") && reads){ 
+            // 
+			// 	if(formatType == "METADATA" && reads == 1) 
+			// 		reads += " view";
+			// 	else if(formatType == "METADATA")
+			// 		reads += " views";
+			// 	else if(reads == 1)
+			// 		reads += " download";
+			// 	else
+			// 		reads += " downloads";
+            // 
+			// 	$(readsCell).text(reads);
+			// 	this.readsEnabled = true;
+			// }
 			
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");	
