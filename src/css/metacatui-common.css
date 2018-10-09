@@ -1503,11 +1503,11 @@ img.icon{
 }
 .metadata-view .controls-container{
 	margin-bottom: 20px;
+	padding: 10px;
 }
 .metadata-view .controls-container > .controls{
-	display: inline;
-	float: left;
-	margin-right: 20px;
+	display: inline-block;
+	float: right;
 }
 .metadata-view .controls-container > .controls .inline-buttons{
 	margin-top: 0px;
@@ -1605,12 +1605,14 @@ body > .alert-container {
   float: right;
   margin-bottom: 10px;
 }
-.metadata-controls-container .info-icons{
+.controls-container .info-icons{
 	display: inline-block;
-	padding-left: 20px;
-	font-size: 1.2em;
-	top: 5px;
-    position: relative;
+	margin-left: 10px;
+	margin-right: 20px;
+	vertical-align: top;
+}
+.controls-container .info-icons .icon {
+	font-size: 25px;
 }
 .metadata-controls-container{
 	position: relative;
@@ -1640,20 +1642,15 @@ body > .alert-container {
 /******************************************
 * Metrics Controller Styling
 ********************************************/
-/* Style for the metric button */
-
-
-
+.metrics-container{
+	display: inline-block;
+}
 
 /***********
 Defult button styling for Metrics views
 ***********/
 a.btn.metrics {
-    display: inline-block;
     width: 164px;
-    padding-right: 0px;
-    margin-top: -14px;
-    margin-left: -5px;
 }
 .metric-value.badge {
     float: right;
@@ -1696,60 +1693,16 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     float: left;
     width: auto;
 }
-.edit-toolbar {
+.controls-container .controls {
     border-left: 1px solid #E3E3E3;
     float: right;
-    margin-top: -15px;
-    width: auto;
-    height: 50px;
-
+		padding-left: 10px;
 }
-
-.edit-toolbar >
-#metadata-controls-container >
-.metadata-controls-container {
-    margin-left: 15px;
-    margin-top: 10px;
-    margin-right: -10px;
-    width: auto;
-    height: 38px;
-    display: inline-block;
-    position: relative;
-}
-
-.edit-toolbar >
-#owner-controls-container >
-.authority-controls {
-    width: auto;
-    height: 38px;
-    margin-top: -38px;
-    margin-right: -20px;
-    margin-left: 170px;
-}
-
-.edit-toolbar >
-#owner-controls-container >
-.authority-controls >
-#editMetadata {
-    margin-right: 15px;
-}
-
-/* .edit-toolbar >
-#metadata-controls-container.controls >
-.metadata-controls-container >
-.copy-success{
-	position: absolute;
-    top: -24px;
-    left: 17px;
-    font-size: .9em;
-} */
-
-
 /* Making the publish button consistent size as the downloads all*/
-.edit-toolbar >
-#owner-controls-container >
-.authority-controls >
-#publish {
+#owner-controls-container > .btn {
+    margin-right: 10px;
+}
+.edit-toolbar > #owner-controls-container #publish {
     width: 138px;
 }
 

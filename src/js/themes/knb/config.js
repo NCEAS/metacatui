@@ -1,15 +1,15 @@
 MetacatUI.theme = MetacatUI.theme || "knb";
 MetacatUI.themeTitle = "KNB";
-MetacatUI.themeMap = 
+MetacatUI.themeMap =
 {
 	'*': {
 		// Template overrides are provided here
-		
+
 		// Resources (js) omit extension
 		//'views/AboutView' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/views/AboutView',
 		//'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router',
 		'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js',
-		
+
 		// Templates include extension
 		'templates/app.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/app.html',
 		'templates/navbar.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/navbar.html',
@@ -20,7 +20,8 @@ MetacatUI.themeMap =
 		'templates/altHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
 		'templates/tools.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/tools.html',
-		'templates/about.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/about.html'
+		'templates/about.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/about.html',
+		'templates/publishDOI.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/publishDOI.html'
 		}
 };
 
@@ -29,7 +30,7 @@ MetacatUI.customAppConfig = function(){
 	if(!MetacatUI.appModel || (MetacatUI.appModel.get("baseUrl").indexOf("knb.ecoinformatics.org") < 0)) return;
 
 	//Gmaps key  AIzaSyA6-jiEs5rmEqKk70bigvnwuvhdZbt4tJs
-	
+
 	MetacatUI.appModel.set("nodeId", "urn:node:KNB");
 	MetacatUI.appModel.set("googleAnalyticsKey", "UA-1588494-14");
 }

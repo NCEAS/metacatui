@@ -1,14 +1,14 @@
 # Milestones from MetacatUI prioritization
 
-## Milestone 2.3.0 (October 5, 2018)
+## Milestone 2.3.0 (October 12, 2018)
 - Save emergency draft for manual recovery (MVP) (Chris) - Allows for Arctic Data Center production deployment (yay!)
 - Semantic search UI mockups (Lauren)
 
-## Milestone 3.0.0 (October 12, 2018)
+## Milestone 3.0.0 (October 2018)
 - Configuration refactor (Lauren)
 - Code minimization/optimization (Lauren)
 
-## Milestone 3.1.0 (October 2018)
+## Milestone 3.1.0 (November 2018)
 - Finalize collection and project schema (Lauren)
 - People graph with disambiguated user profile pages (linking Creator metadata to accounts) (Bryce)
 - Search Page aggregated metrics (Citations, Downloads, Views) (Rushiraj)
@@ -16,7 +16,7 @@
 - Annotation Display in MetadataView (Bryce with Lauren/Chris)
 - New attribute editor mockup (Chris)
 
-## Milestone 3.2.0 (November 2018)
+## Milestone 3.2.0 (late November 2018)
 - New attribute editor UX review (Chris)
 - Replace entity - ??
 - Copy attribute metadata in Editor (Dominic)
