@@ -1824,23 +1824,12 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 /******************************************
 * Search Page / Data Catalog Page Metrics
 ******************************************/
-span.catalog.badge {
-	background-color: #555;
-	padding: -2px 0px -2px 0px;
-	margin: 0px 3px 0px 3px;
-	font-size: 14px;
-
+.catalog-metrics .badge {
+	background-color: #dedede;
+	color: #666;
 }
 i.catalog-metric-icon {
 	margin-right: 3px;
-}
-.catalog-metrics {
-	width: 218px;
-	margin-left: 90px;
-}
-.catalog-stat{
-	float: left;
-    width: 70px;
 }
 
 /******************************************
