@@ -16,8 +16,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		//template: _.template($('#result-template').html()),
 		template: _.template(ResultItemTemplate),
 		//Templates
-        metricStatTemplate:  _.template( "<span class='metric-stat'> <i class='icon" + 
-                            " <%=metricIcon%>'></i> <%=metricValue %> </span>"),
+        metricStatTemplate:  _.template( "<a class='btn catalog metrics-button-disabled '> <span class=''> <i class='catalog-metric-icon" + 
+                            " <%=metricIcon%>'></i> </span>" +
+                            "<span class='catalog metrics-value badge'> <%=metricValue%> </span> </a>"),
 
 		// The DOM events specific to an item.
 		events: {
@@ -118,12 +119,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			var datasets = this.metricsModel.get("datasets");
 			var downloads = this.metricsModel.get("downloads");
 			var views = this.metricsModel.get("views");
+			var citations = this.metricsModel.get("citations");
 
 			var index = datasets.indexOf(this.model.get("id"));
 			var viewCount = views[index];
 			var downloadCount = downloads[index];
+			var citationCount = citations[index];
 
 			// Replacing the metric total count with the spinning icon.
+			this.$('#resultItem-CitationCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(citationCount,1), metricIcon:'icon-quote-right'}));
+
             this.$('#resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}));
 
             this.$('#resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}));

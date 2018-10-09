@@ -82,13 +82,16 @@
 
         </div>
 
-		<div class="span1 stats">
-			<%
-
-			if (typeof read_count_i != "undefined"){
-				print('<span class="count">', commaSeparateNumber(read_count_i), '</span><label class="subtle">views</label>');
-			}
-			%>
+		<div class="metrics">
+			<span id="resultItem-CitationCount" class='metric-stat'>
+	        	<i class='icon metric-icon icon-spinner icon-spin'></i>
+	        </span>
+			<span id="resultItem-DownloadCount" class='metric-stat'>
+	        	<i class='icon metric-icon icon-spinner icon-spin'></i>
+	        </span>
+	       	<span id="resultItem-ViewCount" class='metric-stat'>
+	        	<i class='icon metric-icon icon-spinner icon-spin'></i>
+	        </span>
 		</div>
 
 </div>
