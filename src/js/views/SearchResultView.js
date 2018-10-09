@@ -128,26 +128,26 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			// Generating tool-tip title
 			// Citations
 			if(citationCount == 1){
-				var citationToolTip = citationCount + " Citation";
+				var citationToolTip = citationCount + " citation";
 			}
 			else {
-				var citationToolTip = MetacatUI.appView.numberAbbreviator(citationCount,1) + " Citations";
+				var citationToolTip = MetacatUI.appView.numberAbbreviator(citationCount,1) + " citations";
 			}
 
 			// Downloads
 			if(downloadCount == 1){
-				var downloadToolTip = downloadCount + " Download";
+				var downloadToolTip = downloadCount + " download";
 			}
 			else {
-				var downloadToolTip = MetacatUI.appView.numberAbbreviator(downloadCount,1) + " Downloads";
+				var downloadToolTip = MetacatUI.appView.numberAbbreviator(downloadCount,1) + " downloads";
 			}
 
 			// Views
 			if(viewCount == 1){
-				var viewToolTip = viewCount + " View";
+				var viewToolTip = viewCount + " view";
 			}
 			else {
-				var viewToolTip = MetacatUI.appView.numberAbbreviator(viewCount,1) + " Views";
+				var viewToolTip = MetacatUI.appView.numberAbbreviator(viewCount,1) + " views";
 			}
 
 
