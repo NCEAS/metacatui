@@ -56,11 +56,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//  retrieved from the response
 			else if(this.model.type == "CitationModel") {
 				var authorText = this.model.get("origin") || "",
-					datasource = this.model.get("publisher"),
+					datasource = this.model.get("journal"),
 					dateUploaded = this.model.get("year_of_publishing"),
 					sourceUrl = this.model.get("source_url"),
 					sourceId = this.model.get("source_id"),
-					title = this.model.get("title");
+					title = this.model.get("title"),
+					journal =this.model.get("publisher"),
+					volume =this.model.get("volume"),
+					page =this.model.get("page");
 			
 				// Format the Author textarea				else if (this.model.type == "CitationModel") {
 				if (authorText.length > 0) {
@@ -271,12 +274,34 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			//Create a link and put all the citation parts together
 			if (this.createLink){
 				if(this.model.type == "CitationModel") {
+
+					// Creating APA style
+					//Volume
+					//Page Numbers
+					if(volume === "NULL") {
+						var volumeText = "";
+					}
+					else {
+						var volumeText = "Vol. " + volume + ". ";
+					}
+					var volumeEl = $(document.createElement("span")).addClass("publisher").text(volumeText);
+					
+					//Page Numbers
+					if(page === "NULL") {
+						var pageText = "";
+					}
+					else {
+						var pageText = "pp. " + page + ". ";
+					}
+					
+					var pageEl = $(document.createElement("span")).addClass("publisher").text(pageText);
+
 					var linkEl = $(document.createElement("a"))
 									.addClass("metrics-route-to-metadata")
 									.attr("data-id", id)
 									.attr("href", sourceUrl)
 									.attr("target", "_blank")
-									.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
+									.append(authorEl, pubDateEl, titleEl, publisherEl, volumeEl, pageEl, idEl);
 				}
 				else {
 					var linkEl = $(document.createElement("a"))

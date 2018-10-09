@@ -22,6 +22,9 @@ define(["jquery", "underscore", "backbone"], function($, _, Backbone) {
                 source_id: null,
                 target_id: null,
                 publisher: null,
+                journal: null,
+                volume: null,
+                page: null,
             };
         },
 
