@@ -1,7 +1,7 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'], 				
+define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/PackageModel', 'views/CitationView', 'text!templates/resultsItem.html'],
 	function($, _, Backbone, SolrResult, Package, CitationView, ResultItemTemplate) {
-	
+
 	'use strict';
 
 	// SearchResult View
@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		//template: _.template($('#result-template').html()),
 		template: _.template(ResultItemTemplate),
 		//Templates
-        metricStatTemplate:  _.template( "<span class='catalog badge'> <i class='catalog-metric-icon " + 
+        metricStatTemplate:  _.template( "<span class='catalog badge'> <i class='catalog-metric-icon " +
                             " <%=metricIcon%>'></i> <%=metricValue%> </span>"),
 
 		// The DOM events specific to an item.
@@ -49,28 +49,28 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			var resultRow = this.template(json);
 			this.$el.html(resultRow);
-			
+
 			//Create the citation
 			var citation = new CitationView({metadata: this.model}).render().el;
 			var placeholder = this.$(".citation");
 			if(placeholder.length < 1) this.$el.append(citation);
 			else $(placeholder).replaceWith(citation);
-			
+
 			//Create the OpenURL COinS
 			var span = this.getOpenURLCOinS();
 			this.$el.append(span);
-						
+
 			//Save the id in the DOM for later use
 			var id = json.id;
 			this.$el.attr("data-id", id);
-			
+
 				//If this object has a provenance trace, we want to display information about it
 				if(json.hasProv){
-					
+
 					var numSources = this.model.get("prov_hasSources"),
 						numDerivations = this.model.get("prov_hasDerivations");
-					
-					//Create the title of the popover 
+
+					//Create the title of the popover
 					/*if(numSources) title += " was created using source";
 					if(numSources > 1) title += "s";
 					if(numSources > 0 &amp;&amp; numDerivations > 0) title += " and";
@@ -79,21 +79,21 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 					title += ".";
 									*/
 					if(numDerivations || numSources) var title = "This dataset contains provenance information";
-					
+
 					//Make a tooltip with basic info for mouseover
 					this.$el.find(".provenance.active").tooltip({
 						placement: "top",
 						trigger: "hover",
 						container: this.el,
 						title: title
-					});	
+					});
 				}
-				
+
 			if(this.model.get("abstract")){
 				var abridgedAbstract = (this.model.get("abstract").indexOf(" ", 250) < 0) ? this.model.get("abstract") : this.model.get("abstract").substring(0, this.model.get("abstract").indexOf(" ", 250)) + "...";
 				var content = $(document.createElement("div"))
 								.append($(document.createElement("p")).text(abridgedAbstract));
-												
+
 				this.$(".popover-this.abstract").popover({
 					trigger: "hover",
 					html: true,
@@ -110,7 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			// waiting for the fetch() call to succeed.
             this.listenTo(this.metricsModel, "sync", this.displayMetrics);
-			
+
 			return this;
 		},
 
@@ -154,26 +154,29 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			// Replacing the metric total count with the spinning icon.
 						// Replacing the metric total count with the spinning icon.
-			this.$('#resultItem-CitationCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(citationCount,1), metricIcon:'icon-quote-right'}))
+			this.$('.resultItem-CitationCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(citationCount,1), metricIcon:'icon-quote-right'}))
 		    									.tooltip({
 													placement: "top",
 													trigger: "hover",
+													delay: 800,
 													container: this.el,
 													title: citationToolTip
 												});
 
-            this.$('#resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}))
+            this.$('.resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}))
             								   .tooltip({
 													placement: "top",
 													trigger: "hover",
+													delay: 800,
 													container: this.el,
 													title: downloadToolTip
 												});
 
-            this.$('#resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}))
+            this.$('.resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}))
             								.tooltip({
 												placement: "top",
 												trigger: "hover",
+												delay: 800,
 												container: this.el,
 												title: viewToolTip
 											});
@@ -183,18 +186,18 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		toggleSelected: function () {
 			this.model.toggle();
 		},
-		
-		routeToMetadata: function(e){	
+
+		routeToMetadata: function(e){
 			var id = this.model.get("id");
-			
+
 			//If the user clicked on a download button or any element with the class 'stop-route', we don't want to navigate to the metadata
 			if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
 				return;
-			
+
 			MetacatUI.uiRouter.navigate('view/'+id, {trigger: true});
 		},
-		
-		download: function(e){				
+
+		download: function(e){
 			if(MetacatUI.appUserModel.get("loggedIn") && !this.model.get("isPublic")){
 				if(e){
 					e.preventDefault();
@@ -202,35 +205,35 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				}
 				else
 					var packageId = this.model.get("resourceMap");
-				
+
 				var fileName = this.model.get("fileName") || this.model.get("title");
-				
+
 				//Download the entire package if there is one
 				if(packageId){
-					
+
 					//If there is more than one resource map, download all of them
 					if(Array.isArray(packageId)){
 						for(var i = 0; i<packageId.length; i++){
-							var pkgFileName = fileName || "Dataset_" + (i+1); 
-							
+							var pkgFileName = fileName || "Dataset_" + (i+1);
+
 							//Take off the file extension part of the file name
 							if(pkgFileName.lastIndexOf(".") > 0)
 								pkgFileName = pkgFileName.substring(0, pkgFileName.lastIndexOf("."));
-								
-							var packageModel = new Package({ 
+
+							var packageModel = new Package({
 								id: packageId[i],
 								fileName: pkgFileName + ".zip"
 							});
 							packageModel.downloadWithCredentials();
 						}
 					}
-					else{							
+					else{
 						//Take off the file extension part of the file name
 						if(fileName.lastIndexOf(".") > 0)
 							fileName = fileName.substring(0, fileName.lastIndexOf("."));
-						
+
 						//Create a model to represent the package
-						var packageModel = new Package({ 
+						var packageModel = new Package({
 							id: packageId,
 							fileName: fileName + ".zip"
 						});
@@ -243,11 +246,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				}
 			}
 			else
-				return true;			
+				return true;
 		},
-		
+
 		getOpenURLCOinS: function(){
-			//Create the OpenURL COinS 
+			//Create the OpenURL COinS
 			var spanTitle = "ctx_ver=Z39.88-2004&amp;rft_val_fmt=info:ofi/fmt:kev:mtx:dc&amp;rfr_id=info:sid/ocoins.info:generator&amp;rft.type=Dataset";
 
 			if(this.model.get("title")) 	 spanTitle += "&amp;rft.title=" + this.model.get("title");
@@ -259,15 +262,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			if(this.model.get("formatID")) 	 spanTitle += "&amp;rft.format=" + this.model.get("formatID");
 			if(this.model.get("id"))         spanTitle += "&amp;rft.identifier=" + this.model.get("id");
 			if(this.model.get("url")) 		 spanTitle += "&amp;rft.source=" + this.model.get("url");
-			if(this.model.get("northBoundCoord")){					
-				spanTitle += "&amp;rft.coverage=POLYGON((" + this.model.get("southBoundCoord") + " " + this.model.get("westBoundCoord") + ", " + 
+			if(this.model.get("northBoundCoord")){
+				spanTitle += "&amp;rft.coverage=POLYGON((" + this.model.get("southBoundCoord") + " " + this.model.get("westBoundCoord") + ", " +
 														     this.model.get("northBoundCoord") + " " + this.model.get("westBoundCoord") + ", " +
 														     this.model.get("northBoundCoord") + " " + this.model.get("eastBoundCoord") + ", " +
 														     this.model.get("southBoundCoord") + " " + this.model.get("eastBoundCoord") + "))";
 			}
-			
+
 			spanTitle = encodeURI(spanTitle);
-			
+
 			return $(document.createElement("span")).attr("title", spanTitle).addClass("Z3988");
 		},
 
@@ -275,7 +278,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		clear: function () {
 			this.model.destroy();
 		},
-		
+
 		onClose: function(){
 			this.clear();
 		}

@@ -30,13 +30,13 @@
           	%>
       </div>
   	<div class="catalog-metrics">
-      <span id="resultItem-CitationCount" class='catalog-stat'>
+      <span class='catalog-stat resultItem-CitationCount'>
             <i class='icon catalog-metric-icon icon-spinner icon-spin'></i>
           </span>
-      <span id="resultItem-DownloadCount" class='catalog-stat'>
+      <span class='catalog-stat resultItem-DownloadCount'>
             <i class='icon catalog-metric-icon icon-spinner icon-spin'></i>
           </span>
-          <span id="resultItem-ViewCount" class='catalog-stat;'>
+          <span class='catalog-stat resultItem-ViewCount'>
             <i class='icon catalog-metric-icon icon-spinner icon-spin'></i>
           </span>
     </div>
@@ -52,7 +52,7 @@
 
     </div>
       	<div class="on-map icons  stop-route">
-		<% 
+		<%
 		if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
         	print('<i class="icon icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body"  title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
         }
