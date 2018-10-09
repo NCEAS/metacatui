@@ -40,6 +40,10 @@ define(['jquery', 'underscore', 'backbone',
 				this.model.set("memberId", this.memberId);
 				this.model.set("packageId", this.packageId);
 			}
+
+			if(!(typeof options.metricsModel == "undefined")){
+                this.metricsModel = options.metricsModel;
+            }
 			
 			//Get the members
 			if(this.packageId)    this.model.getMembers();
@@ -342,24 +346,41 @@ define(['jquery', 'underscore', 'backbone',
 	
 			// //The number of reads/downloads cell
 			// // Removing the downloads (this version) from the package table
-			// var reads = memberModel.get("read_count_i") || memberModel.get("reads");
-			// var readsCell = $(document.createElement("td")).addClass("downloads");		
-			// this.readsEnabled = false;
-			// $(tr).append(readsCell);
-			// if((typeof reads !== "undefined") && reads){ 
-            // 
-			// 	if(formatType == "METADATA" && reads == 1) 
-			// 		reads += " view";
-			// 	else if(formatType == "METADATA")
-			// 		reads += " views";
-			// 	else if(reads == 1)
-			// 		reads += " download";
-			// 	else
-			// 		reads += " downloads";
-            // 
-			// 	$(readsCell).text(reads);
-			// 	this.readsEnabled = true;
-			// }
+			if(typeof this.metricsModel !== "undefined"){
+				var metricsResultDetails = this.metricsModel.get("resultDetails");
+				var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
+
+				var objectLevelMetrics = metricsPackageDetails[id];
+				if(typeof objectLevelMetrics !== "undefined") {
+					if(formatType == "METADATA") {
+						var reads = objectLevelMetrics["viewCount"];
+					}
+					else {
+						var reads = objectLevelMetrics["downloadCount"];
+					}
+				}
+				else{
+					var reads = 0;
+				}
+			}
+			
+			var readsCell = $(document.createElement("td")).addClass("downloads");		
+			this.readsEnabled = false;
+			$(tr).append(readsCell);
+			if((typeof reads !== "undefined") && reads){ 
+            
+				if(formatType == "METADATA" && reads == 1) 
+					reads += " view";
+				else if(formatType == "METADATA")
+					reads += " views";
+				else if(reads == 1)
+					reads += " download";
+				else
+					reads += " downloads";
+            
+				$(readsCell).text(reads);
+				this.readsEnabled = true;
+			}
 			
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");	

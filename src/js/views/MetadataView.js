@@ -612,7 +612,8 @@ define(['jquery',
 				currentlyViewing: this.pid,
 				parentView: this,
 				title: title,
-				nested: nested
+				nested: nested,
+				metricsModel: this.metricsModel
 			});
 
 			//Get the package table container
