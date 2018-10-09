@@ -344,8 +344,9 @@ define(['jquery', 'underscore', 'backbone',
 			$(sizeCell).text(size);
 			$(tr).append(sizeCell);
 	
-			// //The number of reads/downloads cell
-			// // Removing the downloads (this version) from the package table
+			// Retreiving the Package Metrics Counts from the Metrics Model
+			// If the formatType fo the object is METADATA then retreive the View Count
+			// Otherwise retreive the Download Count
 			if(typeof this.metricsModel !== "undefined"){
 				var metricsResultDetails = this.metricsModel.get("resultDetails");
 				var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
@@ -364,6 +365,7 @@ define(['jquery', 'underscore', 'backbone',
 				}
 			}
 			
+			// Adding a Metric Cell for the corresponding DataONE object in the table
 			var readsCell = $(document.createElement("td")).addClass("downloads");		
 			this.readsEnabled = false;
 			$(tr).append(readsCell);

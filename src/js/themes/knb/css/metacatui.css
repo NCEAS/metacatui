@@ -3055,21 +3055,3 @@ a {
 #metric-modal .metric-chart path.area {
    fill: #006699;
 }
-
-/******************************************
-* Search Page / Data Catalog Page Metrics
-******************************************/
-.catalog-metric-icon{
-  color: #006699;
-  margin-right: 10px;
-    float: left;
-  padding-top: 1px;
-}
-.catalog-metrics{
-  padding-top: 2px;
-  
-}
-a.btn.metrics-button-disabled.catalog > span.metrics-value.badge{
-  top: -3px;
-  background-color: #006699;
-}

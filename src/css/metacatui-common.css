@@ -1824,32 +1824,24 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 /******************************************
 * Search Page / Data Catalog Page Metrics
 ******************************************/
-/*.metric-stat{
-	padding-right: 5px;
-}
-*/
-a.btn.catalog.metrics-button-disabled{
-	margin-top: -4px;
-	width: 78px;
-	background-color: inherit;
+span.catalog.badge {
+	background-color: #555;
+	padding: -2px 0px -2px 0px;
+	margin: 0px 3px 0px 3px;
+	font-size: 14px;
 
 }
-.catalog-metric-icon{
-  color: #555555;
-  margin-right: 10px;
-    float: left;
-  padding-top: 1px;
+i.catalog-metric-icon {
+	margin-right: 3px;
 }
-.catalog-metrics{
-  padding-top: 2px;
-  
+.catalog-metrics {
+	width: 218px;
+	margin-left: 90px;
 }
-a.btn.metrics-button-disabled.catalog > span.metrics-value.badge{
-  top: -3px;
-  margin-left: -20px;
-  background-color: #555555;
+.catalog-stat{
+	float: left;
+    width: 70px;
 }
-
 
 /******************************************
 * Metric Modal Chart (Views, Downloads, Citations)

@@ -2489,21 +2489,3 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   background-color: #FFFFFF;
   color: #1C6E84;
 }
-
-/******************************************
-* Search Page / Data Catalog Page Metrics
-******************************************/
-.catalog-metric-icon{
-	color: #6E3F57;
-	margin-right: 10px;
-    float: left;
-	padding-top: 1px;
-}
-.catalog-metrics{
-	padding-top: 2px;
-	
-}
-a.btn.catalog.metrics-button-disabled > span.metrics-value.badge{
-	top: -3px;
-	background-color: #6E3F57;
-}

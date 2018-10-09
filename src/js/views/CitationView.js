@@ -275,9 +275,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if (this.createLink){
 				if(this.model.type == "CitationModel") {
 
-					// Creating APA style
-					//Volume
-					//Page Numbers
+					// Creating a volume element to display in Citations Modal Window
 					if(volume === "NULL") {
 						var volumeText = "";
 					}
@@ -286,14 +284,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					}
 					var volumeEl = $(document.createElement("span")).addClass("publisher").text(volumeText);
 					
-					//Page Numbers
+					// Creating a 'pages' element to display in Citations Modal Window
 					if(page === "NULL") {
 						var pageText = "";
 					}
 					else {
 						var pageText = "pp. " + page + ". ";
 					}
-					
 					var pageEl = $(document.createElement("span")).addClass("publisher").text(pageText);
 
 					var linkEl = $(document.createElement("a"))

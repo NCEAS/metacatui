@@ -16,9 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		//template: _.template($('#result-template').html()),
 		template: _.template(ResultItemTemplate),
 		//Templates
-        metricStatTemplate:  _.template( "<a class='btn catalog metrics-button-disabled '> <span class=''> <i class='catalog-metric-icon" + 
-                            " <%=metricIcon%>'></i> </span>" +
-                            "<span class='catalog metrics-value badge'> <%=metricValue%> </span> </a>"),
+        metricStatTemplate:  _.template( "<span class='catalog badge'> <i class='catalog-metric-icon " + 
+                            " <%=metricIcon%>'></i> <%=metricValue%> </span>"),
 
 		// The DOM events specific to an item.
 		events: {
@@ -126,13 +125,58 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			var downloadCount = downloads[index];
 			var citationCount = citations[index];
 
+			// Generating tool-tip title
+			// Citations
+			if(citationCount == 1){
+				var citationToolTip = citationCount + " Citation";
+			}
+			else {
+				var citationToolTip = MetacatUI.appView.numberAbbreviator(citationCount,1) + " Citations";
+			}
+
+			// Downloads
+			if(downloadCount == 1){
+				var downloadToolTip = downloadCount + " Download";
+			}
+			else {
+				var downloadToolTip = MetacatUI.appView.numberAbbreviator(downloadCount,1) + " Downloads";
+			}
+
+			// Views
+			if(viewCount == 1){
+				var viewToolTip = viewCount + " View";
+			}
+			else {
+				var viewToolTip = MetacatUI.appView.numberAbbreviator(viewCount,1) + " Views";
+			}
+
+
+
 			// Replacing the metric total count with the spinning icon.
-			this.$('#resultItem-CitationCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(citationCount,1), metricIcon:'icon-quote-right'}));
+						// Replacing the metric total count with the spinning icon.
+			this.$('#resultItem-CitationCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(citationCount,1), metricIcon:'icon-quote-right'}))
+		    									.tooltip({
+													placement: "top",
+													trigger: "hover",
+													container: this.el,
+													title: citationToolTip
+												});
 
-            this.$('#resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}));
+            this.$('#resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}))
+            								   .tooltip({
+													placement: "top",
+													trigger: "hover",
+													container: this.el,
+													title: downloadToolTip
+												});
 
-            this.$('#resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}));
-
+            this.$('#resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}))
+            								.tooltip({
+												placement: "top",
+												trigger: "hover",
+												container: this.el,
+												title: viewToolTip
+											});
 		},
 
 		// Toggle the `"selected"` state of the model.
