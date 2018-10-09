@@ -1508,6 +1508,8 @@ img.icon{
 .metadata-view .controls-container > .controls{
 	display: inline-block;
 	float: right;
+	margin-top: 0px;
+	margin-bottom: 0px;
 }
 .metadata-view .controls-container > .controls .inline-buttons{
 	margin-top: 0px;
@@ -1644,6 +1646,8 @@ body > .alert-container {
 ********************************************/
 .metrics-container{
 	display: inline-block;
+	margin-top: 0px;
+	margin-bottom: 0px;
 }
 
 /***********
@@ -1651,6 +1655,7 @@ Defult button styling for Metrics views
 ***********/
 a.btn.metrics {
     width: 164px;
+		margin-bottom: 0px;
 }
 .metric-value.badge {
     float: right;
@@ -1697,6 +1702,9 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     border-left: 1px solid #E3E3E3;
     float: right;
 		padding-left: 10px;
+}
+.controls .btn{
+	margin-bottom: 0px;
 }
 /* Making the publish button consistent size as the downloads all*/
 #owner-controls-container > .btn {
