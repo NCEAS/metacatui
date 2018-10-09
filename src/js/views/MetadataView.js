@@ -26,6 +26,7 @@ define(['jquery',
 		'text!templates/newerVersion.html',
 		'text!templates/loading.html',
 		'text!templates/metadataControls.html',
+		'text!templates/metadataInfoIcons.html',
 		'text!templates/usageStats.html',
 		'text!templates/downloadContents.html',
 		'text!templates/alert.html',
@@ -40,7 +41,7 @@ define(['jquery',
 	function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
 			 MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
 			 AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
-			 VersionTemplate, LoadingTemplate, ControlsTemplate, UsageTemplate,
+			 VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, UsageTemplate,
 			 DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
 			 MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
 	'use strict';
@@ -79,6 +80,7 @@ define(['jquery',
 		versionTemplate: _.template(VersionTemplate),
 		loadingTemplate: _.template(LoadingTemplate),
 		controlsTemplate: _.template(ControlsTemplate),
+		infoIconsTemplate: _.template(MetadataInfoIconsTemplate),
 		dataSourceTemplate: _.template(DataSourceTemplate),
 		downloadContentsTemplate: _.template(DownloadContentsTemplate),
 		editMetadataTemplate: _.template(EditMetadataTemplate),
@@ -226,22 +228,18 @@ define(['jquery',
 			this.showLatestVersion();
 
 
-            // If we're displaying the metrics well then display copy citation and edit button
-            // inside the well
+			// Insert various metadata controls in the page
+			this.insertControls();
+
+      // If we're displaying the metrics well then display copy citation and edit button
+      // inside the well
 			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
 				//Insert Metrics Stats into the dataset landing pages
 				this.insertMetricsControls();
 			}
-            else {
-                // Copy Citation button
-                this.insertControls();
 
-                // Edit button and the publish button
-                this.insertOwnerControls();
-            }
-
-
-
+      // Edit button and the publish button
+      this.insertOwnerControls();
 
 			//Show loading icon in metadata section
 			this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
@@ -861,20 +859,16 @@ define(['jquery',
 			this.listenToOnce(this.model, "change:isAuthorized", function(){
 				if(!model.get("isAuthorized")) return false;
 
-				//Insert the controls container
-				var controlsEl = $(document.createElement("div")).addClass("authority-controls inline-buttons");
-				$(container).html(controlsEl);
-
 				//Insert an Edit button
 				if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
-					controlsEl.append(
+					container.append(
 						this.editMetadataTemplate({
 							identifier: pid,
 							supported: true
 						}));
 				}
 				else{
-					controlsEl.append(this.editMetadataTemplate({
+					container.append(this.editMetadataTemplate({
 						supported: false
 					}));
 				}
@@ -882,7 +876,7 @@ define(['jquery',
 				//Insert a Publish button if its not already published with a DOI
 				if(!model.isDOI()){
 					//Insert the template
-					controlsEl.append(
+					container.append(
 						viewRef.doiTemplate({
 							isAuthorized: true,
 							identifier: pid
@@ -951,6 +945,7 @@ define(['jquery',
 		 * - A "Copy Citation" button to copy the citation text
 		 */
 		insertControls: function(){
+
 			//Get template
 			var controlsContainer = this.controlsTemplate({
 					citation: $(this.citationContainer).text(),
@@ -962,6 +957,12 @@ define(['jquery',
 			$(this.controlsContainer).html(controlsContainer);
 
 			var view = this;
+
+			//Insert the info icons
+			var metricsWell = this.$(".metrics-container");
+			metricsWell.append( this.infoIconsTemplate({
+				model: this.model.toJSON()
+			}) );
 
 			//Create clickable "Copy" buttons to copy text (e.g. citation) to the user's clipboard
 			var copyBtns = $(this.controlsContainer).find(".copy");
@@ -1027,14 +1028,11 @@ define(['jquery',
 			metricsModel.fetch();
 			this.metricsModel = metricsModel;
 
-			var self = this;
 			// Retreive the model from the server for the given PID
 			// TODO: Create a Metric Request Object
 
-			var metrics = $(document.createElement("div")).addClass("metric-well well well-lg");
-
 			if (MetacatUI.appModel.get("displayDatasetMetrics")) {
-				var buttonToolbar = $(document.createElement("div")).addClass("metric-toolbar btn-toolbar");
+				var buttonToolbar = this.$(".metrics-container");
 
 				if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
 					var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel});
@@ -1051,11 +1049,10 @@ define(['jquery',
 					buttonToolbar.append(viewsMetricView.render().el);
 				}
 
-				metrics.append(buttonToolbar);
 			}
 
 
-            if(MetacatUI.appModel.get("displayDatasetControls")) {
+    /*        if(MetacatUI.appModel.get("displayDatasetControls")) {
                 var controlsToolbar = $(document.createElement("div")).addClass("edit-toolbar btn-toolbar");
                 var copyCitationToolbar = this.$(this.controlsContainer);
 
@@ -1073,8 +1070,8 @@ define(['jquery',
 
 				metrics.append(controlsToolbar);
             }
+*/
 
-			self.$(self.tableContainer).before(metrics);
 		},
 
 

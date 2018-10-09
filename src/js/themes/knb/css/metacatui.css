@@ -3028,22 +3028,6 @@ a {
     width: 138px;
 }
 
-.edit-toolbar >
-#metadata-controls-container >
-.metadata-controls-container {
-    margin-right: -45px;
-}
-
-.edit-toolbar >
-#owner-controls-container >
-.authority-controls {
-    width: auto;
-    height: 38px;
-    margin-top: -38px;
-    margin-right: -20px;
-    margin-left: 375px;
-}
-
 /******************************************
 * Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/
