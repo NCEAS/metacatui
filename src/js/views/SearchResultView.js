@@ -150,12 +150,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				var viewToolTip = MetacatUI.appView.numberAbbreviator(viewCount,1) + " views";
 			}
 
-
-
 			// Replacing the metric total count with the spinning icon.
-						// Replacing the metric total count with the spinning icon.
 			this.$('.resultItem-CitationCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(citationCount,1), metricIcon:'icon-quote-right'}))
-		    									.tooltip({
+												.tooltip({
 													placement: "top",
 													trigger: "hover",
 													delay: 800,
@@ -163,8 +160,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 													title: citationToolTip
 												});
 
-            this.$('.resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}))
-            								   .tooltip({
+			this.$('.resultItem-DownloadCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(downloadCount,1), metricIcon:'icon-cloud-download'}))
+											   .tooltip({
 													placement: "top",
 													trigger: "hover",
 													delay: 800,
@@ -172,14 +169,30 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 													title: downloadToolTip
 												});
 
-            this.$('.resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}))
-            								.tooltip({
+			this.$('.resultItem-ViewCount').html(this.metricStatTemplate({metricValue:MetacatUI.appView.numberAbbreviator(viewCount,1), metricIcon:'icon-eye-open'}))
+											.tooltip({
 												placement: "top",
 												trigger: "hover",
 												delay: 800,
 												container: this.el,
 												title: viewToolTip
 											});
+
+			
+			// Removing Citation metric if the citationCount is 0
+			if (citationCount === 0) {
+				this.$('.resultItem-CitationCount').css("visibility","hidden");
+			}
+
+			// Removing Download metric if the downloadCount is 0
+			if (downloadCount === 0) {
+				this.$('.resultItem-DownloadCount').css("visibility","hidden");
+			}
+
+			// Removing View metric if the viewCount is 0
+			if (viewCount === 0) {
+				this.$('.resultItem-ViewCount').css("visibility","hidden");
+			}
 		},
 
 		// Toggle the `"selected"` state of the model.
