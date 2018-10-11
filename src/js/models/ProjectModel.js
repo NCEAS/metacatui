@@ -2,7 +2,7 @@
 define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/CollectionModel", "models/ImageModel", "collections/SolrResults"],
     function($, _, Backbone, EMLParty, CollectionModel, Image, SearchResults) {
 
-	var ProjectModel = Backbone.Model.extend({
+	var ProjectModel = CollectionModel.extend({
 
 		defaults: {
       id: null,
