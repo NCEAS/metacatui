@@ -1,10 +1,14 @@
 # Milestones from MetacatUI prioritization
 
-## Milestone 2.3.0 (October 12, 2018)
+## Milestone 2.4.0 (October 20 2018)
+- Various bug fixes and minor improvements (see issues)
+
+## Milestone 2.5.0 (October 2018?)
 - Save emergency draft for manual recovery (MVP) (Chris) - Allows for Arctic Data Center production deployment (yay!)
 - Semantic search UI mockups (Lauren)
+- JSON-LD for Google Datasets (Bryce and Lauren)
 
-## Milestone 3.0.0 (October 2018)
+## Milestone 3.0.0 (November 2018)
 - Configuration refactor (Lauren)
 - Code minimization/optimization (Lauren)
 
