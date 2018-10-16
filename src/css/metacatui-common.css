@@ -1657,6 +1657,9 @@ a.btn.metrics {
     width: 164px;
 		margin-bottom: 0px;
 }
+.metric-value > .icon.metric-icon {
+    font-size:  18px;
+}
 .metric-value.badge {
     float: right;
     background-color: #333;
