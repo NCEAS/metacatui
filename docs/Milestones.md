@@ -19,6 +19,7 @@
 - Semantic Search (Bryce with Lauren/Chris) 
 - Annotation Display in MetadataView (Bryce with Lauren/Chris)
 - New attribute editor mockup (Chris)
+- Project section in editor
 
 ## Milestone 3.2.0 (late November 2018)
 - New attribute editor UX review (Chris)
