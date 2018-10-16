@@ -44,31 +44,41 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
     fetch: function(){      
       var model = this;
-
-      var requestSettings = {
+      $.ajax({
         url: this.url(),
         dataType: "xml",
         error: function(){
           model.trigger('error');
         },
-        success: function(){
-          // get the collection model
-          model.collectionFetch = new CollectionModel({id: model.get("projectCollection"), dataType: "json"}).fetch();
-          // model.collectionJSON = model.collectionFetch.responseText;
-          // console.log(model.collectionFetch);
+        success: function(response){
+          //Stash the project XML so we can parse it later
+          model.projectXML = response;
+
+          //Get the collection id
+          var collection = $(response).find("projectCollection")
+          if ( collection ){
+            model.collectionID = collection.find("collectionID").text() || null;
+          }
+
+          //Set up the request to get the collection json
+          var requestSettings = {
+            url: "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/" + model.collectionID, // need to replace hard-coding of dev
+            dataType: "json",
+            error: function(){
+              model.trigger('error');
+            }
+          }
+
+          requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+          return Backbone.Model.prototype.fetch.call(model, requestSettings);
         }
-      }
-
-      //Add the authorization header and other AJAX settings
-      requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
-
-      //Call Backbone.Model.fetch to retrieve the info
-      return Backbone.Model.prototype.fetch.call(this, requestSettings);
+      });
     },
 
 		parse: function(response){
-      var xmlDoc = response;
-			var modelJSON = {};
+      // console.log(response);
+      var xmlDoc = this.projectXML;
+			var modelJSON = response;
 
       //Parse the title
       //There are multiple title nodes nested within funding elements - only want top level
@@ -136,8 +146,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       if( acknowledgments ){
         modelJSON.acknowledgments = acknowledgments.text() || null;
       }
-      // modelJSON = $.merge(modelJSON, this.collectionFetch);
-      console.log(this.collectionFetch);
+
+      // console.log(modelJSON);
       return modelJSON;
 		}
 	});
