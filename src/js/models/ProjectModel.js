@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
 		},
 
-    fetch: function(){
+    fetch: function(){      
       var model = this;
 
       var requestSettings = {
@@ -50,6 +50,10 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         dataType: "xml",
         error: function(){
           model.trigger('error');
+        },
+        success: function(){
+          model.collectionMod = new CollectionModel({id: model.get("projectCollection")}).fetch();
+          // console.log(model.collectionMod);
         }
       }
 
@@ -130,7 +134,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         modelJSON.acknowledgments = acknowledgments.text() || null;
       }
 
-			return modelJSON;
+      return modelJSON;
 		}
 	});
 
