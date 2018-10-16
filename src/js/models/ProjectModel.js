@@ -45,9 +45,6 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
     fetch: function(){      
       var model = this;
 
-      // get the collection model
-      model.collectionFetch = new CollectionModel({id: model.id}).fetch();
-
       var requestSettings = {
         url: this.url(),
         dataType: "xml",
@@ -55,7 +52,10 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
           model.trigger('error');
         },
         success: function(){
-          model.collectionJSON = model.collectionFetch.responseText;
+          // get the collection model
+          model.collectionFetch = new CollectionModel({id: model.get("projectCollection"), dataType: "json"}).fetch();
+          // model.collectionJSON = model.collectionFetch.responseText;
+          // console.log(model.collectionFetch);
         }
       }
 
@@ -105,7 +105,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         modelJSON.projectCollection = collection.find("collectionID").text() || null;
       }
 
-      modelJSON.collectionJSON = this.collectionFetch.responseText;
+      // modelJSON.collectionJSON = this.collectionFetch.responseText;
 			//TODO fix this: Parse the funding info
 			modelJSON.funding = [];
 			var fundingEl    = $(xmlDoc).find("funding"),
@@ -136,7 +136,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       if( acknowledgments ){
         modelJSON.acknowledgments = acknowledgments.text() || null;
       }
-      
+      // modelJSON = $.merge(modelJSON, this.collectionFetch);
+      console.log(this.collectionFetch);
       return modelJSON;
 		}
 	});
