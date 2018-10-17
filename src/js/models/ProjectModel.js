@@ -61,8 +61,9 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
           }
 
           //Set up the request to get the collection json
+          var colmod = new CollectionModel({id: model.collectionID});
           var requestSettings = {
-            url: "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/" + model.collectionID, // need to replace hard-coding of dev
+            url: colmod.url(), // I'm not sure this is the best way to get the url, but it seems to work
             dataType: "json",
             error: function(){
               model.trigger('error');
@@ -78,8 +79,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 		parse: function(response){
       // console.log(response);
       var xmlDoc = this.projectXML;
-			var modelJSON = response;
-
+      var modelJSON = response;
+      
       //Parse the title
       //There are multiple title nodes nested within funding elements - only want top level
       var titleNode = _.first($(xmlDoc).find("title"));
