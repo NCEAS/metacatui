@@ -2969,11 +2969,13 @@ a {
 * Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/
 
-#metric-modal .metric-chart path.line {
-	stroke: #146660;
+
+#metric-modal .metric-chart .scale_button:hover rect,
+#metric-modal .metric-chart .bar,
+#metric-modal .metric-chart .bar_context {
+   fill: #146660;
 }
 
-#metric-modal .metric-chart path.area {
-	fill: #146660;
+#metric-modal .metric-chart .bar {
+   stroke: #146660;
 }
-
