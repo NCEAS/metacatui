@@ -70,10 +70,9 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
-            // suidIds and suiteLables must be specified as a list, even if only one suite is available.
-            suiteIds: ["dataone.suite.1"],
-            suiteLabels: ["DataONE Metadata Completeness Suite v1.0"],
+			mdqUrl: null,
+
+
 			// Metrics endpoint url
 			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 			
@@ -112,12 +111,6 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('objectServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/object/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
-
-            // Metadata quality report services
-            this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
-            this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
-            this.set('mdqSuiteIds', this.get("suiteIds"));
-            this.set('mdqSuiteLabels', this.get("suiteLabels"));
 
 			//The logs index
 			if(typeof this.get("d1LogServiceUrl") !== "undefined"){

@@ -102,11 +102,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-            
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
-            // suidIds and suiteLables must be specified as a list, even if only one suite is available.
-            suiteIds: ["arctic.data.center.suite.1"],
-            suiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
+			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
 
 			// Metrics endpoint url
 			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
@@ -151,12 +147,6 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('registryServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/register-dataset.cgi');
 			this.set('ldapwebServiceUrl', this.get('baseUrl') + this.get('context') + '/cgi-bin/ldapweb.cgi');
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
-
-            // Metadata quality report services
-            this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
-            this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
-            this.set('mdqSuiteIds', this.get("suiteIds"));
-            this.set('mdqSuiteLabels', this.get("suiteLabels"));
 
 			//Set the NSF Award API proxy
 			if(typeof this.get("grantsUrl") != "undefined")
