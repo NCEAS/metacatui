@@ -130,7 +130,6 @@ define(['jquery', 'underscore', 'backbone',
 			}
 
 			this.$el.html(this.template({
-				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
 			          metadata : this.nested ? metadata : null,
 			           colspan : bodyRows.first().find("td").length,
@@ -345,51 +344,50 @@ define(['jquery', 'underscore', 'backbone',
 			$(tr).append(sizeCell);
 
 			// Retreiving the Package Metrics Counts from the Metrics Model
-			// If the formatType fo the object is METADATA then retreive the View Count
-			// Otherwise retreive the Download Count
-			if(typeof this.metricsModel !== "undefined"){
-				var metricsResultDetails = this.metricsModel.get("resultDetails");
-
-        if( typeof metricsResultDetails !== "undefined" && metricsResultDetails ){
-          var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
-
-  				var objectLevelMetrics = metricsPackageDetails[id];
-  				if(typeof objectLevelMetrics !== "undefined") {
-  					if(formatType == "METADATA") {
-  						var reads = objectLevelMetrics["viewCount"];
-  					}
-  					else {
-  						var reads = objectLevelMetrics["downloadCount"];
-  					}
-  				}
-  				else{
-  					var reads = 0;
-  				}
-        }
-        else{
-          var reads = 0;
-        }
-
-			}
-
 			// Adding a Metric Cell for the corresponding DataONE object in the table
-			var readsCell = $(document.createElement("td")).addClass("downloads");
-			this.readsEnabled = false;
-			$(tr).append(readsCell);
-			if((typeof reads !== "undefined") && reads){
+			var readsCell = $(document.createElement("td")).addClass("metrics-count downloads");
+			
+			if (this.metricsModel.get("views") !== null) {
+				if(typeof this.metricsModel !== "undefined"){
+					var metricsResultDetails = this.metricsModel.get("resultDetails");
 
-				if(formatType == "METADATA" && reads == 1)
-					reads += " view";
-				else if(formatType == "METADATA")
-					reads += " views";
-				else if(reads == 1)
-					reads += " download";
-				else
-					reads += " downloads";
+			        if( typeof metricsResultDetails !== "undefined" && metricsResultDetails ){
+			          var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
 
-				$(readsCell).text(reads);
-				this.readsEnabled = true;
+			  				var objectLevelMetrics = metricsPackageDetails[id];
+			  				if(typeof objectLevelMetrics !== "undefined") {
+			  					if(formatType == "METADATA") {
+			  						var reads = objectLevelMetrics["viewCount"];
+			  					}
+			  					else {
+			  						var reads = objectLevelMetrics["downloadCount"];
+			  					}
+			  				}
+			  				else{
+			  					var reads = 0;
+			  				}
+			        }
+			        else{
+			          var reads = 0;
+			        }
+
+				}
+
+				if((typeof reads !== "undefined") && reads){
+
+					if(formatType == "METADATA" && reads == 1)
+						reads += " view";
+					else if(formatType == "METADATA")
+						reads += " views";
+					else if(reads == 1)
+						reads += " download";
+					else
+						reads += " downloads";
+
+					$(readsCell).text(reads);
+				}
 			}
+			$(tr).append(readsCell);
 
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");
