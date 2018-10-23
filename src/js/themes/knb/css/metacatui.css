@@ -3032,10 +3032,12 @@ a {
 * Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/
 
-#metric-modal .metric-chart path.line {
-   stroke: #006699;
+#metric-modal .metric-chart .scale_button:hover rect,
+#metric-modal .metric-chart .bar,
+#metric-modal .metric-chart .bar_context {
+	fill: #006699;
 }
 
-#metric-modal .metric-chart path.area {
-   fill: #006699;
+#metric-modal .metric-chart .bar {
+	stroke: #006699;
 }

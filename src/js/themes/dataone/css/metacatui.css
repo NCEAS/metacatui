@@ -2473,13 +2473,17 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 * Metric Modal Chart (Views, Downloads, Citations)
 ********************************************/
 
-#metric-modal .metric-chart path.line {
+#metric-modal .metric-chart .scale_button:hover rect,
+#metric-modal .metric-chart .bar,
+#metric-modal .metric-chart .bar_context {
+	fill: #1C6E84;
+}
+
+#metric-modal .metric-chart .bar {
 	stroke: #1C6E84;
 }
 
-#metric-modal .metric-chart path.area {
-	fill: #1C6E84;
-}
+
 
 .metrics .metric-value.badge{
   background-color: #1C6E84;

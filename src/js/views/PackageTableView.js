@@ -130,7 +130,6 @@ define(['jquery', 'underscore', 'backbone',
 			}
 
 			this.$el.html(this.template({
-				readsEnabled   : this.readsEnabled,
 					   title   : this.title || "Files in this dataset",
 			          metadata : this.nested ? metadata : null,
 			           colspan : bodyRows.first().find("td").length,
@@ -345,51 +344,23 @@ define(['jquery', 'underscore', 'backbone',
 			$(tr).append(sizeCell);
 
 			// Retreiving the Package Metrics Counts from the Metrics Model
-			// If the formatType fo the object is METADATA then retreive the View Count
-			// Otherwise retreive the Download Count
-			if(typeof this.metricsModel !== "undefined"){
-				var metricsResultDetails = this.metricsModel.get("resultDetails");
-
-        if( typeof metricsResultDetails !== "undefined" && metricsResultDetails ){
-          var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
-
-  				var objectLevelMetrics = metricsPackageDetails[id];
-  				if(typeof objectLevelMetrics !== "undefined") {
-  					if(formatType == "METADATA") {
-  						var reads = objectLevelMetrics["viewCount"];
-  					}
-  					else {
-  						var reads = objectLevelMetrics["downloadCount"];
-  					}
-  				}
-  				else{
-  					var reads = 0;
-  				}
-        }
-        else{
-          var reads = 0;
-        }
-
-			}
-
 			// Adding a Metric Cell for the corresponding DataONE object in the table
-			var readsCell = $(document.createElement("td")).addClass("downloads");
-			this.readsEnabled = false;
-			$(tr).append(readsCell);
-			if((typeof reads !== "undefined") && reads){
+			var readsCell = $(document.createElement("td")).addClass("metrics-count downloads")
+								.attr("data-id", id);
 
-				if(formatType == "METADATA" && reads == 1)
-					reads += " view";
-				else if(formatType == "METADATA")
-					reads += " views";
-				else if(reads == 1)
-					reads += " download";
-				else
-					reads += " downloads";
-
-				$(readsCell).text(reads);
-				this.readsEnabled = true;
+			// If the model has already been fethced.
+			if (this.metricsModel.get("views") !== null) {
+				readsCell.append(this.getMemberRowMetrics(id, formatType));
 			}
+			else {
+				// Update the metrics later on
+				// If the fetch() is still in progress.
+				this.listenTo(this.metricsModel, "sync", function(){
+					var readsCell = this.$('.metrics-count.downloads[data-id="' + id + '"]');
+					readsCell.text(this.getMemberRowMetrics(id, formatType));
+				});
+			}
+			$(tr).append(readsCell);
 
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");
@@ -406,6 +377,54 @@ define(['jquery', 'underscore', 'backbone',
 				tr.css("display", "none");
 
 			return tr;
+		},
+
+		// Member row metrics for the package table
+		// Retrieving information from the Metrics Model's result details
+		getMemberRowMetrics: function(id, formatType) {
+
+			if(typeof this.metricsModel !== "undefined"){
+				var metricsResultDetails = this.metricsModel.get("resultDetails");
+
+		        if( typeof metricsResultDetails !== "undefined" && metricsResultDetails ){
+		          	var metricsPackageDetails = metricsResultDetails["metrics_package_counts"];
+
+	  				var objectLevelMetrics = metricsPackageDetails[id];
+	  				if(typeof objectLevelMetrics !== "undefined") {
+	  					if(formatType == "METADATA") {
+	  						var reads = objectLevelMetrics["viewCount"];
+	  					}
+	  					else {
+	  						var reads = objectLevelMetrics["downloadCount"];
+	  					}
+	  				}
+	  				else{
+	  					var reads = 0;
+	  				}
+		        }
+		        else{
+		          	var reads = 0;
+		        }
+
+			}
+
+			if((typeof reads !== "undefined") && reads){
+				// giving labels
+				if(formatType == "METADATA" && reads == 1)
+					reads += " view";
+				else if(formatType == "METADATA")
+					reads += " views";
+				else if(reads == 1)
+					reads += " download";
+				else
+					reads += " downloads";
+			}
+			else {
+				// returning an empty string if the metrics are 0
+				reads = "";
+			}
+
+			return reads;
 		},
 
 		expand: function(e){

@@ -1915,7 +1915,7 @@ define(['jquery',
 
 							if (identifier) {
 								viewRef.hideLoading();
-								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetcatUI.root + "/view/" + identifier + "'>published data package here</a>";
+								var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetacatUI.root + "/view/" + identifier + "'>published data package here</a>";
 								viewRef.$el.find('.container').prepend(
 										viewRef.alertTemplate({
 											msg: msg,
