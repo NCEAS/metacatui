@@ -132,11 +132,13 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             var iconEl = this.$('.metric-value').find('.metric-icon');
             iconEl.removeClass('icon-spinner');
             iconEl.removeClass('icon-spin');
-            iconEl.addClass("icon-question-sign more-info");
+            iconEl.addClass("icon-exclamation-sign more-info");
             
             // Setting the error tool-tip
             this.$el.removeAttr("data-title");
-            this.$el.attr("data-title", "The metric count could not be retreived at this time!");
+
+            this.$el.addClass("metrics-button-disabled");
+            this.$el.attr("data-title", "The number of " + this.metricName + " could not be retreived at this time.");
         }
 
     });

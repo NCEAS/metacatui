@@ -2029,11 +2029,8 @@ button.modal-btn.btn.btn-default {
 Non-clickable (Disabled) button styling for metrics views
 ***********/
 a.btn.metrics-button-disabled {
-    display: inline-block;
-    width: auto;
-    padding-right: 0px;
-    margin-top: -14px;
-    margin-left: -5px;
+	width: 164px;
+	margin-bottom: 0px;
     color: #555;
     background-color: #F3F3F3;
     cursor: default;
@@ -2832,6 +2829,14 @@ address.email-container:before{
 #quality-score, #quality-chart{
 	display: none;
 }
+
+.quality-report-view #suiteId {
+    position: relative;
+    width: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 /******************************************
 ** Stats ***
 ******************************************/
