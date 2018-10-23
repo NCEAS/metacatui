@@ -356,7 +356,7 @@ define(['jquery', 'underscore', 'backbone',
 				// Update the metrics later on
 				// If the fetch() is still in progress.
 				this.listenTo(this.metricsModel, "sync", function(){
-					var readsCell = $('.metrics-count.downloads[data-id="' + id + '"]');
+					var readsCell = this.$('.metrics-count.downloads[data-id="' + id + '"]');
 					readsCell.text(this.getMemberRowMetrics(id, formatType));
 				});
 			}
