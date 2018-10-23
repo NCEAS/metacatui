@@ -1858,6 +1858,9 @@ i.catalog-metric-icon {
 	display: none;
 }
 
+#metric-modal .metric-chart .context .x.axis {
+	clip-path: url(#clip);
+}
 
 #metric-modal .metric-chart .context .x.axis .domain {
 	display:none;
@@ -1948,11 +1951,11 @@ i.catalog-metric-icon {
 #metric-modal .metric-chart .bar_context {
 	fill: black;  /* change for each theme */
 	stroke-width: 0;
+	clip-path: url(#clip);
 }
 
 #metric-modal .metric-chart .bar {
 	stroke: black; /* change for each theme */
-	clip-path: url(#clip);
 	cursor: default;
 }
 
@@ -1982,7 +1985,6 @@ i.catalog-metric-icon {
 #metric-modal div.metric_tooltip {
     position: fixed;
     text-align: center;
-    width: 60px;
     height: 25px;
     padding: 2px;
     font: 10px sans-serif;
