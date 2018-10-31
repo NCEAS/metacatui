@@ -1,7 +1,7 @@
 define(["jquery",
     "underscore",
     "Backbone",
-    "text!templates/project/project-section.html"], function($, _, Backbone, ProjectSectionTemplate){
+    "text!templates/project/projectSection.html"], function($, _, Backbone, ProjectSectionTemplate){
 
     /* The ProjectSectionView is a generic view to render
      * project sections, with a default rendering of a
@@ -10,7 +10,7 @@ define(["jquery",
      var ProjectSectionView = Backbone.View.extend({
 
         /* The Project Section Element*/
-        el: "#project-section",
+        el: "#ProjectSection",
 
         /* TODO: Decide if we need this */
         type: "ProjectSection",
