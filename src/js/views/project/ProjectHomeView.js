@@ -3,7 +3,7 @@ define(["jquery",
     "Backbone",
     "text!templates/project/projectHome.html",
     "views/project/ProjectSectionView.js"], 
-    function($, _, Backbone, ProjectHomeTemplate){
+    function($, _, Backbone, ProjectHomeTemplate, ProjectSectionView){
 
     /* The ProjectHomeView is a view to render the
      * project home tab (within ProjectSectionView) 
