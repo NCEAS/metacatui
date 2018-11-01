@@ -81,6 +81,17 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 
               this.listenToOnce(qualityReport, "fetchComplete", function() {
                 this.showLoading();
+                // Filter out the checks with level 'METADATA', as these checks are intended
+                // to pass info to metadig-engine indexing (for search, faceting), and not intended for display.
+                qualityReport.reset(_.reject(qualityReport.models, function (model) {
+                    var check = model.get("check");
+                    if (check.level == "METADATA") {
+                        return true
+                    } else {
+                        return false;
+                    }
+                }));
+                    
                 var groupedResults = qualityReport.groupResults(qualityReport.models);
                 var groupedByType = qualityReport.groupByType(qualityReport.models);
                 
