@@ -1,7 +1,7 @@
 ..
    @startuml images/editor-design-eml-package.png  
 
-     !include plantuml-styles.txt
+     !include ../plantuml-styles.txt
 
      ' override the linetype
      skinparam linetype ortho   

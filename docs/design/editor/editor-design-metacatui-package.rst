@@ -1,6 +1,6 @@
 ..
   @startuml images/editor-design-metacatui-package.png
-  !include plantuml-styles.txt
+  !include ../plantuml-styles.txt
   
   ' override the linetype
   skinparam linetype ortho   
