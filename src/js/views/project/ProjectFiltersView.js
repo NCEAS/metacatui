@@ -1,7 +1,7 @@
 define(["jquery",
     "underscore",
     "Backbone",
-    "text!templates/project/ProjectFilters.html"], function($, _, Backbone, ProjectFiltersTemplate){
+    "text!templates/project/projectFilters.html"], function($, _, Backbone, ProjectFiltersTemplate){
 
     /* The ProjectFiltersView is the view that will hold the project's individual filters
      */
