@@ -1,7 +1,7 @@
 define(["jquery",
     "underscore",
     "Backbone",
-    "text!templates/project/projectTOC.html"], function($, _, Backbone, ProjectTOCTemplate){
+    "text!templates/tableOfContents.html"], function($, _, Backbone, ProjectTOCTemplate){
 
     /* The Table of Contents View is the area on the left-hand side of the project's page
      * that will allow a user to navigate within the current tab of the project page.
