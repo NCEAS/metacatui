@@ -53,7 +53,7 @@ Overview
 ..
   @startuml images/editor-design.png
   
-    !include ../plantuml-styles.txt
+    !include plantuml-styles.txt
     
     package metacatui {
       class DataPackage {

@@ -1,23 +1,28 @@
 define(["jquery",
     "underscore",
     "Backbone",
-    "text!templates/project/projectMembers.html"], function($, _, Backbone, ProjectMembersTemplate){
+    "text!templates/project/projectMembers.html",
+    "views/project/ProjectSectionView.js"], 
+    function($, _, Backbone, ProjectMembersTemplate, ProjectSectionView){
 
-    /* The Project Members View lists the name, organization, contact information,
-     * as well as the role in the project for each of the project's members.
+    /* The ProjectMembersView is a view to render the
+     * project members tab (within ProjectSectionView) 
      */
-    var ProjectMembersView = Backbone.View.extend({
+     var ProjectMembersView = ProjectSectionView.extend({
 
-        /* The Project Members Element */
-        el: "#ProjectMembers",
+        /* The Project Members Element*/
+        el: "#project-members",
 
         /* TODO: Decide if we need this */
         type: "ProjectMembers",
 
+        /* The list of subview instances contained in this view*/
+        subviews: [], // Could be a literal object {}
+
         /* Renders the compiled template into HTML */
         template: _.template(ProjectMembersTemplate),
 
-        /* The events that this view listens to */
+        /* The events that this view listens to*/
         events: {
 
         },
@@ -32,12 +37,11 @@ define(["jquery",
 
         },
 
-        /* Close and destroy the view */
         onClose: function() {
 
         }
 
-    });
+     });
 
-    return ProjectMembersView;
+     return ProjectMembersView;
 });
