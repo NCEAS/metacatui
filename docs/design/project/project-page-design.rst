@@ -65,7 +65,7 @@ The ``ProjectView`` contains three subviews: a ``ProjectHeaderView`` for the mai
   
 .. image:: images/project-view-design.png
 
-The ``ProjectSectionView`` is an abstract generic view with a simple ``MarkdownView`` subview that will be rendered if the ``ProjectSectionView`` is not overridden by a subclass.  The ``ProjectSectionView`` is extended with specific specialty views, including a ``ProjectHomeView``, ``ProjectMetricsView``,``ProjectMembersView``, and ``ProjectVisualizationsView``.  These four views visually translate to the four tabs of a ``ProjectView``.
+The ``ProjectSectionView`` is an abstract generic view with a simple ``MarkdownView`` subview that will be rendered if the ``ProjectSectionView`` is not overridden by a subclass.  The ``ProjectSectionView`` is extended with specific specialty views, including a ``ProjectHomeView``, ``ProjectMetricsView``, ``ProjectMembersView``, and ``ProjectVisualizationsView``.  These four views visually translate to the four tabs of a ``ProjectView``.
 
 ..
   @startuml images/project-section-view-design.png
