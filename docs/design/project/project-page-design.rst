@@ -100,10 +100,8 @@ Project Home View
 ~~~~~~~~~~~~~~~~~
 As stated above, a ``ProjectHomeView`` is a specialized ``ProjectSectionView``. The wireframe on the left shows the subview layouts, based on the example on the right.
 
-.. image:: images/project-home-view-wireframe.png
-    :width: 46%
-.. image:: images/project-home-view-mockup.png
-    :width: 50%
+.. image:: images/project-home-view-wireframe-mockup.png
+    :width: 100%
 
 The ``ProjectHomeView`` contains a number of subviews, including a ``ProjectFiltersView``, a ``SearchResultsView``, a ``MapView``, a ``MarkdownView``, a ``ProjectMembersView``, and a ``ProjectLogosView`` The ``ProjectMembersView`` is a subset of the whole view, showing just the members with a particular attribute (like ``role: PrinciplaInvesigator``).
 
