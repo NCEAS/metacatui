@@ -11,7 +11,7 @@ Architecture
 Project View
 ~~~~~~~~~~~~
 
-Each scientific project is rendered as a customizable ``ProjectView`` object, and is shown when the application router routes to ``/projects/:id/(:home)`` where the required ``id`` is an identifier reference to (like ``urn:uuid:xxxx-xxxx-xxxx-xxxx``), or a proxy for (like ``SASAP``) the project definition instance file stored in the repository.  The following wireframe shows how the ``ProjectView`` is rendered inside of the application ``#Content`` area.  Note that the ``NavbarView`` and the ``FooterView`` are rendered by the ``AppView`` parent container.
+Each scientific project is rendered as a customizable ``ProjectView`` object, and is shown when the application router routes to ``/projects/:id/(:home)`` where the required ``id`` is an identifier reference (like ``urn:uuid:xxxx-xxxx-xxxx-xxxx``) to, or a proxy for (like ``SASAP``) the project definition instance file stored in the repository.  The following wireframe shows how the ``ProjectView`` is rendered inside of the application ``#Content`` area.  Note that the ``NavbarView`` and the ``FooterView`` are rendered by the ``AppView`` parent container.
 
 .. image:: images/project-view-wireframe.png
     :width: 50%
@@ -103,7 +103,7 @@ As stated above, a ``ProjectHomeView`` is a specialized ``ProjectSectionView``. 
 .. image:: images/project-home-view-wireframe-mockup.png
     :width: 100%
 
-The ``ProjectHomeView`` contains a number of subviews, including a ``ProjectFiltersView``, a ``SearchResultsView``, a ``MapView``, a ``MarkdownView``, a ``ProjectMembersView``, and a ``ProjectLogosView`` The ``ProjectMembersView`` is a subset of the whole view, showing just the members with a particular attribute (like ``role: PrinciplaInvesigator``).
+The ``ProjectHomeView`` contains a number of subviews, including a ``ProjectFiltersView``, a ``SearchResultsView``, a ``MapView``, a ``MarkdownView``, and a ``ProjectLogosView``.
 
 ..
   @startuml images/project-home-view-design.png
@@ -121,8 +121,6 @@ The ``ProjectHomeView`` contains a number of subviews, including a ``ProjectFilt
       }
       class MarkdownView {
       }
-      class ProjectMembersView {
-      }
       class ProjectLogosView {
       }
     }
@@ -131,7 +129,6 @@ The ``ProjectHomeView`` contains a number of subviews, including a ``ProjectFilt
     ProjectHomeView --o SearchResultsView : contains
     ProjectHomeView --o MapView : contains
     ProjectHomeView --o MarkdownView : contains
-    ProjectHomeView --o ProjectMembersView : contains
     ProjectHomeView --o ProjectLogosView : contains
   @enduml
   
