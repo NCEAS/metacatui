@@ -11,7 +11,7 @@ Architecture
 Project View
 ~~~~~~~~~~~~
 
-Each scientific project is rendered as a customizable ``ProjectView`` object, and is shown when the application router routes to ``/projects/:id/(:home)`` where the required ``id`` is an identifier reference (like ``urn:uuid:xxxx-xxxx-xxxx-xxxx``) to, or a proxy for (like ``SASAP``) the project definition instance file stored in the repository.  The following wireframe shows how the ``ProjectView`` is rendered inside of the application ``#Content`` area.  Note that the ``NavbarView`` and the ``FooterView`` are rendered by the ``AppView`` parent container.
+Each scientific project is rendered as a customizable ``ProjectView`` object, and is shown when the application router routes to ``/projects/:id/(:section)`` where the required ``id`` is an identifier reference to the project definition instance file stored in the repository (for example a ``seriesId`` like ``urn:uuid:xxxx-xxxx-xxxx-xxxx``). These project definition files will be indexed and searchable in the future, but for the MVP release, we will associate each document's ``seriesId`` with a URL-friendly proxy name (like ``SASAP``).  The following wireframe shows how the ``ProjectView`` is rendered inside of the application ``#Content`` area.  Note that the ``NavbarView`` and the ``FooterView`` are rendered by the ``AppView`` parent container.
 
 .. image:: images/project-view-wireframe.png
     :width: 50%
