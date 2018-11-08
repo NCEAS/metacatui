@@ -1,6 +1,6 @@
 define(["jquery",
     "underscore",
-    "Backbone",
+    "backbone",
     "text!templates/project/projectHeader.html"], function($, _, Backbone, ProjectHeaderTemplate){
 
     /* The ProjectHeaderView is the view at the top of project pages
@@ -9,7 +9,7 @@ define(["jquery",
      var ProjectHeaderView = Backbone.View.extend({
 
         /* The Project Header Element */
-        el: "#ProjectHeader",
+        el: "#project-header-container",
 
         /* TODO: Decide if we need this */
         type: "ProjectHeader",
@@ -29,7 +29,8 @@ define(["jquery",
 
         /* Render the view */
         render: function() {
-
+            this.$el.html(this.template());
+            return this;
         },
 
         /* Close and destroy the view */

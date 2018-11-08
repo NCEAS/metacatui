@@ -1,6 +1,6 @@
 define(["jquery",
     "underscore",
-    "Backbone",
+    "backbone",
     "text!templates/tableOfContents.html"], function($, _, Backbone, ProjectTOCTemplate){
 
     /* The Table of Contents View is the area on the left-hand side of the project's page
@@ -9,7 +9,7 @@ define(["jquery",
     var ProjectTOCView = Backbone.View.extend({
 
         /* The Project TOC Element */
-        el: "#ProjectTOC",
+        el: "#project-toc-container",
 
         /* TODO: Decide if we need this */
         type: "ProjectTOC",
@@ -29,7 +29,8 @@ define(["jquery",
 
         /* Render the view */
         render: function() {
-
+            this.$el.html(this.template());
+            return this;
         },
 
         /* Close and destroy the view */
