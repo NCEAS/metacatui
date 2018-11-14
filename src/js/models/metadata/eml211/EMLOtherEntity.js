@@ -17,7 +17,7 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
 	            return	_.extend({
 
 		                /* Attributes from EML */
-		                entityType: null, // The type of the entity
+		                entityType: "otherEntity", // The type of the entity
 
 		                /* Attributes not from EML */
 		                nodeOrder: [ // The order of the top level XML element nodes
@@ -137,6 +137,27 @@ define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
                 }
 
                 return objectDOM;
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
             },
 
             /* Serialize the EML DOM to XML */

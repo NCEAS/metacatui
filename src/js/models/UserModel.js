@@ -287,8 +287,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 								},
 								error: function(){
 									//Set some blank values and flag as checked
-									model.set("username", "");
-									model.set("fullName", "");
+									//model.set("username", "");
+									//model.set("fullName", "");
 									model.set("notFound", true);
 									model.set("checked", true);
 								}
@@ -377,8 +377,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			if((typeof orcid == "undefined") && (username == this.get("orcid"))) return true;
 
 			//Checks for ORCIDs using the orcid base URL as a prefix
-			if(username.indexOf("http://orcid.org/") == 0){
-				this.set("orcid", username);
+			if(username.indexOf("orcid.org/") > -1){
 				return true;
 			}
 
@@ -468,13 +467,14 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				  target = Backbone.history.location.href;
 
 			// DO NOT include the route otherwise we have an infinite redirect
-			target  = target.split("#")[0];
+			// target  = target.split("#")[0];
+			target = target.slice(0, -8);
 
 			// make sure to include the target
 			signOutUrl += "?target=" + target;
 
 			// do it!
-			window.location = signOutUrl;
+			window.location.replace(signOutUrl);
 		},
 
 		// call Metacat or the DataONE CN to validate the session and tell us the user's name
@@ -769,6 +769,10 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			var mapUrl = MetacatUI.appModel.get("pendingMapsUrl"),
 				model = this;
 
+			if(mapUrl.charAt(mapUrl.length-1) == "/"){
+				mapUrl = mapUrl.substring(0, mapUrl.length-1)
+			}
+
 			// ajax call to map
 			var requestSettings = {
 				type: "POST",
@@ -777,7 +781,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				},
 				headers: {
 			        "Authorization": "Bearer " + this.get("token")
-			    },
+			  },
 				url: mapUrl,
 				data: {
 					subject: otherUsername
@@ -789,10 +793,32 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					model.getInfo();
 				},
 				error: function(xhr, textStatus, error) {
-					if(typeof onError == "function")
-						onError(xhr, textStatus, error);
+
+					//Check if the username might have been spelled or formatted incorrectly
+					//ORCIDs, in particular, have different formats that we should account for
+					if(xhr.responseText.indexOf("LDAP: error code 32 - No Such Object") > -1 && model.isOrcid(otherUsername)){
+						if(otherUsername.length == 19)
+							model.addMap("http://orcid.org/" + otherUsername, onSuccess, onError);
+						else if(otherUsername.indexOf("https://orcid.org") == 0)
+							model.addMap(otherUsername.replace("https", "http"), onSuccess, onError);
+						else if(otherUsername.indexOf("orcid.org") == 0)
+							model.addMap("http://" + otherUsername, onSuccess, onError);
+						else if(otherUsername.indexOf("www.orcid.org") == 0)
+								model.addMap(otherUsername.replace("www.", "http://"), onSuccess, onError);
+						else if(otherUsername.indexOf("http://www.orcid.org") == 0)
+								model.addMap(otherUsername.replace("www.", ""), onSuccess, onError);
+						else if(otherUsername.indexOf("https://www.orcid.org") == 0)
+								model.addMap(otherUsername.replace("https://www.", "http://"), onSuccess, onError);
+						else if(typeof onError == "function")
+							onError(xhr, textStatus, error);
+					}
+					else{
+						if(typeof onError == "function")
+							onError(xhr, textStatus, error);
+				  }
 				}
 			}
+			
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},
 

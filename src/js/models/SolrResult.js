@@ -12,7 +12,16 @@ define(['jquery', 'underscore', 'backbone'],
 			indexed: true,
 			archived: false,
 			origin: '',
+            keywords: '',
 			title: '',
+			pubDate: '',
+			eastBoundCoord: '',
+			westBoundCoord: '',
+			northBoundCoord: '',
+			southBoundCoord: '',
+			attributeName: '',
+			beginDate: '',
+			endDate: '',
 			pubDate: '',
 			id: '',
 			seriesId: null,
@@ -317,7 +326,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 
 			if(!fields)
-				var fields = "id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,pubDate,dateUploaded,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
+				var fields = "abstract,id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,keywords,attributeName,pubDate,eastBoundCoord,westBoundCoord,northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
 
 			var escapeSpecialChar = MetacatUI.appSearchModel.escapeSpecialChar;
 
@@ -334,7 +343,7 @@ define(['jquery', 'underscore', 'backbone'],
 				query += 'seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" -obsoletedBy:*';
 
 			var requestSettings = {
-				url: MetacatUI.appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json',
+				url: MetacatUI.appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json&rows=1000',
 				type: "GET",
 				success: function(data, response, xhr){
 					var docs = data.response.docs;
@@ -345,16 +354,64 @@ define(['jquery', 'underscore', 'backbone'],
 					}
 					//If we searched by seriesId, then let's find the most recent version in the series
 					else if(docs.length > 1){
+						//Filter out docs that are obsoleted
 						var mostRecent = _.reject(docs, function(doc){
 							return (typeof doc.obsoletedBy !== "undefined");
 						});
 
-						if(mostRecent.length > 0)
+						//If there is only one doc that is not obsoleted (the most recent), then
+						// set this doc's values on this model
+						if(mostRecent.length == 1){
 							model.set(mostRecent[0]);
-						else
-							model.set(docs[0]); //Just default to the first doc found
+							model.trigger("sync");
+						}
+						else{
+							//If there are multiple docs without an obsoletedBy statement, then
+							// retreive the head of the series via the system metadata
+							var sysMetaRequestSettings = {
+								url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(docs[0].seriesId),
+								type: "GET",
+								success: function(sysMetaData){
+									//Get the identifier node from the system metadata
+									var seriesHeadID = $(sysMetaData).find("identifier").text();
+									//Get the doc from the Solr results with that identifier
+									var seriesHead = _.findWhere(docs, { id: seriesHeadID });
 
-						model.trigger("sync");
+									//If there is a doc in the Solr results list that matches the series head id
+									if(seriesHead){
+										//Set those values on this model
+										model.set(seriesHead);
+									}
+									//Otherwise, just fall back on the first doc in the list
+									else if( mostRecent.length ){
+										model.set(mostRecent[0]);
+									}
+									else {
+										model.set(docs[0]);
+									}
+
+									model.trigger("sync");
+
+								},
+								error: function(xhr, textStatus, errorThrown){
+
+									// Fall back on the first doc in the list
+									if( mostRecent.length ){
+										model.set(mostRecent[0]);
+									}
+									else {
+										model.set(docs[0]);
+									}
+
+									model.trigger("sync");
+
+								}
+							};
+
+							$.ajax(_.extend(sysMetaRequestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
+						}
+
 					}
 					else{
 						model.set("indexed", false);

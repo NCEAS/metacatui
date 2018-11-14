@@ -210,11 +210,11 @@ define(["jquery", "underscore", "backbone",
                 var unitTypeNode;
                 if ( unit ) {
                     // Remove any existing unit
-                    if ( $(objectDOM).find("unit").length ) {
-                        $(objectDOM).find("unit").remove();
-                    }
+                    $(objectDOM).find("unit").remove();
+
                     // Build a unit element, and populate a standard or custom child
                     unitNode = document.createElement("unit");
+                    
                     if ( typeof unit.standardUnit !== "undefined") {
                         unitTypeNode = document.createElement("standardUnit");
                         $(unitTypeNode).text(unit.standardUnit);
@@ -394,6 +394,27 @@ define(["jquery", "underscore", "backbone",
             		return;
 
             	}
+
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
 
             },
 

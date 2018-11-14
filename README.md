@@ -25,18 +25,85 @@ A metadata view, as configured for the Arctic Data Center:
  See the [Metacat documentation](https://github.com/NCEAS/metacat) for full installation instructions. In particular, the [`themes` section](https://github.com/NCEAS/metacat/blob/master/docs/user/metacat/source/themes.rst) of the Metacat documentation gives installation instructions for using MetacatUI with your Metacat repository.
 
 ### Using MetacatUI locally with a remote Metacat repository
-To run MetacatUI, you will need to first install a web server such as [Apache](https://httpd.apache.org/). The following instructions are for Mac OS X.
+To run MetacatUI, you will need to first install a web server such as [Apache](https://httpd.apache.org/). The following instructions are for Mac OS X. Apache comes pre-installed on Mac OS X.
 
-#### Step 1. Configure Apache
-- Choose a location from which to serve your Apache website files. A good location is `/Users/{username}/Sites`
-- Configure Apache to serve files from this location by opening `/etc/apache2/httpd.conf` and changing the `DocumentRoot` to your chosen directory path. Example:
+#### Step 1. Set up Apache
+- Choose a location from which to serve *all* your Apache website files. A good location is `/Users/{username}/Sites`
+- Make a subdirectory in `~/Sites` specifically for MetacatUI. The default directory name for MetacatUI is `metacatui`.
+
+  ```
+  mkdir ~/Sites/metacatui
+  ```
+
+- Configure Apache to serve files from your `Sites` directory by opening `/etc/apache2/httpd.conf` and changing the `DocumentRoot` pathname. Example:
 
     ```
     DocumentRoot "/Users/walker/Sites"
-    <Directory "/Users/walker/Sites">
+    <Directory "/Users/walker/Sites/metacatui">
     ```
 
-#### Step 2. Configure MetacatUI
+#### Step 2. Configure a VirtualHost in Apache for MetacatUI
+- First, create a backup of the default httpd-vhosts.conf file:
+
+  ```
+  sudo cp /etc/apache2/extra/httpd-vhosts.conf /etc/apache2/extra/httpd-vhosts.conf.bak
+  ```
+
+- Clear out the example VirtualHost configuration if it is there, and add a VirtualHost for the `~/Sites/metacatui` directory (make sure `walker` is replaced with your username):
+
+  ```
+    <VirtualHost *:80>
+      DocumentRoot "/Users/walker/Sites"
+      ServerName metacatui.localhost
+      ErrorLog "/private/var/log/apache2/metacatui-error_log"
+      CustomLog "/private/var/log/apache2/metacatui-access_log" common
+
+     <Directory "/Users/walker/Sites/metacatui">
+      FallbackResource /metacatui/index.html
+    </Directory>
+  </VirtualHost>
+  ```
+
+The FallbackResource configuration is how MetacatUI is able to use real pathnames like `/data/page/2` for a single-page application.
+
+The FallbackResource directive requires your Apache version to be `2.2.16` and above. If you're using the earlier versions of Apache, you'll require `mod_rewrite` in your configuration. Example:
+
+  ```
+    <Directory "/Users/walker/Sites/metacatui">
+    ...
+    ...
+
+    <IfModule mod_rewrite.c>
+        RewriteEngine On
+        RewriteBase /
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+    </IfModule>
+    </Directory>
+  ```
+
+- Create a host name for `metacatui.locahost`. First, open `/etc/hosts`:
+
+  ```
+  sudo vi /etc/hosts
+  ```
+
+- Add `metacatui.localhost` to the bottom of the file. **Be careful not to change any other part of this file!**:
+
+  ```
+  # metacatui local site
+  127.0.0.1 metacatui.localhost
+  ```
+
+- Save your `/etc/hosts` changes and start (or restart) Apache:
+
+  ```
+  sudo apachectl start
+  ```
+
+#### Step 3. Configure MetacatUI
 - Download the [latest MetacatUI release .zip file](https://github.com/NCEAS/metacatui/releases) and unzip it
 - Open `src/index.html` in a text editor and change the following values:
     - Set the `data-theme` to your chosen theme name, e.g. `default`, `knb`, `arctic`.
@@ -46,21 +113,21 @@ To run MetacatUI, you will need to first install a web server such as [Apache](h
     - Set `baseUrl` to the URL where the remote Metacat is (e.g. `https://dev.nceas.ucsb.edu`)
     - Set `d1CNBaseUrl` to the URL of the DataONE Coordinating Node that the Metacat Member Node is a part of. (e.g. the Member Node `urn:node:mnTestKNB` is in the `urn:node:cnStage` Coordinating Node, so this attribute would be set to `https://cn-stage.test.dataone.org/`)
 
-#### Step 3. Install MetacatUI in Apache
-- Copy the contents of the MetacatUI `src` directory to your Sites directory.
+- *Note: If you installed MetacatUI somewhere other than the location in step 2 above:* you will need to change the `loader.js` pathname in `index.html` and the `MetacatUI.root` pathname in `loader.js` to the custom location where MetacatUI is located. For example, if you installed MetacatUI at root instead of in a `metacatui` subdirectory, your `loader.js` pathname in `index.html` would be `/loader.js` and `MetacatUI.root` would be `/`.
+
+#### Step 4. Move MetacatUI files to Apache
+- Move the MetacatUI application code to the directory we chose in Step 2.
 
     ```
-    mkdir ~/Sites/metacatui
     cp -rf metacatui-2.0.0/src/* ~/Sites/metacatui/
     ```
 
-- Run `sudo apachectl start` to start Apache
-- Open a web browser and navigate to `localhost/metacatui`
+- Open a web browser and navigate to `metacatui.localhost/metacatui` and your MetacatUI application should be ready to go!
 
 ### Using MetacatUI locally with a remote DataONE Coordinating Node
 
 #### Step 1.
-- Follow Step 1 above to configure the Apache web server on your local machine.
+- Follow Step 1-2 above to configure the Apache web server on your local machine.
 
 #### Step 2. Configure MetacatUI
 - Download the [latest MetacatUI release .zip file](https://github.com/NCEAS/metacatui/releases) and unzip it
@@ -70,9 +137,18 @@ To run MetacatUI, you will need to first install a web server such as [Apache](h
     - Optional: Replace `YOUR-GOOGLE-MAPS-API-KEY` with your [Google Maps API key](https://developers.google.com/maps/documentation/javascript/get-api-key) to enable the Google Map features of MetacatUI. If no API key is given, MetacatUI will still work, it just will not include the map features.
 - Open `src/js/themes/dataone/models/AppModel.js` and change the following values:
     - Set `baseUrl` and `d1CNBaseUrl` to the URL where the remote DataONE CN is (e.g. `https://cn-stage.test.dataone.org`)
+- Open `src/loader.js` and set the value for the following property:
+    - Set `MetacatUI.root` based on the location off of its top directory. Example:
+        - If the source code is located at `~/Sites/metacatui` (as detailed in Step 1), set the `MetacatUI.root = "/metacatui"`.
 
-#### Step 3.
-- Follow Step 3 above to install MetacatUI in Apache.
+#### Step 3. Move MetacatUI files to Apache
+- Move the MetacatUI application code to the directory we chose in Step 1.
+
+    ```
+    cp -rf metacatui-2.0.0/src/* ~/Sites/metacatui/
+    ```
+
+- Open a web browser and navigate to `metacatui.localhost/metacatui` and your MetacatUI application should be ready to go!
 
 ## License
 ```

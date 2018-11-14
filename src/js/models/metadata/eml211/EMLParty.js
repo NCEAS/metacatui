@@ -243,7 +243,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 
 			//There needs to be at least one individual name, organization name, or position name
-			if(!this.get("individualName") && !this.get("organizationName") && !this.get("positionName"))
+			if( this.nameIsEmpty() && !this.get("organizationName") && !this.get("positionName"))
 				return "";
 
 			var name = this.get("individualName");
@@ -259,21 +259,27 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				$(nameNode).empty();
 
 				 // salutation[s]
-				 if(!Array.isArray(name.salutation) && name.salutation) name.salutation = [name.salutation];
-				 _.each(name.salutation, function(salutation) {
-					 $(nameNode).append("<salutation>" + salutation + "</salutation>");
+				 if(!Array.isArray(name.salutation) && name.salutation)
+          name.salutation = [name.salutation];
+
+         _.each(name.salutation, function(salutation) {
+					 $(nameNode).prepend("<salutation>" + salutation + "</salutation>");
 				 });
 
 				 //Given name
 				 if(!Array.isArray(name.givenName) && name.givenName) name.givenName = [name.givenName];
 				 _.each(name.givenName, function(givenName) {
-					 $(nameNode).prepend("<givenname>" + givenName + "</givenname>");
+					 $(nameNode).append("<givenname>" + givenName + "</givenname>");
 				 });
 
 				 // surname
 				 if(name.surName)
 					 $(nameNode).append("<surname>" +  name.surName + "</surname>");
 			}
+      //If there is no name set on the model, remove it from the DOM
+      else{
+        $(objectDOM).find("individualname").remove();
+      }
 
 			 // organizationName
 			if(this.get("organizationName")){
@@ -300,9 +306,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			}
 			//Remove the organization name node if there is no organization name
 			else{
-				var orgNameNode = $(objectDOM).find("organizationname");
-				if(orgNameNode.length)
-					orgNameNode.remove();
+				var orgNameNode = $(objectDOM).find("organizationname").remove();
 			}
 
 			 // positionName
@@ -322,6 +326,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				else
 					this.getEMLPosition(objectDOM, "positionname").after(posNameNode);
 			}
+      //Remove the position name node if there is no position name
+      else{
+        $(objectDOM).find("positionname").remove();
+      }
 
 			 // address
 			 _.each(this.get("address"), function(address, i) {
@@ -332,6 +340,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 					 addressNode = document.createElement("address");
 					 this.getEMLPosition(objectDOM, "address").after(addressNode);
 				 }
+
+         //Remove all the delivery points since they'll be reserialized
+         $(addressNode).find("deliverypoint").remove();
 
 				 _.each(address.deliveryPoint, function(deliveryPoint, ii){
 					 if(!deliveryPoint) return;
@@ -359,102 +370,127 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 					 if(!cityNode.length){
 						 cityNode = document.createElement("city");
-						 $(addressNode).append(cityNode);
+
+             if(this.getEMLPosition(addressNode, "city")){
+               this.getEMLPosition(addressNode, "city").after(cityNode);
+             }
+             else{
+                $(addressNode).append(cityNode);
+             }
 					 }
 
 					 $(cityNode).text(address.city);
 				 }
+         else{
+           $(addressNode).find("city").remove();
+         }
 
 				 if(address.administrativeArea){
 					 var adminAreaNode = $(addressNode).find("administrativearea");
 
 					 if(!adminAreaNode.length){
 						 adminAreaNode = document.createElement("administrativearea");
-						 $(addressNode).append(adminAreaNode);
+
+             if(this.getEMLPosition(addressNode, "administrativearea")){
+               this.getEMLPosition(addressNode, "administrativearea").after(adminAreaNode);
+             }
+             else{
+                $(addressNode).append(adminAreaNode);
+             }
+
 					 }
 
 					 $(adminAreaNode).text(address.administrativeArea);
 				 }
+         else{
+           $(addressNode).find("administrativearea").remove();
+         }
 
 				 if(address.postalCode){
 					 var postalcodeNode = $(addressNode).find("postalcode");
 
 					 if(!postalcodeNode.length){
 						 postalcodeNode = document.createElement("postalcode");
-						 $(addressNode).append(postalcodeNode);
+
+             if(this.getEMLPosition(addressNode, "postalcode")){
+               this.getEMLPosition(addressNode, "postalcode").after(postalcodeNode);
+             }
+             else{
+                $(addressNode).append(postalcodeNode);
+             }
+
 					 }
 
 					 $(postalcodeNode).text(address.postalCode);
 				 }
+         else{
+           $(addressNode).find("postalcode").remove();
+         }
 
 				 if(address.country){
 					 var countryNode = $(addressNode).find("country");
 
 					 if(!countryNode.length){
 						 countryNode = document.createElement("country");
-						 $(addressNode).append(countryNode);
+
+             if(this.getEMLPosition(addressNode, "country")){
+               this.getEMLPosition(addressNode, "country").after(countryNode);
+             }
+             else{
+                $(addressNode).append(countryNode);
+             }
+
 					 }
 
 					 $(countryNode).text(address.country);
 				 }
+         else{
+           $(addressNode).find("country").remove();
+         }
 
 			 }, this);
 
+       if( this.get("address").length == 0 ){
+         $(objectDOM).find("address").remove();
+       }
+
 			 // phone[s]
+       $(objectDOM).find("phone[phonetype='voice']").remove();
 			 _.each(this.get("phone"), function(phone) {
-				 var phoneNode = $(objectDOM).find("phone[phonetype='voice']");
 
-				 if(!phoneNode.length){
-					 phoneNode = $(document.createElement("phone")).attr("phonetype", "voice");
-					 this.getEMLPosition(objectDOM, "phone").after(phoneNode);
-				 }
+				var phoneNode = $(document.createElement("phone")).attr("phonetype", "voice").text(phone);
+				this.getEMLPosition(objectDOM, "phone").after(phoneNode);
 
-				 $(phoneNode).text(phone);
 			 }, this);
 
 			 // fax[es]
+       $(objectDOM).find("phone[phonetype='facsimile']").remove();
 			 _.each(this.get("fax"), function(fax) {
-				 var faxNode = $(objectDOM).find("phone[phonetype='facsimile']");
 
-				 if(!faxNode.length){
-					 faxNode = $(document.createElement("phone")).attr("phonetype", "facsimile");
-					 this.getEMLPosition(objectDOM, "phone").after(faxNode);
-				 }
+				var faxNode = $(document.createElement("phone")).attr("phonetype", "facsimile").text(fax);
+				this.getEMLPosition(objectDOM, "phone").after(faxNode);
 
-				 $(faxNode).text(fax);
 			 }, this);
 
 			 // electronicMailAddress[es]
+       $(objectDOM).find("electronicmailaddress").remove();
 			 _.each(this.get("email"), function(email) {
-				 var emailNode = $(objectDOM).find("electronicmailaddress");
 
-				 if(!emailNode.length){
-					 emailNode = document.createElement("electronicmailaddress");
-					 this.getEMLPosition(objectDOM, "electronicmailaddress").after(emailNode);
-				 }
+			   var emailNode = document.createElement("electronicmailaddress");
+				 this.getEMLPosition(objectDOM, "electronicmailaddress").after(emailNode);
 
 				 $(emailNode).text(email);
 
 			 }, this);
 
 			// online URL[es]
+      $(objectDOM).find("onlineurl").remove();
 			 _.each(this.get("onlineUrl"), function(onlineUrl, i) {
-				 var urlNode = $(objectDOM).find("onlineurl")[i];
 
-				 //If there is a XML node but no value, remove the node
-				 if(urlNode && !onlineUrl){
-					 urlNode.remove();
-					 return;
-				 }
-				 else if(!onlineUrl)
-					 return;
+				var urlNode = document.createElement("onlineurl");
+			  this.getEMLPosition(objectDOM, "onlineurl").after(urlNode);
 
-				 if(!urlNode){
-					 urlNode = document.createElement("onlineurl");
-					 this.getEMLPosition(objectDOM, "onlineurl").after(urlNode);
-				 }
-
-				 $(urlNode).text(onlineUrl);
+				$(urlNode).text(onlineUrl);
 
 			 }, this);
 
@@ -514,6 +550,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			 }, this);
 
+       //Remove all the user id's if there aren't any in the model
+       if( userId.length == 0 ){
+         $(objectDOM).find("userid").remove();
+       }
+
 			// role
 			//If this party type is not an associated party, then remove the role element
 			if( type != "associatedParty" && type != "personnel" ){
@@ -546,21 +587,31 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 return objectDOM;
 		},
 
+      /*
+      * Adds this EMLParty model to it's parent EML211 model in the appropriate role array
+      *
+      * @return {boolean} - Returns true if the merge was successful, false if the merge was cancelled
+      */
     	mergeIntoParent: function(){
     		//Get the type of EML Party, in relation to the parent model
-			if(this.get("type") && this.get("type") != "associatedParty")
-				var type = this.get("type");
-			else
-				var type = "associatedParty";
+  			if(this.get("type") && this.get("type") != "associatedParty")
+  				var type = this.get("type");
+  			else
+  				var type = "associatedParty";
 
-			//Update the list of EMLParty models in the parent model
-			var currentModels = this.get("parentModel").get(type);
-			currentModels.push(this);
-			this.get("parentModel").set(type, currentModels);
-			this.get("parentModel").trigger("change");
+  			//Update the list of EMLParty models in the parent model
+        var parentEML = this.getParentEML();
 
-			//Trigger a custom event that marks the model as valid
-			this.isValid();
+        if(parentEML.type != "EML")
+          return false;
+
+        //Add this model to the EML model
+        var successfulAdd = parentEML.addParty(this);
+
+  			//Validate the model
+  			this.isValid();
+
+        return successfulAdd;
     	},
 
       isEmpty: function(){
@@ -621,6 +672,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         getEMLPosition: function(objectDOM, nodeName){
         	var nodeOrder = [ "individualname", "organizationname", "positionname", "address", "phone",
         	                  "electronicmailaddress", "onlineurl", "userid", "role"];
+          var addressOrder = ["deliverypoint", "city", "administrativearea", "postalcode", "country"];
+
+          //If this is an address node, find the position within the address
+          if( _.contains(addressOrder, nodeName) ){
+            nodeOrder = addressOrder;
+          }
 
         	var position = _.indexOf(nodeOrder, nodeName);
         	if(position == -1)
@@ -631,7 +688,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         		if($(objectDOM).find(nodeOrder[i]).length)
         			return $(objectDOM).find(nodeOrder[i]).last();
         	}
-
 
         	return false;
         },
@@ -760,6 +816,71 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
       }
 
       return modelValues;
+    },
+
+    /*
+    * function nameIsEmpty - Returns true if the individualName set on this model contains
+    * only empty values. Otherwise, returns false. This is just a shortcut for manually checking
+    * each name field individually.
+    *
+    * @return {boolean}
+    */
+    nameIsEmpty: function(){
+      var name = this.get("individualName");
+
+      if( !name || typeof name != "object" )
+        return true;
+
+      //Check if there are given names
+      var givenName = name.givenName,
+          givenNameEmpty = false;
+
+      if( !givenName || (Array.isArray(givenName) && givenName.length == 0) ||
+        (typeof givenName == "string" && givenName.trim().length == 0) )
+          givenNameEmpty = true;
+
+      //Check if there are no sur names
+      var surName = name.surName,
+          surNameEmpty = false;
+
+      if( !surName || (Array.isArray(surName) && surName.length == 0) ||
+        (typeof surName == "string" && surName.trim().length == 0) )
+          surNameEmpty = true;
+
+      //Check if there are no salutations
+      var salutation = name.salutation,
+          salutationEmpty = false;
+
+      if( !salutation || (Array.isArray(salutation) && salutation.length == 0) ||
+        (typeof salutation == "string" && salutation.trim().length == 0) )
+          salutationEmpty = true;
+
+      if( givenNameEmpty && surNameEmpty && salutationEmpty )
+        return true;
+      else
+        return false;
+
+    },
+
+    /*
+    * Climbs up the model heirarchy until it finds the EML model
+    *
+    * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+    */
+    getParentEML: function(){
+      var emlModel = this.get("parentModel"),
+          tries = 0;
+
+      while (emlModel.type !== "EML" && tries < 6){
+        emlModel = emlModel.get("parentModel");
+        tries++;
+      }
+
+      if( emlModel && emlModel.type == "EML")
+        return emlModel;
+      else
+        return false;
+
     },
 
 		formatXML: function(xmlString){

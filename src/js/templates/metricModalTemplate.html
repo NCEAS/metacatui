@@ -1,0 +1,53 @@
+<% if(metricName != 'undefined') {
+        var metrics = ['Citations', 'Downloads', 'Views'];
+        var metricIndex = metrics.indexOf(metricName);
+        var iconArrays = ['icon-quote-right', 'icon-cloud-download', 'icon-eye-open'];
+        var metricIcon = iconArrays[metricIndex];
+        // Implementing a circular queue for the modal footer
+        var prevMetricName = metrics[((metricIndex + metrics.length - 1) % metrics.length)];
+        var nextMetricName = metrics[((metricIndex + metrics.length + 1) % metrics.length)];
+}
+%>
+
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+        <div class="left-header-section">
+
+            <i class='icon <%=metricIcon%>'></i>
+            <%=MetacatUI.appView.numberAbbreviator(metricValue,1) %>
+            <%=metricName%>
+        </div>
+        <div class="right-header-section">
+            <button type="button" class="metric close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </div>
+    </div>
+    <div class="modal-body">
+
+        <% if (metricNameLemma != "citation") { %>
+            <div class="modal-description">
+                <p>For all versions of this data set, the number of times that all or part of this data set was <%=metricNameLemma%>ed over time.</p>
+                <p>These <%=metricNameLemma%> counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that <%=metricNameLemma%>s from some Internet robots and repeat <%=metricNameLemma%>s within a certain time window are excluded.</p>
+                <p id="slider-instructions">Drag the slider to visualize a specific time window for the <%=metricNameLemma%> events.</p>
+            </div>
+        <% } %>
+
+      <%=metricBody%>
+    </div>
+
+    <div class="modal-footer" >
+      <div class="left-modal-footer" style="float:left">
+            <button type="button" class="modal-btn btn btn-default" >
+                <i class='icon icon-chevron-left'></i>
+                <%=prevMetricName%>
+            </button>
+      </div>
+      <div class="right-modal-footer" style="float:right" >
+            <button type="button" class="modal-btn btn btn-default">
+                <%=nextMetricName%>
+                <i class='icon icon-chevron-right'></i>
+            </button>
+      </div>
+    </div>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

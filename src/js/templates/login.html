@@ -12,7 +12,7 @@
 		 <%  if(signInUrlOrcid) { %>
 				<div class="orcid-signin center">
 					<a href="<%=signInUrlOrcid%>" class="signin orcid-btn update-orcid-sign-in-url" <%=linkAttr%>>
-						<img src="./img/orcid_64x64.png" />
+						<img src="<%= MetacatUI.root %>/img/orcid_64x64.png" />
 						<span>Sign in with ORCID</span>
 					</a>
 				</div>
@@ -43,10 +43,10 @@
   	</div>
 	<div class="modal-body center">
 		<% if(signInUrlOrcid) { %>
-			<p>There's no need to create a new account - just use your <a href="<%=signInUrlOrcid%>">existing <img src="./img/orcid_64x64.png" class="icon-on-left icon" /> ORCID account</a> now or <a href="<%=signInUrlOrcid%>">create a new one</a>.</p>
+			<p>There's no need to create a new account - just use your <a href="<%=signInUrlOrcid%>">existing <img src="<%= MetacatUI.root %>/img/orcid_64x64.png" class="icon-on-left icon" /> ORCID account</a> now or <a href="<%=signInUrlOrcid%>">create a new one</a>.</p>
 			<div class="orcid-signin center">
 				<a href="<%=signInUrlOrcid%>" class="signin orcid-btn update-orcid-sign-in-url" <%=linkAttr%>>
-					<img src="./img/orcid_64x64.png" />
+					<img src="<%= MetacatUI.root %>/img/orcid_64x64.png" />
 					<span>Sign up with ORCID</span>
 				</a>
 			</div>

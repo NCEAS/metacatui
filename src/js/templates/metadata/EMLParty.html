@@ -4,69 +4,69 @@
 	<div class="span4">
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-givenName">First Name</label>
-			<input type="text" value="<%=givenName%>" id="<%=uniqueId%>-givenName" class="span6 tooltip-this" name="first name" data-attribute="givenName" placeholder="First name" />
+			<input type="text" id="<%=uniqueId%>-givenName" class="span6 tooltip-this" name="first name" data-attribute="givenName" placeholder="First name" />
 			<label class="hidden" for="<%=uniqueId%>-surName">Last Name</label>
-			<input type="text" value="<%=surName%>" id="<%=uniqueId%>-surName" class="span6 tooltip-this required" name="last name" data-attribute="surName" placeholder="Last name"/>
+			<input type="text" id="<%=uniqueId%>-surName" class="span6 tooltip-this required" name="last name" data-attribute="surName" placeholder="Last name"/>
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-position">Position</label>
-			<input type="text" value="<%=posName%>" id="<%=uniqueId%>-position" name="Position" class="span12 tooltip-this required" data-attribute="positionName" placeholder="Position name" />
+			<input type="text" id="<%=uniqueId%>-position" name="Position" class="span12 tooltip-this required" data-attribute="positionName" placeholder="Position name" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-organizationName">Organization Name</label>
-			<input type="text" value="<%=orgName%>" id="<%=uniqueId%>-organizationName" name="Organization" class="span12 tooltip-this required" data-attribute="organizationName" placeholder="Organization name"/>
+			<input type="text" id="<%=uniqueId%>-organizationName" name="Organization" class="span12 tooltip-this required" data-attribute="organizationName" placeholder="Organization name"/>
 		</div>
 	</div>
 	<div class="span4">
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-email">E-mail</label>
-			<input type="email" value="<%=email%>" id="<%=uniqueId%>-email" name="E-mail" class="span12 tooltip-this" data-attribute="email" placeholder="Email" />
+			<input type="email" id="<%=uniqueId%>-email" name="E-mail" class="span12 tooltip-this" data-attribute="email" placeholder="Email" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-website">Website</label>
-			<input type="url" value="<%=website%>" id="<%=uniqueId%>-website" name="website" class="span12 tooltip-this" data-attribute="onlineUrl" placeholder="Website" />
+			<input type="url" id="<%=uniqueId%>-website" name="website" class="span12 tooltip-this" data-attribute="onlineUrl" placeholder="Website" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-phone">Phone number</label>
-			<input type="tel" value="<%=phone%>" id="<%=uniqueId%>-phone" name="Phone number" class="span6 tooltip-this phone" data-attribute="phone" placeholder="Phone" />
+			<input type="tel" id="<%=uniqueId%>-phone" name="Phone number" class="span6 tooltip-this phone" data-attribute="phone" placeholder="Phone" />
 
 			<label class="hidden" for="<%=uniqueId%>-fax">Fax number</label>
-			<input type="tel" value="<%=fax%>" id="<%=uniqueId%>-fax" name="fax number" class="span6 tooltip-this phone" data-attribute="fax" placeholder="Fax" />
+			<input type="tel" id="<%=uniqueId%>-fax" name="fax number" class="span6 tooltip-this phone" data-attribute="fax" placeholder="Fax" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-orcid">ORCID</label>
-			<img src="img/orcid_64x64.png" class="input-logo" alt="ORCID logo" title="ORCID logo"/>
-			<input type="text" value="<%=userId%>" id="<%=uniqueId%>-orcid" name="orcid" class="tooltip-this" data-attribute="userId" data-html="true" placeholder="For maximum impact, add this person's ORCID. <a href='https://orcid.org/orcid-search/search'>Search for an ORCID by name.</a>" />
+			<img src="<%= MetacatUI.root %>/img/orcid_64x64.png" class="input-logo" alt="ORCID logo" title="ORCID logo"/>
+			<input type="text" id="<%=uniqueId%>-orcid" name="orcid" class="tooltip-this" data-attribute="userId" data-html="true" placeholder="For maximum impact, add this person's ORCID. <a href='https://orcid.org/orcid-search/search'>Search for an ORCID by name.</a>" />
 		</div>
 	</div>
 	<div class="span4">
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-address">Address</label>
-			<input type="text" id="<%=uniqueId%>-address" name="address" value="<%=addressOne%>" class="span12 tooltip-this" data-attribute="deliveryPoint" placeholder="Street address" />
+			<input type="text" id="<%=uniqueId%>-address" name="address" class="span12 tooltip-this" data-attribute="deliveryPoint" placeholder="Street address" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-address2">Address Line 2</label>
-			<input type="text" id="<%=uniqueId%>-address2" name="address line 2" value="<%=addressTwo%>" class="span12 tooltip-this" data-attribute="deliveryPoint" placeholder="Address line 2" />
+			<input type="text" id="<%=uniqueId%>-address2" name="address line 2" class="span12 tooltip-this" data-attribute="deliveryPoint" placeholder="Address line 2" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-city">City</label>
-			<input type="text" value="<%=city%>" id="<%=uniqueId%>-city" name="city" class="span6 tooltip-this" data-attribute="city" placeholder="City" />
+			<input type="text" id="<%=uniqueId%>-city" name="city" class="span6 tooltip-this" data-attribute="city" placeholder="City" />
 
 			<label class="hidden" for="<%=uniqueId%>-state">State or Administrative Area</label>
-			<input type="text" value="<%=adminArea%>" id="<%=uniqueId%>-state" name="state" class="span6 tooltip-this" data-attribute="administrativeArea" placeholder="State or province" />
+			<input type="text" id="<%=uniqueId%>-state" name="state" class="span6 tooltip-this" data-attribute="administrativeArea" placeholder="State or province" />
 		</div>
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-zip">Zip Code</label>
-			<input type="text" value="<%=postalCode%>" id="<%=uniqueId%>-zip" name="zip code" class="span6 tooltip-this" data-attribute="postalCode" placeholder="Postal code" />
+			<input type="text" id="<%=uniqueId%>-zip" name="zip code" class="span6 tooltip-this" data-attribute="postalCode" placeholder="Postal code" />
 
 			<label class="hidden" for="<%=uniqueId%>-country">Country</label>
-			<input type="text" value="<%=country%>" id="<%=uniqueId%>-country" name="country" class="span6 tooltip-this" data-attribute="country" placeholder="Country" />
+			<input type="text" id="<%=uniqueId%>-country" name="country" class="span6 tooltip-this" data-attribute="country" placeholder="Country" />
 		</div>
 	</div>
 </div>
 <nav class="party-menu btn-group subtle-btn-group">
     <button class="btn dropdown-toggle" data-toggle="dropdown">
-    	<img src="./img/ellipsis-menu-icon.png" title="Copy, remove, and other actions for this person" />
+    	<img src="<%= MetacatUI.root %>/img/ellipsis-menu-icon.png" title="Copy, remove, and other actions for this person" />
     </button>
     <ul class="dropdown-menu">
     	<li class="copy" ><a title="Copy this person to another role">Copy to ...</a></li>

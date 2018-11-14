@@ -70,8 +70,29 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-			mdqUrl: null
+			mdqUrl: null,
 
+
+			// Metrics endpoint url
+			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
+
+			// Metrics flags for the Dataset Landing Page
+			// Enable these flags to enable metrics display
+			displayDatasetMetrics: true,
+
+			// Controlling individual functionality
+			// Only works if the parent flags displayDatasetMetrics is enabled
+			displayDatasetMetricsTooltip: true,
+			displayDatasetCitationMetric: true,
+			displayDatasetDownloadMetric: true,
+			displayDatasetViewMetric: true,
+			displayDatasetEditButton: false,
+			displayDatasetQualityMetric: false,
+			displayDatasetAnalyzeButton: false,
+			displayMetricModals: true,
+			displayDatasetControls: true,
+
+			isJSONLDEnabled: true
 		},
 
 		defaultView: "data",
@@ -101,7 +122,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("groupsUrl", 		  this.get("baseUrl") + this.get("d1Service") + "/groups/");
 				this.set("accountsUrl", 	  this.get("baseUrl")  + this.get("d1Service") + "/accounts/");
 
-				this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap");
+				this.set("pendingMapsUrl",    this.get("accountsUrl") + "pendingmap/");
 				this.set("accountsMapsUrl",    this.get("accountsUrl") + "map/");
 			}
 
@@ -129,7 +150,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
 			//The package service for v2 DataONE API
-			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+			this.set('packageServiceUrl', this.get('baseUrl') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			//Only use these settings in production
 			if(this.get("baseUrl").indexOf("search.dataone.org") > -1)
@@ -140,6 +161,7 @@ define(['jquery', 'underscore', 'backbone'],
 				this.set("bioportalSearchUrl", "https://data.bioontology.org/search?ontologies=ECSO&apikey=" + this.get("bioportalAPIKey") + "&pagesize=1000&suggest=true&q=")
 
 			this.on("change:pid", this.changePid);
+
 		},
 
 		changePid: function(model, name){

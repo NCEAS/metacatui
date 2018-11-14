@@ -1,7 +1,8 @@
 ﻿﻿/* global define */
 define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
-        'models/metadata/eml211/EMLOtherEntity', 'text!templates/dataItem.html'],
-    function(_, $, Backbone, DataONEObject, EMLOtherEntity, DataItemTemplate){
+        'models/metadata/eml211/EML211', 'models/metadata/eml211/EMLOtherEntity',
+        'text!templates/dataItem.html'],
+    function(_, $, Backbone, DataONEObject, EML, EMLOtherEntity, DataItemTemplate){
 
         /*
             A DataItemView represents a single data item in a data package as a single row of
@@ -37,7 +38,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "click .cancel"        : "handleCancel",      // Cancel a file load
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
                 "mouseover .remove"    : "previewRemove",
-                "mouseout  .remove"    : "previewRemove"
+                "mouseout  .remove"    : "previewRemove",
+                "change .private"      : "changeAccessPolicy"
             },
 
             /* Initialize the object - post constructor */
@@ -70,7 +72,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 //Set some defaults
                 attributes.numAttributes = 0;
-                attributes.entityIsValid = false;
+                attributes.entityIsValid = true;
                 attributes.hasInvalidAttribute = false;
 
                 //Get the number of attributes for this item
@@ -123,6 +125,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 	                		//Determine if the entity model is valid
 	                		attributes.entityIsValid = entity.isValid();
 
+                      //Listen to changes to certain attributes of this EMLEntity model
+                      // to re-render this view
+                      this.stopListening(entity);
+                      this.listenTo(entity, "change:entityType, change:entityName", this.render);
+
 	                		//Check if there are any invalid attribute models
 	                		//Also listen to each attribute model
                 			_.each( entity.get("attributeList"), function(attr){
@@ -160,15 +167,50 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
 
                 this.$el.html( this.template(attributes) );
+
+                //Initialize dropdowns
                 this.$el.find(".dropdown-toggle").dropdown();
 
-                //Add the title data-attribute attribute to the name cell
                 if(this.model.get("type") == "Metadata"){
+                  //Add the title data-attribute attribute to the name cell
                 	this.$el.find(".name").attr("data-attribute", "title");
                 	this.$el.addClass("folder");
                 }
                 else{
                 	this.$el.addClass("data");
+
+                  //Get the AccessPolicy for this object
+                  var accessPolicy = this.model.get("accessPolicy"),
+                      checkbox = this.$(".sharing input");
+
+                  //Check the public/private toggle if this object is private
+                  if( accessPolicy && !accessPolicy.isPublic() ){
+                    checkbox.prop("checked", true);
+                  }
+
+                  //If the user is not authorized to change the permissions of
+                  // this object, then disable the checkbox
+                  if( !accessPolicy.isAuthorized("changePermission") ){
+                    checkbox.prop("disabled", "disabled")
+                            .addClass("disabled");
+
+                    this.$(".sharing").tooltip({
+                      title: "You are not authorized to edit the privacy of this data file",
+                      placement: "top",
+                      container: this.el,
+                      trigger: "hover",
+                      delay: { show: 800 }
+                    });
+                  }
+                  else{
+                    checkbox.tooltip({
+                      title: "Check to make this data file private",
+                      placement: "top",
+                      trigger: "hover",
+                      delay: { show: 800 }
+                    });
+                  }
+
                 }
 
                 //Check if the data package is in progress of being uploaded
@@ -201,7 +243,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             		this.$el.removeClass("loading");
 
             	}
-                else if( attributes.hasInvalidAttribute ){
+                else if( attributes.hasInvalidAttribute || !attributes.entityIsValid ){
 
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
@@ -246,7 +288,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 		html: true,
                 		title: function(){
                 			if(model.get("numSaveAttempts") > 0){
-                				return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + model.get("numSaveAttempts") + " of 3)</div>";
+                				return "<div class='status-tooltip'>Something went wrong during upload. <br/> Trying again... (attempt " + (model.get("numSaveAttempts") + 1) + " of 3)</div>";
                 			}
                 			else if(model.get("uploadProgress")){
                 				var percentDone = model.get("uploadProgress").toString();
@@ -572,7 +614,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     } else {
                         // It's data, get the parent scimeta
                         parentMetadata = MetacatUI.rootDataPackage.where({
-                            id: eventModel.get("isDocumentedBy")[0]
+                            id: Array.isArray(eventModel.get("isDocumentedBy"))? eventModel.get("isDocumentedBy")[0] : null
                         });
 
                         if ( parentMetadata.length > 0 ) {
@@ -637,33 +679,35 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             cleanInput: function(input){
             	// 1. remove line breaks / Mso classes
-				var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g;
-				var output = input.replace(stringStripper, ' ');
+      				var stringStripper = /(\n|\r| class=(")?Mso[a-zA-Z]+(")?)/g;
+      				var output = input.replace(stringStripper, ' ');
 
-				// 2. strip Word generated HTML comments
-				var commentSripper = new RegExp('<!--(.*?)-->','g');
-				output = output.replace(commentSripper, '');
-				var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
+      				// 2. strip Word generated HTML comments
+      				var commentSripper = new RegExp('<!--(.*?)-->','g');
+      				output = output.replace(commentSripper, '');
+      				var tagStripper = new RegExp('<(/)*(meta|link|span|\\?xml:|st1:|o:|font)(.*?)>','gi');
 
-				// 3. remove tags leave content if any
-				output = output.replace(tagStripper, '');
+      				// 3. remove tags leave content if any
+      				output = output.replace(tagStripper, '');
 
-				// 4. Remove everything in between and including tags '<style(.)style(.)>'
-				var badTags = ['style', 'script','applet','embed','noframes','noscript'];
+      				// 4. Remove everything in between and including tags '<style(.)style(.)>'
+      				var badTags = ['style', 'script','applet','embed','noframes','noscript'];
 
-				for (var i=0; i< badTags.length; i++) {
-				  tagStripper = new RegExp('<'+badTags[i]+'.*?'+badTags[i]+'(.*?)>', 'gi');
-				  output = output.replace(tagStripper, '');
-				}
+      				for (var i=0; i< badTags.length; i++) {
+      				  tagStripper = new RegExp('<'+badTags[i]+'.*?'+badTags[i]+'(.*?)>', 'gi');
+      				  output = output.replace(tagStripper, '');
+      				}
 
-				// 5. remove attributes ' style="..."'
-				var badAttributes = ['style', 'start'];
-				for (var i=0; i< badAttributes.length; i++) {
-				  var attributeStripper = new RegExp(' ' + badAttributes[i] + '="(.*?)"','gi');
-				  output = output.replace(attributeStripper, '');
-				}
+      				// 5. remove attributes ' style="..."'
+      				var badAttributes = ['style', 'start'];
+      				for (var i=0; i< badAttributes.length; i++) {
+      				  var attributeStripper = new RegExp(' ' + badAttributes[i] + '="(.*?)"','gi');
+      				  output = output.replace(attributeStripper, '');
+      				}
 
-				return output;
+              output = EML.prototype.cleanXMLText(output);
+
+      				return output;
             },
 
             /*
@@ -691,6 +735,56 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             							editableCell.text(editableCell.attr("data-original-text")).removeClass("empty");
             					});
             	}
+            },
+
+            /*
+            * Changes the access policy of a data object based on user input.
+            *
+            * @param {HTML DOM Event} e - The event that triggered this function as a callback
+            */
+            changeAccessPolicy: function(e){
+
+              if( typeof e === "undefined" || !e )
+                return;
+
+              var dataModel   = this.model,
+                  makePrivate = $(e.target).prop("checked");
+
+              //If the user has chosen to make this object private
+              if(makePrivate){
+
+                //Get the existing access policy
+                var accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  //Make the access policy private
+                  accessPolicy.makePrivate();
+                }
+                else{
+                  //Create an access policy from the default settings
+                  this.model.createAccessPolicy();
+                  //Make the access policy private
+                  this.model.get("accessPolicy").makePrivate();
+                }
+
+              }
+              else{
+                //Get the existing access policy
+                var accessPolicy = this.model.get("accessPolicy");
+                if( accessPolicy ){
+                  //Make the access policy public
+                  accessPolicy.makePublic();
+                }
+                else{
+                  //Create an access policy from the default settings
+                  this.model.createAccessPolicy();
+                  //Make the access policy public
+                  this.model.get("accessPolicy").makePublic();
+                }
+              }
+
+              //Close the tooltips
+              this.$(".sharing").tooltip("hide");
+
             },
 
             showValidation: function(attr, errorMsg){

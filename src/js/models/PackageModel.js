@@ -762,7 +762,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			var url = null;
 
 			//If we haven't set a packageServiceURL upon app initialization and we are querying a CN, then the packageServiceURL is dependent on the MN this package is from
-			if(!MetacatUI.appModel.get("packageServiceUrl") && (MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && MetacatUI.nodeModel.get("members").length){
+			if((MetacatUI.appModel.get("d1Service").toLowerCase().indexOf("cn/") > -1) && MetacatUI.nodeModel.get("members").length){
 				var source = this.get("datasource"),
 					node   = _.find(MetacatUI.nodeModel.get("members"), {identifier: source});
 
@@ -1343,7 +1343,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			this.trigger("complete", this);
 		},
 
-		// A utility function for converting XML to JSON
+
+		    /*
+		    * function xmlToJson - A utility function for converting XML to JSON
+		    *
+		    * @param xml {DOM Element} - An XML or HTML DOM element to convert to json
+		    * @returns {object} - A literal JS object that represents the given XML
+		    */
         toJson: function(xml) {
 
         	// Create the return object

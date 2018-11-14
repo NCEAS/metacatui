@@ -1,5 +1,5 @@
 
-    
+
 #loading-app{
 	display: none;
 }
@@ -68,14 +68,14 @@ input[type="password"]{
 		padding: 2%;
 		width: 96%;
 	}
-	
+
 	.controls-well img{
 		max-width: 90%;
 		max-height: 900px;
 		margin: 0 auto;
 		display: block;
 	}
-	
+
 	th.id,
 	td.id{
 		overflow-wrap: break-word;
@@ -83,14 +83,14 @@ input[type="password"]{
 	td.format-type{
 		text-transform: lowercase;
 	}
-	
+
 	.fancybox.btn{
 		margin-left: 180px;
 	}
-	
+
 
 /* FORM/INPUT CUSTOMIZATIONS
--------------------------------------------------- */ 
+-------------------------------------------------- */
 	.depth {
   display: block;
   border: 1px solid silver;
@@ -113,24 +113,24 @@ input[type="password"]{
 	.control-label {
 		cursor: default;
 	}
-	
+
 	select{
     	width: auto;
     	font-size: 14px;
     	line-height: 14px;
     }
 
-/* SHARE/UPLOAD, AND LOGIN FEATURES 
+/* SHARE/UPLOAD, AND LOGIN FEATURES
 * Choose to hide these features
 * -----------------------------------------------------*/
 .share-feature{
-	/* display: none; */ 
+	/* display: none; */
 }
 #ldap-login .control-group select {
     min-width: 220px;
 }
 
-/* EDITOR 
+/* EDITOR
 * --------------------------------------------------- */
 .data-package-item.message-row button {
     margin-left: auto;
@@ -140,18 +140,18 @@ input[type="password"]{
 
 
 /* NOTIFICATION AREA CSS
- * -------------------------------------------------- */    
+ * -------------------------------------------------- */
   /*.notification {
     position: relative;
     margin: 50px auto;
     font-size: 40px;
   }*/
-  
+
   .notification i{
   	font-size: 40px;
   	margin-left: 43%;
   }
-  
+
   .notification p{
   	font-size: 20px;
   	width: 350px;
@@ -170,13 +170,13 @@ input[type="password"]{
 		color: #999;
 		margin: 0;
   }
-  
+
   .root-taxonomic-classification-container .notification{
   	padding-left: 68px;
   	position: absolute;
   	margin-top: -26px;
   }
-  
+
   /*Filter checkboxes */
       .filter-contain .checkbox-list{
     	margin-left: 36px;
@@ -189,7 +189,7 @@ input[type="password"]{
     	margin-right: 10px;
     }
     .checkbox-list > li > input{
-    	float: left; 	
+    	float: left;
     }
     .checkbox-list label{
     	font-size: .9em;
@@ -197,23 +197,23 @@ input[type="password"]{
     .checkbox-list .more-link{
   		font-weight: normal;
   		font-size: .9em;
-  	} 
+  	}
 
-    
+
 /* Registry CSS
 -------------------------------------------------- */
 
-    
+
     label.inline {
     	width: 40%;
     }
-    
+
     /* Larger modal for guide content */
     .modal.large {
     	width: 80%;
     	margin-left: -40%;
     }
-    
+
 	/* Inherit for these registry labels */
 	.label {
 	  display: inherit;
@@ -227,8 +227,8 @@ input[type="password"]{
 	  -webkit-border-radius: inherit;
 	     -moz-border-radius: inherit;
 	          border-radius: inherit;
-	}  
-	
+	}
+
 /* Combobox styles, overlay text input on select
 <!-- example here -->
 <div class="select-editable">
@@ -238,32 +238,32 @@ input[type="password"]{
   </select>
   <input type="text" name="keyword" value=""/>
 </div>
--------------------------------------------------- */     
+-------------------------------------------------- */
 	.select-editable {
-		position: relative; 
-		height: 45px; 
+		position: relative;
+		height: 45px;
 	}
-	.select-editable select { 
-		position:absolute; 
-		top: 0px; 
-		left: 0px; 
-		width: 220px; 
+	.select-editable select {
+		position:absolute;
+		top: 0px;
+		left: 0px;
+		width: 220px;
 		height: 29px;
 	}
 	.select-editable input {
-		position:absolute; 
+		position:absolute;
 		top: 0px;
-		left: 0px; 
-		width: 193px; 
+		left: 0px;
+		width: 193px;
 		padding: 1px;
 		padding-left: 5px;
 		height: 25px;
 	}
-	.select-editable select:focus, 
-	.select-editable input:focus { 
-		outline:none; 
-	}	  
-	
+	.select-editable select:focus,
+	.select-editable input:focus {
+		outline:none;
+	}
+
 	.minimize > i,
 	.result-header-count .minimize{
 		display: none;
@@ -275,49 +275,49 @@ input[type="password"]{
     	margin-top: 5px;
     	float: right;
     }
-    
+
     .mapMode .minimize{
     	display: block;
     }
-    
+
     .mapMode .minimize > i.icon-check-minus{
     	font-size: 17px;
     }
-    
+
     .mapMode #sidebar .minimize > i{
     	float: right;
     	margin-right: 10px;
     }
-    
+
     .mapMode #content .minimize{
     	position: fixed;
     	right: 25px;
     	z-index: 1;
     }
-    
+
      .mapMode #sidebar.collapsed .minimize > i.minimize,
      .mapMode #sidebar .minimize > i.maximize,
      .mapMode #content.collapsed .minimize > i.minimize,
      .mapMode #content .minimize > i.maximize{
     	display: none;
     }
-    
+
      .mapMode #sidebar.collapsed .minimize > i.maximize,
      .mapMode #sidebar .minimize > i.minimize,
      .mapMode #content.collapsed .minimize > i.maximize,
      .mapMode #content .minimize > i.minimize{
     	display: block;
     }
-    
- 
+
+
 	.accordion-heading .accordion-toggle{
 		display: inline;
 	}
-	
+
 	#collapseSpatial table input[type="TEXT"]{
 		width: 140px;
 	}
-	
+
 
 
 
@@ -375,7 +375,7 @@ input[type="password"]{
 	color: #FFFFFF;
 	font-size: 30px;
 	text-decoration: none;
-	text-transform: uppercase;	
+	text-transform: uppercase;
 }
 
 #metacatDocs .related > ul > li.right{
@@ -437,7 +437,7 @@ input[type="password"]{
 
 #metacatDocs .footerNav > .related li.right{
 
-	
+
 }
 
 #metacatDocs .footerNav > .related li.breadcrumb:last-child{
@@ -504,7 +504,7 @@ input[type="password"]{
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
 	padding: 10px;
-	
+
 }
 
 #metacatDocs > .footer > .small-print{
@@ -524,10 +524,10 @@ input[type="password"]{
 	margin-bottom: 10px;
 }
 
-    
-/* TABLES 
+
+/* TABLES
  -----------------------------------------------*/
- #metacatDocs table, 
+ #metacatDocs table,
  #metacatDocs tr,
  #metacatDocs th,
  #metacatDocs td,
@@ -537,14 +537,14 @@ input[type="password"]{
     	border-collapse: collapse;
     	padding: 8px;
     }
-    
+
 #metacatDocs table{
 		background-color: #FFFFFF; /*IE 8 fallback */
     	background: rgba(255,255,255, 0.8);
     	margin: 40px auto;
-    	
+
     }
-    
+
 #metacatDocs thead,
 #metacatDocs th{
     	background-color: #555555;
@@ -552,12 +552,12 @@ input[type="password"]{
     	font-size: 16px;
     	line-height: 20px;
     }
-    
+
 #metacatDocs td{
     	font-size: 16px;
     	line-height: 20px;
     }
-    
+
 #metacatDocs tr.row-odd{
 		background-color: #BAD6E6; /*IE8 fallback*/
     	background: rgba(103, 184, 229, 0.2);
@@ -574,16 +574,16 @@ input[type="password"]{
  	background: none;
  	clear: right;
  }
- 
+
 #metacatDocs .highlight-python{
  	word-wrap: break-word;
  	color: #FFFFFF;
  	clear: right;
  }
- 
+
  pre{
 	 padding: 10px;
-	 background-color: #1C6E84; /*IE 8 fallback*/ 
+	 background-color: #1C6E84; /*IE 8 fallback*/
 	background: rgba(22,97,148,0.7);
 	color: #FFFFFF;
 	font-size: 15px;
@@ -592,15 +592,15 @@ input[type="password"]{
 	-webkit-border-radius: 5px;
 	margin: 20px auto;
  }
- 
-    
+
+
  /* MISC
  -----------------------------------------------*/
  .align-center{
  	margin-left: auto;
  	margin-right: auto;
  }
- 
+
  .figure{
  	max-width: 80%;
  	background-color: #FFFFFF;
@@ -609,21 +609,21 @@ input[type="password"]{
  	border: 1px solid #666666;
  	margin: 20px auto;
  }
- 
+
  .figure > img{
  	max-width: 90%;
  	margin: 10px auto;
  	display: block;
  }
- 
+
  .figure > .caption{
 	 margin-bottom: 0px;
 	text-align: center;
 	color: #666;
 	padding-top: 10px;
  }
- 
- 
+
+
 #metacatDocs .topic{
 	background-color: #FFFFFF; /*iE 8 fallback */
  	background: rgba(255,255,255,0.5);
@@ -632,30 +632,30 @@ input[type="password"]{
  	-webkit-border-radius: 20px;
  	-moz-border-radius: 20px;
  }
- 
+
  #metacatDocs .topic > ul{
  	margin-left: 20px;
  }
- 
+
  #metacatDocs .topic-title{
  	font-size: 24px;
 	margin-top: 0;
  }
- 
+
 #metacatDocs  #license pre{
  	width: 700px;
  	margin: 0 auto;
  }
- 
+
  #installing-the-registry .sidebar{
  	max-width: 100%;
  }
- 
+
     dt{
    		font-size: 18px;
    		line-height: 24px;
    }
-   
+
    #metacatDocs input {
 		-webkit-appearance: none;
 		background-color: white;
@@ -665,47 +665,47 @@ input[type="password"]{
 		box-shadow: none;
 		border: 0;
     }
-    
+
     #metacatDocs input[type="submit"]{
     	width: auto;
     }
-    
+
     #metacatDocs h3 {
 		font-size: 24px;
 		line-height: 40px;
 	}
-	
+
 	#metacatDocs h2{
 		font-size: 27px;
 		line-height: 40px;
 	}
-		
+
 	#metacatDocs h1{
 		font-size: 32px;
 		line-height: 40px;
 	}
-	
-	#metacatDocs h1 > a, 
+
+	#metacatDocs h1 > a,
 	#metacatDocs h2 > a,
 	#metacatDocs h3 > a,
 	#metacatDocs h4 > a{
 		color: #333333;
 	}
-	
+
 	#metacatDocs ul ul{
 		margin-left:20px;
 	}
-	
+
 	#metacatDocs .note{
 		 margin-left: 20px;
 		 color: #555555;
 	}
-	
+
 	#metacatDocs blockquote p{
 		font-size: inherit;
 		font-weight: inherit;
 	}
- 
+
  	#metacatDocs #contents{
  		background: rgba(255, 255, 255, 0.5);
 		border-radius: 20px;
@@ -715,11 +715,11 @@ input[type="password"]{
 		clear: both;
 		padding: 10px 10px 10px 40px;
  	}
- 	
+
 /*
 ==================================================================
 Imported from NCEAS website - nceas_adaptive.css
-================================================================== 	
+==================================================================
 */
  	html {
 	background: #fff;
@@ -744,7 +744,7 @@ body {
 	padding: 5px;
 	border-radius: 15px;
 }
-#top input[type=search] { 
+#top input[type=search] {
 	float: right;
 	clear: right;
 	cursor: pointer;
@@ -970,7 +970,7 @@ body {
 	padding: 0px;
 }
 .videos h3 {
-	
+
 }
 .videos .archive a {
 	font-size: 14px;
@@ -1058,7 +1058,7 @@ body {
 	font-size: 14px;
 	line-height: 18px;
 }
-/** used to be h5 */ 
+/** used to be h5 */
 #sidebar h2 {
 	display: block;
 	background-image: url(../images/yellowBox.jpg);
@@ -1158,7 +1158,7 @@ body {
 	text-align: center;
 	text-transform: capitalize;
 }
-  /** 
+  /**
  ============================================================================
  Imported CSS from NCEAS website  - grid.css
  ============================================================================
@@ -1166,39 +1166,39 @@ body {
 
 /*	SELF CLEARING FLOATS - CLEARFIX METHOD */
 .container:after,
-.row:after, 
-.col:after, 
-.clr:after, 
-.group:after { 
-	content: ""; 
-	display: table; 
-	clear: both; 
+.row:after,
+.col:after,
+.clr:after,
+.group:after {
+	content: "";
+	display: table;
+	clear: both;
 }
 
-/* 	DEFAULT ROW STYLES 
+/* 	DEFAULT ROW STYLES
 	Set bottom padding according to preference */
 .row { padding-bottom: 0em;
 }
-			
-								  
+
+
 /* DEFAULT COLUMN STYLES */
-.col { 
+.col {
 	display: block;
 	float: left;
 	width: 100%;
 }
 
 @media ( min-width : 768px ) {
-	
+
 	.gutters .col {
 		margin-left: 2%;
 	}
-	
-	.gutters .col:first-child { 
-		margin-left: 0; 
+
+	.gutters .col:first-child {
+		margin-left: 0;
 	}
 }
-/*	COLUMN WIDTH ON DISPLAYS +768px 
+/*	COLUMN WIDTH ON DISPLAYS +768px
 	You might need to play with media queries here to suite your design. */
 @media ( min-width : 768px ) {
 	.span_1 { width: 8.33333333333%; }
@@ -1213,7 +1213,7 @@ body {
 	.span_10 { width: 83.3333333333%; }
 	.span_11 { width: 91.6666666667%; }
 	.span_12 { width: 100%; }
-	
+
 	.gutters .span_1 { width: 6.5%; }
 	.gutters .span_2 { width: 15.0%; }
 	.gutters .span_3 { width: 23.5%; }
@@ -1227,12 +1227,12 @@ body {
 	.gutters .span_11 { width: 91.5%; }
 	.gutters .span_12 { width: 100%; }
 }
-  /** 
+  /**
  ============================================================================
  Imported CSS from NCEAS website  - system.base.css
  ============================================================================
  **/
- 	
+
 /**
  * @file
  * Generic theme-independent base styles.
@@ -1502,8 +1502,8 @@ html.js .js-hide {
   min-height: 1%;
 }
 
- 	
- /** 
+
+ /**
  ============================================================================
  Imported CSS from NCEAS website  - pixture_reloaded.css
  ============================================================================
@@ -2919,13 +2919,13 @@ body.wysiwygeditor {
 #getlocations_map_canvas img {
   max-width: none;
 }
- 
-  /** 
+
+  /**
  ============================================================================
  Imported CSS from NCEAS website - nceas_adaptive.fonts.css
  ============================================================================
  **/
- 
+
  body{font-family:Arial, Helvetica, sans-serif}
 #site-name{font-size:3.5em;}
 #site-slogan{font-size:1.2em;}
@@ -2943,3 +2943,19 @@ h6{font-size:1em;}
 #secondary-menu-bar .menu-wrapper,#menu-bar #block-system-user-menu{font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
 nav.block .block-content{font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
 ruby ruby{font-family:'Trebuchet MS', 'Helvetica Neue', Arial, Helvetica, sans-serif}
+
+
+/******************************************
+* Metric Modal Chart (Views, Downloads, Citations)
+********************************************/
+
+
+#metric-modal .metric-chart .scale_button:hover rect,
+#metric-modal .metric-chart .bar,
+#metric-modal .metric-chart .bar_context {
+	fill: #1C6E84;
+}
+
+#metric-modal .metric-chart .bar {
+	stroke: #1C6E84;
+}

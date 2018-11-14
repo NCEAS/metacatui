@@ -149,7 +149,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             },
 
             /**
-            * Sometimes we'll need to add a space between error messages, but only if an 
+            * Sometimes we'll need to add a space between error messages, but only if an
             * error has already been triggered. Use addSpace to accomplish this.
             *
             * @function addSpace
@@ -171,13 +171,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             },
 
             /**
-            * Because the same error messages are used in a couple of different places, we centralize the strings 
+            * Because the same error messages are used in a couple of different places, we centralize the strings
             * and access here.
             *
             * @function getErrorMessage
             * @param {string} area Specifies the area that the error message belongs to.
             * Browse through the switch statement to find the one you need.
-            * @return {string} The error message	
+            * @return {string} The error message
             */
             getErrorMessage: function (area) {
                 switch (area) {
@@ -211,7 +211,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             /**
             * Generates an object that describes the current state of each latitude
             * and longitude box. The status includes whether there is a value and
-            * if the value is valid. 
+            * if the value is valid.
             *
             * @function getCoordinateStatus
             * @return {array} An array containing the current state of each coordinate box
@@ -259,7 +259,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                     errorMsg = this.addSpace(errorMsg);
                     errorMsg += this.getErrorMessage("north");
                 }
-                // Northwest Longitude	
+                // Northwest Longitude
                 if (status.west.isSet && !status.west.isValid) {
                     errorMsg = this.addSpace(errorMsg);
                     errorMsg += this.getErrorMessage("west");
@@ -278,7 +278,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
             },
 
-            /** 
+            /**
             * This grabs the various location elements and validates the user input. In the case of an error,
             * we append an error string (errMsg) so that we display all of the messages at the same time. This
             * validates the entire location row by adding extra checks for a description and for coordinate pairs
@@ -306,13 +306,13 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 }
 */
  //               errorMsg += this.addSpace(this.generateStatusErrors(pointStatuses), true);
-                
-                if( !pointStatuses.north.isSet && !pointStatuses.south.isSet && 
+
+                if( !pointStatuses.north.isSet && !pointStatuses.south.isSet &&
                 		!pointStatuses.east.isSet && !pointStatuses.west.isSet){
                 	errors.north = this.getErrorMessage("needPair");
                 	errors.west  = "";
                 }
-                
+
                 //Check that all the values are correct
                 if( pointStatuses.north.isSet && !pointStatuses.north.isValid )
                 	errors.north = this.getErrorMessage("north");
@@ -322,7 +322,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 	errors.east = this.getErrorMessage("east");
                 if( pointStatuses.west.isSet && !pointStatuses.west.isValid )
                 	errors.west = this.getErrorMessage("west");
-                
+
                 if( pointStatuses.north.isSet && !pointStatuses.west.isSet )
                 	errors.west = this.getErrorMessage("missing");
                 else if( !pointStatuses.north.isSet && pointStatuses.west.isSet )
@@ -331,7 +331,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 	errors.east = this.getErrorMessage("missing");
                 else if( !pointStatuses.south.isSet && pointStatuses.east.isSet )
                 	errors.south = this.getErrorMessage("missing");
-                
+
                 if( Object.keys(errors).length )
                 	return errors;
                 else
@@ -340,7 +340,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
             /**
              * Checks for any coordinates with missing counterparts.
-             * 
+             *
              * @function hasMissingPoint
              * @param status The status of the coordinates
              * @return {bool} True if there are missing coordinates, false otherwise
@@ -361,7 +361,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             /**
              * Checks that there are either two or four coordinate values. If there aren't,
              * it means that the user still needs to enter coordinates.
-             * 
+             *
              * @function checkForPairs
              * @param status The current state of the coordinates
              * @return {bool} True if there are pairs, false otherwise
@@ -378,7 +378,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             /**
              * Validate a coordinate String by making sure it can be coerced into a number and
              * is within the given bounds.
-             * Note: Min and max are inclusive 
+             * Note: Min and max are inclusive
              *
              * @function validateCoordinate
              * @param value {string} The value of the edit area that will be validated
@@ -403,6 +403,27 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
                 }
 
                 return true;
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
             },
 
             trickleUpChange: function () {

@@ -119,11 +119,13 @@ define(["jquery", "underscore", "backbone",
                     var min = $(bound).find("minimum").text();
                     if ( min ) {
                         bnd.minimum = min;
+                        bnd.exclusive = $(bound).find("minimum").attr("exclusive");
                     }
                     // Get the maximum if available
                     var max = $(bound).find("maximum").text();
                     if ( max ) {
                         bnd.maximum = max;
+                        bnd.exclusive = $(bound).find("maximum").attr("exclusive");
                     }
                     domain.bounds.push(bnd);
 
@@ -185,6 +187,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when formatstrings are better supported
+                else{
+                  $(objectDOM).find("formatstring").remove();
+                }
+                */
 
                 // Update the dateTimePrecision
                 if ( this.get("dateTimePrecision") ) {
@@ -204,6 +211,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                /* TODO: Uncomment out when datetimeprecision if better supported
+                else{
+                  $(objectDOM).find("datetimeprecision").remove();
+                }
+                */
 
                 // Update the dateTimeDomain
                 var dateTimeDomain = this.get("dateTimeDomain");
@@ -234,18 +246,34 @@ define(["jquery", "underscore", "backbone",
                             if ( hasBounds ) {
                                 // Populate the minimum element
                                 if ( typeof minBound !== "undefined" ) {
-                                    minBoundNode = document.createElement("minimum");
+                                    minBoundNode = $(document.createElement("minimum"));
                                     minBoundNode.text(minBound);
+
+                                    if(bound.exclusive === true || bound.exclusive == "true")
+                                      minBoundNode.attr("exclusive", "true");
+                                    else
+                                      minBoundNode.attr("exclusive", "false");
+
+                                    $(boundsNode).append(minBoundNode);
                                 }
 
                                 // Populate the maximum element
                                 if ( typeof maxBound !== "undefined" ) {
-                                    maxBoundNode = document.createElement("maximum");
+                                    maxBoundNode = $(document.createElement("maximum"));
                                     maxBoundNode.text(maxBound);
+
+                                    if(bound.exclusive === true || bound.exclusive == "true")
+                                      maxBoundNode.attr("exclusive", "true");
+                                    else
+                                      maxBoundNode.attr("exclusive", "false");
+
+                                    $(boundsNode).append(maxBoundNode);
                                 }
-                                $(boundsNode).append(minBoundNode);
-                                $(boundsNode).append(maxBoundNode);
-                                $(dateTimeDomainNode).append(boundsNode);
+
+                                //If the bounds are populated, append it to the date time domain node
+                                if( $(boundsNode).children().length > 0 )
+                                  $(dateTimeDomainNode).append(boundsNode);
+
                             } else {
                                 // Do nothing. Content is missing, don't append the node
                             }
@@ -288,6 +316,27 @@ define(["jquery", "underscore", "backbone",
                         return $(objectDOM).find(nodeOrder[i]).last()[0];
                     }
                 }
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
             },
 
             /* Let the top level package know of attribute changes from this object */

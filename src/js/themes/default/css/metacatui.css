@@ -512,7 +512,6 @@ select{
 -------------------------------------------------- */
    .breadcrumb{
    		margin-bottom: 20px;
-   		width: 97%;
    }
     nav#Navbar {
       top: 0px;
@@ -779,7 +778,7 @@ select{
 	#Content.no-stylesheet.container > .breadcrumb {
     	width: calc(100% - 40px);
 	}
-	#Metadata > a[href="#data"]{
+	#Metadata > a[href="data"]{
 		display: block;
 		margin-bottom: 20px;
 		font-size: 13px;
@@ -2499,4 +2498,19 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #loading-app{
 	display: none;
+}
+
+/******************************************
+* Metric Modal Chart (Views, Downloads, Citations)
+********************************************/
+
+
+#metric-modal .metric-chart .scale_button:hover rect,
+#metric-modal .metric-chart .bar,
+#metric-modal .metric-chart .bar_context {
+	fill: #0E69A1;
+}
+
+#metric-modal .metric-chart .bar {
+	stroke: #0E69A1;
 }

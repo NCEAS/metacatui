@@ -23,7 +23,7 @@
 		  </div>
 		</div>
 		
-		<a class="btn btn-primary btn-large center" href="#view/<%=id%>">View your data set</a>	
+		<a class="btn btn-primary btn-large center" href="<%= MetacatUI.root %>/view/<%=id%>">View your data set</a>	
 	
 	<% } else if(status == "error"){ %>
 	
@@ -35,7 +35,7 @@
 		  </div>
 		</div>
 		
-		<div class="alert alert-error">Your submission could not be completed. Please <a href="#submit" id="registerAnotherPackage">try again</a> or 
+		<div class="alert alert-error">Your submission could not be completed. Please <a href="<%= MetacatUI.root %>/submit" id="registerAnotherPackage">try again</a> or 
 		<a href="mailto:<%=MetacatUI.appModel.get('emailContact')%>"> contact us at <%=MetacatUI.appModel.get("emailContact")%></a>
 		for assistance.</div>
 		

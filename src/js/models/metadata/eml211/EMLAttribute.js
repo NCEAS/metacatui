@@ -175,7 +175,7 @@ define(["jquery", "underscore", "backbone",
                 }
 
                 // Update the attributeName
-                if ( this.get("attributeName") ) {
+                if ( typeof this.get("attributeName") == "string" && this.get("attributeName").trim().length ) {
                     if ( $(objectDOM).find("attributename").length ) {
                         $(objectDOM).find("attributename").text(this.get("attributeName"));
                     } else {
@@ -190,6 +190,11 @@ define(["jquery", "underscore", "backbone",
                             );
                         }
                     }
+                }
+                //If there is no attribute name, return an empty string because it
+                // is invalid
+                else{
+                  return "";
                 }
 
                 // Update the attributeLabels
@@ -206,19 +211,45 @@ define(["jquery", "underscore", "backbone",
                         if( ! nodeToInsertAfter ) {
                             // Add the new list back in
                             _.each(attributeLabels, function(attributeLabel) {
-                                $(objectDOM).append(
-                                    $(document.createElement("attributelabel"))
-                                        .text(attributeLabel)[0]);
+
+                              //If there is an empty string or falsey value in the label, don't add it to the XML
+                              // We check purposefuly for falsey types (instead of just doing !attributeLabel) because
+                              // it's ok to serialize labels that are the number 0.
+                              if( (typeof attributeLabel == "string" && !attributeLabel.trim().length) ||
+                                  attributeLabel === false || attributeLabel === null || typeof attributeLabel == "undefined"){
+                                    return;
+                              }
+
+                              $(objectDOM).append(
+                                  $(document.createElement("attributelabel"))
+                                      .text(attributeLabel)[0]);
                             });
                         } else {
                             // Add the new list back in after its previous sibling
                             _.each(attributeLabels, function(attributeLabel) {
+
+                                //If there is an empty string or falsey value in the label, don't add it to the XML
+                                // We check purposefuly for falsey types (instead of just doing !attributeLabel) because
+                                // it's ok to serialize labels that are the number 0.
+                                if( (typeof attributeLabel == "string" && !attributeLabel.trim().length) ||
+                                    attributeLabel === false || attributeLabel === null || typeof attributeLabel == "undefined"){
+                                      return;
+                                }
+
                                 $(nodeToInsertAfter).after(
                                     $(document.createElement("attributelabel"))
                                         .text(attributeLabel)[0]);
                             });
                         }
                     }
+                    //If the label array is empty, remove all the labels from the DOM
+                    else{
+                      $(objectDOM).find("attributelabel").remove();
+                    }
+                }
+                //If there is no attribute label, remove them from the DOM
+                else{
+                  $(objectDOM).find("attributelabel").remove();
                 }
 
                 // Update the attributeDefinition
@@ -238,6 +269,11 @@ define(["jquery", "underscore", "backbone",
                         }
                     }
                 }
+                //If there is no attirbute definition, then return an empty String
+                // because it is invalid
+                else{
+                  return "";
+                }
 
                 // Update the storageTypes
                 nodeToInsertAfter = undefined;
@@ -253,20 +289,34 @@ define(["jquery", "underscore", "backbone",
                         if( ! nodeToInsertAfter ) {
                             // Add the new list back in
                             _.each(storageTypes, function(storageType) {
-                                $(objectDOM).append(
-                                    $(document.createElement("storagetype"))
-                                        .text(storageType)[0]);
+
+                              if(!storageType)
+                                return;
+
+                              $(objectDOM).append(
+                                  $(document.createElement("storagetype"))
+                                      .text(storageType)[0]);
                             });
                         } else {
                             // Add the new list back in after its previous sibling
                             _.each(storageTypes, function(storageType) {
-                                $(nodeToInsertAfter).after(
-                                    $(document.createElement("storagetype"))
-                                        .text(storageType)[0]);
+
+                              if(!storageType)
+                                return;
+
+                              $(nodeToInsertAfter).after(
+                                  $(document.createElement("storagetype"))
+                                      .text(storageType)[0]);
                             });
                         }
                     }
                 }
+                /*If there are no storage types, remove them all from the DOM.
+                TODO: Uncomment this out when storage type is supported in editor
+                else{
+                  $(objectDOM).find("storagetype").remove();
+                }
+                */
 
                 // Update the measurementScale
                 nodeToInsertAfter = undefined;
@@ -370,6 +420,27 @@ define(["jquery", "underscore", "backbone",
             	//If there is at least one error, then return the errors object
             	if(Object.keys(errors).length)
             		return errors;
+
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" && tries < 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel && emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
 
             },
 

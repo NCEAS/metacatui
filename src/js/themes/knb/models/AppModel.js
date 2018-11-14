@@ -69,6 +69,8 @@ define(['jquery', 'underscore', 'backbone'],
 				read: true
 			}],
 
+			allowAccessPolicyChanges: true,
+
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
@@ -104,7 +106,28 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsMapsUrl: null,
 			groupsUrl: null,
 			portalUrl: null,
-			mdqUrl: "https://quality.nceas.ucsb.edu/quality/"
+			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
+
+			// Metrics endpoint url
+			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
+
+			// Metrics flags for the Dataset Landing Page
+			// Enable these flags to enable metrics display
+			displayDatasetMetrics: true,
+
+			// Controlling individual functionality
+			// Only works if the parent flags displayDatasetMetrics is enabled
+			displayDatasetMetricsTooltip: true,
+			displayDatasetCitationMetric: true,
+			displayDatasetDownloadMetric: true,
+			displayDatasetViewMetric: true,
+			displayDatasetEditButton: true,
+			displayDatasetQualityMetric: false,
+			displayDatasetAnalyzeButton: false,
+			displayMetricModals: true,
+			displayDatasetControls: true,
+
+			isJSONLDEnabled: true
 		},
 
 		defaultView: "data",
@@ -131,7 +154,7 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
 			if(typeof this.get("grantsUrl") !== "undefined")
-				this.set("grantsUrl", this.get("baseUrl") + "/api.nsf.gov/services/v1/awards.json");
+				this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");
 
 			//ORCID search
 			if(typeof this.get("orcidBaseUrl") != "undefined")
@@ -151,7 +174,7 @@ define(['jquery', 'underscore', 'backbone'],
 					this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
 
 					if(typeof this.get("pendingMapsUrl") != "undefined")
-						this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap");
+						this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
 
 					if(typeof this.get("accountsMapsUrl") != "undefined")
 						this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");

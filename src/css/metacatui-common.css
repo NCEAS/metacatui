@@ -112,17 +112,16 @@ article.container {
 	padding: 2%;
 	width: 96%;
 }
-/*#Content{
-	width: 90%;
-	max-width: 1200px;
-	margin-left: auto;
-	margin-right: auto;
-}*/
-
+#Content{
+    padding: 40px 40px 40px 40px;
+}
+.DataCatalog #Content{
+	box-sizing: border-box;
+}
 .mapMode #Content{
 	width: 100%;
-   	margin: 0px;
-   	padding-bottom: 0px;
+  margin: 0px;
+	padding: 0px;
 }
 footer{
 	background-color: #FFFFFF;
@@ -1050,6 +1049,9 @@ img.icon{
 	min-width: 100px;
 	max-width: 250px;
 }
+.downloads-this-version{
+    font-size: 12px;
+}
 /*The metadata gets narrowed even more when there are two prov charts next to it */
 .hasProvLeft.hasProvRight,
 .entitydetails.hasProvLeft.hasProvRight{
@@ -1444,10 +1446,7 @@ img.icon{
 {
 	display: none;
 }
-.metadata-view{
-  padding-left: 20px;
-  padding-right: 20px;
-}
+
 #metadata-index-details .entitydetails .size{
 	display: inherit;
 }
@@ -1504,11 +1503,13 @@ img.icon{
 }
 .metadata-view .controls-container{
 	margin-bottom: 20px;
+	padding: 10px;
 }
 .metadata-view .controls-container > .controls{
-	display: inline;
-	float: left;
-	margin-right: 20px;
+	display: inline-block;
+	float: right;
+	margin-top: 0px;
+	margin-bottom: 0px;
 }
 .metadata-view .controls-container > .controls .inline-buttons{
 	margin-top: 0px;
@@ -1606,22 +1607,24 @@ body > .alert-container {
   float: right;
   margin-bottom: 10px;
 }
-.metadata-controls-container .info-icons{
+.controls-container .info-icons{
 	display: inline-block;
-	padding-left: 20px;
-	font-size: 1.2em;
-	top: 5px;
-    position: relative;
+	margin-left: 10px;
+	margin-right: 20px;
+	vertical-align: top;
+}
+.controls-container .info-icons .icon {
+	font-size: 25px;
 }
 .metadata-controls-container{
 	position: relative;
 }
-.metadata-controls-container .copy-success{
+/* .metadata-controls-container>.copy-success{
 	position: absolute;
     top: -24px;
     left: 17px;
     font-size: .9em;
-}
+} */
 .citation-container ~ .data-source .ORNLDAAC,
 .citation-container ~ .data-source .CDL,
 .citation-container ~ .data-source .PISCO,
@@ -1636,6 +1639,429 @@ body > .alert-container {
 .citation-container ~ .data-source .LTER{
 	max-height: 90px;
 }
+
+
+/******************************************
+* Metrics Controller Styling
+********************************************/
+.metrics-container{
+	display: inline-block;
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+/***********
+Defult button styling for Metrics views
+***********/
+a.btn.metrics {
+    width: 164px;
+		margin-bottom: 0px;
+}
+.metric-value > .icon.metric-icon {
+    font-size:  18px;
+}
+.metric-value.badge {
+    float: right;
+    background-color: #333;
+    margin-top: 2px;
+}
+.metric-icon {
+    margin-right: 10px;
+    float: left;
+	padding-top: 1px;
+}
+.metric-name {
+    float: left;
+}
+.metric-value {
+    float: right;
+}
+
+
+
+
+i.icon.icon-cloud-download {
+    font-size: 1.2em; !important;
+}
+i.icon.icon-eye-open {
+    font-size: 1.2em; !important;
+}
+.btn-group+.btn-group, .btn-toolbar>.btn+.btn,
+.btn-toolbar>.btn+.btn-group, .btn-toolbar>.btn-group+.btn {
+    margin-left: 15px;
+}
+
+i.icon.metric-icon.icon-spinner.icon-spin {
+    margin-top: 2px;
+    margin-right: 15px;
+}
+
+/* Style for the toolbars that contains buttons in the well on either side. */
+.metric-toolbar {
+    float: left;
+    width: auto;
+}
+.controls-container .controls {
+    border-left: 1px solid #E3E3E3;
+    float: right;
+		padding-left: 10px;
+}
+.controls .btn{
+	margin-bottom: 0px;
+}
+/* Making the publish button consistent size as the downloads all*/
+#owner-controls-container > .btn {
+    margin-right: 10px;
+}
+.edit-toolbar > #owner-controls-container #publish {
+    width: 138px;
+}
+
+#metric-modal {
+    z-index: 1050;
+    top: 15%;
+    width: 930px;
+    height: 500px;
+    left: 40%;
+}
+#metric-modal .modal-content {
+    width: auto;
+}
+
+#metric-modal .modal-header {
+    width: 900px;
+    height: 25px;
+}
+
+#metric-modal .modal-body {
+    width: 100%;
+    height: 400px;
+    max-height: 400px;
+    padding: 0px;
+}
+
+#metric-modal .modal-footer {
+    width: 900px;
+    height: 25px;
+	padding-top: 18px;
+}
+
+#metric-modal .modal-header .icon {
+	padding: 0px 9px;
+}
+
+#metric-modal .modal-header .left-header-section {
+	float: left;
+	width: 90%;
+	margin-top: 3px;
+}
+
+#metric-modal .modal-header .right-header-section {
+	float: right;
+	width: 10%;
+}
+
+#metric-modal .modal-body .modal-description {
+	float: left;
+	width: 236px;
+	padding-left: 30px;
+	padding-top: 33px;
+}
+
+#metric-modal .modal-body .modal-description p {
+	margin: 0 0 25px;
+}
+
+#metric-modal .modal-body .modal-description p#slider-instructions {
+	margin-top: 109px;
+	margin-bottom: 0;
+}
+
+#metric-modal .modal-body .metric-chart {
+	float: right;
+	width: 600px;
+	padding-right: 18px;
+	padding-top: 22px;
+}
+
+
+/******************************************
+* Search Page / Data Catalog Page Metrics
+******************************************/
+.catalog-metrics .badge {
+	background-color: #dedede;
+	color: #666;
+}
+i.catalog-metric-icon {
+	margin-right: 3px;
+}
+
+/**********************************************************
+*	  Metric Modal Chart (Views, Downloads, Citations)	  *
+***********************************************************/
+
+
+/*
+============ GENERAL CHART TEXT STYLE ===========		[metric modal chart]
+*/
+
+#metric-modal .metric-chart text {
+	fill: #565656;
+	font-size: 9px;
+	font-family: Helvetica, Arial, "sans serif";
+}
+
+/*
+============ WHEN THERE IS NO DATA: ===========		[metric modal chart]
+*/
+
+#metric-modal .metric-chart text.no-data {
+	font-size: 16px;
+	font-weight: 100;
+	fill:#d0d0d0;
+}
+
+#metric-modal .metric-chart rect.no-data {
+	fill: #f5f5f5;
+}
+
+/*
+	============ WHEN THERE IS DATA: ===========		[metric modal chart]
+*/
+
+/*
+	--- AXES ---		[metric modal chart]
+*/
+
+/* --- x axis focus --- */
+
+#metric-modal .metric-chart .focus .axis {
+	shape-rendering: crispEdges;
+}
+
+#metric-modal .metric-chart .focus .x.axis {
+	clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart .focus .x.axis line {
+	display: none;
+}
+
+#metric-modal .metric-chart .focus .x.axis .tick:hover {
+	cursor: default;
+}
+
+
+/* --- x axis context --- */
+
+#metric-modal .metric-chart .context .x.axis line {
+	display: none;
+}
+
+#metric-modal .metric-chart .context .x.axis {
+	clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart .context .x.axis .domain {
+	display:none;
+}
+
+/* --- focus y-axis --- */
+
+#metric-modal .metric-chart .focus .y.axis .domain {
+	display: none;
+}
+
+#metric-modal .metric-chart .y.axis.title {
+	font-size: 13px;
+	font-weight: 100;
+}
+
+/* horizontal focus gridlines */
+#metric-modal .metric-chart .y.axis line {
+	stroke: #565656;
+	stroke-dasharray: 2,2;
+	stroke-opacity: 0.3;
+}
+
+/*
+	--- BRUSH ---		[metric modal chart]
+*/
+
+/* --- brush window --- */
+
+#metric-modal .metric-chart .brush .extent {
+  fill-opacity: .07;
+  shape-rendering: crispEdges;
+  clip-path: url(#clip);
+  fill: #70706c;
+}
+
+/* --- brush handles --- */
+
+#metric-modal .metric-chart .resize .handle {
+	fill: #555;
+}
+
+#metric-modal .metric-chart .resize .handle-mini {
+	fill: white;
+    stroke-width: 1px;
+    stroke: #555;
+}
+
+/*
+	--- ZOOM TO BUTTONS ---		[metric modal chart]
+*/
+
+#metric-modal .metric-chart .scale_button rect {
+	fill: #eaeaea;
+}
+
+#metric-modal .metric-chart .scale_button:hover text {
+	fill: white;
+	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
+}
+
+#metric-modal .metric-chart .scale_button:hover rect {
+	fill: grey;	/* change for each theme */
+	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
+}
+
+
+
+/*
+	--- EXPLANATORY TEXT (# views/downloads) ---		[metric modal chart]
+*/
+
+#metric-modal .metric-chart text#totalCount  {
+	font-size: 15px;
+	font-weight: bold;
+}
+
+#metric-modal .metric-chart text#displayDates  {
+	font-weight: bold;
+}
+
+/*
+	--- BARS ---		[metric modal chart]
+*/
+
+
+#metric-modal .metric-chart .bar,
+#metric-modal .metric-chart .bar_context {
+	fill: black;  /* change for each theme */
+	stroke-width: 0;
+	clip-path: url(#clip);
+}
+
+#metric-modal .metric-chart .bar {
+	stroke: black; /* change for each theme */
+	cursor: default;
+}
+
+/* --- context bars --- */
+
+
+/*
+	--- PANE CURSORS ---		[metric modal chart]
+*/
+
+#metric-modal .metric-chart rect.pane {
+	cursor: move; /* fallback if grab cursor is unsupported */
+	cursor: grab;
+	fill: #FAFAFA;
+	pointer-events: all;
+}
+
+#metric-modal .metric-chart rect.pane:active {
+	cursor: move; /* fallback if grab cursor is unsupported */
+	cursor: grabbing;
+}
+
+/*
+	--- TOOLTIPS ---		[metric modal chart]
+*/
+
+#metric-modal div.metric_tooltip {
+    position: fixed;
+    text-align: center;
+    height: 25px;
+    padding: 2px;
+    font: 10px sans-serif;
+    background: white;
+	color: #565656;
+    border: 0px;
+    border-radius: 2px;
+    pointer-events: none;
+	box-shadow: 0 0px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
+}
+/*  ====== END: Metrics modal chart ======  */
+
+.metric-table.table.table-striped.table-condensed {
+    width: 930px;
+}
+.metric-table.table.table-striped.table-condensed td {
+    padding: 5px 15px 5px 85px;
+}
+.metric-table.table.table-striped.table-condensed td > .citation {
+    margin-left: -70px;
+}
+button.modal-btn.btn.btn-default {
+    all: unset;
+    cursor: pointer;
+}
+.metrics-route-to-metadata > span.author {
+    color: #888;
+    font-weight: normal;
+}
+
+.metrics-route-to-metadata > span.pubdate {
+    color: #888;
+    font-weight: normal;
+}
+
+.metrics-route-to-metadata > span.publisher {
+    color: #888;
+}
+
+/***********
+Non-clickable (Disabled) button styling for metrics views
+***********/
+a.btn.metrics-button-disabled {
+	width: 164px;
+	margin-bottom: 0px;
+    color: #555;
+    background-color: #F3F3F3;
+    cursor: default;
+    border: none;
+    box-shadow: none;
+
+}
+.metrics-button-disabled> .metric-value.badge {
+    float: right;
+    color: #FFF;
+    margin-left: 20px;
+    background-color: #555;
+    margin-top: 2px;
+}
+.metrics-button-disabled.metric-icon {
+    margin-right: 10px;
+    float: left;
+}
+.metrics-button-disabled.metric-name {
+    float: left;
+    margin-right: 10px;
+}
+.metrics-button-disabled.metric-value {
+    float: right;
+}
+.metrics-button-disabled:hover, .metrics-button-disabled:click {
+    color: #888888;
+    background-color: #F5F5F5;
+    border-color: #C3C3C3;
+}
+
 /******************************************
 * The Data Details box in the Metadata View
 ********************************************/
@@ -2103,7 +2529,7 @@ table.download-contents.nested{
 	font-size: 1em;
 	margin-left: 5px;
 }
-.download-contents a[href="#tools/eml"]{
+.download-contents a[href="tools/eml"]{
 	color: inherit;
 }
 .download .btn i{
@@ -2761,7 +3187,6 @@ body.mapMode{
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#000000', endColorstr='#b3000000',GradientType=0 ); /* IE6-9 */
   padding: 5px;
   top: 0px;
-  z-index: 1;
   height: auto;
   position: relative;
   display: block;
@@ -2786,7 +3211,7 @@ body.mapMode{
 	margin-right: 5px;
 }
 .map-toggle-container > label{
-	color: yellow;
+	color: #FFF;
 	float: right;
 }
 .map-toggle-container > input[type="checkbox"]{
@@ -3013,18 +3438,21 @@ body.mapMode{
  	float: left;
  	width: auto;
 }
-.ui-buttonset input[type="checkbox"]{
+.ui-checkboxradio-label input[type="checkbox"]{
    	display: none;
 }
-.ui-buttonset .icon-check-empty,
-.ui-buttonset .icon-check{
+.ui-checkboxradio-label .icon-check-empty,
+.ui-checkboxradio-label .icon-check{
 	margin-right: 5px;
 }
-label.ui-state-active i.icon-check-empty,
-label.ui-state-default i.icon-check {
+.ui-checkboxradio-label .icon{
+	margin-right: 5px;
+}
+label.ui-state-active .icon-check-empty,
+label .icon-check {
   display: none;
 }
-label.ui-state-active i.icon-check{
+label.ui-state-active .icon-check{
 	display: inline;
 }
 /** Filter icons **/
@@ -3399,25 +3827,38 @@ ul.side-nav-items {
     width: 100px;
 }
 
-/* Editor package table column 2 */
-.data-package-item td:nth-of-type(2) {
+/* Editor package table file name column */
+.data-package-item td.name {
     white-space: normal;
 }
 
-/* Editor package table column 3 */
-.data-package-item td:nth-of-type(3) {
+/* Editor package table size column */
+.data-package-item td.size {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100px;
 }
 
-/* Editor package table column 4 */
-.data-package-item td:nth-of-type(4) {
+/* Editor package table type column */
+.data-package-item td.type {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100px;
+}
+
+/* Editor package table sharing column */
+.data-package-item td.sharing {
+    width: 60px;
+}
+
+.data-package-item td input[type='checkbox']{
+	margin-left: 30%;
+	height: auto;
+}
+.data-package-item .sharing .disabled{
+	opacity: .5;
 }
 
 /* Editor package table column 5 */

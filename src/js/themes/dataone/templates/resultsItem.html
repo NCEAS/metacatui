@@ -1,24 +1,24 @@
 <% if(memberNode && memberNode.logo){ %>
-	<a href="#profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" /></a>
-<% } %>	
-<div class="citation"></div> 
+	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" /></a>
+<% } %>
+<div class="citation"></div>
 <div class="clear"></div>
-<div class="info-icons  stop-route">  
-	
+<div class="info-icons  stop-route">
+
 	<% if(!isPublic){ %>
-		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-container="#results-container" data-toggle="tooltip" data-placement="right" title="This is private content."></i></div>		
+		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-container="#results-container" data-toggle="tooltip" data-placement="right" title="This is private content."></i></div>
 	<% } %>
 	<% if(typeof abstract != "undefined"){  %>
 		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
-	<% } %> 
-	<div class="resource-map icons stop-route">             
+	<% } %>
+	<div class="resource-map icons stop-route">
 		<% if (resourceMap) {
-				print('<img src="js/themes/dataone/img/data-file-icon-magenta-desat.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This data set includes data files"></i>');
+				print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" title="This data set includes data files"></i>');
 			} %>
-	         
-	</div>    		      
+
+	</div>
 	<div class="on-map icons stop-route">
-		<% if (typeof southBoundCoord != "undefined"){
+		<% if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
 	          print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
 	       }
 	       else{
@@ -30,16 +30,16 @@
 		print('<i class="icon icon-code-fork active stop-route"></i>');
 	}
 	%>
-	</a> 
-    <div class="stats icons stop-route">
-		<% if (reads){ 
-			var readableCount = MetacatUI.appView.commaSeparateNumber(reads); %>
-			<span class="count label label-primary tooltip-this stop-route" data-title="<%=readableCount%> views" data-trigger="hover" data-placement="top"><span class="count-container"><%=readableCount%></span> <i class="icon icon-eye-open views stop-route"></i></span>
-		<% }
-		else{ 
-		%>
-			<span></span>
-		<% }
-		%>
+	</a>
+   <div class="catalog-metrics">
+		<span class='catalog-stat resultItem-CitationCount'>
+	    	<i class='icon catalog-metric-icon'></i>
+	    </span>
+		<span class='catalog-stat resultItem-DownloadCount'>
+	    	<i class='icon catalog-metric-icon'></i>
+	    </span>
+	   	<span class='catalog-stat resultItem-ViewCount'>
+	    	<i class='icon catalog-metric-icon'></i>
+	    </span>
 	</div>
 </div>
