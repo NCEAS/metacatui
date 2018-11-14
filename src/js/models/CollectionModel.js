@@ -4,48 +4,33 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', 'collections/SolrRe
 
 	var CollectionModel = Backbone.Model.extend({
 
-		defaults: {
-      id: null,
-      name: null,
-      label: null,
-      synopsis: null,
-			definition: null,
-			optionalFilterGroups: null,
-
-      searchModel: null,
-      searchResults: null,
-      definitionFilters: []
-		},
+    //The default attributes for this model
+		defaults: function(){
+      return {
+        name: null,
+        label: null,
+        description: null,
+  			filters: []
+  		}
+    },
 
 		initialize: function(options){
-      this.createCollectionDefinition();
 
-			var searchResults = new SearchResults([], { rows: 5, start: 0 });
-			this.set("searchResults", searchResults);
 		},
 
     url: function(){
 			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
 		},
 
-    createCollectionDefinition: function(){
-      this.set("searchModel", new SearchModel());
-
-      //Need to iterate through the list of filter groups, extract each filter,
-      // then field and value for each filter
-
-      //Placeholder for now for SASAP
-      // this.get("searchModel").set("project", "State of Alaska's Salmon and People");
-
-      this.get("searchModel").set("all", ["SASAP"]);
-      this.trigger("change:searchModel");
-    },
-
+    /*
+    * Overrides the default Backbone.Model.fetch() function to provide some custom
+    * fetch options
+    */
     fetch: function(){
       var model = this;
+
       var requestSettings = {
-        url: this.url(),
-        dataType: "json",
+        dataType: "xml",
         error: function(){
           model.trigger('error');
         }
@@ -137,7 +122,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', 'collections/SolrRe
       }
       //If exactly one node is found and we are only expecting one, return the text content
       else if( node.length == 1 && !isMultiple ){
-        return node.textContent;
+        return node[0].textContent;
       }
       //If more than one node is found, parse into an array
       else{
