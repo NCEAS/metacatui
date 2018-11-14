@@ -332,16 +332,10 @@ function ($, _, Backbone) {
 				require(['views/project/ProjectView'], function(ProjectView){
 					MetacatUI.appView.ProjectView = new ProjectView();
 
-					//Send the id(s) to the view
-					MetacatUI.appView.ProjectView.projectId = projectId;
-
 					MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
 				});
 			}
 			else{
-				//Send the id(s) to the view
-				MetacatUI.appView.ProjectView.projectId = projectId;
-
 				MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
 			}
 		},
