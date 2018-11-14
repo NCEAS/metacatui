@@ -30,7 +30,8 @@ function ($, _, Backbone) {
 			'submit(/*pid)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)'           : 'renderAPI',       // API page
-			'project(/:projectId)'			: 'renderProject' // project page
+			'projectold(/:projectId)'			: 'renderProjectOld', // project page
+			'project(/:projectId)'			: 'renderProject' // project page hacky temp
 		},
 
 		helpPages: {
@@ -295,7 +296,7 @@ function ($, _, Backbone) {
 			}
 		},
 
-		renderProject: function (projectId) {
+		renderProjectOld: function (projectId) {
 			this.routeHistory.push("project");
 			MetacatUI.appModel.set('projectId', projectId);
 
@@ -304,6 +305,31 @@ function ($, _, Backbone) {
 
 			if(!MetacatUI.appView.ProjectView){
 				require(['views/ProjectView'], function(ProjectView){
+					MetacatUI.appView.ProjectView = new ProjectView();
+
+					//Send the id(s) to the view
+					MetacatUI.appView.ProjectView.projectId = projectId;
+
+					MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
+				});
+			}
+			else{
+				//Send the id(s) to the view
+				MetacatUI.appView.ProjectView.projectId = projectId;
+
+				MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
+			}
+		},
+
+		renderProject: function(projectId) {
+			// We're re-writing projects. I'm reluctant to dump the semi-functional version,
+			// so I'm adding this for now. Can replace the old later.
+			// console.log("derp");
+			this.routeHistory.push("project");
+			MetacatUI.appModel.set('projectId', projectId);
+
+			if(!MetacatUI.appView.ProjectView){
+				require(['views/project/ProjectView'], function(ProjectView){
 					MetacatUI.appView.ProjectView = new ProjectView();
 
 					//Send the id(s) to the view
