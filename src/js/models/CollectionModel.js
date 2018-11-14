@@ -33,7 +33,7 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', 'collections/SolrRe
 
       //Need to iterate through the list of filter groups, extract each filter,
       // then field and value for each filter
-     
+
       //Placeholder for now for SASAP
       // this.get("searchModel").set("project", "State of Alaska's Salmon and People");
 
@@ -56,12 +56,99 @@ define(['jquery', 'underscore', 'backbone', 'models/Search', 'collections/SolrRe
       return Backbone.Model.prototype.fetch.call(this, requestSettings);
     },
 
+    /*
+    * Overrides the default Backbone.Model.parse() function to parse the custom
+    * collection XML document
+    *
+    * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
+    * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+    */
     parse: function(json){
-      // move filter set up stuff here
-      // extract and set search model
 
-      return json
+      //Start the empty JSON object
+      var modelJSON = {},
+          collectionNode;
+
+      //Iterate over each root XML node to find the collection node
+      $(response).children().each(function(i, el){
+        if( el.tagName.indexOf("collection") > -1 ){
+          collectionNode = el;
+          return false;
+        }
+      });
+
+      //If a collection XML node wasn't found, return an empty JSON object
+      if( typeof collectionNode == "undefined" || !collectionNode )
+        return {};
+
+      //Parse the collection XML and return it
+      return this.parseCollectionXML(collectionNode);
+
+    },
+
+    /*
+    * Parses the collection XML into a JSON object
+    *
+    * @param {Element} rootNode - The XML Element that contains all the collection nodes
+    * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+    */
+    parseCollectionXML: function( rootNode ){
+      var modelJSON = {};
+
+      //Parse the simple text nodes
+      modelJSON.name = this.parseTextNode(rootNode, "name");
+      modelJSON.label = this.parseTextNode(rootNode, "label");
+      modelJSON.description = this.parseTextNode(rootNode, "description");
+      modelJSON.filters = [];
+
+      //Parse the collection definition
+      _.each( $(rootNode).find("definition > filter"), function(filterNode){
+
+        //Push the parsed filter into the filters array
+        //TODO: Parse filters
+        modelJSON.filters.push();
+
+      });
+
+      return modelJSON;
+
+    },
+
+    /*
+    * Gets the text content of the XML node matching the given node name
+    *
+    * @param {Element} parentNode - The parent node to select from
+    * @param {string} nodeName - The name of the XML node to parse
+    * @param {boolean} isMultiple - If true, parses the nodes into an array
+    * @return {(string|Array)} - Returns a string or array of strings of the text content
+    */
+    parseTextNode: function( parentNode, nodeName, isMultiple ){
+      var node = $(parentNode).children(nodeName);
+
+      //If no matching nodes were found, return falsey values
+      if( !node || !node.length ){
+
+        //Return an empty array if the isMultiple flag is true
+        if( isMultiple )
+          return [];
+        //Return null if the isMultiple flag is false
+        else
+          return null;
+      }
+      //If exactly one node is found and we are only expecting one, return the text content
+      else if( node.length == 1 && !isMultiple ){
+        return node.textContent;
+      }
+      //If more than one node is found, parse into an array
+      else{
+
+        return _.map(node, function(node){
+          return node.textContent || null;
+        });
+
+      }
     }
+
 	});
 
 	return CollectionModel;

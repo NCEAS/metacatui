@@ -42,67 +42,70 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
 		},
 
-    fetch: function(){      
+    /*
+    * Overrides the default Backbone.Model.fetch() function to provide some custom
+    * fetch options
+    */
+    fetch: function(){
       var model = this;
-      $.ajax({
-        url: this.url(),
+
+      var requestSettings = {
         dataType: "xml",
         error: function(){
           model.trigger('error');
-        },
-        success: function(response){
-          //Stash the project XML so we can parse it later
-          model.projectXML = response;
-
-          //Get the collection id
-          var collection = $(response).find("projectCollection")
-          if ( collection ){
-            model.collectionID = collection.find("collectionID").text() || null;
-          }
-
-          //Set up the request to get the collection json
-          var colmod = new CollectionModel({id: model.collectionID});
-          var requestSettings = {
-            url: colmod.url(), // I'm not sure this is the best way to get the url, but it seems to work
-            dataType: "json",
-            error: function(){
-              model.trigger('error');
-            }
-          }
-
-          requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
-          return Backbone.Model.prototype.fetch.call(model, requestSettings);
         }
-      });
-    },
-
-		parse: function(response){
-      // console.log(response);
-      var xmlDoc = this.projectXML;
-      var modelJSON = response;
-      
-      //Parse the title
-      //There are multiple title nodes nested within funding elements - only want top level
-      var titleNode = _.first($(xmlDoc).find("title"));
-      if( titleNode ){
-          modelJSON.title = titleNode.innerHTML || null;
       }
 
+      //Add the user settings to the fetch settings
+      requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+      //Call Backbone.Model.fetch()
+      return Backbone.Model.prototype.fetch.call(this, requestSettings);
+
+    },
+
+    /*
+    * Overrides the default Backbone.Model.parse() function to parse the custom
+    * project XML document
+    *
+    * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
+    * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+    */
+		parse: function(response){
+
+      //Start the empty JSON object
+      var modelJSON = {},
+          projectNode;
+
+      //Iterate over each root XML node to find the project node
+      $(response).children().each(function(i, el){
+        if( el.tagName.indexOf("project") > -1 ){
+          projectNode = el;
+          return false;
+        }
+      });
+
+      //If a project XML node wasn't found, return an empty JSON object
+      if( typeof projectNode == "undefined" || !projectNode )
+        return {};
+
+      //Parse the collection elements
+      modelJSON = this.parseCollectionXML(projectNode);
+
+      //Parse the simple text nodes
+      modelJSON.logo = this.parseTextNode(projectNode, "logo");
+      modelJSON.acknowledgmentsLogo = this.parseTextNode(projectNode, "acknowledgmentsLogo", true);
+
+/*
       //Parse the synopsis
-      var synopsis = $(xmlDoc).find("synopsis");
+      var synopsis = $(projectNode).find("synopsis");
       if( synopsis ){
         modelJSON.synopsis = synopsis.text() || null;
       }
 
-      //TODO This will need to be farmed out to a markdown processor
-      var description = $(xmlDoc).find("projectDescription");
-      if( description ){
-        modelJSON.projectDescription = description.text() || null;
-      }
-
       //TODO need to talk more about different ways that we can store logos. Haven't finalized this.
       // options: URL to external source, stored as an object w/ pid, or raw bytes
-      var logos = $(xmlDoc).find("logos");
+      var logos = $(projectNode).find("logos");
       // For now, find all logos that have external URLS
       var logoImages = logos.find("image");
       modelJSON.logos = [];
@@ -110,16 +113,11 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         modelJSON.logos.push( new Image({ imageURL: $(logo).find("imageURL").text() }));
       });
 
-      //Get the collection id and model
-      var collection = $(xmlDoc).find("projectCollection")
-      if ( collection ){
-        modelJSON.projectCollection = collection.find("collectionID").text() || null;
-      }
 
       // modelJSON.collectionJSON = this.collectionFetch.responseText;
 			//TODO fix this: Parse the funding info
 			modelJSON.funding = [];
-			var fundingEl    = $(xmlDoc).find("funding"),
+			var fundingEl    = $(projectNode).find("funding"),
 				  fundingNodes = fundingEl.children("para").length ? fundingEl.children("para") : fundingEl;
 
       //Iterate over each funding node and put the text into the funding array
@@ -131,7 +129,7 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 			}, this);
 
       //Parse the project personnel
-			var personnelNodes = $(xmlDoc).find("personnel");
+			var personnelNodes = $(projectNode).find("personnel");
 			modelJSON.personnel = [];
 
       //TODO - I'm running into problems with parsing the xml every time there are children nodes.
@@ -141,16 +139,11 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
            objectDOM: personnelNode,
            parentModel: this }))
       });
+    */
 
-      //Parse the acknowledgments -
-      var acknowledgments = $(xmlDoc).find("acknowledgements");
-      if( acknowledgments ){
-        modelJSON.acknowledgments = acknowledgments.text() || null;
-      }
-
-      // console.log(modelJSON);
       return modelJSON;
-		}
+		},
+
 	});
 
 	return ProjectModel;
