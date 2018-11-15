@@ -5,16 +5,18 @@ define(['jquery', 'underscore', 'backbone'],
 	var FilterModel = Backbone.Model.extend({
 
     //Default attributes for this model
-    defaults: {
-      objectDOM: null,
-      fields: [],
-      values: [],
-      operator: "AND",
-      exclude: false,
-      label: null,
-      placeholder: null,
-      icon: null,
-      description: null
+    defaults: function(){
+      return{
+        objectDOM: null,
+        fields: [],
+        values: [],
+        operator: "AND",
+        exclude: false,
+        label: null,
+        placeholder: null,
+        icon: null,
+        description: null
+      }
     },
 
     /*
@@ -64,7 +66,7 @@ define(['jquery', 'underscore', 'backbone'],
 
       //Parse the exclude, if it exists
       if( $(xml).find("exclude").length )
-        modelJSON.exclude = this.parseTextNode(xml, "exclude");
+        modelJSON.exclude = (this.parseTextNode(xml, "exclude") === "true")? true : false;
 
       return modelJSON;
 

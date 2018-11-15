@@ -1,7 +1,7 @@
 /* global define */
 define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/metadata/eml211/EMLText",
- "models/CollectionModel", "collections/SolrResults"],
-    function($, _, Backbone, EMLParty, EMLText, CollectionModel, SearchResults) {
+ "models/CollectionModel", "models/filters/FilterGroup", "collections/SolrResults"],
+    function($, _, Backbone, EMLParty, EMLText, CollectionModel, FilterGroup, SearchResults) {
 
 	var ProjectModel = CollectionModel.extend({
 
@@ -102,7 +102,11 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       });
 
       //Parse the filterGroups
+      modelJSON.filterGroups = [];
       $(projectNode).find("filterGroup").each(function(i, filterGroup){
+
+        modelJSON.filterGroups.push( new FilterGroup({ objectDOM: filterGroup }) );
+
       });
 
       console.log(modelJSON);
