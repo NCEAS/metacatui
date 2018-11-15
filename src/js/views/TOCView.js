@@ -29,7 +29,7 @@ define(["jquery",
 
         /* Render the view */
         render: function() {
-            this.$el.html(this.template());
+            this.$el.append(this.template());
             return this;
         },
 

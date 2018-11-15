@@ -4,8 +4,9 @@ define(["jquery",
     "models/ProjectModel",
     "text!templates/project/project.html",
     "views/project/ProjectHeaderView",
-    "views/TOCView"],
-    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView){
+    "views/TOCView",
+    "views/project/ProjectSectionView"], 
+    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView, ProjectSectionView){
     'use_strict';
     /* The ProjectView is a generic view to render
      * projects, it will hold project sections
@@ -19,7 +20,11 @@ define(["jquery",
         type: "Project",
 
         /* The list of subview instances contained in this view*/
-        subviews: [], // Could be a literal object {}
+        subviews: { // Question: I can't seem to make this work -JK
+            headerView: new ProjectHeaderView(),
+            tocView: new TOCView(),
+            sectionView: new ProjectSectionView()
+        }, // Could be a literal object {}
 
         /* Renders the compiled template into HTML */
         template: _.template(ProjectTemplate),
@@ -53,6 +58,12 @@ define(["jquery",
             this.tocView = new TOCView();
             this.renderSub(this.tocView);
 
+            //Render section view, this will be replaced by 
+            // actual sections (which subclass section view)
+            this.sectionView = new ProjectSectionView();
+            this.renderSub(this.sectionView);
+
+            // temporary ugly line just to show header container
             this.$("#project-header-container").css('border', 'solid');
 
             //Create a new Project model

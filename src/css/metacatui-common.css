@@ -2481,6 +2481,13 @@ hr.project{
 #project-nav-tabs ul.nav.nav-tabs>li:first-child {
 	margin-left: 245px;
 }
+div.toc-container {
+	width: 240px;
+	max-height: 85%;
+	margin-left: 15px;
+	float: left;
+	border: 1px solid #ccc;
+}
 /******************************************
 * Download / Resource Map contents table
 ********************************************/
