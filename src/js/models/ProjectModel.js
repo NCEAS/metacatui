@@ -1,38 +1,20 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/CollectionModel", "models/ImageModel", "collections/SolrResults"],
-    function($, _, Backbone, EMLParty, CollectionModel, Image, SearchResults) {
+define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/metadata/eml211/EMLText",
+ "models/CollectionModel", "collections/SolrResults"],
+    function($, _, Backbone, EMLParty, EMLText, CollectionModel, SearchResults) {
 
 	var ProjectModel = CollectionModel.extend({
 
-		defaults: {
-      id: null,
-      url: null,
-      projectCollection: null,
-			title: null,
-			funding: [],
-			personnel: null,
-			parentModel: null,
-      projectDescription: null,
-      resultsOverview: null,
-      acknowledgments: null,
-      award: [],
-      synopsis: null,
-      logos: [],
-      projectLogo: null,
-      searchResults: null
-		},
-
-    //Don't need this yet
-    nodeNameMap: function(){
-      return {
-        "projectid" : "projectId",
-        "projectcollection" : "projectCollection",
-        "projectdescription" : "projectDescription",
-        "resultsoverview" : "resultsOverview",
-        "studyareadescription" : "studyAreaDescription",
-        "relatedproject" : "relatedProject",
-        "researchproject" : "researchProject"
-      }
+		defaults: function(){ return _.extend(CollectionModel.prototype.defaults(), {
+  			logo: null,
+        overview: null,
+        results: null,
+        associatedParties: [],
+        acknowledgments: null,
+        acknowledgmentsLogos: [],
+        filterGroups: [],
+        options: []
+  		});
     },
 
 		initialize: function(options){
@@ -96,53 +78,74 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
       modelJSON.logo = this.parseTextNode(projectNode, "logo");
       modelJSON.acknowledgmentsLogo = this.parseTextNode(projectNode, "acknowledgmentsLogo", true);
 
-/*
-      //Parse the synopsis
-      var synopsis = $(projectNode).find("synopsis");
-      if( synopsis ){
-        modelJSON.synopsis = synopsis.text() || null;
-      }
+      //Parse the EMLText elements
+      modelJSON.overview = this.parseEMLTextNode(projectNode, "overview");
+      modelJSON.results = this.parseEMLTextNode(projectNode, "results");
+      modelJSON.acknowledgments = this.parseEMLTextNode(projectNode, "acknowledgments");
 
-      //TODO need to talk more about different ways that we can store logos. Haven't finalized this.
-      // options: URL to external source, stored as an object w/ pid, or raw bytes
-      var logos = $(projectNode).find("logos");
-      // For now, find all logos that have external URLS
-      var logoImages = logos.find("image");
-      modelJSON.logos = [];
-      _.each(logoImages, function(logo){
-        modelJSON.logos.push( new Image({ imageURL: $(logo).find("imageURL").text() }));
+      //Parse the associatedParties
+      modelJSON.associatedParties = [];
+      $(projectNode).children("associatedParty").each(function(i, associatedParty){
+
+        modelJSON.associatedParties.push( new EMLParty({ objectDOM: associatedParty }) );
+
       });
 
+      //Parse the options
+      $(projectNode).find("option").each(function(i, option){
 
-      // modelJSON.collectionJSON = this.collectionFetch.responseText;
-			//TODO fix this: Parse the funding info
-			modelJSON.funding = [];
-			var fundingEl    = $(projectNode).find("funding"),
-				  fundingNodes = fundingEl.children("para").length ? fundingEl.children("para") : fundingEl;
+        var optionName  = $(option).find("optionName")[0].textContent,
+            optionValue = $(option).find("optionValue")[0].textContent;
 
-      //Iterate over each funding node and put the text into the funding array
-			_.each(fundingNodes, function(fundingNode){
-        if( $(fundingNode).text() ){
-            modelJSON.funding.push( $(fundingNode).text() );
-        }
+        modelJSON[optionName] = optionValue;
 
-			}, this);
-
-      //Parse the project personnel
-			var personnelNodes = $(projectNode).find("personnel");
-			modelJSON.personnel = [];
-
-      //TODO - I'm running into problems with parsing the xml every time there are children nodes.
-      // I'm not sure if this is a problem with the xml document itself or if something else needs to be done while parsing.
-      _.each(personnelNodes, function(personnelNode){
-         modelJSON.personnel.push( new EMLParty({
-           objectDOM: personnelNode,
-           parentModel: this }))
       });
-    */
+
+      //Parse the filterGroups
+      $(projectNode).find("filterGroup").each(function(i, filterGroup){
+      });
+
+      console.log(modelJSON);
 
       return modelJSON;
 		},
+
+    /*
+    * Parses the XML nodes that are of type EMLText
+    *
+    * @param {Element} parentNode - The XML Element that contains all the EMLText nodes
+    * @param {string} nodeName - The name of the XML node to parse
+    * @param {boolean} isMultiple - If true, parses the nodes into an array
+    * @return {(string|Array)} - Returns a string or array of strings of the text content
+    */
+		parseEMLTextNode: function(parentNode, nodeName, isMultiple){
+
+      var node = $(parentNode).children(nodeName);
+
+      //If no matching nodes were found, return falsey values
+      if( !node || !node.length ){
+
+        //Return an empty array if the isMultiple flag is true
+        if( isMultiple )
+          return [];
+        //Return null if the isMultiple flag is false
+        else
+          return null;
+      }
+      //If exactly one node is found and we are only expecting one, return the text content
+      else if( node.length == 1 && !isMultiple ){
+        return new EMLText({ objectDOM: node[0] });
+      }
+      //If more than one node is found, parse into an array
+      else{
+
+        return _.map(node, function(node){
+          return new EMLText({ objectDOM: node });
+        });
+
+      }
+
+    }
 
 	});
 

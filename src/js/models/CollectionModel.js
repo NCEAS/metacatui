@@ -126,13 +126,13 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       }
       //If exactly one node is found and we are only expecting one, return the text content
       else if( node.length == 1 && !isMultiple ){
-        return node[0].textContent;
+        return node[0].textContent.trim();
       }
       //If more than one node is found, parse into an array
       else{
 
         return _.map(node, function(node){
-          return node.textContent || null;
+          return node.textContent.trim() || null;
         });
 
       }
