@@ -19,7 +19,7 @@ define(["jquery",
         type: "ProjectSection",
 
         /* Tab label and section name */
-        tab_info: {
+        tabInfo: {
             // title displayed on tab in ui
             tab_title: "Section Title", 
             // value of data-section and data-target id
@@ -33,7 +33,7 @@ define(["jquery",
 
         /* Renders the compiled template into HTML */
         template: _.template(ProjectSectionTemplate),
-        tab_template: _.template(SectionTabTemplate),
+        tabTemplate: _.template(SectionTabTemplate),
 
         /* The events that this view listens to*/
         events: {
@@ -47,8 +47,10 @@ define(["jquery",
 
         /* Render the view */
         render: function() {
-            $(this.tabs_el).append(this.tab_template(this.tab_info));
-            this.$el.append("<h2>Project Section</h2>");
+            $(this.tabs_el).append(this.tabTemplate(this.tabInfo));
+
+            this.tabInfo.html_content = "<h2>" + this.tabInfo.tab_title + "</h2>";
+            this.$el.append(this.template(this.tabInfo));
         },
 
         onClose: function() {

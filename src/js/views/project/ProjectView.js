@@ -5,8 +5,10 @@ define(["jquery",
     "text!templates/project/project.html",
     "views/project/ProjectHeaderView",
     "views/TOCView",
-    "views/project/ProjectSectionView"], 
-    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView, ProjectSectionView){
+    "views/project/ProjectHomeView",
+    "views/project/ProjectMembersView"], 
+    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView, 
+      ProjectHomeView, ProjectMembersView){
     'use_strict';
     /* The ProjectView is a generic view to render
      * projects, it will hold project sections
@@ -19,12 +21,12 @@ define(["jquery",
         /* TODO: Decide if we need this */
         type: "Project",
 
-        /* The list of subview instances contained in this view*/
+        /* The list of subview instances contained in this view
         subviews: { // Question: I can't seem to make this work -JK
             headerView: new ProjectHeaderView(),
             tocView: new TOCView(),
-            sectionView: new ProjectSectionView()
-        }, // Could be a literal object {}
+            sectionView: new ProjectHomeView()
+        }, // Could be a literal object {} */
 
         /* Renders the compiled template into HTML */
         template: _.template(ProjectTemplate),
@@ -57,11 +59,14 @@ define(["jquery",
             //Render the table of contents view
             this.tocView = new TOCView();
             this.renderSub(this.tocView);
-
+            
             //Render section view, this will be replaced by 
             // actual sections (which subclass section view)
-            this.sectionView = new ProjectSectionView();
-            this.renderSub(this.sectionView);
+            this.sectionHomeView = new ProjectHomeView();
+            this.renderSub(this.sectionHomeView);
+
+            this.sectionMembersView = new ProjectMembersView();
+            this.renderSub(this.sectionMembersView);
 
             // temporary ugly line just to show header container
             this.$("#project-header-container").css('border', 'solid');

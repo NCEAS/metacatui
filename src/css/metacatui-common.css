@@ -2488,6 +2488,9 @@ div.toc-container {
 	float: left;
 	border: 1px solid #ccc;
 }
+#project-view {
+	margin-left: 300px;
+}
 /******************************************
 * Download / Resource Map contents table
 ********************************************/

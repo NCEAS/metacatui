@@ -1,8 +1,8 @@
 define(["jquery",
     "underscore",
-    "Backbone",
+    "backbone",
     "text!templates/project/projectHome.html",
-    "views/project/ProjectSectionView.js"], 
+    "views/project/ProjectSectionView"], 
     function($, _, Backbone, ProjectHomeTemplate, ProjectSectionView){
 
     /* The ProjectHomeView is a view to render the
@@ -11,38 +11,17 @@ define(["jquery",
      * SearchResultsView, ProjectMapView, MarkdownView,
      * ProjectMembersView, and ProjectLogosView. 
      */
-     var ProjectHomeView = ProjectSectionView.extend({
+      var ProjectHomeView = ProjectSectionView.extend({
 
-        /* The Project Home Element*/
-        el: "#project-home",
-
-        /* TODO: Decide if we need this */
-        type: "ProjectHome",
-
-        /* The list of subview instances contained in this view*/
-        subviews: [], // Could be a literal object {}
-
-        /* Renders the compiled template into HTML */
-        template: _.template(ProjectHomeTemplate),
-
-        /* The events that this view listens to*/
-        events: {
-
-        },
-
-        /* Construct a new instance of ProjectHomeView */
-        initialize: function() {
-
-        },
-
-        /* Render the view */
-        render: function() {
-
-        },
-
-        onClose: function() {
-
-        }
+         /* Tab label and section name */
+         tabInfo: {
+            // title displayed on tab in ui
+            tab_title: "Project Home", 
+            // value of data-section and data-target id
+            section_name: "project-home", 
+            // should the tab be active when first loaded
+            active_by_default: true,
+         },
 
      });
 
