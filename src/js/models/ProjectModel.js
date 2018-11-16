@@ -1,5 +1,5 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/metadata/eml211/EMLText",
+define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/metadata/eml220/EMLText",
  "models/CollectionModel", "models/filters/FilterGroup", "collections/SolrResults"],
     function($, _, Backbone, EMLParty, EMLText, CollectionModel, FilterGroup, SearchResults) {
 
