@@ -2482,14 +2482,7 @@ hr.project{
 	margin-left: 245px;
 }
 div.toc-container {
-	width: 240px;
-	max-height: 85%;
-	margin-left: 15px;
-	float: left;
 	border: 1px solid #ccc;
-}
-#project-view {
-	margin-left: 300px;
 }
 /******************************************
 * Download / Resource Map contents table
