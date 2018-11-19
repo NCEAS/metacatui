@@ -248,7 +248,8 @@ function(Bootstrap, AppView, AppModel) {
 			// Stop if the click happened on an a w/o an href
 			// This is kind of a weird edge case where. This could be removed if
 			// we remove these instances from the codebase
-			if (typeof href === "undefined" || typeof href.attr === "undefined") {
+			if (typeof href === "undefined" || typeof href.attr === "undefined" ||
+					href.attr === "") {
 				return;
 			}
 
