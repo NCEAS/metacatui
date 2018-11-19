@@ -1984,7 +1984,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     aggregationNode,
                     aggByStatements,
                     modifiedDate,
-                    idsFromModel,
                     subjectClone,
                     predicateClone,
                     objectClone;
@@ -2004,6 +2003,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               //Get the pid of this package - depends on whether we are updating or creating a resource map
                 var pid = this.packageModel.get("id"),
                     oldPid = this.packageModel.get("oldPid");
+
+                //Get a list of the models that are not in progress or failed uploading
+                var modelsToAggregate = this.reject(function(packageMember){
+                      return (packageMember.get("uploadStatus") == "p" || packageMember.get("uploadStatus") == "e")
+                    }),
+                    //Get all the ids of all those models
+                    idsFromModel = _.pluck(modelsToAggregate, "id");
+
+                this.idsToAggregate = idsFromModel;
 
                 //Update the pids in the RDF graph only if we are updating the resource map with a new pid
                 if( !this.packageModel.isNew() ) {
@@ -2058,9 +2066,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     }
 
                   }, this);
-
-                  //Get all the models ids from this collection
-                  idsFromModel = this.pluck("id");
 
                 //Get all the child package ids
                 var childPackages = this.packageModel.get("childPackages");
@@ -2225,7 +2230,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     this.dataPackageGraph.add(aggregationNode, ORE("isDescribedBy"), rMapNode);
 
                     // Aggregate each package member
-                    idsFromModel = this.pluck("id");
                     _.each(idsFromModel, function(id) {
                         this.addToAggregation(id);
 
@@ -2373,22 +2377,26 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             var metadataNode = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id));
 
             _.each(documents, function(dataID){
-              // Create a named node for the data object
-              var dataNode = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(dataID)),
-              // Create a statement: This metadata documents this data
+
+              //Make sure the id is one that will be aggregated
+              if( _.contains(this.idsToAggregate, dataID) ){
+                // Create a named node for the data object
+                var dataNode = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(dataID)),
+                // Create a statement: This metadata documents this data
                 documentsStatement = this.rdf.st(metadataNode, CITO("documents"), dataNode),
-              // Create a statement: This data is documented by this metadata
+                // Create a statement: This data is documented by this metadata
                 isDocByStatement = this.rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode);
 
-              // Add the statements
-                        documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), dataNode);
-                        if ( documentsStatements.length < 1 ) {
-                            this.dataPackageGraph.add(documentsStatement);
-                        }
-                        isDocumentedByStatements = this.dataPackageGraph.statementsMatching(dataNode, CITO("isDocumentedBy"), metadataNode);
-                        if ( isDocumentedByStatements.length < 1 ) {
-                            this.dataPackageGraph.add(isDocByStatement);
-                        }
+                // Add the statements
+                documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), dataNode);
+                if ( documentsStatements.length < 1 ) {
+                    this.dataPackageGraph.add(documentsStatement);
+                }
+                isDocumentedByStatements = this.dataPackageGraph.statementsMatching(dataNode, CITO("isDocumentedBy"), metadataNode);
+                if ( isDocumentedByStatements.length < 1 ) {
+                    this.dataPackageGraph.add(isDocByStatement);
+                }
+              }
             }, this);
           }
             },
