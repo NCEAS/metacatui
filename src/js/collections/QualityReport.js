@@ -13,6 +13,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
       //The name of this type of collection
       type: "QualityReport",
+      runStatus: null,
+      errorDescription: null,
+      timestamp: null,
 
       initialize: function (models, options) {
         if (typeof options == "undefined")
@@ -34,6 +37,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
       model: QualityCheck,
       
       parse: function(response, options) {
+        // runStatus can be one of "success", "failure", "queued"
+        this.runStatus = response.runStatus;
+        this.errorDescription = response.errorDescription;
+        this.timestamp = response.timestamp;
         return response.result;
       },
       
@@ -51,17 +58,15 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               headers: {
                 'Accept': 'application/json'
               },
-              success: function (data, textStatus, xhr) {
+              success: function (collection, jqXhr, options) {
                 //collectionRef.run = data;
-                console.log("textStatus: " + textStatus)
+                console.log("jqXhr.status: " + jqXhr.status)
                 collectionRef.trigger("fetchComplete");
               },
-              error: function (data, response, options) {
-                console.debug("quality report not found.");
-                if(response.status == 404) {
-                  collectionRef.fetchResponse = response;
-                  collectionRef.trigger("fetchError");
-                }
+              error: function (collection, jqXhr, options) {
+                console.debug("error fetching quality report.");
+                collectionRef.fetchResponse = jqXhr;
+                collectionRef.trigger("fetchError");
               }
             });
           fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());

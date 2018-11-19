@@ -68,11 +68,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
                 viewRef.hideLoading();
                 this.$el.html(this.template({}));
                 var msgText;
+                console.log("Error status: " + qualityReport.fetchResponse.status);
                 if(qualityReport.fetchResponse.status == 404) {
-                  msgText = "The quality report for this dataset is not currently available, please try again in a few minutes.";
+                  msgText = "The quality report for this dataset is not currently available.";
                 } else {
-                  msgText = "Error retrieving the quality report for this dataset: " + qualityReport.fetchResponse.status 
-                            + qualityReport.fetchResponse.statusText;
+                  msgText = "Error retrieving the quality report for this dataset";
+                  if(typeof qualityReport.fetchResponse.statusText !== 'undefined' && typeof qualityReport.fetchResponse.status !== 'undefined') {
+                    if(qualityReport.fetchResponse.status != 0)
+                      msgText += ": " + qualityReport.fetchResponse.statusText; 
+                  } 
                 }
                 var message = $(document.createElement("div")).append($(document.createElement("span")).text(msgText));
                 MetacatUI.uiRouter.navigate("view/" + qualityReport.id, { trigger: true, replace: true });
@@ -80,7 +84,34 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
               }),
 
               this.listenToOnce(qualityReport, "fetchComplete", function() {
+                viewRef.hideLoading();
+                this.$el.html(this.template({}));
+                var msgText;
+                if(qualityReport.runStatus != "success") {
+                  if(qualityReport.runStatus == "failure") {
+                      msgText = "There was an error generating the quality report. The Quality Server reported this error: " + qualityReport.errorDescription;
+                  } else if (qualityReport.runStatus == "queued") {
+                      msgText = "The quality report is in the Quality Server queue to be generated. It was queued at: " + qualityReport.timestamp;
+                  } else {
+                      msgText = "Error retrieving the quality report."
+                  }
+                  var message = $(document.createElement("div")).append($(document.createElement("span")).text(msgText));
+                  MetacatUI.uiRouter.navigate("view/" + qualityReport.id, { trigger: true, replace: true });
+                  MetacatUI.appView.showAlert(message, "alert-success", MetacatUI.appView.currentView.$("alert-container"), 10000, { remove: true });
+                }
+                  
                 this.showLoading();
+                // Filter out the checks with level 'METADATA', as these checks are intended
+                // to pass info to metadig-engine indexing (for search, faceting), and not intended for display.
+                qualityReport.reset(_.reject(qualityReport.models, function (model) {
+                    var check = model.get("check");
+                    if (check.level == "METADATA") {
+                        return true
+                    } else {
+                        return false;
+                    }
+                }));
+                
                 var groupedResults = qualityReport.groupResults(qualityReport.models);
                 var groupedByType = qualityReport.groupByType(qualityReport.models);
                 
