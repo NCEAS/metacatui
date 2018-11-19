@@ -64,6 +64,9 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
 
             // waiting for the fetch() call to succeed.
             this.listenTo(this.model, "sync", this.renderResults);
+            
+            // in case when there is an error for the fetch call.
+            this.listenTo(this.model, "error", this.renderError);
 
             return this;
         },
@@ -121,9 +124,22 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             // Replacing the metric total count with the spinning icon.
             this.$('.metric-value').addClass("badge");
             this.$('.metric-value').text(MetacatUI.appView.numberAbbreviator(total, 1));
+        },
+        
+        renderError: function() {
+            // Replacing the spinning icon with a question-mark
+            // when the metrics are not loaded
+            var iconEl = this.$('.metric-value').find('.metric-icon');
+            iconEl.removeClass('icon-spinner');
+            iconEl.removeClass('icon-spin');
+            iconEl.addClass("icon-exclamation-sign more-info");
+            
+            // Setting the error tool-tip
+            this.$el.removeAttr("data-title");
+
+            this.$el.addClass("metrics-button-disabled");
+            this.$el.attr("data-title", "The number of " + this.metricName + " could not be retreived at this time.");
         }
-        
-        
 
     });
 

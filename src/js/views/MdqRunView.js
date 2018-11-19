@@ -28,30 +28,30 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 
 		},
 
-        switchSuite: function(event) {
-            var select = $(event.target);
-            var suiteId = $(select).val();
-            MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: false});
-            this.suiteId = suiteId;
-            this.render();
-            return false;
-        },
-        
+		switchSuite: function(event) {
+			var select = $(event.target);
+			var suiteId = $(select).val();
+			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: false});
+			this.suiteId = suiteId;
+			this.render();
+			return false;
+		},
+
 		render: function () {
 			// The suite use for rendering can initially be set via the theme AppModel.
             // If a suite id is request via the metacatui route, then we have to display that
             // suite, and in addition have to display all possible suites for this theme in
             // a selection list, if the user wants to view a different one.
-            if (!this.suiteId) {
+			if (!this.suiteId) {
                this.suiteId = MetacatUI.appModel.get("mdqSuiteIds")[0];
-            }
+			}
             
             this.suiteIdList = MetacatUI.appModel.get("mdqSuiteIds");
             this.suiteLabels = MetacatUI.appModel.get("mdqSuiteLabels");
             
 			//this.url = this.mdqRunsServiceUrl + "/" + this.suiteId + "/" + this.pid;
 			var viewRef = this;
-            
+
 			if (this.pid) {
               // Fetch a quality report from the quality server and display it.
               var viewRef = this;
@@ -147,7 +147,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
         hideLoading: function() {
             if(this.$loading)  this.$loading.remove();
             if(this.$detached) this.$el.html(this.$detached);
-        },
+		},
 
 		showCitation: function(){
 			if(!this.citationView) return false;
@@ -160,7 +160,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			this.$el.hide();
 			this.$el.fadeIn({duration: "slow"});
 		},
-        
+
 		drawScoreChart: function(results, groupedResults){
 
 			var dataCount = results.length;
@@ -170,7 +170,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			            {label: "Fail", count: groupedResults.RED.length, perc: groupedResults.RED.length/results.length},
 			            {label: "Info", count: groupedResults.BLUE.length, perc: groupedResults.BLUE.length/results.length},
 			        ];
-                    
+
 			var svgClass = "data";
 
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
