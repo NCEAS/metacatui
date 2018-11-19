@@ -1624,7 +1624,9 @@ define(['jquery',
 
 					//Insert the data display HTML and the anchor tag to mark this spot on the page
 					if(container){
-						if((type == "image") || (type == "PDF")){
+
+						//Only show data displays for images and PDFs hosted on the same origin
+						if((type == "image") || ((type == "PDF") && solrResult.get("url").indexOf(window.location.host) > -1) ){
 
 							//Create the data display HTML
 							var dataDisplay = $.parseHTML(viewRef.dataDisplayTemplate({
