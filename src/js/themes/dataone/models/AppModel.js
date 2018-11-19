@@ -76,7 +76,7 @@ define(['jquery', 'underscore', 'backbone'],
             suiteLabels: ["DataONE Metadata Completeness Suite v1.0"],
 			// Metrics endpoint url
 			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
-			
+
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
 			displayDatasetMetrics: true,

@@ -108,8 +108,15 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				this.$(".icon.abstract").addClass("inactive");
 			}
 
-			// waiting for the fetch() call to succeed.
-            this.listenTo(this.metricsModel, "sync", this.displayMetrics);
+			if (this.metricsModel.get("views") !== null) {
+				// Display metrics if the model has already been fetched
+				this.displayMetrics();
+			}
+			else {
+				// waiting for the fetch() call to succeed.
+            	this.listenTo(this.metricsModel, "sync", this.displayMetrics);
+			}
+			
 
 			return this;
 		},

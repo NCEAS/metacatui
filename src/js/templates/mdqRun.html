@@ -33,7 +33,7 @@
 	
 	<div id="mdqDonut" class="format-charts-data"></div>		
 	
-	<div id="mdqTypeSummary">
+	<div id="mdqTypeSummary">			
         
 		<div id="suites">
             <p>
@@ -52,7 +52,7 @@
                 </select>
             </p>
         </div>
-            
+		
 		<%
 		var types = _.keys(groupedByType);
 		_.each(types, function(type) {
@@ -74,7 +74,7 @@
 				role="progressbar" 
 				aria-valuenow="<%=success%>" 
 				aria-valuemin="0" aria-valuemax="<%=total%>" 
-				style="width: <%= width %>%;">
+				style="width: <%=width%>%;">
 				
 				</div>
 			</div>
@@ -89,7 +89,7 @@
 			total = total - groupedResults.BLUE.length;
 		}
 		
-	    %>	
+	%>	
 	<ul class="list-group">
 		<% if (groupedResults.GREEN) { %>
 		
