@@ -951,7 +951,8 @@ define(['jquery',
 			var controlsContainer = this.controlsTemplate({
 					citation: $(this.citationContainer).text(),
 					url: window.location,
-					mdqUrl: MetacatUI.appModel.get("mdqUrl"),
+                    mdqUrl: MetacatUI.appModel.get("mdqUrl"),
+                    showWholetale: MetacatUI.appModel.get("showWholeTaleFeatures"),
 					model: this.model.toJSON()
 				});
 
@@ -965,6 +966,10 @@ define(['jquery',
 				model: this.model.toJSON()
 			}) );
 
+            if(MetacatUI.appModel.get("showWholeTaleFeatures")) {
+                this.createWholeTaleButton ();
+            }
+            
 			//Create clickable "Copy" buttons to copy text (e.g. citation) to the user's clipboard
 			var copyBtns = $(this.controlsContainer).find(".copy");
 			_.each(copyBtns, function(btn){
@@ -1014,12 +1019,31 @@ define(['jquery',
 					textarea.focusout(function(){
 						textarea.animate({ width: "0px" }, function(){
 							textarea.remove();
-						})
+						});
 					});
 				});
 			});
 			this.$(".tooltip-this").tooltip();
 		},
+
+    /**
+     *Creates a button which the user can click to launch the package in Whole Tale
+    */
+    createWholeTaleButton: function() {
+      let self=this;
+      MetacatUI.appModel.get('taleEnvironments').forEach(function(environment){
+        var queryParams=
+        '?data_location='+ self.model.id +
+        '&data_title='+encodeURIComponent(self.model.get("title"))+
+        '&data_api='+encodeURIComponent(MetacatUI.appModel.get('d1CNBaseUrl'))+
+        '&environment='+environment;
+        var composeUrl = MetacatUI.appModel.get('dashboardUrl')+'compose'+queryParams;
+        $('.analyze.dropdown-menu').append(
+            $('<li>').append(
+              $('<a>').attr('href',composeUrl).append(
+                $('<span>').attr('class', 'tab').append(environment))));
+        });
+      },
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {

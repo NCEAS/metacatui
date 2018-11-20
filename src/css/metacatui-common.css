@@ -4777,3 +4777,37 @@ CSS library fixes
   background-image:      -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
   background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
 }
+
+.dropdown.btn.btn-secondary.dropdown-toggle .icon-bar-chart
+{
+    margin-right: 10px;
+}
+
+.dropdown.btn.btn-secondary.dropdown-toggle .analyze-text {
+    margin-right:10px;
+    font-weight: 600;
+}
+
+div.analyze.dropdown{
+    display: inline-block;
+}
+
+div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle{
+    display: inline-block;
+    color:white;
+    text-shadow: 0;
+    background-color: #1C6E84;
+    border-width: 0px;
+}
+
+div.controls.btn-toolbar{
+    font-size: 1em;
+}
+
+.analyze.dropdown-menu {
+    border: none;
+    border-radius: 10px;
+    padding: 0px;
+    margin: 0px;
+}
+
