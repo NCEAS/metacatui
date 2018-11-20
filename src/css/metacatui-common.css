@@ -1596,11 +1596,11 @@ body > .alert-container {
 }
 
 /* ---- Analyze Button ---- */
-.dropdown.btn.btn-secondary.dropdown-toggle .icon-bar-chart
+div.dropdown.btn.btn-secondary.dropdown-toggle .icon-bar-chart
 {
 	margin-right: 10px;
 }
-.dropdown.btn.btn-secondary.dropdown-toggle .analyze-text {
+div.dropdown.btn.btn-secondary.dropdown-toggle .analyze-text {
 	margin-right:10px;
 	font-weight: 600;
 }
@@ -1614,10 +1614,10 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle{
 	background-color: #1C6E84;
 	border-width: 0px;
 }
- div.controls.btn-toolbar{
+.controls.btn-toolbar{
 	font-size: 1em;
 }
- .analyze.dropdown-menu {
+.analyze.dropdown-menu {
 	border: none;
 	border-radius: 10px;
 	padding: 0px;

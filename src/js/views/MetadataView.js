@@ -1026,11 +1026,12 @@ define(['jquery',
 			this.$(".tooltip-this").tooltip();
 		},
 
-        /**
-     *Creates a button which the user can click to launch the package in Whole Tale
+    /**
+     * Creates a button which the user can click to launch the package in Whole Tale
     */
    createWholeTaleButton: function() {
     let self=this;
+    // Loop over each environment and add it to the dropdown menu
     MetacatUI.appModel.get('taleEnvironments').forEach(function(environment){
       var queryParams=
       '?data_location='+ self.model.id +
@@ -1038,13 +1039,15 @@ define(['jquery',
       '&data_api='+encodeURIComponent(MetacatUI.appModel.get('d1CNBaseUrl'))+
       '&environment='+environment;
       var composeUrl = MetacatUI.appModel.get('dashboardUrl')+'compose'+queryParams;
+
+      // Add a row to the dropdown for this environment
       $('.analyze.dropdown-menu').append(
           $('<li>').append(
             $('<a>').attr('href',composeUrl).append(
-              $('<span>').attr('class', 'tab').append(environment))));
+              $('<span>').attr('class', 'tab').append(environment)
+              ).attr('target', '_blank')));
       });
     },
-
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
