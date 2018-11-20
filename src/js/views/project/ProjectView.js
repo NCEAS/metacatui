@@ -6,9 +6,10 @@ define(["jquery",
     "views/project/ProjectHeaderView",
     "views/TOCView",
     "views/project/ProjectHomeView",
-    "views/project/ProjectMembersView"], 
-    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView, 
-      ProjectHomeView, ProjectMembersView){
+    "views/project/ProjectMembersView",
+    "views/MarkdownView"],
+    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView,
+      ProjectHomeView, ProjectMembersView, MarkdownView){
     'use_strict';
     /* The ProjectView is a generic view to render
      * projects, it will hold project sections
@@ -59,14 +60,17 @@ define(["jquery",
             //Render the table of contents view
             this.tocView = new TOCView();
             this.renderSub(this.tocView);
-            
-            //Render section view, this will be replaced by 
+
+            //Render section view, this will be replaced by
             // actual sections (which subclass section view)
             this.sectionHomeView = new ProjectHomeView();
             this.renderSub(this.sectionHomeView);
 
             this.sectionMembersView = new ProjectMembersView();
             this.renderSub(this.sectionMembersView);
+
+            this.sectionMarkdownView = new MarkdownView();
+            this.renderSub(this.sectionMarkdownView);
 
             // temporary ugly line just to show header container
             this.$("#project-header-container").css('border', 'solid');
