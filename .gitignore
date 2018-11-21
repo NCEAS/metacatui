@@ -1,6 +1,3 @@
 *.DS_Store
-metacatui/.classpath
-metacatui/.project
-metacatui/.settings
-metacatui/target
 /.project
+src/js/themes/ess-dive
