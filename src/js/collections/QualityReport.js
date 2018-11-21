@@ -69,7 +69,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 collectionRef.trigger("fetchError");
               }
             });
-          fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
+          //fetchOptions = _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
           return Backbone.Collection.prototype.fetch.call(collectionRef, fetchOptions);
         }
       },
