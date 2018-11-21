@@ -35,6 +35,11 @@ define(['jquery', 'underscore', 'backbone'],
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: true,
 
+      // Flag which, when true shows Whole Tale features in the UI
+      showWholeTaleFeatures: false,
+      taleEnvironments: ["RStudio", "Jupyter Notebook", "OpenRefine"],
+      dashboardUrl: 'https://dashboard.dev.wholetale.org/',
+
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
 			 * Any field set to true will prevent the user from saving the Editor until a value has been given
