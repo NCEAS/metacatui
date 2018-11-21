@@ -1,7 +1,7 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/filters/BooleanFilter',
+define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filters/Filter', 'models/filters/BooleanFilter',
     'models/filters/ChoiceFilter', 'models/filters/DateFilter', 'models/filters/NumericFilter'],
-    function($, _, Backbone, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter) {
+    function($, _, Backbone, Search, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter) {
 
 	var FilterGroup = Backbone.Model.extend({
 
@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
         label: null,
         description: null,
         icon: null,
-        filters: []
+        filters:  new Search()
       }
     },
 
@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
       modelJSON.icon = this.parseTextNode(xml, "icon");
 
       //Start an array for the filters
-      modelJSON.filters = [];
+      modelJSON.filters = new Search();
 
       //Iterate over each child and look for filter elements
       $(xml).children().each(function(i, filterNode){
@@ -49,26 +49,26 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
 
         switch (filterType) {
           case "textFilter":
-            modelJSON.filters.push( new Filter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new Filter({ objectDOM: filterNode }) );
             break;
           case "numericFilter":
-            modelJSON.filters.push( new NumericFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new NumericFilter({ objectDOM: filterNode }) );
             break;
           case "booleanFilter":
-            modelJSON.filters.push( new BooleanFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new BooleanFilter({ objectDOM: filterNode }) );
             break;
           case "choiceFilter":
-            modelJSON.filters.push( new ChoiceFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new ChoiceFilter({ objectDOM: filterNode }) );
             break;
           case "dateFilter":
-            modelJSON.filters.push( new DateFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new DateFilter({ objectDOM: filterNode }) );
             break;
         }
 
       });
 
 
-      _.each(modelJSON.filters, function(filter){
+      _.each(modelJSON.filters.models, function(filter){
         console.log(filter.toJSON())
       });
 

@@ -1,6 +1,6 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
-    function($, _, Backbone, Filter) {
+define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filters/Filter'],
+    function($, _, Backbone, Search, Filter) {
 
 	var CollectionModel = Backbone.Model.extend({
 
@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         name: null,
         label: null,
         description: null,
-  			filters: []
+  			filters: new Search()
   		}
     },
 
@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       modelJSON.name = this.parseTextNode(rootNode, "name");
       modelJSON.label = this.parseTextNode(rootNode, "label");
       modelJSON.description = this.parseTextNode(rootNode, "description");
-      modelJSON.filters = [];
+      modelJSON.filters = new Search();
 
       //Parse the collection definition
       _.each( $(rootNode).find("definition > filter"), function(filterNode){
@@ -94,8 +94,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           objectDOM: filterNode
         });
 
-        //Push the parsed filter into the filters array
-        modelJSON.filters.push(filterModel);
+        //Add the filter to the Search collection
+        modelJSON.filters.add(filterModel);
 
       });
 

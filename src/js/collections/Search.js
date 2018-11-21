@@ -1,7 +1,7 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/filters/BooleanFilter',
-    'models/filters/ChoiceFilter', 'models/filters/DateFilter', 'models/filters/NumericFilter'],
-	function($, _, Backbone, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter) {
+    'models/filters/ChoiceFilter', 'models/filters/DateFilter', 'models/filters/NumericFilter', 'models/filters/ToggleFilter'],
+	function($, _, Backbone, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter, ToggleFilter) {
 	'use strict';
 
 	/*
@@ -34,6 +34,22 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
      * @return {string} The query string to send to Solr
      */
     getSolrQuery: function(){
+
+      var queryString = "";
+
+      //Iterate over each Filter model in this collection
+      this.forEach(function(filterModel, i){
+
+        //Get the Solr query string from this model
+        queryString += filterModel.getSolrQuery();
+
+        if( this.length > i+1 && queryString.length ){
+          queryString += "%20AND%20";
+        }
+
+      }, this);
+
+      return queryString;
 
     }
 
