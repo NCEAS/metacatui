@@ -22,14 +22,19 @@ define(["jquery",
         },
 
         /* Construct a new instance of markdownView */
-        initialize: function() {
-            this.$el.append(this.template());
-            return this;
+        initialize: function (options) {
+
+            if(typeof options !== "undefined"){
+
+                this.markdown = options.markdown         || "#testmarkdown";    // TODO: figure out how to set the model on this view
+
+            }
         },
 
         /* Render the view */
         render: function() {
-
+            this.$el.append(this.template({markdown:this.markdown}));
+            return this;
         },
 
         /* Close and destroy the view */

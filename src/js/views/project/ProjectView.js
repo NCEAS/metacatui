@@ -22,12 +22,9 @@ define(["jquery",
         /* TODO: Decide if we need this */
         type: "Project",
 
-        /* The list of subview instances contained in this view
-        subviews: { // Question: I can't seem to make this work -JK
-            headerView: new ProjectHeaderView(),
-            tocView: new TOCView(),
-            sectionView: new ProjectHomeView()
-        }, // Could be a literal object {} */
+        subviews: new Array(), // Could be a literal object {} */
+
+        model: new Project(),
 
         /* Renders the compiled template into HTML */
         template: _.template(ProjectTemplate),
@@ -37,11 +34,10 @@ define(["jquery",
 
         },
 
-        /*
-        * Construct a new instance of ProjectView
-        */
         initialize: function() {
 
+            this.model.set("id", MetacatUI.appModel.get("projectId"));
+            this.model.fetch();
         },
 
         /*
@@ -52,56 +48,39 @@ define(["jquery",
         render: function() {
 
             this.$el.html(this.template());
-
-            //Render the header view
-            this.headerView = new ProjectHeaderView();
-            this.renderSub(this.headerView);
-
-            //Render the table of contents view
-            this.tocView = new TOCView();
-            this.renderSub(this.tocView);
-
-            //Render section view, this will be replaced by
-            // actual sections (which subclass section view)
-            this.sectionHomeView = new ProjectHomeView();
-            this.renderSub(this.sectionHomeView);
-
-            this.sectionMembersView = new ProjectMembersView();
-            this.renderSub(this.sectionMembersView);
-
-            this.sectionMarkdownView = new MarkdownView();
-            this.renderSub(this.sectionMarkdownView);
+            this.listenTo(this.model, "sync", this.renderResults);
 
             // temporary ugly line just to show header container
             this.$("#project-header-container").css('border', 'solid');
 
-            //Create a new Project model
-            this.model = new Project({
-              id: MetacatUI.appModel.get("projectId")
-            });
-
-            //Fetch the Project model
-            this.getModel();
-
             return this;
         },
 
-        /*
-        * Fetches the Project model for this view
-        */
-        getModel: function(){
-          this.model.fetch();
-        },
 
-        /*
-        * Renders the given view inside of this view
-        *
-        * @param {Backbone.View} subView - The Backbone View to render inside this view
-        */
-        renderSub: function( subView ) {
+        renderResults: function(){
 
-          //Render the sub view
-          subView.render();
+            //Render the header view
+            this.headerView = new ProjectHeaderView();
+            this.subviews.push(this.headerView);
+            //this.renderSub(this.headerView);
+
+            //Render the table of contents view
+            this.tocView = new TOCView();
+            this.subviews.push(this.tocView);
+            //this.renderSub(this.tocView);
+
+            //Render section view, this will be replaced by
+            // actual sections (which subclass section view)
+            this.sectionHomeView = new ProjectHomeView();
+            this.subviews.push(this.sectionHomeView);
+
+            this.sectionMembersView = new ProjectMembersView();
+            this.subviews.push(this.sectionMembersView);
+
+            this.sectionMarkdownView = new MarkdownView({markdown:this.model.get("overview").get("markdown")});
+            this.subviews.push(this.sectionMarkdownView);
+
+            _.invoke(this.subviews, 'render');
 
         },
 
@@ -111,7 +90,7 @@ define(["jquery",
         */
         onClose: function() {
           //Remove each subview from the DOM and remove listeners
-          _.invoke(this.subviews, "remove");
+          _.invoke(this.subviews, 'remove');
         }
 
      });
