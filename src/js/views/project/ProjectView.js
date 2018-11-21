@@ -56,18 +56,15 @@ define(["jquery",
             return this;
         },
 
-
         renderResults: function(){
 
             //Render the header view
             this.headerView = new ProjectHeaderView();
             this.subviews.push(this.headerView);
-            //this.renderSub(this.headerView);
 
             //Render the table of contents view
             this.tocView = new TOCView();
             this.subviews.push(this.tocView);
-            //this.renderSub(this.tocView);
 
             //Render section view, this will be replaced by
             // actual sections (which subclass section view)

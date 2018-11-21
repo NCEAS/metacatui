@@ -26,15 +26,38 @@ define(["jquery",
 
             if(typeof options !== "undefined"){
 
-                this.markdown = options.markdown         || "#testmarkdown";    // TODO: figure out how to set the model on this view
+                this.markdown = options.markdown         || "#testmarkdown";
 
             }
         },
 
         /* Render the view */
         render: function() {
-            this.$el.append(this.template({markdown:this.markdown}));
+            var htmlFromMD = this.convertMarkdown(this.markdown);
+
+            this.$el.append(this.template({markdown:htmlFromMD}));
             return this;
+        },
+
+        convertMarkdown: function(markdown) {
+
+            // --- TODO: add custom extensions here -- //
+
+            var converter  = new showdown.Converter({
+                                    metadata: true,
+                                    simplifiedAutoLink:true,
+                                    customizedHeaderId:true,
+                                    tables:true,
+                                    strikethrough: true,
+                                    tasklists: true,
+                                    emoji: true
+                                    // TODO: extensions: ['codehighlight', bindings]
+                              });
+
+            var htmlFromMD = converter.makeHtml(markdown);
+
+            return htmlFromMD;
+
         },
 
         /* Close and destroy the view */
