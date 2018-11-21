@@ -8,8 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-        trueLabel: null,
-        falseLabel: null
+
       });
     },
 
@@ -23,9 +22,15 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
       var modelJSON = Filter.prototype.parse(xml);
 
-      //Parse the trueLabel and falseLabels
-      modelJSON.trueLabel = this.parseTextNode(xml, "trueLabel");
-      modelJSON.falseLabel = this.parseTextNode(xml, "falseLabel");
+      //Parse the boolean value
+      modelJSON.value = this.parseTextNode(xml, "value");
+
+      if(modelJSON.value === "true"){
+        modelJSON.value = true;
+      }
+      else if(modelJSON.value === "false"){
+        modelJSON.value = false;
+      }
 
       return modelJSON;
     }
