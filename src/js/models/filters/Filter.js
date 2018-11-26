@@ -115,11 +115,17 @@ define(['jquery', 'underscore', 'backbone'],
      */
     getSolrQuery: function(){
 
+      //Get the values of this filter in Array format
+      var values = this.get("values");
+      if( !Array.isArray(values) ){
+        values = [values];
+      }
+
       //Check that there are actually values to serialize
-      if( !this.get("values").length ){
+      if( !values.length ){
         return "";
       }
-      else if( _.every(this.get("values"), function(value){
+      else if( _.every(values, function(value){
         return (value === null || typeof value == "undefined" || value === NaN || value === "");
       }) ){
         return "";
@@ -183,6 +189,11 @@ define(['jquery', 'underscore', 'backbone'],
 
       //Iterate over each value set on the model
       _.each( values, function(value, i){
+
+        //If the value is not a string, then convert it to a string
+        if( typeof value != "string" ){
+          value = value.toString();
+        }
 
         //Trim off whitespace
         value = value.trim();

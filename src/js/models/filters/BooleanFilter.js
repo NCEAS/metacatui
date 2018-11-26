@@ -8,7 +8,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-
+        //Boolean Filters cannot have an array of values
+        values: null,
+        //Boolean filters can't match substrings
+        matchSubstring: false,
+        //Boolean filters don't use operators
+        operator: null
       });
     },
 
@@ -23,13 +28,13 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       var modelJSON = Filter.prototype.parse(xml);
 
       //Parse the boolean value
-      modelJSON.value = this.parseTextNode(xml, "value");
+      modelJSON.values = this.parseTextNode(xml, "value");
 
-      if(modelJSON.value === "true"){
-        modelJSON.value = true;
+      if(modelJSON.values === "true"){
+        modelJSON.values = true;
       }
-      else if(modelJSON.value === "false"){
-        modelJSON.value = false;
+      else if(modelJSON.values === "false"){
+        modelJSON.values = false;
       }
 
       return modelJSON;
