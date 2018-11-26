@@ -24,7 +24,8 @@ define(["jquery",
 
         subviews: new Array(), // Could be a literal object {} */
 
-        model: new Project(),
+        // @type {Project} - A Project Model is associated with this view and gets created during render()
+        model: null,
 
         /* Renders the compiled template into HTML */
         template: _.template(ProjectTemplate),
@@ -36,8 +37,6 @@ define(["jquery",
 
         initialize: function() {
 
-            this.model.set("id", MetacatUI.appModel.get("projectId"));
-            this.model.fetch();
         },
 
         /*
@@ -47,13 +46,24 @@ define(["jquery",
         */
         render: function() {
 
-            this.$el.html(this.template());
-            this.listenTo(this.model, "sync", this.renderResults);
+          this.$el.html(this.template());
 
-            // temporary ugly line just to show header container
-            this.$("#project-header-container").css('border', 'solid');
+          //Create a new Project model
+          this.model = new Project({
+            id: MetacatUI.appModel.get("projectId")
+          });
 
-            return this;
+          //When the model has been synced, render the results
+          this.stopListening();
+          this.listenTo(this.model, "sync", this.renderResults);
+
+          //Fetch the model
+          this.model.fetch();
+
+          // temporary ugly line just to show header container
+          this.$("#project-header-container").css('border', 'solid');
+
+          return this;
         },
 
         renderResults: function(){
@@ -87,7 +97,7 @@ define(["jquery",
         */
         onClose: function() {
           //Remove each subview from the DOM and remove listeners
-          _.invoke(this.subviews, 'remove');
+          _.invoke(this.subviews, "remove");
         }
 
      });
