@@ -1,6 +1,6 @@
 define(["jquery",
     "underscore",
-    "Backbone",
+    "backbone",
     "text!templates/project/projectLogos.html"], function($, _, Backbone, ProjectLogosTemplate){
 
     /* The ProjectLogosView is the area where the the logos of the organizations

@@ -1,6 +1,6 @@
 define(["jquery",
     "underscore",
-    "Backbone",
+    "backbone",
     'gmaps', //? <- used in dataCatalogView
     'nGeohash', // ? <- used in dataCatalogView
     "text!templates/maps.html"], // <- maps.html exists outside of project folder

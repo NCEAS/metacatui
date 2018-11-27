@@ -15,8 +15,6 @@ define(["jquery",
      */
       var ProjectHomeView = ProjectSectionView.extend({
 
-         el: "#project-section-container",
-
         render: function(){
 
           //Create a DataCatalogView

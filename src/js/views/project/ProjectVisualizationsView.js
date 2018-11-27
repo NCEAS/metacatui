@@ -1,6 +1,6 @@
 define(["jquery",
     "underscore",
-    "Backbone",
+    "backbone",
     "text!templates/project/projectVisualizations.html",
     "views/project/ProjectSectionView.js"], 
     function($, _, Backbone, ProjectVisualizationsTemplate, ProjectSectionView){
