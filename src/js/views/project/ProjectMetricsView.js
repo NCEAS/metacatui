@@ -10,14 +10,10 @@ define(["jquery",
      */
      var ProjectMetricsView = ProjectSectionView.extend({
 
-        /* The Project Metrics Element*/
-        el: "#project-metrics",
-
-        /* TODO: Decide if we need this */
         type: "ProjectMetrics",
 
         /* The list of subview instances contained in this view*/
-        subviews: [], // Could be a literal object {}
+        subviews: [],
 
         /* Renders the compiled template into HTML */
         template: _.template(ProjectMetricsTemplate),

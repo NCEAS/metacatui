@@ -10,11 +10,7 @@ define(["jquery",
      */
      var ProjectMembersView = ProjectSectionView.extend({
 
-      //   /* The Project Members Element*/
-      //   el: "#project-members",
-
-      //   /* TODO: Decide if we need this */
-      //   type: "ProjectMembers",
+         type: "ProjectMembers",
 
       //   /* The list of subview instances contained in this view*/
       //   subviews: [], // Could be a literal object {}

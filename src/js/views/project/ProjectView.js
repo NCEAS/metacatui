@@ -78,20 +78,38 @@ define(["jquery",
           this.subviews.push(this.headerView);
 
           //Render the table of contents view
-          this.tocView = new TOCView({ model: this.model });
+          this.tocView = new TOCView({
+            model: this.model,
+            el: "#project-toc-container"
+           });
           this.subviews.push(this.tocView);
 
           //Render the Home section
-          this.sectionHomeView = new ProjectHomeView({ model: this.model });
-          this.subviews.push(this.sectionHomeView);
+          if( !this.model.get("hideHome") ){
+            this.sectionHomeView = new ProjectHomeView({
+              model: this.model,
+              el: "#project-home"
+            });
+            this.subviews.push(this.sectionHomeView);
+          }
 
           //Render the Metrics section
-          this.sectionMetricsView = new ProjectMetricsView({ model: this.model });
-          this.subviews.push(this.sectionMetricsView);
+          if( !this.model.get("hideMetrics") ){
+            this.sectionMetricsView = new ProjectMetricsView({
+              model: this.model,
+              el: "#project-metrics"
+             });
+            this.subviews.push(this.sectionMetricsView);
+          }
 
           //Render the members section
-          this.sectionMembersView = new ProjectMembersView({ model: this.model });
-          this.subviews.push(this.sectionMembersView);
+          if( !this.model.get("hideMembers") ){
+            this.sectionMembersView = new ProjectMembersView({
+              model: this.model,
+              el: "#project-members"
+            });
+            this.subviews.push(this.sectionMembersView);
+         }
 
           //TODO: Incorporate this into the actual view it will live in (Home view)
           //Render the markdown view
