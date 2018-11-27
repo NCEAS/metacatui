@@ -13,11 +13,11 @@ define(["jquery",
       /* Tab label and section name */
       tabInfo: {
          // title displayed on tab in ui
-         tab_title: "People", 
+         tabTitle: "People",
          // value of data-section and data-target id
-         section_name: "project-members", 
+         sectionName: "project-members",
          // should the tab be active when first loaded
-         active_by_default: false,
+         activeByDefault: false,
      },
       //   /* The Project Members Element*/
       //   el: "#project-members",

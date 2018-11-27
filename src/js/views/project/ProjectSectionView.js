@@ -13,7 +13,7 @@ define(["jquery",
 
         /* The Project Section Elements*/
         el: "#project-tabs",
-        tabs_el: "#project-section-tabs",
+        tabsEl: "#project-section-tabs",
 
         /* TODO: Decide if we need this */
         type: "ProjectSection",
@@ -21,11 +21,11 @@ define(["jquery",
         /* Tab label and section name */
         tabInfo: {
             // title displayed on tab in ui
-            tab_title: "Section Title", 
+            tabTitle: "Section Title",
             // value of data-section and data-target id
-            section_name: "data-section-value", 
+            sectionName: "data-section-value",
             // should the tab be active when first loaded
-            active_by_default: true,
+            activeByDefault: true,
         },
 
         /* The list of subview instances contained in this view*/
@@ -47,9 +47,9 @@ define(["jquery",
 
         /* Render the view */
         render: function() {
-            $(this.tabs_el).append(this.tabTemplate(this.tabInfo));
+            $(this.tabsEl).append(this.tabTemplate(this.tabInfo));
 
-            this.tabInfo.html_content = "<h2>" + this.tabInfo.tab_title + "</h2>";
+            this.tabInfo.htmlContent = "<h2>" + this.tabInfo.tabTitle + "</h2>";
             this.$el.append(this.template(this.tabInfo));
         },
 

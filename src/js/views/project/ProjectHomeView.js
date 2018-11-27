@@ -16,11 +16,11 @@ define(["jquery",
          /* Tab label and section name */
          tabInfo: {
             // title displayed on tab in ui
-            tab_title: "Project Home", 
+            tabTitle: "Project Home",
             // value of data-section and data-target id
-            section_name: "project-home", 
+            sectionName: "project-home",
             // should the tab be active when first loaded
-            active_by_default: true,
+            activeByDefault: true,
          },
 
      });
