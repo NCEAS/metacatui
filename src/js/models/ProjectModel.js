@@ -1,8 +1,8 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "collections/Search",
+define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "collections/SolrResults",
  "models/metadata/eml211/EMLParty", "models/metadata/eml220/EMLText",
- "models/CollectionModel", "models/filters/FilterGroup", "collections/SolrResults"],
-    function($, _, Backbone, Search, EMLParty, EMLText, CollectionModel, FilterGroup, SearchResults) {
+ "models/CollectionModel", "models/filters/FilterGroup", "models/Map"],
+    function($, _, Backbone, gmaps, Search, SolrResults, EMLParty, EMLText, CollectionModel, FilterGroup, MapModel) {
 
 	var ProjectModel = CollectionModel.extend({
 
@@ -22,10 +22,12 @@ define(['jquery', 'underscore', 'backbone', "collections/Search",
         hidePeople: false,
         hideMap: false,
         //Map options, as specified in the project document options
-        mapZoolLevel: 9,
-        mapCenterLatitude: 0,
-        mapCenterLongitude: 0,
-        mapShapeColor: "#333",
+        mapZoomLevel: 3,
+        mapCenterLatitude: null,
+        mapCenterLongitude: null,
+        mapShapeHue: 200,
+        //The MapModel
+        mapModel: gmaps? new MapModel() : null,
         //Project view colors, as specified in the project document options
         primaryColor: "#333",
         secondaryColor: "#333",
@@ -123,6 +125,23 @@ define(['jquery', 'underscore', 'backbone', "collections/Search",
         modelJSON[optionName] = optionValue;
 
       });
+
+      if(gmaps){
+        //Create a MapModel with all the map options
+        modelJSON.mapModel = new MapModel();
+        var mapOptions = modelJSON.mapModel.get("mapOptions");
+
+        if( modelJSON.mapZoomLevel ){
+          mapOptions.zoom = modelJSON.mapZoomLevel;
+        }
+        if(( modelJSON.mapCenterLatitude || modelJSON.mapCenterLatitude === 0 ) &&
+          ( modelJSON.mapCenterLongitude || modelJSON.mapCenterLongitude === 0)){
+          mapOptions.center = modelJSON.mapModel.createLatLng(modelJSON.mapCenterLatitude, modelJSON.mapCenterLongitude);
+        }
+        if( modelJSON.mapShapeHue ){
+            modelJSON.mapModel.set("tileHue", modelJSON.mapShapeHue);
+        }
+      }
 
       //Parse the filterGroups
       modelJSON.filterGroups = [];

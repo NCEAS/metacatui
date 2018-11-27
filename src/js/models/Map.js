@@ -178,7 +178,14 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 			else if (zoom <= 15) return 6;
 			else return 7;
 		},
-		
+
+		/*
+		* Creates a LatLng Google Maps object based on the given latitude and longitude
+		*/
+		createLatLng: function(lat, long){
+			return new google.maps.LatLng(lat, long);
+		},
+
 		clear: function() {
 		    return this.set(_.clone(this.defaults()));
 		  }
