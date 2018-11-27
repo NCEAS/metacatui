@@ -2,11 +2,11 @@ define(["jquery",
     "underscore",
     "Backbone",
     "text!templates/project/projectMetrics.html",
-    "views/project/ProjectSectionView.js"], 
+    "views/project/ProjectSectionView"], 
     function($, _, Backbone, ProjectMetricsTemplate, ProjectSectionView){
 
     /* The ProjectMetricsView is a view to render the
-     * project metrics tab (within ProjectSectionView) 
+     * project metrics tab (within ProjectSectionView)
      */
      var ProjectMetricsView = ProjectSectionView.extend({
 

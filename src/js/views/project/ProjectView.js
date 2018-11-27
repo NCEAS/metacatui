@@ -7,9 +7,10 @@ define(["jquery",
     "views/TOCView",
     "views/project/ProjectHomeView",
     "views/project/ProjectMembersView",
+    "views/project/ProjectMetricsView",
     "views/MarkdownView"],
     function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView,
-      ProjectHomeView, ProjectMembersView, MarkdownView){
+      ProjectHomeView, ProjectMembersView, ProjectMetricsView, MarkdownView){
     'use_strict';
     /* The ProjectView is a generic view to render
      * projects, it will hold project sections
@@ -19,7 +20,6 @@ define(["jquery",
         /* The Project Element*/
         el: "#Content",
 
-        /* TODO: Decide if we need this */
         type: "Project",
 
         subviews: new Array(), // Could be a literal object {} */
@@ -46,8 +46,6 @@ define(["jquery",
         */
         render: function() {
 
-          this.$el.html(this.template());
-
           //Create a new Project model
           this.model = new Project({
             id: MetacatUI.appModel.get("projectId")
@@ -55,7 +53,7 @@ define(["jquery",
 
           //When the model has been synced, render the results
           this.stopListening();
-          this.listenTo(this.model, "sync", this.renderResults);
+          this.listenTo(this.model, "sync", this.renderProject);
 
           //Fetch the model
           this.model.fetch();
@@ -66,28 +64,41 @@ define(["jquery",
           return this;
         },
 
-        renderResults: function(){
+        renderProject: function(){
 
-            //Render the header view
-            this.headerView = new ProjectHeaderView();
-            this.subviews.push(this.headerView);
+          //Insert the overall project template
+          this.$el.html(this.template({
+            hideMetrics: this.model.get("hideMetrics"),
+            hideHome:    this.model.get("hideHome"),
+            hidePeople:  this.model.get("hidePeople")
+          }));
 
-            //Render the table of contents view
-            this.tocView = new TOCView();
-            this.subviews.push(this.tocView);
+          //Render the header view
+          this.headerView = new ProjectHeaderView({ model: this.model });
+          this.subviews.push(this.headerView);
 
-            //Render section view, this will be replaced by
-            // actual sections (which subclass section view)
-            this.sectionHomeView = new ProjectHomeView();
-            this.subviews.push(this.sectionHomeView);
+          //Render the table of contents view
+          this.tocView = new TOCView({ model: this.model });
+          this.subviews.push(this.tocView);
 
-            this.sectionMembersView = new ProjectMembersView();
-            this.subviews.push(this.sectionMembersView);
+          //Render the Home section
+          this.sectionHomeView = new ProjectHomeView({ model: this.model });
+          this.subviews.push(this.sectionHomeView);
 
-            this.sectionMarkdownView = new MarkdownView({markdown:this.model.get("overview").get("markdown")});
-            this.subviews.push(this.sectionMarkdownView);
+          //Render the Metrics section
+          this.sectionMetricsView = new ProjectMetricsView({ model: this.model });
+          this.subviews.push(this.sectionMetricsView);
 
-            _.invoke(this.subviews, 'render');
+          //Render the members section
+          this.sectionMembersView = new ProjectMembersView({ model: this.model });
+          this.subviews.push(this.sectionMembersView);
+
+          //TODO: Incorporate this into the actual view it will live in (Home view)
+          //Render the markdown view
+          this.sectionMarkdownView = new MarkdownView({markdown:this.model.get("overview").get("markdown")});
+          this.subviews.push(this.sectionMarkdownView);
+
+          _.invoke(this.subviews, 'render');
 
         },
 
@@ -98,6 +109,8 @@ define(["jquery",
         onClose: function() {
           //Remove each subview from the DOM and remove listeners
           _.invoke(this.subviews, "remove");
+
+          this.subviews = new Array();
         }
 
      });

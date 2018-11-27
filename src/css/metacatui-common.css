@@ -2475,15 +2475,6 @@ hr.project{
 .logo-image img{
 	max-width: 100%;
 }
-.project-tabs{
-	width: 100%;
-}
-#project-nav-tabs ul.nav.nav-tabs>li:first-child {
-	margin-left: 245px;
-}
-div.toc-container {
-	border: 1px solid #ccc;
-}
 /******************************************
 * Download / Resource Map contents table
 ********************************************/

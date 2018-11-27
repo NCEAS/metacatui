@@ -1,18 +1,37 @@
+<div id="project-header-container" class="row-fluid"></div>
+
 <div class="row-fluid">
-  <div id="project-toc-container" class="toc-container span3"></div>
-  <article id="project-view" class="span9">
-      <div id="project-header-container"></div>
-      <section class="row-fluid" id="project-sections" data-section="project">
-          <div id="project-nav-tabs" class="tabbable">
-              <ul id="project-section-tabs" class="nav nav-tabs"></ul>
-              </div>
+  <div id="project-toc-container" class="span3"></div>
 
-              <div id="project-tabs" class="project-tabs tab-content"></div>
-          </div>
+  <article class="span9 tabbable">
 
-          <div id="project-logos-container" class="logo-container"></div>
-          <div id="markdown-container" class="markdown"></div>
-          </div>
-      </section>
+    <ul id="project-section-tabs" class="nav nav-tabs">
+      <% if( !hideHome ){ %>
+        <li class="active"><a href="#project-home" data-toggle="tab">Home</a></li>
+      <% } %>
+      <% if( !hideMetrics ){ %>
+        <li class=""><a href="#project-metrics" data-toggle="tab">Metrics</a></li>
+      <% } %>
+      <% if( !hidePeople ){ %>
+        <li class=""><a href="#project-people" data-toggle="tab">People</a></li>
+      <% } %>
+    </ul>
+
+    <section id="project-section-content" class="row-fluid tab-content" data-section="project">
+      <% if( !hideHome ){ %>
+        <div class="tab-pane active" id="project-home">Home</div>
+      <% } %>
+      <% if( !hideMetrics ){ %>
+        <div class="tab-pane" id="project-metrics">Metrics</div>
+      <% } %>
+      <% if( !hidePeople ){ %>
+        <div class="tab-pane" id="project-people">People</div>
+      <% } %>
+    </section>
+
   </article>
+
 </div>
+
+<div id="project-logos-container" class="logo-container row-fluid"></div>
+<div id="markdown-container" class="markdown"></div>

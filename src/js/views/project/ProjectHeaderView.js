@@ -11,31 +11,18 @@ define(["jquery",
         /* The Project Header Element */
         el: "#project-header-container",
 
-        /* TODO: Decide if we need this */
         type: "ProjectHeader",
 
         /* Renders the compiled template into HTML */
         template: _.template(ProjectHeaderTemplate),
 
-        /* The events that this view listens to */
-        events: {
-
-        },
-
-        /* Construct a new instance of ProjectHeaderView */
-        initialize: function() {
-
-        },
-
         /* Render the view */
         render: function() {
-            this.$el.append(this.template());
+            this.$el.append(this.template({
+              label: this.model.get("label"),
+              description: this.model.get("description")
+            }));
             return this;
-        },
-
-        /* Close and destroy the view */
-        onClose: function() {
-
         }
 
      });

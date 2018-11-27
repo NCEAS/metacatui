@@ -13,7 +13,20 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         acknowledgments: null,
         acknowledgmentsLogos: [],
         filterGroups: [],
-        options: []
+        //The project document options may specify section to hide
+        hideMetrics: false,
+        hideHome: false,
+        hidePeople: false,
+        hideMap: false,
+        //Map options, as specified in the project document options
+        mapZoolLevel: 9,
+        mapCenterLatitude: 0,
+        mapCenterLongitude: 0,
+        mapShapeColor: "#333",
+        //Project view colors, as specified in the project document options
+        primaryColor: "#333",
+        secondaryColor: "#333",
+        accentColor: "#333"
   		});
     },
 
@@ -96,6 +109,13 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
 
         var optionName  = $(option).find("optionName")[0].textContent,
             optionValue = $(option).find("optionValue")[0].textContent;
+
+        if( optionValue === "true" ){
+          optionValue = true;
+        }
+        else if( optionValue === "false" ){
+          optionValue = false;
+        }
 
         modelJSON[optionName] = optionValue;
 

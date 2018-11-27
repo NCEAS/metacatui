@@ -2,23 +2,14 @@ define(["jquery",
     "underscore",
     "backbone",
     "text!templates/project/projectMembers.html",
-    "views/project/ProjectSectionView"], 
+    "views/project/ProjectSectionView"],
     function($, _, Backbone, ProjectMembersTemplate, ProjectSectionView){
 
     /* The ProjectMembersView is a view to render the
-     * project members tab (within ProjectSectionView) 
+     * project members tab (within ProjectSectionView)
      */
      var ProjectMembersView = ProjectSectionView.extend({
 
-      /* Tab label and section name */
-      tabInfo: {
-         // title displayed on tab in ui
-         tabTitle: "People",
-         // value of data-section and data-target id
-         sectionName: "project-members",
-         // should the tab be active when first loaded
-         activeByDefault: false,
-     },
       //   /* The Project Members Element*/
       //   el: "#project-members",
 
