@@ -84,6 +84,9 @@ define(["jquery",
            });
           this.subviews.push(this.tocView);
 
+          //Create a Search collection for all search events in this view
+          this.search = this.model.createSearch();
+
           //Render the Home section
           if( !this.model.get("hideHome") ){
             this.sectionHomeView = new ProjectHomeView({

@@ -1,7 +1,8 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "models/metadata/eml220/EMLText",
+define(['jquery', 'underscore', 'backbone', "collections/Search",
+ "models/metadata/eml211/EMLParty", "models/metadata/eml220/EMLText",
  "models/CollectionModel", "models/filters/FilterGroup", "collections/SolrResults"],
-    function($, _, Backbone, EMLParty, EMLText, CollectionModel, FilterGroup, SearchResults) {
+    function($, _, Backbone, Search, EMLParty, EMLText, CollectionModel, FilterGroup, SearchResults) {
 
 	var ProjectModel = CollectionModel.extend({
 
@@ -13,6 +14,8 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         acknowledgments: null,
         acknowledgmentsLogos: [],
         filterGroups: [],
+        //A Search collection that contains all the filters assoc. with this project
+        search: new Search(),
         //The project document options may specify section to hide
         hideMetrics: false,
         hideHome: false,
@@ -168,6 +171,30 @@ define(['jquery', 'underscore', 'backbone', "models/metadata/eml211/EMLParty", "
         });
 
       }
+
+    },
+
+    /*
+    * Creates a Search collection with all filters associated with this collection
+    * and project. Sets it on the `search` attribute.
+    *
+    * @return {Search} - Returns a Search collection that contains all the Filter
+    * models associated with this project
+    */
+    createSearch: function(){
+
+      var search = new Search();
+
+      _.each(this.get("filterGroups"), function(filterGroup){
+        search.add(filterGroup.get("filters").models);
+      });
+
+      search.add(this.get("filters").models);
+
+      this.set("search", search);
+
+
+      return search;
 
     }
 
