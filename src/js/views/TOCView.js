@@ -1,28 +1,25 @@
 define(["jquery",
     "underscore",
     "backbone",
-    "text!templates/tableOfContents.html"], function($, _, Backbone, ProjectTOCTemplate){
+    "text!templates/tableOfContents.html"], function($, _, Backbone, TOCTemplate){
 
-    /* The Table of Contents View is the area on the left-hand side of the project's page
-     * that will allow a user to navigate within the current tab of the project page.
+    /*
+       The Table of Contents View is a vertical navigation menu that links to other
+       sections within the same view.
      */
-    var ProjectTOCView = Backbone.View.extend({
+    var TOCView = Backbone.View.extend({
 
-        /* The Project TOC Element */
-        el: "#project-toc-container",
-
-        /* TODO: Decide if we need this */
-        type: "ProjectTOC",
+        type: "TOC",
 
         /* Renders the compiled template into HTML */
-        template: _.template(ProjectTOCTemplate),
+        template: _.template(TOCTemplate),
 
         /* The events that this view listens to */
         events: {
 
         },
 
-        /* Construct a new instance of ProjectTOCView */
+        /* Construct a new instance  */
         initialize: function() {
 
         },
@@ -40,5 +37,5 @@ define(["jquery",
 
     });
 
-    return ProjectTOCView;
+    return TOCView;
 });
