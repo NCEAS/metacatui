@@ -336,17 +336,23 @@ function ($, _, Backbone) {
                 return;
             }
 
-			if( !MetacatUI.appView.projectView ){
+			if ( !MetacatUI.appView.projectView ) {
 				require(['views/project/ProjectView'], function(ProjectView){
 					MetacatUI.appView.projectView = new ProjectView({
-                        projectName: projectName,
-                        projectId: projectId,
-                        projectSection: projectSection
+                        attributes: {
+                            projectName: projectName,
+                            projectId: projectId,
+                            projectSection: projectSection
+                        }
                     });
-
 					MetacatUI.appView.showView(MetacatUI.appView.projectView);
 				});
 			} else {
+                MetacatUI.appView.projectView.set({
+                    projectName: projectName,
+                    projectId: projectId,
+                    projectSection: projectSection
+                });
 				MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},
