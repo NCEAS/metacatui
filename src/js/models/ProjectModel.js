@@ -16,6 +16,7 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
         filterGroups: [],
         //A Search collection that contains all the filters assoc. with this project
         search: new Search(),
+        searchResults: new SolrResults(),
         //The project document options may specify section to hide
         hideMetrics: false,
         hideHome: false,
@@ -132,7 +133,8 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
         var mapOptions = modelJSON.mapModel.get("mapOptions");
 
         if( modelJSON.mapZoomLevel ){
-          mapOptions.zoom = modelJSON.mapZoomLevel;
+          mapOptions.zoom = parseInt(modelJSON.mapZoomLevel);
+          mapOptions.minZoom = parseInt(modelJSON.mapZoomLevel);
         }
         if(( modelJSON.mapCenterLatitude || modelJSON.mapCenterLatitude === 0 ) &&
           ( modelJSON.mapCenterLongitude || modelJSON.mapCenterLongitude === 0)){
@@ -212,6 +214,8 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
 
       this.set("search", search);
 
+      MetacatUI.searchCollection = search;
+      MetacatUI.project = this;
 
       return search;
 

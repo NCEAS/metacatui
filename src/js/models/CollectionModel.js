@@ -91,7 +91,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
 
         //Create a new Filter model
         var filterModel = new Filter({
-          objectDOM: filterNode
+          objectDOM: filterNode,
+          isInvisible: true
         });
 
         //Add the filter to the Search collection

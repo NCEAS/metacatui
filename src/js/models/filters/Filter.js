@@ -16,7 +16,10 @@ define(['jquery', 'underscore', 'backbone'],
         label: null,
         placeholder: null,
         icon: null,
-        description: null
+        description: null,
+        //@type {boolean} - If true, this filter will be added to the query but will
+        // act in the "background", like a default filter
+        isInvisible: false
       }
     },
 
@@ -96,14 +99,22 @@ define(['jquery', 'underscore', 'backbone'],
       }
       //If exactly one node is found and we are only expecting one, return the text content
       else if( node.length == 1 && !isMultiple ){
-        return node[0].textContent;
+        if( !node[0].textContent )
+          return null;
+        else
+          return node[0].textContent;
       }
       //If more than one node is found, parse into an array
       else{
 
-        return _.map(node, function(node){
-          return node.textContent || null;
+        var allContents = [];
+
+         _.each(node, function(node){
+           if(node.textContent || node.textContent === 0)
+             allContents.push( node.textContent );
         });
+
+        return allContents;
 
       }
     },
@@ -113,7 +124,7 @@ define(['jquery', 'underscore', 'backbone'],
      *
      * @return {string} The query string to send to Solr
      */
-    getSolrQuery: function(){
+    getQuery: function(){
 
       //Get the values of this filter in Array format
       var values = this.get("values");
@@ -231,6 +242,13 @@ define(['jquery', 'underscore', 'backbone'],
       }
 
       return valuesQueryString;
+    },
+
+    /*
+    * Resets the values attribute on this filter
+    */
+    resetValue: function(){
+      this.set("values", this.defaults().values);
     }
 
   });

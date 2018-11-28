@@ -3,7 +3,7 @@ define(["jquery",
     "backbone",
     "collections/Search",
     "views/project/ProjectSectionView",
-    "views/DataCatalogview",
+    "views/DataCatalogViewWithFilters",
     "text!templates/project/projectHome.html"],
     function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, ProjectHomeTemplate){
 
@@ -15,15 +15,30 @@ define(["jquery",
      */
       var ProjectHomeView = ProjectSectionView.extend({
 
+        // @type {ProjectModel} - The Project associated with this view
+        model: null,
+
+        template: _.template(ProjectHomeTemplate),
+
         render: function(){
+
+          this.$el.html(this.template());
+
+          //Set some options on the searchResults
+          var searchResults = this.model.get("searchResults");
+          searchResults.rows = 5;
 
           //Create a DataCatalogView
           var dataCatalogView = new DataCatalogView({
             mode: "map",
-            searchModel: null,
-            mapModel: null
+            searchModel: this.model.get("search"),
+            searchResults: searchResults,
+            mapModel: this.model.get("mapModel"),
+            el: "#project-search-results",
+            isSubView: true
           });
 
+          dataCatalogView.render();
 
         }
 

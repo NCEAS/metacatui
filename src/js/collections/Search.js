@@ -33,7 +33,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
      *
      * @return {string} The query string to send to Solr
      */
-    getSolrQuery: function(){
+    getQuery: function(){
 
       var queryString = "";
 
@@ -41,7 +41,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
       this.forEach(function(filterModel, i){
 
         //Get the Solr query string from this model
-        queryString += filterModel.getSolrQuery();
+        queryString += filterModel.getQuery();
 
         if( this.length > i+1 && queryString.length ){
           queryString += "%20AND%20";
@@ -51,7 +51,79 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
 
       return queryString;
 
+    },
+
+    /*
+    * Given a Solr field name, determines if that field is set as a filter option
+    */
+    filterIsAvailable: function(field){
+      var matchingFilter = this.find( function(filterModel){
+
+        return _.contains(filterModel.fields, field);
+
+      });
+
+      if(matchingFilter){
+        return true;
+      }
+      else {
+        return false
+      }
+    },
+
+    /*
+    * Returns an array of filter models in this collection that have a value set
+    *
+    * @return {Array} - an array of filter models in this collection that have a value set
+    */
+    getCurrentFilters: function(){
+
+      var currentFilters = new Array();
+
+      this.each( function(filterModel){
+
+        //If the filter model has values set differently than the default AND it is
+        // not an invisible filter, then add it to the current filters array
+        if( !filterModel.get("isInvisible") &&
+            (( Array.isArray(filterModel.get("values")) && filterModel.get("values").length &&
+              _.difference(filterModel.get("values"), filterModel.defaults().values).length ) ||
+            ( !Array.isArray(filterModel.get("values")) && filterModel.get("values") !== filterModel.defaults().values ))
+          ){
+          currentFilters.push(filterModel);
+        }
+
+      });
+
+      return currentFilters;
+    },
+
+    resetGeohash: function(){
+
+      //Find all the filters in this collection that are related to geohashes
+      this.each(function(filterModel){
+        if( !filterModel.get("isInvisible") &&
+            _.intersection(filterModel.fields, ["geohashes", "geohashLevel", "geohashGroups"]).length){
+            filterModel.resetValue();
+        }
+      });
     }
+/*
+    hasGeohashFilter: function(){
+
+      var currentFilters = this.getCurrentFilters();
+      var geohashFilter = _.find(currentFilters, function(filterModel){
+        return (_.intersection(filterModel.get("fields"), ["geohashes", "geohash"]).length > 0)
+      });
+
+      if(geohashFilter){
+        return true;
+      }
+      else{
+        return false;
+      }
+
+    }
+    */
 
   });
 

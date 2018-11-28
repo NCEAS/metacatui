@@ -107,7 +107,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
      		"all"        : "keywords"
 		},
 
-		currentFilters: function(){
+		getCurrentFilters: function(){
 			var changedAttr = this.changedAttributes(_.clone(this.defaults()));
 
 			if (!changedAttr) return new Array();
@@ -125,7 +125,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		},
 
 		filterCount: function() {
-			var currentFilters = this.currentFilters();
+			var currentFilters = this.getCurrentFilters();
 
 			return currentFilters.length;
 		},
@@ -154,7 +154,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				if((category == "pubYear") || (category == "dataYear")){
 					var otherType = (category == "pubYear") ? "dataYear" : "pubYear";
 
-					if(_.contains(this.currentFilters(), otherType))
+					if(_.contains(this.getCurrentFilters(), otherType))
 						var newFilterValues = this.defaults()[category];
 					else{
 						this.set(category, this.defaults()[category]);
