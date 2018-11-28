@@ -116,7 +116,8 @@ define(['jquery', 'underscore', 'backbone'],
 			displayMetricModals: true,
 			displayDatasetControls: true,
 
-			isJSONLDEnabled: true
+			isJSONLDEnabled: true,
+            projectsMap: {} // A lookup map of project names to project seriesIds
 		},
 
 		defaultView: "data",

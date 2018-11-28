@@ -123,7 +123,11 @@ define(['jquery', 'underscore', 'backbone'],
 			displayMetricModals: true,
 			displayDatasetControls: true,
 
-			isJSONLDEnabled: true
+			isJSONLDEnabled: true,
+            // A lookup map of project names to project seriesIds
+            projectsMap: {
+                "DBO": "urn:node:93834148-30ce-420d-8d6d-b6690d93b9bc"
+            }
 		},
 
 		defaultView: "data",

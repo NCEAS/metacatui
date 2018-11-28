@@ -127,7 +127,11 @@ define(['jquery', 'underscore', 'backbone'],
 			displayMetricModals: true,
 			displayDatasetControls: true,
 
-			isJSONLDEnabled: true
+			isJSONLDEnabled: true,
+            // A lookup map of project names to project seriesIds
+            projectsMap: {
+                "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d"
+            }
 		},
 
 		defaultView: "data",
