@@ -535,12 +535,14 @@ define(['jquery',
 			//Trigger a search to load the results
 			MetacatUI.appModel.trigger('search');
 
-			// make sure the browser knows where we are
-			var route = Backbone.history.fragment;
-			if (route.indexOf("data") < 0) {
-				MetacatUI.uiRouter.navigate("data");
-			} else {
-				MetacatUI.uiRouter.navigate(route);
+			if( !this.isSubView ){
+				// make sure the browser knows where we are
+				var route = Backbone.history.fragment;
+				if (route.indexOf("data") < 0) {
+					MetacatUI.uiRouter.navigate("data");
+				} else {
+					MetacatUI.uiRouter.navigate(route);
+				}
 			}
 
 			// ...but don't want to follow links
