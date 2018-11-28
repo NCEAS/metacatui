@@ -2,9 +2,11 @@ define(["jquery",
     "underscore",
     "backbone",
     "showdown",
-    "text!templates/markdown.html"], function($, _, Backbone, showdown, markdownTemplate){
+    "highlight",
+    "showdownKatex",
+    "text!templates/markdown.html"], function($, _, Backbone, showdown, hljs, showdownKatex, markdownTemplate){
 
-    /* The markdownView is a view that will retrieve and parse markdown */
+    /* The markdownView is a view that will retrieve and parse markdown */1
     var markdownView = Backbone.View.extend({
 //     "showdown",
         /* The markdown Element */
@@ -26,32 +28,80 @@ define(["jquery",
 
             if(typeof options !== "undefined"){
 
-                this.markdown = options.markdown         || "#testmarkdown";
+                this.markdown = options.markdown         || "";
 
             }
         },
 
         /* Render the view */
         render: function() {
+
+            /* convert markdown to HTML */
             var htmlFromMD = this.convertMarkdown(this.markdown);
 
-            this.$el.append(this.template({markdown:htmlFromMD}));
+            /* append converted markdown to the template. */
+            /* highlightStyle = the name of the code syntax highlight style we want to use */
+            /* all options can be viewed in src/components/highlight/styles/... */
+            /* TODO: determine if the highlight style should be changed in each/some themes */
+            this.$el.append(this.template({ markdown: htmlFromMD,
+                                            highlightStyle: "atom-one-light"}));
             return this;
         },
 
         convertMarkdown: function(markdown) {
 
-            // --- TODO: add custom extensions here -- //
+            // === CUSTOM SHOWDOWN EXTENSIONS === //
+
+            /* -- Extension: HighlightJS -- */
+            /* from: https://stackoverflow.com/questions/21785658/showdown-highlightjs-extension */
+            showdown.extension('codehighlight', function() {
+                function htmlunencode(text) {
+                    return (
+                      text
+                        .replace(/&amp;/g, '&')
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                      );
+                }
+                return [
+                    {
+                      type: 'output',
+                      filter: function (text, converter, options) {
+                        // use shodown's regexp engine to conditionally parse codeblocks
+                        var left  = '<pre><code\\b[^>]*>',
+                            right = '</code></pre>',
+                            flags = 'g',
+                            replacement = function (wholeMatch, match, left, right) {
+                              // unescape match to prevent double escaping
+                              match = htmlunencode(match);
+                              return left + hljs.highlightAuto(match).value + right;
+                            };
+                        return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
+                      }
+                    }
+                ];
+            });
 
             var converter  = new showdown.Converter({
-                                    metadata: true,
-                                    simplifiedAutoLink:true,
-                                    customizedHeaderId:true,
-                                    tables:true,
-                                    strikethrough: true,
-                                    tasklists: true,
-                                    emoji: true
-                                    // TODO: extensions: ['codehighlight', bindings]
+                metadata: true,
+                simplifiedAutoLink:true,
+                customizedHeaderId:true,
+                tables:true,
+                strikethrough: true,
+                tasklists: true,
+                emoji: true,
+                extensions: [
+                    showdownKatex({
+                        delimiters: [
+                            { left: "$", right: "$", display: false }, // katex default
+                            { left: "\\[", right: "\\]", display: true }, // katex default
+                            { left: "\\(", right: "\\)", display: false }, // katex default
+                            { left: '~', right: '~', display: false, asciimath: true },
+                            { left: '&&', right: '&&', display: true, asciimath: true },
+                        ],
+                    }),
+                    'codehighlight'
+                ]//, bindings]
                               });
 
             var htmlFromMD = converter.makeHtml(markdown);

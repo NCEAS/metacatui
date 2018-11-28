@@ -8,30 +8,29 @@ function ($, _, Backbone) {
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''                          : 'renderIndex',    // the default route
-			'about(/:anchorId)'         : 'renderAbout',    // about page
-			'help(/:page)(/:anchorId)'  : 'renderHelp',
-			'tools(/:anchorId)'         : 'renderTools',    // tools page
-			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
+			''                               : 'renderIndex',    // the default route
+			'about(/:anchorId)'              : 'renderAbout',    // about page
+			'help(/:page)(/:anchorId)'       : 'renderHelp',
+			'tools(/:anchorId)'              : 'renderTools',    // tools page
+			'data/my-data(/page/:page)'      : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'data/my-data'              : 'renderMyData',
+			'data/my-data'                   : 'renderMyData',
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			//'my-account'                   : 'renderUserSettings',
-			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'logout'                    : 'logout',    		// logout the user
-			'signout'                   : 'logout',    		// logout the user
-			'signin'                    : 'renderSignIn',    		// logout the user
-			"signinsuccess"             : "renderSignInSuccess",
-			"signinldaperror"           : "renderLdapSignInError",
-			"signinLdap"                : "renderLdapSignIn",
-			"signinSuccessLdap"         : "renderLdapSignInSuccess",
-			'share(/*pid)'              : 'renderEditor', // registry page
-			'submit(/*pid)'             : 'renderEditor', // registry page
-			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)'           : 'renderAPI',       // API page
-			'projectold(/:projectId)'			: 'renderProjectOld', // project page
-			'project(/:projectId)'			: 'renderProject' // project page hacky temp
+			'external(/*url)'                : 'renderExternal', // renders the content of the given url in our UI
+			'logout'                         : 'logout', // logout the user
+			'signout'                        : 'logout', // logout the user
+			'signin'                         : 'renderSignIn', // logout the user
+			"signinsuccess"                  : "renderSignInSuccess",
+			"signinldaperror"                : "renderLdapSignInError",
+			"signinLdap"                     : "renderLdapSignIn",
+			"signinSuccessLdap"              : "renderLdapSignInSuccess",
+			'share(/*pid)'                   : 'renderEditor', // registry page
+			'submit(/*pid)'                  : 'renderEditor', // registry page
+			'quality(/s=:suiteId)(/:pid)'    : 'renderMdqRun', // MDQ page
+			'api(/:anchorId)'                : 'renderAPI', // API page
+			'projects(/:projectId)(/:projectSection)': 'renderProject' // project page
 		},
 
 		helpPages: {
@@ -296,47 +295,61 @@ function ($, _, Backbone) {
 			}
 		},
 
-		renderProjectOld: function (projectId) {
-			this.routeHistory.push("project");
-			MetacatUI.appModel.set('projectId', projectId);
+        /*
+         * Render the project view based on the given name, id, or section
+         */
+		renderProject: function(projectId, projectSection) {
+            var projectName;
+            var projectsMap = MetacatUI.appModel.get("projectsMap");
+            
+            // Look up the project document seriesId by its registered name if given
+            if ( projectId ) {
+                if ( projectsMap ) {
+                    // Do a forward lookup by key
+                    if ( typeof (projectsMap[projectId] ) !== "undefined" ) {
+                        projectName = projectId;
+                        projectId = projectsMap[projectId];
+                        // Then set the history
+                        if ( projectSection ) {
+                            this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                        } else {
+                            this.routeHistory.push("projects/" + projectName);
+                        }
+                    } else {
+                        // Try a reverse lookup of the project name by values
+                        projectName = Object.keys(projectsMap)
+                            .find(key => projectsMap[key] === projectId);
+                        if ( typeof projectName !== "undefined" ) {
+                            if ( projectSection ) {
+                                this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                            } else {
+                                this.routeHistory.push("projects/" + projectName);
+                            }
+                        } else {
+                            // Fall back to routing to the project by id, not name
+                            this.routeHistory.push("projects/" + projectId);
+                        }
+                    }
+                }
+            } else {
+                // TODO: Show a ProjectsView here of the Projects collection (no projectId given)
+                return;
+            }
 
-			//Get the full identifier from the window object since Backbone filters out URL parameters starting with & and ?
-			//projectId = window.location.hash.substring(window.location.hash.indexOf("/")+1);
-
-			if(!MetacatUI.appView.ProjectView){
-				require(['views/ProjectView'], function(ProjectView){
-					MetacatUI.appView.ProjectView = new ProjectView();
-
-					//Send the id(s) to the view
-					MetacatUI.appView.ProjectView.projectId = projectId;
-
-					MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
-				});
-			}
-			else{
-				//Send the id(s) to the view
-				MetacatUI.appView.ProjectView.projectId = projectId;
-
-				MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
-			}
-		},
-
-		renderProject: function(projectId) {
-			// We're re-writing projects. I'm reluctant to dump the semi-functional version,
-			// so I'm adding this for now. Can replace the old later.
-			// console.log("derp");
-			this.routeHistory.push("project");
-			MetacatUI.appModel.set('projectId', projectId);
-
-			if(!MetacatUI.appView.ProjectView){
+			if ( !MetacatUI.appView.projectView ) {
 				require(['views/project/ProjectView'], function(ProjectView){
-					MetacatUI.appView.ProjectView = new ProjectView();
-
-					MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
+					MetacatUI.appView.projectView = new ProjectView({
+                        projectId: projectId,
+                        projectName: projectName,
+                        projectSection: projectSection
+                    });
+					MetacatUI.appView.showView(MetacatUI.appView.projectView);
 				});
-			}
-			else{
-				MetacatUI.appView.showView(MetacatUI.appView.ProjectView);
+			} else {
+                MetacatUI.appView.projectView.projectName = projectName;
+                MetacatUI.appView.projectView.projectId = projectId;
+                MetacatUI.appView.projectView.projectSection = projectSection;
+				MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},
 

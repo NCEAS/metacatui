@@ -1,3 +1,8 @@
 <div class = "markdown">
-    <%=markdown%>
+    <!-- Syntax highlighting style sheet -->
+    <link href="<%= MetacatUI.root %>/components/showdown/extensions/highlight/styles/<%= highlightStyle %>.css" rel="stylesheet" type="text/css">
+    <!-- math style sheet -->
+    <link href="<%= MetacatUI.root %>/components/showdown/extensions/katex/katex.min.css" rel="stylesheet" type="text/css">
+    <!-- Markdown converted to HTML -->
+    <%= markdown %>
 </div>

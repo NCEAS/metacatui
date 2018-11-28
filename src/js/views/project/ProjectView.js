@@ -35,8 +35,11 @@ define(["jquery",
 
         },
 
-        initialize: function() {
-
+        initialize: function(options) {
+            // Set the current ProjectView properties
+            this.projectId = options.projectId ? options.projectId : undefined;
+            this.projectName = options.projectName ? options.projectName : undefined;
+            this.projectSection = options.projectSection ? options.projectSectrion : undefined;
         },
 
         /*
@@ -48,7 +51,7 @@ define(["jquery",
 
           //Create a new Project model
           this.model = new Project({
-            id: MetacatUI.appModel.get("projectId")
+            id: this.projectId
           });
 
           //When the model has been synced, render the results
