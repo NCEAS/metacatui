@@ -130,7 +130,8 @@ define(['jquery', 'underscore', 'backbone'],
 			isJSONLDEnabled: true,
             // A lookup map of project names to project seriesIds
             projectsMap: {
-                "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d"
+                "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",
+				"markdownTest": "urn:uuid:5a26fb11-e0a1-4e3f-976e-1090f24089c0"
             }
 		},
 
