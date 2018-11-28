@@ -37,8 +37,7 @@ define(['jquery',
 			"click .nav-tabs a" : "switchTab"
 		},
 
-		initialize: function () {
-			this.projectId = MetacatUI.appModel.get("projectId");
+		initialize: function (options) {
 			this.model = new Project();
 			this.collectionModel = new Collection();
 
@@ -64,7 +63,7 @@ define(['jquery',
 		},
 
 		getModel: function(){
-		 	this.model.set("id", this.projectId);
+		 	this.model.set("id", this.get("projectId");
 			this.model.fetch();
 		},
 
@@ -75,7 +74,7 @@ define(['jquery',
 
 		renderProjectMetadata: function(){
 			MetacatUI.t = this;
-			this.$el.html(this.template({ id: this.projectId }));
+			this.$el.html(this.template({ id: this.get("projectId" }));
 
 			//Insert project header with title/synopsis
 			this.insertHeader();
