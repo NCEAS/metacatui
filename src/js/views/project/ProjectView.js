@@ -67,11 +67,7 @@ define(["jquery",
         renderProject: function(){
 
           //Insert the overall project template
-          this.$el.html(this.template({
-            hideMetrics: this.model.get("hideMetrics"),
-            hideHome:    this.model.get("hideHome"),
-            hidePeople:  this.model.get("hidePeople")
-          }));
+          this.$el.html(this.template(this.model.toJSON()));
 
           //Render the header view
           this.headerView = new ProjectHeaderView({ model: this.model });
