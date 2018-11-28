@@ -2729,7 +2729,15 @@ define(['jquery',
 			//If there are no results, display so
 			var numFound = this.searchResults.length;
 			if (numFound == 0){
+
+				//Add a No Results Found message
 				this.$results.html('<p id="no-results-found">No results found.</p>');
+
+				//Remove the loading styles from the map
+				if(gmaps && this.mapModel){
+					$("#map-container").removeClass("loading");
+				}
+
 				if(MetacatUI.theme == "arctic"){
 					//When we get new results, check if the user is searching for their own datasets and display a message
 					if((MetacatUI.appView.dataCatalogView && MetacatUI.appView.dataCatalogView.searchModel.getQuery() == MetacatUI.appUserModel.get("searchModel").getQuery()) && !MetacatUI.appSearchResults.length){
@@ -2746,7 +2754,7 @@ define(['jquery',
 			this.$results.html('');
 
 			//--First map all the results--
-			if(gmaps){
+			if(gmaps && this.mapModel){
 				//Draw all the tiles on the map to represent the datasets
 				this.drawTiles();
 
