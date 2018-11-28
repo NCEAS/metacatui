@@ -860,7 +860,7 @@ define(['jquery',
 				this.statsModel.set("query", this.searchModel.getQuery());
 				this.listenTo(this.statsModel, "change:firstBeginDate", function(){
 					if(this.statsModel.get("firstBeginDate") == 0 || !this.statsModel.get("firstBeginDate")){
-						$('#year-range').slider({ min: model.defaults().yearMin });
+						$('#year-range').slider({ min: defaultMin });
 						return;
 					}
 					var year = new Date.fromISO(this.statsModel.get("firstBeginDate")).getUTCFullYear();
@@ -884,7 +884,7 @@ define(['jquery',
 				//Only when the first begin date is retrieved, set the slider min and max values
 				this.listenTo(this.statsModel, "change:lastEndDate", function(){
 					if(this.statsModel.get("lastEndDate") == 0 || !this.statsModel.get("lastEndDate")){
-						$('#year-range').slider({ max: model.defaults().yearMax });
+						$('#year-range').slider({ max: defaultMax });
 						return;
 					}
 					var year = new Date.fromISO(this.statsModel.get("lastEndDate")).getUTCFullYear();
