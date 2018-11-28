@@ -339,20 +339,16 @@ function ($, _, Backbone) {
 			if ( !MetacatUI.appView.projectView ) {
 				require(['views/project/ProjectView'], function(ProjectView){
 					MetacatUI.appView.projectView = new ProjectView({
-                        attributes: {
-                            projectName: projectName,
-                            projectId: projectId,
-                            projectSection: projectSection
-                        }
+                        projectId: projectId,
+                        projectName: projectName,
+                        projectSection: projectSection
                     });
 					MetacatUI.appView.showView(MetacatUI.appView.projectView);
 				});
 			} else {
-                MetacatUI.appView.projectView.set({
-                    projectName: projectName,
-                    projectId: projectId,
-                    projectSection: projectSection
-                });
+                MetacatUI.appView.projectView.projectName = projectName;
+                MetacatUI.appView.projectView.projectId = projectId;
+                MetacatUI.appView.projectView.projectSection = projectSection;
 				MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},
