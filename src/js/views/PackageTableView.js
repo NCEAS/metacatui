@@ -343,24 +343,26 @@ define(['jquery', 'underscore', 'backbone',
 			$(sizeCell).text(size);
 			$(tr).append(sizeCell);
 
-			// Retreiving the Package Metrics Counts from the Metrics Model
-			// Adding a Metric Cell for the corresponding DataONE object in the table
-			var readsCell = $(document.createElement("td")).addClass("metrics-count downloads")
-								.attr("data-id", id);
+      if( MetacatUI.appModel.get("displayDatasetMetrics") ){
+  			// Retreiving the Package Metrics Counts from the Metrics Model
+  			// Adding a Metric Cell for the corresponding DataONE object in the table
+  			var readsCell = $(document.createElement("td")).addClass("metrics-count downloads")
+  								.attr("data-id", id);
 
-			// If the model has already been fethced.
-			if (this.metricsModel.get("views") !== null) {
-				readsCell.append(this.getMemberRowMetrics(id, formatType));
-			}
-			else {
-				// Update the metrics later on
-				// If the fetch() is still in progress.
-				this.listenTo(this.metricsModel, "sync", function(){
-					var readsCell = this.$('.metrics-count.downloads[data-id="' + id + '"]');
-					readsCell.text(this.getMemberRowMetrics(id, formatType));
-				});
-			}
-			$(tr).append(readsCell);
+  			// If the model has already been fethced.
+  			if (this.metricsModel.get("views") !== null) {
+  				readsCell.append(this.getMemberRowMetrics(id, formatType));
+  			}
+  			else {
+  				// Update the metrics later on
+  				// If the fetch() is still in progress.
+  				this.listenTo(this.metricsModel, "sync", function(){
+  					var readsCell = this.$('.metrics-count.downloads[data-id="' + id + '"]');
+  					readsCell.text(this.getMemberRowMetrics(id, formatType));
+  				});
+  			}
+  			$(tr).append(readsCell);
+      }
 
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");

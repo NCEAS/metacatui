@@ -108,15 +108,17 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				this.$(".icon.abstract").addClass("inactive");
 			}
 
-			if (this.metricsModel.get("views") !== null) {
-				// Display metrics if the model has already been fetched
-				this.displayMetrics();
+			if( MetacatUI.appModel.get("displayDatasetMetrics") ){
+				if (this.metricsModel.get("views") !== null) {
+					// Display metrics if the model has already been fetched
+					this.displayMetrics();
+				}
+				else {
+					// waiting for the fetch() call to succeed.
+	            	this.listenTo(this.metricsModel, "sync", this.displayMetrics);
+				}
 			}
-			else {
-				// waiting for the fetch() call to succeed.
-            	this.listenTo(this.metricsModel, "sync", this.displayMetrics);
-			}
-			
+
 
 			return this;
 		},
@@ -185,7 +187,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 												title: viewToolTip
 											});
 
-			
+
 			// Removing Citation metric if the citationCount is 0
 			if (citationCount === 0) {
 				this.$('.resultItem-CitationCount').css("visibility","hidden");

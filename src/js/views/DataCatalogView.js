@@ -2753,17 +2753,19 @@ define(['jquery',
 				//Remove the loading styles from the map
 				$("#map-container").removeClass("loading");
 			}
-			
+
 			var pid_list = new Array();
 
 			//--- Add all the results to the list ---
 			for (i = 0; i < this.searchResults.length; i++) {
 				pid_list.push(this.searchResults.models[i].get("id"));
 			};
-			// console.log(pid_list);
-			var metricsModel = new MetricsModel({pid_list: pid_list, type: "catalog"});
-			metricsModel.fetch();
-			this.metricsModel = metricsModel;
+
+			if( MetacatUI.appModel.get("displayDatasetMetrics") ){
+				var metricsModel = new MetricsModel({pid_list: pid_list, type: "catalog"});
+				metricsModel.fetch();
+				this.metricsModel = metricsModel;
+			}
 
 			//--- Add all the results to the list ---
 			for (i = 0; i < this.searchResults.length; i++) {
