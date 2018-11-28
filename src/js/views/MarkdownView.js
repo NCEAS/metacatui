@@ -3,9 +3,10 @@ define(["jquery",
     "backbone",
     "showdown",
     "highlight",
-    "text!templates/markdown.html"], function($, _, Backbone, showdown, highlight, markdownTemplate){
+    "showdownKatex",
+    "text!templates/markdown.html"], function($, _, Backbone, showdown, hljs, showdownKatex, markdownTemplate){
 
-    /* The markdownView is a view that will retrieve and parse markdown */
+    /* The markdownView is a view that will retrieve and parse markdown */1
     var markdownView = Backbone.View.extend({
 //     "showdown",
         /* The markdown Element */
@@ -43,7 +44,7 @@ define(["jquery",
             /* all options can be viewed in src/components/highlight/styles/... */
             /* TODO: determine if the highlight style should be changed in each/some themes */
             this.$el.append(this.template({ markdown: htmlFromMD,
-                                            highlightStyle: "github-gist"}));
+                                            highlightStyle: "atom-one-light"}));
             return this;
         },
 
@@ -82,14 +83,25 @@ define(["jquery",
             });
 
             var converter  = new showdown.Converter({
-                                    metadata: true,
-                                    simplifiedAutoLink:true,
-                                    customizedHeaderId:true,
-                                    tables:true,
-                                    strikethrough: true,
-                                    tasklists: true,
-                                    emoji: true,
-                                    extensions: ['codehighlight']//, bindings]
+                metadata: true,
+                simplifiedAutoLink:true,
+                customizedHeaderId:true,
+                tables:true,
+                strikethrough: true,
+                tasklists: true,
+                emoji: true,
+                extensions: [
+                    showdownKatex({
+                        delimiters: [
+                            { left: "$", right: "$", display: false }, // katex default
+                            { left: "\\[", right: "\\]", display: true }, // katex default
+                            { left: "\\(", right: "\\)", display: false }, // katex default
+                            { left: '~', right: '~', display: false, asciimath: true },
+                            { left: '&&', right: '&&', display: true, asciimath: true },
+                        ],
+                    }),
+                    'codehighlight'
+                ]//, bindings]
                               });
 
             var htmlFromMD = converter.makeHtml(markdown);

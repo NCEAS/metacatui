@@ -2476,6 +2476,20 @@ hr.project{
 	max-width: 100%;
 }
 /******************************************
+* HTML converted from Markdown
+********************************************/
+
+/* the following two rules overwrite both:
+	i. the bootstrap `pre` rules
+	ii. individual theme `pre` rules
+*/
+div.markdown pre {
+	color: #383a42;
+	background: #fafafa;
+	border-radius: 3px;
+}
+
+/******************************************
 * Download / Resource Map contents table
 ********************************************/
 #downloadContents .controls-well{

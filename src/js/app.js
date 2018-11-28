@@ -55,8 +55,9 @@ require.config({
     rdflib: MetacatUI.root + '/components/rdflib.min',
     x2js: MetacatUI.root + '/components/xml2json',
     he: MetacatUI.root + '/components/he',
-	showdown: MetacatUI.root + '/components/showdown.min',
-	highlight: MetacatUI.root + '/components/highlight/highlight.pack',
+	showdown: MetacatUI.root + '/components/showdown/showdown.min',
+	highlight: MetacatUI.root + '/components/showdown/extensions/highlight/highlight.pack',
+	showdownKatex: MetacatUI.root + '/components/showdown/extensions/katex/showdown-katex.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
