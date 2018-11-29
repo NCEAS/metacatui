@@ -205,7 +205,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
     					      .append($(document.createElement("li"))
     					    		  .addClass("home")
     					    		  .append($(document.createElement("a"))
-    					    				  .attr("href", MetacatUI.root)
+    					    				  .attr("href", MetacatUI.root? MetacatUI.root : "/")
     					    				  .addClass("home")
     					    				  .text("Home")))
     	    				  .append($(document.createElement("li"))
