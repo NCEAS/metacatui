@@ -725,7 +725,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 					var results = data.grouped.formatType.groups,
-						rMapList = _.where(results, { groupValue: "RESOURCE" })[0].doclist,
+							resourceMapGroup = _.where(results, { groupValue: "RESOURCE" })[0],
+						rMapList = resourceMapGroup? resourceMapGroup.doclist : null,
 						rMaps = rMapList? rMapList.docs : [],
 						rMapIds = _.pluck(rMaps, "id"),
 						parents = [],
