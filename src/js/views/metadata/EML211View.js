@@ -408,7 +408,7 @@ define(['underscore', 'jquery', 'backbone',
     		this.$("input.tooltip-this").tooltip({
     			placement: "top",
     			title: function(){
-    				return $(this).attr("placeholder")
+    				return $(this).attr("data-title") || $(this).attr("placeholder")
     			},
     			delay: 1000
     		});
