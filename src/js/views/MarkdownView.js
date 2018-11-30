@@ -1,18 +1,34 @@
-define(["jquery",
-    "underscore",
-    "backbone",
-    "showdown",
-    "highlight",
-    "showdownKatex",
-    "text!templates/markdown.html"], function($, _, Backbone, showdown, hljs, showdownKatex, markdownTemplate){
+define(["jquery","underscore","backbone",
 
-    /* The markdownView is a view that will retrieve and parse markdown */1
+        "showdown",
+        "showdownKatex",
+        "showdownHighlight",
+        "showdownFootnotes",
+        "showdownBootstrap",
+        "showdownDocbook",
+        "showdownCitation",
+
+        "text!templates/markdown.html"
+],
+    function($, _, Backbone,
+
+                showdown,
+                showdownKatex,
+                showdownHighlight,
+                showdownFootnotes,
+                showdownBootstrap,
+                showdownDocbook,
+                showdownCitation,
+
+                markdownTemplate
+    ){
+
+    /* The markdownView is a view that will retrieve and parse markdown */
     var markdownView = Backbone.View.extend({
-//     "showdown",
-        /* The markdown Element */
+
+        /* element: The markdown div */
         el: ".markdown",
 
-        /* TODO: Decide if we need this */
         type: "markdown",
 
         /* Renders the compiled template into HTML */
@@ -26,87 +42,108 @@ define(["jquery",
         /* Construct a new instance of markdownView */
         initialize: function (options) {
 
+            /* highlightStyle = the name of the code syntax highlight style we want to use */
+            this.highlightStyle = "atom-one-light";
+
             if(typeof options !== "undefined"){
-
                 this.markdown = options.markdown         || "";
-
             }
+
         },
 
         /* Render the view */
         render: function() {
 
-            /* convert markdown to HTML */
-            var htmlFromMD = this.convertMarkdown(this.markdown);
+            // detect which extensions we'll need, return vector of extensions
+            var extensions = this.listRequiredExtensions(this.markdown);
 
-            /* append converted markdown to the template. */
-            /* highlightStyle = the name of the code syntax highlight style we want to use */
-            /* all options can be viewed in src/components/highlight/styles/... */
-            /* TODO: determine if the highlight style should be changed in each/some themes */
-            this.$el.append(this.template({ markdown: htmlFromMD,
-                                            highlightStyle: "atom-one-light"}));
+            // make an instance of showdown conveter with our custom config
+            var converter  = new showdown.Converter({
+                        metadata: true,
+                        simplifiedAutoLink:true,
+                        customizedHeaderId:true,
+                        tables:true,
+                        strikethrough: true,
+                        tasklists: true,
+                        emoji: true,
+                        extensions: extensions
+            });
+
+            // use the converter to make html
+            var htmlFromMD = converter.makeHtml(this.markdown);
+
+            // append converted markdown to the template
+            this.$el.append(this.template({ markdown: htmlFromMD
+                                            }));
             return this;
         },
 
-        convertMarkdown: function(markdown) {
+        // test which extensions are needed, then load them
+        // TODO: using require() here doesn't work
+        listRequiredExtensions: function(markdown){
 
-            // === CUSTOM SHOWDOWN EXTENSIONS === //
+            var extensions = new Array;
 
-            /* -- Extension: HighlightJS -- */
-            /* from: https://stackoverflow.com/questions/21785658/showdown-highlightjs-extension */
-            showdown.extension('codehighlight', function() {
-                function htmlunencode(text) {
-                    return (
-                      text
-                        .replace(/&amp;/g, '&')
-                        .replace(/&lt;/g, '<')
-                        .replace(/&gt;/g, '>')
-                      );
-                }
-                return [
-                    {
-                      type: 'output',
-                      filter: function (text, converter, options) {
-                        // use shodown's regexp engine to conditionally parse codeblocks
-                        var left  = '<pre><code\\b[^>]*>',
-                            right = '</code></pre>',
-                            flags = 'g',
-                            replacement = function (wholeMatch, match, left, right) {
-                              // unescape match to prevent double escaping
-                              match = htmlunencode(match);
-                              return left + hljs.highlightAuto(match).value + right;
-                            };
-                        return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
-                      }
-                    }
-                ];
-            });
+            var regexHighlight  = new RegExp("`.*`"),
+                regexDocbook    = new RegExp("<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>"),
 
-            var converter  = new showdown.Converter({
-                metadata: true,
-                simplifiedAutoLink:true,
-                customizedHeaderId:true,
-                tables:true,
-                strikethrough: true,
-                tasklists: true,
-                emoji: true,
-                extensions: [
-                    showdownKatex({
-                        delimiters: [
-                            { left: "$", right: "$", display: false }, // katex default
-                            { left: "\\[", right: "\\]", display: true }, // katex default
-                            { left: "\\(", right: "\\)", display: false }, // katex default
-                            { left: '~', right: '~', display: false, asciimath: true },
-                            { left: '&&', right: '&&', display: true, asciimath: true },
-                        ],
-                    }),
-                    'codehighlight'
-                ]//, bindings]
-                              });
+                // for bootstrap: test for tables, directly from showdown/src/subParsers/makehtml/tables.js
+                // if we add more bootstrap classes, this will become more complicated since we have to test the markdown before the initial parse
+                regexTable1        = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
+                regexTable2        = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
 
-            var htmlFromMD = converter.makeHtml(markdown);
+                regexFootnotes1     = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/mg,
+                regexFootnotes2     = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/mg,
+                regexFootnotes3     = /\[\^([\d\w]+)\]/m,
 
-            return htmlFromMD;
+                // test for all of the math/katex delimiters (this might be too general)
+                regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
+
+                regexCitation   = /\^\[.*\]/g;
+
+            if( regexKatex.test(markdown) ){
+                // require(["showdownKatex"]);
+                var katex = showdownKatex({
+                    delimiters: [
+                        { left: "$",    right: "$",      display: false,    asciimath: true },
+                        { left: "\\[",  right: "\\]",    display: true,     asciimath: true },
+                        { left: "\\(",  right: "\\)",    display: false,    asciimath: true },
+                        { left: '~',    right: '~',      display: false,    asciimath: true },
+                        { left: '&&',   right: '&&',     display: true,     asciimath: true },
+                    ],
+                });
+                extensions.push(katex);
+                this.$el.append("<link href='"+ MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css' rel='stylesheet' type='text/css'>");
+            };
+
+            if( regexHighlight.test(markdown) ){
+                // require(["showdownHighlight"]);
+                extensions.push("highlight");
+                this.$el.append("<link href='" + MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/" + "atom-one-light" + ".css' rel='stylesheet' type='text/css'>");
+            };
+
+            if( regexDocbook.test(markdown) ){
+                // require(["showdownDocbook"]);
+                extensions.push("docbook");
+            };
+
+            if( regexTable1.test(markdown) | regexTable2.test(markdown) ){
+                // require(["showdownDocbook"]);
+                extensions.push("bootstrap");
+            };
+
+            if( regexFootnotes1.test(markdown) | regexFootnotes2.test(markdown) | regexFootnotes3.test(markdown) ){
+                // require(["showdownFootnotes"]);
+                extensions.push("footnotes");
+            };
+
+            // showdownCitation throws error...
+            if( regexCitation.test(markdown) ){
+                // require(["showdownCitation"])
+                //extensions.push("citation.js") // does not work
+            };
+
+            return extensions
 
         },
 

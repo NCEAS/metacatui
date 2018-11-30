@@ -55,9 +55,15 @@ require.config({
     rdflib: MetacatUI.root + '/components/rdflib.min',
     x2js: MetacatUI.root + '/components/xml2json',
     he: MetacatUI.root + '/components/he',
+	// showdown + extensions (used in the markdownView to convert markdown to html)
 	showdown: MetacatUI.root + '/components/showdown/showdown.min',
-	highlight: MetacatUI.root + '/components/showdown/extensions/highlight/highlight.pack',
-	showdownKatex: MetacatUI.root + '/components/showdown/extensions/katex/showdown-katex.min',
+	showdownHighlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/showdown-highlight',
+	highlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/highlight.pack',
+	showdownFootnotes: MetacatUI.root + '/components/showdown/extensions/showdown-footnotes',
+	showdownBootstrap: MetacatUI.root + '/components/showdown/extensions/showdown-bootstrap',
+	showdownDocbook: MetacatUI.root + '/components/showdown/extensions/showdown-docbook',
+	showdownKatex: MetacatUI.root + '/components/showdown/extensions/showdown-katex/showdown-katex.min',
+	showdownCitation:  MetacatUI.root + '/components/showdown/extensions/showdown.citation',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
