@@ -7,160 +7,54 @@ the browser as well as on the server. It works with pretty much any
 markup, doesn’t depend on any framework, and has automatic language
 detection.
 
-## Getting Started
+## Languages supported
 
-The bare minimum for using highlight.js on a web page is linking to the
-library along with one of the styles and calling
-[`initHighlightingOnLoad`][1]:
+The package downloaded supported the languages listed below. The list of all supported languages can be viewed here: https://highlightjs.org/download/
 
-```html
-<link rel="stylesheet" href="/path/to/styles/default.css">
-<script src="/path/to/highlight.pack.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-```
-
-This will find and highlight code inside of `<pre><code>` tags; it tries
-to detect the language automatically. If automatic detection doesn’t
-work for you, you can specify the language in the `class` attribute:
-
-```html
-<pre><code class="html">...</code></pre>
-```
-
-The list of supported language classes is available in the [class
-reference][2].  Classes can also be prefixed with either `language-` or
-`lang-`.
-
-To make arbitrary text look like code, but without highlighting, use the
-`plaintext` class:
-
-```html
-<pre><code class="plaintext">...</code></pre>
-```
-
-To disable highlighting altogether use the `nohighlight` class:
-
-```html
-<pre><code class="nohighlight">...</code></pre>
-```
-
-## Custom Initialization
-
-When you need a bit more control over the initialization of
-highlight.js, you can use the [`highlightBlock`][3] and [`configure`][4]
-functions. This allows you to control *what* to highlight and *when*.
-
-Here’s an equivalent way to calling [`initHighlightingOnLoad`][1] using
-jQuery:
-
-```javascript
-$(document).ready(function() {
-  $('pre code').each(function(i, block) {
-    hljs.highlightBlock(block);
-  });
-});
-```
-
-You can use any tags instead of `<pre><code>` to mark up your code. If
-you don't use a container that preserves line breaks you will need to
-configure highlight.js to use the `<br>` tag:
-
-```javascript
-hljs.configure({useBR: true});
-
-$('div.code').each(function(i, block) {
-  hljs.highlightBlock(block);
-});
-```
-
-For other options refer to the documentation for [`configure`][4].
-
-
-## Web Workers
-
-You can run highlighting inside a web worker to avoid freezing the browser
-window while dealing with very big chunks of code.
-
-In your main script:
-
-```javascript
-addEventListener('load', function() {
-  var code = document.querySelector('#code');
-  var worker = new Worker('worker.js');
-  worker.onmessage = function(event) { code.innerHTML = event.data; }
-  worker.postMessage(code.textContent);
-})
-```
-
-In worker.js:
-
-```javascript
-onmessage = function(event) {
-  importScripts('<path>/highlight.pack.js');
-  var result = self.hljs.highlightAuto(event.data);
-  postMessage(result.value);
-}
-```
-
-
-## Getting the Library
-
-You can get highlight.js as a hosted, or custom-build, browser script or
-as a server module. Right out of the box the browser script supports
-both AMD and CommonJS, so if you wish you can use RequireJS or
-Browserify without having to build from source. The server module also
-works perfectly fine with Browserify, but there is the option to use a
-build specific to browsers rather than something meant for a server.
-Head over to the [download page][5] for all the options.
-
-**Don't link to GitHub directly.** The library is not supposed to work straight
-from the source, it requires building. If none of the pre-packaged options
-work for you refer to the [building documentation][6].
-
-**The CDN-hosted package doesn't have all the languages.** Otherwise it'd be
-too big. If you don't see the language you need in the ["Common" section][5],
-it can be added manually:
-
-```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/go.min.js"></script>
-```
-
-**On Almond.** You need to use the optimizer to give the module a name. For
-example:
-
-```
-r.js -o name=hljs paths.hljs=/path/to/highlight out=highlight.js
-```
-
-
-### CommonJS
-
-You can import Highlight.js as a CommonJS-module:
-
-```bash
-npm install highlight.js --save
-```
-
-In your application:
-
-```javascript
-import hljs from 'highlight.js';
-```
-
-The default import imports all languages! Therefore it is likely to be more efficient to import only the library and the languages you need:
-
-```javascript
-import hljs from 'highlight.js/lib/highlight';
-import javascript from 'highlight.js/lib/languages/javascript';
-hljs.registerLanguage('javascript', javascript);
-```
-
-To set the syntax highlighting style, if your build tool processes CSS from your JavaScript entry point, you can import the stylesheet directly into your CommonJS-module:
-
-```javascript
-import hljs from 'highlight.js/lib/highlight';
-import 'highlight.js/styles/github.css'
-```
+Apache
+ArcGIS Arcade
+Bash
+C#
+CoffeeScript
+C++
+CSS
+Diff
+Excel
+Fortran
+GAMS
+GAUSS
+HTML, XML
+HTTP
+Ini, TOML
+IRPF90
+Java
+JavaScript
+JSON
+Julia
+Julia REPL
+Makefile
+Markdown
+Mathematica
+Matlab
+Maxima
+Mizar
+Nginx
+Objective-C
+OpenSCAD
+Perl
+PHP
+Properties
+Python
+R
+Ruby
+SAS
+Scilab
+Shell Session
+SQL
+Stata
+TeX
+VB.NET
+VBScript
 
 ## License
 
