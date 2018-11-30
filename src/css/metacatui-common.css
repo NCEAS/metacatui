@@ -1600,7 +1600,7 @@ div.dropdown.btn.btn-secondary.dropdown-toggle .icon-bar-chart
 {
 	margin-right: 10px;
 }
-div.dropdown.btn.btn-secondary.dropdown-toggle .analyze-text {
+#metadata-controls-container > div.controls.btn-toolbar > div > button > span.analyze-text {
 	margin-right:10px;
 	font-weight: 600;
 }
@@ -1619,7 +1619,7 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle{
 }
 .analyze.dropdown-menu {
 	border: none;
-	border-radius: 10px;
+	border-radius: 4px;
 	padding: 0px;
 	margin: 0px;
 }
