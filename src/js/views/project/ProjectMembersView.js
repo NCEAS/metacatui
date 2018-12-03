@@ -1,22 +1,22 @@
 define(["jquery",
     "underscore",
     "backbone",
-    "text!templates/project/projectMembers.html",
+    "text!templates/metadata/EMLPartyDisplay.html",
     "views/project/ProjectSectionView"],
-    function($, _, Backbone, ProjectMembersTemplate, ProjectSectionView){
+    function($, _, Backbone, EMLPartyDisplayTemplate, ProjectSectionView){
 
     /* The ProjectMembersView is a view to render the
      * project members tab (within ProjectSectionView)
      */
      var ProjectMembersView = ProjectSectionView.extend({
-
-         type: "ProjectMembers",
+        el: "#project-members",
+        type: "ProjectMembers",
 
       //   /* The list of subview instances contained in this view*/
       //   subviews: [], // Could be a literal object {}
 
       //   /* Renders the compiled template into HTML */
-      //   template: _.template(ProjectMembersTemplate),
+        template: _.template(EMLPartyDisplayTemplate),
 
       //   /* The events that this view listens to*/
       //   events: {
@@ -29,9 +29,14 @@ define(["jquery",
       //   },
 
       //   /* Render the view */
-      //   render: function() {
-
-      //   },
+        render: function() {
+            var parties = this.model.toJSON().associatedParties;
+            console.log(parties);
+            this.$el.html(this.template({parties: parties}));
+            // _.each(parties, function(party) {
+            //     console.log(party.get("email"))
+            // })
+        },
 
       //   onClose: function() {
 
