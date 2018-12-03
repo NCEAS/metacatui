@@ -1,0 +1,10 @@
+
+<div class="row-fluid"><% _.each(parties, function(party) { %>
+    <div class="span5"> <!--style="border: solid 1px #6c757d">-->
+        <p>
+            Firstname Lastname (not sure how to get that) <br>
+            <%=party.get("positionName")%> <br>
+            <a href="mailto:<%=party.get("email")%>"><%=party.get("email")%></a> / (805) 555-1234
+        </p>
+    </div>
+<%});%></div>
