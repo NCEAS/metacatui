@@ -130,8 +130,12 @@ define(['jquery',
 				this.mapModel    = MetacatUI.mapModel;
 			}
 
-		    if(((typeof this.searchResults === "undefined") || (!this.searchResults || Object.keys(this.searchResults).length == 0)) && (MetacatUI.appSearchResults && (Object.keys(MetacatUI.appSearchResults).length > 0)))
-		    	this.searchResults = MetacatUI.appSearchResults;
+			if( !this.mapModel && gmaps ){
+				this.mapModel = MetacatUI.mapModel;
+			}
+
+	    if(((typeof this.searchResults === "undefined") || (!this.searchResults || Object.keys(this.searchResults).length == 0)) && (MetacatUI.appSearchResults && (Object.keys(MetacatUI.appSearchResults).length > 0)))
+	    	this.searchResults = MetacatUI.appSearchResults;
 
 			//Get the search mode - either "map" or "list"
 			if((typeof this.mode === "undefined") || !this.mode){
