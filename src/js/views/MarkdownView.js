@@ -2,7 +2,7 @@ define(["jquery","underscore","backbone",
 
         "showdown",
         "showdownKatex",
-        "showdownHighlight",
+    //    "showdownHighlight",
         "showdownFootnotes",
         "showdownBootstrap",
         "showdownDocbook",
@@ -14,7 +14,7 @@ define(["jquery","underscore","backbone",
 
                 showdown,
                 showdownKatex,
-                showdownHighlight,
+        //        showdownHighlight,
                 showdownFootnotes,
                 showdownBootstrap,
                 showdownDocbook,
@@ -117,9 +117,18 @@ define(["jquery","underscore","backbone",
             };
 
             if( regexHighlight.test(markdown) ){
-                // require(["showdownHighlight"]);
+              var markdownView = this;
+
+              //Require showdown highlight
+              require(["showdownHighlight"], function(showdownHighlight){
+                //Save a reference to this extension (may not actually need this - not sure if it is ever used somewhere else)
+                markdownView.showdownHighlight = showdownHighlight;
+
+                //Push the extension
                 extensions.push("highlight");
-                this.$el.append("<link href='" + MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/" + "atom-one-light" + ".css' rel='stylesheet' type='text/css'>");
+              });
+
+              this.$el.append("<link href='" + MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/" + "atom-one-light" + ".css' rel='stylesheet' type='text/css'>");
             };
 
             if( regexDocbook.test(markdown) ){
