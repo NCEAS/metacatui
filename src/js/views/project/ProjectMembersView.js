@@ -30,12 +30,25 @@ define(["jquery",
 
       //   /* Render the view */
         render: function() {
-            var parties = this.model.toJSON().associatedParties;
-            console.log(parties);
-            this.$el.html(this.template({parties: parties}));
-            // _.each(parties, function(party) {
-            //     console.log(party.get("email"))
-            // })
+            var parties = this.model.get("associatedParties");
+            var thisview = this;
+            // Group parties into sets of 2 to do 2 per row
+            var row_groups = _.groupBy(parties, function(parties, index) {
+                return Math.floor(index / 2);
+            });
+
+            _.each(row_groups, function(row_group){
+                // Create a new bootstrap row for each set of 2 parties
+                var newdiv = $('<div class="row-fluid"></div>');
+                // Put the empty row into the project members container
+                thisview.$el.append(newdiv);
+                // iterate for the 2 parties in this row
+                _.each(row_group, function(party) {
+                    // render party into its row
+                    newdiv.append(thisview.template(party.toJSON()));
+                    console.log(party.toJSON().phone);
+                })
+            });
         },
 
       //   onClose: function() {
