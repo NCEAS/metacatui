@@ -46,7 +46,7 @@ define(["jquery",
                 _.each(row_group, function(party) {
                     // render party into its row
                     newdiv.append(thisview.template(party.toJSON()));
-                    console.log(party.toJSON().phone);
+                    
                 })
             });
         },
