@@ -1,11 +1,12 @@
 # Milestones from MetacatUI prioritization
 
 ## Milestone 2.5.0 (December 2018)
-- Project pages (Lauren, Chris, Jared, Robyn)
-- JSON-LD for Google Datasets (Bryce and Lauren)
 - Ability to reorder parties in the editor (Needs assignee)
+- Show archived content in the MetadataView (Lauren)
 
 ## MIlestone 2.6.0 (January 2019)
+- JSON-LD for Google Datasets (Bryce and Lauren)
+- Project pages (Lauren, Chris, Jared, Robyn)
 - Save emergency draft for manual recovery (MVP) (Chris)
 
 ## Milestone 3.0.0 (January 2019)
