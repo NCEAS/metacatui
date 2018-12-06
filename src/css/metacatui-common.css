@@ -2465,6 +2465,10 @@ img[src*="googleapis.com/"].georegion-map{
 .project-view .mapMode #map-container{
 	width: 50%;
 }
+.well.awards-info {
+	background: inherit;
+	margin-top: 20px;
+}
 /******************************************
 * HTML converted from Markdown
 ********************************************/

@@ -1,0 +1,8 @@
+<div class="well awards-info">
+    <%if (text.length) {%>
+        <h4>Acknowledgements</h4> <hr width="125px"> 
+        <% _.each(text, function(para){%>
+            <p><%=para%></p>
+        <% }); %>
+    <%}%>
+</div>
