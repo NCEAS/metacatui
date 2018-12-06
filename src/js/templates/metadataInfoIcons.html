@@ -1,9 +1,33 @@
-<% if( !model.isPublic ){ %>
+<% if( !model.isPublic || model.archived ){ %>
 <span class="info-icons">
-    <span class="private icons"><i class="icon icon-lock tooltip-this private"
-    data-toggle="tooltip"
-    data-placement="top"
-    data-container="#metadata-controls-container"
-    title="This is private content."></i></span>
+<% } %>
+
+  <% if( !model.isPublic ){ %>
+  <span class="private icons">
+    <span class="icon-stack private tooltip-this"
+          data-toggle="tooltip"
+          data-placement="top"
+          data-container="#metadata-controls-container"
+          title="This is a private dataset.">
+      <i class="icon icon-circle icon-stack-base private"></i>
+      <i class="icon icon-lock icon-stack-top"></i>
+    </span>
+  </span>
+  <% } %>
+
+  <% if( model.archived ){ %>
+  <span class="archived icons">
+    <span class="icon-stack archived tooltip-this"
+          data-toggle="tooltip"
+          data-placement="top"
+          data-container="#metadata-controls-container"
+          title="This dataset has been archived.">
+      <i class="icon icon-circle icon-stack-base danger"></i>
+      <i class="icon icon-trash icon-stack-top"></i>
+    </span>
+  </span>
+  <% } %>
+
+<% if( !model.isPublic || model.archived ){ %>
 </span>
 <% } %>

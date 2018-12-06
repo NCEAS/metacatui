@@ -93,10 +93,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 						if (count == authors.length) authorText += ". ";
 					});
-				
+
 				}
 			}
- 			else if(this.metadata && this.metadata.get("archived")){
+ 			else if(this.metadata && this.metadata.get("archived") && !MetacatUI.appModel.get("archivedContentIsIndexed")){
  				this.$el.append('<span class="danger">This content has been archived. </span>');
 
  				//The ID

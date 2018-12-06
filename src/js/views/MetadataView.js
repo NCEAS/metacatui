@@ -281,7 +281,7 @@ define(['jquery',
 								viewRef.$(viewRef.metadataContainer).html(response);
 
 								//If there is no info from the index and there is no metadata doc rendered either, then display a message
-								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
+								if(viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
 									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
 
 								viewRef.alterMarkup();
@@ -477,6 +477,9 @@ define(['jquery',
 
 					//Save the package in the view
 					viewRef.packageModels.push(thisPackage);
+
+					//Make sure we get archived content, too
+					thisPackage.set("getArchivedMembers", true);
 
 					//Get the members
 					thisPackage.getMembers({getParentMetadata: true });
@@ -858,7 +861,7 @@ define(['jquery',
 				viewRef = this;
 
 			this.listenToOnce(this.model, "change:isAuthorized", function(){
-				if(!model.get("isAuthorized")) return false;
+				if(!model.get("isAuthorized") || model.get("archived")) return false;
 
 				//Insert an Edit button
 				if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
@@ -1138,7 +1141,13 @@ define(['jquery',
 			//var isAuthorized = true;
 			var editModeOn = false;
 
+			//If the user is authorized to edit this metadata doc, then turn edit mode on
 			this.model.get("isAuthorized") ? editModeOn = true : editModeOn = false;
+			//If this content is archived, then turn edit mode off
+			if( this.model.get("archived") ){
+				editModeOn = false;
+			}
+
 			var view = this;
 			//Draw two flow charts to represent the sources and derivations at a package level
 			var packageSources     = dataPackage.sourcePackages;

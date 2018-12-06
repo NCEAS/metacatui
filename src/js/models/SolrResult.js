@@ -326,7 +326,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 
 			if(!fields)
-				var fields = "abstract,id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,keywords,attributeName,pubDate,eastBoundCoord,westBoundCoord,northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
+				var fields = "abstract,id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,keywords,attributeName,pubDate,eastBoundCoord,westBoundCoord,northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded,archived,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
 
 			var escapeSpecialChar = MetacatUI.appSearchModel.escapeSpecialChar;
 
@@ -342,8 +342,12 @@ define(['jquery', 'underscore', 'backbone'],
 			else if(this.get("seriesId") && !this.get("id"))
 				query += 'seriesId:"' + escapeSpecialChar(encodeURIComponent(this.get("id"))) + '" -obsoletedBy:*';
 
+			query += "&fl=" + fields + //Specify the fields to return
+			         "&wt=json&rows=1000" + //Get the results in JSON format and get 1000 rows
+			         "&archived=archived:*"; //Get archived or unarchived content
+
 			var requestSettings = {
-				url: MetacatUI.appModel.get("queryServiceUrl") + query + '&fl='+fields+'&wt=json&rows=1000',
+				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				type: "GET",
 				success: function(data, response, xhr){
 					var docs = data.response.docs;

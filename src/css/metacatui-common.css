@@ -473,7 +473,6 @@ img.icon{
 	height: 1em;
 }
 .info-icons .icon.private{
-	font-size: 1.5em;
 	color: #FF7600;
 }
 .result-row .info-icons .label{
@@ -1642,9 +1641,24 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle{
 	margin-left: 10px;
 	margin-right: 20px;
 	vertical-align: top;
+	position: relative;
+	font-size: 30px;
 }
-.controls-container .info-icons .icon {
-	font-size: 25px;
+.controls-container .info-icons .icon-stack{
+	width: 1.25em;
+  height: 1.25em;
+  vertical-align: top;
+}
+.controls-container .info-icons .icon-stack .icon {
+	margin-top: -15px;
+}
+.controls-container .info-icons .icon-stack .icon-stack-top{
+	color: #FFF;
+	font-size: .75em;
+	margin-top: -15px;
+}
+.controls-container .info-icons .icon-stack .icon-stack-base{
+	font-size: 1.25em;
 }
 .metadata-controls-container{
 	position: relative;

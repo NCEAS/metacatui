@@ -136,7 +136,11 @@ define(['jquery', 'underscore', 'backbone'],
 			displayMetricModals: true,
 			displayDatasetControls: true,
 
-			isJSONLDEnabled: true
+			isJSONLDEnabled: true,
+
+			// If true, then archived content is available in the search index.
+			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
+			archivedContentIsIndexed: true
 		},
 
 		defaultView: "data",

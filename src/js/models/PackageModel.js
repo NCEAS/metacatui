@@ -30,7 +30,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				sourceDocs: [],
 				derivationDocs: [],
 				relatedModels: [], //A condensed list of all SolrResult models related to this package in some way
-				parentPackageMetadata: null
+				parentPackageMetadata: null,
+				//If true, when the member objects are retrieved, archived content will be included
+				getArchivedMembers: false,
 			}
 		},
 
@@ -158,6 +160,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						'&rows=1000' +
 						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
 						'&wt=json';
+
+			if( this.get("getArchivedMembers") ){
+				query += "&archived=archived:*";
+			}
 
 			var requestSettings = {
 				url: MetacatUI.appModel.get("queryServiceUrl") + query,
