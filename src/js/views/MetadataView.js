@@ -1183,6 +1183,10 @@ define(['jquery',
 					if(member.get("type").toLowerCase() == "metadata") return;
 					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
 
+					if( !entityDetailsSection ){
+						return;
+					}
+
 					//Retrieve the sources and derivations for this member
 					var memberSources 	  = member.get("provSources") || new Array(),
 						memberDerivations = member.get("provDerivations") || new Array();
