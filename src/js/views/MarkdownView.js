@@ -1,27 +1,5 @@
-define(["jquery","underscore","backbone",
-
-        "showdown",
-        "showdownKatex",
-    //    "showdownHighlight",
-        "showdownFootnotes",
-        "showdownBootstrap",
-        "showdownDocbook",
-        "showdownCitation",
-
-        "text!templates/markdown.html"
-],
-    function($, _, Backbone,
-
-                showdown,
-                showdownKatex,
-        //        showdownHighlight,
-                showdownFootnotes,
-                showdownBootstrap,
-                showdownDocbook,
-                showdownCitation,
-
-                markdownTemplate
-    ){
+define([    "jquery",   "underscore",   "backbone", "showdown", "text!templates/markdown.html" ],
+    function($,         _,              Backbone,   showdown,   markdownTemplate ){
 
     /* The markdownView is a view that will retrieve and parse markdown */
     var markdownView = Backbone.View.extend({
@@ -36,7 +14,6 @@ define(["jquery","underscore","backbone",
 
         /* The events that this view listens to */
         events: {
-
         },
 
         /* Construct a new instance of markdownView */
@@ -54,105 +31,156 @@ define(["jquery","underscore","backbone",
         /* Render the view */
         render: function() {
 
-            // detect which extensions we'll need, return vector of extensions
-            var extensions = this.listRequiredExtensions(this.markdown);
+            // once required extensions are tested for and loaded, convert and append markdown
+            this.stopListening();
+            this.listenTo(this, "requiredExtensionsLoaded", function(SDextensions){
 
-            // make an instance of showdown conveter with our custom config
-            var converter  = new showdown.Converter({
-                        metadata: true,
-                        simplifiedAutoLink:true,
-                        customizedHeaderId:true,
-                        tables:true,
-                        strikethrough: true,
-                        tasklists: true,
-                        emoji: true,
-                        extensions: extensions
+                var converter  = new showdown.Converter({
+                            metadata: true,
+                            simplifiedAutoLink:true,
+                            customizedHeaderId:true,
+                            tables:true,
+                            strikethrough: true,
+                            tasklists: true,
+                            emoji: true,
+                            extensions: SDextensions
+                });
+                htmlFromMD = converter.makeHtml(this.markdown);
+                this.$el.append(this.template({ markdown: htmlFromMD }));
+
             });
 
-            // use the converter to make html
-            var htmlFromMD = converter.makeHtml(this.markdown);
+            // detect which extensions we'll need
+            this.listRequiredExtensions(this.markdown);
 
-            // append converted markdown to the template
-            this.$el.append(this.template({ markdown: htmlFromMD
-                                            }));
             return this;
         },
 
         // test which extensions are needed, then load them
-        // TODO: using require() here doesn't work
         listRequiredExtensions: function(markdown){
 
-            var extensions = new Array;
+            var markdownView = this;
 
-            var regexHighlight  = new RegExp("`.*`"),
+            // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
+            var SDextensions = ["katex", "highlight", "docbook", "bootstrap", "footnotes"]; //, "citation.js"];
+            var numTestsTodo = SDextensions.length;
+
+            // each time an extension is tested for (and loaded if required), updateExtensionList is called.
+            // when all tests are completed (numTestsTodo == 0), an event is triggered.
+            // when this event is triggered, markdown is converted and appended (see render)
+            var updateExtensionList = function(extensionName, required){
+
+                numTestsTodo = numTestsTodo - 1;
+
+                if(required == false){
+                    var n = SDextensions.indexOf(extensionName);
+                    SDextensions.splice(n, 1);
+                }
+
+                //console.log(extensionName + " tested. " + numTestsTodo + " more tests to go.");
+
+                if(numTestsTodo == 0){
+                    markdownView.trigger("requiredExtensionsLoaded", SDextensions);
+                }
+            };
+
+            // ===== the regular expressions used to test whether showdown extensions are required ===== //
+
+            var regexHighlight  = new RegExp("`.*`"), // too general?
                 regexDocbook    = new RegExp("<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>"),
-
                 // for bootstrap: test for tables, directly from showdown/src/subParsers/makehtml/tables.js
                 // if we add more bootstrap classes, this will become more complicated since we have to test the markdown before the initial parse
                 regexTable1        = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
                 regexTable2        = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
-
                 regexFootnotes1     = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/mg,
                 regexFootnotes2     = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/mg,
                 regexFootnotes3     = /\[\^([\d\w]+)\]/m,
-
                 // test for all of the math/katex delimiters (this might be too general)
                 regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
-
                 regexCitation   = /\^\[.*\]/g;
 
+            // ====== test for and load each as required each showdown extension ====== //
+
+            // --- katex test --- //
+
             if( regexKatex.test(markdown) ){
-                // require(["showdownKatex"]);
-                var katex = showdownKatex({
-                    delimiters: [
-                        { left: "$",    right: "$",      display: false,    asciimath: true },
-                        { left: "\\[",  right: "\\]",    display: true,     asciimath: true },
-                        { left: "\\(",  right: "\\)",    display: false,    asciimath: true },
-                        { left: '~',    right: '~',      display: false,    asciimath: true },
-                        { left: '&&',   right: '&&',     display: true,     asciimath: true },
-                    ],
+
+                require(["showdownKatex"], function(showdownKatex){
+                    // custom config needed for katex
+                    var katex = showdownKatex({
+                        delimiters: [
+                            { left: "$",    right: "$",      display: false,    asciimath: true },
+                            { left: "\\[",  right: "\\]",    display: true,     asciimath: true },
+                            { left: "\\(",  right: "\\)",    display: false,    asciimath: true },
+                            { left: '~',    right: '~',      display: false,    asciimath: true },
+                            { left: '&&',   right: '&&',     display: true,     asciimath: true },
+                        ],
+                    });
+
+                    // because custom config, register katex with showdown
+                    showdown.extension("katex", katex);
+                    updateExtensionList("katex", required=true);
                 });
-                extensions.push(katex);
-                this.$el.append("<link href='"+ MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css' rel='stylesheet' type='text/css'>");
+                // css needed for katex
+                markdownView.$el.append("<link href='"+ MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css' rel='stylesheet' type='text/css'>");
+
+            } else {
+                updateExtensionList("katex", required=false);
             };
+
+
+            // --- highlight test --- //
 
             if( regexHighlight.test(markdown) ){
-              var markdownView = this;
-
-              //Require showdown highlight
-              require(["showdownHighlight"], function(showdownHighlight){
-                //Save a reference to this extension (may not actually need this - not sure if it is ever used somewhere else)
-                markdownView.showdownHighlight = showdownHighlight;
-
-                //Push the extension
-                extensions.push("highlight");
-              });
-
-              this.$el.append("<link href='" + MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/" + "atom-one-light" + ".css' rel='stylesheet' type='text/css'>");
+                require(["showdownHighlight"], function(showdownHighlight){
+                    updateExtensionList("highlight", required=true);
+                });
+                // css needed for highlight
+                this.$el.append("<link href='" + MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/" + "atom-one-light" + ".css' rel='stylesheet' type='text/css'>");
+            } else {
+                updateExtensionList("highlight", required=false);
             };
+
+            // --- docbooks test --- //
 
             if( regexDocbook.test(markdown) ){
-                // require(["showdownDocbook"]);
-                extensions.push("docbook");
+                require(["showdownDocbook"], function(showdownDocbook){
+                    updateExtensionList("docbook", required=true);
+                });
+            } else {
+                updateExtensionList("docbook", required=false);
             };
+
+            // --- bootstrap test --- //
 
             if( regexTable1.test(markdown) | regexTable2.test(markdown) ){
-                // require(["showdownDocbook"]);
-                extensions.push("bootstrap");
+                require(["showdownBootstrap"], function(showdownBootstrap){
+                    updateExtensionList("bootstrap", required=true);
+                });
+            } else {
+                updateExtensionList("bootstrap", required=false);
             };
+
+            // --- footnotes test --- //
 
             if( regexFootnotes1.test(markdown) | regexFootnotes2.test(markdown) | regexFootnotes3.test(markdown) ){
-                // require(["showdownFootnotes"]);
-                extensions.push("footnotes");
+                require(["showdownFootnotes"], function(showdownFootnotes){
+                    updateExtensionList("footnotes", required=true);
+                });
+            } else {
+                updateExtensionList("footnotes", required=false);
             };
+
+            // --- citation test --- //
 
             // showdownCitation throws error...
-            if( regexCitation.test(markdown) ){
-                // require(["showdownCitation"])
-                //extensions.push("citation.js") // does not work
-            };
-
-            return extensions
+            // if( regexCitation.test(markdown) ){
+            //         require(["showdownCitation"], function(showdownCitation){
+            //             updateExtensionList("citation.js", required=true);
+            //         });
+            //     } else {
+            //         updateExtensionList("citation.js", required=false);
+            // };
 
         },
 
