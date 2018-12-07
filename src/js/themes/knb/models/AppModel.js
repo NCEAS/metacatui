@@ -35,6 +35,11 @@ define(['jquery', 'underscore', 'backbone'],
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: false,
 
+      // Flag which, when true shows Whole Tale features in the UI
+      showWholeTaleFeatures: false,
+      taleEnvironments: ["RStudio", "Jupyter Notebook", "OpenRefine"],
+      dashboardUrl: 'https://dashboard.dev.wholetale.org/',
+
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
 			 * Any field set to true will prevent the user from saving the Editor until a value has been given
@@ -106,7 +111,11 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsMapsUrl: null,
 			groupsUrl: null,
 			portalUrl: null,
-			mdqUrl: "https://quality.nceas.ucsb.edu/quality/",
+            
+            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            // suidIds and suiteLables must be specified as a list, even if only one suite is available.
+            suiteIds: ["knb.suite.1"],
+            suiteLabels: ["KNB Metadata Completeness Suite v1.0"],
 
 			// Metrics endpoint url
 			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
@@ -157,6 +166,12 @@ define(['jquery', 'underscore', 'backbone'],
 			this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 			//The package service
 			this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+
+            // Metadata quality report services
+            this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
+            this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
+            this.set('mdqSuiteIds', this.get("suiteIds"));
+            this.set('mdqSuiteLabels', this.get("suiteLabels"));
 
 			if(typeof this.get("grantsUrl") !== "undefined")
 				this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");

@@ -44,8 +44,25 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			//Convert the model to JSON and create the result row from the template
 			var json = this.model.toJSON();
+
+			/* Add other attributes to the JSON to send to the template */
+			//Determine if there is a prov trace
 			json.hasProv  = this.model.hasProvTrace();
+			//Find the member node object
 			json.memberNode = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: this.model.get("datasource")});
+			//Determine if this metadata doc documents any data files
+			if( Array.isArray(json.documents) && json.documents.length ){
+				var dataFileIDs = _.without(json.documents, this.model.get("id"), this.model.get("seriesId"), this.model.get("resourceMap"));
+				json.numDataFiles = dataFileIDs.length;
+				json.dataFilesMessage = "This dataset contains " + json.numDataFiles + " data file";
+				if(json.numDataFiles > 1){
+					json.dataFilesMessage += "s";
+				}
+			}
+			else{
+				json.numDataFiles = 0;
+				json.dataFilesMessage = "This dataset doesn't contain any data files";
+			}
 
 			var resultRow = this.template(json);
 			this.$el.html(resultRow);

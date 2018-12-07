@@ -28,14 +28,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.stats 		  = options.stats   || false;
 		    this.minYear 	  = options.minYear || 1900;
 		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
-
-		    //Turn on/off the feature to search the logs when retrieving SolrResults
-		    this.searchLogs  = (typeof options.searchLogs == "undefined")? true : options.searchLogs;
-
-		    if(MetacatUI.appModel.get("d1LogServiceUrl") && this.searchLogs){
-			    this.logsSearch = options.logsSearch || new LogsSearch();
-			    this.on("reset", this.getLogs);
-		    }
 		},
 
 		url: function() {
@@ -182,42 +174,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			}
 
 			return _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
-		},
-
-		//Get info about each model in this collection from the Logs index
-		getLogs: function(){
-			if(!MetacatUI.appModel.get("d1LogServiceUrl") || (typeof MetacatUI.appModel.get("d1LogServiceUrl") == "undefined")) return;
-
-			var collection = this;
-
-			//Get the read events
-			this.logsSearch.set({
-				pid: this.pluck("id"),
-				event: "read",
-				facets: "pid"
-			});
-
-			var url = MetacatUI.appModel.get("d1LogServiceUrl") + "q=" + this.logsSearch.getQuery() + this.logsSearch.getFacetQuery();
-			var requestSettings = {
-				url: url + "&wt=json&rows=0",
-				type: "GET",
-				success: function(data, textStatus, xhr){
-					var pidCounts = data.facet_counts.facet_fields.pid;
-
-					if(!pidCounts || !pidCounts.length){
-						collection.invoke("set", {reads: 0});
-						return;
-					}
-
-					for(var i=0; i < pidCounts.length; i+=2){
-						var doc = collection.findWhere({ id: pidCounts[i] });
-						if(!doc) break;
-
-						doc.set("reads", pidCounts[i+1]);
-					}
-				}
-			}
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		}
 	});
 

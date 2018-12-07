@@ -573,7 +573,7 @@ define(['jquery',
 			}
 
 			//Specify which fields to retrieve
-			var fields = "id,seriesId,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,isPublic";
+			var fields = "id,seriesId,title,origin,pubDate,dateUploaded,abstract,resourceMap,beginDate,endDate,read_count_i,geohash_9,datasource,isPublic,documents";
 			if(gmaps){
 				fields += ",northBoundCoord,southBoundCoord,eastBoundCoord,westBoundCoord";
 			}

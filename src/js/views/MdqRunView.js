@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationView', 'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html'],
-	function($, _, Backbone, d3, DonutChart, CitationView, MdqRunTemplate, SuitesTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationView', 'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html', 'collections/QualityReport'],
+	function($, _, Backbone, d3, DonutChart, CitationView, MdqRunTemplate, SuitesTemplate, LoadingTemplate, QualityReport) {
 	'use strict';
 
 	// Build the Footer view of the application
@@ -9,105 +9,144 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 		el: '#Content',
 
 		events: {
-			"click input[type='submit']"	:	"submitForm",
+			//"click input[type='submit']"	:	"submitForm"
 			"change #suiteId" : "switchSuite"
 		},
 
-		suitesUrl: MetacatUI.appModel.get("mdqUrl") + "suites/",
-
 		url: null,
-
 		pid: null,
-
+        // The currently selected/requested suite
 		suiteId: null,
-
+        // The list of all potential suites for this theme
+        suiteIdList: [],
 		loadingTemplate: _.template(LoadingTemplate),
-
 		template: _.template(MdqRunTemplate),
-
-		suitesTemplate: _.template(SuitesTemplate),
-
+        //suitesTemplate: _.template(SuitesTemplate),
+        breadcrumbContainer: "#breadcrumb-container",
 
 		initialize: function () {
 
 		},
 
 		switchSuite: function(event) {
-
 			var select = $(event.target);
-
 			var suiteId = $(select).val();
-
 			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: false});
-
 			this.suiteId = suiteId;
 			this.render();
-
 			return false;
 		},
 
 		render: function () {
-
-			// use the requested suite if provided
+			// The suite use for rendering can initially be set via the theme AppModel.
+            // If a suite id is request via the metacatui route, then we have to display that
+            // suite, and in addition have to display all possible suites for this theme in
+            // a selection list, if the user wants to view a different one.
 			if (!this.suiteId) {
-				this.suiteId = "arctic.data.center.suite.1";
+               this.suiteId = MetacatUI.appModel.get("mdqSuiteIds")[0];
 			}
-			this.url = this.suitesUrl + this.suiteId + "/run";
-
+            
+            this.suiteIdList = MetacatUI.appModel.get("mdqSuiteIds");
+            this.suiteLabels = MetacatUI.appModel.get("mdqSuiteLabels");
+            
+			//this.url = this.mdqRunsServiceUrl + "/" + this.suiteId + "/" + this.pid;
 			var viewRef = this;
 
 			if (this.pid) {
+              // Fetch a quality report from the quality server and display it.
+              var viewRef = this;
+              var qualityUrl = MetacatUI.appModel.get("mdqRunsServiceUrl") + viewRef.suiteId + "/" + viewRef.pid;
+              var qualityReport = new QualityReport([], {url:qualityUrl, pid: viewRef.pid});
+              
+              qualityReport.fetch({url:qualityUrl});
+                
+              this.listenToOnce(qualityReport, "fetchError", function() {
+                // Inspect the results to see if a quality report was returned.
+                // If not, then submit a request to the quality engine to create the
+                // quality report for this pid/suiteId, and inform the user of this.
 
-				this.showLoading();
-								
-				// fetch SystemMetadata		
-				var xhr = new XMLHttpRequest();
-				xhr.onreadystatechange = function() {
-				    if (this.readyState == 4 && this.status == 200){
-				        //this.response is what you're looking for
-				        var sysMetaBlob = this.response;
-				        
-				        // fetch the metadata contents by the pid
-						var xhr = new XMLHttpRequest();
-						xhr.onreadystatechange = function() {
-						    if (this.readyState == 4 && this.status == 200){
-						        //this.response is what you're looking for
-						        var documentBlob = this.response;
-						        // send to MDQ as blob
-								var formData = new FormData();
-								formData.append('document', documentBlob);
-								formData.append('systemMetadata', sysMetaBlob);
-								viewRef.showResults(formData);
-						    }
-						}
-						var url = MetacatUI.appModel.get("objectServiceUrl") + viewRef.pid;
-						xhr.open('GET', url);
-						xhr.responseType = 'blob';
-						xhr.withCredentials = true;
-						xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
-						xhr.send();
-		
-						//Render a Citation View for the page header
-						var citationView = new CitationView({ pid: viewRef.pid });
-						citationView.render();
-						viewRef.citationView = citationView;
-				    }
-				}
-				var url = MetacatUI.appModel.get("metaServiceUrl") + this.pid;
-				xhr.open('GET', url);
-				xhr.responseType = 'blob';
-				xhr.withCredentials = true;
-				xhr.setRequestHeader("Authorization", "Bearer " + MetacatUI.appUserModel.get("token"));
-				xhr.send();
-				
+                viewRef.hideLoading();
+                this.$el.html(this.template({}));
+                var msgText;
+                console.log("Error status: " + qualityReport.fetchResponse.status);
+                if(qualityReport.fetchResponse.status == 404) {
+                  msgText = "The quality report for this dataset is not currently available.";
+                } else {
+                  msgText = "Error retrieving the quality report for this dataset";
+                  if(typeof qualityReport.fetchResponse.statusText !== 'undefined' && typeof qualityReport.fetchResponse.status !== 'undefined') {
+                    if(qualityReport.fetchResponse.status != 0)
+                      msgText += ": " + qualityReport.fetchResponse.statusText; 
+                  } 
+                }
+                var message = $(document.createElement("div")).append($(document.createElement("span")).text(msgText));
+                MetacatUI.uiRouter.navigate("view/" + qualityReport.id, { trigger: true, replace: true });
+                MetacatUI.appView.showAlert(message, "alert-success", MetacatUI.appView.currentView.$("alert-container"), 10000, { remove: true });
+              }),
+
+              this.listenToOnce(qualityReport, "fetchComplete", function() {
+                viewRef.hideLoading();
+                this.$el.html(this.template({}));
+                var msgText;
+                if(qualityReport.runStatus != "success") {
+                  if(qualityReport.runStatus == "failure") {
+                      msgText = "There was an error generating the quality report. The Quality Server reported this error: " + qualityReport.errorDescription;
+                  } else if (qualityReport.runStatus == "queued") {
+                      msgText = "The quality report is in the Quality Server queue to be generated. It was queued at: " + qualityReport.timestamp;
+                  } else {
+                      msgText = "Error retrieving the quality report."
+                  }
+                  var message = $(document.createElement("div")).append($(document.createElement("span")).text(msgText));
+                  MetacatUI.uiRouter.navigate("view/" + qualityReport.id, { trigger: true, replace: true });
+                  MetacatUI.appView.showAlert(message, "alert-success", MetacatUI.appView.currentView.$("alert-container"), 10000, { remove: true });
+                }
+                  
+                this.showLoading();
+                // Filter out the checks with level 'METADATA', as these checks are intended
+                // to pass info to metadig-engine indexing (for search, faceting), and not intended for display.
+                qualityReport.reset(_.reject(qualityReport.models, function (model) {
+                    var check = model.get("check");
+                    if (check.level == "METADATA") {
+                        return true
+                    } else {
+                        return false;
+                    }
+                }));
+                
+                var groupedResults = qualityReport.groupResults(qualityReport.models);
+                var groupedByType = qualityReport.groupByType(qualityReport.models);
+                
+                var data = {
+                      objectIdentifier: qualityReport.id,
+                      suiteId: viewRef.suiteId,
+                      suiteIdList: viewRef.suiteIdList,
+                      suiteLabels: viewRef.suiteLabels,
+                      groupedResults: groupedResults,
+                      groupedByType: groupedByType,
+                      timestamp: _.now(),
+                      id: viewRef.pid,
+                      checkCount: qualityReport.length
+                };
+
+                viewRef.$el.html(viewRef.template(data));
+                viewRef.insertBreadcrumbs();
+                viewRef.drawScoreChart(qualityReport.models, groupedResults);
+                viewRef.showCitation();
+                viewRef.show();
+                viewRef.$('.popover-this').popover();
+              });
 			} else {
 				this.$el.html(this.template({}));
+                viewRef.insertBreadcrumbs();
 			}
-
 		},
 
 		showLoading: function() {
-			this.$el.html(this.loadingTemplate({ msg: "Running quality report..."}));
+			this.$el.html(this.loadingTemplate({ msg: "Retreiving quality report..."}));
+		},
+        
+        hideLoading: function() {
+            if(this.$loading)  this.$loading.remove();
+            if(this.$detached) this.$el.html(this.$detached);
 		},
 
 		showCitation: function(){
@@ -122,180 +161,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 			this.$el.fadeIn({duration: "slow"});
 		},
 
-		// lookup the suites we can run
-		showAvailableSuites: function() {
-			var viewRef = this;
-
-			try {
-				var args = {
-						url: this.suitesUrl,
-					    type: 'GET',
-						success: function(data, textStatus, xhr) {
-							viewRef.$el.find('#suites').append(
-									viewRef.suitesTemplate(
-											{
-												suiteId: viewRef.suiteId,
-												suiteIds: data
-											}));
-							//Initialize all popover elements
-							//$('.popover-this').popover();
-						}
-				};
-				$.ajax(args);
-			} catch (error) {
-				console.log(error.stack);
-			}
-		},
-
-		submitForm: function(event) {
-
-			var form = $(event.target).parents("form");
-
-			var formData = new FormData($(form)[0]);
-
-			this.showResults(formData);
-
-			return false;
-
-		},
-
-		// do the work of sending the data and rendering the results
-		showResults: function(formData) {
-			var viewRef = this;
-
-			try {
-				var args = {
-						url: this.url,
-						cache: false,
-						data: formData,
-					    contentType: false, //"multipart/form-data",
-					    processData: false,
-					    type: 'POST',
-						success: function(data, textStatus, xhr) {
-							var groupedResults = viewRef.groupResults(data.result);
-							var groupedByType = viewRef.groupByType(data.result);
-
-							data = _.extend(data,
-									{
-										objectIdentifier: viewRef.pid,
-										suiteId: viewRef.suiteId,
-										groupedResults: groupedResults,
-										groupedByType: groupedByType
-									});
-
-							viewRef.$el.html(viewRef.template(data));
-							viewRef.drawScoreChart(data.result, groupedResults);
-							viewRef.showAvailableSuites();
-							viewRef.showCitation();
-							viewRef.show();
-							//Initialize all popover elements
-							viewRef.$('.popover-this').popover();
-						}
-				};
-				$.ajax(args);
-			} catch (error) {
-				console.log(error.stack);
-			}
-		},
-
-		groupResults: function(results) {
-			var groupedResults = _.groupBy(results, function(result) {
-				var color;
-
-				// simple cases
-				// always blue for info and skip
-				if (result.check.level == 'INFO') {
-					color = 'BLUE';
-					return color;
-				}
-				if (result.status == 'SKIP') {
-					color = 'BLUE';
-					return color;
-				}
-				// always green for success
-				if (result.status == 'SUCCESS') {
-					color = 'GREEN';
-					return color;
-				}
-
-				// handle failures and warnings
-				if (result.status == 'FAILURE') {
-					color = 'RED';
-					if (result.check.level == 'OPTIONAL') {
-						color = 'ORANGE';
-					}
-				}
-				if (result.status == 'ERROR') {
-					color = 'ORANGE';
-					if (result.check.level == 'REQUIRED') {
-						color = 'RED';
-					}
-				}
-				return color;
-
-			});
-
-			// make sure we have everything, even if empty
-			if (!groupedResults.BLUE) {
-				groupedResults.BLUE = [];
-			}
-			if (!groupedResults.GREEN) {
-				groupedResults.GREEN = [];
-			}
-			if (!groupedResults.ORANGE) {
-				groupedResults.ORANGE = [];
-			}
-			if (!groupedResults.RED) {
-				groupedResults.RED = [];
-			}
-
-			var total = results.length;
-			if (groupedResults.BLUE) {
-				total = total - groupedResults.BLUE.length;
-			}
-
-			return groupedResults;
-		},
-
-		groupByType: function(results) {
-			var groupedResults = _.groupBy(results, function(result) {
-				if (result.status == "ERROR" || result.status == "SKIP") {
-					// orange or blue
-					return "removeMe";
-				}
-				if (result.status == "FAILURE" && result.check.level == "OPTIONAL") {
-					// orange
-					return "removeMe";
-				}
-
-				return result.check.type || "uncategorized";
-			});
-
-			// get rid of the ones that should not be counted in our totals
-			delete groupedResults["removeMe"];
-
-			return groupedResults;
-		},
-
 		drawScoreChart: function(results, groupedResults){
 
 			var dataCount = results.length;
-
-
 			var data = [
 			            {label: "Pass", count: groupedResults.GREEN.length, perc: groupedResults.GREEN.length/results.length },
 			            {label: "Warn", count:  groupedResults.ORANGE.length, perc: groupedResults.ORANGE.length/results.length},
 			            {label: "Fail", count: groupedResults.RED.length, perc: groupedResults.RED.length/results.length},
 			            {label: "Info", count: groupedResults.BLUE.length, perc: groupedResults.BLUE.length/results.length},
 			        ];
-			/*
-			var data = [
-			            "Pass", groupedResults.GREEN.length,
-			            "Warning", groupedResults.ORANGE.length,
-			            "Fail", groupedResults.RED.length,
-			            "Info", groupedResults.BLUE.length,
-			        ];
-			 */
 
 			var svgClass = "data";
 
@@ -323,8 +197,36 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 							}
 						});
 			this.$('.format-charts-data').html(donut.render().el);
-		}
-
+		},
+        
+    	insertBreadcrumbs: function(){
+    		var breadcrumbs = $(document.createElement("ol"))
+    					      .addClass("breadcrumb")
+    					      .append($(document.createElement("li"))
+    					    		  .addClass("home")
+    					    		  .append($(document.createElement("a"))
+    					    				  .attr("href", MetacatUI.root? MetacatUI.root : "/")
+    					    				  .addClass("home")
+    					    				  .text("Home")))
+    	    				  .append($(document.createElement("li"))
+    	    						  .addClass("search")
+    					    		  .append($(document.createElement("a"))
+    					    				  .attr("href", MetacatUI.root + "/data" + ((MetacatUI.appModel.get("page") > 0)? ("/page/" + (parseInt(MetacatUI.appModel.get("page"))+1)) : ""))
+    					    				  .addClass("search")
+    					    				  .text("Search")))
+    	    				  .append($(document.createElement("li"))
+    					                      .append($(document.createElement("a"))
+    					    				  .attr("href", MetacatUI.root + "/view/" + this.pid)
+    					    				  .addClass("inactive")
+    					    				  .text("Metadata")))
+                              .append($(document.createElement("li"))
+                                    .append($(document.createElement("a"))
+                                    .attr("href", MetacatUI.root + "/quality/" + this.pid)
+                                    .addClass("inactive")
+                                    .text("Quality Report")));
+                                    
+    		this.$(this.breadcrumbContainer).html(breadcrumbs);
+    	},
 	});
 	return MdqRunView;
 });

@@ -1,24 +1,21 @@
+<article class="quality-report-view">
 <% if (typeof objectIdentifier === 'undefined') { %>
-
 	<div class="panel panel-default">
-		<div class="panel-heading">
-			<h3>Upload Metadata document for QC</h3>
-		</div>
-		<div class="panel-body">
-			<form id="mdqRunForm" method="POST" enctype="multipart/form-data">
-				<input type="file" name="document" id="document"/>
-				<input type="submit" value="Run" class="btn btn-default"/>
-			</form>
-		</div>
+        <div id="report-alert-container"></div>
+        <div id="breadcrumb-container"></div>
+		<div class="heading"></div>
+		<div class="body"></div>
 	</div>		
 
 <% } %>
 
 <div id="mdqResult">
 
-<% if (typeof result !== 'undefined') { %>
+<% if (typeof groupedResults !== 'undefined') { %>
 
 <header class="page-header">
+    <div id="report-alert-container"></div>
+    <div id="breadcrumb-container"></div>
 	<h1>Metadata Quality Report</h1>
 	<cite id="mdqCitation"></cite>
 </header>
@@ -37,7 +34,24 @@
 	<div id="mdqDonut" class="format-charts-data"></div>		
 	
 	<div id="mdqTypeSummary">			
-		<div id="suites"></div>			
+        
+		<div id="suites">
+            <p>
+                <strong>Quality suite: </strong> 
+                <select id="suiteId" name="suiteId">
+	                <%
+                    var zipped = _.zip(suiteIdList, suiteLabels);
+		                _.each(zipped, function(pair) {
+                            var id = pair[0];
+                            var label = pair[1];
+	                %>
+	                <option <% if (id == suiteId) { print("selected='selected'") } %> value="<%= id %>"><%= label %></option>
+	                <%
+		                });
+	                %>
+                </select>
+            </p>
+        </div>
 		
 		<%
 		var types = _.keys(groupedByType);
@@ -46,7 +60,7 @@
 			var total = results.length;
 			var success = 0;
 			_.each(results, function(result) {
-				if (result.status == "SUCCESS") {
+				if (result.get("status") == "SUCCESS") {
 					success++;
 				}
 			});
@@ -70,7 +84,7 @@
 			
 		<%
 		
-		var total = result.length;
+		var total = checkCount;
 		if (groupedResults.BLUE) {
 			total = total - groupedResults.BLUE.length;
 		}
@@ -83,7 +97,7 @@
 				<h4>
 					<i class="icon icon-caret-right"></i>
 					<i class="icon icon-caret-down"></i>
-					Passed <%=groupedResults.GREEN.length%> checks out of <%= total %>. Good job!
+					Passed <%=groupedResults.GREEN.length%> checks out of <%= total %> (informational checks not included).
 				</h4>				
 			</li>
 			
@@ -97,7 +111,7 @@
 	  			<i class="icon icon-check-sign success span1"></i>	  			
 	  			<span class="span6">
 		  			<%
-					_.each(result.output, function(output) {
+					_.each(result.get("output"), function(output) {
 					%>				
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
@@ -116,15 +130,15 @@
 						data-trigger="hover focus"
 						data-container="body"
 						data-html="true"
-						data-title="<%= result.check.name%>"
-						data-content="<%= result.check.description %>">
+						data-title="<%= result.get("check").name %>"
+						data-content="<%= result.get("check").description %>">
 						<i class="icon icon-question-sign subtle"></i>
 					</a>
 				</span>	  			
 	  			<span class="span4">
-		  			<span class="badge pull-right"><%= result.status %></span>
-					<span class="badge pull-right"><%= result.check.level %></span>
-					<span class="badge pull-right"><%= result.check.type %></span>
+		  			<span class="badge pull-right"><%= result.get("status") %></span>
+					<span class="badge pull-right"><%= result.get("check").level %></span>
+					<span class="badge pull-right"><%= result.get("check").type %></span>
 				</span>
 	  		</li>
 		<% }); %>			
@@ -150,7 +164,7 @@
 	  			
 	  			<span class="span6">
 		  			<%
-					_.each(result.output, function(output) {
+					_.each(result.get("output"), function(output) {
 					%>				
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
@@ -169,15 +183,15 @@
 						data-container="body"
 						data-trigger="hover focus"
 						data-html="true"
-						data-title="<%= result.check.name %>"
-						data-content="<%= result.check.description %>">
+						data-title="<%= result.get("check").name %>"
+						data-content="<%= result.get("check").description %>">
 					    <i class="icon icon-question-sign subtle"></i>
 					</a>
 	  			</span>
 	  			<span class="span4">
-		  			<span class="badge pull-right"><%= result.status %></span>
-					<span class="badge pull-right"><%= result.check.level %></span>
-					<span class="badge pull-right"><%= result.check.type %></span>
+		  			<span class="badge pull-right"><%= result.get("status") %></span>
+					<span class="badge pull-right"><%= result.get("check").level %></span>
+					<span class="badge pull-right"><%= result.get("check").type %></span>
 				</span>			
 	  		</li>
 		<% }); %>		
@@ -203,7 +217,7 @@
 	  			</span>
 	  			<span class="span6">
 		  			<%
-					_.each(result.output, function(output) {
+					_.each(result.get("output"), function(output) {
 					%>				
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
@@ -222,15 +236,15 @@
 						data-container="body"
 						data-trigger="hover focus"
 						data-html="true"
-						data-title="<%= result.check.name %>"
-						data-content="<%= result.check.description %>">
+						data-title="<%= result.get("check").name %>"
+						data-content="<%= result.get("check").description %>">
 						<i class="icon icon-question-sign subtle"></i>
 					</a>
 	  			</span>
 	  			<span class="span4">
-		  			<span class="badge pull-right"><%= result.status %></span>
-					<span class="badge pull-right"><%= result.check.level %></span>
-					<span class="badge pull-right"><%= result.check.type %></span>
+		  			<span class="badge pull-right"><%= result.get("status") %></span>
+					<span class="badge pull-right"><%= result.get("check").level %></span>
+					<span class="badge pull-right"><%= result.get("check").type %></span>
 				</span>			
 	  		</li>
 		<% }); %>		
@@ -241,7 +255,7 @@
 			<h4>
 				<i class="icon icon-caret-right"></i>
 				<i class="icon icon-caret-down"></i>
-				<%=groupedResults.BLUE.length%> informational check<% if (groupedResults.BLUE.length != 1) {print('s')}%>. These may include skips, errors and failures.
+				<%=groupedResults.BLUE.length%> informational check<% if (groupedResults.BLUE.length != 1) {print('s')}%>.
 			</h4>
 		</li>
 
@@ -255,7 +269,7 @@
 	  			</span>
 	  			<span class="span6">
 					<%
-					_.each(result.output, function(output) {
+					_.each(result.get("output"), function(output) {
 					%>				
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
@@ -274,15 +288,15 @@
 						data-container="body"
 						data-trigger="hover focus" 
 						data-html="true"
-						data-title="<%=result.check.name%>"
-						data-content="<%= result.check.description %>">
+						data-title="<%= result.get("check").name %>"
+						data-content="<%= result.get("check").description %>">
 						<i class="icon icon-question-sign subtle"></i>
 					</a>
 	  			</span>
 	  			<span class="span4">
-					<span class="badge pull-right"><%= result.status %></span>
-					<span class="badge pull-right"><%= result.check.level %></span>
-					<span class="badge pull-right"><%= result.check.type %></span>
+					<span class="badge pull-right"><%= result.get("status") %></span>
+					<span class="badge pull-right"><%= result.get("check").level %></span>
+					<span class="badge pull-right"><%= result.get("check").type %></span>
 				</span>				
 	  		</li>
 		<% }); %>		
@@ -294,3 +308,4 @@
 
 <% } %>
 </div>
+</article>

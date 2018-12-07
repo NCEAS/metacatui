@@ -75,7 +75,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
         dataPackageGraph: null,
 
 		initialize: function(options){
-			this.on("complete", this.getLogInfo);
 			this.setURL();
 
 			// Create an initial RDF graph
@@ -726,7 +725,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				success: function(data, textStatus, xhr) {
 					var results = data.grouped.formatType.groups,
-						rMapList = _.where(results, { groupValue: "RESOURCE" })[0].doclist,
+							resourceMapGroup = _.where(results, { groupValue: "RESOURCE" })[0],
+						rMapList = resourceMapGroup? resourceMapGroup.doclist : null,
 						rMaps = rMapList? rMapList.docs : [],
 						rMapIds = _.pluck(rMaps, "id"),
 						parents = [],
@@ -840,48 +840,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 						}
 					}
-			}
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
-
-		getLogInfo: function(){
-			if(!MetacatUI.appModel.get("d1LogServiceUrl") || (typeof MetacatUI.appModel.get("d1LogServiceUrl") == "undefined")) return;
-
-			var model = this;
-
-			var memberIds = _.map(this.get("members"), function(m){
-				return  m.get("id");
-			});
-			//Get the read events
-			var logsSearch = new LogsSearch();
-			logsSearch.set({
-				pid: memberIds,
-				event: "read",
-				facets: "pid"
-			});
-
-			var url = MetacatUI.appModel.get("d1LogServiceUrl") + "q=" + logsSearch.getQuery() + logsSearch.getFacetQuery();
-			var requestSettings = {
-				url: url + "&wt=json&rows=0",
-				success: function(data, textStatus, xhr){
-					var pidCounts = data.facet_counts.facet_fields.pid;
-
-					if(!pidCounts || !pidCounts.length){
-						_.invoke(model.get("members"), "set", {reads: 0});
-						_.invoke(model.get("members"), "trigger", "change:reads");
-						return;
-					}
-
-					for(var i=0; i < pidCounts.length; i+=2){
-						var doc = _.findWhere(model.get("members"), { id: pidCounts[i] });
-						if(!doc) break;
-
-						doc.set("reads", pidCounts[i+1]);
-					}
-
-					//Trigger the change all event to send notice that all members have changed somehow
-					model.trigger("changeAll");
-				}
 			}
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 		},

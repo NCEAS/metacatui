@@ -408,7 +408,7 @@ define(['underscore', 'jquery', 'backbone',
     		this.$("input.tooltip-this").tooltip({
     			placement: "top",
     			title: function(){
-    				return $(this).attr("placeholder")
+    				return $(this).attr("data-title") || $(this).attr("placeholder")
     			},
     			delay: 1000
     		});
@@ -2053,8 +2053,13 @@ define(['underscore', 'jquery', 'backbone',
     	 * Resizes the vertical table of contents so it's always the same height as the editor body
     	 */
         resizeTOC: function(){
-        	var tableBottom = $("#editor-body .ui-resizable-handle")[0].getBoundingClientRect().bottom,
-        		navTop = tableBottom;
+        	var tableBottomHandle = $("#editor-body .ui-resizable-handle");
+
+          if( !tableBottomHandle.length )
+            return;
+
+          var tableBottom = tableBottomHandle[0].getBoundingClientRect().bottom,
+        		  navTop = tableBottom;
 
         	if(tableBottom < $("#Navbar").outerHeight()){
         		if( $("#Navbar").css("position") == "fixed" )

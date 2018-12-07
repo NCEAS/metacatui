@@ -36,10 +36,10 @@
 		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
 	<% } %>
     <div class="resource-map icons stop-route">
-			<% if (resourceMap) { %>
-				<i src="<% MetacatUI.root %>/img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="This result includes data files"></i>
-			<% } %>
-
+	<%	if (numDataFiles > 0) {
+	 			print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="'+ dataFilesMessage +'"></i>');
+ 			}
+	%>
     </div>
       	<div class="on-map icons  stop-route">
 		<%

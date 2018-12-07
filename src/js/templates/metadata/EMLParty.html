@@ -36,7 +36,9 @@
 		<div class="row-fluid">
 			<label class="hidden" for="<%=uniqueId%>-orcid">ORCID</label>
 			<img src="<%= MetacatUI.root %>/img/orcid_64x64.png" class="input-logo" alt="ORCID logo" title="ORCID logo"/>
-			<input type="text" id="<%=uniqueId%>-orcid" name="orcid" class="tooltip-this" data-attribute="userId" data-html="true" placeholder="For maximum impact, add this person's ORCID. <a href='https://orcid.org/orcid-search/search'>Search for an ORCID by name.</a>" />
+			<input type="text" id="<%=uniqueId%>-orcid" name="orcid" class="tooltip-this" data-attribute="userId" data-html="true"
+				data-title="For maximum impact, add this person's ORCID. <a href='https://orcid.org/orcid-search/search' target='offline'>Search for an ORCID by name.</a>"
+				placeholder="This person's ORCID" />
 		</div>
 	</div>
 	<div class="span4">

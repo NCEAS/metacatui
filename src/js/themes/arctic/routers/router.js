@@ -78,7 +78,7 @@ function ($, _, Backbone) {
 		renderAPI: function (anchorId) {
 			this.routeHistory.push("api");
 
-			appModel.set('anchorId', anchorId);
+			MetacatUI.appModel.set('anchorId', anchorId);
 			var options = {
 					pageName: "api",
 					anchorId: anchorId
