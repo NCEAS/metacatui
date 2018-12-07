@@ -13,6 +13,7 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
         associatedParties: [],
         acknowledgments: null,
         acknowledgmentsLogos: [],
+        awards: [],
         filterGroups: [],
         //A Search collection that contains all the filters assoc. with this project
         search: new Search(),
@@ -101,6 +102,17 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
       modelJSON.overview = this.parseEMLTextNode(projectNode, "overview");
       modelJSON.results = this.parseEMLTextNode(projectNode, "results");
       modelJSON.acknowledgments = this.parseEMLTextNode(projectNode, "acknowledgments");
+      
+      //Parse the awards
+      modelJSON.awards = [];
+      var parse_it = this.parseTextNode;
+      $(projectNode).children("award").each(function(i, award){
+        var award_parsed = {};
+        $(award).children().each(function(i, award_attr){
+          award_parsed[award_attr.nodeName] = parse_it(award, award_attr.nodeName);
+        });
+        modelJSON.awards.push(award_parsed);
+      });
 
       //Parse the associatedParties
       modelJSON.associatedParties = [];

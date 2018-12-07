@@ -3,8 +3,10 @@ define(["jquery",
     "backbone",
     "text!templates/metadata/EMLPartyDisplay.html",
     "views/project/ProjectSectionView",
-    "text!templates/project/projectAcknowledgements.html"],
-    function($, _, Backbone, EMLPartyDisplayTemplate, ProjectSectionView, AcknowledgementsTemplate){
+    "text!templates/project/projectAcknowledgements.html",
+    "text!templates/project/projectAwards.html"],
+    function($, _, Backbone, EMLPartyDisplayTemplate, ProjectSectionView, 
+        AcknowledgementsTemplate, AwardsTemplate){
 
     /* The ProjectMembersView is a view to render the
      * project members tab (within ProjectSectionView)
@@ -19,6 +21,7 @@ define(["jquery",
       //   /* Renders the compiled template into HTML */
         partyTemplate: _.template(EMLPartyDisplayTemplate),
         acknowledgementsTemplate: _.template(AcknowledgementsTemplate),
+        awardsTemplate: _.template(AwardsTemplate),
 
       //   /* The events that this view listens to*/
       //   events: {
@@ -51,8 +54,16 @@ define(["jquery",
                 });
             });
 
-            var acknowledgements = this.model.get("acknowledgments"); // spelled wrong in document
-            this.$el.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
+            var acknowledgements = this.model.get("acknowledgments"); 
+            var awards = this.model.get("awards");
+
+            if( awards.length || acknowledgements.length ) {
+                var ack_div = $('<div class="well awards-info"></div>');
+                this.$el.append(ack_div);
+                ack_div.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
+                ack_div.append(this.awardsTemplate({awards: awards}));
+            }
+            // this.$el.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
         },
 
       //   onClose: function() {
