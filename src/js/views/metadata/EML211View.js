@@ -274,13 +274,31 @@ define(['underscore', 'jquery', 'backbone',
         //Insert the people template
         this.$(".section[data-section='people']").html(this.peopleTemplate());
 
-	    	//Creators
-	    	_.each(this.model.get("creator"), this.renderPerson, this);
-	    	this.renderPerson(null, "creator");
+        if( this.model.get("creator").length ){
+  	    	//Creators
+  	    	_.each(this.model.get("creator"), this.renderPerson, this);
+  	    	this.renderPerson(null, "creator");
+        }
+        else{
+          var creator = new EMLParty({ type: "creator", parentModel: this.model });
+          this.model.get("creator").push(creator);
+          creator.createFromUser();
+          this.renderPerson(creator);
+          this.renderPerson(null, "creator");
+        }
 
-	    	//Contacts
-	    	_.each(this.model.get("contact"), this.renderPerson, this);
-	    	this.renderPerson(null, "contact");
+        if( this.model.get("contact").length ){
+  	    	//Contacts
+  	    	_.each(this.model.get("contact"), this.renderPerson, this);
+  	    	this.renderPerson(null, "contact");
+        }
+        else{
+          var contact = new EMLParty({ type: "contact", parentModel: this.model });
+          this.model.get("contact").push(contact);
+          contact.createFromUser();
+          this.renderPerson(contact);
+          this.renderPerson(null, "contact");
+        }
 
 	    	//Principal Investigators
 	    	if(PIs.length){

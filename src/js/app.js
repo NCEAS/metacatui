@@ -264,12 +264,15 @@ function(Bootstrap, AppView, AppModel) {
 			// attribute of the clicked element so Backbone.history.navigate works.
 			// Note that a RegExp was used here to anchor the .replace call to the
 			// front of the string so that this code works when MetacatUI.root is "".
-			var route = href.attr.replace(new RegExp("^" + MetacatUI.root + "/"), "")
+			var route = href.attr.replace(new RegExp("^" + MetacatUI.root + "/"), "");
 
 			// Catch routes hrefs that start with # and don't do anything with them
 			if (href.attr.indexOf("#") == 0) { return; }
 
-			if (href.prop && href.prop.slice(0, root.length) === root) {
+			//If the URL is not a route defined in the app router, then follow the link
+			//If the URL is not at the MetacatUI root, then follow the link
+			if (href.prop && href.prop.slice(0, root.length) === root &&
+					_.contains(MetacatUI.uiRouter.getRouteNames(), MetacatUI.uiRouter.getRouteName(route))) {
 				evt.preventDefault();
 				Backbone.history.navigate(route, true);
 			}
