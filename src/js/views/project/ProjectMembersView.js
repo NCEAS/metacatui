@@ -5,7 +5,7 @@ define(["jquery",
     "views/project/ProjectSectionView",
     "text!templates/project/projectAcknowledgements.html",
     "text!templates/project/projectAwards.html"],
-    function($, _, Backbone, EMLPartyDisplayTemplate, ProjectSectionView, 
+    function($, _, Backbone, EMLPartyDisplayTemplate, ProjectSectionView,
         AcknowledgementsTemplate, AwardsTemplate){
 
     /* The ProjectMembersView is a view to render the
@@ -54,8 +54,8 @@ define(["jquery",
                 });
             });
 
-            var acknowledgements = this.model.get("acknowledgments"); 
-            var awards = this.model.get("awards");
+            var acknowledgements = this.model.get("acknowledgments") || "";
+            var awards = this.model.get("awards") || "";
 
             if( awards.length || acknowledgements.length ) {
                 var ack_div = $('<div class="well awards-info"></div>');
