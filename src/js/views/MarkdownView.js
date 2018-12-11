@@ -1,5 +1,12 @@
-define([    "jquery",   "underscore",   "backbone", "showdown", "text!templates/markdown.html" ],
-    function($,         _,              Backbone,   showdown,   markdownTemplate ){
+define([    "jquery", "underscore", "backbone",
+            "showdown",
+            "showdownXssFilter",
+            "text!templates/markdown.html" ],
+
+    function($, _, Backbone,
+        showdown,
+        showdownXssFilter,
+        markdownTemplate ){
 
     /* The markdownView is a view that will retrieve and parse markdown */
     var markdownView = Backbone.View.extend({
@@ -35,6 +42,9 @@ define([    "jquery",   "underscore",   "backbone", "showdown", "text!templates/
             this.stopListening();
             this.listenTo(this, "requiredExtensionsLoaded", function(SDextensions){
 
+                // xss filter is not loaded dynamically. we should always have this.
+                SDextensions.unshift('xssfilter');
+
                 var converter  = new showdown.Converter({
                             metadata: true,
                             simplifiedAutoLink:true,
@@ -45,6 +55,7 @@ define([    "jquery",   "underscore",   "backbone", "showdown", "text!templates/
                             emoji: true,
                             extensions: SDextensions
                 });
+
                 htmlFromMD = converter.makeHtml(this.markdown);
                 this.$el.append(this.template({ markdown: htmlFromMD }));
 
@@ -95,7 +106,7 @@ define([    "jquery",   "underscore",   "backbone", "showdown", "text!templates/
                 regexFootnotes1     = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/mg,
                 regexFootnotes2     = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/mg,
                 regexFootnotes3     = /\[\^([\d\w]+)\]/m,
-                // test for all of the math/katex delimiters (this might be too general)
+                // test for all of the math/katex delimiters (TODO: see what katex uses for regex. this is too general.)
                 regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
                 regexCitation   = /\^\[.*\]/g;
 
