@@ -599,6 +599,51 @@ function ($, _, Backbone) {
 			this.navigate(MetacatUI.appModel.defaultView, {trigger: true});
 		},
 
+		/*
+		* Gets an array of route names that are set on this router.
+		* @return {Array} - An array of route names, not including any special characters
+		*/
+		getRouteNames: function(){
+
+			var router = this;
+
+		  var routeNames = _.map(Object.keys(this.routes), function(routeName){
+
+				return router.getRouteName(routeName);
+
+			});
+
+			//The "view" route is not included in the route hash (it is set up during initialize),
+			// so we have to manually add it here.
+			routeNames.push("view");
+
+			return routeNames;
+
+		},
+
+		/*
+		* Gets the route name based on the route pattern given
+		* @param {string} routePattern - A string that represents the route pattern e.g. "view(/pid)"
+		* @return {string} - The name of the route without any pattern special characters e.g. "view"
+		*/
+		getRouteName: function(routePattern){
+
+			var specialChars = ["/", "(", "*", ":"];
+
+			_.each(specialChars, function(specialChar){
+
+				var substring = routePattern.substring(0, routePattern.indexOf(specialChar));
+
+				if( substring && substring.length < routePattern.length ){
+					routePattern = substring;
+				}
+
+			});
+
+			return routePattern;
+
+		},
+
 		closeLastView: function(){
 			//Get the last route and close the view
 			var lastRoute = _.last(this.routeHistory);
