@@ -8,11 +8,11 @@ define(['showdown', 'xss'], function (showdown, xss) {
 
         return showdown.extension('xssfilter', function() {
 
-            // custome rules
+            // custom rules
             var options = {
                 css: false,
                 whiteList: {
-                    a: ["target", "href", "title"],
+                    a: ["target", "href", "title", "class"],
                     abbr: ["title"],
                     address: [],
                     area: ["shape", "coords", "href", "alt"],

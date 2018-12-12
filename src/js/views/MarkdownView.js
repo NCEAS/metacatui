@@ -56,13 +56,13 @@ define([    "jquery", "underscore", "backbone",
                             extensions: SDextensions
                 });
 
-                htmlFromMD = converter.makeHtml(this.markdown);
+                htmlFromMD = converter.makeHtml( this.markdown); //markdownTest );//
                 this.$el.append(this.template({ markdown: htmlFromMD }));
 
             });
 
             // detect which extensions we'll need
-            this.listRequiredExtensions(this.markdown);
+            this.listRequiredExtensions( this.markdown);
 
             return this;
         },
@@ -73,7 +73,7 @@ define([    "jquery", "underscore", "backbone",
             var markdownView = this;
 
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
-            var SDextensions = ["katex", "highlight", "docbook", "bootstrap", "footnotes"]; //, "citation.js"];
+            var SDextensions = ["katex", "highlight", "docbook", "bootstrap", "footnotes", "showdown-citation"];
             var numTestsTodo = SDextensions.length;
 
             // each time an extension is tested for (and loaded if required), updateExtensionList is called.
@@ -185,13 +185,13 @@ define([    "jquery", "underscore", "backbone",
             // --- citation test --- //
 
             // showdownCitation throws error...
-            // if( regexCitation.test(markdown) ){
-            //         require(["showdownCitation"], function(showdownCitation){
-            //             updateExtensionList("citation.js", required=true);
-            //         });
-            //     } else {
-            //         updateExtensionList("citation.js", required=false);
-            // };
+            if( regexCitation.test(markdown) ){
+                    require(["showdownCitation"], function(showdownCitation){
+                        updateExtensionList("showdown-citation", required=true);
+                    });
+                } else {
+                    updateExtensionList("showdown-citation", required=false);
+            };
 
         },
 

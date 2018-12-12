@@ -63,7 +63,10 @@ require.config({
 	showdownBootstrap: MetacatUI.root + '/components/showdown/extensions/showdown-bootstrap',
 	showdownDocbook: MetacatUI.root + '/components/showdown/extensions/showdown-docbook',
 	showdownKatex: MetacatUI.root + '/components/showdown/extensions/showdown-katex/showdown-katex.min',
-	showdownCitation:  MetacatUI.root + '/components/showdown/extensions/showdown.citation',
+	citation: MetacatUI.root + '/components/showdown/extensions/showdown-citation/citation-0.4.0-9.min',
+	showdownCitation:  MetacatUI.root + '/components/showdown/extensions/showdown-citation/showdown-citation',
+	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
+	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
@@ -74,7 +77,7 @@ require.config({
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
-      exports: '_'
+      exports: '_',
     },
     backbone: {
       deps: ['underscore', 'jquery'],
@@ -105,7 +108,13 @@ require.config({
     },
     rdflib: {
         exports: 'rdf'
-    }
+    },
+	xss: {
+		exports: 'filterXSS'
+	},
+	citation: {
+		exports: 'Cite'
+	}
   }
 });
 
