@@ -269,7 +269,12 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				 //Given name
 				 if(!Array.isArray(name.givenName) && name.givenName) name.givenName = [name.givenName];
 				 _.each(name.givenName, function(givenName) {
-					 $(nameNode).append("<givenname>" + givenName + "</givenname>");
+
+          //If there is a given name string, create a givenName node
+          if(typeof givenName == "string" && givenName){
+					  $(nameNode).append("<givenname>" + givenName + "</givenname>");
+          }
+
 				 });
 
 				 // surname
