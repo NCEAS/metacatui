@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         chooseMultiple: true,
+        //@type {object} - A literal JS object with a "label" and "value" attribute
         choices: []
       });
     },

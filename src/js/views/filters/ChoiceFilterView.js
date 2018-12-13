@@ -28,6 +28,18 @@ define(['jquery', 'underscore', 'backbone',
 
     render: function () {
       this.$el.html( this.template( this.model.toJSON() ) );
+
+      var select = this.$("select");
+
+      //Create an option element for each choice listen in the model
+      _.each( this.model.get("choices"), function(choice){
+
+        select.append( $(document.createElement("option"))
+                         .attr("value", choice.value)
+                         .text(choice.label) );
+
+      }, this );
+      
     }
 
   });
