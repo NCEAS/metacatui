@@ -4,8 +4,10 @@ define(["jquery",
     "collections/Search",
     "views/project/ProjectSectionView",
     "views/DataCatalogViewWithFilters",
+    "views/filters/FilterGroupsView",
     "text!templates/project/projectHome.html"],
-    function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, ProjectHomeTemplate){
+    function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, FilterGroupsView,
+      ProjectHomeTemplate){
 
     /* The ProjectHomeView is a view to render the
      * project home tab (within ProjectSectionView)
@@ -39,6 +41,14 @@ define(["jquery",
           });
 
           dataCatalogView.render();
+
+          //Render the filters
+          var filterGroupsView = new FilterGroupsView({
+            filterGroups: this.model.get("filterGroups"),
+            el: "#project-filters"
+          });
+
+          filterGroupsView.render();
 
         }
 

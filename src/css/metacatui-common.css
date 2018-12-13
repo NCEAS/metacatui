@@ -3555,6 +3555,50 @@ a.disabled {
 	pointer-events: none;
 }
 
+/********* Filter Views ***********/
+.filter-group .filter {
+  display: inline-block;
+  margin-right: 20px;
+}
+.filter-group .filter .btn{
+	box-shadow: none;
+	border-bottom-color: #ccc;
+}
+.filter-group .filter input{
+	box-shadow: none;
+}
+.filter-group-link a,
+.nav-tabs .filter-group-link a,
+.nav-tabs .filter-group-link.active a {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-bottom: 0px;
+    border-top: 0px;
+		border-radius: 0px;
+		border-top-width: 0px;
+		margin-right: 0px;
+		border-right-width: 0px;
+		text-align: center;
+}
+.nav-tabs .filter-group-link.active a{
+	background-color: #FFF;
+}
+.nav-tabs .filter-group-link a:hover{
+	border-color: #CCC;
+}
+.filter-group-link{
+	background-color: #eee;
+}
+#project-filters{
+	border: 1px solid #CCC;
+	box-sizing: border-box;
+}
+#project-filters > .tab-content{
+	padding: 10px 20px;
+}
+#project-filters > .nav-tabs{
+	margin-bottom: 0px;
+}
 /*******************************************
    Registry and Forms
 ******************************************/
