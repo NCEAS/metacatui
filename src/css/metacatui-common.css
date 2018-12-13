@@ -2499,6 +2499,22 @@ img[src*="googleapis.com/"].georegion-map{
 	background: inherit;
 	margin-top: 20px;
 }
+
+/* markdown citations */
+.markdown .inlineCitation {
+	
+}
+
+.markdown .csl-entry {
+	text-indent: -15px;
+	margin-left: 15px;
+	margin-bottom: 10px;
+}
+
+.markdown #bibliography {
+	margin-top: 40px;
+	margin-bottom: 20px;
+}
 /******************************************
 * HTML converted from Markdown
 ********************************************/

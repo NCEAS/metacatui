@@ -12,7 +12,7 @@ define(['showdown', 'xss'], function (showdown, xss) {
             var options = {
                 css: false,
                 whiteList: {
-                    a: ["target", "href", "title", "class"],
+                    a: ["target", "href", "title", "class", "target"],
                     abbr: ["title"],
                     address: [],
                     area: ["shape", "coords", "href", "alt"],

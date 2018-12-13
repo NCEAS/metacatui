@@ -56,7 +56,7 @@ define([    "jquery", "underscore", "backbone",
                             extensions: SDextensions
                 });
 
-                htmlFromMD = converter.makeHtml( this.markdown); //markdownTest );//
+                htmlFromMD = converter.makeHtml( this.markdown); //
                 this.$el.append(this.template({ markdown: htmlFromMD }));
 
             });
@@ -87,8 +87,6 @@ define([    "jquery", "underscore", "backbone",
                     var n = SDextensions.indexOf(extensionName);
                     SDextensions.splice(n, 1);
                 }
-
-                //console.log(extensionName + " tested. " + numTestsTodo + " more tests to go.");
 
                 if(numTestsTodo == 0){
                     markdownView.trigger("requiredExtensionsLoaded", SDextensions);
@@ -121,10 +119,7 @@ define([    "jquery", "underscore", "backbone",
                     var katex = showdownKatex({
                         delimiters: [
                             { left: "$",    right: "$",      display: false,    asciimath: true },
-                            { left: "\\[",  right: "\\]",    display: true,     asciimath: true },
-                            { left: "\\(",  right: "\\)",    display: false,    asciimath: true },
-                            { left: '~',    right: '~',      display: false,    asciimath: true },
-                            { left: '&&',   right: '&&',     display: true,     asciimath: true },
+                            { left: '$$',   right: '$$',     display: true,     asciimath: true },
                         ],
                     });
 
