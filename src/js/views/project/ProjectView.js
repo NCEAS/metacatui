@@ -115,8 +115,8 @@ define(["jquery",
 
           //TODO: Incorporate this into the actual view it will live in (Home view)
           //Render the markdown view
-          this.sectionMarkdownView = new MarkdownView({markdown:this.model.get("overview").get("markdown")});
-          this.subviews.push(this.sectionMarkdownView);
+          // this.sectionMarkdownView = new MarkdownView({markdown:this.model.get("overview").get("markdown")});
+          // this.subviews.push(this.sectionMarkdownView);
 
           _.invoke(this.subviews, 'render');
 

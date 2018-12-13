@@ -5,9 +5,10 @@ define(["jquery",
     "views/project/ProjectSectionView",
     "views/DataCatalogViewWithFilters",
     "views/filters/FilterGroupsView",
+    "views/MarkdownView",
     "text!templates/project/projectHome.html"],
     function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, FilterGroupsView,
-      ProjectHomeTemplate){
+      MarkdownView, ProjectHomeTemplate){
 
     /* The ProjectHomeView is a view to render the
      * project home tab (within ProjectSectionView)
@@ -49,6 +50,14 @@ define(["jquery",
           });
 
           filterGroupsView.render();
+
+          //Create a MarkdownView
+          var sectionMarkdownView = new MarkdownView({
+            markdown: this.model.get("overview").get("markdown"),
+            el: "#project-description-container"
+          });
+          //Render the view
+          sectionMarkdownView.render();
 
         }
 
