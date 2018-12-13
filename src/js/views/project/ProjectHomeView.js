@@ -4,8 +4,10 @@ define(["jquery",
     "collections/Search",
     "views/project/ProjectSectionView",
     "views/DataCatalogViewWithFilters",
-    "text!templates/project/projectHome.html"],
-    function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, ProjectHomeTemplate){
+    "text!templates/project/projectHome.html",
+    "views/MarkdownView"],
+    function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, 
+      ProjectHomeTemplate, MarkdownView){
 
     /* The ProjectHomeView is a view to render the
      * project home tab (within ProjectSectionView)
@@ -40,6 +42,11 @@ define(["jquery",
 
           dataCatalogView.render();
 
+          var sectionMarkdownView = new MarkdownView({
+            markdown: this.model.get("overview").get("markdown"),
+            el: "#project-description-container"
+          });
+          sectionMarkdownView.render();
         }
 
      });
