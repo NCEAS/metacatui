@@ -192,7 +192,8 @@ define([    "jquery", "underscore", "backbone",
 
         /* Close and destroy the view */
         onClose: function() {
-
+            this.remove(); // remove for the DOM, stop listening
+            this.$el.html("");   // remove appended html
         }
 
     });
