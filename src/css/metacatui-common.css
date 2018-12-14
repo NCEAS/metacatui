@@ -2502,7 +2502,7 @@ img[src*="googleapis.com/"].georegion-map{
 
 /* markdown citations */
 .markdown .inlineCitation {
-	
+
 }
 
 .markdown .csl-entry {
@@ -3604,6 +3604,26 @@ a.disabled {
 }
 .filter-group-link{
 	background-color: #eee;
+}
+.filter-group .filter .ui-slider{
+	position: relative;
+	height: 5px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	width: 90%;
+	width: calc(100% - 20px);
+}
+.filter.date .min,
+.filter.date .max{
+	max-width: 80px;
+}
+.filter.date .min{
+	float: left;
+	margin-right: 10px;
+}
+.filter.date .max{
+	float: right;
+	margin-left: 10px;
 }
 #project-filters{
 	border: 1px solid #CCC;
