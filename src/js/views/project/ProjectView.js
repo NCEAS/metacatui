@@ -8,9 +8,10 @@ define(["jquery",
     "views/project/ProjectHomeView",
     "views/project/ProjectMembersView",
     "views/project/ProjectMetricsView",
+    'views/StatsView',
     "views/MarkdownView"],
     function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView,
-      ProjectHomeView, ProjectMembersView, ProjectMetricsView, MarkdownView){
+      ProjectHomeView, ProjectMembersView, ProjectMetricsView, StatsView, MarkdownView){
     'use_strict';
     /* The ProjectView is a generic view to render
      * projects, it will hold project sections
@@ -97,11 +98,31 @@ define(["jquery",
 
           //Render the Metrics section
           if( !this.model.get("hideMetrics") ){
-            this.sectionMetricsView = new ProjectMetricsView({
-              model: this.model,
-              el: "#project-metrics"
-             });
+
+            // this.sectionMetricsView = new ProjectMetricsView({
+            //   model: this.model,
+            //   el: "#project-metrics"
+            //  });
+
+            // TODO: should statsview be a separate view within metricsview?
+            // TODO: why are the results wrong? (search gives 25 datasets, stats gives 20 + 0 data files)
+
+            //Create a base query for the statistics
+			var statsSearchModel = this.model.get("search").clone();
+			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+            MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+            // add a stats view
+            this.sectionMetricsView = new StatsView({
+    			title: "Statistics and Figures",
+    			description: "A summary of all datasets from the " + this.model.get("label") + " group",
+    			el: "#project-metrics"
+    		});
+
+    		this.subviews.push(this.sectionMetricsView);
+    		this.sectionMetricsView.render();
             this.subviews.push(this.sectionMetricsView);
+
           }
 
           //Render the members section
