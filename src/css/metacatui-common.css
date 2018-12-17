@@ -3631,9 +3631,9 @@ a.disabled {
   border: 0px;
   background: #CCC;
 }
-.filter.boolean label{
+.filter.boolean span{
 	display: inline;
-	margin-left: 10px;
+	margin-left: 5px;
 }
 .filter.numeric input{
 	max-width: 70px;
