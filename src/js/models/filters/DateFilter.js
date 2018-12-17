@@ -8,8 +8,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-        min: null,
-        max: null
+        min: 0,
+        max: (new Date()).getUTCFullYear()
       });
     },
 
@@ -29,7 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       //If a min XML node is found
       if(minNode.length){
         //Parse the text content of the node into a float
-        modelJSON.min = minNode[0].textContent;
+        modelJSON.min = (new Date(minNode[0].textContent)).getUTCFullYear();
 
         //Find the max XML node
         var maxNode = $(xml).find("max");
@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         //If a max XML node is found
         if(maxNode.length){
           //Parse the text content of the node into a float
-          modelJSON.max = maxNode[0].textContent;
+          modelJSON.max = (new Date(maxNode[0].textContent)).getUTCFullYear();
         }
       }
 

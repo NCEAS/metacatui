@@ -3615,7 +3615,7 @@ a.disabled {
 }
 .filter.date .min,
 .filter.date .max{
-	max-width: 80px;
+	max-width: 60px;
 }
 .filter.date .min{
 	float: left;
@@ -3623,6 +3623,16 @@ a.disabled {
 }
 .filter.date .max{
 	float: right;
+	margin-left: 10px;
+}
+.filter.date .ui-slider{
+	min-height: 6px;
+  border-radius: 4px;
+  border: 0px;
+  background: #CCC;
+}
+.filter.boolean label{
+	display: inline;
 	margin-left: 10px;
 }
 #project-filters{
