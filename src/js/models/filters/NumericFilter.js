@@ -9,7 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         min: null,
-        max: null
+        max: null,
+        step: 0
       });
     },
 
@@ -24,7 +25,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       var modelJSON = Filter.prototype.parse(xml);
 
       //Find the min XML node
-      var minNode = $(xml).find("min");
+      var minNode = $(xml).find("min"),
+          stepNode = $(xml).find("step");
 
       //If a min XML node is found
       if(minNode.length){
@@ -40,7 +42,13 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           modelJSON.max = parseFloat(maxNode[0].textContent);
         }
       }
-      
+
+      //If a step XML node is found
+      if(stepNode.length){
+        //Parse the text content of the node into a float
+        modelJSON.step = parseFloat(stepNode[0].textContent);
+      }
+
       return modelJSON;
     }
 

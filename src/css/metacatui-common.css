@@ -3635,6 +3635,9 @@ a.disabled {
 	display: inline;
 	margin-left: 10px;
 }
+.filter.numeric input{
+	max-width: 70px;
+}
 #project-filters{
 	border: 1px solid #CCC;
 	box-sizing: border-box;
