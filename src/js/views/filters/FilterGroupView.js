@@ -18,6 +18,8 @@ define(['jquery', 'underscore', 'backbone',
     // @type {FilterGroup} - A FilterGroup model to be rendered in this view
     model: null,
 
+    subviews: new Array(),
+
     tagName: "div",
 
     className: "filter-group tab-pane",
@@ -32,6 +34,8 @@ define(['jquery', 'underscore', 'backbone',
 
       this.model = options.model || new FilterGroup();
 
+      this.subviews = new Array();
+
     },
 
     render: function () {
@@ -41,6 +45,11 @@ define(['jquery', 'underscore', 'backbone',
 
       //Get the collection of filters
       var filters = this.model.get("filters");
+
+      //Create a new row for the filter views
+      var newRowNum = 3, //Start a new row every 3 filter views
+          row = $(document.createElement("div")).addClass("row-fluid");
+      this.$el.append(row);
 
       //Render each filter model in the FilterGroup model
       filters.each(function(filter, i){
@@ -71,15 +80,44 @@ define(['jquery', 'underscore', 'backbone',
 
         //Render the view and append it's element to this view
         filterView.render();
-        this.$el.append(filterView.el);
 
-        //Add a margin to the filter element if there are at least three, since
-        // it will likely appear in a new row
-        if( i > 2 ){
-          filterView.$el.css("margin-top", "20px");
+        //Create a new row or append the filter view element to the current row
+        if( i < newRowNum ){
+          row.append(filterView.el);
+        }
+        else{
+          //Create a new row
+          row = $(document.createElement("div")).addClass("row-fluid");
+          this.$el.append(row);
+          row.append(filterView.el);
+          //Uptick the next row counter
+          newRowNum += 3;
         }
 
+        //Add the span3 class so the filter views are shown in columns of three
+        filterView.$el.addClass("span3");
+
+        //Save a reference to this subview
+        this.subviews.push(filterView);
+
       }, this);
+
+    },
+
+    /*
+    * Actions to perform after the render() function has completed and this view's
+    * element is added to the webpage.
+    */
+    postRender: function(){
+
+      //Iterate over each subview and call postRender() if it exists
+      _.each( this.subviews, function(subview){
+
+        if( subview.postRender ){
+          subview.postRender();
+        }
+
+      });
 
     }
 

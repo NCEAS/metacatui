@@ -8,9 +8,9 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-        trueLabel: null,
+        trueLabel: "On",
         trueValue: null,
-        falseLabel: null,
+        falseLabel: "Off",
         falseValue: null
       });
     },
@@ -30,6 +30,18 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       modelJSON.trueValue = this.parseTextNode(xml, "trueValue");
       modelJSON.falseLabel = this.parseTextNode(xml, "falseLabel");
       modelJSON.falseValue = this.parseTextNode(xml, "falseValue");
+
+      //Delete any attributes from the JSON that don't exist in the XML
+      if( !modelJSON.trueLabel ){
+        delete modelJSON.trueLabel;
+      }
+      if( !modelJSON.falseLabel ){
+        delete modelJSON.falseLabel;
+      }
+      if( !modelJSON.falseValue ){
+        delete modelJSON.falseValue;
+      }
+
 
       return modelJSON;
     }

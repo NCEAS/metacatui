@@ -1,7 +1,7 @@
 /* global define */
 define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filters/Filter', 'models/filters/BooleanFilter',
-    'models/filters/ChoiceFilter', 'models/filters/DateFilter', 'models/filters/NumericFilter'],
-    function($, _, Backbone, Search, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter) {
+    'models/filters/ChoiceFilter', 'models/filters/DateFilter', 'models/filters/NumericFilter', 'models/filters/ToggleFilter'],
+    function($, _, Backbone, Search, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter, ToggleFilter) {
 
 	var FilterGroup = Backbone.Model.extend({
 
@@ -63,13 +63,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
           case "dateFilter":
             modelJSON.filters.add( new DateFilter({ objectDOM: filterNode }) );
             break;
+          case "toggleFilter":
+            modelJSON.filters.add( new ToggleFilter({ objectDOM: filterNode }) );
+            break;
         }
 
-      });
-
-
-      _.each(modelJSON.filters.models, function(filter){
-        console.log(filter.toJSON())
       });
 
       return modelJSON;
