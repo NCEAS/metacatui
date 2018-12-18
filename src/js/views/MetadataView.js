@@ -2248,14 +2248,6 @@ define(['jquery',
 			var href = document.location.href,
 					route = href.replace(document.location.origin + "/", "")
 					            .split("/")[0];
-			// Citation
-			var citationParts = [
-						this.getAuthorText(),
-						new Date(this.getDatePublishedText()).getUTCFullYear().toString(),
-						model.get("title"),
-						this.getPublisherText(),
-						model.get("id")],
-				  citationText = citationParts.join(". ") + ".";
 
 			// First: Create a minimal Schema.org Dataset with just the fields we
 			// know will come back from Solr (System Metadata fields).
@@ -2285,23 +2277,6 @@ define(['jquery',
 			// Creator
 			if (model.get("origin")) {
 				elJSON["creator"] = model.get("origin")
-			}
-
-			// Citation
-			//
-			// I made this optional because there are rare cases where a metadata
-			// standard doesn't have creators or titles
-
-			// Returns 1 if all citationParts are non-zero-length
-			// Returns 0 if any are zero length
-			var isCitationValid = citationParts.map(function(p) {
-				return (typeof p === "string" && p.length > 0 ? true : false)
-			}).reduce(function(acc, val) {
-				return acc * val;
-			});
-
-			if (isCitationValid) {
-				elJSON['citation'] = citationText;
 			}
 
 			// Dataset/spatialCoverage
