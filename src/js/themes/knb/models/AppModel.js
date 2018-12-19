@@ -111,7 +111,7 @@ define(['jquery', 'underscore', 'backbone'],
 			accountsMapsUrl: null,
 			groupsUrl: null,
 			portalUrl: null,
-            
+
             mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["knb.suite.1"],
@@ -140,7 +140,7 @@ define(['jquery', 'underscore', 'backbone'],
             // A lookup map of project names to project seriesIds
             projectsMap: {
                 "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",
-				"markdownTest": "urn:uuid:5a26fb11-e0a1-4e3f-976e-1090f24089c0",
+				"markdownTest": "urn:uuid:48bbddc9-e14f-4888-b9dc-16d9d1136d40",
 				"example": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854d1234"
             }
 		},
