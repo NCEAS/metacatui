@@ -128,8 +128,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				modelJSON.userId = [$(objectDOM).find("userid, userId").first().text()];
 			}
 
-      console.log(modelJSON);
-
 			return modelJSON;
 		},
 

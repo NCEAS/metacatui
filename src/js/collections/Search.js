@@ -23,7 +23,15 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
     */
 		model: Filter,
 
-    initialize: function(){
+    initialize: function(options){
+
+      if( typeof options === "undefined" ){
+        var options = {};
+      }
+
+      if( options.catalogSearch ){
+        this.createCatalogFilters();
+      }
 
     },
 
@@ -37,13 +45,18 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
 
       var queryString = "";
 
+      console.log(this.models);
+
       //Iterate over each Filter model in this collection
       this.forEach(function(filterModel, i){
 
         //Get the Solr query string from this model
-        queryString += filterModel.getQuery();
+        var filterQuery = filterModel.getQuery();
 
-        if( this.length > i+1 && queryString.length ){
+        //Add the filter query string to the overall query string
+        queryString += filterQuery;
+
+        if( this.length > i+1 && filterQuery ){
           queryString += "%20AND%20";
         }
 
@@ -106,6 +119,29 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter', 'models/fil
             filterModel.resetValue();
         }
       });
+    },
+
+    /*
+    * Creates and adds FilterModels to this collection that are standard filters
+    * to be sent with every Data Catalog query.
+    */
+    createCatalogFilters: function(){
+
+      //Exclude obsoleted objects from the search
+      this.add( new Filter({
+        fields: ["obsoletedBy"],
+        values: ["*"],
+        exclude: true,
+        isInvisible: true
+      }) );
+
+      //Only search for metadata objects
+      this.add( new Filter({
+        fields: ["formatType"],
+        values: ["METADATA"],
+        isInvisible: true
+      }) );
+
     }
 /*
     hasGeohashFilter: function(){

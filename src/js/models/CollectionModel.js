@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
         name: null,
         label: null,
         description: null,
-  			filters: new Search()
+  			filters: null
   		}
     },
 
@@ -85,6 +85,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
       modelJSON.label = this.parseTextNode(rootNode, "label");
       modelJSON.description = this.parseTextNode(rootNode, "description");
       modelJSON.filters = new Search();
+      modelJSON.filters.createCatalogFilters();
 
       //Parse the collection definition
       _.each( $(rootNode).find("definition > filter"), function(filterNode){
