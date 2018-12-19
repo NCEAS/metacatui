@@ -73,7 +73,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				modelJSON = {};
 
 			//Set the name
-			var person = $(objectDOM).children("individualname", "individualName");
+			var person = $(objectDOM).children("individualname, individualName");
 
 			if(person.length)
 				modelJSON.individualName = this.parsePerson(person);
@@ -104,29 +104,31 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			modelJSON.address = addressesJSON;
 
 			//Set the text fields
-			modelJSON.organizationName = $(objectDOM).children("organizationname", "organizationName").text() || null;
-			modelJSON.positionName     = $(objectDOM).children("positionname", "positionName").text() || null;
+			modelJSON.organizationName = $(objectDOM).children("organizationname, organizationName").text() || null;
+			modelJSON.positionName     = $(objectDOM).children("positionname, positionName").text() || null;
 			modelJSON.role 			   = $(objectDOM).find("role").text() || null;
 
 			//Set the id attribute
 			modelJSON.xmlID = $(objectDOM).attr("id");
 
 			//Email - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
-			if( $(objectDOM).children("electronicmailaddress", "electronicMailAddress").length ){
-				modelJSON.email = _.map($(objectDOM).children("electronicmailaddress", "electronicMailAddress"), function(email){
+			if( $(objectDOM).children("electronicmailaddress, electronicMailAddress").length ){
+				modelJSON.email = _.map($(objectDOM).children("electronicmailaddress, electronicMailAddress"), function(email){
 										return  $(email).text();
 								  });
 			}
 
 			//Online URL - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
-			if( $(objectDOM).find("onlineurl", "onlineUrl").length ){
-				modelJSON.onlineUrl = [$(objectDOM).find("onlineurl", "onlineUrl").first().text()];
+			if( $(objectDOM).find("onlineurl, onlineUrl").length ){
+				modelJSON.onlineUrl = [$(objectDOM).find("onlineurl, onlineUrl").first().text()];
 			}
 
 			//User ID - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
-			if( $(objectDOM).find("userid", "userId").length ){
-				modelJSON.userId = [$(objectDOM).find("userid", "userId").first().text()];
+			if( $(objectDOM).find("userid, userId").length ){
+				modelJSON.userId = [$(objectDOM).find("userid, userId").first().text()];
 			}
+
+      console.log(modelJSON);
 
 			return modelJSON;
 		},
@@ -173,8 +175,8 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			var address    = {},
 				delPoint   = $(addressXML).find("deliverypoint, deliveryPoint"),
 				city       = $(addressXML).find("city"),
-				adminArea  = $(addressXML).find("administrativearea", "administrativeArea"),
-				postalCode = $(addressXML).find("postalcode", "postalCode"),
+				adminArea  = $(addressXML).find("administrativearea, administrativeArea"),
+				postalCode = $(addressXML).find("postalcode, postalCode"),
 				country    = $(addressXML).find("country");
 
 			address.city               = city.length? city.text() : "";
