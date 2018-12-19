@@ -33,7 +33,7 @@ define(["jquery",
 
         /* The events that this view listens to*/
         events: {
-
+            "click #project-metrics-tab": "renderMetricsView"
         },
 
         initialize: function(options) {
@@ -96,35 +96,6 @@ define(["jquery",
             this.subviews.push(this.sectionHomeView);
           }
 
-          //Render the Metrics section
-          if( !this.model.get("hideMetrics") ){
-
-            // this.sectionMetricsView = new ProjectMetricsView({
-            //   model: this.model,
-            //   el: "#project-metrics"
-            //  });
-
-            // TODO: should statsview be a separate view within metricsview?
-            // TODO: why are the results wrong? (search gives 25 datasets, stats gives 20 + 0 data files)
-
-            //Create a base query for the statistics
-			var statsSearchModel = this.model.get("search").clone();
-			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-            MetacatUI.statsModel.set("searchModel", statsSearchModel);
-
-            // add a stats view
-            this.sectionMetricsView = new StatsView({
-    			title: "Statistics and Figures",
-    			description: "A summary of all datasets from the " + this.model.get("label") + " group",
-    			el: "#project-metrics"
-    		});
-
-    		this.subviews.push(this.sectionMetricsView);
-    		this.sectionMetricsView.render();
-            this.subviews.push(this.sectionMetricsView);
-
-          }
-
           //Render the members section
           if( !this.model.get("hideMembers") ){
             this.sectionMembersView = new ProjectMembersView({
@@ -134,14 +105,33 @@ define(["jquery",
             this.subviews.push(this.sectionMembersView);
          }
 
-          //TODO: Incorporate this into the actual view it will live in (Home view)
-          //Render the markdown view
-          // this.sectionMarkdownView = new MarkdownView({markdown:this.model.get("overview").get("markdown")});
-          // this.subviews.push(this.sectionMarkdownView);
-
           _.invoke(this.subviews, 'render');
 
         },
+
+        // render the metrics section
+        renderMetricsView: _.once(function() {
+
+            if( !this.model.get("hideMetrics") ){
+
+                var statsSearchModel = this.model.get("search").clone();
+    			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+                MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+                // add a stats view
+                this.sectionMetricsView = new StatsView({
+        			title: "Statistics and Figures",
+        			description: "A summary of all datasets from the " + this.model.get("label") + " group",
+        			el: "#project-metrics"
+        		});
+
+                this.sectionMetricsView.render();
+                this.subviews.push(this.sectionMetricsView);
+
+            }
+
+
+        }),
 
         /*
         * This function is called when the app navigates away from this view.
