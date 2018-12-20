@@ -4,13 +4,12 @@ define(["jquery",
     "models/ProjectModel",
     "text!templates/project/project.html",
     "views/project/ProjectHeaderView",
-    "views/TOCView",
     "views/project/ProjectHomeView",
     "views/project/ProjectMembersView",
     "views/project/ProjectMetricsView",
     'views/StatsView',
     "views/MarkdownView"],
-    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, TOCView,
+    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, 
       ProjectHomeView, ProjectMembersView, ProjectMetricsView, StatsView, MarkdownView){
     'use_strict';
     /* The ProjectView is a generic view to render
@@ -76,13 +75,6 @@ define(["jquery",
           //Render the header view
           this.headerView = new ProjectHeaderView({ model: this.model });
           this.subviews.push(this.headerView);
-
-          //Render the table of contents view
-          this.tocView = new TOCView({
-            model: this.model,
-            el: "#project-toc-container"
-           });
-          this.subviews.push(this.tocView);
 
           //Create a Search collection for all search events in this view
           this.search = this.model.createSearch();

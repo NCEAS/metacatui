@@ -6,9 +6,10 @@ define(["jquery",
     "views/DataCatalogViewWithFilters",
     "views/filters/FilterGroupsView",
     "views/MarkdownView",
+    "views/TOCView",
     "text!templates/project/projectHome.html"],
     function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, FilterGroupsView,
-      MarkdownView, ProjectHomeTemplate){
+      MarkdownView, TOCView, ProjectHomeTemplate){
 
     /* The ProjectHomeView is a view to render the
      * project home tab (within ProjectSectionView)
@@ -59,6 +60,12 @@ define(["jquery",
           //Render the view
           sectionMarkdownView.render();
 
+          //Render the table of contents view
+          var tocView = new TOCView({
+            model: this.model,
+            el: "#project-toc-container"
+           });
+          tocView.render()
         }
 
      });
