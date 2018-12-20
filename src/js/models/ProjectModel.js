@@ -14,6 +14,7 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
         acknowledgments: null,
         acknowledgmentsLogos: [],
         awards: [],
+        literatureCited: [],
         filterGroups: [],
         //A Search collection that contains all the filters assoc. with this project
         search: new Search(),
@@ -102,7 +103,7 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
       modelJSON.overview = this.parseEMLTextNode(projectNode, "overview");
       modelJSON.results = this.parseEMLTextNode(projectNode, "results");
       modelJSON.acknowledgments = this.parseEMLTextNode(projectNode, "acknowledgments");
-      
+
       //Parse the awards
       modelJSON.awards = [];
       var parse_it = this.parseTextNode;
@@ -113,6 +114,17 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
         });
         modelJSON.awards.push(award_parsed);
       });
+
+      // Parse the literature cited
+      // This will only work for bibtex at the moment
+      var bibtex = $(projectNode).children("literatureCited").children("bibtex");
+      if(bibtex.length > 0){
+          thisModel = this;
+          require(["citation"], function(citation){
+              const Cite = require('citation-js');
+              modelJSON.literatureCited = new Cite(thisModel.parseTextNode(projectNode, "literatureCited")).data;
+          });
+      }
 
       //Parse the associatedParties
       modelJSON.associatedParties = [];
