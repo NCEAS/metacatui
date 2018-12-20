@@ -7,10 +7,9 @@ define(["jquery",
     "views/project/ProjectHomeView",
     "views/project/ProjectMembersView",
     "views/project/ProjectMetricsView",
-    'views/StatsView',
-    "views/MarkdownView"],
-    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView, 
-      ProjectHomeView, ProjectMembersView, ProjectMetricsView, StatsView, MarkdownView){
+    'views/StatsView'],
+    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView,
+      ProjectHomeView, ProjectMembersView, ProjectMetricsView, StatsView){
     'use_strict';
     /* The ProjectView is a generic view to render
      * projects, it will hold project sections

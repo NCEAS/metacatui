@@ -55,6 +55,7 @@ define(["jquery",
           //Create a MarkdownView
           var sectionMarkdownView = new MarkdownView({
             markdown: this.model.get("overview").get("markdown"),
+            citations: this.model.get("literatureCited"),
             el: "#project-description-container"
           });
           //Render the view

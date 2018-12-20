@@ -140,7 +140,7 @@ define(['jquery', 'underscore', 'backbone'],
             // A lookup map of project names to project seriesIds
             projectsMap: {
                 "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",
-				"markdownTest": "urn:uuid:48bbddc9-e14f-4888-b9dc-16d9d1136d40",
+				"markdownTest": "urn:uuid:21580913-c23a-4677-af71-45cf0415a57e",
 				"example": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854d1234"
             }
 		},
