@@ -42,9 +42,6 @@ define([    "jquery", "underscore", "backbone",
             this.stopListening();
             this.listenTo(this, "requiredExtensionsLoaded", function(SDextensions){
 
-                // xss filter is not loaded dynamically. we should always have this.
-                SDextensions.unshift('xssfilter');
-
                 var converter  = new showdown.Converter({
                             metadata: true,
                             simplifiedAutoLink:true,
@@ -73,7 +70,7 @@ define([    "jquery", "underscore", "backbone",
             var markdownView = this;
 
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
-            var SDextensions = ["katex", "highlight", "docbook", "bootstrap", "footnotes", "showdown-citation"];
+            var SDextensions = ["xssfilter", "katex", "highlight", "docbook", "showdown-htags", "bootstrap", "footnotes", "showdown-citation"];
             var numTestsTodo = SDextensions.length;
 
             // each time an extension is tested for (and loaded if required), updateExtensionList is called.
@@ -107,8 +104,16 @@ define([    "jquery", "underscore", "backbone",
                 // test for all of the math/katex delimiters (TODO: see what katex uses for regex. this is too general.)
                 regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
                 regexCitation   = /\^\[.*\]/g;
+                // test for any <h.> tags
+                regexHtags      = new RegExp(`#\\s`);
 
             // ====== test for and load each as required each showdown extension ====== //
+
+            // --- xss --- //
+
+            // there is no test for the xss filter because it should always be included.
+            // it's included via the updateExtensionList function for consistency
+            updateExtensionList("xssfilter", required=true);
 
             // --- katex test --- //
 
@@ -156,6 +161,17 @@ define([    "jquery", "underscore", "backbone",
             } else {
                 updateExtensionList("docbook", required=false);
             };
+
+            // --- htag test --- //
+
+            if( regexHtags.test(markdown) ){
+                require(["showdownHtags"], function(showdownHtags){
+                   updateExtensionList("showdown-htags", required=true);
+                });
+            } else {
+                updateExtensionList("showdown-htags", required=false);
+            };
+
 
             // --- bootstrap test --- //
 

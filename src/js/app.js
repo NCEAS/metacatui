@@ -67,6 +67,7 @@ require.config({
 	showdownCitation:  MetacatUI.root + '/components/showdown/extensions/showdown-citation/showdown-citation',
 	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
 	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
+	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
