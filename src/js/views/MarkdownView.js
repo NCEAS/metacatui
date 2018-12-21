@@ -1,11 +1,9 @@
 define([    "jquery", "underscore", "backbone",
             "showdown",
-            "showdownXssFilter",
             "text!templates/markdown.html" ],
 
     function($, _, Backbone,
         showdown,
-        showdownXssFilter,
         markdownTemplate ){
 
     /* The markdownView is a view that will retrieve and parse markdown */
@@ -53,13 +51,13 @@ define([    "jquery", "underscore", "backbone",
                             extensions: SDextensions
                 });
 
-                htmlFromMD = converter.makeHtml( this.markdown); //
+                htmlFromMD = converter.makeHtml( this.markdown ); //
                 this.$el.append(this.template({ markdown: htmlFromMD }));
 
             });
 
             // detect which extensions we'll need
-            this.listRequiredExtensions( this.markdown);
+            this.listRequiredExtensions( this.markdown );
 
             return this;
         },
@@ -91,6 +89,7 @@ define([    "jquery", "underscore", "backbone",
             };
 
             // ===== the regular expressions used to test whether showdown extensions are required ===== //
+            // note: these expressions test the *markdown* and *not* the html
 
             var regexHighlight  = new RegExp("`.*`"), // too general?
                 regexDocbook    = new RegExp("<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>"),
@@ -112,8 +111,10 @@ define([    "jquery", "underscore", "backbone",
             // --- xss --- //
 
             // there is no test for the xss filter because it should always be included.
-            // it's included via the updateExtensionList function for consistency
-            updateExtensionList("xssfilter", required=true);
+            // it's included via the updateExtensionList function for consistency with the other, optional extensions
+            require(["showdownXssFilter"], function(showdownKatex){
+                updateExtensionList("xssfilter", required=true);
+            })
 
             // --- katex test --- //
 
@@ -127,7 +128,6 @@ define([    "jquery", "underscore", "backbone",
                             { left: '$$',   right: '$$',     display: true,     asciimath: true },
                         ],
                     });
-
                     // because custom config, register katex with showdown
                     showdown.extension("katex", katex);
                     updateExtensionList("katex", required=true);
