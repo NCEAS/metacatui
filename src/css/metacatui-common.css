@@ -2499,6 +2499,9 @@ img[src*="googleapis.com/"].georegion-map{
 	background: inherit;
 	margin-top: 20px;
 }
+.toc-li-sub{
+	margin-left: 18px;
+}
 
 /* markdown citations */
 .markdown .inlineCitation {

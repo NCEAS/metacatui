@@ -58,15 +58,38 @@ define(["jquery",
             citations: this.model.get("literatureCited"),
             el: "#project-description-container"
           });
-          //Render the view
-          sectionMarkdownView.render();
 
           //Render the table of contents view
-          var tocView = new TOCView({
-            model: this.model,
-            el: "#project-toc-container"
+          var h1s = [
+            {
+              "text": "Search",
+              "icon": "icon-search",
+              "link": "#project-filters"
+            },
+            {
+              "text": "Datasets",
+              "icon": "icon-hdd",
+              "link": "#results-view"
+            },
+            {
+              "text": "Project Description",
+              "icon": "icon-file-text-alt",
+              "link": "#project-description-container"
+            },
+          ];
+          this.tocView = new TOCView({
+            targetEl: sectionMarkdownView.el,
+            h1s: h1s,
+            el: "#project-toc-container",
            });
-          tocView.render()
+          // this.tocView.render();
+
+          this.tocView.stopListening();
+          this.tocView.listenTo(sectionMarkdownView, "mdRendered", this.tocView.render);
+
+
+          //Render the view
+          sectionMarkdownView.render();
         }
 
      });

@@ -53,12 +53,11 @@ define([    "jquery", "underscore", "backbone",
 
                 htmlFromMD = converter.makeHtml( this.markdown ); //
                 this.$el.append(this.template({ markdown: htmlFromMD }));
-
+                this.trigger("mdRendered");
             });
 
             // detect which extensions we'll need
-            this.listRequiredExtensions( this.markdown );
-
+            this.listRequiredExtensions( this.markdown);
             return this;
         },
 
