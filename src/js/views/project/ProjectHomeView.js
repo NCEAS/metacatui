@@ -80,13 +80,12 @@ define(["jquery",
           this.tocView = new TOCView({
             targetEl: sectionMarkdownView.el,
             h1s: h1s,
-            el: "#project-toc-container",
-           });
-          // this.tocView.render();
-
+            el: "#project-toc-container"
+          });
+          //Set TOC to render after the Markdown section, so it
+          // can get the rendered h2 tags
           this.tocView.stopListening();
           this.tocView.listenTo(sectionMarkdownView, "mdRendered", this.tocView.render);
-
 
           //Render the view
           sectionMarkdownView.render();
