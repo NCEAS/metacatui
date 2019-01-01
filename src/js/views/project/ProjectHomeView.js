@@ -50,6 +50,9 @@ define(["jquery",
             el: "#project-filters"
           });
 
+          // just for testing TOC -> Delete!
+          $(filterGroupsView.el).append("<h2 id='foo' style='display: none'>First h2</h2><h2 id='bar' style='display: none'>H tutu</h2>")
+
           filterGroupsView.render();
 
           //Create a MarkdownView
@@ -64,21 +67,20 @@ define(["jquery",
             {
               "text": "Search",
               "icon": "icon-search",
-              "link": "#project-filters"
+              "link": filterGroupsView.el
             },
             {
               "text": "Datasets",
               "icon": "icon-hdd",
-              "link": "#results-view"
+              "link": dataCatalogView.el
             },
             {
               "text": "Project Description",
               "icon": "icon-file-text-alt",
-              "link": "#project-description-container"
+              "link": sectionMarkdownView.el
             },
           ];
           this.tocView = new TOCView({
-            targetEl: sectionMarkdownView.el,
             h1s: h1s,
             el: "#project-toc-container"
           });

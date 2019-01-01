@@ -33,7 +33,6 @@ define(["jquery",
         /* Construct a new instance  */
         initialize: function(options) {
             if(typeof options !== "undefined"){
-                this.targetEl = options.targetEl         || "";
                 this.h1s = options.h1s                   || "";
             }
         },
@@ -45,6 +44,9 @@ define(["jquery",
             var ul = this.$el.html(this.templateUL()).find("#toc-ul");
             // Render the top level items that have been passed in
             _.each(this.h1s, function(h1) {
+                // Deal with id-less elements handed in
+                h1.link = "#" + $(h1.link).attr("id");
+                // Render the top level item
                 ul.append(liTemplate({"tocItem": h1}));
                 // Within each top level item, look for h2 tags and
                 // render them as second level TOC items
