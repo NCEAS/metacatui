@@ -50,9 +50,6 @@ define(["jquery",
             el: "#project-filters"
           });
 
-          // just for testing TOC -> Delete!
-          $(filterGroupsView.el).append("<h2 id='foo' style='display: none'>First h2</h2><h2 id='bar' style='display: none'>H tutu</h2>")
-
           filterGroupsView.render();
 
           //Create a MarkdownView
