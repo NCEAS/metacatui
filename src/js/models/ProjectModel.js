@@ -41,8 +41,12 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
 		initialize: function(options){
 		},
 
+    urlFromID: function(id){
+			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(id);
+    },
+    
     url: function(){
-			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
+			return this.urlFromID(this.get("id"));
 		},
 
     /*
@@ -96,8 +100,18 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
       modelJSON = this.parseCollectionXML(projectNode);
 
       //Parse the simple text nodes
-      modelJSON.logo = this.parseTextNode(projectNode, "logo");
-      modelJSON.acknowledgmentsLogo = this.parseTextNode(projectNode, "acknowledgmentsLogo", true);
+      console.log(this.parseTextNode(projectNode, "logo"));
+      var projLogo = this.parseTextNode(projectNode, "logo");
+      modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
+      
+      //Parse acknowledgement logos into urls
+      var logos = this.parseTextNode(projectNode, "acknowledgmentsLogo", true);
+      modelJSON.acknowledgmentsLogos = [];
+      _.each(logos, function(logo, i) {
+        modelJSON.acknowledgmentsLogos.push(
+          MetacatUI.appModel.get("objectServiceUrl") + logo
+        );
+      });
 
       //Parse the EMLText elements
       modelJSON.overview = this.parseEMLTextNode(projectNode, "overview");

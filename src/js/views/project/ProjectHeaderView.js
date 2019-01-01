@@ -20,7 +20,8 @@ define(["jquery",
         render: function() {
             this.$el.append(this.template({
               label: this.model.get("label"),
-              description: this.model.get("description")
+              description: this.model.get("description"),
+              logo: this.model.get("logo")
             }));
             return this;
         }
