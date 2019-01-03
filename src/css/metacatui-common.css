@@ -2502,6 +2502,9 @@ img[src*="googleapis.com/"].georegion-map{
 .toc-li-sub{
 	margin-left: 18px;
 }
+.logo-row{
+	margin-bottom: 15px;
+}
 
 /* markdown citations */
 .markdown .inlineCitation {

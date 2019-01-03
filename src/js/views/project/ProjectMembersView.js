@@ -3,10 +3,11 @@ define(["jquery",
     "backbone",
     "text!templates/metadata/EMLPartyDisplay.html",
     "views/project/ProjectSectionView",
+    "views/project/ProjectLogosView",
     "text!templates/project/projectAcknowledgements.html",
     "text!templates/project/projectAwards.html"],
     function($, _, Backbone, EMLPartyDisplayTemplate, ProjectSectionView,
-        AcknowledgementsTemplate, AwardsTemplate){
+        ProjectLogosView, AcknowledgementsTemplate, AwardsTemplate){
 
     /* The ProjectMembersView is a view to render the
      * project members tab (within ProjectSectionView)
@@ -69,7 +70,13 @@ define(["jquery",
                 };
                 ack_div.append(this.awardsTemplate({awards: awards}));
             };
-            // this.$el.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
+            
+            var ackLogos = this.model.get("acknowledgmentsLogos") || [];
+            var logosView = new ProjectLogosView({
+                model: ackLogos,
+                el: this.el
+            });
+            logosView.render();
         },
 
       //   onClose: function() {
