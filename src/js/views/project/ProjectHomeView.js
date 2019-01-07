@@ -62,14 +62,9 @@ define(["jquery",
           //Render the table of contents view
           var h1s = [
             {
-              "text": "Search",
-              "icon": "icon-search",
-              "link": filterGroupsView.el
-            },
-            {
               "text": "Datasets",
               "icon": "icon-hdd",
-              "link": dataCatalogView.el
+              "link": filterGroupsView.el
             },
             {
               "text": "Project Description",
