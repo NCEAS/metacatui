@@ -2499,8 +2499,15 @@ img[src*="googleapis.com/"].georegion-map{
 	background: inherit;
 	margin-top: 20px;
 }
-.toc-li-sub{
+#project-toc-container{
+	position: sticky;
+	position: -webkit-sticky;
+	top: 20px;
+	margin-top: 58px;
+}
+i.toc-sub-item{
 	margin-left: 18px;
+	visibility: hidden;
 }
 .logo-row{
 	margin-bottom: 15px;

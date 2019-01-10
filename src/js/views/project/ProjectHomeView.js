@@ -62,6 +62,12 @@ define(["jquery",
           //Render the table of contents view
           var h1s = [
             {
+              "text": "Top",
+              "icon": "icon-arrow-up",
+              "link": "#metacatui-app",
+              "showH2s": false
+            },
+            {
               "text": "Datasets",
               "icon": "icon-hdd",
               "link": filterGroupsView.el

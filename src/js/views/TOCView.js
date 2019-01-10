@@ -50,14 +50,16 @@ define(["jquery",
                 ul.append(liTemplate({"tocItem": h1}));
                 // Within each top level item, look for h2 tags and
                 // render them as second level TOC items
-                var h2s = $(h1.link).find("h2"); 
-                _.each(h2s, function(h2) {
-                    var tocItem = {
-                        "link": "#" + $(h2).attr("id"),
-                        "text": $(h2).text()
-                    };
-                    ul.append(liSubTemplate({"tocItem": tocItem}));
-                });
+                var h2s = $(h1.link).find("h2");
+                if(typeof h1.showH2s == "undefined" || h1.showH2s == true) {
+                    _.each(h2s, function(h2) {
+                        var tocItem = {
+                            "link": "#" + $(h2).attr("id"),
+                            "text": $(h2).text()
+                        };
+                        ul.append(liSubTemplate({"tocItem": tocItem}));
+                    });
+                }
             });
             return this;
         },
