@@ -1555,7 +1555,7 @@ body > .alert-container {
   max-width: 150px;
   max-width: calc(165px - 2.127659574468085%);
   max-height: 700px;
-  overflow-y: scroll;
+  overflow: scroll;
 }
 .tab-content,
 .row-fluid .tab-content.span10{
@@ -1563,8 +1563,6 @@ body > .alert-container {
 	width: calc(100% - 165px);
 }
 .attributeList a{
-	text-overflow: ellipsis;
-	overflow: hidden;
 	white-space: nowrap;
 	max-width: 100%;
 }
