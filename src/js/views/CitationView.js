@@ -338,7 +338,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(seriesId){
 				//Create a link for the identifier if it is a DOI
 				if( model.isDOI(seriesId) && !this.createLink ){
-					var doiURL  = (seriesId.indexOf("doi:") == 0)? "https://doi.org/" + seriesId.substring(4) : seriesId,
+					var doiURL  = this.createDoiUrl(seriesId),
 							doiLink = $(document.createElement("a"))
 													.attr("href", doiURL)
 													.text(seriesId);
@@ -372,8 +372,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 				return idEl;
 			}
 			// End PANGAEA-specific override 3
-			else if( id.indexOf("doi:") == 0 && !this.createLink ){
-				var doiURL  = (id.indexOf("doi:") == 0)? "https://doi.org/" + id.substring(4) : id,
+			else if( model.isDOI(id) && !this.createLink ){
+				var doiURL  = this.createDoiUrl(id),
 						doiLink = $(document.createElement("a"))
 												.attr("href", doiURL)
 												.text(id);
@@ -385,6 +385,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			}
 
 			return idEl;
+		},
+
+		createDoiUrl: function(doi){
+
+			if( doi.indexOf("http") == 0 ){
+				return doi;
+			}
+			else if( doi.indexOf("doi:") == 0){
+				return "https://doi.org/" + doi.substring(4);
+			}
+			else{
+				return "https://doi.org/" + doi;
+			}
+
 		},
 
 		setUpListeners: function(){
