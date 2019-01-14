@@ -51,6 +51,7 @@ define(["jquery",
           });
 
           filterGroupsView.render();
+          filterGroupsView.$el.addClass(filterGroupsView.className)
 
           //Create a MarkdownView
           var sectionMarkdownView = new MarkdownView({
