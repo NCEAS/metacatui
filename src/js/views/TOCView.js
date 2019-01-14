@@ -34,6 +34,7 @@ define(["jquery",
         initialize: function(options) {
             if(typeof options !== "undefined"){
                 this.h1s = options.h1s                   || "";
+                this.linkedEl = options.linkedEl         || "";
             }
         },
 
@@ -59,6 +60,18 @@ define(["jquery",
                         };
                         ul.append(liSubTemplate({"tocItem": tocItem}));
                     });
+                }
+            });
+            // Hide / show TOC when tabs are changed
+            var linkedEl = this.linkedEl;
+            var tocEl = this.$el;
+            $('a[data-toggle="tab"]').on('shown', function (e) {
+                if ($(linkedEl).is(":visible")) {
+                //   console.log("turn TOC on");
+                  tocEl.css("visibility", "visible");
+                } else {
+                //   console.log("turn TOC off");
+                  tocEl.css("visibility", "hidden");
                 }
             });
             return this;
