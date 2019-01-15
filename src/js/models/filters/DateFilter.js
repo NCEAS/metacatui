@@ -9,7 +9,9 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         min: 0,
-        max: (new Date()).getUTCFullYear()
+        max: (new Date()).getUTCFullYear(),
+        minDefault: 0,
+        maxDefault: (new Date()).getUTCFullYear()
       });
     },
 
@@ -29,7 +31,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       //If a min XML node is found
       if(minNode.length){
         //Parse the text content of the node into a float
-        modelJSON.min = (new Date(minNode[0].textContent)).getUTCFullYear();
+        modelJSON.minDefault = (new Date(minNode[0].textContent)).getUTCFullYear();
+        modelJSON.min = modelJSON.minDefault;
 
         //Find the max XML node
         var maxNode = $(xml).find("max");
@@ -37,11 +40,50 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         //If a max XML node is found
         if(maxNode.length){
           //Parse the text content of the node into a float
-          modelJSON.max = (new Date(maxNode[0].textContent)).getUTCFullYear();
+          modelJSON.maxDefault = (new Date(maxNode[0].textContent)).getUTCFullYear();
+          modelJSON.max = modelJSON.maxDefault;
         }
       }
 
       return modelJSON;
+    },
+
+    /*
+     * Builds a query string that represents this filter.
+     *
+     * @return {string} The query string to send to Solr
+     */
+    getQuery: function(){
+
+      //Start the query string
+      var queryString = "";
+
+      //Only construct the query if the min or max is different than the default
+      if( this.get("min") != this.get("minDefault") || this.get("max") != this.get("maxDefault") ){
+
+        //Iterate over each filter field and add to the query string
+        _.each(this.get("fields"), function(field, i, allFields){
+
+          //Add the date range for this field to the query string
+          queryString += field + ":[" + this.get("min") + "-01-01T00:00:00Z%20TO%20" +
+           this.get("max") + "-12-31T00:00:00Z]";
+
+          //If there is another field, add an operator
+          if( allFields[i+1] ){
+            queryString += "%20" + this.get("operator") + "%20";
+          }
+
+        }, this);
+
+        //If there is more than one field, wrap the query in paranthesis
+        if( this.get("fields").length > 1 ){
+          queryString = "(" + queryString + ")";
+        }
+
+      }
+
+      return queryString;
+
     }
 
   });
