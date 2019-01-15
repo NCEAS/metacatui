@@ -17,7 +17,8 @@ define(['jquery', 'underscore', 'backbone',
     template: _.template(Template),
 
     events: {
-      "change input[type='checkbox']" : "setToggleWidth"
+      "change input" : "setToggleWidth",
+      "change input" : "updateModel"
     },
 
     initialize: function (options) {
@@ -105,6 +106,33 @@ define(['jquery', 'underscore', 'backbone',
 
       //Add the CSS to the style tag
       styleTag.html(newCSS);
+    },
+
+    /*
+    * Updates the value set on the ToggleFilter Model associated with this view.
+    * The filter value is grabbed from the checkbox element in this view.
+    *
+    */
+    updateModel: function(){
+
+      //Check if the checkbox is checked
+      var isChecked = this.$("input").prop("checked");
+
+      //If the toggle is checked, then set the true toggle value on the model
+      if( isChecked ){
+        this.model.set("values", [ this.model.get("trueValue") ]);
+      }
+      //If the toggle is not checked and there is no false value specified,
+      // then remove the value from the model completely
+      else if(!this.model.get("falseValue")){
+        this.model.set("values", []);
+      }
+      //If the toggle is not checked and there is a false value specified,
+      // then set the false toggle value on the model
+      else{
+        this.model.set("values", [ this.model.get("falseValue") ]);
+      }
+
     }
 
   });
