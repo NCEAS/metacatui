@@ -3666,6 +3666,24 @@ a.disabled {
 .filter-group > .row-fluid:not(:first-child){
 	margin-top: 20px;
 }
+.applied-filter.label{
+	text-shadow: none;
+	font-size: 1em;
+	font-weight: normal;
+	padding: 5px;
+	margin-right: 10px;
+}
+.applied-filter .icon.remove-filter{
+	opacity: .7;
+	margin-left: 10px;
+	color: inherit;
+}
+.applied-filters{
+	margin: 0px;
+}
+.filters-header{
+	margin: 10px;
+}
 #project-filters{
 	border: 1px solid #CCC;
 	box-sizing: border-box;
@@ -3675,6 +3693,15 @@ a.disabled {
 }
 #project-filters > .nav-tabs{
 	margin-bottom: 0px;
+	border: 1px solid #CCC;
+	border-left: 0px;
+	border-right: 0px;
+}
+#project-filters > .nav-tabs > li:first-child > a{
+	border-left: 0px;
+}
+#project-filters > .nav-tabs > li:last-child > a{
+	border-right: 0px;
 }
 
 /******** Toggle Widget ************/
