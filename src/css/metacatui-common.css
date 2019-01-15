@@ -3628,7 +3628,12 @@ a.disabled {
 }
 .filter.date .min,
 .filter.date .max{
-	max-width: 60px;
+	max-width: 30%;
+}
+.filter.date .to{
+	width: 20%;
+	text-align: center;
+	display: inline-block;
 }
 .filter.date .min{
 	float: left;
