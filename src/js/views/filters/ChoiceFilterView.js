@@ -31,6 +31,12 @@ define(['jquery', 'underscore', 'backbone',
 
       var select = this.$("select");
 
+      //Create the default option
+      var defaultOption = $(document.createElement("option"))
+                            .attr("value", "")
+                            .text( this.model.get("placeholder") || "Choose a " + this.model.get("label") );
+      select.append(defaultOption);
+
       //Create an option element for each choice listen in the model
       _.each( this.model.get("choices"), function(choice){
 
