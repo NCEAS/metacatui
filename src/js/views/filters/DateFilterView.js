@@ -39,8 +39,8 @@ define(['jquery', 'underscore', 'backbone',
       this.$('.year-slider').slider({
           range: true,
           disabled: false,
-          min: this.model.get("min"),  //sets the minimum on the UI slider on initialization
-          max: this.model.get("max"),   //sets the maximum on the UI slider on initialization
+          min: this.model.get("minDefault"),  //sets the minimum on the UI slider on initialization
+          max: this.model.get("maxDefault"),   //sets the maximum on the UI slider on initialization
           values: [ this.model.get("min"), this.model.get("max") ], //where the left and right slider handles are
           stop: function( event, ui ) {
 
@@ -58,12 +58,12 @@ define(['jquery', 'underscore', 'backbone',
 
     /*
     * Gets the min and max years from the number inputs and updates the DateFilter
-    *  model and the year UI slider. 
+    *  model and the year UI slider.
     * @param {Event} e - The event that triggered this callback function
     */
     updateYearRange : function(e) {
 
-      //Get hte min and max values from the number inputs
+      //Get the min and max values from the number inputs
       var minVal = this.$('input.min').val();
       var maxVal = this.$('input.max').val();
 
