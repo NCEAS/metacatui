@@ -2505,6 +2505,12 @@ img[src*="googleapis.com/"].georegion-map{
 	top: 20px;
 	margin-top: 58px;
 }
+#toc-container a{
+	color: #555;
+}
+#toc-container i{
+	color: #069;
+}
 i.toc-sub-item{
 	margin-left: 18px;
 	visibility: hidden;
