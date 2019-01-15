@@ -213,7 +213,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Add the value to the query string. Wrap in wildcards, if specified
         if( value.indexOf(" ") > -1 ){
-          valuesQueryString = '"' + value + '"';
+          valuesQueryString += '"' + value + '"';
         }
         else if( this.get("matchSubstring") ){
 
