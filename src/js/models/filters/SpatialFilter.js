@@ -29,7 +29,10 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     south: null,
                     
                     /* The default precision level of the geohash-based search */
-                    geohashLevel: null
+                    geohashLevel: null,
+                    
+                    /* The list of grouped geohashes, as complete or incomplete 32 tiles */
+                    groupedGeohashes: {}
                 });
             },
             
@@ -85,6 +88,15 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     geohashGroups[completeGroups[0].length.toString()] = completeGroups;
                 }
                 this.set("geohashGroups", geohashGroups); // Triggers a change event
+            },
+            
+            /**
+             * Reset the geohash fields in the model
+             */
+            resetGeohashes: function() {
+                this.set("geohashes", this.defaults().geohashes);
+                this.set("geohashLevel", this.defaults().geohashLevel);
+                this.set("geohashGroups", this.defaults().geohashGroups);
             }
         });
         return SpatialFilter;
