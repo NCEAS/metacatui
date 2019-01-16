@@ -3632,12 +3632,17 @@ a.disabled {
 	width: 90%;
 	width: calc(100% - 20px);
 }
+.filter-group .filter .ui-slider-handle{
+  width: 7px;
+  height: 16px;
+}
 .filter.date .min,
 .filter.date .max{
 	max-width: 30%;
 }
 .filter.date .to{
-	width: 20%;
+	width: 30%;
+	width: calc(40% - 50px);
 	text-align: center;
 	display: inline-block;
 }

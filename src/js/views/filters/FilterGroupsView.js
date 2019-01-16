@@ -121,26 +121,46 @@ define(['jquery', 'underscore', 'backbone',
 
       this.$el.prepend( $(document.createElement("div")).addClass("filters-header") );
 
-      this.renderAppliedFilters();
+      this.renderAppliedFiltersSection();
 
     },
 
     /*
     * Renders the section of the view that will display the currently-applied filters
     */
-    renderAppliedFilters: function(){
+    renderAppliedFiltersSection: function(){
 
+      //Make the applied filters list
       var appliedFiltersEl = $(document.createElement("ul")).addClass("applied-filters");
 
+      //Add the applied filters element to the filters header
       this.$(".filters-header").append(appliedFiltersEl);
 
       _.each( this.filterGroups, function(filterGroup){
 
+        //Get all the FilterModels
         var filters = filterGroup.get("filters");
-        this.listenTo(filters, "change:values", this.updateAppliedFilters);
 
-        var dateFilters = _.findWhere(filters, { type: "DateFilter" });
-        this.listenTo(dateFilters, "change:min change:max", this.updateAppliedDateFilters);
+        //Get all the nonNumeric filter models
+        var nonNumericFilters = filters.reject(function(filterModel){
+          return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
+        });
+        //Listen to changes on the "values" attribute for nonNumeric filters
+        _.each(nonNumericFilters, function(nonNumericFilter){
+          this.listenTo(nonNumericFilter, "change:values", this.updateAppliedFilters);
+        }, this);
+
+        //Get the numeric filters and listen to the min and max values
+        var numericFilters = _.where(filters.models, { type: "NumericFilter" });
+        _.each(numericFilters, function(numericFilter){
+          this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
+        }, this);
+
+        //Get the date filters and listen to the min and max values
+        var dateFilters = _.where(filters.models, { type: "DateFilter" });
+        _.each(dateFilters, function(dateFilter){
+          this.listenTo(dateFilter, "change:min change:max", this.updateAppliedRangeFilters);
+        }, this);
 
       }, this);
 
@@ -157,7 +177,7 @@ define(['jquery', 'underscore', 'backbone',
       if( filterModel.changed && filterModel.changed.values ){
 
         //Get the new values and the previous values
-        var newValues = filterModel.changed.values,
+        var newValues      = filterModel.changed.values,
             previousValues = filterModel.previousAttributes().values,
             //Find the values that were removed
             removedValues  = _.difference(previousValues, newValues),
@@ -223,9 +243,48 @@ define(['jquery', 'underscore', 'backbone',
     },
 
     /*
-    * When a DateFilter model is changed, update the applied filters in the UI
+    * When a NumericFilter or DateFilter model is changed, update the applied filters in the UI
     */
-    updateAppliedDateFilters: function(filterModel){
+    updateAppliedRangeFilters: function(filterModel){
+
+      //If the values attribue has changed...
+      if( filterModel.changed && (filterModel.changed.min || filterModel.changed.max) ){
+
+        //Create the filter label
+        var filterLabel = filterModel.get("label") + ": " + filterModel.get("min") +
+          " to " + filterModel.get("max");
+
+        //Create the applied filter element
+        var removeIcon    = $(document.createElement("a"))
+                              .addClass("icon icon-remove remove-filter icon-on-right")
+                              .attr("title", "Remove this filter"),
+            appliedFilter = $(document.createElement("li"))
+                              .addClass("applied-filter label")
+                              .text(filterLabel)
+                              .append(removeIcon)
+                              .data("model", filterModel);
+
+        //Keep track if this filter is already displayed and needs to be replaced
+        var replaced = false;
+
+        //Check if this filter model already has an applied filter in the UI
+        _.each(this.$(".applied-filter"), function(appliedFilterEl){
+
+          //If this applied filter already is displayed, replace it
+          if( $(appliedFilterEl).data("model") == filterModel ){
+            //Replace the applied filter element with the new one
+            $(appliedFilterEl).replaceWith(appliedFilter);
+            replaced = true;
+          }
+
+        }, this);
+
+        if( !replaced ){
+          //Add the applied filter to the view
+          this.$(".applied-filters").append(appliedFilter);
+        }
+
+      }
 
     },
 
