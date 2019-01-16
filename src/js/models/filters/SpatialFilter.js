@@ -89,15 +89,6 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                 }
                 this.set("geohashGroups", geohashGroups); // Triggers a change event
             },
-            
-            /**
-             * Reset the geohash fields in the model
-             */
-            resetGeohashes: function() {
-                this.set("geohashes", this.defaults().geohashes);
-                this.set("geohashLevel", this.defaults().geohashLevel);
-                this.set("geohashGroups", this.defaults().geohashGroups);
-            }
         });
         return SpatialFilter;
 });
