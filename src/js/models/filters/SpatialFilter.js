@@ -45,6 +45,7 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
              * Initialize the model, calling super
              */
             initialize: function(attributes, options) {
+                this.on("change:geohashes", groupGeohashes);
             },
             
             /**
