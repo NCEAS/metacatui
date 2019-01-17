@@ -32,7 +32,10 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     geohashLevel: null,
                     
                     /* The list of grouped geohashes, as complete or incomplete 32 tiles */
-                    groupedGeohashes: {}
+                    groupedGeohashes: {},
+                    
+                    /* A flag for enabling or disabling geohashes in queries */
+                    useGeohash: true
                 });
             },
             
@@ -50,9 +53,46 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
             
             /**
              * Builds a query string that represents this spatial filter
+             * @return queryFragment - the query string representing the geohash constraints
              */
             getQuery: function() {
+                var queryFragment = "";
+                var geohashes = this.get("geohashes");
+                var groups = this.get("geohashGroups");
+                var geohashList;
                 
+                // Only return geohash query fragments when they are enabled in the filter
+                if ( this.get("useGeohash") ) {
+                    if ( (typeof geohashes !== "undefined") && geohashes.length > 0 ) {
+                        if ( (typeof geohashGroups !== "undefined") && 
+                            Object.keys(groups).length > 0
+                        ) {
+                            // Group the Solr query fragment
+                            queryFragment += "+(";
+                            
+                            // Append geohashes at each level up to a fixed query string length
+                            _.each(Object.keys(groups), function(level) {
+                                geohashList = groups[level];
+                                queryFragment += "geohash_" + level + ":(";
+                                _.each(geohashList, function(geohash) {
+                                    if ( queryFragment.length < 7900 ) {
+                                        queryFragment += geohash + "%20OR%20";
+                                    }
+                                });
+                                // Remove the last OR
+                                queryFragment = 
+                                    queryFragment.substring(0, (queryFragment.length - 8));
+                                queryFragment += ")%20OR%20";
+                            });
+                            // Remove the last OR
+                            queryFragment = queryFragment.substring(0, (queryFragment.length - 8));
+                            // Ungroup the Solr query fragment
+                            queryFragment += ")";
+                            
+                        }
+                    }
+                }
+                return queryFragment;
             },
             
             /**
