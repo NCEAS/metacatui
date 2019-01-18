@@ -36,7 +36,7 @@ define(['jquery', 'underscore', 'backbone',
       var view = this;
 
       //jQueryUI slider
-      this.$('.year-slider').slider({
+      this.$('.slider').slider({
           range: true,
           disabled: false,
           min: this.model.get("minDefault"),  //sets the minimum on the UI slider on initialization
@@ -54,6 +54,10 @@ define(['jquery', 'underscore', 'backbone',
 
           }
         });
+
+        //When the rangeReset event is triggered, reset the slider
+        this.listenTo(view.model, "rangeReset", this.resetSlider);
+
     },
 
     /*
@@ -73,12 +77,26 @@ define(['jquery', 'underscore', 'backbone',
 
       //Update the UI slider to match the new min and max
       // Setter
-      this.$( ".year-slider" ).slider( "option", "values", [ minVal, maxVal ] );
+      this.$( ".slider" ).slider( "option", "values", [ minVal, maxVal ] );
 
       //Send this event to Google Analytics
       if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
         ga("send", "event", "project search", "filter, Data Year", minVal + " to " + maxVal);
       }
+
+    },
+
+    /*
+    * Resets the slider to the default values
+    */
+    resetSlider: function(){
+
+      //Set the min and max values on the slider widget
+      this.$( ".slider" ).slider( "option", "values", [ this.model.get("minDefault"), this.model.get("maxDefault") ] );
+
+      //Reset the min and max values
+      this.$('input.min').val( this.model.get("minDefault") );
+      this.$('input.max').val( this.model.get("maxDefault") );
 
     }
 

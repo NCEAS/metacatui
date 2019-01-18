@@ -247,12 +247,33 @@ define(['jquery', 'underscore', 'backbone',
     */
     updateAppliedRangeFilters: function(filterModel){
 
-      //If the values attribue has changed...
-      if( filterModel.changed && (filterModel.changed.min || filterModel.changed.max) ){
+      //If the minimum and maximum values are set to the default, remove the filter element
+      if( filterModel.get("min") == filterModel.get("minDefault") &&
+          filterModel.get("max") == filterModel.get("maxDefault")){
 
-        //Create the filter label
-        var filterLabel = filterModel.get("label") + ": " + filterModel.get("min") +
-          " to " + filterModel.get("max");
+        //Find the applied filter element for this filter model
+        _.each(this.$(".applied-filter"), function(filterEl){
+
+          if( $(filterEl).data("model") == filterModel ){
+            //Remove the applied filter element
+            $(filterEl).remove();
+          }
+
+        }, this);
+
+      }
+      //If the values attribue has changed...
+      else if( filterModel.changed && (filterModel.changed.min || filterModel.changed.max) ){
+
+        //Create the filter label for ranges of numbers
+        if( filterModel.type == "DateFilter" || filterModel.get("range") ){
+          var filterLabel = filterModel.get("label") + ": " + filterModel.get("min") +
+            " to " + filterModel.get("max");
+        }
+        //Create the filter label for a single number value
+        else{
+          var filterLabel = filterModel.get("label") + ": " + filterModel.get("min");
+        }
 
         //Create the applied filter element
         var removeIcon    = $(document.createElement("a"))
@@ -299,16 +320,31 @@ define(['jquery', 'underscore', 'backbone',
       var appliedFilterEl = $(e.target).parents(".applied-filter"),
           filterModel =  appliedFilterEl.data("model");
 
-      //Remove the given value from the filter model
       if( filterModel ){
 
-        //Get the current value
-        var values = filterModel.get("values"),
-            //Remove the value that was in this applied filter
-            newValues = _.without(values, appliedFilterEl.data("value"));
+        //NumericFilters and DateFilters get the min and max values reset
+        if( filterModel.type == "NumericFilter" || filterModel.type == "DateFilter" ){
 
-        //Updates the values on the model
-        filterModel.set("values", newValues);
+          //Set the min and max values
+          filterModel.set({
+            min: filterModel.get("minDefault"),
+            max: filterModel.get("maxDefault")
+          });
+
+          //Trigger the reset event
+          filterModel.trigger("rangeReset");
+
+        }
+        //For all other filter types
+        else{
+          //Get the current value
+          var values = filterModel.get("values"),
+              //Remove the value that was in this applied filter
+              newValues = _.without(values, appliedFilterEl.data("value"));
+
+          //Updates the values on the model
+          filterModel.set("values", newValues);
+        }
 
       }
 
