@@ -16,7 +16,8 @@ define(['jquery', 'underscore', 'backbone',
     className: "filter-groups tabbable",
 
     events: {
-      "click .remove-filter" : "removeFilter"
+      "click .remove-filter" : "handleRemove",
+      "click .clear-all"     : "removeAllFilters"
     },
 
     initialize: function (options) {
@@ -130,11 +131,21 @@ define(['jquery', 'underscore', 'backbone',
     */
     renderAppliedFiltersSection: function(){
 
+      //Add a title to the header
+      var headerText = $(document.createElement("h5"))
+                        .addClass("filters-title")
+                        .text("Current search")
+                        .append( $(document.createElement("a"))
+                                  .text("Clear all")
+                                  .addClass("clear-all hidden")
+                                  .prepend( $(document.createElement("i"))
+                                              .addClass("icon icon-remove icon-on-left") ));
+
       //Make the applied filters list
       var appliedFiltersEl = $(document.createElement("ul")).addClass("applied-filters");
 
       //Add the applied filters element to the filters header
-      this.$(".filters-header").append(appliedFiltersEl);
+      this.$(".filters-header").append(headerText, appliedFiltersEl);
 
       _.each( this.filterGroups, function(filterGroup){
 
@@ -277,6 +288,15 @@ define(['jquery', 'underscore', 'backbone',
 
       }
 
+      //If there is an applied filter, show the Clear All button
+      if( this.$(".applied-filter").length ){
+        this.$(".clear-all").show();
+      }
+      //If there are no applied filters, hide the Clear All button
+      else{
+        this.$(".clear-all").hide();
+      }
+
     },
 
     /*
@@ -344,18 +364,40 @@ define(['jquery', 'underscore', 'backbone',
 
       }
 
+      //If there is an applied filter, show the Clear All button
+      if( this.$(".applied-filter").length ){
+        this.$(".clear-all").show();
+      }
+      //If there are no applied filters, hide the Clear All button
+      else{
+        this.$(".clear-all").hide();
+      }
+
+    },
+
+    /*
+    * When a remove button is clicked, get the filter model associated with it
+    /* and remove the filter from the filter group
+    *
+    * @param {Event} - The DOM Event that occured on the filter remove icon
+    */
+    handleRemove: function(e){
+
+      //Get the applied filter element and the filter model associated with it
+      var appliedFilterEl = $(e.target).parents(".applied-filter"),
+          filterModel =  appliedFilterEl.data("model");
+
+      //Remove the filter from the filter group model
+      this.removeFilter(filterModel, appliedFilterEl);
+
     },
 
     /*
     * Remove the filter from the UI and the Search collection
     *
-    * @param {Event} - The DOM Event that occured on the filter remove icon
     */
-    removeFilter: function(e){
+    removeFilter: function(filterModel, appliedFilterEl){
 
-      //Get the applied filter element and the filter model associated with it
-      var appliedFilterEl = $(e.target).parents(".applied-filter"),
-          filterModel =  appliedFilterEl.data("model");
 
       if( filterModel ){
 
@@ -377,7 +419,7 @@ define(['jquery', 'underscore', 'backbone',
           //Get the current value
           var values = filterModel.get("values"),
               //Remove the value that was in this applied filter
-              newValues = _.without(values, appliedFilterEl.data("value"));
+              newValues = _.without(values, $(appliedFilterEl).data("value"));
 
           //Updates the values on the model
           filterModel.set("values", newValues);
@@ -385,6 +427,21 @@ define(['jquery', 'underscore', 'backbone',
 
       }
 
+    },
+
+    /*
+    * Gets all the applied filters in this view and their associated filter models
+    *   and removes them.
+    */
+    removeAllFilters: function(){
+
+      //Iterate over each applied filter in the view
+      _.each( this.$(".applied-filter"), function(appliedFilterEl){
+
+        //Remove the filter from the fitler group
+        this.removeFilter($(appliedFilterEl).data("model"), appliedFilterEl);
+
+      }, this);
     }
 
   });
