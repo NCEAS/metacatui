@@ -61,7 +61,7 @@ define(["jquery",
           });
 
           //Render the table of contents view
-          var h1s = [
+          var topLevelItems = [
             {
               "text": "Top",
               "icon": "icon-arrow-up",
@@ -71,17 +71,17 @@ define(["jquery",
             {
               "text": "Datasets",
               "icon": "icon-hdd",
-              "link": filterGroupsView.el
+              "link": filterGroupsView.el,
             },
             {
               "text": "Project Description",
               "icon": "icon-file-text-alt",
-              "link": sectionMarkdownView.el
+              "link": sectionMarkdownView.el,
             },
           ];
 
           var tocView = new TOCView({
-            h1s: h1s,
+            topLevelItems: topLevelItems,
             el: "#project-toc-container",
             linkedEl: this.el
           });
