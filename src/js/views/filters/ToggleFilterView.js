@@ -17,7 +17,6 @@ define(['jquery', 'underscore', 'backbone',
     template: _.template(Template),
 
     events: {
-      "change input" : "setToggleWidth",
       "change input" : "updateModel"
     },
 
@@ -38,6 +37,8 @@ define(['jquery', 'underscore', 'backbone',
 
       this.$el.html( this.template( modelJSON ) );
 
+      this.listenTo(this.model, "change:values", this.updateToggle);
+
     },
 
     /*
@@ -50,6 +51,23 @@ define(['jquery', 'underscore', 'backbone',
       this.setToggleWidth();
     },
 
+    updateToggle: function(){
+
+      //If the model is set to true
+      if( this.model.get("values").length && this.model.get("values")[0] == this.model.get("trueValue") ){
+        this.$("input").prop("checked", true);
+      }
+      else if( this.model.get("values").length && this.model.get("values")[0] == this.model.get("falseValue") ){
+        this.$("input").prop("checked", false);
+      }
+      else if( !this.model.get("values").length ){
+        this.$("input").prop("checked", false);
+      }
+
+      this.setToggleWidth();
+
+    },
+
     /*
     * Gets the width of the toggle labels and sets the various CSS attributes
     * necessary for the switch to fully display each label
@@ -59,7 +77,7 @@ define(['jquery', 'underscore', 'backbone',
       var switchPadding    = 24,
           onSwitchWidth = this.$(".true-label").width(),
           offSwitchWidth  = this.$(".false-label").width(),
-          totalSwitchWidth = onSwitchWidth + offSwitchWidth + (switchPadding * 2) + 1,
+          totalSwitchWidth = onSwitchWidth + offSwitchWidth + (switchPadding * 2) + 2,
           isChecked = this.$("input[type='checkbox']").prop("checked");
 
       //Set the width on the whole view
@@ -78,22 +96,22 @@ define(['jquery', 'underscore', 'backbone',
       // by adding a style tag directly to the DOM
       if( isChecked ){
         var newCSS = "#" + "toggle-" + this.model.cid + ":before{ " +
+                       "transform: translate3d(" + (onSwitchWidth + switchPadding) + "px, 0, 0);" +
                        "width: " + (offSwitchWidth + switchPadding) + "px ;" +
-                      "left: 0px;" +
                      "}" +
                      "#" + "toggle-" + this.model.cid + ":after{ " +
-                      "width: " + (onSwitchWidth + switchPadding) + "px ;" +
-                      "left: 0px;" +
-                      "transform: translate3d(" + (offSwitchWidth + switchPadding) + "px, 0, 0)"
+                      "width: " + (onSwitchWidth + switchPadding) + "px;" +
+                      "transform: translate3d(0px, 0, 0);" +
                     "}";
       }
       else{
         var newCSS = "#" + "toggle-" + this.model.cid + ":before{ " +
-                       "width: " + (onSwitchWidth + switchPadding) + "px ;" +
-                       "left: " + (offSwitchWidth + switchPadding) + "px ;" +
+                       "width: " + (offSwitchWidth + switchPadding) + "px ;" +
+                       "left: 0px ;" +
                      "}" +
                      "#" + "toggle-" + this.model.cid + ":after{ " +
-                      "width: " + (offSwitchWidth + switchPadding) + "px ;" +
+                      "width: " + (onSwitchWidth + switchPadding) + "px;" +
+                      "transform: translate3d(" + (offSwitchWidth + switchPadding) + "px, 0, 0);" +
                     "}";
       }
 

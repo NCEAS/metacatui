@@ -203,6 +203,43 @@ define(['jquery', 'underscore', 'backbone',
             if( !filterLabel )
               filterLabel = value;
           }
+          //Create the filter label for boolean filters
+          else if( filterModel.type == "BooleanFilter" ){
+
+            //If the filter is set to true, show the filter label
+            if( filterModel.get("values")[0] ){
+              filterLabel = filterModel.get("label");
+            }
+            //If the filter is set to false, remove the applied filter element
+            else{
+
+              //Iterate over the applied filters
+              _.each(this.$(".applied-filter"), function(appliedFilterEl){
+
+                //If this is the applied filter element for this model,
+                if( $(appliedFilterEl).data("model") == filterModel ){
+                  //Remove the applied filter element from the page
+                  $(appliedFilterEl).remove();
+                }
+
+              }, this);
+
+              //Exit the function at this point since there is nothing else to
+              // do for false BooleanFilters
+              return;
+            }
+
+          }
+          else if( filterModel.type == "ToggleFilter" ){
+
+            if( filterModel.get("values")[0] == filterModel.get("trueValue") ){
+              filterLabel = filterModel.get("label") + ": " + filterModel.get("trueLabel");
+            }
+            else{
+              filterLabel = filterModel.get("label") + ": " + filterModel.get("falseLabel");
+            }
+
+          }
 
           //Create the applied filter element
           var removeIcon    = $(document.createElement("a"))

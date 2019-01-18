@@ -8,8 +8,6 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-        //Boolean Filters cannot have an array of values
-        values: null,
         //Boolean filters can't match substrings
         matchSubstring: false,
         //Boolean filters don't use operators
