@@ -41,8 +41,15 @@ define(["jquery",
             }
         },
 
+        truncateCleanly: function(str, nCharacters=10) {
+            var re = new RegExp("^(.{" + nCharacters + "}[^\\s]*).*");
+            return str.replace(re, "$1...");
+        },
+
         /* Render the view */
         render: function() {
+            var nCharacters = 15;
+            var truncateCleanly = this.truncateCleanly;
             var liSubTemplate = this.templateLIsub;
             var liTemplate = this.templateLI;
             var h1Template = this.templateInvisibleH1;
@@ -62,9 +69,20 @@ define(["jquery",
                 var h2s = $(topLevelItem.link).find("h2");
                 if(typeof topLevelItem.showH2s == "undefined" || topLevelItem.showH2s == true) {
                     _.each(h2s, function(h2) {
+                        var h2Text = $(h2).text();
+                        // if TOC item text is longer than `nCharacters`, then truncate
+                        // after the end of the word and add `...` to the end.
+                        if (h2Text.length > nCharacters) {
+                            var truncated = truncateCleanly(h2Text, nCharacters);
+                            // only use the truncated version if it's shorter than the
+                            // original (might be longer because of addition of `...`)
+                            if (truncated.length < h2Text.length) {
+                                h2Text = truncated;
+                            }
+                        }
                         var tocItem = {
                             "link": "#" + $(h2).attr("id"),
-                            "text": $(h2).text()
+                            "text": h2Text
                         };
                         ul.append(liSubTemplate({"tocItem": tocItem}));
                     });
