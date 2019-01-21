@@ -28,6 +28,9 @@ define(["jquery",
         // @type {Project} - A Project Model is associated with this view and gets created during render()
         model: null,
 
+        /* The top level collection of filters used to build a query, an instance of Filters */
+        filters: null, // previously: searchModel
+
         /* Renders the compiled template into HTML */
         template: _.template(ProjectTemplate),
 
@@ -74,8 +77,8 @@ define(["jquery",
           this.headerView = new ProjectHeaderView({ model: this.model });
           this.subviews.push(this.headerView);
 
-          //Create a Search collection for all search events in this view
-          this.search = this.model.createSearch();
+          //Create a Filters collection for all search constraints in this view
+          this.filters = this.model.createFilters();
 
           //Render the Home section
           if( !this.model.get("hideHome") ){

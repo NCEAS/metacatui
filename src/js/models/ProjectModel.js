@@ -1,8 +1,8 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "collections/SolrResults",
+define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Filters", "collections/SolrResults",
  "models/metadata/eml211/EMLParty", "models/metadata/eml220/EMLText",
  "models/CollectionModel", "models/filters/FilterGroup", "models/Map"],
-    function($, _, Backbone, gmaps, Search, SolrResults, EMLParty, EMLText, CollectionModel, FilterGroup, MapModel) {
+    function($, _, Backbone, gmaps, Filters, SolrResults, EMLParty, EMLText, CollectionModel, FilterGroup, MapModel) {
 
 	var ProjectModel = CollectionModel.extend({
 
@@ -16,8 +16,8 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
         awards: [],
         literatureCited: [],
         filterGroups: [],
-        //A Search collection that contains all the filters assoc. with this project
-        search: new Search(),
+        //A Filters collection that contains all the filters assoc. with this project
+        search: new Filters(),
         searchResults: new SolrResults(),
         //The project document options may specify section to hide
         hideMetrics: false,
@@ -238,15 +238,15 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
     },
 
     /*
-    * Creates a Search collection with all filters associated with this collection
+    * Creates a Filters collection with all filters associated with this collection
     * and project. Sets it on the `search` attribute.
     *
-    * @return {Search} - Returns a Search collection that contains all the Filter
+    * @return {Filters} - Returns a Filters collection that contains all the Filter
     * models associated with this project
     */
-    createSearch: function(){
+    createFilters: function(){
 
-      var search = new Search();
+      var search = new Filters();
 
       _.each(this.get("filterGroups"), function(filterGroup){
         search.add(filterGroup.get("filters").models);

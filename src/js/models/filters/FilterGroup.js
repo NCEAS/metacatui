@@ -1,7 +1,10 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filters/Filter', 'models/filters/BooleanFilter',
-    'models/filters/ChoiceFilter', 'models/filters/DateFilter', 'models/filters/NumericFilter', 'models/filters/ToggleFilter'],
-    function($, _, Backbone, Search, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter, ToggleFilter) {
+define(["jquery", "underscore", "backbone", "collections/Filters", "models/filters/Filter",
+    "models/filters/BooleanFilter", "models/filters/ChoiceFilter", "models/filters/DateFilter",
+    "models/filters/NumericFilter", "models/filters/ToggleFilter"],
+    function($, _, Backbone, Filters, Filter, 
+        BooleanFilter, ChoiceFilter, DateFilter, 
+        NumericFilter, ToggleFilter) {
 
 	var FilterGroup = Backbone.Model.extend({
 
@@ -11,7 +14,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
         label: null,
         description: null,
         icon: null,
-        filters:  new Search()
+        filters:  new Filters()
       }
     },
 
@@ -40,7 +43,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
       modelJSON.icon = this.parseTextNode(xml, "icon");
 
       //Start an array for the filters
-      modelJSON.filters = new Search();
+      modelJSON.filters = new Filters();
 
       //Iterate over each child and look for filter elements
       $(xml).children().each(function(i, filterNode){

@@ -1,15 +1,15 @@
 define(["jquery",
     "underscore",
     "backbone",
-    "collections/Search",
+    "collections/Filters",
     "views/project/ProjectSectionView",
     "views/DataCatalogViewWithFilters",
     "views/filters/FilterGroupsView",
     "views/MarkdownView",
     "views/TOCView",
     "text!templates/project/projectHome.html"],
-    function($, _, Backbone, Search, ProjectSectionView, DataCatalogView,
-      FilterGroupsView, MarkdownView, TOCView, ProjectHomeTemplate){
+    function($, _, Backbone, Filters, ProjectSectionView, DataCatalogView, FilterGroupsView,
+      MarkdownView, TOCView, ProjectHomeTemplate){
 
     /* The ProjectHomeView is a view to render the
      * project home tab (within ProjectSectionView)
@@ -35,8 +35,8 @@ define(["jquery",
           //Create a DataCatalogView
           var dataCatalogView = new DataCatalogView({
             mode: "map",
-            searchModel: this.model.get("search"),
-            searchResults: searchResults,
+            filters: this.model.get("filters"),
+            collection: searchResults,
             mapModel: this.model.get("mapModel"),
             el: "#project-search-results",
             isSubView: true

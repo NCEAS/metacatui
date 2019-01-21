@@ -1,6 +1,6 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filters/Filter'],
-    function($, _, Backbone, Search, Filter) {
+define(["jquery", "underscore", "backbone", "collections/Filters", "models/filters/Filter"],
+    function($, _, Backbone, Filters, Filter) {
 
 	var CollectionModel = Backbone.Model.extend({
 
@@ -32,7 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
       var requestSettings = {
         dataType: "xml",
         error: function(){
-          model.trigger('error');
+          model.trigger("error");
         }
       }
 
@@ -84,7 +84,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Search', 'models/filter
       modelJSON.name = this.parseTextNode(rootNode, "name");
       modelJSON.label = this.parseTextNode(rootNode, "label");
       modelJSON.description = this.parseTextNode(rootNode, "description");
-      modelJSON.filters = new Search();
+      modelJSON.filters = new Filters();
       modelJSON.filters.createCatalogFilters();
 
       //Parse the collection definition
