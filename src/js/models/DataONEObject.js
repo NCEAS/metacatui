@@ -1147,6 +1147,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             //If this isn't obsoleted by anything, then there is no newer version
             if(!possiblyNewer || typeof latestVersion != "string"){
               this.set("latestVersion", latestVersion);
+
+              //Trigger an event that will fire whether or not the latestVersion
+              // attribute was actually changed
+              this.trigger("latestVersionFound", this);
+
               return;
             }
 
