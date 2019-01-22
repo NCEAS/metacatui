@@ -98,6 +98,15 @@ define(["jquery",
                     }
                 }
                 this.searchResults.start = page * this.searchResults.rows;
+                
+                //Show or hide the reset filters button
+                this.toggleClearButton();
+
+                // go to the page
+                this.showPage(page);
+
+                // don't want to follow links
+                return false;
             },
             /*
              * Either hides or shows the "clear all filters" button
