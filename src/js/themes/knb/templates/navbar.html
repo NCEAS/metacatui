@@ -1,7 +1,7 @@
 <div class="navbar" >
   <div class="navbar-inner">
       <ul class="nav">
-	    <li><a class="brand" href="<%= MetacatUI.root %>">knb</a></li>
+	    <li><a class="brand" href="<%= MetacatUI.root || "/" %>">knb</a></li>
         <li><a href="<%= MetacatUI.root %>/about">About</a></li>
         <li class="dropdown">
         	<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
@@ -15,12 +15,12 @@
         <li><a href="<%= MetacatUI.root %>/tools">Tools</a></li>
         <li class="input input-append">
         	<form id="direct-search" action="#">
-	        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label> 
+	        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label>
 	        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="jump-width-input direct-search subtle" form="direct-search"/>
 	        	<button class="btn direct-search" form="direct-search">Go</button>
 	        </form>
         </li>
-        
+
         <% if (loggedIn) { %>
         	<li class="dropdown">
 				<a href="#" class="dropdown-toggle user" data-toggle="dropdown">
@@ -38,7 +38,7 @@
         <% } else { %>
         		<li id="SignIn"><a href="<%= MetacatUI.root %>/signin">Sign In</a></li>
        <%  } %>
-        	
+
       </ul>
   </div><!-- /.navbar-inner -->
 </div><!-- /.navbar -->
