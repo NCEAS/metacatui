@@ -266,16 +266,20 @@ define(["jquery",
              */
             createFilters: function() {
 
-                var filter = new Filters();
+                var filters = new Filters();
 
+                // Add each filter in the filter groups to this filter collection
                 _.each(this.get("filterGroups"), function(filterGroup) {
                     filters.add(filterGroup.get("filters").models);
                 });
 
-                filters.add(this.get("filters").models);
+                // And add any previously added filters (are there any ??)
+                filters.add(this.get("searchModel").get("filters").models);
 
-                this.searchModel.set("filters", search);
+                // Set them on the search model
+                this.get("searchModel").set("filters", filters);
 
+                // Cache this model for later use
                 MetacatUI.projects[this.get("id")] = this;
 
                 return filters;
