@@ -36,7 +36,7 @@ define(["jquery",
           var dataCatalogView = new DataCatalogView({
             mode: "map",
             filters: this.model.get("filters"),
-            collection: searchResults,
+            searchResults: searchResults,
             mapModel: this.model.get("mapModel"),
             el: "#project-search-results",
             isSubView: true

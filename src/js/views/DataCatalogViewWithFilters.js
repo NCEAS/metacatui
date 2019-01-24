@@ -21,14 +21,61 @@ define(["jquery",
             /* The sort order for the Solr query */
             sortOrder: "dateUploaded+desc",
             
-            /* The main search collection, an instance of SolrResults */
-            collection: null, // previously: searchResults
-            
             /* The top level collection of filters used to build a query, an instance of Filters */
             filters: null, // previously: searchModel
             
-            /* The map model used to configure the map */
-            mapModel: null,
+            /**
+             * Override DataCatalogView.render() to render this view with filters
+             * from the Filters collection
+             */
+            render: function() {
+                var loadingHTML;
+                var templateVars;
+                
+                // TODO: Do we really need to cache the filters collection? 
+                // Reconcile this from DataCatalogView.render()
+                // See https://github.com/NCEAS/metacatui/blob/19d608df9cc17ac2abee76d35feca415137c09d7/src/js/views/DataCatalogView.js#L122-L145
+                
+                //Get the search mode - either "map" or "list"
+                if ((typeof this.mode === "undefined") || !this.mode) {
+                    this.mode = MetacatUI.appModel.get("searchMode");
+                    if ((typeof this.mode === "undefined") || !this.mode) {
+                        this.mode = "map";
+                    }
+                    MetacatUI.appModel.set("searchMode", this.mode);
+                }
+                
+                // Use map mode on tablets and browsers only
+                if ($(window).outerWidth() <= 600) {
+                    this.mode = "list";
+                    MetacatUI.appModel.set("searchMode", "list");
+                    gmaps = null;
+                }
+                
+                // If this is a subview, don't set the headerType
+                if (!this.isSubView) {
+                    MetacatUI.appModel.set("headerType", "default");
+                    $("body").addClass("DataCatalog");
+                } else {
+                    this.$el.addClass("DataCatalog");
+                }
+                //Populate the search template with some model attributes
+                loadingHTML = this.loadingTemplate({
+                    msg: "Loading entries ..."
+                });
+                
+                templateVars = {
+                    gmaps: gmaps,
+                    mode: MetacatUI.appModel.get("searchMode"),
+                    useMapBounds: this.searchModel.get("useGeohash"),
+                    username: MetacatUI.appUserModel.get("username"),
+                    isMySearch: (_.indexOf(this.searchModel.get("username"), MetacatUI.appUserModel.get("username")) > -1),
+                    loading: loadingHTML,
+                    searchModelRef: this.searchModel,
+                    searchResultsRef: this.searchResults,
+                    dataSourceTitle: (MetacatUI.theme == "dataone") ? "Member Node" : "Data source"
+                }
+            },
             
             /*
              * Get Results from the Solr index by combining the Filter query string fragments
@@ -37,7 +84,7 @@ define(["jquery",
              * Overrides DataCatalogView.getResults().
              */
             getResults: function() {
-                var sortOrder = this.sortOrder || "dateUploaded+desc";
+                var sortOrder = this.searchModel.sortOrder || "dateUploaded+desc";
                 var query; // The full query string
                 var geohashLevel; // The geohash level to search
                 var page; // The page of search results to render
