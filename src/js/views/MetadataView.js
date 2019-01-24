@@ -392,7 +392,7 @@ define(['jquery',
 						      .append($(document.createElement("li"))
 						    		  .addClass("home")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", MetacatUI.root)
+						    				  .attr("href", MetacatUI.root || "/")
 						    				  .addClass("home")
 						    				  .text("Home")))
 		    				  .append($(document.createElement("li"))
