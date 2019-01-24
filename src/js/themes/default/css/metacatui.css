@@ -2028,11 +2028,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: transparent;
 }
 
-#content{
-	margin-left: 270px;
-}
-
-
 /* MAIN CONTENT
 --------------------------------- */
 #mainContent{
