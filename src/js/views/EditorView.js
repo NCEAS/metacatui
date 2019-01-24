@@ -429,8 +429,17 @@ define(['underscore',
                 // Create a citation view and render it
                 var citationView = new CitationView({
                             model: model,
-                            title: "Untitled dataset",
-                            createLink: false });
+                            title: "Untitled dataset"
+                          });
+
+                if( model.isNew() ){
+                  citationView.createLink = false;
+                  citationView.createTitleLink = false;
+                }
+                else{
+                  citationView.createLink = false;
+                  citationView.createTitleLink = true;
+                }
 
                 this.subviews.push(citationView);
                 $("#citation-container").html(citationView.render().$el);
