@@ -8,10 +8,12 @@ define(["jquery",
         "models/metadata/eml211/EMLParty", 
         "models/metadata/eml220/EMLText",
         "models/CollectionModel", 
+        "models/Search", 
         "models/filters/FilterGroup", 
         "models/Map"
     ],
-    function($, _, Backbone, gmaps, Filters, SolrResults, EMLParty, EMLText, CollectionModel, FilterGroup, MapModel) {
+    function($, _, Backbone, gmaps, Filters, SolrResults, EMLParty, EMLText, CollectionModel,
+        SearchModel, FilterGroup, MapModel) {
 
         /**
          * A ProjectModel is a specialized collection that represents a project,
@@ -33,8 +35,8 @@ define(["jquery",
                     awards: [],
                     literatureCited: [],
                     filterGroups: [],
-                    //A Filters collection that contains all the filters assoc. with this project
-                    search: new Filters(),
+                    // A Search model with a Filters collection that contains the filters associated with this project
+                    searchModel: new SearchModel({filters: new Filters()}),
                     searchResults: new SolrResults(),
                     //The project document options may specify section to hide
                     hideMetrics: false,
@@ -257,28 +259,26 @@ define(["jquery",
 
             /*
              * Creates a Filters collection with all filters associated with this collection
-             * and project. Sets it on the `search` attribute.
+             * and project. Sets it on the `searchModel.filters` attribute.
              *
              * @return {Filters} - Returns a Filters collection that contains all the Filter
              * models associated with this project
              */
             createFilters: function() {
 
-                var search = new Filters();
+                var filter = new Filters();
 
                 _.each(this.get("filterGroups"), function(filterGroup) {
-                    search.add(filterGroup.get("filters").models);
+                    filters.add(filterGroup.get("filters").models);
                 });
 
-                search.add(this.get("filters").models);
+                filters.add(this.get("filters").models);
 
-                this.set("search", search);
+                this.searchModel.set("filters", search);
 
-                MetacatUI.searchCollection = search;
-                MetacatUI.project = this;
+                MetacatUI.projects[this.get("id")] = this;
 
-                return search;
-
+                return filters;
             }
 
         });
