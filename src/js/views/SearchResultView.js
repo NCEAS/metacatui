@@ -144,10 +144,19 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			var views = this.metricsModel.get("views");
 			var citations = this.metricsModel.get("citations");
 
-			var index = datasets.indexOf(this.model.get("id"));
-			var viewCount = views[index];
-			var downloadCount = downloads[index];
-			var citationCount = citations[index];
+			// Initializing the metric counts
+			var viewCount = 0;
+			var downloadCount = 0;
+			var citationCount = 0;
+
+			// Get the individual dataset metics only if the response from Metrics Service API
+			// has non-zero array sizes
+			if(datasets.length > 0) {
+				var index = datasets.indexOf(this.model.get("id"));
+				viewCount = views[index];
+				downloadCount = downloads[index];
+				citationCount = citations[index];
+			}
 
 			// Generating tool-tip title
 			// Citations
