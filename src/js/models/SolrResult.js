@@ -193,7 +193,8 @@ define(['jquery', 'underscore', 'backbone'],
 		 */
 		isDOI: function(customString) {
 			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.",
-				"https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."];
+				"https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."],
+				  DOI_REGEX = new RegExp(/^10.\d{4,9}\/[-._;()/:A-Z0-9]+$/i);;
 
 			//If a custom string is given, then check that instead of the seriesId and id from the model
 			if( typeof customString == "string" ){
@@ -201,16 +202,29 @@ define(['jquery', 'underscore', 'backbone'],
 					if (customString.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
 						return true;
 				}
+
+				//If there is no DOI prefix, check for a DOI without the prefix using a regular expression
+				if( DOI_REGEX.test(customString) ){
+					return true;
+				}
+
 			}
+			else{
+				var seriesId = this.get("seriesId"),
+						pid      = this.get("id");
 
-			var seriesId = this.get("seriesId"),
-			    pid      = this.get("id");
+				for (var i=0; i < DOI_PREFIXES.length; i++) {
+					if (seriesId && seriesId.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+						return true;
+					else if (pid && pid.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+						return true;
+				}
 
-			for (var i=0; i < DOI_PREFIXES.length; i++) {
-				if (seriesId && seriesId.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+				//If there is no DOI prefix, check for a DOI without the prefix using a regular expression
+				if( DOI_REGEX.test(seriesId) || DOI_REGEX.test(pid) ){
 					return true;
-				else if (pid && pid.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-					return true;
+				}
+
 			}
 
 			return false;

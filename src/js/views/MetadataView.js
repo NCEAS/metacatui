@@ -392,7 +392,7 @@ define(['jquery',
 						      .append($(document.createElement("li"))
 						    		  .addClass("home")
 						    		  .append($(document.createElement("a"))
-						    				  .attr("href", MetacatUI.root)
+						    				  .attr("href", MetacatUI.root || "/")
 						    				  .addClass("home")
 						    				  .text("Home")))
 		    				  .append($(document.createElement("li"))
@@ -1030,25 +1030,22 @@ define(['jquery',
 		},
 
     /**
-     * Creates a button which the user can click to launch the package in Whole Tale
+     *Creates a button which the user can click to launch the package in Whole Tale
     */
    createWholeTaleButton: function() {
     let self=this;
-    // Loop over each environment and add it to the dropdown menu
     MetacatUI.appModel.get('taleEnvironments').forEach(function(environment){
       var queryParams=
-      '?data_location='+ self.model.id +
-      '&data_title='+encodeURIComponent(self.model.get("title"))+
+      '?uri='+ window.location.href+
+      '&name='+encodeURIComponent(self.model.get("title"))+
       '&data_api='+encodeURIComponent(MetacatUI.appModel.get('d1CNBaseUrl'))+
       '&environment='+environment;
       var composeUrl = MetacatUI.appModel.get('dashboardUrl')+'compose'+queryParams;
-
-      // Add a row to the dropdown for this environment
-      $('.analyze.dropdown-menu').append(
-          $('<li>').append(
-            $('<a>').attr('href',composeUrl).append(
-              $('<span>').attr('class', 'tab').append(environment)
-              ).attr('target', '_blank')));
+      var anchor = $('<a>');
+      anchor.attr('href',composeUrl).append(
+        $('<span>').attr('class', 'tab').append(environment));
+      anchor.attr('target', '_blank');
+      $('.analyze.dropdown-menu').append($('<li>').append(anchor));
       });
     },
 
