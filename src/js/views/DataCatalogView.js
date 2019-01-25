@@ -31,7 +31,7 @@ define(["jquery",
             filters: true, //Turn on/off the filters in this view
 
             //The default global models for searching
-            searchModel: null,
+            searchModel: new SearchModel(),
             searchResults: null,
             statsModel: new StatsModel(),
             mapModel: null,
