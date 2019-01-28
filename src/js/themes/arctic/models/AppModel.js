@@ -107,7 +107,7 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-            
+
             mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["arctic.data.center.suite.1"],
@@ -133,11 +133,15 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetControls: true,
 
 			isJSONLDEnabled: true,
-            // A lookup map of project names to project seriesIds
-            projectsMap: {
-                "DBO": "urn:node:93834148-30ce-420d-8d6d-b6690d93b9bc"
-            }
-		},
+
+			// A lookup map of project names to project seriesIds
+			projectsMap: {
+			    "DBO": "urn:node:93834148-30ce-420d-8d6d-b6690d93b9bc"
+			},
+
+			// If true, then archived content is available in the search index.
+			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
+			archivedContentIsIndexed: true,
 
 		defaultView: "data",
 

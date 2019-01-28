@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: false,
-      
+
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
@@ -98,8 +98,11 @@ define(['jquery', 'underscore', 'backbone'],
 			displayMetricModals: true,
 			displayDatasetControls: true,
 
-			isJSONLDEnabled: true
-		},
+			isJSONLDEnabled: true,
+
+			// If true, then archived content is available in the search index.
+			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
+			archivedContentIsIndexed: true,
 
 		defaultView: "data",
 

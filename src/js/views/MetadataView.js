@@ -281,7 +281,7 @@ define(['jquery',
 								viewRef.$(viewRef.metadataContainer).html(response);
 
 								//If there is no info from the index and there is no metadata doc rendered either, then display a message
-								if(viewRef.$el.is(".no-stylesheet") && !viewRef.model.get("indexed"))
+								if(viewRef.$el.is(".no-stylesheet") && viewRef.model.get("archived") && !viewRef.model.get("indexed"))
 									viewRef.$(viewRef.metadataContainer).prepend(viewRef.alertTemplate({ msg: "There is limited metadata about this dataset since it has been archived." }));
 
 								viewRef.alterMarkup();
@@ -477,6 +477,9 @@ define(['jquery',
 
 					//Save the package in the view
 					viewRef.packageModels.push(thisPackage);
+
+					//Make sure we get archived content, too
+					thisPackage.set("getArchivedMembers", true);
 
 					//Get the members
 					thisPackage.getMembers({getParentMetadata: true });
@@ -858,7 +861,7 @@ define(['jquery',
 				viewRef = this;
 
 			this.listenToOnce(this.model, "change:isAuthorized", function(){
-				if(!model.get("isAuthorized")) return false;
+				if(!model.get("isAuthorized") || model.get("archived")) return false;
 
 				//Insert an Edit button
 				if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
@@ -1135,7 +1138,13 @@ define(['jquery',
 			//var isAuthorized = true;
 			var editModeOn = false;
 
+			//If the user is authorized to edit this metadata doc, then turn edit mode on
 			this.model.get("isAuthorized") ? editModeOn = true : editModeOn = false;
+			//If this content is archived, then turn edit mode off
+			if( this.model.get("archived") ){
+				editModeOn = false;
+			}
+
 			var view = this;
 			//Draw two flow charts to represent the sources and derivations at a package level
 			var packageSources     = dataPackage.sourcePackages;
@@ -1170,6 +1179,10 @@ define(['jquery',
 					// Don't draw prov charts for metadata objects.
 					if(member.get("type").toLowerCase() == "metadata") return;
 					var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
+
+					if( !entityDetailsSection ){
+						return;
+					}
 
 					//Retrieve the sources and derivations for this member
 					var memberSources 	  = member.get("provSources") || new Array(),
@@ -2232,14 +2245,6 @@ define(['jquery',
 			var href = document.location.href,
 					route = href.replace(document.location.origin + "/", "")
 					            .split("/")[0];
-			// Citation
-			var citationParts = [
-						this.getAuthorText(),
-						new Date(this.getDatePublishedText()).getUTCFullYear().toString(),
-						model.get("title"),
-						this.getPublisherText(),
-						model.get("id")],
-				  citationText = citationParts.join(". ") + ".";
 
 			// First: Create a minimal Schema.org Dataset with just the fields we
 			// know will come back from Solr (System Metadata fields).
@@ -2269,23 +2274,6 @@ define(['jquery',
 			// Creator
 			if (model.get("origin")) {
 				elJSON["creator"] = model.get("origin")
-			}
-
-			// Citation
-			//
-			// I made this optional because there are rare cases where a metadata
-			// standard doesn't have creators or titles
-
-			// Returns 1 if all citationParts are non-zero-length
-			// Returns 0 if any are zero length
-			var isCitationValid = citationParts.map(function(p) {
-				return (typeof p === "string" && p.length > 0 ? true : false)
-			}).reduce(function(acc, val) {
-				return acc * val;
-			});
-
-			if (isCitationValid) {
-				elJSON['citation'] = citationText;
 			}
 
 			// Dataset/spatialCoverage

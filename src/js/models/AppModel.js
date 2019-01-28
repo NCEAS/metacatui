@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// set this variable to true, if the content being published is moderated by the data team.
       contentIsModerated: false,
-      
+
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
@@ -104,7 +104,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// Metrics endpoint url
 			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
-			
+
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
 			displayDatasetMetrics: true,
@@ -122,8 +122,13 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetControls: true,
 
 			isJSONLDEnabled: true,
-            projectsMap: {} // A lookup map of project names to project seriesIds
-		},
+
+			// A lookup map of project names to project seriesIds
+			projectsMap: {},
+
+			// If true, then archived content is available in the search index.
+			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
+			archivedContentIsIndexed: true,
 
 		defaultView: "data",
 
