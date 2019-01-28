@@ -1,8 +1,10 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone',
+        'models/filters/Filter',
         'models/filters/FilterGroup',
-        'views/filters/FilterGroupView'],
-  function($, _, Backbone, FilterGroup, FilterGroupView) {
+        'views/filters/FilterGroupView',
+      'views/filters/FilterView'],
+  function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView) {
   'use strict';
 
   // Renders a display multiple FilterGroups
@@ -10,6 +12,10 @@ define(['jquery', 'underscore', 'backbone',
 
     //An array of FilterGroups
     filterGroups: [],
+
+    //@type Search - The Search collection that corresponds to all the Filter
+    //models in these FIlterGroups
+    searchCollection: null,
 
     tagName: "div",
 
@@ -27,6 +33,7 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.filterGroups = options.filterGroups || new Array();
+      this.searchCollection = options.searchCollection || null;
 
     },
 
@@ -174,6 +181,31 @@ define(['jquery', 'underscore', 'backbone',
         }, this);
 
       }, this);
+
+      //Render an "All" filter
+      this.renderAllFilter();
+
+    },
+
+    renderAllFilter: function(){
+
+      //Create an "All" filter that will search the general `text` Solr field
+      var filter = new Filter({
+        fields: ["text"],
+        description: "Search the datasets for anything",
+        placeholder: "Search"
+      });
+      this.searchCollection.add( filter );
+
+      //Create a FilterView for the All filter
+      var filterView = new FilterView({
+        model: filter
+      });
+      this.listenTo(filter, "change:values", this.updateAppliedFilters);
+
+      //Render the view and add the element to the filters header
+      filterView.render();
+      this.$(".filters-header").prepend(filterView.el);
 
     },
 

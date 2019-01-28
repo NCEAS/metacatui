@@ -8,8 +8,8 @@ define(["jquery",
     "views/MarkdownView",
     "views/TOCView",
     "text!templates/project/projectHome.html"],
-    function($, _, Backbone, Search, ProjectSectionView, DataCatalogView, FilterGroupsView,
-      MarkdownView, TOCView, ProjectHomeTemplate){
+    function($, _, Backbone, Search, ProjectSectionView, DataCatalogView,
+      FilterGroupsView, MarkdownView, TOCView, ProjectHomeTemplate){
 
     /* The ProjectHomeView is a view to render the
      * project home tab (within ProjectSectionView)
@@ -47,11 +47,12 @@ define(["jquery",
           //Render the filters
           var filterGroupsView = new FilterGroupsView({
             filterGroups: this.model.get("filterGroups"),
-            el: "#project-filters"
+            el: "#project-filters",
+            searchCollection: this.model.get("search")
           });
 
           filterGroupsView.render();
-          filterGroupsView.$el.addClass(filterGroupsView.className)
+          filterGroupsView.$el.addClass(filterGroupsView.className);
 
           //Create a MarkdownView
           var sectionMarkdownView = new MarkdownView({
