@@ -276,12 +276,6 @@ define(["jquery",
                 // And add any previously added filters (are there any ??)
                 filters.add(this.get("searchModel").get("filters").models);
 
-                // Set them on the search model
-                this.get("searchModel").set("filters", filters);
-
-                // Cache this model for later use
-                MetacatUI.projects[this.get("id")] = this;
-
                 return filters;
             }
 
