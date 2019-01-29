@@ -3486,6 +3486,9 @@ body.mapMode{
 .sort-by select{
 	width: auto;
 }
+#results-container .pagination{
+	box-sizing: border-box;
+}
 /*-- The filter checkboxes --*/
 #includes-files label{
  	margin-right: 4px;
