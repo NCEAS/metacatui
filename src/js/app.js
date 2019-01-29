@@ -65,6 +65,7 @@ require.config({
 	showdownKatex: MetacatUI.root + '/components/showdown/extensions/showdown-katex/showdown-katex.min',
 	citation: MetacatUI.root + '/components/showdown/extensions/showdown-citation/citation-0.4.0-9.min',
 	showdownCitation:  MetacatUI.root + '/components/showdown/extensions/showdown-citation/showdown-citation',
+	showdownImages:  MetacatUI.root + '/components/showdown/extensions/showdown-images',
 	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
 	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',

@@ -67,7 +67,9 @@ define([    "jquery", "underscore", "backbone",
             var markdownView = this;
 
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
-            var SDextensions = ["xssfilter", "katex", "highlight", "docbook", "showdown-htags", "bootstrap", "footnotes", "showdown-citation"];
+            var SDextensions = ["xssfilter", "katex", "highlight", "docbook",
+                                "showdown-htags", "bootstrap", "footnotes",
+                                "showdown-citation", "showdown-images"];
             var numTestsTodo = SDextensions.length;
 
             // each time an extension is tested for (and loaded if required), updateExtensionList is called.
@@ -103,7 +105,8 @@ define([    "jquery", "underscore", "backbone",
                 regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
                 regexCitation   = /\^\[.*\]/g;
                 // test for any <h.> tags
-                regexHtags      = new RegExp(`#\\s`);
+                regexHtags      = new RegExp(`#\\s`),
+                regexImages     = /!\[.*\]\(\S+\)/;
 
             // ====== test for and load each as required each showdown extension ====== //
 
@@ -174,7 +177,7 @@ define([    "jquery", "underscore", "backbone",
 
             // --- bootstrap test --- //
 
-            if( regexTable1.test(markdown) | regexTable2.test(markdown) ){
+            if( regexTable1.test(markdown) || regexTable2.test(markdown) ){
                 require(["showdownBootstrap"], function(showdownBootstrap){
                     updateExtensionList("bootstrap", required=true);
                 });
@@ -184,7 +187,7 @@ define([    "jquery", "underscore", "backbone",
 
             // --- footnotes test --- //
 
-            if( regexFootnotes1.test(markdown) | regexFootnotes2.test(markdown) | regexFootnotes3.test(markdown) ){
+            if( regexFootnotes1.test(markdown) || regexFootnotes2.test(markdown) || regexFootnotes3.test(markdown) ){
                 require(["showdownFootnotes"], function(showdownFootnotes){
                     updateExtensionList("footnotes", required=true);
                 });
@@ -201,6 +204,15 @@ define([    "jquery", "underscore", "backbone",
                     });
                 } else {
                     updateExtensionList("showdown-citation", required=false);
+            };
+
+            // --- images test --- //
+            if( regexImages.test(markdown) ){
+                require(["showdownImages"], function(showdownImages){
+                    updateExtensionList("showdown-images", required=true);
+                });
+            } else {
+                updateExtensionList("showdown-images", required=false);
             };
 
         },
