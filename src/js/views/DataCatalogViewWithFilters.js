@@ -21,9 +21,6 @@ define(["jquery",
             /* The sort order for the Solr query */
             sortOrder: "dateUploaded+desc",
             
-            /* The top level collection of filters used to build a query, an instance of Filters */
-            filters: null, // previously: searchModel
-            
             /**
              * Override DataCatalogView.render() to render this view with filters
              * from the Filters collection
@@ -31,7 +28,11 @@ define(["jquery",
             render: function() {
                 var loadingHTML;
                 var templateVars;
-                
+                var compiledEl;
+                var tooltips;
+                var groupedTooltips;
+                var forFilterLabel = true;
+                var forOtherElements = false;
                 // TODO: Do we really need to cache the filters collection? 
                 // Reconcile this from DataCatalogView.render()
                 // See https://github.com/NCEAS/metacatui/blob/19d608df9cc17ac2abee76d35feca415137c09d7/src/js/views/DataCatalogView.js#L122-L145
@@ -75,6 +76,75 @@ define(["jquery",
                     searchResultsRef: this.searchResults,
                     dataSourceTitle: (MetacatUI.theme == "dataone") ? "Member Node" : "Data source"
                 }
+                compiledEl = 
+                    this.template(_.extend(this.searchModel.toJSON(), templateVars));
+                this.$el.html(compiledEl);
+
+                // Store some references to key views that we use repeatedly
+                this.$resultsview = this.$("#results-view");
+                this.$results = this.$("#results");
+
+                //Update stats
+                this.updateStats();
+
+                //Render the Google Map
+                this.renderMap();
+                //Initialize the tooltips
+                tooltips = $(".tooltip-this");
+
+                //Find the tooltips that are on filter labels - add a slight delay to those
+                groupedTooltips = _.groupBy(tooltips, function(t) {
+                    return ((($(t).prop("tagName") == "LABEL") || 
+                        ($(t).parent().prop("tagName") == "LABEL")) && 
+                        ($(t).parents(".filter-container").length > 0))
+                });
+
+                $(groupedTooltips[forFilterLabel]).tooltip({
+                    delay: {
+                        show: "800"
+                    }
+                });
+                $(groupedTooltips[forOtherElements]).tooltip();
+
+                //Initialize all popover elements
+                $(".popover-this").popover();
+
+                //Initialize the resizeable content div
+                $("#content").resizable({
+                    handles: "n,s,e,w"
+                });
+
+                // Register listeners; this is done here in render because the HTML
+                // needs to be bound before the listenTo call can be made
+                this.stopListening(this.searchResults);
+                this.stopListening(this.searchModel);
+                this.stopListening(MetacatUI.appModel);
+                this.listenTo(this.searchResults, "reset", this.cacheSearch);
+                this.listenTo(this.searchResults, "add", this.addOne);
+                this.listenTo(this.searchResults, "reset", this.addAll);
+                this.listenTo(this.searchResults, "reset", this.checkForProv);
+                
+                // Listen to the MetacatUI.appModel for the search trigger
+                this.listenTo(MetacatUI.appModel, "search", this.getResults);
+
+                this.listenTo(MetacatUI.appUserModel, "change:loggedIn",
+                    this.triggerSearch);
+
+                // and go to a certain page if we have it
+                this.getResults();
+
+                //Set a custom height on any elements that have the .auto-height class
+                if ($(".auto-height").length > 0) {
+                    //Readjust the height whenever the window is resized
+                    $(window).resize(this.setAutoHeight);
+                    $(".auto-height-member").resize(this.setAutoHeight);
+                }
+
+                if (MetacatUI.appModel.get("bioportalAPIKey")) {
+                    this.setUpTree();
+                }
+
+                return this;
             },
             
             /*
@@ -84,7 +154,7 @@ define(["jquery",
              * Overrides DataCatalogView.getResults().
              */
             getResults: function() {
-                var sortOrder = this.searchModel.sortOrder || "dateUploaded+desc";
+                var sortOrder = this.searchModel.get("sortOrder");
                 var query; // The full query string
                 var geohashLevel; // The geohash level to search
                 var page; // The page of search results to render
@@ -124,7 +194,7 @@ define(["jquery",
                 this.searchResults.setfields(fields);
                 
                 // Get the Solr query string from the Search filter collection
-                query = this.filters.getQuery();
+                query = this.searchModel.get("filters").getQuery();
                 
                 // Specify which geohash level is used to return tile counts
                 if ( gmaps && this.map ) {
@@ -160,7 +230,7 @@ define(["jquery",
              */
             toggleClearButton: function() {
 
-                var currentFilters = this.filters.getCurrentFilters();
+                var currentFilters = this.searchModel.get("filters").getCurrentFilters();
 
                 if (currentFilters && currentFilters.length > 0) {
                     this.showClearButton();
