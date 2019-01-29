@@ -25,17 +25,18 @@ define(["jquery",
         template: _.template(ProjectHomeTemplate),
 
         render: function(){
-
+          var searchResults;
+          var searchModel = this.model.get("searchModel"); 
           this.$el.html(this.template());
 
           //Set some options on the searchResults
-          var searchResults = this.model.get("searchResults");
+          searchResults = this.model.get("searchResults");
           searchResults.rows = 5;
 
           //Create a DataCatalogView
           var dataCatalogView = new DataCatalogView({
             mode: "map",
-            filters: this.model.get("filters"),
+            searchModel: this.model.get("searchModel"),
             searchResults: searchResults,
             mapModel: this.model.get("mapModel"),
             el: "#project-search-results",
