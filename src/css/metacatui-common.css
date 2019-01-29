@@ -3656,9 +3656,18 @@ a.disabled {
 	color: #999;
 	font-size: .9em;
 	font-weight: normal;
+	visibility: hidden;
+	margin-top: 0px;
 }
 .filters-title .clear-all{
 	margin-left: 10px;
+}
+.filters-header .applied-filters{
+	min-height: 25px;
+}
+.filters-header > .filter{
+	float: left;
+	margin-right: 10px;
 }
 .filter.date .min,
 .filter.date .max{

@@ -139,12 +139,13 @@ define(['jquery', 'underscore', 'backbone',
     renderAppliedFiltersSection: function(){
 
       //Add a title to the header
-      var headerText = $(document.createElement("h5"))
+      var appliedFiltersContainer = $(document.createElement("div")).addClass("applied-filters-container"),
+          headerText = $(document.createElement("h5"))
                         .addClass("filters-title")
                         .text("Current search")
                         .append( $(document.createElement("a"))
                                   .text("Clear all")
-                                  .addClass("clear-all hidden")
+                                  .addClass("clear-all")
                                   .prepend( $(document.createElement("i"))
                                               .addClass("icon icon-remove icon-on-left") ));
 
@@ -152,7 +153,8 @@ define(['jquery', 'underscore', 'backbone',
       var appliedFiltersEl = $(document.createElement("ul")).addClass("applied-filters");
 
       //Add the applied filters element to the filters header
-      this.$(".filters-header").append(headerText, appliedFiltersEl);
+      appliedFiltersContainer.append(headerText, appliedFiltersEl);
+      this.$(".filters-header").append(appliedFiltersContainer);
 
       _.each( this.filterGroups, function(filterGroup){
 
@@ -322,11 +324,11 @@ define(['jquery', 'underscore', 'backbone',
 
       //If there is an applied filter, show the Clear All button
       if( this.$(".applied-filter").length ){
-        this.$(".clear-all").show();
+        this.$(".filters-title").css("visibility", "visible");
       }
       //If there are no applied filters, hide the Clear All button
       else{
-        this.$(".clear-all").hide();
+        this.$(".filters-title").css("visibility", "hidden");
       }
 
     },
