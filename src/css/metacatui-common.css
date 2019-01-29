@@ -2510,6 +2510,11 @@ img[src*="googleapis.com/"].georegion-map{
 #project-search-results #clear-all{
 	display: none;
 }
+#project-description-container{
+	border-top: 1px solid #DDD;
+	margin-top: 20px;
+	padding-top: 10px;
+}
 .well.awards-info {
 	background: inherit;
 	margin-top: 20px;
