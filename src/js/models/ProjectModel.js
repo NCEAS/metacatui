@@ -265,16 +265,13 @@ define(["jquery",
              * models associated with this project
              */
             createFilters: function() {
-
-                var filters = new Filters();
-
+                
+                var filters = this.get("searchModel").get("filters") || new Filters();
+                
                 // Add each filter in the filter groups to this filter collection
                 _.each(this.get("filterGroups"), function(filterGroup) {
                     filters.add(filterGroup.get("filters").models);
                 });
-
-                // And add any previously added filters (are there any ??)
-                filters.add(this.get("searchModel").get("filters").models);
 
                 return filters;
             }
