@@ -13,9 +13,9 @@ define(['jquery', 'underscore', 'backbone',
     //An array of FilterGroups
     filterGroups: [],
 
-    //@type Search - The Search collection that corresponds to all the Filter
-    //models in these FIlterGroups
-    searchCollection: null,
+    // @type Filters - The Filters collection that corresponds to all the Filter
+    // models in these FIlterGroups
+    filters: null,
 
     tagName: "div",
 
@@ -33,7 +33,7 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       this.filterGroups = options.filterGroups || new Array();
-      this.searchCollection = options.searchCollection || null;
+      this.filters = options.filters || null;
 
     },
 
@@ -197,7 +197,7 @@ define(['jquery', 'underscore', 'backbone',
         description: "Search the datasets for anything",
         placeholder: "Search"
       });
-      this.searchCollection.add( filter );
+      this.filters.add( filter );
 
       //Create a FilterView for the All filter
       var filterView = new FilterView({

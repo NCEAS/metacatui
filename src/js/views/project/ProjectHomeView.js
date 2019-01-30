@@ -49,7 +49,7 @@ define(["jquery",
           var filterGroupsView = new FilterGroupsView({
             filterGroups: this.model.get("filterGroups"),
             el: "#project-filters",
-            searchCollection: this.model.get("search")
+            filters: this.model.get("searchModel").get("filters")
           });
 
           filterGroupsView.render();
