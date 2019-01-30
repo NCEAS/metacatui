@@ -39,8 +39,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
              * @return {string} The query string to send to Solr
              */
             getQuery: function() {
-                var queryString = "";
-                console.log(this.models);
+                var queryFragments = [];
 
                 //Iterate over each Filter model in this collection
                 this.forEach(function(filterModel, i) {
@@ -48,14 +47,13 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                     //Get the Solr query string from this model
                     var filterQuery = filterModel.getQuery();
 
-                    //Add the filter query string to the overall query string
-                    queryString += filterQuery;
-
-                    if (this.length > i + 1 && filterQuery) {
-                        queryString += "%20AND%20";
+                    //Add the filter query string to the overall array
+                    if ( filterQuery && filterQuery.length > 0 ) {
+                        queryFragments.push(filterQuery);
                     }
                 }, this);
-                return queryString;
+                
+                return queryFragments.join("%20AND%20");
             },
 
             /*
