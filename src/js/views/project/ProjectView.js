@@ -80,7 +80,7 @@ define(["jquery",
 
                 // Cache this model for later use
                 MetacatUI.projects = MetacatUI.projects || {};
-                MetacatUI.projects[this.model.get("id")] = this;
+                MetacatUI.projects[this.model.get("id")] = this.model.clone();
 
                 // Render the Home section
                 if (!this.model.get("hideHome")) {
