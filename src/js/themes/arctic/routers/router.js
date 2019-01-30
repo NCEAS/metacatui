@@ -20,7 +20,8 @@ function ($, _, Backbone) {
 			'share(/*pid)'              : 'renderEditor', // registry page
 			'submit(/*pid)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)'           : 'renderAPI'       // API page
+			'api(/:anchorId)'           : 'renderAPI',       // API page
+			'projects(/:projectId)(/:projectSection)': 'renderProject' // project page
 		},
 
 		helpPages: {
@@ -393,6 +394,64 @@ function ($, _, Backbone) {
 			else{
 				MetacatUI.appView.externalView.url = url;
 				MetacatUI.appView.showView(MetacatUI.appView.externalView);
+			}
+		},
+
+		/*
+		 * Render the project view based on the given name, id, or section
+		 */
+		renderProject: function(projectId, projectSection) {
+			var projectName;
+			var projectsMap = MetacatUI.appModel.get("projectsMap");
+
+			// Look up the project document seriesId by its registered name if given
+			if ( projectId ) {
+				if ( projectsMap ) {
+					// Do a forward lookup by key
+					if ( typeof (projectsMap[projectId] ) !== "undefined" ) {
+						projectName = projectId;
+						projectId = projectsMap[projectId];
+						// Then set the history
+						if ( projectSection ) {
+							this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+						} else {
+							this.routeHistory.push("projects/" + projectName);
+						}
+					} else {
+						// Try a reverse lookup of the project name by values
+						projectName = Object.keys(projectsMap)
+																.find(key => projectsMap[key] === projectId);
+						if ( typeof projectName !== "undefined" ) {
+							if ( projectSection ) {
+								this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+							} else {
+								this.routeHistory.push("projects/" + projectName);
+							}
+						} else {
+							// Fall back to routing to the project by id, not name
+							this.routeHistory.push("projects/" + projectId);
+						}
+					}
+				}
+			} else {
+				// TODO: Show a ProjectsView here of the Projects collection (no projectId given)
+				return;
+			}
+
+			if ( !MetacatUI.appView.projectView ) {
+				require(['views/project/ProjectView'], function(ProjectView){
+					MetacatUI.appView.projectView = new ProjectView({
+												projectId: projectId,
+												projectName: projectName,
+												projectSection: projectSection
+										});
+					MetacatUI.appView.showView(MetacatUI.appView.projectView);
+				});
+			} else {
+								MetacatUI.appView.projectView.projectName = projectName;
+								MetacatUI.appView.projectView.projectId = projectId;
+								MetacatUI.appView.projectView.projectSection = projectSection;
+				MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},
 
