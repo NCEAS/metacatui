@@ -7,9 +7,11 @@ define(["jquery",
     "views/project/ProjectHomeView",
     "views/project/ProjectMembersView",
     "views/project/ProjectMetricsView",
-    'views/StatsView'],
+    'views/StatsView',
+    "views/project/ProjectLogosView"],
     function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView,
-      ProjectHomeView, ProjectMembersView, ProjectMetricsView, StatsView){
+      ProjectHomeView, ProjectMembersView, ProjectMetricsView, StatsView,
+      ProjectLogosView){
     'use_strict';
     /* The ProjectView is a generic view to render
      * projects, it will hold project sections
@@ -60,9 +62,6 @@ define(["jquery",
           //Fetch the model
           this.model.fetch();
 
-          // temporary ugly line just to show header container
-          this.$("#project-header-container").css('border', 'solid');
-
           return this;
         },
 
@@ -94,7 +93,14 @@ define(["jquery",
               el: "#project-members"
             });
             this.subviews.push(this.sectionMembersView);
-         }
+          }
+
+          var ackLogos = this.model.get("acknowledgmentsLogos") || [];
+          this.logosView = new ProjectLogosView({
+            model: ackLogos,
+            el: "#project-section-content"
+          });
+          this.subviews.push(this.logosView)
 
           _.invoke(this.subviews, 'render');
 

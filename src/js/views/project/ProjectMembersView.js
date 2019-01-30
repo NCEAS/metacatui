@@ -70,13 +70,6 @@ define(["jquery",
                 };
                 ack_div.append(this.awardsTemplate({awards: awards}));
             };
-            
-            var ackLogos = this.model.get("acknowledgmentsLogos") || [];
-            var logosView = new ProjectLogosView({
-                model: ackLogos,
-                el: this.el
-            });
-            logosView.render();
         },
 
       //   onClose: function() {
