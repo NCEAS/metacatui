@@ -2525,10 +2525,10 @@ img[src*="googleapis.com/"].georegion-map{
 	top: 20px;
 	margin-top: 58px;
 }
-#toc-container a{
+.toc a{
 	color: #555;
 }
-#toc-container i{
+.toc .icon{
 	color: #069;
 }
 i.toc-sub-item{
@@ -2537,6 +2537,76 @@ i.toc-sub-item{
 }
 .logo-row{
 	margin-bottom: 15px;
+}
+
+/*** Colors used in the Project View ***/
+.project-view .toc .icon{
+	color: var(--project-primary-color);
+}
+.project-view a:hover{
+	color: var(--project-secondary-color);
+}
+.project-view #project-section-tabs a{
+	color: var(--project-primary-color);
+}
+.project-view #project-section-tabs .active a{
+	color: #555;
+}
+.project-view .result-row .citation .title{
+	color: var(--project-primary-color);
+}
+.project-view .applied-filter{
+	background-color: var(--project-primary-color);
+}
+.project-view .filter-group-link a{
+	color: var(--project-primary-color);
+}
+.project-view .filter-group-link a:hover{
+	color: var(--project-secondary-color);
+}
+.project-view .filter-group-link.active a,
+.project-view .filter-group-link.active a:hover{
+	color: inherit;
+}
+.project-view .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch{
+	background-color: var(--project-primary-color);
+}
+.project-view .ui-slider-range{
+	background-color: var(--project-primary-color);
+}
+.project-view .result-row .citation a:hover,
+.project-view .result-row .citation a:hover .title,
+.project-view .result-row .citation a:hover .id{
+	color: var(--project-secondary-color);
+}
+.project-view .result-row .icon{
+	color: #666;
+}
+.project-view .profile .quick-stats circle{
+	stroke:  var(--project-primary-color);
+}
+.project-view svg .packages,
+.project-view .chart-title .packages{
+	color: var(--project-primary-color);
+	fill: var(--project-primary-color);
+}
+.project-view svg circle.packages{
+	fill: none;
+}
+.project-view svg .metadata,
+.project-view .fallback.metadata{
+	color: var(--project-secondary-color);
+	fill: var(--project-secondary-color);
+	stroke: var(--project-secondary-color);
+}
+.project-view .line-chart .line{
+	fill: none;
+}
+.project-view .line-chart text.line-chart-label{
+	fill: #FFF;
+}
+.project-view #project-members a{
+	color: var(--project-primary-color);
 }
 
 /* markdown citations */

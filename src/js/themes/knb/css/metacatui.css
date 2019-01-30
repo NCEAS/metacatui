@@ -2073,12 +2073,14 @@ svg .no-activity,
     	cursor: default;
     }
 	.pagination ul > li.active > a{
-		background-color: #006699;
+		background-color: #AAA;
 		color: white;
 	}
 	.pagination ul > li > a:hover{
-		color: #FFF;
-		background-color: #00AAFF;
+		background-color: #EEE;
+	}
+	.pagination ul>li>a{
+		color: inherit;
 	}
 
 /*-------------- DOCUMENTATION CSS -----------------------------*/
