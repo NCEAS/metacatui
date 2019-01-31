@@ -6,10 +6,9 @@ define(['jquery', 'underscore', 'backbone',
         'views/filters/ChoiceFilterView',
         'views/filters/DateFilterView',
         'views/filters/NumericFilterView',
-        'views/filters/ToggleFilterView',
-        'text!templates/filters/filterGroup.html'],
+        'views/filters/ToggleFilterView'],
   function($, _, Backbone, FilterGroup, FilterView, BooleanFilterView, ChoiceFilterView,
-    DateFilterView, NumericFilterView, ToggleFilterView, Template) {
+    DateFilterView, NumericFilterView, ToggleFilterView) {
   'use strict';
 
   // Renders a display of a group of filters
@@ -23,8 +22,6 @@ define(['jquery', 'underscore', 'backbone',
     tagName: "div",
 
     className: "filter-group tab-pane",
-
-    template: _.template(Template),
 
     initialize: function (options) {
 
