@@ -108,6 +108,10 @@ define(['jquery', 'underscore', 'backbone', "gmaps", "collections/Search", "coll
       var logos = this.parseTextNode(projectNode, "acknowledgmentsLogo", true);
       modelJSON.acknowledgmentsLogos = [];
       _.each(logos, function(logo, i) {
+
+        if(!logo)
+          return;
+
         modelJSON.acknowledgmentsLogos.push(
           MetacatUI.appModel.get("objectServiceUrl") + logo
         );
