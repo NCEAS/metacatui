@@ -2568,8 +2568,12 @@ i.toc-sub-item{
 .project-view .filter-group-link.active a:hover{
 	color: inherit;
 }
-.project-view .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch{
+.project-view .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch,
+.project-view .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch{
 	background-color: var(--project-primary-color);
+}
+.project-view .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch{
+	background-color: var(--project-secondary-color);
 }
 .project-view .ui-slider-range{
 	background-color: var(--project-primary-color);
