@@ -96,13 +96,13 @@ define(["jquery",
           }
 
           var ackLogos = this.model.get("acknowledgmentsLogos") || [];
-          this.logosView = new ProjectLogosView({
-            model: ackLogos,
-            el: "#project-section-content"
-          });
-          this.subviews.push(this.logosView)
+          this.logosView = new ProjectLogosView();
+          this.logosView.logos = ackLogos;
+          this.subviews.push(this.logosView);
 
           _.invoke(this.subviews, 'render');
+
+          this.$(".project-view").append(this.logosView.el);
 
         },
 
