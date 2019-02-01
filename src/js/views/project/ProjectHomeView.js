@@ -86,13 +86,28 @@ define(["jquery",
             el: "#project-toc-container",
             linkedEl: this.el
           });
+
           //Set TOC to render after the Markdown section, so it
           // can get the rendered h2 tags
           tocView.stopListening();
-          tocView.listenTo(sectionMarkdownView, "mdRendered",tocView.render);
+          tocView.listenTo(sectionMarkdownView, "mdRendered", tocView.render);
+
+          //Listen to the markdown view and when it is rendered, format the rendered markdown
+          this.listenTo(sectionMarkdownView, "mdRendered", this.formatProjectDescription);
 
           //Render the view
           sectionMarkdownView.render();
+        },
+
+        /*
+        * When the project description is rendered in a MarkdownView, format the
+        * resulting HTML as needed for this view
+        */
+        formatProjectDescription: function(){
+
+          this.$("#project-description-container img").addClass("thumbnail").after("<div class='clear'></div>");
+          this.$("#project-description-container").append("<div class='clear'></div>");
+
         }
 
      });

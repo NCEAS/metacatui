@@ -2516,6 +2516,11 @@ img[src*="googleapis.com/"].georegion-map{
 	margin-top: 20px;
 	padding-top: 10px;
 }
+#project-description-container img{
+	margin: 20px;
+	max-width: 80%;
+	width: auto;
+}
 .project-logos-view{
 	border-top: 1px solid #DDD;
   padding-top: 40px;
