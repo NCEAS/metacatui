@@ -41,14 +41,14 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
             
             /* Standard events and callbacks for this model */
             events: {
-                "change geohashes": groupGeohashes
+                "change geohashes": this.groupGeohashes
             },
             
             /**
              * Initialize the model, calling super
              */
             initialize: function(attributes, options) {
-                this.on("change:geohashes", groupGeohashes);
+                this.on("change:geohashes", this.groupGeohashes);
             },
             
             /**
