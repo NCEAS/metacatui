@@ -28,15 +28,15 @@ define(["jquery",
             el: "#Content",
 
             isSubView: false,
-            filters: true, //Turn on/off the filters in this view
+            filters: true, // Turn on/off the filters in this view
 
-            //The default global models for searching
+            // The default global models for searching
             searchModel: new SearchModel(),
             searchResults: null,
             statsModel: new StatsModel(),
             mapModel: null,
 
-            //Templates
+            // Templates
             template: _.template(CatalogTemplate),
             statsTemplate: _.template(CountTemplate),
             pagerTemplate: _.template(PagerTemplate),
@@ -48,10 +48,10 @@ define(["jquery",
                 "<span class='metric-value'> <i class='icon metric-icon'>" +
                 "</i> </span>"),
 
-            //Search mode
+            // Search mode
             mode: "map",
 
-            //Map settings and storage
+            // Map settings and storage
             map: null,
             ready: false,
             allowSearch: true,
@@ -60,15 +60,15 @@ define(["jquery",
             markers: {},
             tiles: [],
             tileCounts: [],
-            //Contains the geohashes for all the markers on the map (if turned on in the Map model)
+            // Contains the geohashes for all the markers on the map (if turned on in the Map model)
             markerGeohashes: [],
-            //Contains all the info windows for all the markers on the map (if turned on in the Map model)
+            // Contains all the info windows for all the markers on the map (if turned on in the Map model)
             markerInfoWindows: [],
-            //Contains all the info windows for each document in the search result list - to display on hover
+            // Contains all the info windows for each document in the search result list - to display on hover
             tileInfoWindows: [],
-            //Contains all the currently visible markers on the map
+            // Contains all the currently visible markers on the map
             resultMarkers: [],
-            //The geohash value for each tile drawn on the map
+            // The geohash value for each tile drawn on the map
             tileGeohashes: [],
             mapFilterToggle: ".toggle-map-filter",
 
@@ -108,7 +108,7 @@ define(["jquery",
             initialize: function(options) {
                 var view = this;
 
-                //Get all the options and apply them to this view
+                // Get all the options and apply them to this view
                 if (options) {
                     var optionKeys = Object.keys(options);
                     _.each(optionKeys, function(key, i) {
@@ -122,7 +122,7 @@ define(["jquery",
             // and event handling to sub views
             render: function() {
 
-                //Use the global models if there are no other models specified at time of render
+                // Use the global models if there are no other models specified at time of render
                 if ((MetacatUI.appModel.get("searchHistory").length > 0) && 
                     (!this.searchModel || Object.keys(this.searchModel).length == 0)
                 ) {
@@ -146,7 +146,7 @@ define(["jquery",
                     this.searchResults = MetacatUI.appSearchResults;
                 }
 
-                //Get the search mode - either "map" or "list"
+                // Get the search mode - either "map" or "list"
                 if ((typeof this.mode === "undefined") || !this.mode) {
                     this.mode = MetacatUI.appModel.get("searchMode");
                     if ((typeof this.mode === "undefined") || !this.mode) {
@@ -167,7 +167,7 @@ define(["jquery",
                     this.$el.addClass("DataCatalog");
                 }
 
-                //Populate the search template with some model attributes
+                // Populate the search template with some model attributes
                 var loadingHTML = this.loadingTemplate({
                     msg: "Retrieving member nodes..."
                 });
@@ -191,16 +191,16 @@ define(["jquery",
                 this.$resultsview = this.$("#results-view");
                 this.$results = this.$("#results");
 
-                //Update stats
+                // Update stats
                 this.updateStats();
 
-                //Render the Google Map
+                // Render the Google Map
                 this.renderMap();
 
-                //Initialize the tooltips
+                // Initialize the tooltips
                 var tooltips = $(".tooltip-this");
 
-                //Find the tooltips that are on filter labels - add a slight delay to those
+                // Find the tooltips that are on filter labels - add a slight delay to those
                 var groupedTooltips = _.groupBy(tooltips, function(t) {
                     return ((($(t).prop("tagName") == "LABEL") || 
                         ($(t).parent().prop("tagName") == "LABEL")) && 
@@ -216,22 +216,22 @@ define(["jquery",
                 });
                 $(groupedTooltips[forOtherElements]).tooltip();
 
-                //Initialize all popover elements
+                // Initialize all popover elements
                 $(".popover-this").popover();
 
-                //Initialize the resizeable content div
+                // Initialize the resizeable content div
                 $("#content").resizable({
                     handles: "n,s,e,w"
                 });
 
-                //Collapse the filters
+                // Collapse the filters
                 this.toggleFilterCollapse();
 
-                //Initialize the jQueryUI button checkboxes
+                // Initialize the jQueryUI button checkboxes
                 $("#filter-year").buttonset();
                 $("#includes-files-buttonset").buttonset();
 
-                //Iterate through each search model text attribute and show UI filter for each
+                // Iterate through each search model text attribute and show UI filter for each
                 var categories = ["all", "attribute", "creator", "id", "taxon", "spatial", 
                     "additionalCriteria", "annotation"];
                 var thisTerm = null;
@@ -246,7 +246,7 @@ define(["jquery",
                     }
                 }
 
-                //List the Member Node filters
+                // List the Member Node filters
                 var view = this;
                 _.each(this.searchModel.get("dataSource"), function(source, i) {
                     view.showFilter("dataSource", source);
@@ -270,7 +270,7 @@ define(["jquery",
                 this.listenTo(this.searchResults, "reset", this.addAll);
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
 
-                //List data sources
+                // List data sources
                 this.listDataSources();
                 this.listenTo(MetacatUI.nodeModel, "change:members", this.listDataSources);
 
@@ -282,9 +282,9 @@ define(["jquery",
                 // and go to a certain page if we have it
                 this.getResults();
 
-                //Set a custom height on any elements that have the .auto-height class
+                // Set a custom height on any elements that have the .auto-height class
                 if ($(".auto-height").length > 0) {
-                    //Readjust the height whenever the window is resized
+                    // Readjust the height whenever the window is resized
                     $(window).resize(this.setAutoHeight);
                     $(".auto-height-member").resize(this.setAutoHeight);
                 }
@@ -367,21 +367,21 @@ define(["jquery",
                     container: "#bioportal-popover"
                 }).on("click", function() {
                     if ($($(this).data().popover.options.content).is(":visible")) {
-                        //Detach the tree from the popover so it doesn't get removed by Bootstrap
+                        // Detach the tree from the popover so it doesn't get removed by Bootstrap
                         $(this).data().popover.options.content.detach();
-                        //Hide the popover
+                        // Hide the popover
                         $(this).popover("hide");
                     } else {
-                        //Get the popover content
+                        // Get the popover content
                         var content = $(this).data().popoverContent || 
                             $(this).data().popover.options.content.detach();
-                        //Cache it
+                        // Cache it
                         $(this).data({
                             popoverContent: content
                         });
-                        //Show the popover
+                        // Show the popover
                         $(this).popover("show");
-                        //Insert the tree into the popover content
+                        // Insert the tree into the popover content
                         $(this).data().popover.options.content = content;
 
                         // ensure tooltips are activated
@@ -513,13 +513,13 @@ define(["jquery",
              * Sets the height on elements in the main content area to fill up the entire area minus header and footer
              */
             setAutoHeight: function() {
-                //If we are in list mode, don't determine the height of any elements because we are not "full screen"
+                // If we are in list mode, don't determine the height of any elements because we are not "full screen"
                 if (MetacatUI.appModel.get("searchMode") == "list") {
                     MetacatUI.appView.$(".auto-height").height("auto");
                     return;
                 }
 
-                //Get the heights of the header, navbar, and footer
+                // Get the heights of the header, navbar, and footer
                 var otherHeight = 0;
                 $(".auto-height-member").each(function(i, el) {
                     if ($(el).css("display") != "none") {
@@ -527,12 +527,12 @@ define(["jquery",
                     }
                 });
 
-                //Get the remaining height left based on the window size
+                // Get the remaining height left based on the window size
                 var remainingHeight = $(window).outerHeight(true) - otherHeight;
                 if (remainingHeight < 0) remainingHeight = $(window).outerHeight(true) || 300;
                 else if (remainingHeight <= 120) remainingHeight = ($(window).outerHeight(true) - remainingHeight) || 300;
 
-                //Adjust all elements with the .auto-height class
+                // Adjust all elements with the .auto-height class
                 $(".auto-height").height(remainingHeight);
 
                 if (($("#map-container.auto-height").length > 0) && ($("#map-canvas").length > 0)) {
@@ -548,7 +548,7 @@ define(["jquery",
                     }
                 }
 
-                //Trigger a resize for the map so that all of the map background images are loaded
+                // Trigger a resize for the map so that all of the map background images are loaded
                 if (gmaps && this.mapModel && this.mapModel.get("map")) {
                     google.maps.event.trigger(this.mapModel.get("map"), "resize");
                 }
@@ -561,13 +561,13 @@ define(["jquery",
              **/
             triggerSearch: function() {
 
-                //Set the sort order
+                // Set the sort order
                 var sortOrder = $("#sortOrder").val();
                 if (sortOrder) {
                     this.searchModel.set("sortOrder", sortOrder);
                 }
 
-                //Trigger a search to load the results
+                // Trigger a search to load the results
                 MetacatUI.appModel.trigger("search");
 
                 if (!this.isSubView) {
@@ -587,7 +587,7 @@ define(["jquery",
             triggerOnEnter: function(e) {
                 if (e.keyCode != 13) return;
 
-                //Update the filters
+                // Update the filters
                 this.updateTextFilters(e);
             },
 
@@ -597,13 +597,13 @@ define(["jquery",
              */
             getResults: function(page) {
 
-                //Set the sort order based on user choice
+                // Set the sort order based on user choice
                 var sortOrder = this.searchModel.get("sortOrder");
                 if (sortOrder) {
                     this.searchResults.setSort(sortOrder);
                 }
 
-                //Specify which fields to retrieve
+                // Specify which fields to retrieve
                 var fields = ""; 
                     fields += "id,";
                     fields += "seriesId,";
@@ -633,20 +633,20 @@ define(["jquery",
                 }
                 this.searchResults.setfields(fields);
 
-                //Get the query
+                // Get the query
                 var query = this.searchModel.getQuery();
 
-                //Specify which facets to retrieve
-                if (gmaps && this.map) { //If we have Google Maps enabled
+                // Specify which facets to retrieve
+                if (gmaps && this.map) { // If we have Google Maps enabled
                     var geohashLevel = "geohash_" + 
                         this.mapModel.determineGeohashLevel(this.map.zoom);
                     this.searchResults.facet.push(geohashLevel);
                 }
 
-                //Run the query
+                // Run the query
                 this.searchResults.setQuery(query);
 
-                //Get the page number
+                // Get the page number
                 if (this.isSubView) {
                     var page = 0;
                 } else {
@@ -657,7 +657,7 @@ define(["jquery",
                 }
                 this.searchResults.start = page * this.searchResults.rows;
 
-                //Show or hide the reset filters button
+                // Show or hide the reset filters button
                 this.toggleClearButton();
 
                 // go to the page
@@ -679,11 +679,11 @@ define(["jquery",
                     hasDerivations = [],
                     mainSearchResults = this.searchResults;
 
-                //Get a list of all the resource map IDs from the SolrResults collection
+                // Get a list of all the resource map IDs from the SolrResults collection
                 maps = this.searchResults.pluck("resourceMap");
                 maps = _.compact(_.flatten(maps));
 
-                //Create a new Search model with a search that finds all members of these packages/resource maps
+                // Create a new Search model with a search that finds all members of these packages/resource maps
                 var provSearchModel = new SearchModel({
                     formatType: [{
                         value: "DATA",
@@ -694,7 +694,7 @@ define(["jquery",
                     resourceMap: maps
                 });
 
-                //Create a new Solr Results model to store the results of this supplemental query
+                // Create a new Solr Results model to store the results of this supplemental query
                 var provSearchResults = new SearchResults(null, {
                     query: provSearchModel.getQuery(),
                     searchLogs: false,
@@ -702,11 +702,11 @@ define(["jquery",
                     fields: provSearchModel.getProvFlList() + ",id,resourceMap"
                 });
 
-                //Trigger a search on that Solr Results model
+                // Trigger a search on that Solr Results model
                 this.listenTo(provSearchResults, "reset", function(results) {
                     if (results.models.length == 0) return;
 
-                    //See if any of the results have a value for a prov field
+                    // See if any of the results have a value for a prov field
                     results.forEach(function(result) {
                         if ((!result.getSources().length) || (!result.getDerivations())) return;
                         _.each(result.get("resourceMap"), function(rMapID) {
@@ -720,7 +720,7 @@ define(["jquery",
                         });
                     });
 
-                    //Filter out the duplicates
+                    // Filter out the duplicates
                     hasSources = _.uniq(hasSources);
                     hasDerivations = _.uniq(hasDerivations);
 
@@ -768,66 +768,66 @@ define(["jquery",
                 if (typeof category == "undefined") var category = $(checkbox).attr("data-category");
                 if (typeof value == "undefined") var value = $(checkbox).attr("value");
 
-                //If the user just unchecked the box, then remove this filter
+                // If the user just unchecked the box, then remove this filter
                 if (!checked) {
                     this.searchModel.removeFromModel(category, value);
                     this.hideFilter(category, value);
                 }
-                //If the user just checked the box, then add this filter
+                // If the user just checked the box, then add this filter
                 else {
                     var currentValue = this.searchModel.get(category);
 
-                    //Get the description
+                    // Get the description
                     var desc = $(checkbox).attr("data-description") || $(checkbox).attr("title");
                     if (typeof desc == "undefined" || !desc) desc = "";
-                    //Get the label
+                    // Get the label
                     var labl = $(checkbox).attr("data-label");
                     if (typeof labl == "undefined" || !labl) labl = "";
 
-                    //Make the filter object
+                    // Make the filter object
                     var filter = {
                         description: desc,
                         label: labl,
                         value: value
                     }
 
-                    //If this filter category is an array, add this value to the array
+                    // If this filter category is an array, add this value to the array
                     if (Array.isArray(currentValue)) {
                         currentValue.push(filter);
                         this.searchModel.set(category, currentValue);
                         this.searchModel.trigger("change:" + category);
                     } else {
-                        //If it isn't an array, then just update the model with a simple value
+                        // If it isn't an array, then just update the model with a simple value
                         this.searchModel.set(category, filter);
                     }
 
-                    //Show the filter element
+                    // Show the filter element
                     this.showFilter(category, value, true, labl);
 
-                    //Show the reset button
+                    // Show the reset button
                     this.showClearButton();
                 }
 
-                //Route to page 1
+                // Route to page 1
                 this.updatePageNumber(0);
 
-                //Trigger a new search
+                // Trigger a new search
                 this.triggerSearch();
             },
 
             updateBooleanFilters: function(e) {
                 if (!this.filters) return;
 
-                //Get the category
+                // Get the category
                 var checkbox = e.target;
                 var category = $(checkbox).attr("data-category");
                 var currentValue = this.searchModel.get(category);
 
-                //If this filter is not available, exit this function
+                // If this filter is not available, exit this function
                 if (!this.searchModel.filterIsAvailable(category)) return false;
                 if ((category == "pubYear") || (category == "dataYear")) return;
 
-                //If the checkbox has a value, then update as a string value not boolean
+                // If the checkbox has a value, then update as a string value not boolean
                 var value = $(checkbox).attr("value");
                 if (value) {
                     this.updateCheckboxFilter(e, category, value);
@@ -838,32 +838,32 @@ define(["jquery",
 
                 this.searchModel.set(category, value);
 
-                //Add the filter to the UI
+                // Add the filter to the UI
                 if (value) {
                     this.showFilter(category, "", true);
                 } else {
-                //Remove the filter from the UI
+                // Remove the filter from the UI
                     value = "";
                     this.hideFilter(category, value);
                 }
 
-                //Show the reset button
+                // Show the reset button
                 this.showClearButton();
 
-                //Route to page 1
+                // Route to page 1
                 this.updatePageNumber(0);
 
-                //Trigger a new search
+                // Trigger a new search
                 this.triggerSearch();
 
-                //Send this event to Google Analytics
+                // Send this event to Google Analytics
                 if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                     ga("send", "event", "search", "filter, " + category, value);
                 }
             },
 
-            //Update the UI year slider and input values
-            //Also update the model
+            // Update the UI year slider and input values
+            // Also update the model
             updateYearRange: function(e) {
                 if (!this.filters) return;
 
@@ -874,7 +874,7 @@ define(["jquery",
                     dataYearChecked = $("#data_year").prop("checked");
 
 
-                //If the year range slider has not been created yet
+                // If the year range slider has not been created yet
                 if (!userAction && !$("#year-range").hasClass("ui-slider")) {
 
                     var defaultMin = typeof this.searchModel.defaults == "function" ? this.searchModel.defaults().yearMin : 1800,
@@ -893,24 +893,24 @@ define(["jquery",
                             $("#min_year").val(ui.values[0]);
                             $("#max_year").val(ui.values[1]);
 
-                            //Also update the search model
+                            // Also update the search model
                             model.set("yearMin", ui.values[0]);
                             model.set("yearMax", ui.values[1]);
 
                             // If neither the publish year or data coverage year are checked
                             if (!$("#publish_year").prop("checked") && !$("#data_year").prop("checked")) {
 
-                                //We want to check the data coverage year on the user's behalf
+                                // We want to check the data coverage year on the user's behalf
                                 $("#data_year").prop("checked", "true");
 
-                                //And update the search model
+                                // And update the search model
                                 model.set("dataYear", true);
 
                                 //refresh the UI buttonset so it appears as checked/unchecked
                                 $("#filter-year").buttonset("refresh");
                             }
 
-                            //Add the filter elements
+                            // Add the filter elements
                             if ($("#publish_year").prop("checked")) {
                                 viewRef.showFilter($("#publish_year").attr("data-category"), true, false, ui.values[0] + " to " + ui.values[1], {
                                     replace: true
@@ -922,15 +922,15 @@ define(["jquery",
                                 });
                             }
 
-                            //Route to page 1
+                            // Route to page 1
                             viewRef.updatePageNumber(0);
 
-                            //Trigger a new search
+                            // Trigger a new search
                             viewRef.triggerSearch();
                         }
                     });
 
-                    //Get the minimum and maximum years of this current search and use those as the min and max values in the slider
+                    // Get the minimum and maximum years of this current search and use those as the min and max values in the slider
                     this.statsModel.set("query", this.searchModel.getQuery());
                     this.listenTo(this.statsModel, "change:firstBeginDate", function() {
                         if (this.statsModel.get("firstBeginDate") == 0 || !this.statsModel.get("firstBeginDate")) {
@@ -946,14 +946,14 @@ define(["jquery",
                                 values: [year, $("#max_year").val()]
                             });
 
-                            //If the slider min is still at the default value, then update with the min value found at this search
+                            // If the slider min is still at the default value, then update with the min value found at this search
                             if ($("#year-range").slider("option", "min") == defaultMin) {
                                 $("#year-range").slider({
                                     min: year
                                 });
                             }
 
-                            //Add the filter elements if this is set
+                            // Add the filter elements if this is set
                             if (viewRef.searchModel.get("pubYear")) {
                                 viewRef.showFilter("pubYear", true, false, $("#min_year").val() + " to " + $("#max_year").val(), {
                                     replace: true
@@ -966,7 +966,7 @@ define(["jquery",
                             }
                         }
                     });
-                    //Only when the first begin date is retrieved, set the slider min and max values
+                    // Only when the first begin date is retrieved, set the slider min and max values
                     this.listenTo(this.statsModel, "change:lastEndDate", function() {
                         if (this.statsModel.get("lastEndDate") == 0 || !this.statsModel.get("lastEndDate")) {
                             $("#year-range").slider({
@@ -981,14 +981,14 @@ define(["jquery",
                                 values: [$("#min_year").val(), year]
                             });
 
-                            //If the slider max is still at the default value, then update with the max value found at this search
+                            // If the slider max is still at the default value, then update with the max value found at this search
                             if ($("#year-range").slider("option", "max") == defaultMax) {
                                 $("#year-range").slider({
                                     max: year
                                 });
                             }
 
-                            //Add the filter elements if this is set
+                            // Add the filter elements if this is set
                             if (viewRef.searchModel.get("pubYear")) {
                                 viewRef.showFilter("pubYear", true, false, $("#min_year").val() + " to " + $("#max_year").val(), {
                                     replace: true
@@ -1004,9 +1004,9 @@ define(["jquery",
                     this.statsModel.getFirstBeginDate();
                     this.statsModel.getLastEndDate();
                 }
-                //If the year slider has been created and the user initiated a new search using other filters
+                // If the year slider has been created and the user initiated a new search using other filters
                 else if (!userAction && (!this.searchModel.get("dataYear")) && (!this.searchModel.get("pubYear"))) {
-                    //Reset the min and max year based on this search
+                    // Reset the min and max year based on this search
                     this.statsModel.set("query", this.searchModel.getQuery());
                     this.statsModel.getFirstBeginDate();
                     this.statsModel.getLastEndDate();
@@ -1014,32 +1014,32 @@ define(["jquery",
                 // If either of the year type selectors is what brought us here, then determine whether the user
                 // is completely removing both (reset both year filters) or just one (remove just that one filter)
                 else if (userAction) {
-                    //When both year types were unchecked, assume user wants to reset the year filter
+                    // When both year types were unchecked, assume user wants to reset the year filter
                     if ((($(e.target).attr("id") == "data_year") || ($(e.target).attr("id") == "publish_year")) && (!pubYearChecked && !dataYearChecked)) {
-                        //Reset the search model
+                        // Reset the search model
                         this.searchModel.set("yearMin", defaultMin);
                         this.searchModel.set("yearMax", defaultMax);
                         this.searchModel.set("dataYear", false);
                         this.searchModel.set("pubYear", false);
 
-                        //Reset the min and max year based on this search
+                        // Reset the min and max year based on this search
                         this.statsModel.set("query", this.searchModel.getQuery());
                         this.statsModel.getFirstBeginDate();
                         this.statsModel.getLastEndDate();
 
-                        //Slide the handles back to the defaults
+                        // Slide the handles back to the defaults
                         $("#year-range").slider("values", [defaultMin, defaultMax]);
 
-                        //Hide the filters
+                        // Hide the filters
                         this.hideFilter("dataYear");
                         this.hideFilter("pubYear");
                     }
-                    //If either of the year inputs have changed or if just one of the year types were unchecked
+                    // If either of the year inputs have changed or if just one of the year types were unchecked
                     else {
                         var minVal = $("#min_year").val();
                         var maxVal = $("#max_year").val();
 
-                        //Update the search model to match what is in the text inputs
+                        // Update the search model to match what is in the text inputs
                         this.searchModel.set("yearMin", minVal);
                         this.searchModel.set("yearMax", maxVal);
                         this.searchModel.set("dataYear", dataYearChecked);
@@ -1048,13 +1048,13 @@ define(["jquery",
                         // If neither the publish year or data coverage year are checked
                         if (!pubYearChecked && !dataYearChecked) {
 
-                            //We want to check the data coverage year on the user's behalf
+                            // We want to check the data coverage year on the user's behalf
                             $("#data_year").prop("checked", "true");
 
-                            //And update the search model
+                            // And update the search model
                             model.set("dataYear", true);
 
-                            //Add the filter elements
+                            // Add the filter elements
                             this.showFilter($("#data_year").attr("data-category"), true, true, minVal + " to " + maxVal, {
                                 replace: true
                             });
@@ -1062,19 +1062,19 @@ define(["jquery",
                             //refresh the UI buttonset so it appears as checked/unchecked
                             $("#filter-year").buttonset("refresh");
 
-                            //Send this event to Google Analytics
+                            // Send this event to Google Analytics
                             if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                                 ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
                             }
 
                         } else {
-                            //Add the filter elements
+                            // Add the filter elements
                             if (pubYearChecked) {
                                 this.showFilter($("#publish_year").attr("data-category"), true, true, minVal + " to " + maxVal, {
                                     replace: true
                                 });
 
-                                //Send this event to Google Analytics
+                                // Send this event to Google Analytics
                                 if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                                     ga("send", "event", "search", "filter, Publication Year", minVal + " to " + maxVal);
                                 }
@@ -1087,7 +1087,7 @@ define(["jquery",
                                     replace: true
                                 });
 
-                                //Send this event to Google Analytics
+                                // Send this event to Google Analytics
                                 if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                                     ga("send", "event", "search", "filter, Data Year", minVal + " to " + maxVal);
                                 }
@@ -1097,10 +1097,10 @@ define(["jquery",
                         }
                     }
 
-                    //Route to page 1
+                    // Route to page 1
                     this.updatePageNumber(0);
 
-                    //Trigger a new search
+                    // Trigger a new search
                     this.triggerSearch();
                 }
             },
@@ -1108,10 +1108,10 @@ define(["jquery",
             updateTextFilters: function(e, item) {
                 if (!this.filters) return;
 
-                //Get the search/filter category
+                // Get the search/filter category
                 var category = $(e.target).attr("data-category");
 
-                //Try the parent elements if not found
+                // Try the parent elements if not found
                 if (!category) {
                     var parents = $(e.target).parents().each(function() {
                         category = $(this).attr("data-category");
@@ -1125,20 +1125,20 @@ define(["jquery",
                     return false;
                 }
 
-                //Get the input element
+                // Get the input element
                 var input = this.$el.find("#" + category + "_input");
 
-                //Get the value of the associated input
+                // Get the value of the associated input
                 var term = (!item || !item.value) ? input.val() : item.value;
                 var label = (!item || !item.filterLabel) ? null : item.filterLabel;
                 var filterDesc = (!item || !item.desc) ? null : item.desc;
 
-                //Check that something was actually entered
+                // Check that something was actually entered
                 if ((term == "") || (term == " ")) {
                     return false;
                 }
 
-                //Take out quotes since all search multi-word terms are wrapped in quotes anyway
+                // Take out quotes since all search multi-word terms are wrapped in quotes anyway
                 while (term.startsWith('"') || term.startsWith("'")) {
                     term = term.substr(1);
                 }
@@ -1152,15 +1152,15 @@ define(["jquery",
                     term = term.substr(0, term.length - 3);
                 }
 
-                //Close the autocomplete box
+                // Close the autocomplete box
                 if (e.type == "hoverautocompleteselect") {
                     $(input).hoverAutocomplete("close");
                 } else if ($(input).data("ui-autocomplete") != undefined) {
-                    //If the autocomplete has been initialized, then close it
+                    // If the autocomplete has been initialized, then close it
                     $(input).autocomplete("close");
                 }
 
-                //Get the current searchModel array for this category
+                // Get the current searchModel array for this category
                 var filtersArray = _.clone(this.searchModel.get(category));
 
                 if (typeof filtersArray == "undefined") {
@@ -1168,7 +1168,7 @@ define(["jquery",
                     return false;
                 }
 
-                //Check if this entry is a duplicate
+                // Check if this entry is a duplicate
                 var duplicate = (function() {
                     for (var i = 0; i < filtersArray.length; i++) {
                         if (filtersArray[i].value === term) {
@@ -1178,7 +1178,7 @@ define(["jquery",
                 })();
 
                 if (duplicate) {
-                    //Display a quick message
+                    // Display a quick message
                     if ($("#duplicate-" + category + "-alert").length <= 0) {
                         $("#current-" + category + "-filters").prepend(
                             "<div class='alert alert-block' id='duplicate-' + category + '-alert'>" +
@@ -1194,7 +1194,7 @@ define(["jquery",
                     return false;
                 }
 
-                //Add the new entry to the array of current filters
+                // Add the new entry to the array of current filters
                 var filter = {
                     value: term,
                     filterLabel: label,
@@ -1203,43 +1203,43 @@ define(["jquery",
                 };
                 filtersArray.push(filter);
 
-                //Replace the current array with the new one in the search model
+                // Replace the current array with the new one in the search model
                 this.searchModel.set(category, filtersArray);
 
-                //Show the UI filter
+                // Show the UI filter
                 this.showFilter(category, filter, false, label);
 
-                //Clear the input
+                // Clear the input
                 input.val("");
 
-                //Route to page 1
+                // Route to page 1
                 this.updatePageNumber(0);
 
-                //Trigger a new search
+                // Trigger a new search
                 this.triggerSearch();
 
-                //Send this event to Google Analytics
+                // Send this event to Google Analytics
                 if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                     ga("send", "event", "search", "filter, " + category, term);
                 }
             },
 
-            //Removes a specific filter term from the searchModel
+            // Removes a specific filter term from the searchModel
             removeFilter: function(e) {
-                //Get the parent element that stores the filter term
+                // Get the parent element that stores the filter term
                 var filterNode = $(e.target).parent();
 
-                //Find this filter's category and value
+                // Find this filter's category and value
                 var category = filterNode.attr("data-category") || filterNode.parent().attr("data-category"),
                     value = $(filterNode).attr("data-term");
 
-                //Remove this filter from the searchModel
+                // Remove this filter from the searchModel
                 this.searchModel.removeFromModel(category, value);
 
-                //Hide the filter from the UI
+                // Hide the filter from the UI
                 this.hideFilter(category, value);
 
-                //Find if there is an associated checkbox with this filter
+                // Find if there is an associated checkbox with this filter
                 var checkbox = $("input[type='checkbox'][data-category='" + category + "']");
                 if (checkbox.length > 0) {
                     var checkboxWithValue = checkbox.find("[value='" + value + "']");
@@ -1251,67 +1251,67 @@ define(["jquery",
                     this.$(".ui-buttonset").buttonset("refresh");
                 }
 
-                //Route to page 1
+                // Route to page 1
                 this.updatePageNumber(0);
 
-                //Trigger a new search
+                // Trigger a new search
                 this.triggerSearch();
 
             },
 
-            //Clear all the currently applied filters
+            // Clear all the currently applied filters
             resetFilters: function() {
                 var viewRef = this;
 
                 this.allowSearch = true;
 
-                //Hide all the filters in the UI
+                // Hide all the filters in the UI
                 $.each(this.$(".current-filter"), function() {
                     viewRef.hideEl(this);
                 });
 
-                //Hide the clear button
+                // Hide the clear button
                 this.hideClearButton();
 
-                //Then reset the model
+                // Then reset the model
                 this.searchModel.clear();
                 this.mapModel.clear();
 
-                //Reset the year slider handles
+                // Reset the year slider handles
                 $("#year-range").slider("values", [this.searchModel.get("yearMin"), this.searchModel.get("yearMax")])
                 //and the year inputs
                 $("#min_year").val(this.searchModel.get("yearMin"));
                 $("#max_year").val(this.searchModel.get("yearMax"));
 
-                //Reset the checkboxes
+                // Reset the checkboxes
                 $("#includes_data").prop("checked", this.searchModel.get("documents"));
                 $("#data_year").prop("checked", this.searchModel.get("dataYear"));
                 $("#publish_year").prop("checked", this.searchModel.get("pubYear"));
                 this.listDataSources();
                 $(".ui-buttonset").buttonset("refresh");
 
-                //Zoom out the Google Map
+                // Zoom out the Google Map
                 this.resetMap();
                 this.renderMap();
 
                 // reset any filter links
                 this.showAdditionalCriteria();
 
-                //Route to page 1
+                // Route to page 1
                 this.updatePageNumber(0);
 
-                //Trigger a new search
+                // Trigger a new search
                 this.triggerSearch();
             },
 
             hideEl: function(element) {
-                //Fade out and remove the element
+                // Fade out and remove the element
                 $(element).fadeOut("slow", function() {
                     $(element).remove();
                 });
             },
 
-            //Removes a specified filter node from the DOM
+            // Removes a specified filter node from the DOM
             hideFilter: function(category, value) {
                 if (!this.filters) return;
 
@@ -1323,16 +1323,16 @@ define(["jquery",
                         category + "']").children("[data-term='" + value + "']");
                 }
 
-                //Try finding it a different way
+                // Try finding it a different way
                 if (!filterNode || !filterNode.length) {
                     filterNode = this.$(".current-filter[data-category='" + category + "']");
                 }
 
-                //Remove the filter node from the DOM
+                // Remove the filter node from the DOM
                 this.hideEl(filterNode);
             },
 
-            //Adds a specified filter node to the DOM
+            // Adds a specified filter node to the DOM
             showFilter: function(category, term, checkForDuplicates, label, options) {
                 if (!this.filters) return;
 
@@ -1340,23 +1340,23 @@ define(["jquery",
 
                 if (typeof term === "undefined") return false;
 
-                //Get the element to add the UI filter node to
-                //The pattern is #current-<category>-filters
+                // Get the element to add the UI filter node to
+                // The pattern is #current-<category>-filters
                 var filterContainer = this.$el.find("#current-" + category + "-filters");
 
-                //Allow the option to only display this exact filter category and term once to the DOM
-                //Helpful when adding a filter that is not stored in the search model (for display only)
+                // Allow the option to only display this exact filter category and term once to the DOM
+                // Helpful when adding a filter that is not stored in the search model (for display only)
                 if (checkForDuplicates) {
                     var duplicate = false;
 
-                    //Get the current terms from the DOM and check against the new term
+                    // Get the current terms from the DOM and check against the new term
                     filterContainer.children().each(function() {
                         if ($(this).attr("data-term") == term) {
                             duplicate = true;
                         }
                     });
 
-                    //If there is a duplicate, exit without adding it
+                    // If there is a duplicate, exit without adding it
                     if (duplicate) {
                         return;
                     }
@@ -1365,7 +1365,7 @@ define(["jquery",
                 var value = null,
                     desc = null;
 
-                //See if this filter is an object and extract the filter attributes
+                // See if this filter is an object and extract the filter attributes
                 if (typeof term === "object") {
                     if (typeof term.description !== "undefined") {
                         desc = term.description;
@@ -1383,10 +1383,10 @@ define(["jquery",
                 } else {
                     value = term;
 
-                    //Find the filter label
+                    // Find the filter label
                     if ((typeof label === "undefined") || !label) {
 
-                        //Use the filter value for the label, sans any leading # character
+                        // Use the filter value for the label, sans any leading # character
                         if (value.indexOf("#") > 0) {
                             label = value.substring(value.indexOf("#"));
                         }
@@ -1399,7 +1399,7 @@ define(["jquery",
                 if ((typeof categoryLabel === "undefined") && (category == "additionalCriteria")) categoryLabel = "";
                 if (typeof categoryLabel === "undefined") categoryLabel = category;
 
-                //Add a filter node to the DOM
+                // Add a filter node to the DOM
                 var filterEl = viewRef.currentFilterTemplate({
                     category: categoryLabel,
                     value: value,
@@ -1407,7 +1407,7 @@ define(["jquery",
                     description: desc
                 });
 
-                //Add the filter to the page - either replace or tack on
+                // Add the filter to the page - either replace or tack on
                 if (options && options.replace) {
                     var currentFilter = filterContainer.find(".current-filter");
                     if (currentFilter.length > 0) {
@@ -1419,7 +1419,7 @@ define(["jquery",
                     filterContainer.prepend(filterEl);
                 }
 
-                //Tooltips and Popovers
+                // Tooltips and Popovers
                 $(filterEl).tooltip({
                     delay: {
                         show: 800
@@ -1437,7 +1437,7 @@ define(["jquery",
 
                 if (MetacatUI.nodeModel.get("members").length < 1) return;
 
-                //Get the member nodes
+                // Get the member nodes
                 var members = _.sortBy(MetacatUI.nodeModel.get("members"), function(m) {
                     if (m.name) {
                         return m.name.toLowerCase();
@@ -1449,32 +1449,32 @@ define(["jquery",
                     return m.status != "operational"
                 });
 
-                //Get the current search filters for data source
+                // Get the current search filters for data source
                 var currentFilters = this.searchModel.get("dataSource");
 
-                //Create an HTML list
+                // Create an HTML list
                 var listMax = 4,
                     numHidden = filteredMembers.length - listMax,
                     list = $(document.createElement("ul")).addClass("checkbox-list");
 
-                //Add a checkbox and label for each member node in the node model
+                // Add a checkbox and label for each member node in the node model
                 _.each(filteredMembers, function(member, i) {
                     var listItem = document.createElement("li"),
                         input = document.createElement("input"),
                         label = document.createElement("label");
 
-                    //If this member node is already a data source filter, then the checkbox is checked
+                    // If this member node is already a data source filter, then the checkbox is checked
                     var checked = _.findWhere(currentFilters, {
                         value: member.identifier
                     }) ? true : false;
 
-                    //Create a textual label for this data source
+                    // Create a textual label for this data source
                     $(label).addClass("ellipsis")
                         .attr("for", member.identifier)
                         .html(member.name)
                         .prepend($(document.createElement("i")).addClass("icon icon-check"), $(document.createElement("i")).addClass("icon icon-check-empty"));
 
-                    //Create a checkbox for this data source
+                    // Create a checkbox for this data source
                     $(input).addClass("filter")
                         .attr("type", "checkbox")
                         .attr("data-category", "dataSource")
@@ -1484,7 +1484,7 @@ define(["jquery",
                         .attr("data-label", member.name)
                         .attr("data-description", member.description);
 
-                    //Add tooltips to the label element
+                    // Add tooltips to the label element
                     $(label).tooltip({
                         placement: "top",
                         delay: {
@@ -1495,15 +1495,15 @@ define(["jquery",
                         title: member.description
                     });
 
-                    //If this data source is already selected as a filter (from the search model), then check the checkbox
+                    // If this data source is already selected as a filter (from the search model), then check the checkbox
                     if (checked) $(input).prop("checked", "checked");
 
-                    //Collapse some of the checkboxes and labels after a certain amount
+                    // Collapse some of the checkboxes and labels after a certain amount
                     if (i > (listMax - 1)) {
                         $(listItem).addClass("hidden");
                     }
 
-                    //Insert a "More" link after a certain amount to enable users to expand the list
+                    // Insert a "More" link after a certain amount to enable users to expand the list
                     if (i == listMax) {
                         var moreLink = document.createElement("a");
                         $(moreLink).html("Show " + numHidden + " more")
@@ -1512,7 +1512,7 @@ define(["jquery",
                         $(list).append(moreLink);
                     }
 
-                    //Add this checkbox and laebl to the list
+                    // Add this checkbox and laebl to the list
                     $(listItem).append(input).append(label);
                     $(list).append(listItem);
                 });
@@ -1526,7 +1526,7 @@ define(["jquery",
                     $(list).append(lessLink);
                 }
 
-                //Add the list of checkboxes to the placeholder
+                // Add the list of checkboxes to the placeholder
                 var container = $(".member-nodes-placeholder");
                 $(container).html(list);
                 $(".tooltip-this").tooltip();
@@ -1536,22 +1536,22 @@ define(["jquery",
             resetDataSourceList: function() {
                 if (!this.filters) return;
 
-                //Reset the Member Nodes checkboxes
+                // Reset the Member Nodes checkboxes
                 var mnFilterContainer = $("#member-nodes-container"),
                     defaultMNs = this.searchModel.get("dataSource");
 
-                //Make sure the member node filter exists
+                // Make sure the member node filter exists
                 if (!mnFilterContainer || mnFilterContainer.length == 0) return false;
                 if ((typeof defaultMNs === "undefined") || !defaultMNs) return false;
 
-                //Reset each member node checkbox
+                // Reset each member node checkbox
                 var boxes = $(mnFilterContainer).find(".filter").prop("checked", false);
 
-                //Check the member node checkboxes that are defaults in the search model
+                // Check the member node checkboxes that are defaults in the search model
                 _.each(defaultMNs, function(member, i) {
                     var value = null;
 
-                    //Allow for string search model filter values and object filter values
+                    // Allow for string search model filter values and object filter values
                     if ((typeof member !== "object") && member) value = member;
                     else if ((typeof member.value === "undefined") || !member.value) value = "";
                     else value = member.value;
@@ -1572,14 +1572,14 @@ define(["jquery",
                     list = $(link).parents("ul"),
                     isHidden = !(list.find(".more-link").is(".hidden"));
 
-                //Hide/Show the list
+                // Hide/Show the list
                 if (isHidden) {
                     list.children("li").slideDown();
                 } else {
                     list.children("li.hidden").slideUp();
                 }
 
-                //Hide/Show the control links
+                // Hide/Show the control links
                 controls.toggleClass("hidden");
             },
 
@@ -1589,19 +1589,19 @@ define(["jquery",
 
                 // style the selection
                 $(".keyword-search-link").each(function(index, targetNode) {
-                    //Neutralize all keyword search links by 'deactivating'
+                    // Neutralize all keyword search links by 'deactivating'
                     $(targetNode).removeClass("active");
-                    //Do this for the parent node as well for template flexibility
+                    // Do this for the parent node as well for template flexibility
                     $(targetNode).parent().removeClass("active");
 
                     var dataCategory = $(targetNode).attr("data-category");
                     var dataTerm = $(targetNode).attr("data-term");
                     var terms = model.get(dataCategory);
                     if (_.contains(terms, dataTerm)) {
-                        //Add the active class for styling
+                        // Add the active class for styling
                         $(targetNode).addClass("active");
 
-                        //Add the class to the parent node as well for template flexibility
+                        // Add the class to the parent node as well for template flexibility
                         $(targetNode).parent().addClass("active");
                     }
 
@@ -1614,7 +1614,7 @@ define(["jquery",
                 // Get the clicked node
                 var targetNode = $(e.target);
 
-                //If this additional criteria is already applied, remove it
+                // If this additional criteria is already applied, remove it
                 if (targetNode.hasClass("active")) {
                     this.removeAdditionalCriteria(e);
                     return false;
@@ -1648,37 +1648,37 @@ define(["jquery",
                 // Get the clicked node
                 var targetNode = $(e.target);
 
-                //Reference to model
+                // Reference to model
                 var model = this.searchModel;
 
                 // remove the styling
                 $(".keyword-search-link").removeClass("active");
                 $(".keyword-search-link").parent().removeClass("active");
 
-                //Get the term
+                // Get the term
                 var term = targetNode.attr("data-term");
 
-                //Get the current search model additional criteria
+                // Get the current search model additional criteria
                 var current = this.searchModel.get("additionalCriteria");
-                //If this term is in the current search model (should be)...
+                // If this term is in the current search model (should be)...
                 if (_.contains(current, term)) {
                     //then remove it
                     var newTerms = _.without(current, term);
                     model.set("additionalCriteria", newTerms);
                 }
 
-                //Route to page 1
+                // Route to page 1
                 this.updatePageNumber(0);
 
-                //Trigger a new search
+                // Trigger a new search
                 this.triggerSearch();
             },
 
-            //Get the facet counts
+            // Get the facet counts
             getAutocompletes: function(e) {
                 if (!e) return;
 
-                //Get the text input to determine the filter type
+                // Get the text input to determine the filter type
                 var input = $(e.target),
                     category = input.attr("data-category");
 
@@ -1686,20 +1686,20 @@ define(["jquery",
 
                 var viewRef = this;
 
-                //Create the facet query by using our current search query
+                // Create the facet query by using our current search query
                 var facetQuery = "q=" + this.searchResults.currentquery +
                     "&rows=0" +
                     this.searchModel.getFacetQuery(category) +
                     "&wt=json&";
 
-                //If we've cached these filter results, then use the cache instead of sending a new request
+                // If we've cached these filter results, then use the cache instead of sending a new request
                 if (!MetacatUI.appSearchModel.autocompleteCache) MetacatUI.appSearchModel.autocompleteCache = {};
                 else if (MetacatUI.appSearchModel.autocompleteCache[facetQuery]) {
                     this.setupAutocomplete(input, MetacatUI.appSearchModel.autocompleteCache[facetQuery]);
                     return;
                 }
 
-                //Get the facet counts for the autocomplete
+                // Get the facet counts for the autocomplete
                 var requestSettings = {
                     url: MetacatUI.appModel.get("queryServiceUrl") + facetQuery,
                     type: "GET",
@@ -1709,15 +1709,15 @@ define(["jquery",
                         var suggestions = [],
                             facetLimit = 999;
 
-                        //Get all the facet counts
+                        // Get all the facet counts
                         _.each(category.split(","), function(c) {
                             if (typeof c == "string") c = [c];
                             _.each(c, function(thisCategory) {
-                                //Get the field name(s)
+                                // Get the field name(s)
                                 var fieldNames = MetacatUI.appSearchModel.facetNameMap[thisCategory];
                                 if (typeof fieldNames == "string") fieldNames = [fieldNames];
 
-                                //Get the facet counts
+                                // Get the facet counts
                                 _.each(fieldNames, function(fieldName) {
                                     suggestions.push(data.facet_counts.facet_fields[fieldName]);
                                 });
@@ -1725,7 +1725,7 @@ define(["jquery",
                         });
                         suggestions = _.flatten(suggestions);
 
-                        //Format the suggestions
+                        // Format the suggestions
                         var rankedSuggestions = new Array();
                         for (var i = 0; i < Math.min(suggestions.length - 1, facetLimit); i += 2) {
                             rankedSuggestions.push({
@@ -1734,10 +1734,10 @@ define(["jquery",
                             });
                         }
 
-                        //Save these facets in the app so we don't have to send another query
+                        // Save these facets in the app so we don't have to send another query
                         MetacatUI.appSearchModel.autocompleteCache[facetQuery] = rankedSuggestions;
 
-                        //Now setup the actual autocomplete menu
+                        // Now setup the actual autocomplete menu
                         viewRef.setupAutocomplete(input, rankedSuggestions);
                     }
                 }
@@ -1777,7 +1777,7 @@ define(["jquery",
                     }
                 });
 
-                //Add a class
+                // Add a class
                 if (input.data("uiAutocomplete")) {
                     $(input.data("uiAutocomplete").menu.element).addClass("filter-autocomplete");
                 }
@@ -1786,10 +1786,10 @@ define(["jquery",
             hideClearButton: function() {
                 if (!this.filters) return;
 
-                //Show the current filters panel
+                // Show the current filters panel
                 this.$(".current-filters-container").slideUp();
 
-                //Hide the reset button
+                // Hide the reset button
                 $("#clear-all").addClass("hidden");
                 this.setAutoHeight();
             },
@@ -1797,12 +1797,12 @@ define(["jquery",
             showClearButton: function() {
                 if (!this.filters) return;
 
-                //Show the current filters panel
+                // Show the current filters panel
                 if (_.difference(this.searchModel.getCurrentFilters(), this.searchModel.spatialFilters).length > 0) {
                     this.$(".current-filters-container").slideDown();
                 }
 
-                //Show the reset button
+                // Show the reset button
                 $("#clear-all").removeClass("hidden");
                 this.setAutoHeight();
             },
@@ -1812,7 +1812,7 @@ define(["jquery",
              *                                             NAVIGATING THE UI
              * ==================================================================================================
              **/
-            //Update all the statistics throughout the page
+            // Update all the statistics throughout the page
             updateStats: function() {
                 if (this.searchResults.header != null) {
                     this.$statcounts = this.$("#statcounts");
@@ -1833,14 +1833,14 @@ define(["jquery",
                 if (this.searchResults.header != null) {
                     var pageCount = Math.ceil(this.searchResults.header.get("numFound") / this.searchResults.header.get("rows"));
 
-                    //If no results were found, display a message instead of the list and clear the pagination.
+                    // If no results were found, display a message instead of the list and clear the pagination.
                     if (pageCount == 0) {
                         this.$results.html("<p id='no-results-found'>No results found.</p>");
 
                         this.$("#resultspager").html("");
                         this.$(".resultspager").html("");
                     }
-                    //Do not display the pagination if there is only one page
+                    // Do not display the pagination if there is only one page
                     else if (pageCount == 1) {
                         this.$("#resultspager").html("");
                         this.$(".resultspager").html("");
@@ -1855,7 +1855,7 @@ define(["jquery",
                             console.log("Exception when calculating pages:" + ex.message);
                         }
 
-                        //Populate the pagination element in the UI
+                        // Populate the pagination element in the UI
                         this.$(".resultspager").html(
                             this.pagerTemplate({
                                 pages: pages,
@@ -1938,7 +1938,7 @@ define(["jquery",
              **/
             renderMap: function() {
 
-                //If gmaps isn't enabled or loaded with an error, use list mode
+                // If gmaps isn't enabled or loaded with an error, use list mode
                 if (!gmaps || this.mode == "list") {
                     this.ready = true;
                     this.mode = "list";
@@ -1951,40 +1951,40 @@ define(["jquery",
                     $("body").addClass("mapMode");
                 }
 
-                //Get the map options and create the map
+                // Get the map options and create the map
                 gmaps.visualRefresh = true;
                 var mapOptions = this.mapModel.get("mapOptions");
                 $("#map-container").append("<div id='map-canvas'></div>");
                 this.map = new gmaps.Map($("#map-canvas")[0], mapOptions);
                 this.mapModel.set("map", this.map);
 
-                //Hide the map filter toggle element
+                // Hide the map filter toggle element
                 this.$(this.mapFilterToggle).hide();
 
-                //Store references
+                // Store references
                 var mapRef = this.map;
                 var viewRef = this;
 
                 google.maps.event.addListener(mapRef, "idle", function() {
                     viewRef.ready = true;
 
-                    //Remove all markers from the map
+                    // Remove all markers from the map
                     for (var i = 0; i < viewRef.resultMarkers.length; i++) {
                         viewRef.resultMarkers[i].setMap(null);
                     }
                     viewRef.resultMarkers = new Array();
 
-                    //Trigger a resize so the map background image tiles load completely
+                    // Trigger a resize so the map background image tiles load completely
                     google.maps.event.trigger(mapRef, "resize");
 
                     var currentMapCenter = viewRef.mapModel.get("map").getCenter(),
                         savedMapCenter = viewRef.mapModel.get("mapOptions").center,
                         needsRecentered = (currentMapCenter != savedMapCenter);
 
-                    //If we are doing a new search...
+                    // If we are doing a new search...
                     if (viewRef.allowSearch) {
 
-                        //If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
+                        // If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
                         if (viewRef.map.getZoom() == mapOptions.minZoom) {
 
                             if (!viewRef.hasZoomed) {
@@ -1992,24 +1992,24 @@ define(["jquery",
                                 return;
                             }
 
-                            //Hide the map filter toggle element
+                            // Hide the map filter toggle element
                             viewRef.$(viewRef.mapFilterToggle).hide();
 
                             viewRef.resetMap();
                         } else {
-                            //If the user has not zoomed or dragged to a new area of the map yet and our map is off-center, recenter it
+                            // If the user has not zoomed or dragged to a new area of the map yet and our map is off-center, recenter it
                             if (!viewRef.hasZoomed && needsRecentered) {
                                 viewRef.mapModel.get("map").setCenter(savedMapCenter);
                             }
 
-                            //Show the map filter toggle element
+                            // Show the map filter toggle element
                             viewRef.$(viewRef.mapFilterToggle).show();
 
-                            //Get the Google map bounding box
+                            // Get the Google map bounding box
                             var boundingBox = mapRef.getBounds();
 
-                            //Set the search model spatial filters
-                            //Encode the Google Map bounding box into geohash
+                            // Set the search model spatial filters
+                            // Encode the Google Map bounding box into geohash
                             var north = boundingBox.getNorthEast().lat(),
                                 west = boundingBox.getSouthWest().lng(),
                                 south = boundingBox.getSouthWest().lat(),
@@ -2020,40 +2020,39 @@ define(["jquery",
                             viewRef.searchModel.set("south", south);
                             viewRef.searchModel.set("east", east);
 
-                            //Save the center position and zoom level of the map
+                            // Save the center position and zoom level of the map
                             viewRef.mapModel.get("mapOptions").center = mapRef.getCenter();
                             viewRef.mapModel.get("mapOptions").zoom = mapRef.getZoom();
 
-                            //Determine the precision of geohashes to search for
+                            // Determine the precision of geohashes to search for
                             var zoom = mapRef.getZoom();
 
                             var precision = viewRef.mapModel.getSearchPrecision(zoom);
 
-                            //Get all the geohash tiles contained in the map bounds
+                            // Get all the geohash tiles contained in the map bounds
                             var geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
 
-                            //Save our geohash search settings
+                            // Save our geohash search settings
                             viewRef.searchModel.set("geohashes", geohashBBoxes);
                             viewRef.searchModel.set("geohashLevel", precision);
                         }
 
-                        //Reset to the first page
+                        // Reset to the first page
                         if (viewRef.hasZoomed) {
                             MetacatUI.appModel.set("page", 0);
                         }
 
-                        //Trigger a new search
+                        // Trigger a new search
                         viewRef.triggerSearch();
 
                         viewRef.allowSearch = false;
-                    }
-                    //Else, if this is the fresh map render on page load
-                    else {
+                    } else {
+                        // Else, if this is the fresh map render on page load
                         if (needsRecentered && !viewRef.hasDragged) {
                             viewRef.mapModel.get("map").setCenter(savedMapCenter);
                         }
 
-                        //Show the map filter toggle element
+                        // Show the map filter toggle element
                         if (viewRef.map.getZoom() > mapOptions.minZoom) {
                             viewRef.$(viewRef.mapFilterToggle).show();
                         }
@@ -2062,14 +2061,14 @@ define(["jquery",
                     viewRef.hasZoomed = false;
                 });
 
-                //When the user has zoomed in or out on the map, we want to trigger a new search
+                // When the user has zoomed in or out on the map, we want to trigger a new search
                 google.maps.event.addListener(mapRef, "zoom_changed", function() {
                     viewRef.allowSearch = true;
                     viewRef.hasZoomed = true;
                 });
 
-                //When the user has dragged the map to a new location, we don't want to load cached results.
-                //We still may not trigger a new search because the user has to zoom in first, after the map initially loads at full-world view
+                // When the user has dragged the map to a new location, we don't want to load cached results.
+                // We still may not trigger a new search because the user has to zoom in first, after the map initially loads at full-world view
                 google.maps.event.addListener(mapRef, "dragend", function() {
                     viewRef.hasDragged = true;
 
@@ -2081,22 +2080,22 @@ define(["jquery",
 
             },
 
-            //Resets the model and view settings related to the map
+            // Resets the model and view settings related to the map
             resetMap: function() {
                 if (!gmaps) {
                     return;
                 }
 
-                //First reset the model
-                //The categories pertaining to the map
+                // First reset the model
+                // The categories pertaining to the map
                 var categories = ["east", "west", "north", "south"];
 
-                //Loop through each and remove the filters from the model
+                // Loop through each and remove the filters from the model
                 for (var i = 0; i < categories.length; i++) {
                     this.searchModel.set(categories[i], null);
                 }
 
-                //Reset the map settings
+                // Reset the map settings
                 this.searchModel.resetGeohash();
                 this.mapModel.set("mapOptions", this.mapModel.defaults().mapOptions);
 
@@ -2109,7 +2108,7 @@ define(["jquery",
 
                 var isOn = $(toggleInput).prop("checked");
 
-                //If the user clicked on the label, then change the checkbox for them
+                // If the user clicked on the label, then change the checkbox for them
                 if (e.target.tagName != "INPUT") {
                     isOn = !isOn;
                     toggleInput.prop("checked", isOn);
@@ -2121,11 +2120,11 @@ define(["jquery",
                     this.searchModel.set("useGeohash", false);
                 }
 
-                //Tell the map to trigger a new search and redraw tiles
+                // Tell the map to trigger a new search and redraw tiles
                 this.allowSearch = true;
                 google.maps.event.trigger(this.mapModel.get("map"), "idle");
 
-                //Send this event to Google Analytics
+                // Send this event to Google Analytics
                 if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                     var action = isOn ? "on" : "off";
                     ga("send", "event", "map", action);
@@ -2136,15 +2135,15 @@ define(["jquery",
              * Show the marker, infoWindow, and bounding coordinates polygon on the map when the user hovers on the marker icon in the result list
              */
             showResultOnMap: function(e) {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
 
-                //Get the attributes about this dataset
+                // Get the attributes about this dataset
                 var resultRow = e.target,
                     id = $(resultRow).attr("data-id");
-                //The mouseover event might be triggered by a nested element, so loop through the parents to find the id
+                // The mouseover event might be triggered by a nested element, so loop through the parents to find the id
                 if (typeof id == "undefined") {
                     $(resultRow).parents().each(function() {
                         if (typeof $(this).attr("data-id") != "undefined") {
@@ -2154,7 +2153,7 @@ define(["jquery",
                     });
                 }
 
-                //Find the tile for this data set and highlight it on the map
+                // Find the tile for this data set and highlight it on the map
                 var resultGeohashes = this.searchResults.findWhere({
                     id: id
                 }).get("geohash_9");
@@ -2169,12 +2168,12 @@ define(["jquery",
                             geohash: containingTileGeohash
                         });
 
-                    //If this is a geohash for a georegion outside the map, do not highlight a tile or display a marker
+                    // If this is a geohash for a georegion outside the map, do not highlight a tile or display a marker
                     if (typeof containingTile === "undefined") continue;
 
                     this.highlightTile(containingTile);
 
-                    //Set up the options for each marker
+                    // Set up the options for each marker
                     var markerOptions = {
                         position: position,
                         icon: this.mapModel.get("markerImage"),
@@ -2182,7 +2181,7 @@ define(["jquery",
                         map: this.map
                     };
 
-                    //Create the marker and add to the map
+                    // Create the marker and add to the map
                     var marker = new google.maps.Marker(markerOptions);
 
                     this.resultMarkers.push(marker);
@@ -2194,15 +2193,15 @@ define(["jquery",
              * Hide the marker, infoWindow, and bounding coordinates polygon on the map when the user stops hovering on the marker icon in the result list
              */
             hideResultOnMap: function(e) {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
 
-                //Get the attributes about this dataset
+                // Get the attributes about this dataset
                 var resultRow = e.target,
                     id = $(resultRow).attr("data-id");
-                //The mouseover event might be triggered by a nested element, so loop through the parents to find the id
+                // The mouseover event might be triggered by a nested element, so loop through the parents to find the id
                 if (typeof id == "undefined") {
                     $(e.target).parents().each(function() {
                         if (typeof $(this).attr("data-id") != "undefined") {
@@ -2212,7 +2211,7 @@ define(["jquery",
                     });
                 }
 
-                //Get the map tile for this result and un-highlight it
+                // Get the map tile for this result and un-highlight it
                 var resultGeohashes = this.searchResults.findWhere({
                     id: id
                 }).get("geohash_9");
@@ -2225,14 +2224,14 @@ define(["jquery",
                             geohash: containingTileGeohash
                         });
 
-                    //If this is a geohash for a georegion outside the map, do not unhighlight a tile
+                    // If this is a geohash for a georegion outside the map, do not unhighlight a tile
                     if (typeof containingTile === "undefined") continue;
 
-                    //Unhighlight the tile
+                    // Unhighlight the tile
                     this.unhighlightTile(containingTile);
                 }
 
-                //Remove all markers from the map
+                // Remove all markers from the map
                 _.each(this.resultMarkers, function(marker) {
                     marker.setMap(null);
                 });
@@ -2243,7 +2242,7 @@ define(["jquery",
              * Create a tile for each geohash facet. A separate tile label is added to the map with the count of the facet.
              **/
             drawTiles: function() {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
@@ -2326,33 +2325,33 @@ define(["jquery",
                     this.div_ = null;
                 }
 
-                //Determine the geohash level we will use to draw tiles
+                // Determine the geohash level we will use to draw tiles
                 var currentZoom = this.map.getZoom(),
                     geohashLevelNum = this.mapModel.determineGeohashLevel(currentZoom),
                     geohashLevel = "geohash_" + geohashLevelNum,
                     geohashes = this.searchResults.facetCounts[geohashLevel];
 
-                //Save the current geohash level in the map model
+                // Save the current geohash level in the map model
                 this.mapModel.set("tileGeohashLevel", geohashLevelNum);
 
-                //Get all the geohashes contained in the map
+                // Get all the geohashes contained in the map
                 var mapBBoxes = _.flatten(_.values(this.searchModel.get("geohashGroups")));
 
-                //Geohashes may be returned that are part of datasets with multiple geographic areas. Some of these may be outside this map.
-                //So we will want to filter out geohashes that are not contained in this map.
+                // Geohashes may be returned that are part of datasets with multiple geographic areas. Some of these may be outside this map.
+                // So we will want to filter out geohashes that are not contained in this map.
                 if (mapBBoxes.length == 0) {
                     var filteredTileGeohashes = geohashes;
                 } else {
                     var filteredTileGeohashes = [];
                     for (var i = 0; i < geohashes.length - 1; i += 2) {
 
-                        //Get the geohash for this tile
+                        // Get the geohash for this tile
                         var tileGeohash = geohashes[i],
                             isInsideMap = false,
                             index = 0,
                             searchString = tileGeohash;
 
-                        //Find if any of the bounding boxes/geohashes inside our map contain this tile geohash
+                        // Find if any of the bounding boxes/geohashes inside our map contain this tile geohash
                         while ((!isInsideMap) && (searchString.length > 0)) {
                             searchString = tileGeohash.substring(0, tileGeohash.length - index);
                             if (_.contains(mapBBoxes, searchString)) isInsideMap = true;
@@ -2366,18 +2365,18 @@ define(["jquery",
                     }
                 }
 
-                //Make a copy of the array that is geohash counts only
+                // Make a copy of the array that is geohash counts only
                 var countsOnly = [];
                 for (var i = 1; i < filteredTileGeohashes.length; i += 2) {
                     countsOnly.push(filteredTileGeohashes[i]);
                 }
 
-                //Create a range of lightness to make different colors on the tiles
+                // Create a range of lightness to make different colors on the tiles
                 var lightnessMin = this.mapModel.get("tileLightnessMin"),
                     lightnessMax = this.mapModel.get("tileLightnessMax"),
                     lightnessRange = lightnessMax - lightnessMin;
 
-                //Get some stats on our tile counts so we can normalize them to create a color scale
+                // Get some stats on our tile counts so we can normalize them to create a color scale
                 var findMedian = function(nums) {
                     if (nums.length % 2 == 0) {
                         return (nums[(nums.length / 2) - 1] + nums[(nums.length / 2)]) / 2;
@@ -2403,10 +2402,10 @@ define(["jquery",
             */
                 var viewRef = this;
 
-                //Now draw a tile for each geohash facet
+                // Now draw a tile for each geohash facet
                 for (var i = 0; i < filteredTileGeohashes.length - 1; i += 2) {
 
-                    //Convert this geohash to lat,long values
+                    // Convert this geohash to lat,long values
                     var tileGeohash = filteredTileGeohashes[i],
                         decodedGeohash = nGeohash.decode(tileGeohash),
                         latLngCenter = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude),
@@ -2420,7 +2419,7 @@ define(["jquery",
                         count,
                         color;
 
-                    //Normalize the range of tiles counts and convert them to a lightness domain of 20-70% lightness.
+                    // Normalize the range of tiles counts and convert them to a lightness domain of 20-70% lightness.
                     if (maxCount - minCount == 0) {
                         var lightness = lightnessRange;
                     } else {
@@ -2429,10 +2428,10 @@ define(["jquery",
 
                     var color = "hsl(" + this.mapModel.get("tileHue") + "," + lightness + "%,50%)";
 
-                    //Add the count to the tile
+                    // Add the count to the tile
                     var countLocation = new google.maps.LatLngBounds(latLngCenter, latLngCenter);
 
-                    //Draw the tile label with the dataset count
+                    // Draw the tile label with the dataset count
                     count = new TextOverlay({
                         bounds: countLocation,
                         map: this.map,
@@ -2440,7 +2439,7 @@ define(["jquery",
                         color: this.mapModel.get("tileLabelColor")
                     });
 
-                    //Set up the default tile options
+                    // Set up the default tile options
                     var tileOptions = {
                         fillColor: color,
                         strokeColor: color,
@@ -2449,23 +2448,23 @@ define(["jquery",
                         bounds: bounds
                     };
 
-                    //Merge these options with any tile options set in the map model
+                    // Merge these options with any tile options set in the map model
                     var modelTileOptions = this.mapModel.get("tileOptions");
                     for (var attr in modelTileOptions) {
                         tileOptions[attr] = modelTileOptions[attr];
                     }
 
-                    //Draw this tile
+                    // Draw this tile
                     var tile = this.drawTile(tileOptions, tileGeohash, count);
 
-                    //Save the geohashes for tiles in the view for later
+                    // Save the geohashes for tiles in the view for later
                     this.tileGeohashes.push(tileGeohash);
                 }
 
-                //Create an info window for each marker that is on the map, to display when it is clicked on
+                // Create an info window for each marker that is on the map, to display when it is clicked on
                 if (this.markerGeohashes.length > 0) this.addMarkers();
 
-                //If the map is zoomed all the way in, draw info windows for each tile that will be displayed when they are clicked on
+                // If the map is zoomed all the way in, draw info windows for each tile that will be displayed when they are clicked on
                 if (this.mapModel.isMaxZoom(this.map)) this.addTileInfoWindows();
             },
 
@@ -2473,7 +2472,7 @@ define(["jquery",
              * With the options and label object given, add a single tile to the map and set its event listeners
              **/
             drawTile: function(options, geohash, label) {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
@@ -2483,7 +2482,7 @@ define(["jquery",
 
                 var viewRef = this;
 
-                //Save our tiles in the view
+                // Save our tiles in the view
                 var tileObject = {
                     text: label,
                     shape: tile,
@@ -2492,17 +2491,17 @@ define(["jquery",
                 };
                 this.tiles.push(tileObject);
 
-                //Change styles when the tile is hovered on
+                // Change styles when the tile is hovered on
                 google.maps.event.addListener(tile, "mouseover", function(event) {
                     viewRef.highlightTile(tileObject);
                 });
 
-                //Change the styles back after the tile is hovered on
+                // Change the styles back after the tile is hovered on
                 google.maps.event.addListener(tile, "mouseout", function(event) {
                     viewRef.unhighlightTile(tileObject);
                 });
 
-                //If we are at the max zoom, we will display an info window. If not, we will zoom in.
+                // If we are at the max zoom, we will display an info window. If not, we will zoom in.
                 if (!this.mapModel.isMaxZoom(viewRef.map)) {
 
                     /** Set up some helper functions for zooming in on the map **/
@@ -2549,22 +2548,22 @@ define(["jquery",
                         return Math.floor(Math.log(min) / Math.LN2 /* = log2(min) */ );
                     }
 
-                    //Zoom in when the tile is clicked on
+                    // Zoom in when the tile is clicked on
                     gmaps.event.addListener(tile, "click", function(clickEvent) {
-                        //Change the center
+                        // Change the center
                         viewRef.map.panTo(clickEvent.latLng);
 
-                        //Get this tile's bounds
+                        // Get this tile's bounds
                         var tileBounds = tile.getBounds();
-                        //Get the current map bounds
+                        // Get the current map bounds
                         var mapBounds = viewRef.map.getBounds();
 
-                        //Change the zoom
+                        // Change the zoom
                         //viewRef.map.fitBounds(tileBounds);
                         myFitBounds(viewRef.map, tileBounds);
 
 
-                        //Send this event to Google Analytics
+                        // Send this event to Google Analytics
                         if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
                             ga("send", "event", "map", "clickTile", "geohash : " + tileObject.geohash);
                         }
@@ -2575,10 +2574,10 @@ define(["jquery",
             },
 
             highlightTile: function(tile) {
-                //Change the tile style on hover
+                // Change the tile style on hover
                 tile.shape.setOptions(this.mapModel.get("tileOnHover"));
 
-                //Change the label color on hover
+                // Change the label color on hover
                 var div = tile.text.div_;
                 div.style.color = this.mapModel.get("tileLabelColorOnHover");
                 tile.text.div_ = div;
@@ -2586,10 +2585,10 @@ define(["jquery",
             },
 
             unhighlightTile: function(tile) {
-                //Change back the tile to it's original styling
+                // Change back the tile to it's original styling
                 tile.shape.setOptions(tile.options);
 
-                //Change back the label color
+                // Change back the label color
                 var div = tile.text.div_;
                 div.style.color = this.mapModel.get("tileLabelColor");
                 tile.text.div_ = div;
@@ -2601,22 +2600,22 @@ define(["jquery",
              * And create an infowindow for that marker
              */
             addMarkers: function() {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
 
-                //Clone the Search model
+                // Clone the Search model
                 var searchModelClone = this.searchModel.clone(),
                     geohashLevel = this.mapModel.get("tileGeohashLevel"),
                     viewRef = this,
                     markers = this.markers;
 
-                //Change the geohash filter to match our tiles
+                // Change the geohash filter to match our tiles
                 searchModelClone.set("geohashLevel", geohashLevel);
                 searchModelClone.set("geohashes", this.markerGeohashes);
 
-                //Now run a query to get a list of documents that are represented by our markers
+                // Now run a query to get a list of documents that are represented by our markers
                 var query = "q=" + searchModelClone.getQuery() +
                     "&fl=id,title,geohash_9,abstract,geohash_" + geohashLevel +
                     "&rows=1000" +
@@ -2628,7 +2627,7 @@ define(["jquery",
                         var docs = data.response.docs;
                         var uniqueGeohashes = viewRef.markerGeohashes;
 
-                        //Create a marker and infoWindow for each document
+                        // Create a marker and infoWindow for each document
                         _.each(docs, function(doc, key, list) {
 
                             var marker,
@@ -2651,7 +2650,7 @@ define(["jquery",
                                 var decodedGeohash = nGeohash.decode(markerGeohash),
                                     latLng = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
 
-                                //Set up the options for each marker
+                                // Set up the options for each marker
                                 var markerOptions = {
                                     position: latLng,
                                     icon: this.mapModel.get("markerImage"),
@@ -2659,7 +2658,7 @@ define(["jquery",
                                     map: viewRef.map
                                 };
 
-                                //Create the marker and add to the map
+                                // Create the marker and add to the map
                                 var marker = new google.maps.Marker(markerOptions);
                             });
                         });
@@ -2674,23 +2673,23 @@ define(["jquery",
              * And create an infowindow for that tile
              */
             addTileInfoWindows: function() {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
 
-                //Clone the Search model
+                // Clone the Search model
                 var searchModelClone = this.searchModel.clone(),
                     geohashLevel = this.mapModel.get("tileGeohashLevel"),
                     geohashName = "geohash_" + geohashLevel,
                     viewRef = this,
                     infoWindows = [];
 
-                //Change the geohash filter to match our tiles
+                // Change the geohash filter to match our tiles
                 searchModelClone.set("geohashLevel", geohashLevel);
                 searchModelClone.set("geohashes", this.tileGeohashes);
 
-                //Now run a query to get a list of documents that are represented by our tiles
+                // Now run a query to get a list of documents that are represented by our tiles
                 var query = "q=" + searchModelClone.getQuery() +
                     "&fl=id,title,geohash_9," + geohashName +
                     "&rows=1000" +
@@ -2699,31 +2698,31 @@ define(["jquery",
                 var requestSettings = {
                     url: MetacatUI.appModel.get("queryServiceUrl") + query,
                     success: function(data, textStatus, xhr) {
-                        //Make an infoWindow for each doc
+                        // Make an infoWindow for each doc
                         var docs = data.response.docs;
 
-                        //For each tile, loop through the docs to find which ones to include in its infoWindow
+                        // For each tile, loop through the docs to find which ones to include in its infoWindow
                         _.each(viewRef.tiles, function(tile, key, list) {
 
                             var infoWindowContent = "";
 
                             _.each(docs, function(doc, key, list) {
 
-                                //Is this document in this tile?
+                                // Is this document in this tile?
                                 for (var i = 0; i < doc[geohashName].length; i++) {
                                     if (doc[geohashName][i] == tile.geohash) {
-                                        //Add this doc to the infoWindow content
+                                        // Add this doc to the infoWindow content
                                         infoWindowContent += "<a href='" + MetacatUI.root + "/view/" + doc.id + "'>" + doc.title + "</a> (" + doc.id + ") <br/>"
                                         break;
                                     }
                                 }
                             });
 
-                            //The center of the tile
+                            // The center of the tile
                             var decodedGeohash = nGeohash.decode(tile.geohash),
                                 tileCenter = new google.maps.LatLng(decodedGeohash.latitude, decodedGeohash.longitude);
 
-                            //The infowindow
+                            // The infowindow
                             var infoWindow = new gmaps.InfoWindow({
                                 content: "<div class='gmaps-infowindow'>" +
                                     "<h4> Datasets located here </h4>" +
@@ -2737,34 +2736,34 @@ define(["jquery",
 
                             viewRef.tileInfoWindows.push(infoWindow);
 
-                            //Zoom in when the tile is clicked on
+                            // Zoom in when the tile is clicked on
                             gmaps.event.addListener(tile.shape, "click", function(clickEvent) {
 
                                 //--- We are at max zoom, display an infowindow ----//
                                 if (this.mapModel.isMaxZoom(viewRef.map)) {
 
-                                    //Find the infowindow that belongs to this tile in the view
+                                    // Find the infowindow that belongs to this tile in the view
                                     infoWindow.open(viewRef.map);
                                     infoWindow.isOpen = true;
 
-                                    //Close all other infowindows
+                                    // Close all other infowindows
                                     viewRef.closeInfoWindows(infoWindow);
                                 }
 
                                 //------ We are not at max zoom, so zoom into this tile ----//
                                 else {
-                                    //Change the center
+                                    // Change the center
                                     viewRef.map.panTo(clickEvent.latLng);
 
-                                    //Get this tile's bounds
+                                    // Get this tile's bounds
                                     var bounds = tile.shape.getBounds();
 
-                                    //Change the zoom
+                                    // Change the zoom
                                     viewRef.map.fitBounds(bounds);
                                 }
                             });
 
-                            //Close the infowindow upon any click on the map
+                            // Close the infowindow upon any click on the map
                             gmaps.event.addListener(viewRef.map, "click", function() {
                                 infoWindow.close();
                                 infoWindow.isOpen = false;
@@ -2787,10 +2786,10 @@ define(["jquery",
                 var infoWindowLists = [this.markerInfoWindows, this.tileInfoWindows];
 
                 _.each(infoWindowLists, function(infoWindows, key, list) {
-                    //Iterate over all the marker infowindows and close all of them except for this one
+                    // Iterate over all the marker infowindows and close all of them except for this one
                     for (var i = 0; i < infoWindows.length; i++) {
                         if ((infoWindows[i].isOpen) && (infoWindows[i] != except)) {
-                            //Close this info window and stop looking, since only one of each kind should be open anyway
+                            // Close this info window and stop looking, since only one of each kind should be open anyway
                             infoWindows[i].close();
                             infoWindows[i].isOpen = false;
                             i = infoWindows.length;
@@ -2803,18 +2802,18 @@ define(["jquery",
              * Remove all the tiles and text from the map
              **/
             removeTiles: function() {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
 
-                //Remove the tile from the map
+                // Remove the tile from the map
                 _.each(this.tiles, function(tile, key, list) {
                     if (tile.shape) tile.shape.setMap(null);
                     if (tile.text) tile.text.setMap(null);
                 });
 
-                //Reset the tile storage in the view
+                // Reset the tile storage in the view
                 this.tiles = [];
                 this.tileGeohashes = [];
                 this.tileInfoWindows = [];
@@ -2824,17 +2823,17 @@ define(["jquery",
              * Iterate over all the markers in the view and remove them from the map and view
              */
             removeMarkers: function() {
-                //Exit if maps are not in use
+                // Exit if maps are not in use
                 if ((this.mode != "map") || (!gmaps)) {
                     return false;
                 }
 
-                //Remove the marker from the map
+                // Remove the marker from the map
                 _.each(this.markers, function(marker, key, list) {
                     marker.marker.setMap(null);
                 });
 
-                //Reset the marker storage in the view
+                // Reset the marker storage in the view
                 this.markers = [];
                 this.markerGeohashes = [];
                 this.markerInfoWindows = [];
@@ -2853,7 +2852,7 @@ define(["jquery",
              * Without this delay, the app waits until all records are processed
              */
             addAll: function() {
-                //After the map is done loading, then load the rest of the results into the list
+                // After the map is done loading, then load the rest of the results into the list
                 if (this.ready) this.renderAll();
                 else {
                     var viewRef = this;
@@ -2865,7 +2864,7 @@ define(["jquery",
                     }, 500);
                 }
 
-                //After all the results are loaded, query for our facet counts in the background
+                // After all the results are loaded, query for our facet counts in the background
                 //this.getAutocompletes();
             },
 
@@ -2873,27 +2872,27 @@ define(["jquery",
                 // do this first to indicate coming results
                 this.updateStats();
 
-                //Remove all the existing tiles on the map
+                // Remove all the existing tiles on the map
                 this.removeTiles();
                 this.removeMarkers();
 
-                //Remove the loading class and styling
+                // Remove the loading class and styling
                 this.$results.removeClass("loading");
 
-                //If there are no results, display so
+                // If there are no results, display so
                 var numFound = this.searchResults.length;
                 if (numFound == 0) {
 
-                    //Add a No Results Found message
+                    // Add a No Results Found message
                     this.$results.html("<p id='no-results-found'>No results found.</p>");
 
-                    //Remove the loading styles from the map
+                    // Remove the loading styles from the map
                     if (gmaps && this.mapModel) {
                         $("#map-container").removeClass("loading");
                     }
 
                     if (MetacatUI.theme == "arctic") {
-                        //When we get new results, check if the user is searching for their own datasets and display a message
+                        // When we get new results, check if the user is searching for their own datasets and display a message
                         if ((MetacatUI.appView.dataCatalogView && MetacatUI.appView.dataCatalogView.searchModel.getQuery() == MetacatUI.appUserModel.get("searchModel").getQuery()) && !MetacatUI.appSearchResults.length) {
                             $("#no-results-found").after("<h3>Where are my data sets?</h3><p>If you are a previous ACADIS Gateway user, " +
                                 "you will need to take additional steps to access your data sets in the new NSF Arctic Data Center." +
@@ -2904,15 +2903,15 @@ define(["jquery",
                     return;
                 }
 
-                //Clear the results list before we start adding new rows
+                // Clear the results list before we start adding new rows
                 this.$results.html("");
 
                 //--First map all the results--
                 if (gmaps && this.mapModel) {
-                    //Draw all the tiles on the map to represent the datasets
+                    // Draw all the tiles on the map to represent the datasets
                     this.drawTiles();
 
-                    //Remove the loading styles from the map
+                    // Remove the loading styles from the map
                     $("#map-container").removeClass("loading");
                 }
 
@@ -2942,7 +2941,7 @@ define(["jquery",
                 $(".tooltip-this").tooltip();
                 $(".popover-this").popover();
 
-                //Set the autoheight
+                // Set the autoheight
                 this.setAutoHeight();
             },
 
@@ -2950,7 +2949,7 @@ define(["jquery",
              * Add a single SolrResult item to the list by creating a view for it and appending its element to the DOM.
              */
             addOne: function(result) {
-                //Get the view and package service URL's
+                // Get the view and package service URL's
                 this.$view_service = MetacatUI.appModel.get("viewServiceUrl");
                 this.$package_service = MetacatUI.appModel.get("packageServiceUrl");
                 result.set({
@@ -2958,13 +2957,13 @@ define(["jquery",
                     package_service: this.$package_service
                 });
 
-                //Create a new result item
+                // Create a new result item
                 var view = new SearchResultView({
                     model: result,
                     metricsModel: this.metricsModel
                 });
 
-                //Add this item to the list
+                // Add this item to the list
                 this.$results.append(view.render().el);
 
                 // map it
@@ -3024,7 +3023,7 @@ define(["jquery",
                 }));
             },
 
-            //Toggles the collapseable filters sidebar and result list in the default theme
+            // Toggles the collapseable filters sidebar and result list in the default theme
             collapse: function(e) {
                 var id = $(e.target).attr("data-collapse");
 
@@ -3038,28 +3037,28 @@ define(["jquery",
                     var container = this.$(".filter-contain.collapsable");
                 }
 
-                //If we can't find a container, then don't do anything
+                // If we can't find a container, then don't do anything
                 if (container.length < 1) return;
 
-                //Expand
+                // Expand
                 if ($(container).is(".collapsed")) {
-                    //Toggle the visibility of the collapse/expand icons
+                    // Toggle the visibility of the collapse/expand icons
                     $(container).find(".expand").hide();
                     $(container).find(".collapse").show();
 
-                    //Cache the height of this element so we can reset it on collapse
+                    // Cache the height of this element so we can reset it on collapse
                     $(container).attr("data-height", $(container).css("height"));
 
-                    //Increase the height of the container to expand it
+                    // Increase the height of the container to expand it
                     $(container).css("max-height", "3000px");
                 }
-                //Collapse
+                // Collapse
                 else {
-                    //Toggle the visibility of the collapse/expand icons
+                    // Toggle the visibility of the collapse/expand icons
                     $(container).find(".collapse").hide();
                     $(container).find(".expand").show();
 
-                    //Decrease the height of the container to collapse it
+                    // Decrease the height of the container to collapse it
                     if ($(container).attr("data-height")) {
                         $(container).css("max-height", $(container).attr("data-height"));
                     } else {
@@ -3081,10 +3080,10 @@ define(["jquery",
                 }
             },
 
-            //Move the popover element up the page a bit if it runs off the bottom of the page
+            // Move the popover element up the page a bit if it runs off the bottom of the page
             preventPopoverRunoff: function(e) {
 
-                //In map view only (because all elements are fixed and you can't scroll)
+                // In map view only (because all elements are fixed and you can't scroll)
                 if (this.mode == "map") {
                     var viewportHeight = $("#map-container").outerHeight();
                 } else {
@@ -3096,20 +3095,20 @@ define(["jquery",
                     var popoverHeight = $(".popover").outerHeight();
                     var topPosition = offset.top;
 
-                    //If pixels are cut off the top of the page, readjust its vertical position
+                    // If pixels are cut off the top of the page, readjust its vertical position
                     if (topPosition < 0) {
                         $(".popover").offset({
                             top: 10
                         });
                     } else {
-                        //Else, let's check if it is cut off at the bottom
+                        // Else, let's check if it is cut off at the bottom
                         var totalHeight = topPosition + popoverHeight;
 
                         var pixelsHidden = totalHeight - viewportHeight;
 
                         var newTopPosition = topPosition - pixelsHidden - 40;
 
-                        //If pixels are cut off the bottom of the page, readjust its vertical position
+                        // If pixels are cut off the bottom of the page, readjust its vertical position
                         if (pixelsHidden > 0) {
                             $(".popover").offset({
                                 top: newTopPosition
