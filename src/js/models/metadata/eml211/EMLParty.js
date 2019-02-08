@@ -120,7 +120,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			//Online URL - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
 			if( $(objectDOM).find("onlineurl, onlineUrl").length ){
-				modelJSON.onlineUrl = [$(objectDOM).find("onlineurl, onlineUrl").first().text()];
+				// modelJSON.onlineUrl = [$(objectDOM).find("onlineurl, onlineUrl").first().text()];
+				modelJSON.onlineUrl = $(objectDOM).find("onlineurl, onlineUrl").map(function(i,v) {
+					return $(v).text();
+				}).get();
 			}
 
 			//User ID - only set it on the JSON if it exists (we want to avoid an empty string value in the array)
