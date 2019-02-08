@@ -6,6 +6,9 @@
         <%=individualName.surName%> 
         <%=organizationName%> <br>
         <%=positionName%> <br>
+        <% if (urlLink.length) {%>
+            <%=urlLink.join(' / ')%> <br>
+        <%}%>
         <a href="mailto:<%=email%>"><%=email%></a> 
         <% if (email.length && phone.length) {%> / <%}%>
         <%=phone%>
