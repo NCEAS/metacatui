@@ -4,10 +4,9 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
 	var ToggleFilter = Filter.extend({
 
-    type: "ToggleFilter",
-
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
+        type: "ToggleFilter",
         trueLabel: "On",
         trueValue: null,
         falseLabel: "Off",

@@ -4,10 +4,9 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
 	var DateFilter = Filter.extend({
 
-    type: "DateFilter",
-
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
+        type: "DateFilter",
         min: 0,
         max: (new Date()).getUTCFullYear(),
         minDefault: 0,

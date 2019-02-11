@@ -163,7 +163,7 @@ define(['jquery', 'underscore', 'backbone',
 
         //Get all the nonNumeric filter models
         var nonNumericFilters = filters.reject(function(filterModel){
-          return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
+          return (filterModel.get("type") == "NumericFilter" || filterModel.get("type") == "DateFilter");
         });
         //Listen to changes on the "values" attribute for nonNumeric filters
         _.each(nonNumericFilters, function(nonNumericFilter){
@@ -236,7 +236,7 @@ define(['jquery', 'underscore', 'backbone',
           var filterLabel = value;
 
           //If the filter type is Choice, get the choice label which can be different from the value
-          if( filterModel.type == "ChoiceFilter" ){
+          if( filterModel.get("type") == "ChoiceFilter" ){
             //Find the choice object with the given value
             var matchingChoice = _.findWhere(filterModel.get("choices"), { "value" : value });
 
@@ -249,7 +249,7 @@ define(['jquery', 'underscore', 'backbone',
               filterLabel = value;
           }
           //Create the filter label for boolean filters
-          else if( filterModel.type == "BooleanFilter" ){
+          else if( filterModel.get("type") == "BooleanFilter" ){
 
             //If the filter is set to true, show the filter label
             if( filterModel.get("values")[0] ){
@@ -275,7 +275,7 @@ define(['jquery', 'underscore', 'backbone',
             }
 
           }
-          else if( filterModel.type == "ToggleFilter" ){
+          else if( filterModel.get("type") == "ToggleFilter" ){
 
             if( filterModel.get("values")[0] == filterModel.get("trueValue") ){
               filterLabel = filterModel.get("label") + ": " + filterModel.get("trueLabel");
@@ -357,7 +357,7 @@ define(['jquery', 'underscore', 'backbone',
       else if( filterModel.changed && (filterModel.changed.min || filterModel.changed.max) ){
 
         //Create the filter label for ranges of numbers
-        if( filterModel.type == "DateFilter" || filterModel.get("range") ){
+        if( filterModel.get("type") == "DateFilter" || filterModel.get("range") ){
           var filterLabel = filterModel.get("label") + ": " + filterModel.get("min") +
             " to " + filterModel.get("max");
         }
@@ -436,7 +436,7 @@ define(['jquery', 'underscore', 'backbone',
       if( filterModel ){
 
         //NumericFilters and DateFilters get the min and max values reset
-        if( filterModel.type == "NumericFilter" || filterModel.type == "DateFilter" ){
+        if( filterModel.get("type") == "NumericFilter" || filterModel.get("type") == "DateFilter" ){
 
           //Set the min and max values
           filterModel.set({

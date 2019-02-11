@@ -8,11 +8,12 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
          */
         var SpatialFilter = Filter.extend({
             
-            type: "SpatialFilter",
-            
             /* Default attributes of this model */
             defaults: function() {
                 return _.extend(Filter.prototype.defaults(), {
+                    /* The type of the filter */
+                    type: "SpatialFilter",
+                    
                     /* The array of geohashes used to spatially constrain the search*/
                     geohashes: [],
                     
