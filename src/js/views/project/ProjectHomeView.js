@@ -26,7 +26,7 @@ define(["jquery",
 
         render: function(){
           var searchResults;
-          var searchModel = this.model.get("searchModel"); 
+          var searchModel = this.model.get("searchModel");
           this.$el.html(this.template());
 
           //Set some options on the searchResults
@@ -55,13 +55,6 @@ define(["jquery",
           filterGroupsView.render();
           filterGroupsView.$el.addClass(filterGroupsView.className);
 
-          //Create a MarkdownView
-          var sectionMarkdownView = new MarkdownView({
-            markdown: this.model.get("overview").get("markdown"),
-            citations: this.model.get("literatureCited"),
-            el: "#project-description-container"
-          });
-
           //Render the table of contents view
           var topLevelItems = [
             {
@@ -74,30 +67,55 @@ define(["jquery",
               "text": "Datasets",
               "icon": "icon-hdd",
               "link": filterGroupsView.el,
-            },
+            }
+          ];
+
+          //If this project model has an overview, create a MarkdownView for it
+          if( this.model.get("overview") ){
+
+            //Create a MarkdownView
+            var sectionMarkdownView = new MarkdownView({
+              markdown: this.model.get("overview").get("markdown"),
+              citations: this.model.get("literatureCited"),
+              el: "#project-description-container"
+            });
+
+            //Add a table of contents link to the project description
+            topLevelItems.push(
             {
               "text": "Project Description",
               "icon": "icon-file-text-alt",
               "link": sectionMarkdownView.el,
-            },
-          ];
+            });
 
+            //Listen to the markdown view and when it is rendered, format the rendered markdown
+            this.listenTo(sectionMarkdownView, "mdRendered", this.formatProjectDescription);
+
+            //Render the view
+            sectionMarkdownView.render();
+          }
+
+          //Create a table of contents view
           var tocView = new TOCView({
             topLevelItems: topLevelItems,
             el: "#project-toc-container",
             linkedEl: this.el
           });
 
-          //Set TOC to render after the Markdown section, so it
-          // can get the rendered h2 tags
-          tocView.stopListening();
-          tocView.listenTo(sectionMarkdownView, "mdRendered", tocView.render);
+          //If there is no MarkdownView, render the table of contents now
+          if( typeof sectionMarkdownView == "undefined" ){
+            tocView.render();
+          }
+          //If there is a MarkdownView, render it later
+          else{
+            //Set TOC to render after the Markdown section, so it
+            // can get the rendered h2 tags
+            tocView.stopListening();
+            tocView.listenTo(sectionMarkdownView, "mdRendered", tocView.render);
 
-          //Listen to the markdown view and when it is rendered, format the rendered markdown
-          this.listenTo(sectionMarkdownView, "mdRendered", this.formatProjectDescription);
+          }
 
-          //Render the view
-          sectionMarkdownView.render();
+
         },
 
         /*

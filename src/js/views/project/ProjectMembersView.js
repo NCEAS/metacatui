@@ -68,17 +68,23 @@ define(["jquery",
             var acknowledgements = this.model.get("acknowledgments") || "";
             var awards = this.model.get("awards") || "";
 
-            if( awards !== "" || acknowledgements !== "" ) {
-                var ack_div = $('<div class="well awards-info"></div>');
-                this.$el.append(ack_div);
-                ack_div.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
-                if( acknowledgements !== "" ) {
-                    // This is a little cludgy but we need some space here if
-                    // there are acknowledgements and we don't need it if there
-                    // aren't
-                    ack_div.append("<br>");
-                };
+            //Add a container element
+            if(acknowledgements || awards){
+              var ack_div = $('<div class="well awards-info"></div>');
+              this.$el.append(ack_div);
+            }
+
+            //Add the awards
+            if( awards ) {
+
                 ack_div.append(this.awardsTemplate({awards: awards}));
+            };
+
+            //Add the acknowledgments
+            if( acknowledgements ) {
+
+              ack_div.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
+
             };
         },
 
