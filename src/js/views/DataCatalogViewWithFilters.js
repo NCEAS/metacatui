@@ -128,7 +128,7 @@ define(["jquery",
                 
                 // Listen to changes in the Search model Filters to trigger a search
                 this.stopListening(this.searchModel.get("filters"), "change");
-                this.listenTo(this.searchModel.get("filters"), "change", this.triggerSearch);
+                this.listenTo(this.searchModel.get("filters"), "change, add", this.triggerSearch);
                 
                 // Listen to the MetacatUI.appModel for the search trigger
                 this.listenTo(MetacatUI.appModel, "search", this.getResults);
@@ -355,7 +355,9 @@ define(["jquery",
                         // If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
                         if (catalogViewRef.map.getZoom() == mapOptions.minZoom) {
                             if (!catalogViewRef.hasZoomed) {
-                                if (needsRecentered && !catalogViewRef.hasDragged) catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
+                                if (needsRecentered && !catalogViewRef.hasDragged) {
+                                    catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
+                                }
                                 return;
                             }
 
