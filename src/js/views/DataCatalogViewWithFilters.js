@@ -246,7 +246,20 @@ define(["jquery",
              * Reset the map to the defaults
              */
             resetMap: function() {
-                // TODO: migrate from DataCatalogView
+                if (!gmaps) {
+                    return;
+                }
+                
+                // Remove the SpatialFilter from the collection silently
+                // so we don't immediately trigger a new search
+                this.searchModel.get("filters").remove(
+                    this.searchModel.get("filters").where({"type": "SpatialFilter"}),
+                    {"silent": true}
+                );
+                
+                // Reset the map options to defaults
+                this.mapModel.set("mapOptions", this.mapModel.defaults().mapOptions);
+                this.allowSearch = false;
             },
             
             /**
