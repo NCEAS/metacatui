@@ -54,12 +54,10 @@ define(["jquery",
                     var regex = /(.+)/gi;
                     var urlLink = [];
                     _.each(party.get("onlineUrl"), function(url){
-                        console.log(url);
                         urlLink.push(url.replace(regex, '<a href="$&">$&</a>'));
                     });
                     // set the urlLinks into the model
                     party.set({'urlLink': urlLink});
-                    console.log(party.get('urlLink'));
                     // render party into its row
                     newdiv.append(thisview.partyTemplate(party.toJSON()));
                 });
