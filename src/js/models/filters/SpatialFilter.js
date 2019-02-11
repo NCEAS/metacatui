@@ -64,7 +64,7 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                 // Only return geohash query fragments when they are enabled in the filter
                 if ( this.get("useGeohash") ) {
                     if ( (typeof geohashes !== "undefined") && geohashes.length > 0 ) {
-                        if ( (typeof geohashGroups !== "undefined") && 
+                        if ( (typeof groups !== "undefined") && 
                             Object.keys(groups).length > 0
                         ) {
                             // Group the Solr query fragment
