@@ -389,19 +389,11 @@ define(["jquery",
                             // Save our geohash search settings
                             spatialFilter.set({
                                 "geohashes": geohashBBoxes,
+                                "geohashLevel": precision,
                                 "north": north,
                                 "west": west,
                                 "south": south,
                                 "east": east,
-                            }, {"silent": true});
-                            catalogViewRef.searchModel.get("filters").add(spatialFilter);
-                            // Note that we rely on changes in the filters collection to
-                            // trigger a new search. We may need to pass {silent: true} below
-                            // if we're getting 6 events, and only set one property without silent
-                            
-                            // Save our geohash search settings
-                            spatialFilter.set({
-                                "geohashLevel": precision
                             });
                             catalogViewRef.searchModel.get("filters").add(spatialFilter);
                         }
