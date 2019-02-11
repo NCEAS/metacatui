@@ -43,9 +43,13 @@ MetacatUI.customAppConfig = function(){
 	    };
 	}
 	*/
-	if(MetacatUI.appModel.get("baseUrl").indexOf("arcticdata.io") > -1 && MetacatUI.appModel.get("baseUrl").indexOf("test") == -1){
+	if(MetacatUI.appModel.get("baseUrl").indexOf("arcticdata.io") > -1 &&
+	   MetacatUI.appModel.get("baseUrl").indexOf("test") == -1 &&
+	   MetacatUI.appModel.get("baseUrl").indexOf("demo") == -1){
+
 		MetacatUI.appModel.set("nodeId", "urn:node:ARCTIC");
 		MetacatUI.appModel.set("googleAnalyticsKey", "UA-75482301-1");
+
 	}
 }
 
