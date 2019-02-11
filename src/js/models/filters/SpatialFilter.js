@@ -12,7 +12,7 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
             
             /* Default attributes of this model */
             defaults: function() {
-                return _.extend(Filter.defaults(), {
+                return _.extend(Filter.prototype.defaults(), {
                     /* The array of geohashes used to spatially constrain the search*/
                     geohashes: [],
                     
@@ -116,7 +116,7 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     _.filter(Object.keys(groupedGeohashes), function(group) { 
                         return (groupedGeohashes[group].length < 32) 
                     }), function(incomplete) { 
-                        incompleteGroups.push(groupedGeohashes[n]); 
+                        incompleteGroups.push(groupedGeohashes[incomplete]); 
                     }
                 );
                 incompleteGroups = _.flatten(incompleteGroups);
