@@ -2,10 +2,12 @@ define(["jquery",
         "underscore",
         "backbone",
         "gmaps",
+        "models/filters/SpatialFilter",
         "views/DataCatalogView",
-        "text!templates/datacatalog.html"
+        "text!templates/datacatalog.html",
+        "nGeohash"
     ],
-    function($, _, Backbone, gmaps, DataCatalogView, template) {
+    function($, _, Backbone, gmaps, SpatialFilter, DataCatalogView, template, nGeohash) {
 
         /**
          * A DataCatalogView that uses the Search collection
@@ -124,11 +126,14 @@ define(["jquery",
                 this.listenTo(this.searchResults, "reset", this.addAll);
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
                 
+                // Listen to changes in the Search model Filters to trigger a search
+                this.stopListening(this.searchModel.get("filters"), "change");
+                this.listenTo(this.searchModel.get("filters"), "change", this.triggerSearch);
+                
                 // Listen to the MetacatUI.appModel for the search trigger
                 this.listenTo(MetacatUI.appModel, "search", this.getResults);
 
-                this.listenTo(MetacatUI.appUserModel, "change:loggedIn",
-                    this.triggerSearch);
+                this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.triggerSearch);
 
                 // and go to a certain page if we have it
                 this.getResults();
@@ -164,41 +169,38 @@ define(["jquery",
                 }
                 
                 //Specify which fields to retrieve
-                var fields = ""; 
-                    fields += "id,";
-                    fields += "seriesId,";
-                    fields += "title,";
-                    fields += "origin,";
-                    fields += "pubDate,";
-                    fields += "dateUploaded,";
-                    fields += "abstract,";
-                    fields += "resourceMap,";
-                    fields += "beginDate,";
-                    fields += "endDate,";
-                    fields += "read_count_i,";
-                    fields += "geohash_9,";
-                    fields += "datasource,";
-                    fields += "isPublic,";
-                    fields += "documents,";
+                var fields = []; 
+                    fields.push("id");
+                    fields.push("seriesId");
+                    fields.push("title");
+                    fields.push("origin");
+                    fields.push("pubDate");
+                    fields.push("dateUploaded");
+                    fields.push("abstract");
+                    fields.push("resourceMap");
+                    fields.push("beginDate");
+                    fields.push("endDate");
+                    fields.push("read_count_i");
+                    fields.push("geohash_9");
+                    fields.push("datasource");
+                    fields.push("isPublic");
+                    fields.push("documents");
                 // Add spatial fields if the map is present
                 if ( gmaps ) {
-                    fields += "northBoundCoord,";
-                    fields += "southBoundCoord,";
-                    fields += "eastBoundCoord,";
-                    fields += "westBoundCoord";
+                    fields.push("northBoundCoord");
+                    fields.push("southBoundCoord");
+                    fields.push("eastBoundCoord");
+                    fields.push("westBoundCoord");
                 }
-                // Strip the last trailing comma if needed
-                if ( fields[fields.length - 1] === "," ) {
-                    fields = fields.substr(0, fields.length - 1);
-                }
-                this.searchResults.setfields(fields);
+                this.searchResults.setfields(fields.join(","));
                 
                 // Get the Solr query string from the Search filter collection
                 query = this.searchModel.get("filters").getQuery();
                 
                 // Specify which geohash level is used to return tile counts
                 if ( gmaps && this.map ) {
-                    geohashLevel = "geohash_" + this.mapModel.determineGeohashLevel(this.map.zoom);
+                    geohashLevel = "geohash_" +
+                        this.mapModel.determineGeohashLevel(this.map.zoom);
                     this.searchResults.facet.push(geohashLevel);
                 }
                 
@@ -225,6 +227,7 @@ define(["jquery",
                 // don't want to follow links
                 return false;
             },
+            
             /*
              * Either hides or shows the "clear all filters" button
              */
@@ -237,8 +240,210 @@ define(["jquery",
                 } else {
                     this.hideClearButton();
                 }
+            },
+            
+            /**
+             * Reset the map to the defaults
+             */
+            resetMap: function() {
+                // TODO: migrate from DataCatalogView
+            },
+            
+            /**
+             * Render the map based on the mapModel properties and search results
+             */
+            renderMap: function() {
+                
+                // If gmaps isn't enabled or loaded with an error, use list mode
+                if (!gmaps || this.mode == "list") {
+                    this.ready = true;
+                    this.mode = "list";
+                    return;
+                }
+                
+                // The spatial filter instance used to constrain the search by zoom and extent
+                var spatialFilter;
+                
+                // The map's configuration 
+                var mapOptions;
+                
+                // The map extent
+                var boundingBox;
+                
+                // The map bounding coordinates
+                var north;
+                var west;
+                var south;
+                var east;
+                
+                // The map zoom level
+                var zoom;
+                
+                // The map geohash precision based on the zoom level
+                var precision;
+                
+                // The geohash boxes associated with the map extent and zoom
+                var geohashBBoxes;
+                
+                // References to the map and catalog view instances for callbacks
+                var mapRef;
+                var catalogViewRef;
+                
+                if (this.isSubView) {
+                    this.$el.addClass("mapMode");
+                } else {
+                    $("body").addClass("mapMode");
+                }
+
+                // Get the map options and create the map
+                gmaps.visualRefresh = true;
+                mapOptions = this.mapModel.get("mapOptions");
+                $("#map-container").append("<div id='map-canvas'></div>");
+                this.map = new gmaps.Map($("#map-canvas")[0], mapOptions);
+                this.mapModel.set("map", this.map);
+
+                // Hide the map filter toggle element
+                this.$(this.mapFilterToggle).hide();
+
+                // Get the existing spatial filter if it exists
+                if (this.searchModel.get("filters") && 
+                    this.searchModel.get("filters")
+                        .where({type: "SpatialFilter"}).length > 0) {
+                    spatialFilter = this.searchModel.get("filters")
+                        .where({type: "SpatialFilter"})[0];
+                } else {
+                    spatialFilter = new SpatialFilter();
+                }
+                
+                // Store references
+                mapRef = this.map;
+                catalogViewRef = this;
+                
+                // Listen to idle events on the map (at rest), and render content as needed
+                google.maps.event.addListener(mapRef, "idle", function() {
+                    catalogViewRef.ready = true;
+
+                    // Remove all markers from the map
+                    for (var i = 0; i < catalogViewRef.resultMarkers.length; i++) {
+                        catalogViewRef.resultMarkers[i].setMap(null);
+                    }
+                    catalogViewRef.resultMarkers = new Array();
+                    
+                    // Trigger a resize so the map background image tiles load completely
+                    google.maps.event.trigger(mapRef, "resize");
+
+                    var currentMapCenter = catalogViewRef.mapModel.get("map").getCenter(),
+                        savedMapCenter = catalogViewRef.mapModel.get("mapOptions").center,
+                        needsRecentered = (currentMapCenter != savedMapCenter);
+                        
+                    // If we are doing a new search
+                    if ( catalogViewRef.allowSearch ) {
+                        
+                        // If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
+                        if (catalogViewRef.map.getZoom() == mapOptions.minZoom) {
+                            if (!catalogViewRef.hasZoomed) {
+                                if (needsRecentered && !catalogViewRef.hasDragged) catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
+                                return;
+                            }
+
+                            //Hide the map filter toggle element
+                            catalogViewRef.$(catalogViewRef.mapFilterToggle).hide();
+
+                            catalogViewRef.resetMap();
+                        } else {
+                            // If the user has not zoomed or dragged to a new area of the map yet
+                            // and our map is off-center, recenter it
+                            if (!catalogViewRef.hasZoomed && needsRecentered) {
+                                catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
+                            }
+
+                            // Show the map filter toggle element
+                            catalogViewRef.$(catalogViewRef.mapFilterToggle).show();
+                            
+                            // Get the Google map bounding box
+                            boundingBox = mapRef.getBounds();
+
+                            // Set the search model's spatial filter properties
+                            // Encode the Google Map bounding box into geohash
+                            if ( typeof boundingBox !== "undefined") {
+                                north = boundingBox.getNorthEast().lat();
+                                west = boundingBox.getSouthWest().lng();
+                                south = boundingBox.getSouthWest().lat();
+                                east = boundingBox.getNorthEast().lng();
+                            }
+
+                            // Save the center position and zoom level of the map
+                            catalogViewRef.mapModel.get("mapOptions").center = mapRef.getCenter();
+                            catalogViewRef.mapModel.get("mapOptions").zoom = mapRef.getZoom();
+
+                            // Determine the precision of geohashes to search for
+                            zoom = mapRef.getZoom();
+
+                            precision = catalogViewRef.mapModel.getSearchPrecision(zoom);
+
+                            // Get all the geohash tiles contained in the map bounds
+                            if ( south && west && north && east && precision )  {
+                                geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
+                            }
+
+                            // Save our geohash search settings
+                            spatialFilter.set({
+                                "geohashes": geohashBBoxes,
+                                "north": north,
+                                "west": west,
+                                "south": south,
+                                "east": east,
+                            }, {"silent": true});
+                            catalogViewRef.searchModel.get("filters").add(spatialFilter);
+                            // Note that we rely on changes in the filters collection to
+                            // trigger a new search. We may need to pass {silent: true} below
+                            // if we're getting 6 events, and only set one property without silent
+                            
+                            // Save our geohash search settings
+                            spatialFilter.set({
+                                "geohashLevel": precision
+                            });
+                            catalogViewRef.searchModel.get("filters").add(spatialFilter);
+                        }
+                        // Reset to the first page
+                        if (catalogViewRef.hasZoomed) {
+                            MetacatUI.appModel.set("page", 0);
+                        }
+                        catalogViewRef.allowSearch = false;
+                        
+                    } else {
+                        // Else, if this is the fresh map render on page load
+                        if (needsRecentered && !catalogViewRef.hasDragged) {
+                            catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
+                        }
+
+                        //Show the map filter toggle element
+                        if (catalogViewRef.map.getZoom() > mapOptions.minZoom) {
+                            catalogViewRef.$(catalogViewRef.mapFilterToggle).show();
+                        }
+                    }
+                    
+                    catalogViewRef.hasZoomed = false;
+                });
+                
+                // When the user has zoomed the map, trigger a new search, idle event follows
+                google.maps.event.addListener(mapRef, "zoom_changed", function() {
+                    catalogViewRef.allowSearch = true;
+                    catalogViewRef.hasZoomed = true;
+                    
+                });
+                
+                // When the user has dragged the map, don't load cached results.
+                // We still may not trigger a new search because the user has to zoom in first,
+                // after the map initially loads at full-world view. Idel event follows
+                google.maps.event.addListener(mapRef, "dragend", function() {
+                    catalogViewRef.hasDragged = true;
+                    if (catalogViewRef.map.getZoom() > mapOptions.minZoom) {
+                        catalogViewRef.hasZoomed = true;
+                        catalogViewRef.allowSearch = true;
+                    }
+                });
             }
         });
         return DataCatalogViewWithFilters;
-
     });
