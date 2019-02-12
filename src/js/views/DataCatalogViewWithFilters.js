@@ -246,16 +246,19 @@ define(["jquery",
              * Reset the map to the defaults
              */
             resetMap: function() {
+                
+                // The spatial models registered in the filters collection
+                var spatialModels;
+                
                 if (!gmaps) {
                     return;
                 }
                 
                 // Remove the SpatialFilter from the collection silently
                 // so we don't immediately trigger a new search
-                this.searchModel.get("filters").remove(
-                    this.searchModel.get("filters").where({type: "SpatialFilter"}),
-                    {"silent": true}
-                );
+                spatialModels = 
+                    _.where(this.searchModel.get("filters").models, {type: "SpatialFilter"});
+                this.searchModel.get("filters").remove(spatialModels, {"silent": true});
                 
                 // Reset the map options to defaults
                 this.mapModel.set("mapOptions", this.mapModel.defaults().mapOptions);

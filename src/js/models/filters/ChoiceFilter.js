@@ -4,9 +4,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
 	var ChoiceFilter = Filter.extend({
 
+    type: "ChoiceFilter",
+
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-        type: "ChoiceFilter",
         chooseMultiple: true,
         //@type {object} - A literal JS object with a "label" and "value" attribute
         choices: []

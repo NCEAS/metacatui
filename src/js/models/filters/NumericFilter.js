@@ -4,9 +4,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
 	var NumericFilter = Filter.extend({
 
+    type: "NumericFilter",
+
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-        type: "NumericFilter",
         min: null,
         max: null,
         minDefault: null,
