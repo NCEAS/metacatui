@@ -127,8 +127,8 @@ define(["jquery",
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
                 
                 // Listen to changes in the Search model Filters to trigger a search
-                this.stopListening(this.searchModel.get("filters"), "change");
-                this.listenTo(this.searchModel.get("filters"), "change, add", this.triggerSearch);
+                this.stopListening(this.searchModel.get("filters"), "add, remove, update, reset, change");
+                this.listenTo(this.searchModel.get("filters"), "add, remove, update, reset, change", this.triggerSearch);
                 
                 // Listen to the MetacatUI.appModel for the search trigger
                 this.listenTo(MetacatUI.appModel, "search", this.getResults);
