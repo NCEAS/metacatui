@@ -301,7 +301,7 @@ function ($, _, Backbone) {
 		renderProject: function(projectId, projectSection) {
             var projectName;
             var projectsMap = MetacatUI.appModel.get("projectsMap");
-            
+
             // Look up the project document seriesId by its registered name if given
             if ( projectId ) {
                 if ( projectsMap ) {
@@ -319,6 +319,7 @@ function ($, _, Backbone) {
                         // Try a reverse lookup of the project name by values
                         projectName = Object.keys(projectsMap)
                             .find(key => projectsMap[key] === projectId);
+
                         if ( typeof projectName !== "undefined" ) {
                             if ( projectSection ) {
                                 this.routeHistory.push("projects/" + projectName + "/" + projectSection);
@@ -326,8 +327,31 @@ function ($, _, Backbone) {
                                 this.routeHistory.push("projects/" + projectName);
                             }
                         } else {
+
+                          //Try looking up the project name with case-insensitive matching
+                          projectName = _.findKey(projectsMap, function(value, key){
+                            return( key.toLowerCase() == projectId.toLowerCase() );
+                          });
+
+                          //If a matching project name was found, route to it
+                          if( projectName ){
+
+                            //Get the project ID from the map
+                            projectId = projectsMap[projectName];
+
+                            // Then set the history
+                            if ( projectSection ) {
+                              this.navigate("projects/" + projectName + "/" + projectSection, { trigger: false, replace: true });
+                              this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                            } else {
+                              this.navigate("projects/" + projectName, { trigger: false, replace: true });
+                              this.routeHistory.push("projects/" + projectName);
+                            }
+                          }
+                          else{
                             // Fall back to routing to the project by id, not name
                             this.routeHistory.push("projects/" + projectId);
+                          }
                         }
                     }
                 }
