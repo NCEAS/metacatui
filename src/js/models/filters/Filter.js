@@ -4,10 +4,11 @@ define(['jquery', 'underscore', 'backbone'],
 
   var FilterModel = Backbone.Model.extend({
 
+    type: "Filter",
+
     //Default attributes for this model
     defaults: function(){
       return{
-        type: "Filter",
         objectDOM: null,
         fields: [],
         values: [],

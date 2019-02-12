@@ -127,8 +127,8 @@ define(["jquery",
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
                 
                 // Listen to changes in the Search model Filters to trigger a search
-                this.stopListening(this.searchModel.get("filters"), "change");
-                this.listenTo(this.searchModel.get("filters"), "change", this.triggerSearch);
+                this.stopListening(this.searchModel.get("filters"), "add, remove, update, reset, change");
+                this.listenTo(this.searchModel.get("filters"), "add, remove, update, reset, change", this.triggerSearch);
                 
                 // Listen to the MetacatUI.appModel for the search trigger
                 this.listenTo(MetacatUI.appModel, "search", this.getResults);
@@ -246,16 +246,19 @@ define(["jquery",
              * Reset the map to the defaults
              */
             resetMap: function() {
+                
+                // The spatial models registered in the filters collection
+                var spatialModels;
+                
                 if (!gmaps) {
                     return;
                 }
                 
                 // Remove the SpatialFilter from the collection silently
                 // so we don't immediately trigger a new search
-                this.searchModel.get("filters").remove(
-                    this.searchModel.get("filters").where({type: "SpatialFilter"}),
-                    {"silent": true}
-                );
+                spatialModels = 
+                    _.where(this.searchModel.get("filters").models, {type: "SpatialFilter"});
+                this.searchModel.get("filters").remove(spatialModels, {"silent": true});
                 
                 // Reset the map options to defaults
                 this.mapModel.set("mapOptions", this.mapModel.defaults().mapOptions);
@@ -355,7 +358,9 @@ define(["jquery",
                         // If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
                         if (catalogViewRef.map.getZoom() == mapOptions.minZoom) {
                             if (!catalogViewRef.hasZoomed) {
-                                if (needsRecentered && !catalogViewRef.hasDragged) catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
+                                if (needsRecentered && !catalogViewRef.hasDragged) {
+                                    catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
+                                }
                                 return;
                             }
 

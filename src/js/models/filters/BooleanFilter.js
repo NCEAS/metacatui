@@ -4,9 +4,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
 	var BooleanFilter = Filter.extend({
 
+    type: "BooleanFilter",
+
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
-        type: "BooleanFilter",
         //Boolean filters can't match substrings
         matchSubstring: false,
         //Boolean filters don't use operators
