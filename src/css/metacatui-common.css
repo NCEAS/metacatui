@@ -3081,6 +3081,9 @@ address.email-container:before{
 .profile .chart-title{
 	float: left;
 }
+.profile .charts{
+  box-sizing: border-box;
+}
 .profile .chart{
 	float: left;
 	margin-left: 20px;
