@@ -780,13 +780,21 @@ define(['showdown', 'citation'], function (showdown, citation) {
 		    type: "lang",
 			filter: function (text, converter, options) {
 			    // use showdown's regexp engine to conditionally parse codeblocks
-			    var left  = '\\^\\[(doi:)?',
+					// var left  = '\\^\\[(doi:)?',
+					// without escapes: \[(@[^\]]+)\]
+					var left = '\\[(@[^\\]]+)',
 					right = '\\]',
 					flags = 'g',
 					replacement = function (wholeMatch, match, left, right) {
 
 						// if there are multiple citations, split the match into an array
-						var match = match.split(", ");
+						var match = [];
+						wholeMatch.split(", ").forEach(function(item){
+							let itrimmed = item.replace(/[\[\]\s]/g, '');
+							match.push(itrimmed);
+							// console.log(itrimmed);
+						});
+
 						let citeInfo = new Cite(match);
 
 						if(citeInfo.data.length == 0){
@@ -794,7 +802,10 @@ define(['showdown', 'citation'], function (showdown, citation) {
 							console.log("no match found for " + match)
 
 							// return the unmatched doi or id in parentheses
-							return("(" + match + ")");
+							// we need to escape underscores so they don't get
+							// processed as markdown
+							let escmatch = match.map(s => s.replace(/_/,"\\_"));
+							return("(" + escmatch + ")");
 
 						} else {
 
