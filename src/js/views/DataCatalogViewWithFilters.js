@@ -228,6 +228,43 @@ define(["jquery",
                 return false;
             },
             
+            /**
+             * Toggle the map filter to include or exclude it from the Solr query
+             */
+            toggleMapFilter: function(event) {
+                var toggleInput = this.$("input" + this.mapFilterToggle);
+                if ((typeof toggleInput === "undefined") || !toggleInput) return;
+
+                var isOn = $(toggleInput).prop("checked");
+
+                // If the user clicked on the label, then change the checkbox for them
+                if (event.target.tagName != "INPUT") {
+                    isOn = !isOn;
+                    toggleInput.prop("checked", isOn);
+                }
+
+                if (isOn) {
+                    this.searchModel.set("useGeohash", true);
+                } else {
+                    this.searchModel.set("useGeohash", false);
+                    // Remove the spatial filter from the collection
+                    this.searchModel.get("filters")
+                        .remove(
+                            _.findWhere(this.searchModel.get("filters").models, {type: "SpatialFilter"})
+                        );
+                }
+
+                // Tell the map to trigger a new search and redraw tiles
+                this.allowSearch = true;
+                google.maps.event.trigger(this.mapModel.get("map"), "idle");
+
+                // Send this event to Google Analytics
+                if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
+                    var action = isOn ? "on" : "off";
+                    ga("send", "event", "map", action);
+                }
+            },
+            
             /*
              * Either hides or shows the "clear all filters" button
              */
@@ -413,7 +450,11 @@ define(["jquery",
                                 "south": south,
                                 "east": east,
                             });
-                            catalogViewRef.searchModel.get("filters").add(spatialFilter);
+                            
+                            // Add the spatial filter to the filters collection if enabled
+                            if ( catalogViewRef.searchModel.get("useGeohash") ) {
+                                catalogViewRef.searchModel.get("filters").add(spatialFilter);
+                            }
                         }
                         // Reset to the first page
                         if (catalogViewRef.hasZoomed) {

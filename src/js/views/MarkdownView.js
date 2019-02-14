@@ -103,7 +103,7 @@ define([    "jquery", "underscore", "backbone",
                 regexFootnotes3     = /\[\^([\d\w]+)\]/m,
                 // test for all of the math/katex delimiters (TODO: see what katex uses for regex. this is too general.)
                 regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
-                regexCitation   = /\^\[.*\]/g;
+                regexCitation   = /\[@.+\]/g;
                 // test for any <h.> tags
                 regexHtags      = new RegExp(`#\\s`),
                 regexImages     = /!\[.*\]\(\S+\)/;
