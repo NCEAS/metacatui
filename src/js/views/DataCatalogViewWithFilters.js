@@ -459,6 +459,12 @@ define(["jquery",
                             // Add the spatial filter to the filters collection if enabled
                             if ( catalogViewRef.searchModel.get("useGeohash") ) {
                                 catalogViewRef.searchModel.get("filters").add(spatialFilter);
+                            } else {
+                                // If we have zoomed but have not added or removed filters, we
+                                // still trigger a search to update the facet tiles
+                                if ( catalogViewRef.hasZoomed ) {
+                                    catalogViewRef.triggerSearch();
+                                }
                             }
                         }
                         // Reset to the first page
