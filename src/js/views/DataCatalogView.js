@@ -2367,8 +2367,12 @@ define(["jquery",
 
                 // Make a copy of the array that is geohash counts only
                 var countsOnly = [];
-                for (var i = 1; i < filteredTileGeohashes.length; i += 2) {
-                    countsOnly.push(filteredTileGeohashes[i]);
+                if (typeof filteredTileGeohashes.length !== "undefined") {
+                    for (var i = 1; i < filteredTileGeohashes.length; i += 2) {
+                        countsOnly.push(filteredTileGeohashes[i]);
+                    }
+                } else {
+                    console.log("filteredTileGeohashes is undefined.");
                 }
 
                 // Create a range of lightness to make different colors on the tiles
