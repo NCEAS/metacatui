@@ -75,15 +75,16 @@ define(['jquery', 'underscore', 'backbone',
       //Get the new value from the text input
       var newValue = this.$("input").val();
 
+      if( newValue == "" )
+        return;
+
       //Get the current values array from the model
       var currentValue = this.model.get("values");
 
-      //Replace the first index of the array with the new value
-      var newValuesArray = currentValue.slice(0);
-      newValuesArray[0] = newValue;
+      //Create a copy of the array
+      var newValuesArray = _.flatten(new Array(currentValue, newValue));
 
       //Trigger the change event manually since it is an array
-    //  this.model.trigger("change:values", this.model, currentValue);
       this.model.set("values", newValuesArray);
 
     }
