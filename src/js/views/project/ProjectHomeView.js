@@ -55,6 +55,9 @@ define(["jquery",
           filterGroupsView.render();
           filterGroupsView.$el.addClass(filterGroupsView.className);
 
+          //Save a reference to the filter groups view
+          dataCatalogView.filterGroupsView = filterGroupsView;
+
           //Render the table of contents view
           var topLevelItems = [
             {

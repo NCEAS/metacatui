@@ -322,6 +322,16 @@ define(['jquery', 'underscore', 'backbone',
 
       }
 
+      //Toggle the applied filters header
+      this.toggleAppliedFiltersHeader();
+
+    },
+
+    /*
+    * Hides or shows the applied filter list title/header
+    */
+    toggleAppliedFiltersHeader: function(){
+
       //If there is an applied filter, show the Clear All button
       if( this.$(".applied-filter").length ){
         this.$(".filters-title").css("visibility", "visible");
@@ -409,6 +419,62 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
+
+    /*
+    * Adds a custom filter that likely exists outside of the FilterGroups but needs
+    * to be displayed with these other applied fitlers.
+    *
+    * @param {Filter} filterModel - The Filter Model to display
+    */
+    addCustomAppliedFilter: function(filterModel){
+
+      //If this filter already exists in the applied filter list, exit this function
+      var alreadyExists = _.find( this.$(".applied-filter.custom"), function(appliedFilterEl){
+        return $(appliedFilterEl).data("model") == filterModel;
+      });
+
+      if( alreadyExists ){
+        return;
+      }
+
+      //Create the applied filter element
+      var removeIcon    = $(document.createElement("a"))
+                            .addClass("icon icon-remove remove-filter icon-on-right")
+                            .attr("title", "Remove this filter"),
+          appliedFilter = $(document.createElement("li"))
+                            .addClass("applied-filter label custom")
+                            .text(filterModel.get("label"))
+                            .append(removeIcon)
+                            .data("model", filterModel)
+                            .attr("data-value", filterModel.get("values"));
+
+      //Add the applied filter to the view
+      this.$(".applied-filters").append(appliedFilter);
+
+      //Display the filters title
+      this.toggleAppliedFiltersHeader();
+
+    },
+
+    /*
+    * Removes the custom applied filter from the UI.
+    *
+    * @param {Filter} filterModel - The Filter Model to display
+    */
+    removeCustomAppliedFilter: function(filterModel){
+
+      _.each(this.$(".custom.applied-filter"), function(appliedFilterEl){
+        if( $(appliedFilterEl).data("model") == filterModel ){
+          $(appliedFilterEl).remove();
+          this.trigger("customAppliedFilterRemoved", filterModel);
+        }
+      }, this);
+
+      //Hide the filters title
+      this.toggleAppliedFiltersHeader();
+
+    },
+
     /*
     * When a remove button is clicked, get the filter model associated with it
     /* and remove the filter from the filter group
@@ -421,8 +487,13 @@ define(['jquery', 'underscore', 'backbone',
       var appliedFilterEl = $(e.target).parents(".applied-filter"),
           filterModel =  appliedFilterEl.data("model");
 
-      //Remove the filter from the filter group model
-      this.removeFilter(filterModel, appliedFilterEl);
+      if( appliedFilterEl.is(".custom") ){
+        this.removeCustomAppliedFilter(filterModel);
+      }
+      else{
+        //Remove the filter from the filter group model
+        this.removeFilter(filterModel, appliedFilterEl);
+      }
 
     },
 
@@ -453,7 +524,7 @@ define(['jquery', 'underscore', 'backbone',
           //Get the current value
           var values = filterModel.get("values"),
               //Remove the value that was in this applied filter
-              newValues = _.without(values, $(appliedFilterEl).data("value"));
+              newValues = _.without(values, $(appliedFilterEl).data("value").toString() );
 
           //Updates the values on the model
           filterModel.set("values", newValues);
@@ -472,8 +543,17 @@ define(['jquery', 'underscore', 'backbone',
       //Iterate over each applied filter in the view
       _.each( this.$(".applied-filter"), function(appliedFilterEl){
 
-        //Remove the filter from the fitler group
-        this.removeFilter($(appliedFilterEl).data("model"), appliedFilterEl);
+        var $appliedFilterEl = $(appliedFilterEl);
+
+        if( $appliedFilterEl.is(".custom") ){
+          this.removeCustomAppliedFilter( $appliedFilterEl.data("model") );
+        }
+        else{
+
+          //Remove the filter from the fitler group
+          this.removeFilter( $appliedFilterEl.data("model"), appliedFilterEl );
+
+        }
 
       }, this);
     }

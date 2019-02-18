@@ -238,20 +238,30 @@ define(["jquery",
                 var isOn = $(toggleInput).prop("checked");
 
                 // If the user clicked on the label, then change the checkbox for them
-                if (event.target.tagName != "INPUT") {
+                if (event && event.target.tagName != "INPUT") {
                     isOn = !isOn;
                     toggleInput.prop("checked", isOn);
                 }
 
+                var spatialFilter = _.findWhere(this.searchModel.get("filters").models, {type: "SpatialFilter"});
+
                 if (isOn) {
                     this.searchModel.set("useGeohash", true);
+
+                    if( this.filterGroupsView && spatialFilter ){
+
+                      this.filterGroupsView.addCustomAppliedFilter(spatialFilter);
+
+                    }
+
                 } else {
                     this.searchModel.set("useGeohash", false);
                     // Remove the spatial filter from the collection
-                    this.searchModel.get("filters")
-                        .remove(
-                            _.findWhere(this.searchModel.get("filters").models, {type: "SpatialFilter"})
-                        );
+                    this.searchModel.get("filters").remove(spatialFilter);
+
+                    if( this.filterGroupsView && spatialFilter ){
+                      this.filterGroupsView.removeCustomAppliedFilter(spatialFilter);
+                    }
                 }
 
                 // Tell the map to trigger a new search and redraw tiles
@@ -453,7 +463,27 @@ define(["jquery",
                             
                             // Add the spatial filter to the filters collection if enabled
                             if ( catalogViewRef.searchModel.get("useGeohash") ) {
+
                                 catalogViewRef.searchModel.get("filters").add(spatialFilter);
+
+                                if( catalogViewRef.filterGroupsView && spatialFilter ){
+                                  catalogViewRef.filterGroupsView.addCustomAppliedFilter(spatialFilter);
+
+                                  //When the custom spatial filter is removed in the UI, toggle the map filter
+                                  catalogViewRef.listenTo( catalogViewRef.filterGroupsView, "customAppliedFilterRemoved", function(removedFilter){
+
+                                      if( removedFilter.type == "SpatialFilter" ){
+
+                                        //Uncheck the map filter on the map itself
+                                        catalogViewRef.$(".toggle-map-filter").prop("checked", false);
+                                        catalogViewRef.toggleMapFilter();
+
+                                      }
+
+                                  });
+
+                                }
+
                             }
                         }
                         // Reset to the first page

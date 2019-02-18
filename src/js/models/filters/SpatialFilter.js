@@ -35,6 +35,9 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     
                     /* The list of grouped geohashes, as complete or incomplete 32 tiles */
                     groupedGeohashes: {},
+
+                    /* A short intuitive label */
+                    label: "Limit search to the map area"
                 });
             },
             
