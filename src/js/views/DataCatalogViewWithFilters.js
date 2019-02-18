@@ -163,7 +163,8 @@ define(["jquery",
                 var query; // The full query string
                 var geohashLevel; // The geohash level to search
                 var page; // The page of search results to render
-                
+                var position; // The geohash level position in the facet array
+
                 if ( sortOrder ) {
                     this.searchResults.setSort(sortOrder);
                 }
@@ -201,7 +202,11 @@ define(["jquery",
                 if ( gmaps && this.map ) {
                     geohashLevel = "geohash_" +
                         this.mapModel.determineGeohashLevel(this.map.zoom);
-                    this.searchResults.facet.push(geohashLevel);
+                    // Does it already exist as a facet field?
+                    position = this.searchResults.facet.indexOf(geohashLevel);
+                    if ( position == -1) {
+                        this.searchResults.facet.push(geohashLevel);
+                    }
                 }
                 
                 // Run the query
@@ -484,6 +489,12 @@ define(["jquery",
 
                                 }
 
+                            } else {
+                                // If we have zoomed but have not added or removed filters, we
+                                // still trigger a search to update the facet tiles
+                                if ( catalogViewRef.hasZoomed ) {
+                                    catalogViewRef.triggerSearch();
+                                }
                             }
                         }
                         // Reset to the first page
