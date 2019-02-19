@@ -295,6 +295,39 @@ define(["jquery",
             },
             
             /**
+             * Toggle between map and list mode
+             * 
+             * @param(Event)  the event passed by clicking the toggle-map class button
+             */
+            toggleMapMode: function(event) {
+                console.log(event);
+                
+                // Block the event from bubbling
+                if (typeof event === "object") {
+                    event.preventDefault();
+                }
+
+                if (gmaps) {
+                    $(".mapMode").toggleClass("mapMode");
+                }
+
+                // Toggle the mode
+                if (this.mode == "map") {
+                    MetacatUI.appModel.set("searchMode", "list");
+                    this.mode = "list";
+                    this.$("#map-canvas").detach();
+                    this.setAutoHeight();
+                    this.getResults();
+                } else if (this.mode == "list") {
+                    MetacatUI.appModel.set("searchMode", "map");
+                    this.mode = "map";
+                    this.renderMap();
+                    this.setAutoHeight();
+                    this.getResults();
+                }
+            },
+            
+            /**
              * Reset the map to the defaults
              */
             resetMap: function() {
