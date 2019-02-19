@@ -725,9 +725,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                 xml.find("archived").text(this.get("archived") || "false");
                 xml.find("dateuploaded").text(this.get("dateUploaded") || new Date().toISOString());
-                //  xml.find("datesysmetadatamodified").text(new Date().toISOString());
-                xml.find("originmembernode").text(this.get("originMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
-                xml.find("authoritativemembernode").text(this.get("authoritativeMemberNode") || MetacatUI.nodeModel.get("currentMemberNode"));
 
                 //Get the filename node
                 fileNameNode = xml.find("filename");
@@ -735,7 +732,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 //If the filename node doesn't exist, then create one
                 if( ! fileNameNode.length ){
                   fileNameNode = $(document.createElement("filename"));
-                  xml.find("authoritativemembernode").after(fileNameNode);
+                  xml.find("dateuploaded").after(fileNameNode);
                 }
 
                 //Set the object file name
@@ -849,7 +846,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   '    <submitter />',
                   '    <rightsholder />',
                   '    <originmembernode />',
-                  '    <authoritativemembernode />',
                   '    <filename />',
                   '</d1_v2.0:systemmetadata>'
               );
