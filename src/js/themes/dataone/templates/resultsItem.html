@@ -25,12 +25,14 @@
 	          print('<i class="icon icon-map-marker inactive stop-route"></i>');
 	       } %>
 	</div>
+
+  <div class="icons">
 	<% if(prov_hasSources || prov_hasDerivations){
-		print('<a class="icons provenance active stop-route">');
-		print('<i class="icon icon-code-fork active stop-route"></i>');
+		print('<i class="icon icon-code-fork active" title="This dataset contains provenance information"></i>');
 	}
 	%>
-	</a>
+  </div>
+
    <div class="catalog-metrics">
 		<span class='catalog-stat resultItem-CitationCount'>
 	    	<i class='icon catalog-metric-icon'></i>

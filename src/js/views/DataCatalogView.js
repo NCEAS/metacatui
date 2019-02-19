@@ -604,7 +604,6 @@ define(['jquery',
 		 * After the search results have been returned, check if any of them are derived data or have derivations
 		 */
 		checkForProv: function(){
-			if(!MetacatUI.appModel.get("prov")) return;
 
 			var maps = [],
 				hasSources = [],

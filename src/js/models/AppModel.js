@@ -206,10 +206,6 @@ define(['jquery', 'underscore', 'backbone'],
 				if(typeof this.get("orcidBaseUrl") != "undefined")
 					this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 
-				//Turn the provenance features on
-				if(typeof this.get("prov") != "undefined")
-					this.set("prov", true);
-
 				//Turn the seriesId feature on
 				if(typeof this.get("useSeriesId") != "undefined")
 					this.set("useSeriesId", true);

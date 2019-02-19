@@ -1494,6 +1494,10 @@ label.control-label{
     	color: #B2CADD;
     }
 
+    .info-icons .icon.icon-code-fork {
+      font-size: 1.3em;
+    }
+
     .popover{
     	font-size: 13px;
     }
