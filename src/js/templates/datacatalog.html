@@ -6,7 +6,7 @@
 			<div id="results-view">
 				<% if((typeof gmaps !== "undefined") && (gmaps)){ %>
 					<div class="map-toggle-container">
-						<a class="toggle-map" href="<%= MetacatUI.root %>/data/mode=list"><i class="icon icon-double-angle-left"></i> Show Map</a>
+						<a class="toggle-map" href=""><i class="icon icon-double-angle-left"></i> Show Map</a>
 					</div>
 				<% } %>
 				<div id="results-header" class="row-fluid result-header">
@@ -43,7 +43,7 @@
 
 		<div id="map-container" class="auto-height">
 			<div class="map-toggle-container">
-				<a class="toggle-map" href="<%= MetacatUI.root %>/data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
+				<a class="toggle-map" href="">Hide Map <i class="icon icon-double-angle-right"></i></a>
 
 				<% var checked = useMapBounds ? 'checked="checked"' : ''; %>
 				<label class="toggle-map-filter">Limit my search to the map area</label>
