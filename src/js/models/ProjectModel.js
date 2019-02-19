@@ -72,12 +72,15 @@ define(["jquery",
              * fetch options
              */
             fetch: function() {
-                var model = this;
 
                 var requestSettings = {
                     dataType: "xml",
-                    error: function() {
+                    error: function(model, response) {
                         model.trigger("error");
+
+                        if( response.status == 404 ){
+                          model.trigger("notFound");
+                        }
                     }
                 }
 

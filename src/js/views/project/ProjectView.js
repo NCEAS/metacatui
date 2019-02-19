@@ -2,6 +2,7 @@ define(["jquery",
         "underscore",
         "backbone",
         "models/ProjectModel",
+        "text!templates/alert.html",
         "text!templates/project/project.html",
         "views/project/ProjectHeaderView",
         "views/project/ProjectHomeView",
@@ -9,7 +10,7 @@ define(["jquery",
         "views/StatsView",
         "views/project/ProjectLogosView"
     ],
-    function($, _, Backbone, Project, ProjectTemplate, ProjectHeaderView,
+    function($, _, Backbone, Project, AlertTemplate, ProjectTemplate, ProjectHeaderView,
         ProjectHomeView, ProjectMembersView, StatsView, ProjectLogosView) {
         "use_strict";
         /* The ProjectView is a generic view to render
@@ -29,6 +30,8 @@ define(["jquery",
 
             /* Renders the compiled template into HTML */
             template: _.template(ProjectTemplate),
+            //A template to display a notification message
+            alertTemplate: _.template(AlertTemplate),
 
             /* The events that this view listens to*/
             events: {
@@ -57,6 +60,9 @@ define(["jquery",
                 // When the model has been synced, render the results
                 this.stopListening();
                 this.listenTo(this.model, "sync", this.renderProject);
+
+                //If the project isn't found, display a 404 message
+                this.listenToOnce(this.model, "notFound", this.showNotFound);
 
                 //Fetch the model
                 this.model.fetch();
@@ -130,6 +136,23 @@ define(["jquery",
                     this.subviews.push(this.sectionMetricsView);
                 }
             }),
+
+            /*
+            * If the given project doesn't exist, display a Not Found message.
+            */
+            showNotFound: function(){
+
+              var notFoundMessage = "The project \"" + (this.projectName || this.projectId) +
+                                    "\" doesn't exist.",
+                  notification = this.alertTemplate({
+                    classes: "alert-error",
+                    msg: notFoundMessage,
+                    includeEmail: true
+                  });
+
+              this.$el.html(notification);
+
+            },
 
             /*
              * This function is called when the app navigates away from this view.
