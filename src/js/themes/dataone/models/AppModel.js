@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
-      dashboardUrl: 'https://dashboard.dev.wholetale.org/',
+      dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context

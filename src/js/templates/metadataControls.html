@@ -5,14 +5,20 @@
 
   <% if (showWholetale){ %>
     <div class="analyze dropdown">
-      <button class="dropdown btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">
+      <a class="btn tooltip-this"
+       type="button"
+       data-toggle="dropdown"
+       data-placement="top"
+       data-trigger="hover"
+       data-delay="700"
+       data-container="body"
+       data-title="Choose an analysis environment to interactively explore this dataset online using Whole Tale.">
           <i class="icon-bar-chart"></i>
           <span class="analyze-text">Analyze</span>
           <span class="caret"></span>
-      </button>
-      <ul class="analyze dropdown-menu">
-      </ul>
-    </div>
+        </a>
+        <ul class="analyze dropdown-menu"></ul>
+       </div>
   <% } %>
   
 	<% if (mdqUrl){ %>

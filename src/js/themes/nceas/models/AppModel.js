@@ -25,7 +25,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
-      dashboardUrl: 'https://dashboard.dev.wholetale.org/',
+      dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
