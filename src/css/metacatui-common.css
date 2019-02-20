@@ -459,9 +459,6 @@ img.icon{
 .result-row .info-icons .icons.download .tooltip{
 	width: 120px;
 }
-.result-row .info-icons .icon{
-	cursor: default;
-}
 .result-row .info-icons .icon.views{
   margin-left: 5px;
   color: inherit;

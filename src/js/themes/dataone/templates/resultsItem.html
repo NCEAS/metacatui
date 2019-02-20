@@ -1,28 +1,28 @@
 <% if(memberNode && memberNode.logo){ %>
-	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo tooltip-this <%=memberNode.shortIdentifier%>" data-title="From the <%=memberNode.name%> repository" /></a>
+	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo <%=memberNode.shortIdentifier%>" title="From the <%=memberNode.name%> repository" /></a>
 <% } %>
 <div class="citation"></div>
 <div class="clear"></div>
-<div class="info-icons  stop-route">
+<div class="info-icons  ">
 
 	<% if(!isPublic){ %>
-		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-container="#results-container" data-toggle="tooltip" data-placement="right" title="This is private content."></i></div>
+		<div class="private icons "><i class="icon icon-lock private " title="This is private content."></i></div>
 	<% } %>
 	<% if(typeof abstract != "undefined"){  %>
-		<div class="abstract icons stop-route"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
+		<div class="abstract icons "><i class="icon icon-info-sign popover-this abstract "></i></div>
 	<% } %>
-	<div class="resource-map icons stop-route">
+	<div class="resource-map icons ">
 		<% if (numDataFiles > 0) {
- 				print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="'+ dataFilesMessage +'"></i>');
+ 				print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon " title="'+ dataFilesMessage +'"></i>');
 			} %>
 
 	</div>
-	<div class="on-map icons stop-route">
+	<div class="on-map icons ">
 		<% if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
-	          print('<i class="icon icon-map-marker on-map open-marker tooltip-this stop-route" data-id="'+id+'" data-toggle="tooltip" data-placement="top" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
+	          print('<i class="icon icon-map-marker on-map open-marker" data-id="'+id+'" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
 	       }
 	       else{
-	          print('<i class="icon icon-map-marker inactive stop-route"></i>');
+	          print('<i class="icon icon-map-marker inactive "></i>');
 	       } %>
 	</div>
 

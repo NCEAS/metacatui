@@ -1,23 +1,23 @@
 <div class="citation">
 </div>
 <div class="clear"></div>
-<div class="info-icons  stop-route">
+<div class="info-icons  ">
 	<% if(!isPublic){ %>
-		<div class="private icons stop-route"><i class="icon icon-lock tooltip-this private stop-route" data-container="#results-container" data-toggle="tooltip" data-placement="right" title="This is private content."></i></div>
+		<div class="private icons "><i class="icon icon-lock private" title="This is private content."></i></div>
 	<% } %>
-	<div class="icons stop-route">
+	<div class="icons ">
            <%
            if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
 
            	  // handle multiple resourceMaps
-				print('<a class="dropdown-toggle stop-route" data-toggle="dropdown" title="Download">');
-				print('<i class="icon icon-cloud-download stop-route tooltip-this" data-title="There are multiple packages of data associated with this metadata document. Download each individually." data-trigger="hover" data-placement="right" data-container="#results"></i><i class="icon-caret-down icon stop-route"></i>');
+				print('<a class="dropdown-toggle pointer" data-toggle="dropdown" title="Download">');
+				print('<i class="icon icon-cloud-download" title="There are multiple packages of data associated with this metadata document. Download each individually."></i><i class="icon-caret-down icon "></i>');
 				print('</a>');
-				print('<ul class="dropdown-menu stop-route">');
+				print('<ul class="dropdown-menu ">');
 				var cnt = 1;
 				_.each(resourceMap, function(resourceMapId) {
-					print('<li class="stop-route">');
-					print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" data-id="' + resourceMapId + '" class="stop-route download">', 'Dataset ', cnt, '</a>');
+					print('<li class="">');
+					print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" data-id="' + resourceMapId + '" class=" download">', 'Dataset ', cnt, '</a>');
 					print('</li>');
 					cnt++;
 				});
@@ -25,39 +25,39 @@
 			}
 			else{
 				var URLid = resourceMap || id;
-				print('<a class="download stop-route tooltip-this" download data-id="' + URLid + '" title="Click to Download" href="', MetacatUI.appModel.get('objectServiceUrl'), URLid, '" data-title="Click to Download" data-trigger="hover" data-placement="right" data-container="#results"><i class="icon icon-cloud-download stop-route"></i></a>');
+				print('<a class="download pointer" download data-id="' + URLid + '" title="Click to Download" href="', MetacatUI.appModel.get('packageServiceUrl'), encodeURIComponent(resourceMap), '" title="Click to Download"><i class="icon icon-cloud-download "></i></a>');
 			}
           	%>
       </div>
 
     <% if(typeof abstract != "undefined"){  %>
-		<div class="abstract icons stop-route popover-this"><i class="icon icon-info-sign popover-this abstract stop-route"></i></div>
+		<div class="abstract icons  popover-this"><i class="icon icon-info-sign popover-this abstract "></i></div>
 	<% } %>
-    <div class="resource-map icons stop-route">
+    <div class="resource-map icons ">
            <%
            if (numDataFiles > 0) {
-				print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon tooltip-this stop-route"  data-toggle="tooltip" data-placement="top" data-container="body" title="'+ dataFilesMessage +'"></i>');
+				print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon" title="'+ dataFilesMessage +'"></i>');
 			}
             %>
 
     </div>
-      	<div class="on-map icons  stop-route">
+      	<div class="on-map icons  ">
 		<%
 		if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
-        	print('<i class="icon icon-map-marker on-map open-marker stop-route tooltip-this" data-id="'+id+'" data-geohash="' + geohash_9  + '" data-toggle="tooltip" data-placement="top" data-container="body"  title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
+        	print('<i class="icon icon-map-marker on-map open-marker" data-id="'+id+'" data-geohash="' + geohash_9  + '" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
         }
         else{
-           print('<i class="icon icon-map-marker inactive stop-route"></i>');
+           print('<i class="icon icon-map-marker inactive "></i>');
         }
          %>
     </div>
             	<% if(hasProv){
-      			print('<div class="icons provenance active stop-route">');
-      			print('<i class="icon icon-code-fork active stop-route"></i>');
+      			print('<div class="icons provenance active ">');
+      			print('<i class="icon icon-code-fork active "></i>');
       		}
       		else{
-      		    print('<div class="icons provenance inactive stop-route">');
-      			print('<i class="icon icon-code-fork inactive stop-route"></i>');
+      		    print('<div class="icons provenance inactive ">');
+      			print('<i class="icon icon-code-fork inactive "></i>');
       		}
       	%>
       	</div>

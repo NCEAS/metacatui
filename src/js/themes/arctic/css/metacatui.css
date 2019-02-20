@@ -1930,10 +1930,6 @@ MDQ items
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
     }
-    .result-row .info-icons .download{
-    	cursor: pointer;
-    	color: #1f254f;
-    }
 
     /*-- Pagination widget --*/
 	.pagination{

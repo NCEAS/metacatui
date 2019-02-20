@@ -1473,9 +1473,6 @@ label.control-label{
     .info-icons .on-map > i{
     	font-size: 19px;
     }
-    .info-icons .icon{
-    	cursor: pointer;
-    }
     .info-icons .icon:hover{
     	color: #CE0060;
     }
