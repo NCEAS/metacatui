@@ -3,33 +3,31 @@
 ## Milestone 2.6.0 (February 2019)
 - Project pages MVP (Lauren, Chris, Jared, Robyn)
 - Ability to reorder parties in the editor (Needs assignee)
+- Project section in editor (Lauren)
 
-## MIlestone 2.7.0 (January 2019)
+## MIlestone 2.7.0 (March 2019)
 - JSON-LD for Google Datasets (Bryce and Lauren)
 - Save emergency draft for manual recovery (MVP) (Chris)
 
-## Milestone 3.0.0 (January 2019)
+## Milestone 3.0.0 (April 2019)
 - Configuration refactor (Lauren)
 - Code minimization/optimization (Lauren)
 
 ## Milestone 3.1.0 ( 2019)
 - Finalize collection and project schema (Lauren)
 - People graph with disambiguated user profile pages (linking Creator metadata to accounts) (Bryce)
-- Search Page aggregated metrics (Citations, Downloads, Views) (Rushiraj)
 - Semantic Search (Bryce with Lauren/Chris) 
 - Annotation Display in MetadataView (Bryce with Lauren/Chris)
 - New attribute editor mockup (Chris)
-- Project section in editor (Lauren)
 
 ## Milestone 3.2.0 (2019)
 - New attribute editor UX review (Chris)
 - Replace entity - ??
 - Copy attribute metadata in Editor (Dominic)
-- Project view (Jared)
 - Repository Profile Metrics (Rushiraj)
 
 ## Milestone 3.3.0 ( 2019)
-- Aggregated metric views (metrics on user profiles, repo profiles, etc) (Rushiraj)
+- User profile metrics (Rushiraj)
 - Ability to edit local drafts (Chris)
 - New attribute editor, including semantic annotations and custom units (Chris)
 
