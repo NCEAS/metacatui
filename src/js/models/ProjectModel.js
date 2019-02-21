@@ -157,10 +157,13 @@ define(["jquery",
                 // This will only work for bibtex at the moment
                 var bibtex = $(projectNode).children("literatureCited").children("bibtex");
                 if (bibtex.length > 0) {
+                    modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
+                    // I'm not sure we actually need to set this on the model?
                     thisModel = this;
                     require(["citation"], function(citation) {
                         const Cite = require("citation-js");
-                        modelJSON.literatureCited = new Cite(thisModel.parseTextNode(projectNode, "literatureCited")).data;
+                        thisModel.set("literatureCited", thisModel.parseTextNode(projectNode, "literatureCited"));
+                        // Maybe inject the BibTex into the Markdown here?
                     });
                 }
 

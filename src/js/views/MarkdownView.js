@@ -29,8 +29,13 @@ define([    "jquery", "underscore", "backbone",
 
             if(typeof options !== "undefined"){
                 this.markdown = options.markdown         || "";
+                this.citations = options.citations       || "";
             }
-
+            if(this.citations) {
+                // put the bibtex into the markdown so it can be processed by 
+                // the showdown-citations extension.
+                this.markdown = this.markdown + "<bibtex>" + this.citations + "</bibtex>";
+            };
         },
 
         /* Render the view */
