@@ -317,8 +317,9 @@ function ($, _, Backbone) {
                         }
                     } else {
                         // Try a reverse lookup of the project name by values
-                        projectName = Object.keys(projectsMap)
-                            .find(key => projectsMap[key] === projectId);
+                        projectName = _.findKey(projectsMap, function(value){
+                          return( value ==  projectId );
+                        });
 
                         if ( typeof projectName !== "undefined" ) {
                             if ( projectSection ) {
