@@ -122,7 +122,6 @@ define(["jquery",
                 modelJSON = this.parseCollectionXML(projectNode);
 
                 //Parse the simple text nodes
-                console.log(this.parseTextNode(projectNode, "logo"));
                 var projLogo = this.parseTextNode(projectNode, "logo");
                 modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
 

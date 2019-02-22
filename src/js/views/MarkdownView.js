@@ -34,7 +34,7 @@ define([    "jquery", "underscore", "backbone",
             if(this.citations) {
                 // put the bibtex into the markdown so it can be processed by 
                 // the showdown-citations extension.
-                this.markdown = this.markdown + "<bibtex>" + this.citations + "</bibtex>";
+                this.markdown = this.markdown + "\n<bibtex>" + this.citations + "</bibtex>";
             };
         },
 
