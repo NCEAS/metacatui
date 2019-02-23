@@ -779,8 +779,18 @@ define(['showdown', 'citation'], function (showdown, citation) {
 		var subbib = function(bibobj, keyarr) {
 			let filtered = _.filter(bibobj.data, function(item) {
 				return keyarr.includes(item['citation-label']);
-			})
+			});
 			return Cite(filtered);
+		};
+
+		var not_in_bib = function(bibobj, keyarr) {
+			// Return an array containing the elements of `keyarr` that are not
+			// matched by entries in `bibobj`
+			let labels = bibobj.data.map(d => d['citation-label']);
+			let filtered = _.filter(keyarr, function(item) {
+				return !labels.includes(item);
+			});
+			return filtered;
 		};
 
 		var inline_cites = {
@@ -872,19 +882,29 @@ define(['showdown', 'citation'], function (showdown, citation) {
 					let keys = wholeMatch.replace(/<\/*inlinecite>/g, '').split(",");
 					let subcites = subbib(allCites, keys);
 
-					console.log(keys);
-					console.log(subcites);
-					return subcites.format('citation', {
+					let citestring =  subcites.format('citation', {
 						format: 'html',
 						template: templateName,
 						lang: 'en-US'
 					});
+
+					if (subcites.data.length == 0) {
+						// none of the keys handed in matched anything in the bib.
+						// We'll just hand back the keys in parentheses
+						citestring = "(" + keys.join(", ").replace(/_/g, "\\_") + ")";
+					} else if (subcites.data.length < keys.length) {
+						// At least one of the keys found a match, but not all keys
+						// We'll insert the not found keys into the citation
+						let nope = not_in_bib(allCites, keys).join("; ").replace(/_/g, "\\_");
+						citestring = citestring.replace(/([^)]*)\)/g, "$1, " + nope + ")");						
+					}
+					return citestring;
 				}
 				return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
-			}
+			},
 		};
 
-		return [inline_cites, read_bibli, print_inline_cites, print_bibli];
+		return [read_bibli, inline_cites, print_inline_cites, print_bibli];
 
 	});
 

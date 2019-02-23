@@ -31,6 +31,13 @@ define([    "jquery", "underscore", "backbone",
                 this.markdown = options.markdown         || "";
                 this.citations = options.citations       || "";
             }
+
+            // super hacky test insertion:
+            // this.markdown += `\nHere's a single citation [@jones_2001] that's not found in the bibtex. Here's one that is [@collins_2018]. 
+            // Here's one that is and one that isn't [@jones_2001, @brinckman_2018]. 
+            // Here's three [@hampton_2017, @brinckman_2018, @collins_2018] that are in there.
+            // Here's those along with a couple I just made up [@hampton_2017, @porkchop_1973, @brinckman_2018, @sandwiches_1982, @collins_2018].`;
+            
             if(this.citations) {
                 // put the bibtex into the markdown so it can be processed by 
                 // the showdown-citations extension.
