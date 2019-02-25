@@ -203,7 +203,12 @@ define(['jquery',
 				this.getPackageDetails(model.get("resourceMap"));
 
 			});
+
+      //Listen to 404 and 401 errors when we get the metadata object
 			this.listenToOnce(model, "404", this.showNotFound);
+      this.listenToOnce(model, "401", this.showIsPrivate);
+
+      //Fetch the model
 			model.getInfo();
 
 		},
@@ -421,24 +426,60 @@ define(['jquery',
 			this.$(this.breadcrumbContainer).html(breadcrumbs);
 		},
 
-		showNotFound: function(){
-			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
-			if(!MetacatUI.appUserModel.get("checked")){
-				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
-				return;
-			}
+    /*
+    * When the metadata object doesn't exist, display a message to the user
+    */
+    showNotFound: function(){
 
-			if(!this.model.get("notFound")) return;
+      //If the model was found, exit this function
+      if(!this.model.get("notFound")){
+        return;
+      }
 
-			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
-					  "<ul class='indent'>" +
-					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-						  '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
-						  "<li>The content was removed because it was invalid.</li>" +
-					  "</ul>";
-			this.hideLoading();
-			this.showError(msg);
-		},
+      //Construct a message that shows this object doesn't exist
+      var msg = "<h4>Nothing was found.</h4>" +
+            "<p>The dataset identifier '" + this.model.get("id") + "' " +
+            "does not exist or it may have been removed. <a href='" +
+            MetacatUI.root + "/data?query=" + encodeURIComponent(this.model.get("id")) + "'>Search for " +
+            "datasets that mention " + this.model.get("id") + "</a></p>";
+
+      //Remove the loading message
+      this.hideLoading();
+
+      //Show the not found error message
+      this.showError(msg);
+    },
+
+    /*
+    * When the metadata object is private, display a message to the user
+    */
+    showIsPrivate: function(){
+
+      //If we haven't checked the logged-in status of the user yet, wait a bit
+      //until we show a 401 msg, in case this content is their private content
+      if(!MetacatUI.appUserModel.get("checked")){
+        this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showIsPrivate);
+        return;
+      }
+
+      //If the user is logged in, the message will display that this dataset is private.
+      if( MetacatUI.appUserModel.get("loggedIn") ){
+        var msg = "This is a private dataset.";
+      }
+      //If the user isn't logged in, display a log in link.
+      else{
+        var msg = "This is a private dataset. If you believe you have permission " +
+                  "to access this dataset, then <a href=" + MetacatUI.root +
+                  "/signin>sign in</a>.";
+      }
+
+      //Remove the loading message
+      this.hideLoading();
+
+      //Show the not found error message
+      this.showError(msg);
+
+    },
 
 		getPackageDetails: function(packageIDs){
 			var viewRef = this;

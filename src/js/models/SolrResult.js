@@ -495,17 +495,27 @@ define(['jquery', 'underscore', 'backbone'],
 					//Trigger the sync event so the app knows we found the model info
 					model.trigger("sync");
 				},
-				error: function(){
-					model.notFound();
+				error: function(response){
+
+          //When the user is unauthorized to access this object, trigger a 401 error
+          if( response.status == 401 ){
+            model.set("notFound", true);
+            model.trigger("401");
+          }
+          //When the object doesn't exist, trigger a 404 error
+          else if( response.status == 404 ){
+            model.set("notFound", true);
+      			model.trigger("404");
+          }
+          //Other error codes trigger a generic error
+          else{
+            model.trigger("error");
+          }
+
 				}
 			}
 
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
-
-		notFound: function(){
-			this.set({"notFound": true}, {silent: true});
-			this.trigger("404");
 		},
 
 		//Transgresses the obsolence chain until it finds the newest version that this user is authorized to read
