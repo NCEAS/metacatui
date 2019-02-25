@@ -3370,13 +3370,6 @@ body.mapMode{
 #sidebar .ui-helper-hidden-accessible{
 	display: none;
 }
-.filter-autocomplete .ui-menu-item a{
-	font-size: 1em;
-}
-.filter-autocomplete .ui-menu-item a:hover,
-.filter-autocomplete .ui-menu-item a:focus{
-	border: 0px;
-}
 #filter-year .filter-input-contain{
 	margin-top: 10px;
 }
@@ -3510,6 +3503,30 @@ label.ui-state-active .icon-check{
 
 a.disabled {
 	pointer-events: none;
+}
+
+/** Autocompletes **/
+.ui-autocomplete{
+  width: 246px;
+  background-color: #FFFFFF;
+  border: 1px solid #999999;
+  padding: 10px;
+  list-style: none;
+  overflow-y: scroll;
+  -webkit-transform: translate3d(0,0,0);
+  max-height: 150px;
+  z-index: 100;
+  overflow-x: hidden;
+}
+.ui-autocomplete .ui-menu-item{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0px 5px;
+}
+.ui-autocomplete .ui-menu-item:hover{
+  background-color: #DDD;
+  cursor: pointer;
 }
 
 /*******************************************

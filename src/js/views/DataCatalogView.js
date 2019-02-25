@@ -40,7 +40,7 @@ define(['jquery',
 		mainContentTemplate: _.template(MainContentTemplate),
 		currentFilterTemplate: _.template(CurrentFilterTemplate),
 		loadingTemplate: _.template(LoadingTemplate),
-		metricStatTemplate:  _.template( "<span class='metric-icon'> <i class='icon" + 
+		metricStatTemplate:  _.template( "<span class='metric-icon'> <i class='icon" +
                             " <%=metricIcon%>'></i> </span>" +
                             "<span class='metric-value'> <i class='icon metric-icon'>" +
                             "</i> </span>"),
@@ -1588,7 +1588,20 @@ define(['jquery',
 					//Format the suggestions
 					var rankedSuggestions = new Array();
 					for (var i=0; i < Math.min(suggestions.length-1, facetLimit); i+=2) {
-						rankedSuggestions.push({value: suggestions[i], label: suggestions[i] + " (" + suggestions[i+1] + ")"});
+
+            //The label is the item value
+            var label = suggestions[i];
+
+            //For all categories except the 'all' category, display the facet count
+            if(category != "all"){
+              label += " (" + suggestions[i+1] + ")";
+            }
+
+            //Push the autocomplete item to the array
+						rankedSuggestions.push({
+              value: suggestions[i],
+              label: label
+            });
 					}
 
 					//Save these facets in the app so we don't have to send another query
@@ -1603,6 +1616,18 @@ define(['jquery',
 
 		setupAutocomplete: function(input, rankedSuggestions){
 			var viewRef = this;
+
+      //Override the _renderItem() function which renders a single autocomplete item.
+      // We want to use the 'title' HTML attribute on each item.
+      // This method must create a new <li> element, append it to the menu, and return it.
+      $.widget( "custom.autocomplete", $.ui.autocomplete, {
+        _renderItem: function(ul, item) {
+          return $( document.createElement("li") )
+                  .attr( "title", item.label )
+                  .append( item.label )
+                  .appendTo( ul );
+        }
+      });
 
 			input.autocomplete({
 				source: function (request, response) {
@@ -1633,10 +1658,6 @@ define(['jquery',
 					collision: "flipfit"
 				}
 			});
-
-			//Add a class
-			if(input.data("uiAutocomplete"))
-				$(input.data("uiAutocomplete").menu.element).addClass("filter-autocomplete");
 		},
 
 		hideClearButton: function(){
