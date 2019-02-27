@@ -92,7 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             this.dataPackageGraph = this.rdf.graph();
 
             //Set the id or create a new one
-            this.id = options.id || "urn:uuid:" + uuid.v4();
+            this.id = options.id || "resource_map_urn:uuid:" + uuid.v4();
 
             // Create a DataONEObject to represent this resource map
             this.packageModel = new DataONEObject({
@@ -1098,7 +1098,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           this.packageModel.set("checksumAlgorithm", "MD5");
 
           //Set the file name based on the id
-          this.packageModel.set("fileName", "resourceMap_" + this.packageModel.get("id") + ".rdf.xml");
+          this.packageModel.set("fileName", this.packageModel.get("id").replace(/[^a-zA-Z0-9]/g, "_") +
+            ".rdf.xml");
 
           //Create the system metadata
           var sysMetaXML = this.packageModel.serializeSysMeta();
