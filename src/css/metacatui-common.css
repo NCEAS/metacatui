@@ -1556,16 +1556,8 @@ body > .alert-container {
 }
 
 .attributeList > .row-fluid > .span2 {
-  min-width: 130px;
-  max-width: 150px;
-  max-width: calc(165px - 2.127659574468085%);
   max-height: 700px;
   overflow: scroll;
-}
-.tab-content,
-.row-fluid .tab-content.span10{
-	width: 76%;
-	width: calc(100% - 165px);
 }
 .attributeList a{
 	white-space: nowrap;
