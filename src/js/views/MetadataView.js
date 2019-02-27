@@ -440,7 +440,7 @@ define(['jquery',
       var msg = "<h4>Nothing was found.</h4>" +
             "<p>The dataset identifier '" + this.model.get("id") + "' " +
             "does not exist or it may have been removed. <a href='" +
-            MetacatUI.root + "/data?query=" + encodeURIComponent(this.model.get("id")) + "'>Search for " +
+            MetacatUI.root + "/data/query=" + encodeURIComponent(this.model.get("id")) + "'>Search for " +
             "datasets that mention " + this.model.get("id") + "</a></p>";
 
       //Remove the loading message
