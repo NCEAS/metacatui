@@ -114,6 +114,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		},
 
 		displayMetrics: function() {
+
+      //If metrics for this object should be hidden, exit the function
+      if( this.model.hideMetrics() ){
+        return;
+      }
+
 			var datasets = this.metricsModel.get("datasets");
 			var downloads = this.metricsModel.get("downloads");
 			var views = this.metricsModel.get("views");

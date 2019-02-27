@@ -1101,6 +1101,13 @@ define(['jquery',
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
+
+      //Exit if metrics shouldn't be shown for this dataset
+      if( this.model.hideMetrics() ){
+        return;
+      }
+
+
 			var pid_list = [];
 			pid_list.push(this.pid);
 			var metricsModel = new MetricsModel({pid_list: pid_list, type: "dataset"});

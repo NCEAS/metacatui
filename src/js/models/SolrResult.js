@@ -663,6 +663,50 @@ define(['jquery', 'underscore', 'backbone'],
 			return this.get("prov_generated");
 		},
 
+    /*
+    * Uses the app configuration to check if this model's metrics should be hidden in the display
+    *
+    * @return {boolean}
+    */
+    hideMetrics: function(){
+
+      //If the AppModel is configured with cases of where to hide metrics,
+      if( typeof MetacatUI.appModel.get("hideMetricsWhen") == "object" ){
+
+        //Check for at least one match
+        return _.some( MetacatUI.appModel.get("hideMetricsWhen"), function(value, modelProperty){
+
+          //Get the value of this property from this model
+          var modelValue = this.get(modelProperty);
+
+          //Check for the presence of this model's value in the AppModel value
+          if( Array.isArray(value) && typeof modelValue == "string" ){
+            return _.contains(value, modelValue)
+          }
+          //Check for the presence of the AppModel's value in this model's value
+          else if( typeof value == "string" && Array.isArray(modelValue) ){
+            return _.contains(modelValue, value);
+          }
+          //Check for overlap of two arrays
+          else if( Array.isArray(value) && Array.isArray(modelValue) ){
+            return ( _.intersection(value, modelValue).length > 0 );
+          }
+          //If the AppModel value is a function, execute it
+          else if( typeof value == "function" ){
+            return value(modelValue);
+          }
+          //Otherwise, just check for equality
+          else{
+            return value === modelValue;
+          }
+
+        }, this);
+      }
+      else {
+        return false;
+      }
+    },
+
 		/****************************/
 
 		/**

@@ -97,6 +97,22 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetAnalyzeButton: false,
 			displayMetricModals: true,
 			displayDatasetControls: true,
+      /* Hide metrics display for SolrResult models that match the given properties.
+      *  Properties can be functions, which are given the SolrResult model value as a parameter.
+      * Example:
+      * {
+      *    formatId: "eml://ecoinformatics.org/eml-2.1.1",
+      *    isPublic: true,
+      *    dateUploaded: function(date){
+      *      return new Date(date) < new Date('1995-12-17T03:24:00');
+      *    }
+      * }
+      * This example would hide metrics for any objects that are:
+      *   EML 2.1.1 OR public OR were uploaded before 12/17/1995.
+      */
+      hideMetricsWhen: {
+        datasource: "urn:node:ESS_DIVE"
+      },
 
 			isJSONLDEnabled: true,
 

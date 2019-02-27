@@ -345,22 +345,25 @@ define(['jquery', 'underscore', 'backbone',
 
 			// Retreiving the Package Metrics Counts from the Metrics Model
 			// Adding a Metric Cell for the corresponding DataONE object in the table
-			var readsCell = $(document.createElement("td")).addClass("metrics-count downloads")
-								.attr("data-id", id);
+			var readsCell = $(document.createElement("td"))
+                        .addClass("metrics-count downloads")
+								        .attr("data-id", id);
+      $(tr).append(readsCell);
 
-			// If the model has already been fethced.
-			if (this.metricsModel.get("views") !== null) {
-				readsCell.append(this.getMemberRowMetrics(id, formatType));
-			}
-			else {
-				// Update the metrics later on
-				// If the fetch() is still in progress.
-				this.listenTo(this.metricsModel, "sync", function(){
-					var readsCell = this.$('.metrics-count.downloads[data-id="' + id + '"]');
-					readsCell.text(this.getMemberRowMetrics(id, formatType));
-				});
-			}
-			$(tr).append(readsCell);
+      if( !memberModel.hideMetrics() ){
+  			// If the model has already been fethced.
+  			if (this.metricsModel.get("views") !== null) {
+  				readsCell.append(this.getMemberRowMetrics(id, formatType));
+  			}
+  			else {
+  				// Update the metrics later on
+  				// If the fetch() is still in progress.
+  				this.listenTo(this.metricsModel, "sync", function(){
+  					var readsCell = this.$('.metrics-count.downloads[data-id="' + id + '"]');
+  					readsCell.text(this.getMemberRowMetrics(id, formatType));
+  				});
+  			}
+      }
 
 			//Download button cell
 			var downloadBtnCell = $(document.createElement("td")).addClass("download-btn btn-container");
