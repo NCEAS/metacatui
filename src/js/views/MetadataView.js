@@ -464,13 +464,23 @@ define(['jquery',
 
       //If the user is logged in, the message will display that this dataset is private.
       if( MetacatUI.appUserModel.get("loggedIn") ){
-        var msg = "This is a private dataset.";
+        var msg = '<span class="icon-stack private tooltip-this" data-toggle="tooltip"' +
+                  'data-placement="top" data-container="#metadata-controls-container"' +
+                  'title="" data-original-title="This is a private dataset.">' +
+                    '<i class="icon icon-circle icon-stack-base private"></i>' +
+                    '<i class="icon icon-lock icon-stack-top"></i>' +
+                  '</span> This is a private dataset.';
       }
       //If the user isn't logged in, display a log in link.
       else{
-        var msg = "This is a private dataset. If you believe you have permission " +
-                  "to access this dataset, then <a href=" + MetacatUI.root +
-                  "/signin>sign in</a>.";
+        var msg = '<span class="icon-stack private tooltip-this" data-toggle="tooltip"' +
+                  'data-placement="top" data-container="#metadata-controls-container"' +
+                  'title="" data-original-title="This is a private dataset.">' +
+                    '<i class="icon icon-circle icon-stack-base private"></i>' +
+                    '<i class="icon icon-lock icon-stack-top"></i>' +
+                  '</span> This is a private dataset. If you believe you have permission ' +
+                  'to access this dataset, then <a href="' + MetacatUI.root +
+                  '/signin">sign in</a>.';
       }
 
       //Remove the loading message

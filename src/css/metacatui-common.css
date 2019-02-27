@@ -425,6 +425,14 @@ img.icon{
 	font-weight: bold;
 	font-size: .9em;
 }
+.private.icon-stack .icon-circle{
+  color: #FF7600;
+}
+.private.icon-stack .icon-stack-top{
+  color: #FFF;
+  margin-top: -1px;
+  font-size: 1.1em;
+}
 /******************************************
 ** Results and Result Rows ***
 ******************************************/
