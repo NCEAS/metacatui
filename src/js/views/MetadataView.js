@@ -2068,6 +2068,12 @@ define(['jquery',
 
 		// this will lookup the latest version of the PID
 		showLatestVersion: function() {
+
+      //If this metadata doc is not obsoleted by a new version, then exit the function
+      if( !this.model.get("obsoletedBy") ){
+        return;
+      }
+
 			var view = this;
 
 			//When the latest version is found,
@@ -2075,8 +2081,15 @@ define(['jquery',
 				//Make sure it has a newer version, and if so,
 				if(view.model.get("newestVersion") != view.model.get("id"))
 					//Put a link to the newest version in the content
-					view.$el.prepend(view.versionTemplate({pid: view.model.get("newestVersion")}));
+					view.$(".newer-version").replaceWith(view.versionTemplate({
+            pid: view.model.get("newestVersion")
+          }));
 			});
+
+      //Insert the newest version template with a loading message
+      this.$el.prepend( this.versionTemplate({
+        loading: true
+      }) );
 
 			//Find the latest version of this metadata object
 			this.model.findLatestVersion();
