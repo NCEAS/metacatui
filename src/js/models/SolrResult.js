@@ -671,7 +671,7 @@ define(['jquery', 'underscore', 'backbone'],
     hideMetrics: function(){
 
       //If the AppModel is configured with cases of where to hide metrics,
-      if( typeof MetacatUI.appModel.get("hideMetricsWhen") == "object" ){
+      if( typeof MetacatUI.appModel.get("hideMetricsWhen") == "object" && MetacatUI.appModel.get("hideMetricsWhen") ){
 
         //Check for at least one match
         return _.some( MetacatUI.appModel.get("hideMetricsWhen"), function(value, modelProperty){
