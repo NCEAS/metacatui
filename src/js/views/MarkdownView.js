@@ -29,7 +29,7 @@ define([    "jquery", "underscore", "backbone",
 
             if(typeof options !== "undefined"){
                 this.markdown = options.markdown         || "";
-                this.citations = options.citations       || "";
+                this.citations = options.citations       || [];
             }
 
             // super hacky test insertion:
@@ -38,7 +38,7 @@ define([    "jquery", "underscore", "backbone",
             // Here's three [@hampton_2017, @brinckman_2018, @collins_2018] that are in there.
             // Here's those along with a couple I just made up [@hampton_2017, @porkchop_1973, @brinckman_2018, @sandwiches_1982, @collins_2018].`;
             
-            if(this.citations) {
+            if(this.citations.length) {
                 // put the bibtex into the markdown so it can be processed by 
                 // the showdown-citations extension.
                 this.markdown = this.markdown + "\n<bibtex>" + this.citations + "</bibtex>";

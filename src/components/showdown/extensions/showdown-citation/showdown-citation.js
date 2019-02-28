@@ -793,33 +793,6 @@ define(['showdown', 'citation'], function (showdown, citation) {
 			return filtered;
 		};
 
-		var inline_cites = {
-			// We're going to look for inline citations in the format of [@citation_key]
-			// where `citation_key` is generally (but not always) something like 
-			// `author_year` (e.g., `jones_2014`). When we find one, we'll replace it 
-			// with `<inlinecite>citation_key</inlinecite>`. Multiple inlines will go
-			// from [@citekey_1, @citekey_2] to <inlinecite>citekey_1,citekey_2</inlinecite>.
-			type: "lang",
-			filter: function (text, converter, options) {
-				var left = '\\[(@[^\\]]+)',
-				right = '\\]',
-				flags = 'g',
-				replacement = function (wholeMatch, match, left, right) {
-
-					// if there are multiple citations, split the match into an array
-					var match = [];
-					wholeMatch.split(",").forEach(function(item){
-						let itrimmed = item.replace(/[\[@\]\s]/g, '');
-						match.push(itrimmed);
-					});
-
-					return("<inlinecite>" + match + "</inlinecite>");
-				};
-
-				return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
-			}
-		};
-
 		var read_bibli = {
 			// This sub-extension will look for bibtex, wrapped in <bibtex></bibtex> tags.
 			// When found, they'll be added to the cite object. 
@@ -861,7 +834,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 						}
 					})
 
-					return ( text + "<h4 id='bibliography'>Bibliography</h4>" + citeBib );
+					return ( text + "<h2 id='bibliography'>Bibliography</h2>" + citeBib );
 
 				} else {
 
@@ -875,28 +848,30 @@ define(['showdown', 'citation'], function (showdown, citation) {
 		var print_inline_cites = {
 			type: "lang",
 			filter: function(text) {
-				var left = '<inlinecite>',
-				right = '</inlinecite>',
+				var left = '\\[(@[^\\]]+)',
+				right = '\\]',
 				flags = 'g',
 				replacement = function(wholeMatch, match, left, right) {
-					let keys = wholeMatch.replace(/<\/*inlinecite>/g, '').split(",");
+					// let keys = wholeMatch.replace(/<\/*inlinecite>/g, '').split(";");
+					let keys = wholeMatch.replace(/[@\[\]\s]*/g, '').split(",");
+					console.log(keys);
 					let subcites = subbib(allCites, keys);
 
 					let citestring =  subcites.format('citation', {
 						format: 'html',
 						template: templateName,
-						lang: 'en-US'
+						lang: 'en-US',
 					});
 
 					if (subcites.data.length == 0) {
 						// none of the keys handed in matched anything in the bib.
 						// We'll just hand back the keys in parentheses
-						citestring = "(" + keys.join(", ").replace(/_/g, "\\_") + ")";
+						citestring = "(" + keys.join("; ").replace(/_/g, "\\_") + ")";
 					} else if (subcites.data.length < keys.length) {
 						// At least one of the keys found a match, but not all keys
 						// We'll insert the not found keys into the citation
 						let nope = not_in_bib(allCites, keys).join("; ").replace(/_/g, "\\_");
-						citestring = citestring.replace(/([^)]*)\)/g, "$1, " + nope + ")");						
+						citestring = citestring.replace(/([^)]*)\)/g, "$1; " + nope + ")");						
 					}
 					return citestring;
 				}
@@ -904,7 +879,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 			},
 		};
 
-		return [read_bibli, inline_cites, print_inline_cites, print_bibli];
+		return [read_bibli, print_inline_cites, print_bibli];
 
 	});
 
