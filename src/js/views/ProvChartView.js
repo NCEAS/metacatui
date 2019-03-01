@@ -25,6 +25,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			// Does this chart need to be re-rendered after prov relationships have been updated?
 			this.rerender = false;
+            this.serviceUrl = MetacatUI.appModel.get('objectServiceUrl') || MetacatUI.appModel.get('resolveServiceUrl');
 			
 			//For Sources charts
 			if((!this.derivations && this.sources) || (this.editModeOn && this.type == "sources")) {
@@ -462,7 +463,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//Display images in the prov chart node
 			if(provEntity.getType() == "image"){
-				$(nodeEl).css("background-image", "url('" + MetacatUI.appModel.get("objectServiceUrl") + provEntity.get("id") + "')");
+                $(nodeEl).css("background-image", "url('" + view.serviceUrl + provEntity.get("id") + "')");
 			} 
 			//Create an icon inside the node for other format types
 			else {
@@ -537,7 +538,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//Display images in the prov chart node popover 
 			if(provEntity.getType() == "image"){
-				var img = $(document.createElement("img")).attr("src", MetacatUI.appModel.get("objectServiceUrl") + provEntity.get("id")).addClass("thumbnail");
+                var img = $(document.createElement("img")).attr("src", view.serviceUrl + provEntity.get("id")).addClass("thumbnail");
                 
 				$(citationEl).after(img);
 			}
