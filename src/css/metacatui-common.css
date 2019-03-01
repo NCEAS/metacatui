@@ -1554,7 +1554,10 @@ body > .alert-container {
 #Content.no-stylesheet > .breadcrumb~.citation{
 	margin-top: 20px;
 }
-
+/* Padding at the bottom to avoid scrollbar overlap */
+#attributeTabs{
+  padding-bottom: 25px;
+}
 .attributeList > .row-fluid > .span2 {
   max-height: 700px;
   overflow: scroll;
