@@ -455,12 +455,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               if ( ! this.get("fileName") ) {
                   this.setMissingFileName();
               }
-              else{
-                //Replace all non-alphanumeric characters with underscores
-                var fileNameWithoutExt = this.get("fileName").substring(0, this.get("fileName").lastIndexOf(".")),
-                    extension = this.get("fileName").substring(this.get("fileName").lastIndexOf("."), this.get("fileName").length);
-                this.set("fileName", fileNameWithoutExt.replace(/[^a-zA-Z0-9]/g, "_") + extension);
-              }
 
               if ( !this.hasUpdates() ) {
                   this.set("uploadStatus", null);
@@ -920,12 +914,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               this.set("id", id);
 
             } else {
-              if( this.get("type") == "DataPackage" ){
-                this.set("id", "resource_map_urn:uuid:" + uuid.v4());
-              }
-              else{
-                this.set("id", "urn:uuid:" + uuid.v4());
-              }
+              this.set("id", "urn:uuid:" + uuid.v4());
             }
 
             // Remove the old pid from the documents list if present
@@ -1306,22 +1295,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 extension = objectFormats[0].get("extension");
             }
 
-            //Science metadata file names will use the title
-            if( this.get("type") == "Metadata" ){
-              filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
-            }
-            //Resource maps will use a "resource_map_" prefix
-            else if( this.get("type") == "DataPackage" ){
-              filename = "resource_map_" + this.get("id");
-              extension = ".rdf.xml";
-            }
-            //All other object types will just use the id
-            else{
-              filename = this.get("id");
-            }
-
-            //Replace all non-alphanumeric characters with underscores
-            filename = filename.replace(/[^a-zA-Z0-9]/g, "_");
+            filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
+            filename.replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
 
             if ( typeof extension !== "undefined" ) {
               filename = filename + "." + extension;
