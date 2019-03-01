@@ -116,6 +116,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 		'    </names>'+
 		'  </macro>'+
 		'  <macro name="author-short">'+
+		'    <text value="labelisinhere"/><text variable="citation-label"/><text value="@labelisinhere"/>'+
 		'    <choose>'+
 		'      <if type="patent" variable="number" match="all">'+
 		'        <text macro="patent-number"/>'+
@@ -158,6 +159,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 		'        </names>'+
 		'      </else>'+
 		'    </choose>'+
+		'    <text value="endtheanchortaghere"/>'+
 		'  </macro>'+
 		'  <macro name="patent-number">'+
 		'    <group delimiter=" ">'+
@@ -834,6 +836,9 @@ define(['showdown', 'citation'], function (showdown, citation) {
 						}
 					})
 
+					// add in id attributes so we can hack in a link from the inline cite
+					citeBib = citeBib.replace(/(data-csl-entry-id="([^"]+)")/g, 'id="$2" $1');
+
 					return ( text + "<h2 id='bibliography'>Bibliography</h2>" + citeBib );
 
 				} else {
@@ -854,7 +859,6 @@ define(['showdown', 'citation'], function (showdown, citation) {
 				replacement = function(wholeMatch, match, left, right) {
 					// let keys = wholeMatch.replace(/<\/*inlinecite>/g, '').split(";");
 					let keys = wholeMatch.replace(/[@\[\]\s]*/g, '').split(",");
-					console.log(keys);
 					let subcites = subbib(allCites, keys);
 
 					let citestring =  subcites.format('citation', {
@@ -873,6 +877,10 @@ define(['showdown', 'citation'], function (showdown, citation) {
 						let nope = not_in_bib(allCites, keys).join("; ").replace(/_/g, "\\_");
 						citestring = citestring.replace(/([^)]*)\)/g, "$1; " + nope + ")");						
 					}
+
+					// Now we have to deal with a hacky work around to get links to the bibliography
+					citestring = citestring.replace(/labelisinhere([^@]*)@labelisinhere/g, '<a href="#$1">');
+					citestring = citestring.replace(/endtheanchortaghere/g, '</a>');
 					return citestring;
 				}
 				return showdown.helper.replaceRecursiveRegExp(text, replacement, left, right, flags);
