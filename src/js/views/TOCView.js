@@ -41,7 +41,10 @@ define(["jquery",
             }
         },
 
-        truncateCleanly: function(str, nCharacters=10) {
+        truncateCleanly: function(str, nCharacters) {
+            if ( !nCharacters ) {
+                var nCharacters = 10;
+            }
             var re = new RegExp("^(.{" + nCharacters + "}[^\\s]*).*");
             return str.replace(re, "$1...");
         },
