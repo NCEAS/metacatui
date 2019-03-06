@@ -33,10 +33,10 @@ define([    "jquery", "underscore", "backbone",
             }
 
             // super hacky test insertion:
-            // this.markdown += `\nHere's a single citation [@jones_2001] that's not found in the bibtex. Here's one that is [@collins_2018]. 
+            // this.markdown += '\nHere's a single citation [@jones_2001] that's not found in the bibtex. Here's one that is [@collins_2018]. 
             // Here's one that is and one that isn't [@jones_2001, @brinckman_2018]. 
             // Here's three [@hampton_2017, @brinckman_2018, @collins_2018] that are in there.
-            // Here's those along with a couple I just made up [@hampton_2017, @porkchop_1973, @brinckman_2018, @sandwiches_1982, @collins_2018].`;
+            // Here's those along with a couple I just made up [@hampton_2017, @porkchop_1973, @brinckman_2018, @sandwiches_1982, @collins_2018].';
             
             if(this.citations.length) {
                 // put the bibtex into the markdown so it can be processed by 
@@ -104,7 +104,7 @@ define([    "jquery", "underscore", "backbone",
             // ===== the regular expressions used to test whether showdown extensions are required ===== //
             // note: these expressions test the *markdown* and *not* the html
 
-            var regexHighlight  = new RegExp("`.*`"), // too general?
+            var regexHighlight  = new RegExp("'.*'"), // too general?
                 regexDocbook    = new RegExp("<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>"),
                 // for bootstrap: test for tables, directly from showdown/src/subParsers/makehtml/tables.js
                 // if we add more bootstrap classes, this will become more complicated since we have to test the markdown before the initial parse
@@ -117,7 +117,7 @@ define([    "jquery", "underscore", "backbone",
                 regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
                 regexCitation   = /\[@.+\]/g;
                 // test for any <h.> tags
-                regexHtags      = new RegExp(`#\\s`),
+                regexHtags      = new RegExp('#\\s'),
                 regexImages     = /!\[.*\]\(\S+\)/;
 
             // ====== test for and load each as required each showdown extension ====== //
