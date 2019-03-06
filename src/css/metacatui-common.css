@@ -3831,6 +3831,7 @@ a.disabled {
 	border: 1px solid #CCC;
 	border-left: 0px;
 	border-right: 0px;
+  background-color: #eee;
 }
 #project-filters > .nav-tabs > li:first-child > a{
 	border-left: 0px;
