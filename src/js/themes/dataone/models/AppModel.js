@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
-      dashboardUrl: 'https://dashboard.dev.wholetale.org/',
+      dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
@@ -75,7 +75,8 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            //mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            mdqBaseUrl: "",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["dataone.suite.1"],
             suiteLabels: ["DataONE Metadata Completeness Suite v1.0"],
@@ -97,6 +98,22 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetAnalyzeButton: false,
 			displayMetricModals: true,
 			displayDatasetControls: true,
+      /* Hide metrics display for SolrResult models that match the given properties.
+      *  Properties can be functions, which are given the SolrResult model value as a parameter.
+      * Example:
+      * {
+      *    formatId: "eml://ecoinformatics.org/eml-2.1.1",
+      *    isPublic: true,
+      *    dateUploaded: function(date){
+      *      return new Date(date) < new Date('1995-12-17T03:24:00');
+      *    }
+      * }
+      * This example would hide metrics for any objects that are:
+      *   EML 2.1.1 OR public OR were uploaded before 12/17/1995.
+      */
+      hideMetricsWhen: {
+        datasource: "urn:node:ESS_DIVE"
+      },
 
 			isJSONLDEnabled: true,
 

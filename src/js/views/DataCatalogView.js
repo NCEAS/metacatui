@@ -18,7 +18,7 @@ define(["jquery",
         "gmaps",
         "nGeohash"
     ],
-    function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel, 
+    function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
         MetricsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate,
         MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
         "use strict";
@@ -123,12 +123,12 @@ define(["jquery",
             render: function() {
 
                 // Use the global models if there are no other models specified at time of render
-                if ((MetacatUI.appModel.get("searchHistory").length > 0) && 
+                if ((MetacatUI.appModel.get("searchHistory").length > 0) &&
                     (!this.searchModel || Object.keys(this.searchModel).length == 0)
                 ) {
                     this.searchModel = _.last(MetacatUI.appModel.get("searchHistory")).search.clone();
                     this.mapModel = _.last(MetacatUI.appModel.get("searchHistory")).map.clone();
-                } else if ((typeof MetacatUI.appSearchModel !== "undefined") && 
+                } else if ((typeof MetacatUI.appSearchModel !== "undefined") &&
                     (!this.searchModel || Object.keys(this.searchModel).length == 0)
                 ) {
                     this.searchModel = MetacatUI.appSearchModel;
@@ -139,8 +139,8 @@ define(["jquery",
                     this.mapModel = MetacatUI.mapModel;
                 }
 
-                if (((typeof this.searchResults === "undefined") || 
-                    (!this.searchResults || Object.keys(this.searchResults).length == 0)) && 
+                if (((typeof this.searchResults === "undefined") ||
+                    (!this.searchResults || Object.keys(this.searchResults).length == 0)) &&
                     (MetacatUI.appSearchResults && (Object.keys(MetacatUI.appSearchResults).length > 0))
                 ) {
                     this.searchResults = MetacatUI.appSearchResults;
@@ -202,8 +202,8 @@ define(["jquery",
 
                 // Find the tooltips that are on filter labels - add a slight delay to those
                 var groupedTooltips = _.groupBy(tooltips, function(t) {
-                    return ((($(t).prop("tagName") == "LABEL") || 
-                        ($(t).parent().prop("tagName") == "LABEL")) && 
+                    return ((($(t).prop("tagName") == "LABEL") ||
+                        ($(t).parent().prop("tagName") == "LABEL")) &&
                         ($(t).parents(".filter-container").length > 0))
                 });
                 var forFilterLabel = true,
@@ -232,7 +232,7 @@ define(["jquery",
                 $("#includes-files-buttonset").buttonset();
 
                 // Iterate through each search model text attribute and show UI filter for each
-                var categories = ["all", "attribute", "creator", "id", "taxon", "spatial", 
+                var categories = ["all", "attribute", "creator", "id", "taxon", "spatial",
                     "additionalCriteria", "annotation"];
                 var thisTerm = null;
 
@@ -373,7 +373,7 @@ define(["jquery",
                         $(this).popover("hide");
                     } else {
                         // Get the popover content
-                        var content = $(this).data().popoverContent || 
+                        var content = $(this).data().popoverContent ||
                             $(this).data().popover.options.content.detach();
                         // Cache it
                         $(this).data({
@@ -604,7 +604,7 @@ define(["jquery",
                 }
 
                 // Specify which fields to retrieve
-                var fields = ""; 
+                var fields = "";
                     fields += "id,";
                     fields += "seriesId,";
                     fields += "title,";
@@ -638,7 +638,7 @@ define(["jquery",
 
                 // Specify which facets to retrieve
                 if (gmaps && this.map) { // If we have Google Maps enabled
-                    var geohashLevel = "geohash_" + 
+                    var geohashLevel = "geohash_" +
                         this.mapModel.determineGeohashLevel(this.map.zoom);
                     this.searchResults.facet.push(geohashLevel);
                 }
@@ -668,11 +668,10 @@ define(["jquery",
             },
 
             /*
-             * After the search results have been returned, 
+             * After the search results have been returned,
              * check if any of them are derived data or have derivations
              */
             checkForProv: function() {
-                if (!MetacatUI.appModel.get("prov")) return;
 
                 var maps = [],
                     hasSources = [],
@@ -724,7 +723,7 @@ define(["jquery",
                     hasSources = _.uniq(hasSources);
                     hasDerivations = _.uniq(hasDerivations);
 
-                    // If they do, find their corresponding result row here and add 
+                    // If they do, find their corresponding result row here and add
                     // the prov icon (or just change the class to active)
                     _.each(hasSources, function(metadataID) {
                         var metadataDoc = mainSearchResults.findWhere({
@@ -1316,10 +1315,10 @@ define(["jquery",
                 if (!this.filters) return;
 
                 if (typeof value === "undefined") {
-                    var filterNode = this.$(".current-filters[data-category='" + 
+                    var filterNode = this.$(".current-filters[data-category='" +
                         category + "']").children(".current-filter");
                 } else {
-                    var filterNode = this.$(".current-filters[data-category='" + 
+                    var filterNode = this.$(".current-filters[data-category='" +
                         category + "']").children("[data-term='" + value + "']");
                 }
 
@@ -1728,10 +1727,20 @@ define(["jquery",
                         // Format the suggestions
                         var rankedSuggestions = new Array();
                         for (var i = 0; i < Math.min(suggestions.length - 1, facetLimit); i += 2) {
-                            rankedSuggestions.push({
-                                value: suggestions[i],
-                                label: suggestions[i] + " (" + suggestions[i + 1] + ")"
-                            });
+
+                                      //The label is the item value
+                                      var label = suggestions[i];
+
+                                      //For all categories except the 'all' category, display the facet count
+                                      if(category != "all"){
+                                        label += " (" + suggestions[i+1] + ")";
+                                      }
+
+                                      //Push the autocomplete item to the array
+                                      rankedSuggestions.push({
+                                        value: suggestions[i],
+                                        label: label
+                                      });
                         }
 
                         // Save these facets in the app so we don't have to send another query
@@ -1747,6 +1756,17 @@ define(["jquery",
             setupAutocomplete: function(input, rankedSuggestions) {
                 var viewRef = this;
 
+                //Override the _renderItem() function which renders a single autocomplete item.
+                // We want to use the 'title' HTML attribute on each item.
+                // This method must create a new <li> element, append it to the menu, and return it.
+                $.widget( "custom.autocomplete", $.ui.autocomplete, {
+                  _renderItem: function(ul, item) {
+                    return $( document.createElement("li") )
+                            .attr( "title", item.label )
+                            .append( item.label )
+                            .appendTo( ul );
+                  }
+                });
                 input.autocomplete({
                     source: function(request, response) {
                         var term = $.ui.autocomplete.escapeRegex(request.term),
@@ -1776,11 +1796,6 @@ define(["jquery",
                         collision: "flipfit"
                     }
                 });
-
-                // Add a class
-                if (input.data("uiAutocomplete")) {
-                    $(input.data("uiAutocomplete").menu.element).addClass("filter-autocomplete");
-                }
             },
 
             hideClearButton: function() {

@@ -81,31 +81,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			var id = json.id;
 			this.$el.attr("data-id", id);
 
-				//If this object has a provenance trace, we want to display information about it
-				if(json.hasProv){
-
-					var numSources = this.model.get("prov_hasSources"),
-						numDerivations = this.model.get("prov_hasDerivations");
-
-					//Create the title of the popover
-					/*if(numSources) title += " was created using source";
-					if(numSources > 1) title += "s";
-					if(numSources > 0 &amp;&amp; numDerivations > 0) title += " and";
-					if(numDerivations > 0) title += " has been used by " + numDerivations + " other dataset";
-					if(numDerivations > 1) title += "s";
-					title += ".";
-									*/
-					if(numDerivations || numSources) var title = "This dataset contains provenance information";
-
-					//Make a tooltip with basic info for mouseover
-					this.$el.find(".provenance.active").tooltip({
-						placement: "top",
-						trigger: "hover",
-						container: this.el,
-						title: title
-					});
-				}
-
 			if(this.model.get("abstract")){
 				var abridgedAbstract = (this.model.get("abstract").indexOf(" ", 250) < 0) ? this.model.get("abstract") : this.model.get("abstract").substring(0, this.model.get("abstract").indexOf(" ", 250)) + "...";
 				var content = $(document.createElement("div"))
@@ -141,6 +116,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		},
 
 		displayMetrics: function() {
+
+      //If metrics for this object should be hidden, exit the function
+      if( this.model.hideMetrics() ){
+        return;
+      }
+
 			var datasets = this.metricsModel.get("datasets");
 			var downloads = this.metricsModel.get("downloads");
 			var views = this.metricsModel.get("views");

@@ -1773,41 +1773,6 @@ MDQ items
    		float: left;
    }
 
-         /* Autocomplete */
-    ul.ui-autocomplete{
-    	width: 246px;
-    	background-color: #FFFFFF;
-    	border: 1px solid #999999;
-    	padding: 10px;
-    	list-style: none;
-    	overflow-y: scroll;
-    	-webkit-transform: translate3d(0,0,0);
-    	max-height: 150px;
-    	z-index: 100;
-    }
-
-    li.ui-menu-item{
-    	width: 100%;
-    	overflow: hidden;
-    	white-space: nowrap;
-    	text-overflow: ellipsis;
-    	background-color:#FFFFFF;
-    }
-
-    li.ui-menu-item > a{
-    	color: #555555;
-    	width: 100%;
-    }
-
-    li.ui-menu-item > a:hover,
-    .ui-state-focus
-     {
-        color: #1f254f;
-    	cursor: pointer;
-    	text-decoration: none;
-    	font-weight: bold;
-	}
-
 
 /* RESULTS CSS
 -------------------------------------------------- */
@@ -1929,10 +1894,6 @@ MDQ items
 
     .result-row a.download > .icon-caret-down {
     	margin-left: 3px;
-    }
-    .result-row .info-icons .download{
-    	cursor: pointer;
-    	color: #1f254f;
     }
 
     /*-- Pagination widget --*/

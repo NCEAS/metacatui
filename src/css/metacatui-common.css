@@ -425,6 +425,14 @@ img.icon{
 	font-weight: bold;
 	font-size: .9em;
 }
+.private.icon-stack .icon-circle{
+  color: #FF7600;
+}
+.private.icon-stack .icon-stack-top{
+  color: #FFF;
+  margin-top: -1px;
+  font-size: 1.1em;
+}
 /******************************************
 ** Results and Result Rows ***
 ******************************************/
@@ -455,9 +463,6 @@ img.icon{
 }
 .result-row .info-icons .icons.download .tooltip{
 	width: 120px;
-}
-.result-row .info-icons .icon{
-	cursor: default;
 }
 .result-row .info-icons .icon.views{
   margin-left: 5px;
@@ -1546,18 +1551,13 @@ body > .alert-container {
 #Content.no-stylesheet > .breadcrumb~.citation{
 	margin-top: 20px;
 }
-
+/* Padding at the bottom to avoid scrollbar overlap */
+#attributeTabs{
+  padding-bottom: 25px;
+}
 .attributeList > .row-fluid > .span2 {
-  min-width: 130px;
-  max-width: 150px;
-  max-width: calc(165px - 2.127659574468085%);
   max-height: 700px;
   overflow: scroll;
-}
-#Metadata .tab-content,
-#Metadata .row-fluid .tab-content.span10{
-	width: 76%;
-	width: calc(100% - 165px);
 }
 .attributeList a{
 	white-space: nowrap;
@@ -3558,13 +3558,6 @@ body.mapMode{
 #sidebar .ui-helper-hidden-accessible{
 	display: none;
 }
-.filter-autocomplete .ui-menu-item a{
-	font-size: 1em;
-}
-.filter-autocomplete .ui-menu-item a:hover,
-.filter-autocomplete .ui-menu-item a:focus{
-	border: 0px;
-}
 #filter-year .filter-input-contain{
 	margin-top: 10px;
 }
@@ -4032,6 +4025,30 @@ a.disabled {
 .can-toggle.can-toggle-small label .can-toggle-switch:hover:after {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
 }
+/** Autocompletes **/
+.ui-autocomplete{
+  width: 246px;
+  background-color: #FFFFFF;
+  border: 1px solid #999999;
+  padding: 10px;
+  list-style: none;
+  overflow-y: scroll;
+  -webkit-transform: translate3d(0,0,0);
+  max-height: 150px;
+  z-index: 100;
+  overflow-x: hidden;
+}
+.ui-autocomplete .ui-menu-item{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0px 5px;
+}
+.ui-autocomplete .ui-menu-item:hover{
+  background-color: #DDD;
+  cursor: pointer;
+}
+
 /*******************************************
    Registry and Forms
 ******************************************/

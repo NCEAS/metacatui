@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
-      dashboardUrl: 'https://dashboard.dev.wholetale.org/',
+      dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
 			/*
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
@@ -135,6 +135,20 @@ define(['jquery', 'underscore', 'backbone'],
 			displayDatasetAnalyzeButton: false,
 			displayMetricModals: true,
 			displayDatasetControls: true,
+      /* Hide metrics display for SolrResult models that match the given properties.
+      *  Properties can be functions, which are given the SolrResult model value as a parameter.
+      * Example:
+      * {
+      *    formatId: "eml://ecoinformatics.org/eml-2.1.1",
+      *    isPublic: true,
+      *    dateUploaded: function(date){
+      *      return new Date(date) < new Date('1995-12-17T03:24:00');
+      *    }
+      * }
+      * This example would hide metrics for any objects that are:
+      *   EML 2.1.1 OR public OR were uploaded before 12/17/1995.
+      */
+      hideMetricsWhen: null,
 
 			isJSONLDEnabled: true,
       // A lookup map of project names to project seriesIds

@@ -203,7 +203,12 @@ define(['jquery',
 				this.getPackageDetails(model.get("resourceMap"));
 
 			});
+
+      //Listen to 404 and 401 errors when we get the metadata object
 			this.listenToOnce(model, "404", this.showNotFound);
+      this.listenToOnce(model, "401", this.showIsPrivate);
+
+      //Fetch the model
 			model.getInfo();
 
 		},
@@ -421,24 +426,70 @@ define(['jquery',
 			this.$(this.breadcrumbContainer).html(breadcrumbs);
 		},
 
-		showNotFound: function(){
-			//If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
-			if(!MetacatUI.appUserModel.get("checked")){
-				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
-				return;
-			}
+    /*
+    * When the metadata object doesn't exist, display a message to the user
+    */
+    showNotFound: function(){
 
-			if(!this.model.get("notFound")) return;
+      //If the model was found, exit this function
+      if(!this.model.get("notFound")){
+        return;
+      }
 
-			var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
-					  "<ul class='indent'>" +
-					  	  "<li>The ID '" + this.pid  + "' does not exist.</li>" +
-						  '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
-						  "<li>The content was removed because it was invalid.</li>" +
-					  "</ul>";
-			this.hideLoading();
-			this.showError(msg);
-		},
+      //Construct a message that shows this object doesn't exist
+      var msg = "<h4>Nothing was found.</h4>" +
+            "<p>The dataset identifier '" + this.model.get("id") + "' " +
+            "does not exist or it may have been removed. <a href='" +
+            MetacatUI.root + "/data/query=" + encodeURIComponent(this.model.get("id")) + "'>Search for " +
+            "datasets that mention " + this.model.get("id") + "</a></p>";
+
+      //Remove the loading message
+      this.hideLoading();
+
+      //Show the not found error message
+      this.showError(msg);
+    },
+
+    /*
+    * When the metadata object is private, display a message to the user
+    */
+    showIsPrivate: function(){
+
+      //If we haven't checked the logged-in status of the user yet, wait a bit
+      //until we show a 401 msg, in case this content is their private content
+      if(!MetacatUI.appUserModel.get("checked")){
+        this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showIsPrivate);
+        return;
+      }
+
+      //If the user is logged in, the message will display that this dataset is private.
+      if( MetacatUI.appUserModel.get("loggedIn") ){
+        var msg = '<span class="icon-stack private tooltip-this" data-toggle="tooltip"' +
+                  'data-placement="top" data-container="#metadata-controls-container"' +
+                  'title="" data-original-title="This is a private dataset.">' +
+                    '<i class="icon icon-circle icon-stack-base private"></i>' +
+                    '<i class="icon icon-lock icon-stack-top"></i>' +
+                  '</span> This is a private dataset.';
+      }
+      //If the user isn't logged in, display a log in link.
+      else{
+        var msg = '<span class="icon-stack private tooltip-this" data-toggle="tooltip"' +
+                  'data-placement="top" data-container="#metadata-controls-container"' +
+                  'title="" data-original-title="This is a private dataset.">' +
+                    '<i class="icon icon-circle icon-stack-base private"></i>' +
+                    '<i class="icon icon-lock icon-stack-top"></i>' +
+                  '</span> This is a private dataset. If you believe you have permission ' +
+                  'to access this dataset, then <a href="' + MetacatUI.root +
+                  '/signin">sign in</a>.';
+      }
+
+      //Remove the loading message
+      this.hideLoading();
+
+      //Show the not found error message
+      this.showError(msg);
+
+    },
 
 		getPackageDetails: function(packageIDs){
 			var viewRef = this;
@@ -1036,11 +1087,10 @@ define(['jquery',
     let self=this;
     MetacatUI.appModel.get('taleEnvironments').forEach(function(environment){
       var queryParams=
-      '?uri='+ window.location.href+
-      '&name='+encodeURIComponent(self.model.get("title"))+
-      '&data_api='+encodeURIComponent(MetacatUI.appModel.get('d1CNBaseUrl'))+
+      '?uri='+ self.model.id +
+      '&title='+encodeURIComponent(self.model.get("title"))+
       '&environment='+environment;
-      var composeUrl = MetacatUI.appModel.get('dashboardUrl')+'compose'+queryParams;
+      var composeUrl = MetacatUI.appModel.get('dashboardUrl')+queryParams;
       var anchor = $('<a>');
       anchor.attr('href',composeUrl).append(
         $('<span>').attr('class', 'tab').append(environment));
@@ -1051,6 +1101,13 @@ define(['jquery',
 
 		// Inserting the Metric Stats
 		insertMetricsControls: function() {
+
+      //Exit if metrics shouldn't be shown for this dataset
+      if( this.model.hideMetrics() ){
+        return;
+      }
+
+
 			var pid_list = [];
 			pid_list.push(this.pid);
 			var metricsModel = new MetricsModel({pid_list: pid_list, type: "dataset"});
@@ -2011,6 +2068,12 @@ define(['jquery',
 
 		// this will lookup the latest version of the PID
 		showLatestVersion: function() {
+
+      //If this metadata doc is not obsoleted by a new version, then exit the function
+      if( !this.model.get("obsoletedBy") ){
+        return;
+      }
+
 			var view = this;
 
 			//When the latest version is found,
@@ -2018,8 +2081,15 @@ define(['jquery',
 				//Make sure it has a newer version, and if so,
 				if(view.model.get("newestVersion") != view.model.get("id"))
 					//Put a link to the newest version in the content
-					view.$el.prepend(view.versionTemplate({pid: view.model.get("newestVersion")}));
+					view.$(".newer-version").replaceWith(view.versionTemplate({
+            pid: view.model.get("newestVersion")
+          }));
 			});
+
+      //Insert the newest version template with a loading message
+      this.$el.prepend( this.versionTemplate({
+        loading: true
+      }) );
 
 			//Find the latest version of this metadata object
 			this.model.findLatestVersion();

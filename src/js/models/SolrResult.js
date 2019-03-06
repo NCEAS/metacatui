@@ -495,17 +495,27 @@ define(['jquery', 'underscore', 'backbone'],
 					//Trigger the sync event so the app knows we found the model info
 					model.trigger("sync");
 				},
-				error: function(){
-					model.notFound();
+				error: function(response){
+
+          //When the user is unauthorized to access this object, trigger a 401 error
+          if( response.status == 401 ){
+            model.set("notFound", true);
+            model.trigger("401");
+          }
+          //When the object doesn't exist, trigger a 404 error
+          else if( response.status == 404 ){
+            model.set("notFound", true);
+      			model.trigger("404");
+          }
+          //Other error codes trigger a generic error
+          else{
+            model.trigger("error");
+          }
+
 				}
 			}
 
 			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
-
-		notFound: function(){
-			this.set({"notFound": true}, {silent: true});
-			this.trigger("404");
 		},
 
 		//Transgresses the obsolence chain until it finds the newest version that this user is authorized to read
@@ -652,6 +662,50 @@ define(['jquery', 'underscore', 'backbone'],
 		getOutputs: function(){
 			return this.get("prov_generated");
 		},
+
+    /*
+    * Uses the app configuration to check if this model's metrics should be hidden in the display
+    *
+    * @return {boolean}
+    */
+    hideMetrics: function(){
+
+      //If the AppModel is configured with cases of where to hide metrics,
+      if( typeof MetacatUI.appModel.get("hideMetricsWhen") == "object" && MetacatUI.appModel.get("hideMetricsWhen") ){
+
+        //Check for at least one match
+        return _.some( MetacatUI.appModel.get("hideMetricsWhen"), function(value, modelProperty){
+
+          //Get the value of this property from this model
+          var modelValue = this.get(modelProperty);
+
+          //Check for the presence of this model's value in the AppModel value
+          if( Array.isArray(value) && typeof modelValue == "string" ){
+            return _.contains(value, modelValue)
+          }
+          //Check for the presence of the AppModel's value in this model's value
+          else if( typeof value == "string" && Array.isArray(modelValue) ){
+            return _.contains(modelValue, value);
+          }
+          //Check for overlap of two arrays
+          else if( Array.isArray(value) && Array.isArray(modelValue) ){
+            return ( _.intersection(value, modelValue).length > 0 );
+          }
+          //If the AppModel value is a function, execute it
+          else if( typeof value == "function" ){
+            return value(modelValue);
+          }
+          //Otherwise, just check for equality
+          else{
+            return value === modelValue;
+          }
+
+        }, this);
+      }
+      else {
+        return false;
+      }
+    },
 
 		/****************************/
 

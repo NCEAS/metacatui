@@ -1473,9 +1473,6 @@ label.control-label{
     .info-icons .on-map > i{
     	font-size: 19px;
     }
-    .info-icons .icon{
-    	cursor: pointer;
-    }
     .info-icons .icon:hover{
     	color: #CE0060;
     }
@@ -1492,6 +1489,10 @@ label.control-label{
 
     .result-row:hover .info-icons .inactive{
     	color: #B2CADD;
+    }
+
+    .info-icons .icon.icon-code-fork {
+      font-size: 1.3em;
     }
 
     .popover{

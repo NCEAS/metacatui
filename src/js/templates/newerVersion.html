@@ -1,3 +1,13 @@
-<div class="alert">
-	<i class="icon-warning-sign"></i> NOTE: A <a class="" href="<%= MetacatUI.root %>/view/<%=pid%>" >newer version</a> of this dataset exists
+<div class="alert newer-version">
+
+  <% if( typeof loading != "undefined" && loading ){ %>
+    <i class="icon-warning-sign"></i> A newer version of this dataset exists.
+    Searching for the newest version now...
+    <i class="icon-spinner icon-spin icon-large loading icon"></i>
+  <% } else { %>
+    <i class="icon-warning-sign"></i>
+    A newer version of this dataset exists.
+    <a class="" href="<%= MetacatUI.root %>/view/<%=pid%>">View it now</a>.
+  <% } %>
+
 </div>
