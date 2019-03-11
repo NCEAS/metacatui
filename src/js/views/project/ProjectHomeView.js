@@ -40,7 +40,8 @@ define(["jquery",
             searchResults: searchResults,
             mapModel: this.model.get("mapModel"),
             el: "#project-search-results",
-            isSubView: true
+            isSubView: true,
+            filters: false
           });
 
           dataCatalogView.render();
