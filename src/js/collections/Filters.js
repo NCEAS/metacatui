@@ -5,11 +5,11 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
         "use strict";
 
         /*
-         * Search collection
+         * Filters collection
          * A collection of Filter models that represents a full search
-         * @typedef {Backbone.Collection} Search
+         * @typedef {Backbone.Collection} Filters
          */
-        var Search = Backbone.Collection.extend({
+        var Filters = Backbone.Collection.extend({
 
             /* Reference to this collection's model.
              * This collection can contain any type of Filter model:
@@ -145,5 +145,5 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             }
             */
         });
-        return Search;
+        return Filters;
     });
