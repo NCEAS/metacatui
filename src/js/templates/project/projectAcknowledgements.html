@@ -1,0 +1,6 @@
+<%if (text.length) {%>
+    <h4>Acknowledgments</h4> <hr width="125px"> 
+    <% _.each(text, function(para){%>
+        <p><%=para%></p>
+    <% }); %>
+<%}%>

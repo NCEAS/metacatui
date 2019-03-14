@@ -1,4 +1,4 @@
-﻿/*global Backbone */
+/*global Backbone */
 'use strict';
 
 define(['jquery',	'underscore', 'backbone'],
@@ -8,28 +8,29 @@ function ($, _, Backbone) {
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
 		routes: {
-			''                          : 'renderIndex',    // the default route
-			'about(/:anchorId)'         : 'renderAbout',    // about page
-			'help(/:page)(/:anchorId)'  : 'renderHelp',
-			'tools(/:anchorId)'         : 'renderTools',    // tools page
-			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
+			''                               : 'renderIndex',    // the default route
+			'about(/:anchorId)'              : 'renderAbout',    // about page
+			'help(/:page)(/:anchorId)'       : 'renderHelp',
+			'tools(/:anchorId)'              : 'renderTools',    // tools page
+			'data/my-data(/page/:page)'      : 'renderMyData',    // data search page
 			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'data/my-data'              : 'renderMyData',
+			'data/my-data'                   : 'renderMyData',
 			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
 			//'my-account'                   : 'renderUserSettings',
-			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'logout'                    : 'logout',    		// logout the user
-			'signout'                   : 'logout',    		// logout the user
-			'signin'                    : 'renderSignIn',    		// logout the user
-			"signinsuccess"             : "renderSignInSuccess",
-			"signinldaperror"           : "renderLdapSignInError",
-			"signinLdap"                : "renderLdapSignIn",
-			"signinSuccessLdap"         : "renderLdapSignInSuccess",
-			'share(/*pid)'              : 'renderEditor', // registry page
-			'submit(/*pid)'             : 'renderEditor', // registry page
-			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)'           : 'renderAPI'       // API page
+			'external(/*url)'                : 'renderExternal', // renders the content of the given url in our UI
+			'logout'                         : 'logout', // logout the user
+			'signout'                        : 'logout', // logout the user
+			'signin'                         : 'renderSignIn', // logout the user
+			"signinsuccess"                  : "renderSignInSuccess",
+			"signinldaperror"                : "renderLdapSignInError",
+			"signinLdap"                     : "renderLdapSignIn",
+			"signinSuccessLdap"              : "renderLdapSignInSuccess",
+			'share(/*pid)'                   : 'renderEditor', // registry page
+			'submit(/*pid)'                  : 'renderEditor', // registry page
+			'quality(/s=:suiteId)(/:pid)'    : 'renderMdqRun', // MDQ page
+			'api(/:anchorId)'                : 'renderAPI', // API page
+			'projects(/:projectId)(/:projectSection)': 'renderProject' // project page
 		},
 
 		helpPages: {
@@ -291,6 +292,89 @@ function ($, _, Backbone) {
 					MetacatUI.appView.dataCatalogView.mode = mode;
 
 				MetacatUI.appView.showView(MetacatUI.appView.dataCatalogView);
+			}
+		},
+
+        /*
+         * Render the project view based on the given name, id, or section
+         */
+		renderProject: function(projectId, projectSection) {
+            var projectName;
+            var projectsMap = MetacatUI.appModel.get("projectsMap");
+
+            // Look up the project document seriesId by its registered name if given
+            if ( projectId ) {
+                if ( projectsMap ) {
+                    // Do a forward lookup by key
+                    if ( typeof (projectsMap[projectId] ) !== "undefined" ) {
+                        projectName = projectId;
+                        projectId = projectsMap[projectId];
+                        // Then set the history
+                        if ( projectSection ) {
+                            this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                        } else {
+                            this.routeHistory.push("projects/" + projectName);
+                        }
+                    } else {
+                        // Try a reverse lookup of the project name by values
+                        projectName = _.findKey(projectsMap, function(value){
+                          return( value ==  projectId );
+                        });
+
+                        if ( typeof projectName !== "undefined" ) {
+                            if ( projectSection ) {
+                                this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                            } else {
+                                this.routeHistory.push("projects/" + projectName);
+                            }
+                        } else {
+
+                          //Try looking up the project name with case-insensitive matching
+                          projectName = _.findKey(projectsMap, function(value, key){
+                            return( key.toLowerCase() == projectId.toLowerCase() );
+                          });
+
+                          //If a matching project name was found, route to it
+                          if( projectName ){
+
+                            //Get the project ID from the map
+                            projectId = projectsMap[projectName];
+
+                            // Then set the history
+                            if ( projectSection ) {
+                              this.navigate("projects/" + projectName + "/" + projectSection, { trigger: false, replace: true });
+                              this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                            } else {
+                              this.navigate("projects/" + projectName, { trigger: false, replace: true });
+                              this.routeHistory.push("projects/" + projectName);
+                            }
+                          }
+                          else{
+                            // Fall back to routing to the project by id, not name
+                            this.routeHistory.push("projects/" + projectId);
+                          }
+                        }
+                    }
+                }
+            } else {
+                // TODO: Show a ProjectsView here of the Projects collection (no projectId given)
+                return;
+            }
+
+			if ( !MetacatUI.appView.projectView ) {
+				require(['views/project/ProjectView'], function(ProjectView){
+					MetacatUI.appView.projectView = new ProjectView({
+                        projectId: projectId,
+                        projectName: projectName,
+                        projectSection: projectSection
+                    });
+					MetacatUI.appView.showView(MetacatUI.appView.projectView);
+				});
+			} else {
+                MetacatUI.appView.projectView.projectName = projectName;
+                MetacatUI.appView.projectView.projectId = projectId;
+                MetacatUI.appView.projectView.projectSection = projectSection;
+				MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},
 

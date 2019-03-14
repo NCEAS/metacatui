@@ -93,8 +93,8 @@
 						<div class="clear"></div>
 					</div>
 				<% } %>
-				
-				<% if(searchModelRef.filterIsAvailable("dataSource")){ %>
+
+				<% if( _.contains(MetacatUI.appModel.get("defaultSearchFilters"), "dataSource") ){ %>
 					<div class="filter-contain collapsable" id="member-nodes-container" data-category="dataSource">
 						<label class="expand-collapse-control">
 							<i class="icon icon-caret-right expand"></i>

@@ -13,7 +13,6 @@ MetacatUI.themeMap =
 		'templates/resultsItem.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/resultsItem.html',
 		'templates/noResults.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/noResults.html',
 		'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js',
-		'models/Search' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/Search.js',
 		'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router.js'
 		}
 };

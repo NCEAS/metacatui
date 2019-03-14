@@ -12,6 +12,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		model: SolrResult,
 
 		initialize: function(models, options) {
+
+			if( typeof options === "undefined" || !options ){
+				var options = {};
+			}
+
 			this.docsCache    = options.docsCache || null;
 		    this.currentquery = options.query   || '*:*';
 		    this.fields 	  = options.fields  || "id,title";

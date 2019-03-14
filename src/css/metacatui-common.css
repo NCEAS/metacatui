@@ -443,9 +443,6 @@ img.icon{
 	 width: calc(100% - 15px);
 	 border-top: 1px solid #EEE;
 }
-.result-row .info-icons{
-	margin-top: 10px;
-}
 .result-row .info-icons .icons{
 	float: left;
     margin-right: 1em;
@@ -1554,7 +1551,10 @@ body > .alert-container {
 #Content.no-stylesheet > .breadcrumb~.citation{
 	margin-top: 20px;
 }
-
+/* Padding at the bottom to avoid scrollbar overlap */
+#attributeTabs{
+  padding-bottom: 25px;
+}
 .attributeList > .row-fluid > .span2 {
   max-height: 700px;
   overflow: scroll;
@@ -2471,6 +2471,191 @@ img[src*="googleapis.com/"].georegion-map{
   list-style: none;
 }
 /******************************************
+* Projects
+********************************************/
+.projectHeader {
+	border-spacing: 10px;
+	border-collapse: separate;
+}
+.projectHeader td{
+	vertical-align: middle;
+}
+.top-buffer {
+	margin-top:5px;
+	margin-bottom:8px;
+}
+.logo-container{
+	height: 100px;
+  white-space: nowrap;
+  width: 100%;
+  display: table;
+	padding-top:10px;
+}
+.logo-image{
+	vertical-align: middle;
+  padding: 10px;
+  display: table-cell;
+}
+.project-view .project-logo{
+	max-width: 100%;
+	max-height: 120px;
+}
+.project-view #results-container{
+	width: 100%;
+	margin-left:0px;
+}
+.project-view .mapMode #results-container,
+.project-view .mapMode #map-container{
+	width: 50%;
+}
+#project-search-results #clear-all{
+	display: none;
+}
+#project-description-container{
+	border-top: 1px solid #DDD;
+	margin-top: 20px;
+	padding-top: 10px;
+}
+#project-description-container img{
+	margin: 20px;
+	max-width: 80%;
+	width: auto;
+}
+.project-logos-view{
+	border-top: 1px solid #DDD;
+  padding-top: 40px;
+}
+.project-logos-view .img-logo{
+	max-width: 120px;
+}
+.well.awards-info {
+	background: inherit;
+	margin-top: 20px;
+}
+#project-toc-container{
+	position: sticky;
+	position: -webkit-sticky;
+	top: 20px;
+	margin-top: 58px;
+}
+.toc a{
+	color: #555;
+}
+.toc .icon{
+	color: #069;
+}
+i.toc-sub-item{
+	margin-left: 18px;
+	visibility: hidden;
+}
+.project-view .logo-row{
+	margin-bottom: 40px;
+}
+
+/*** Colors used in the Project View ***/
+.project-view .toc .icon{
+	color: var(--project-primary-color);
+}
+.project-view a:hover{
+	color: var(--project-secondary-color);
+}
+.project-view #project-section-tabs a{
+	color: var(--project-primary-color);
+}
+.project-view #project-section-tabs .active a{
+	color: #555;
+}
+.project-view .result-row .citation .title{
+	color: var(--project-primary-color);
+}
+.project-view .applied-filter{
+	background-color: var(--project-primary-color);
+}
+.project-view .filter-group-link a{
+	color: var(--project-primary-color);
+}
+.project-view .filter-group-link a:hover{
+	color: var(--project-secondary-color);
+}
+.project-view .filter-group-link.active a,
+.project-view .filter-group-link.active a:hover{
+	color: inherit;
+}
+.project-view .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch,
+.project-view .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch{
+	background-color: var(--project-primary-color);
+}
+.project-view .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch{
+	background-color: var(--project-secondary-color);
+}
+.project-view .ui-slider-range{
+	background-color: var(--project-primary-color);
+}
+.project-view .result-row .citation a:hover,
+.project-view .result-row .citation a:hover .title,
+.project-view .result-row .citation a:hover .id{
+	color: var(--project-secondary-color);
+}
+.project-view .result-row .icon{
+	color: #666;
+}
+.project-view .profile .quick-stats circle{
+	stroke:  var(--project-primary-color);
+}
+.project-view svg .packages,
+.project-view .chart-title .packages{
+	color: var(--project-primary-color);
+	fill: var(--project-primary-color);
+}
+.project-view svg circle.packages{
+	fill: none;
+}
+.project-view svg .metadata,
+.project-view .fallback.metadata{
+	color: var(--project-secondary-color);
+	fill: var(--project-secondary-color);
+	stroke: var(--project-secondary-color);
+}
+.project-view .line-chart .line{
+	fill: none;
+}
+.project-view .line-chart text.line-chart-label{
+	fill: #FFF;
+}
+.project-view #project-members a{
+	color: var(--project-primary-color);
+}
+
+/* markdown citations */
+.markdown .inlineCitation {
+
+}
+
+.markdown .csl-entry {
+	text-indent: -15px;
+	margin-left: 15px;
+	margin-bottom: 10px;
+}
+
+.markdown #bibliography {
+	margin-top: 40px;
+	margin-bottom: 20px;
+}
+/******************************************
+* HTML converted from Markdown
+********************************************/
+
+/* the following two rules overwrite both:
+	i. the bootstrap `pre` rules
+	ii. individual theme `pre` rules
+*/
+div.markdown pre {
+	color: #383a42;
+	background: #fafafa;
+	border-radius: 3px;
+}
+
+/******************************************
 * Download / Resource Map contents table
 ********************************************/
 #downloadContents .controls-well{
@@ -2895,6 +3080,9 @@ address.email-container:before{
 }
 .profile .chart-title{
 	float: left;
+}
+.profile .charts{
+  box-sizing: border-box;
 }
 .profile .chart{
 	float: left;
@@ -3386,6 +3574,9 @@ body.mapMode{
 .sort-by select{
 	width: auto;
 }
+#results-container .pagination{
+	box-sizing: border-box;
+}
 /*-- The filter checkboxes --*/
 #includes-files label{
  	margin-right: 4px;
@@ -3505,6 +3696,336 @@ a.disabled {
 	pointer-events: none;
 }
 
+/********* Filter Views ***********/
+.filter-group .filter {
+  display: inline-block;
+  margin-right: 20px;
+}
+.filter-group .filter .btn{
+	box-shadow: none;
+	border-bottom-color: #ccc;
+}
+.filter-group .filter input{
+	box-shadow: none;
+}
+.filter-group-link a,
+.nav-tabs .filter-group-link a,
+.nav-tabs .filter-group-link.active a {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-bottom: 0px;
+    border-top: 0px;
+		border-radius: 0px;
+		border-top-width: 0px;
+		margin-right: 0px;
+		border-right-width: 0px;
+		text-align: center;
+}
+.nav-tabs .filter-group-link.active a{
+	background-color: #FFF;
+}
+.nav-tabs .filter-group-link a:hover{
+	border-color: #CCC;
+}
+.filter-group-link{
+	background-color: #eee;
+}
+.filter-group .filter .ui-slider{
+	position: relative;
+	height: 5px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	width: 90%;
+	width: calc(100% - 20px);
+}
+.filter-group .filter .ui-slider-handle{
+  width: 7px;
+  height: 16px;
+}
+.filters-title{
+	text-transform: uppercase;
+	color: #999;
+	font-size: .9em;
+	font-weight: normal;
+	visibility: hidden;
+	margin-top: 0px;
+}
+.filters-title .clear-all{
+	margin-left: 10px;
+}
+.filters-header .applied-filters{
+	min-height: 25px;
+}
+.filters-header > .filter{
+	float: left;
+	margin-right: 10px;
+}
+.filter.date .min,
+.filter.date .max{
+	max-width: 30%;
+}
+.filter.date .to{
+	width: 30%;
+	width: calc(40% - 50px);
+	text-align: center;
+	display: inline-block;
+}
+.filter.date .min{
+	float: left;
+	margin-right: 10px;
+}
+.filter.date .max{
+	float: right;
+	margin-left: 10px;
+}
+.filter .ui-slider{
+	min-height: 6px;
+  border-radius: 4px;
+  border: 0px;
+  background: #CCC;
+}
+.filter.boolean span{
+	display: inline;
+	margin-left: 5px;
+}
+.filter.numeric input{
+	max-width: 70px;
+}
+.filter.toggle .can-toggle > span{
+	margin-bottom: 5px;
+	display: block;
+}
+.filter-group .filter input[type='text']{
+	width: 80%;
+}
+.filter-group > .row-fluid:not(:first-child){
+	margin-top: 20px;
+}
+.applied-filter.label{
+	text-shadow: none;
+	font-size: 1em;
+	font-weight: normal;
+	padding: 5px;
+	margin-right: 10px;
+}
+.applied-filter .icon.remove-filter{
+	opacity: .7;
+	margin-left: 10px;
+	color: inherit;
+}
+.applied-filters{
+	margin: 0px;
+}
+.filters-header{
+	margin: 10px;
+}
+#project-filters{
+	border: 1px solid #CCC;
+	box-sizing: border-box;
+}
+#project-filters > .tab-content{
+	padding: 10px 20px;
+}
+#project-filters > .nav-tabs{
+	margin-bottom: 0px;
+	border: 1px solid #CCC;
+	border-left: 0px;
+	border-right: 0px;
+  background-color: #eee;
+}
+#project-filters > .nav-tabs > li:first-child > a{
+	border-left: 0px;
+}
+#project-filters > .nav-tabs > li:last-child > a{
+	border-right: 0px;
+}
+
+/******** Toggle Widget ************/
+.can-toggle {
+  position: relative;
+}
+.can-toggle *, .can-toggle *:before, .can-toggle *:after {
+  -moz-box-sizing: border-box;
+       box-sizing: border-box;
+			 font-size: 1em;
+}
+.can-toggle input[type="checkbox"] {
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.can-toggle input[type="checkbox"][disabled] ~ label {
+  pointer-events: none;
+}
+.can-toggle input[type="checkbox"][disabled] ~ label .can-toggle-switch {
+  opacity: 0.4;
+}
+.can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch:before {
+  content: attr(data-unchecked);
+  left: 0;
+}
+.can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch:after {
+  content: attr(data-checked);
+}
+.can-toggle label {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  position: relative;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+.can-toggle label .can-toggle__label-text {
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  padding-left: 32px;
+}
+.can-toggle label .can-toggle-switch {
+  position: relative;
+}
+.can-toggle label .can-toggle-switch:before {
+  content: attr(data-checked);
+  position: absolute;
+  top: 0;
+  text-align: center;
+}
+.can-toggle label .can-toggle-switch:after {
+  content: attr(data-unchecked);
+  position: absolute;
+  z-index: 5;
+  text-align: center;
+  background: white;
+  -webkit-transform: translate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0);
+}
+.can-toggle input[type="checkbox"][disabled] ~ label {
+  color: rgba(119, 119, 119, 0.5);
+}
+.can-toggle input[type="checkbox"]:focus ~ label .can-toggle-switch,
+.can-toggle input[type="checkbox"]:hover ~ label .can-toggle-switch {
+  background-color: #777;
+}
+.can-toggle input[type="checkbox"]:focus ~ label .can-toggle-switch:after,
+.can-toggle input[type="checkbox"]:hover ~ label .can-toggle-switch:after {
+  color: #5e5e5e;
+}
+.can-toggle input[type="checkbox"]:hover ~ label {
+  color: #6a6a6a;
+}
+.can-toggle input[type="checkbox"]:checked ~ label:hover {
+  color: #55bc49;
+}
+.can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch {
+  background-color: #00689d;
+}
+.can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch:after {
+  color: #00689d;
+}
+.can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch,
+.can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch {
+  background-color: #00689d;
+}
+.can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch:after,
+.can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch:after {
+  color: #00689d;
+}
+.can-toggle label .can-toggle__label-text {
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+}
+.can-toggle label .can-toggle-switch {
+  -webkit-transition: background-color 0.3s cubic-bezier(0, 1, 0.5, 1);
+          transition: background-color 0.3s cubic-bezier(0, 1, 0.5, 1);
+  background: #848484;
+}
+.can-toggle label .can-toggle-switch:before {
+  color: rgba(255, 255, 255, 0.5);
+}
+.can-toggle label .can-toggle-switch:after {
+  -webkit-transition: -webkit-transform 0.3s cubic-bezier(0, 1, 0.5, 1);
+  transition: transform 0.3s cubic-bezier(0, 1, 0.5, 1);
+  color: #777;
+}
+.can-toggle input[type="checkbox"]:focus ~ label .can-toggle-switch:after, .can-toggle input[type="checkbox"]:hover ~ label .can-toggle-switch:after {
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
+}
+.can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch:after {
+  -webkit-transform: translate3d(65px, 0, 0);
+          transform: translate3d(65px, 0, 0);
+}
+.can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch:after, .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch:after {
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
+}
+.can-toggle label {
+  font-size: 1em;
+}
+.can-toggle label .can-toggle-switch {
+  height: 1.1em;
+  -webkit-flex: 0 0 134px;
+      -ms-flex: 0 0 134px;
+          flex: 0 0 134px;
+  border-radius: 4px;
+}
+.can-toggle label .can-toggle-switch:before {
+  left: 67px;
+  line-height: 1em;
+  width: 67px;
+  padding: 0 12px;
+}
+.can-toggle label .can-toggle-switch:after {
+  top: 2px;
+  left: 2px;
+  border-radius: 2px;
+  width: 65px;
+  line-height: 1.1em;
+}
+.can-toggle label .can-toggle-switch:hover:after {
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
+}
+.can-toggle.can-toggle-small input[type="checkbox"]:focus ~ label .can-toggle-switch:after, .can-toggle.can-toggle-small input[type="checkbox"]:hover ~ label .can-toggle-switch:after {
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+}
+.can-toggle.can-toggle-small input[type="checkbox"]:checked ~ label .can-toggle-switch:after {
+  -webkit-transform: translate3d(44px, 0, 0);
+          transform: translate3d(44px, 0, 0);
+}
+.can-toggle.can-toggle-small input[type="checkbox"]:checked:focus ~ label .can-toggle-switch:after, .can-toggle.can-toggle-small input[type="checkbox"]:checked:hover ~ label .can-toggle-switch:after {
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+}
+.can-toggle.can-toggle-small label {
+  font-size: 1em;
+}
+.can-toggle.can-toggle-small label .can-toggle-switch {
+  height: 2em;
+  -webkit-flex: 0 0 90px;
+      -ms-flex: 0 0 90px;
+          flex: 0 0 90px;
+  border-radius: 2px;
+}
+.can-toggle.can-toggle-small label .can-toggle-switch:before {
+  left: 45px;
+  line-height: 2em;
+  width: 45px;
+  padding: 0 12px;
+}
+.can-toggle.can-toggle-small label .can-toggle-switch:after {
+  top: 1px;
+  left: 1px;
+  border-radius: 1px;
+  width: 44px;
+  line-height: calc(2em - 2px);;
+}
+.can-toggle.can-toggle-small label .can-toggle-switch:hover:after {
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
+}
 /** Autocompletes **/
 .ui-autocomplete{
   width: 246px;

@@ -23,7 +23,9 @@
 			<th class="id wrap-contents more-info-header" colspan="2">Name</th>
 			<th class="formatId wrap-contents">File type</th>
 			<th>Size</th>
-			<th></th>
+      <% if( MetacatUI.appModel.get("displayDatasetMetrics") ){ %>
+			     <th></th>
+      <% } %>
 			<th class="download-container"></th>
 		</tr>
 	</thead>	

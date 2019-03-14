@@ -910,10 +910,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         // Update the file name to match the title
         if( Array.isArray(this.get("title")) ){
-          this.set("fileName", this.get("title")[0].replace(/[^a-zA-Z0-9]/g, "_") + ".xml");
+          this.set("fileName", this.get("title")[0] + ".xml");
         }
         else if( typeof this.get("title") == "string" ){
-          this.set("fileName", this.get("title").replace(/[^a-zA-Z0-9]/g, "_") + ".xml");
+          this.set("fileName", this.get("title") + ".xml");
+        }
+
+        //If that doesn't work for some reason, set the missing file name via the
+        // DataONEObject inherited function setMissingFileName()
+        if ( ! this.get("fileName") ) {
+            this.setMissingFileName();
         }
 
         //Set the upload transfer as in progress

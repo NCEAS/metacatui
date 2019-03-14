@@ -55,6 +55,20 @@ require.config({
     rdflib: MetacatUI.root + '/components/rdflib.min',
     x2js: MetacatUI.root + '/components/xml2json',
     he: MetacatUI.root + '/components/he',
+	// showdown + extensions (used in the markdownView to convert markdown to html)
+	showdown: MetacatUI.root + '/components/showdown/showdown.min',
+	showdownHighlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/showdown-highlight',
+	highlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/highlight.pack',
+	showdownFootnotes: MetacatUI.root + '/components/showdown/extensions/showdown-footnotes',
+	showdownBootstrap: MetacatUI.root + '/components/showdown/extensions/showdown-bootstrap',
+	showdownDocbook: MetacatUI.root + '/components/showdown/extensions/showdown-docbook',
+	showdownKatex: MetacatUI.root + '/components/showdown/extensions/showdown-katex/showdown-katex.min',
+	citation: MetacatUI.root + '/components/showdown/extensions/showdown-citation/citation-0.4.0-9.min',
+	showdownCitation:  MetacatUI.root + '/components/showdown/extensions/showdown-citation/showdown-citation',
+	showdownImages:  MetacatUI.root + '/components/showdown/extensions/showdown-images',
+	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
+	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
+	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
@@ -65,7 +79,7 @@ require.config({
   },
   shim: { /* used for libraries without native AMD support */
     underscore: {
-      exports: '_'
+      exports: '_',
     },
     backbone: {
       deps: ['underscore', 'jquery'],
@@ -96,7 +110,13 @@ require.config({
     },
     rdflib: {
         exports: 'rdf'
-    }
+    },
+	xss: {
+		exports: 'filterXSS'
+	},
+	citation: {
+		exports: 'Cite'
+	}
   }
 });
 

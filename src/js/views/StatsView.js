@@ -6,7 +6,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 	var StatsView = Backbone.View.extend({
 
 		el: '#Content',
-		
+
+    hideUpdatesChart: false,
+
 		template: _.template(profileTemplate),
 		
 		alertTemplate: _.template(AlertTemplate),
@@ -21,6 +23,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					"A summary of all datasets in our catalog." : options.description;
 			if(typeof options.el === "undefined")
 				this.el = options.el;
+
+      this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
 		},
 				
 		render: function () {
@@ -78,7 +82,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			if(!MetacatUI.statsModel.get("supportDownloads"))
 				this.$(".stripe.downloads").remove();
-			
+
+      //Hide the Latest Updates chart if it's turned off
+      if( this.hideUpdatesChart ){
+        this.$(".stripe.updates").remove();
+      }
+
 			//Start retrieving data from Solr
 			MetacatUI.statsModel.getAll();
 		

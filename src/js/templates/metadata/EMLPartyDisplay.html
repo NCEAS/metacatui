@@ -1,0 +1,16 @@
+
+<div class="span6"> <!--style="border: solid 1px #6c757d">-->
+    <p>
+        <%=individualName.salutation.join(', ')%>
+        <%=individualName.givenName.join(' ')%> 
+        <%=individualName.surName%> 
+        <%=organizationName%> <br>
+        <%=positionName%> <br>
+        <% if (urlLink.length) {%>
+            <%=urlLink.join(' / ')%> <br>
+        <%}%>
+        <a href="mailto:<%=email%>"><%=email%></a> 
+        <% if (email.length && phone.length) {%> / <%}%>
+        <%=phone%>
+    </p>
+</div>

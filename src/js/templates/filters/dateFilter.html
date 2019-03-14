@@ -1,0 +1,22 @@
+<div>
+  <label>
+    <% if(icon){
+         print('<i class="icon icon-on-left icon-' + icon + '"></i>');
+       } %>
+    <%=label%>
+  </label>
+
+  <% if( min || max ){ %>
+    <div class="slider year-slider"></div>
+    <div class="clear"></div>
+    <input class="min" type="number" value="<%=min%>">
+    <span class="to">to</span>
+    <input class="max" type="number" value="<%=max%>">
+    <div class="clear"></div>
+  <% } else { %>
+    <input type="date" value="" />
+    <button class="btn">
+      <i class="icon-search"></i>
+    </button>
+  <% } %>
+</div>

@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// set this variable to true, if the content being published is moderated by the data team.
       contentIsModerated: false,
-      
+
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
@@ -77,8 +77,17 @@ define(['jquery', 'underscore', 'backbone'],
 			packageServiceUrl: null,
 			publishServiceUrl: null,
 			authServiceUrl: null,
-			queryServiceUrl: null,
-			metaServiceUrl: null,
+
+      queryServiceUrl: null,
+
+      //If set to true, some parts of the app will send POST HTTP requests to the
+      // Solr search index via the `/query/solr` DataONE API. This requires
+      // Metacat 2.10.2 or later.
+      allowQueryPOSTs: true,
+
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "pubYear", "id", "taxon", "spatial"],
+
+      metaServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
 			objectServiceUrl: null,
@@ -104,7 +113,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// Metrics endpoint url
 			metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
-			
+
 			// Metrics flags for the Dataset Landing Page
 			// Enable these flags to enable metrics display
 			displayDatasetMetrics: true,
@@ -136,6 +145,9 @@ define(['jquery', 'underscore', 'backbone'],
       hideMetricsWhen: null,
 
 			isJSONLDEnabled: true,
+
+			// A lookup map of project names to project seriesIds
+			projectsMap: {},
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
