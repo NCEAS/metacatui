@@ -63,12 +63,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         * ========================================================================
         */
-
+        
         // check if there have been any views/citations
         var sumMetricCount = 0;
         for (var i = 0; i < this.metricCount.length; i++) {
             sumMetricCount += this.metricCount[i]
         }
+
+        var self = this;
 
         // when ther no data or no views/citations yet, just show some text:
         if(this.metricCount.length == 0 || this.metricCount == 0 || sumMetricCount ==0){
@@ -614,7 +616,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             var bar_width_px = bar_width * get_zoom_scale();
 
             // get the width of the modal. Need for tooltip x-position.
-            var modal_width = d3.select("#metric-modal")
+            var modal_width = d3.select("#" + self.id)
                 .style('width')
                 .slice(0, -2);
             var modal_width = Math.round(Number(modal_width));
@@ -837,7 +839,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
             brush.extent([brush_start_new, brush_end_new]);
 
-            brush(d3.select(".brush").transition());
+            brush(d3.select("#" + self.id + " > .context > .brush").transition());
             change_focus_brush();
             change_focus_zoom();
 
@@ -878,9 +880,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             brush.extent([brush_start_new, brush_end_new]);
 
             // now draw the brush to match our extent
-            brush(d3.select(".brush").transition());
+            brush(d3.select("#" + self.id + " > .context > .brush").transition());
             // now fire the brushstart, brushmove, and check_bounds events
-            brush.event(d3.select(".brush").transition());
+            brush.event(d3.select("#" + self.id + " > .context > .brush").transition());
         };
 
         // that's it!
