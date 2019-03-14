@@ -127,6 +127,13 @@ define(['jquery', 'underscore', 'backbone',
 
       });
 
+      //Call postRender() now for the active FilterGroup, since the `shown` event
+      // won't trigger until/unless it's hidden then shown again.
+      var activeFilterGroup = this.$(".filter-group.active").data("view");
+      if( activeFilterGroup ){
+        activeFilterGroup.postRender();
+      }
+
       this.$el.prepend( $(document.createElement("div")).addClass("filters-header") );
 
       this.renderAppliedFiltersSection();

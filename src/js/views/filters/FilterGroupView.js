@@ -40,6 +40,9 @@ define(['jquery', 'underscore', 'backbone',
       //Add the id attribute from the filter group label
       this.$el.attr("id", this.model.get("label").replace( /([^a-zA-Z0-9])/g, "") );
 
+      //Attach a reference to this view to the element
+      this.$el.data("view", this);
+
       //Get the collection of filters
       var filters = this.model.get("filters");
 

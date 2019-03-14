@@ -46,8 +46,6 @@ define(['jquery', 'underscore', 'backbone',
     * element is added to the webpage.
     */
     postRender: function(){
-      console.log(this.$(".true-label").width(), this.$(".false-label").width());
-
       this.setToggleWidth();
     },
 
