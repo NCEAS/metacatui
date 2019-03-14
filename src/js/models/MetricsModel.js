@@ -72,9 +72,9 @@ define(['jquery', 'underscore', 'backbone'],
 
         // Initializing the Model objects pid and the metricName variables.
         initialize: function(options) {
-            if(!(options.pid == 'undefined')) {
-                this.pid_list = options.pid_list;
-                this.filterType = options.type;
+            if((options) && options.pid_list !== 'undefined') {
+                this.set("pid_list", options.pid_list);
+                this.set("filterType", options.type);
             }
             // url for the model that is used to for the fetch() call
             this.url = MetacatUI.appModel.get("metricsUrl");
@@ -83,8 +83,8 @@ define(['jquery', 'underscore', 'backbone'],
         // Overriding the Model's fetch function.
         fetch: function(){
           var fetchOptions = {};
-          this.metricRequest.filterBy[0].filterType = this.filterType;
-          this.metricRequest.filterBy[0].values = this.pid_list;
+          this.metricRequest.filterBy[0].filterType = this.get("filterType");
+          this.metricRequest.filterBy[0].values = this.get("pid_list");
 
           // TODO: Set the startDate and endDate based on the datePublished and current date
           // respctively.
@@ -128,7 +128,10 @@ define(['jquery', 'underscore', 'backbone'],
                 "months": response.results.months,
                 "country": response.results.country,
                 "resultDetails": response.resultDetails,
-                "datasets": response.results.datasets
+                "datasets": response.results.datasets,
+                "totalCitations": response.results.citations.reduce(function(acc, val) { return acc + val; }, 0),
+                "totalDownloads": response.results.downloads.reduce(function(acc, val) { return acc + val; }, 0),
+                "totalViews": response.results.views.reduce(function(acc, val) { return acc + val; }, 0)
             }
         }
 
