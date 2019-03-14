@@ -2,6 +2,7 @@ define(["jquery",
         "underscore",
         "backbone",
         "models/ProjectModel",
+        "models/Search",
         "text!templates/alert.html",
         "text!templates/project/project.html",
         "views/project/ProjectHeaderView",
@@ -10,7 +11,7 @@ define(["jquery",
         "views/StatsView",
         "views/project/ProjectLogosView"
     ],
-    function($, _, Backbone, Project, AlertTemplate, ProjectTemplate, ProjectHeaderView,
+    function($, _, Backbone, Project, SearchModel, AlertTemplate, ProjectTemplate, ProjectHeaderView,
         ProjectHomeView, ProjectMembersView, StatsView, ProjectLogosView) {
         "use_strict";
         /* The ProjectView is a generic view to render
@@ -116,26 +117,64 @@ define(["jquery",
 
             },
 
-            // Render the metrics section
-            renderMetricsView: _.once(function() {
+            /*
+            * Render the metrics section
+            */
+            renderMetricsView: function() {
 
-                if (!this.model.get("hideMetrics")) {
+              if( this.model.get("hideMetrics") ) {
+                return;
+              }
 
-                    var statsSearchModel = this.model.get("searchModel").clone();
-                    MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-                    MetacatUI.statsModel.set("searchModel", statsSearchModel);
+              //Get all the facet counts from the search results collection
+              var facetCounts = this.model.get("searchResults").facetCounts,
+                  //Get the id facet counts
+                  idFacets = facetCounts? facetCounts.id : [],
+                  //Get the documents facet counts
+                  documentsFacets = facetCounts? facetCounts.documents : [],
+                  //Start an array to hold all the ids
+                  allIDs = [];
 
-                    // add a stats view
-                    this.sectionMetricsView = new StatsView({
-                        title: "Statistics and Figures",
-                        description: "A summary of all datasets from the " + this.model.get("label") + " group",
-                        el: "#project-metrics"
-                    });
+              //If there are resource map facet counts, get all the ids
+              if( idFacets && idFacets.length ){
 
-                    this.sectionMetricsView.render();
-                    this.subviews.push(this.sectionMetricsView);
+                //Merge the id and documents arrays
+                var allFacets = idFacets.concat(documentsFacets);
+
+                //Get all the ids, which should be every other element in the
+                // facets array
+                for( var i=0; i < allFacets.length; i+=2 ){
+                  allIDs.push( allFacets[i] );
                 }
-            }),
+
+                //Create a search model that filters by all the data object Ids
+                var statsSearchModel = new SearchModel({
+                  idOnly: allIDs,
+                  formatType: [],
+                  exclude: []
+                });
+
+                //Set the query on the stats model
+                MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+
+                //Set the SearchModel on the Stats Model
+                MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+                MetacatUI.statsModel.set("supportDownloads", false);
+
+              }
+
+              // add a stats view
+              this.sectionMetricsView = new StatsView({
+                  title: "Statistics and Figures",
+                  description: "A summary of all datasets from " + this.model.get("label"),
+                  el: "#project-metrics"
+              });
+
+              this.sectionMetricsView.render();
+              this.subviews.push(this.sectionMetricsView);
+
+            },
 
             /*
             * If the given project doesn't exist, display a Not Found message.

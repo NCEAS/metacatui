@@ -46,6 +46,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     additionalCriteria: [],
                     id: [],
                     seriesId: [],
+                    idOnly: [],
                     formatType: [{
                         value: "METADATA",
                         label: "science metadata",
@@ -96,6 +97,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 resourceMap: "resourceMap",
                 pubYear: ["datePublished", "dateUploaded"],
                 id: ["id", "identifier", "documents", "resourceMap", "seriesId"],
+                idOnly: ["id", "seriesId"],
                 rightsHolder: "rightsHolder",
                 submitter: "submitter",
                 username: ["rightsHolder", "writePermission", "changePermission"],
@@ -283,7 +285,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                         filterValue = model.escapeSpecialChar(filterValue);
 
-                        query += "+" + model.fieldNameMap["annotation"] + ":" + filterValue;
+                        query += model.fieldNameMap["annotation"] + ":" + filterValue;
                     });
                 }
 
@@ -292,12 +294,21 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     var identifiers = this.get('id');
 
                     if (Array.isArray(identifiers)) {
-                        query += "+" + this.getGroupedQuery(this.fieldNameMap["id"], identifiers, {
-                            operator: "OR",
-                            subtext: true
-                        });
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.getGroupedQuery(this.fieldNameMap["id"], identifiers, {
+                        operator: "OR",
+                        subtext: true
+                      });
+
                     } else if (identifiers) {
-                        query += "+" + this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(encodeURIComponent(identifiers)) + "*";
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.fieldNameMap["id"] + ':*' + this.escapeSpecialChar(encodeURIComponent(identifiers)) + "*";
                     }
                 }
 
@@ -307,12 +318,19 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                     //If the resource map search setting is a list of resource map IDs
                     if (Array.isArray(resourceMap)) {
-                        query += "+" + this.getGroupedQuery(this.fieldNameMap["resourceMap"], resourceMap, {
-                            operator: "OR"
-                        });
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.getGroupedQuery(this.fieldNameMap["resourceMap"], resourceMap, {
+                          operator: "OR"
+                      });
                     } else if (resourceMap) {
-                        //Otherwise, treat it as a binary setting
-                        query += "+" + this.fieldNameMap["resourceMap"] + ':*';
+                      if( query.length ){
+                        query += " AND ";
+                      }
+                      //Otherwise, treat it as a binary setting
+                      query += this.fieldNameMap["resourceMap"] + ':*';
                     }
                 }
 
@@ -322,12 +340,20 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                     //If the documents search setting is a list ofdocuments IDs
                     if (Array.isArray(documents)) {
-                        query += "+" + this.getGroupedQuery(this.fieldNameMap["documents"], documents, {
-                            operator: "OR"
-                        });
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.getGroupedQuery(this.fieldNameMap["documents"], documents, {
+                          operator: "OR"
+                      });
                     } else if (documents) {
-                        //Otherwise, treat it as a binary setting
-                            query += "+" + this.fieldNameMap["documents"] + ':*';
+
+                      if( query.length ){
+                        query += " AND ";
+                      }
+                      //Otherwise, treat it as a binary setting
+                      query += this.fieldNameMap["documents"] + ':*';
                     }
                 }
 
@@ -335,7 +361,26 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 if (this.filterIsAvailable("username") && ((filter == "username") || getAll) && this.get('username').length) {
                     var username = this.get('username');
                     if (username) {
-                        query += "+" + this.getGroupedQuery(this.fieldNameMap["username"], username, {
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.getGroupedQuery(this.fieldNameMap["username"], username, {
+                          operator: "OR"
+                      });
+                    }
+                }
+
+                //--- ID Only - searches only the id and seriesId fields ---
+                if (this.filterIsAvailable("idOnly") && ((filter == "idOnly") || getAll) && this.get('idOnly').length) {
+                    var idOnly = this.get('idOnly');
+                    if (idOnly) {
+
+                        if( query.length ){
+                          query += " AND ";
+                        }
+
+                        query += this.getGroupedQuery(this.fieldNameMap["idOnly"], idOnly, {
                             operator: "OR"
                         });
                     }
@@ -364,9 +409,12 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         var yearMin = this.get('yearMin');
                         var yearMax = this.get('yearMax');
 
+                        if( query.length ){
+                          query += " AND ";
+                        }
+
                         //Add to the query if we are searching publication year
-                        query += "+" + this.getMultiFieldQuery(this.fieldNameMap["pubYear"], "[" + yearMin + "-01-01T00:00:00Z TO " + yearMax + "-12-31T00:00:00Z]");
-                        //query += "+" + this.fieldNameMap["pubYear"] + ":%5B" + yearMin + "-01-01T00:00:00Z%20TO%20" + yearMax + "-12-31T00:00:00Z%5D";
+                        query += this.getMultiFieldQuery(this.fieldNameMap["pubYear"], "[" + yearMin + "-01-01T00:00:00Z TO " + yearMax + "-12-31T00:00:00Z]");
                     }
                 }
 
@@ -379,8 +427,12 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         var yearMin = this.get('yearMin');
                         var yearMax = this.get('yearMax');
 
-                        query += "+beginDate:[" + yearMin + "-01-01T00:00:00Z%20TO%20*]" +
-                            "+endDate:[*%20TO%20" + yearMax + "-12-31T00:00:00Z]";
+                        if( query.length ){
+                          query += " AND ";
+                        }
+
+                        query += "beginDate:[" + yearMin + "-01-01T00:00:00Z TO *]" +
+                            " AND endDate:[* TO " + yearMax + "-12-31T00:00:00Z]";
                     }
                 }
 
@@ -407,7 +459,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                     filterValues = _.flatten(filterValues);
 
-                    query += "+" + this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, {
+                    if( query.length ){
+                      query += " AND ";
+                    }
+
+                    query += this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, {
                         operator: "OR"
                     });
                 }
@@ -425,7 +481,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                         filterValue = model.escapeSpecialChar(filterValue);
 
-                        query += "+-" + excludeField.field + ":" + filterValue;
+                        if( query.length ){
+                          query += " AND ";
+                        }
+
+                        query += " -" + excludeField.field + ":" + filterValue;
                     });
                 }
 
@@ -438,7 +498,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         //if(this.needsQuotes(additionalCriteria[i])) value = "%22" + encodeURIComponent(additionalCriteria[i]) + "%22";
                         value = encodeURIComponent(additionalCriteria[i]);
 
-                        query += "+" + model.escapeSpecialChar(value);
+                        if( query.length ){
+                          query += " AND ";
+                        }
+
+                        query += model.escapeSpecialChar(value);
                     }
                 }
 
@@ -458,7 +522,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                             filterValue = encodeURIComponent(filterValue);
                         }
 
-                        query += "+" + model.escapeSpecialChar(filterValue);
+                        if( query.length ){
+                          query += " AND ";
+                        }
+
+                        query += model.escapeSpecialChar(filterValue);
                     }
                 }
 
@@ -484,7 +552,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                                 filterValue = encodeURIComponent(filterValue);
                             }
 
-                            query += "+" + model.fieldNameMap[filterName] + ":" + model.escapeSpecialChar(filterValue);
+                            if( query.length ){
+                              query += " AND ";
+                            }
+
+                            query += model.fieldNameMap[filterName] + ":" + model.escapeSpecialChar(filterValue);
                         }
                     }
                 });
@@ -497,7 +569,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         var groups = this.get("geohashGroups");
 
                         if ((typeof groups !== "undefined") && (Object.keys(groups).length > 0)) {
-                            query += "+(";
+                          if( query.length ){
+                            query += " AND ";
+                          }
+
+                            query += "(";
 
                             _.each(Object.keys(groups), function(level) {
                                 var geohashList = groups[level];
@@ -506,13 +582,13 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                                 _.each(geohashList, function(g) {
                                     if (query.length < 7900) //Keep URI's from getting too long for Apache
-                                        query += g + "%20OR%20";
+                                        query += g + " OR ";
                                 });
 
                                 //Remove the last "OR"
                                 query = query.substr(0, (query.length - 8));
 
-                                query += ")%20OR%20";
+                                query += ") OR ";
 
                             });
 
@@ -527,13 +603,25 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 if (this.filterIsAvailable("spatial") && ((filter == "spatial") || getAll)) {
                     var spatial = this.get('spatial');
 
-                    if (Array.isArray(spatial)) {
-                        query += "+" + this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, {
-                            operator: "AND",
-                            subtext: false
-                        });
-                    } else if (spatial) {
-                        query += "+" + this.fieldNameMap["spatial"] + ':' + model.escapeSpecialChar(encodeURIComponent(spatial));
+                    if (Array.isArray(spatial) && spatial.length) {
+
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.getGroupedQuery(this.fieldNameMap["spatial"], spatial, {
+                          operator: "AND",
+                          subtext: false
+                      });
+
+                    } else if( typeof spatial == "string" && spatial.length) {
+
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.fieldNameMap["spatial"] + ':' + model.escapeSpecialChar(encodeURIComponent(spatial));
+
                     }
                 }
 
@@ -541,13 +629,21 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 if (this.filterIsAvailable("creator") && ((filter == "creator") || getAll)) {
                     var creator = this.get('creator');
 
-                    if (Array.isArray(creator)) {
-                        query += "+" + this.getGroupedQuery(this.fieldNameMap["creator"], creator, {
-                            operator: "AND",
-                            subtext: false
-                        });
-                    } else if (creator) {
-                        query += "+" + this.fieldNameMap["creator"] + ':' + model.escapeSpecialChar(encodeURIComponent(creator));
+                    if (Array.isArray(creator) && creator.length) {
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.getGroupedQuery(this.fieldNameMap["creator"], creator, {
+                          operator: "AND",
+                          subtext: false
+                      });
+                    } else if (typeof creator == "string" && creator.length) {
+                      if( query.length ){
+                        query += " AND ";
+                      }
+
+                      query += this.fieldNameMap["creator"] + ':' + model.escapeSpecialChar(encodeURIComponent(creator));
                     }
                 }
 
@@ -663,7 +759,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     if (!Array.isArray(value) && (typeof value === "object") && value.value) {
                         value = value.value.trim();
                     }
-                    
+
                     if (this.needsQuotes(values[0])) {
                         queryAddition = '%22' + this.escapeSpecialChar(encodeURIComponent(value)) + '%22';
                     } else if (subtext) {
@@ -689,10 +785,12 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                         if ((i == 0) && (numValues > 1)) {
                             query += fieldName + ":(" + value;
-                        } else if ((i > 0) && (i < numValues - 1)) {
-                            query += "%20" + operator + "%20" + value;
+                        } else if ((i > 0) && (i < numValues - 1) && query.length) {
+                            query += " " + operator + " " + value;
+                        } else if( (i > 0) && (i < numValues - 1) ){
+                            query += value;
                         } else if (i == numValues - 1) {
-                            query += "%20" + operator + "%20" + value + ")";
+                            query += " " + operator + " " + value + ")";
                         }
                     }, this);
                 }
@@ -729,7 +827,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 }
 
                 //Default to the OR operator
-                if ((typeof operator === "undefined") || !operator || 
+                if ((typeof operator === "undefined") || !operator ||
                     ((operator != "OR") && (operator != "AND"))) {
                     var operator = "OR";
                 }
@@ -757,7 +855,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                             valueString += "("
                         }
 
-                        if (model.needsQuotes(v)) {
+                        if (model.needsQuotes(v) || _.contains(fieldNames, "id")) {
                             valueString += '"' + this.escapeSpecialChar(encodeURIComponent(v.trim())) + '"';
                         } else if (subtext) {
                             valueString += "*" + this.escapeSpecialChar(encodeURIComponent(v.trim())) + "*";
@@ -774,14 +872,14 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     }, this);
                 } else valueString = value;
 
-                query = "+(";
+                query = "(";
 
                 //Create the query string
                 var last = numFields - 1;
                 _.each(fieldNames, function(field, i) {
                     query += field + ":" + valueString;
                     if (i < last) {
-                        query += "%20" + operator + "%20";
+                        query += " " + operator + " ";
                     }
                 });
 

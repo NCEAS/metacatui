@@ -220,8 +220,6 @@ define(["jquery",
 
                 });
 
-                console.log(modelJSON);
-
                 return modelJSON;
             },
 

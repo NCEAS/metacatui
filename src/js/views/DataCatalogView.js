@@ -187,6 +187,13 @@ define(["jquery",
 
                 this.$el.html(cel);
 
+                //Hide the filters that are disabled in the AppModel settings
+                _.each( this.$(".filter-contain[data-category]"), function(filterEl){
+                  if( ! _.contains(MetacatUI.appModel.get("defaultSearchFilters"), $(filterEl).attr("data-category")) ){
+                    $(filterEl).hide();
+                  }
+                }, this);
+
                 // Store some references to key views that we use repeatedly
                 this.$resultsview = this.$("#results-view");
                 this.$results = this.$("#results");
@@ -248,7 +255,7 @@ define(["jquery",
 
                 // List the Member Node filters
                 var view = this;
-                _.each(this.searchModel.get("dataSource"), function(source, i) {
+                _.each(_.contains(MetacatUI.appModel.get("defaultSearchFilters"), "dataSource"), function(source, i) {
                     view.showFilter("dataSource", source);
                 });
 

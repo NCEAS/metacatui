@@ -50,7 +50,17 @@ define(['jquery', 'underscore', 'backbone'],
 			packageServiceUrl: null,
 			//publishServiceUrl: null,
 			authServiceUrl: null,
+
 			queryServiceUrl: null,
+
+      //If set to true, some parts of the app will send POST HTTP requests to the
+      // Solr search index via the `/query/solr` DataONE API. This requires
+      // Metacat 2.10.2 or later.
+      allowQueryPOSTs: false,
+
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "pubYear",
+                             "id", "taxon", "spatial", "dataSource"],
+
 			metaServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,

@@ -31,6 +31,9 @@ define(["jquery",
 
           //Set some options on the searchResults
           searchResults = this.model.get("searchResults");
+          //Get the documents values as a facet so we can get all the data object IDs
+          searchResults.facet = ["documents", "id"];
+          //Retrieve only 5 result rows
           searchResults.rows = 5;
 
           //Create a DataCatalogView
@@ -55,9 +58,6 @@ define(["jquery",
 
           filterGroupsView.render();
           filterGroupsView.$el.addClass(filterGroupsView.className);
-
-          //Save a reference to the filter groups view
-          dataCatalogView.filterGroupsView = filterGroupsView;
 
           //Render the table of contents view
           var topLevelItems = [
