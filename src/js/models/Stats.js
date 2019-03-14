@@ -43,6 +43,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			mdqStats: {},
 			mdqStatsTotal: {},
 
+      //HTTP GET requests are typically limited to 2,083 characters. So query lengths
+      // should have this maximum before switching over to HTTP POST
+      maxQueryLength: 1958,
+      usePOST: false,
+
 			supportDownloads: (MetacatUI.appModel.get("nodeId") && MetacatUI.appModel.get("d1LogServiceUrl"))
 		},
 
@@ -89,6 +94,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			//this.on("change:dataDownloads",     this.sumDownloads);
 			//this.on("change:metadataDownloads", this.sumDownloads);
+
+      //Set the request type (GET or POST)
+      this.setRequestType();
+      this.on("change:query", this.setRequestType);
+
 		},
 
 		//This function serves as a shorthand way to get all of the statistics stored in the model
@@ -147,7 +157,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
             }
           }
 
-          if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+          if( model.get("usePOST") ){
 
             var queryData = new FormData();
             queryData.append("q", query);
@@ -202,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
           //Return only the beginDate field
           fl = "beginDate";
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
 
         var queryData = new FormData();
         queryData.append("q", query);
@@ -279,7 +289,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         }
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
         var queryData = new FormData();
         queryData.append("q", query);
         queryData.append("rows", rows);
@@ -374,7 +384,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         model.set("totalSize", totalSize);
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
 
         var requestData = new FormData();
         requestData.append("q", query);
@@ -440,7 +450,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         model.set('dataFormatIDs', data.facet_counts.facet_fields.formatId);
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
         var queryData = new FormData();
         queryData.append("q", query);
         queryData.append("facet", facet);
@@ -496,7 +506,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         model.set('metadataFormatIDs', data.facet_counts.facet_fields.formatId);
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
         var queryData = new FormData();
         queryData.append("q", query);
         queryData.append("facet", facet);
@@ -618,7 +628,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         var dataQuery = decodeURIComponent(model.get('query')) +
                         " AND -obsoletedBy:* AND formatType:DATA";
 
-        if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+        if( model.get("usePOST") ){
           var queryData = new FormData();
           queryData.append("q", dataQuery);
           queryData.append("sort", sort);
@@ -659,7 +669,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
         var queryData = new FormData();
         queryData.append("q", metadataQuery);
         queryData.append("sort", sort);
@@ -744,7 +754,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         }
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
 
         var requestData = new FormData();
         requestData.append("q", query);
@@ -896,7 +906,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         model.set('temporalCoverage', data.facet_counts.facet_queries);
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
         var requestData = new FormData();
         requestData.append("q", query);
         requestData.append("rows", rows);
@@ -1116,7 +1126,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
 
         var queryData = new FormData();
         queryData.append("q", query);
@@ -1187,7 +1197,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
       }
 
-      if( MetacatUI.appModel.get("allowQueryPOSTs") ){
+      if( this.get("usePOST") ){
 
         var queryData = new FormData();
         queryData.append("q", query);
@@ -1227,7 +1237,19 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 
       $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+    },
+
+    setRequestType: function(){
+      if( MetacatUI.appModel.get("disableQueryPOSTs") ){
+        this.set("usePOST", false);
+      }
+      else{
+        if( this.get("query") && this.get("query").length > this.get("maxQueryLength") ){
+          this.set("usePOST", true);
+        }
+      }
     }
+
   });
   return Stats;
 });

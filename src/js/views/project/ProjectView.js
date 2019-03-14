@@ -3,6 +3,7 @@ define(["jquery",
         "backbone",
         "models/ProjectModel",
         "models/Search",
+        "models/Stats",
         "text!templates/alert.html",
         "text!templates/project/project.html",
         "views/project/ProjectHeaderView",
@@ -11,7 +12,7 @@ define(["jquery",
         "views/StatsView",
         "views/project/ProjectLogosView"
     ],
-    function($, _, Backbone, Project, SearchModel, AlertTemplate, ProjectTemplate, ProjectHeaderView,
+    function($, _, Backbone, Project, SearchModel, StatsModel, AlertTemplate, ProjectTemplate, ProjectHeaderView,
         ProjectHomeView, ProjectMembersView, StatsView, ProjectLogosView) {
         "use_strict";
         /* The ProjectView is a generic view to render
@@ -154,13 +155,12 @@ define(["jquery",
                   exclude: []
                 });
 
-                //Set the query on the stats model
-                MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-
-                //Set the SearchModel on the Stats Model
-                MetacatUI.statsModel.set("searchModel", statsSearchModel);
-
-                MetacatUI.statsModel.set("supportDownloads", false);
+                //Create a StatsModel
+                var statsModel = new StatsModel({
+                  query: statsSearchModel.getQuery(),
+                  searchModel: statsSearchModel,
+                  supportDownloads: false
+                });
 
               }
 
@@ -168,7 +168,8 @@ define(["jquery",
               this.sectionMetricsView = new StatsView({
                   title: "Statistics and Figures",
                   description: "A summary of all datasets from " + this.model.get("label"),
-                  el: "#project-metrics"
+                  el: "#project-metrics",
+                  model: statsModel
               });
 
               this.sectionMetricsView.render();
