@@ -127,6 +127,11 @@ define(["jquery",
                 return;
               }
 
+              //If this subview is already rendered, exit
+              if( this.sectionMetricsView ){
+                return;
+              }
+
               //Get all the facet counts from the search results collection
               var facetCounts = this.model.get("searchResults").facetCounts,
                   //Get the id facet counts
@@ -203,6 +208,8 @@ define(["jquery",
                 _.invoke(this.subviews, "remove");
 
                 this.subviews = new Array();
+
+                delete this.sectionMetricsView;
             }
         });
 
