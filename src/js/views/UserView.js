@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup', 'models/UserModel', 'views/SignInView', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
-	function($, _, Backbone, Clipboard, UserGroup, UserModel, SignInView, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup', 'models/MetricsModel', 'models/UserModel', 'views/SignInView', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView',  'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
+	function($, _, Backbone, Clipboard, UserGroup, MetricsModel, UserModel, SignInView, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
 
 	/*
@@ -34,10 +34,17 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			"keypress #add-group-name"     : "preventSubmit",
 			"click #add-group-submit"      : "createGroup",
 			"click .token-tab" 			   : "switchTabs"
+
 		},
 
 		initialize: function(){
 			this.subviews = new Array();
+
+			var self = this;
+
+			$(window).bind('scroll', function (ev) {
+				self.onScroll(ev);
+			});
 		},
 
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
@@ -353,11 +360,69 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 
 		//------------------------------------------ Inserting public profile UI elements ------------------------------------------------//
 		insertStats: function(){
+			var self = this;
 			if(this.model.noActivity && this.statsView){
 				this.statsView.$el.addClass("no-activity");
 				this.$("#total-download-wrapper, section.downloads").hide();
 				return;
 			}
+
+			if (this.model.get("type") == "node" || this.model.get("type") == "person") {
+				var pid_list = [];
+				var metricsModel = new MetricsModel({});
+				this.metricsModel = metricsModel;
+
+				if (this.model.get("type") == "node") {
+					pid_list.push(this.model.get("nodeInfo").identifier);
+					var metricsModel = new MetricsModel({pid_list: pid_list, type: "repository"});
+					
+					this.metricsModel.set({
+						"pid_list": pid_list,
+						"filterType": "repository"
+					});
+					this.metricsModel.fetch();
+				}
+				else if (this.model.get("type") == "person") {
+					this.model.get("searchResults").facet.push("id");
+					this.model.get("searchResults").once("sync", function(){
+						var user_pids = self.model.get("searchResults").facetCounts.id
+						for(var i = 0; i < user_pids.length; i = i + 2) {
+							if (user_pids[i].length > 1) {
+								pid_list.push(user_pids[i])
+							}
+						}
+						self.metricsModel.set({
+							"pid_list": pid_list,
+							"filterType": "user"
+						});
+						self.metricsModel.fetch();
+					});
+				}
+
+				MetacatUI.statsModel.once("change:metadataCount", function(){
+					if( MetacatUI.statsModel.get("metadataCount") )
+						view.$("#total-dataset-container").text(MetacatUI.appView.numberAbbreviator(this.get("metadataCount"), 1));
+				});
+
+				// Render the statsView for this profile
+				this.statsView = new StatsView({
+					title: "Statistics and Figures",
+					userType: this.model.get("type"),
+					metricsModel: this.metricsModel,
+					description: description,
+					el: this.$("#user-stats")
+				});
+
+				this.subviews.push(this.statsView);
+				this.statsView.render();
+
+				if(this.model.noActivity)
+					this.statsView.$el.addClass("no-activity");
+
+				if(this.model.isNode())
+					this.insertReplicas();
+			}
+			
 
 			var username = this.model.get("username"),
 				view = this;
@@ -366,15 +431,19 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			this.listenToOnce(MetacatUI.statsModel, "change:firstUpload", this.insertFirstUpload);
 
 			this.listenToOnce(MetacatUI.statsModel, "change:totalUploads", function(){
-				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalUploads")));
+				view.$("#total-upload-container").text(MetacatUI.appView.numberAbbreviator(MetacatUI.statsModel.get("totalUploads"), 1));
 			});
 
-			MetacatUI.statsModel.once("change:downloads", function(){
-				if( !this.get("downloads") )
-					view.$("#total-download-wrapper, section.downloads").hide();
-				else
-					view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
-			});
+			// If the user type is not Node then insert download counts from Stats View
+
+			if (this.model.get("type") != "node") {
+				MetacatUI.statsModel.once("change:downloads", function(){
+					if( !this.get("downloads") )
+						view.$("#total-download-wrapper, section.downloads").hide();
+					else
+						view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
+				});
+			}
 
 			//Create a base query for the statistics
 			var statsSearchModel = this.model.get("searchModel").clone();
@@ -399,20 +468,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 					description = "";
 					break;
 			}
-
-			//Render the Stats View for this person
-			this.statsView = new StatsView({
-				title: "Statistics and Figures",
-				description: description,
-				el: this.$("#user-stats")
-			});
-			this.subviews.push(this.statsView);
-			this.statsView.render();
-			if(this.model.noActivity)
-				this.statsView.$el.addClass("no-activity");
-
-			if(this.model.isNode())
-				this.insertReplicas();
 		},
 
 		/*
@@ -568,7 +623,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 					dataType: "json",
 					success: function(data, textStatus, xhr){
 						if( data.response.numFound > 0 ){
-							view.$("#total-replicas-container").html(MetacatUI.appView.commaSeparateNumber(data.response.numFound));
+							view.$("#total-replicas-container").html(MetacatUI.appView.numberAbbreviator(data.response.numFound, 1));
 							view.$("#total-replicas-wrapper").show();
 						}
 						else{
@@ -600,6 +655,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				isSubView     : true,
 				filters       : false
 			});
+
 			this.subviews.push(view);
 			view.render();
 			view.$el.addClass("list-only");
@@ -1310,6 +1366,20 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				view.onClose();
 			});
 			this.subviews = new Array();
+		},
+
+		onScroll: function(ev) {
+			// Fix the nav menu once we reach to the top-left corner of the screen
+			var y = 180;
+			var scrollPos = $(document).scrollTop();
+
+			if (y <= scrollPos) {
+				// if so, add the fixed class
+				$('#user-profile-menu').addClass('fixed-menu');
+			} else {
+				// otherwise remove it
+				$('#user-profile-menu').removeClass('fixed-menu');
+			}
 		}
 
 	});
