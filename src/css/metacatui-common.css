@@ -1825,6 +1825,22 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	padding-right: 18px;
 	padding-top: 22px;
 }
+.empty-citation-list-text {
+    font-size: 16px;
+    font-weight: 100;
+    color: #d0d0d0;
+    text-align: center;
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+}
+.empty-citation-list {
+    margin: 50px 63px 0px 65px;
+    width: 800px;
+    height: 200px;
+    border-radius: 2px;
+    background-color: #f5f5f5;
+}
 
 
 /******************************************
@@ -1839,100 +1855,128 @@ i.catalog-metric-icon {
 }
 
 /**********************************************************
-*	  Metric Modal Chart (Views, Downloads, Citations)	  *
+*	  Metric Modal / Profile Chart (Views, Downloads, Citations)	  *
 ***********************************************************/
 
 
 /*
-============ GENERAL CHART TEXT STYLE ===========		[metric modal chart]
+============ GENERAL CHART TEXT STYLE ===========		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text {
+#metric-modal .metric-chart text,
+.views-metrics .metric-chart text,
+.downloads-metrics .metric-chart text {
 	fill: #565656;
 	font-size: 9px;
 	font-family: Helvetica, Arial, "sans serif";
 }
 
 /*
-============ WHEN THERE IS NO DATA: ===========		[metric modal chart]
+============ WHEN THERE IS NO DATA: ===========		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text.no-data {
+#metric-modal .metric-chart text.no-data,
+.views-metrics .metric-chart text.no-data,
+.downloads-metrics .metric-chart text.no-data {
 	font-size: 16px;
 	font-weight: 100;
 	fill:#d0d0d0;
 }
 
-#metric-modal .metric-chart rect.no-data {
+#metric-modal .metric-chart rect.no-data,
+.views-metrics .metric-chart rect.no-data,
+.downloads-metrics .metric-chart rect.no-data {
 	fill: #f5f5f5;
 }
 
 /*
-	============ WHEN THERE IS DATA: ===========		[metric modal chart]
+	============ WHEN THERE IS DATA: ===========		[metric modal / profile chart]
 */
 
 /*
-	--- AXES ---		[metric modal chart]
+	--- AXES ---		[metric modal / profile chart]
 */
 
 /* --- x axis focus --- */
 
-#metric-modal .metric-chart .focus .axis {
+#metric-modal .metric-chart .focus .axis,
+.views-metrics .metric-chart .focus .axis,
+.downloads-metrics .metric-chart .focus .axis {
 	shape-rendering: crispEdges;
 }
 
-#metric-modal .metric-chart .focus .x.axis {
+#metric-modal .metric-chart .focus .x.axis,
+.views-metrics .metric-chart .focus .x.axis,
+.downloads-metrics .metric-chart .focus .x.axis {
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .focus .x.axis line {
+#metric-modal .metric-chart .focus .x.axis line,
+.views-metrics .metric-chart .focus .x.axis line,
+.downloads-metrics .metric-chart .focus .x.axis line  {
 	display: none;
 }
 
-#metric-modal .metric-chart .focus .x.axis .tick:hover {
+#metric-modal .metric-chart .focus .x.axis .tick:hover,
+.views-metrics .metric-chart .focus .x.axis .tick:hover,
+.downloads-metrics .metric-chart .focus .x.axis .tick:hover {
 	cursor: default;
 }
 
 
 /* --- x axis context --- */
 
-#metric-modal .metric-chart .context .x.axis line {
+#metric-modal .metric-chart .context .x.axis line,
+.views-metrics .metric-chart .context .x.axis line,
+.downloads-metrics .metric-chart .context .x.axis line {
 	display: none;
 }
 
-#metric-modal .metric-chart .context .x.axis {
+#metric-modal .metric-chart .context .x.axis,
+.views-metrics .metric-chart .context .x.axis,
+.downloads-metrics .metric-chart .context .x.axis {
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .context .x.axis .domain {
+#metric-modal .metric-chart .context .x.axis .domain,
+.views-metrics .metric-chart .context .x.axis .domain,
+.downloads-metrics .metric-chart .context .x.axis .domain {
 	display:none;
 }
 
 /* --- focus y-axis --- */
 
-#metric-modal .metric-chart .focus .y.axis .domain {
+#metric-modal .metric-chart .focus .y.axis .domain,
+.views-metrics .metric-chart .focus .y.axis .domain,
+.downloads-metrics .metric-chart .focus .y.axis .domain {
 	display: none;
 }
 
-#metric-modal .metric-chart .y.axis.title {
+#metric-modal .metric-chart .y.axis.title,
+.views-metrics .metric-chart .y.axis.title,
+.downloads-metrics .metric-chart .y.axis.title {
 	font-size: 13px;
 	font-weight: 100;
 }
 
 /* horizontal focus gridlines */
-#metric-modal .metric-chart .y.axis line {
+#metric-modal .metric-chart .y.axis line,
+.views-metrics .metric-chart .y.axis line,
+.downloads-metrics .metric-chart .y.axis line {
 	stroke: #565656;
 	stroke-dasharray: 2,2;
 	stroke-opacity: 0.3;
 }
 
 /*
-	--- BRUSH ---		[metric modal chart]
+	--- BRUSH ---		[metric modal / profile chart]
 */
 
 /* --- brush window --- */
 
-#metric-modal .metric-chart .brush .extent {
+#metric-modal .metric-chart .brush .extent,
+.views-metrics .metric-chart .brush .extent,
+.downloads-metrics .metric-chart .brush .extent {
   fill-opacity: .07;
   shape-rendering: crispEdges;
   clip-path: url(#clip);
@@ -1941,30 +1985,40 @@ i.catalog-metric-icon {
 
 /* --- brush handles --- */
 
-#metric-modal .metric-chart .resize .handle {
+#metric-modal .metric-chart .resize .handle,
+.views-metrics .metric-chart .resize .handle,
+.downloads-metrics .metric-chart .resize .handle {
 	fill: #555;
 }
 
-#metric-modal .metric-chart .resize .handle-mini {
+#metric-modal .metric-chart .resize .handle-mini,
+.views-metrics .metric-chart .resize .handle-mini,
+.downloads-metrics .metric-chart .resize .handle-mini {
 	fill: white;
     stroke-width: 1px;
     stroke: #555;
 }
 
 /*
-	--- ZOOM TO BUTTONS ---		[metric modal chart]
+	--- ZOOM TO BUTTONS ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart .scale_button rect {
+#metric-modal .metric-chart .scale_button rect,
+.views-metrics .metric-chart .scale_button rect,
+.downloads-metrics .metric-chart .scale_button rect {
 	fill: #eaeaea;
 }
 
-#metric-modal .metric-chart .scale_button:hover text {
+#metric-modal .metric-chart .scale_button:hover text,
+.views-metrics .metric-chart .scale_button:hover text,
+.downloads-metrics .metric-chart .scale_button:hover text  {
 	fill: white;
 	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
 }
 
-#metric-modal .metric-chart .scale_button:hover rect {
+#metric-modal .metric-chart .scale_button:hover rect,
+.views-metrics .metric-chart .scale_button:hover rect,
+.downloads-metrics .metric-chart .scale_button:hover rect {
 	fill: grey;	/* change for each theme */
 	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
 }
@@ -1972,31 +2026,41 @@ i.catalog-metric-icon {
 
 
 /*
-	--- EXPLANATORY TEXT (# views/downloads) ---		[metric modal chart]
+	--- EXPLANATORY TEXT (# views/downloads) ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text#totalCount  {
+#metric-modal .metric-chart text#totalCount,
+.views-metrics .metric-chart text#totalCount,
+.downloads-metrics .metric-chart text#totalCount  {
 	font-size: 15px;
 	font-weight: bold;
 }
 
-#metric-modal .metric-chart text#displayDates  {
+#metric-modal .metric-chart text#displayDates,
+.views-metrics .metric-chart text#displayDates,
+.downloads-metrics .metric-chart text#displayDates  {
 	font-weight: bold;
 }
 
 /*
-	--- BARS ---		[metric modal chart]
+	--- BARS ---		[metric modal / profile chart]
 */
 
 
 #metric-modal .metric-chart .bar,
-#metric-modal .metric-chart .bar_context {
+#metric-modal .metric-chart .bar_context,
+.views-metrics .metric-chart .bar,
+.views-metrics .metric-chart .bar_context,
+.downloads-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar_context {
 	fill: black;  /* change for each theme */
 	stroke-width: 0;
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .bar {
+#metric-modal .metric-chart .bar,
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar {
 	stroke: black; /* change for each theme */
 	cursor: default;
 }
@@ -2005,26 +2069,32 @@ i.catalog-metric-icon {
 
 
 /*
-	--- PANE CURSORS ---		[metric modal chart]
+	--- PANE CURSORS ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart rect.pane {
+#metric-modal .metric-chart rect.pane,
+.views-metrics .metric-chart rect.pane,
+.downloads-metrics .metric-chart rect.pane {
 	cursor: move; /* fallback if grab cursor is unsupported */
 	cursor: grab;
 	fill: #FAFAFA;
 	pointer-events: all;
 }
 
-#metric-modal .metric-chart rect.pane:active {
+#metric-modal .metric-chart rect.pane:active,
+.views-metrics .metric-chart rect.pane:active,
+.downloads-metrics .metric-chart rect.pane:active {
 	cursor: move; /* fallback if grab cursor is unsupported */
 	cursor: grabbing;
 }
 
 /*
-	--- TOOLTIPS ---		[metric modal chart]
+	--- TOOLTIPS ---		[metric modal / profile chart]
 */
 
-#metric-modal div.metric_tooltip {
+#metric-modal div.metric_tooltip,
+.views-metrics div.metric_tooltip,
+.downloads-metrics div.metric_tooltip {
     position: fixed;
     text-align: center;
     height: 25px;
@@ -2038,7 +2108,8 @@ i.catalog-metric-icon {
 	box-shadow: 0 0px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
 }
-/*  ====== END: Metrics modal chart ======  */
+/*  ====== END: Metrics modal / profile chart ======  */
+
 
 .metric-table.table.table-striped.table-condensed {
     width: 930px;
@@ -2102,6 +2173,39 @@ a.btn.metrics-button-disabled {
     color: #888888;
     background-color: #F5F5F5;
     border-color: #C3C3C3;
+}
+
+/******************************************
+* Repository + User Profile Metrics
+********************************************/
+.metrics-title > h3 {
+	display: inline-block;
+}
+.views-metrics .metric-chart {
+	margin-left: 45px;
+	margin-top: 30px;
+}
+.downloads-metrics .metric-chart {
+	margin-left: 45px;
+	margin-top: 30px;
+}
+.citations-metrics-list {
+    overflow: scroll;
+    max-height: 400px;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed,
+.citations-metrics-list > .empty-citation-list {
+    width: 1075px;
+    height: 250px;
+    overflow-y: scroll;
+    margin-left: 65px;
+    margin-top: 30px;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
+    padding: 5px 15px 5px 85px;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed td > .citation {
+    margin-left: -70px;
 }
 
 /******************************************
@@ -2722,8 +2826,101 @@ tfoot .control i{
 /******************************************
 ** User Profile ***
 ******************************************/
-#user-profile{
-	padding-top: 20px;
+
+/* Basic stylig of user menu navigation */
+.list-group-item {
+	color: #208095;
+}
+.user-menu-nav {
+	display: block;
+}
+.user-menu-icon {
+	width: 25px;
+	color: #208095;
+	float: left;
+	font-size: 16px;
+}
+.user-menu-text {
+	width: 175px;
+	font-weight: normal;
+	color: #555;
+}
+
+
+/* User menu nav hover effects*/
+.list-group-item:hover {
+	display: block;
+	color: #FFF;
+	background-color: #208095;
+}
+.list-group-item:hover > a > span {
+	color: #FFF;
+}
+.list-group-item:hover > .user-menu-nav > .user-menu-container > .badge {
+	background-color: #FFF;
+	color: #208095;
+	font-weight: normal;
+}
+
+
+/* Active list sections of the user profile navigation */
+.list-group-item.active {
+	display: block;
+	color: #FFF;
+	background-color: #208095;
+}
+.list-group-item.active > a > span {
+	color: #FFF;
+}
+.list-group-item.active > .user-menu-nav > .user-menu-container > .badge {
+	background-color: #FFF;
+	color: #208095;
+	font-weight: normal;
+}
+
+.user-menu-container {
+	width: auto;
+	margin-right: -20px;
+	margin-top: -10px;
+	float: right;
+}
+.user-menu-container > .badge {
+	background-color: #208095;
+	color: #FFF;
+}
+
+.user-menu-container > .badge:hover {
+	background-color: #208095;
+	color: #FFF;
+}
+
+section #user-profile-menu > .hgroup > .logo {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+.section.profile {
+    position: relative;
+}
+.section.profile > #user-profile-menu {
+    max-width: 280px;
+    width: 15%;
+    height: 1000px;
+    float: left;
+    margin-left: 2%;
+    margin-right: 3%;
+}
+.fixed-menu {
+    top: 10px;
+    position: fixed;
+}
+.section.profile > #profile-content {
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+    margin-left: 22%;
+    margin-right: 7%;
 }
 #user-profile #data-list{
 	padding-bottom: 20px;
@@ -2733,12 +2930,7 @@ tfoot .control i{
 #user-profile #clear-all{
 	display: none;
 }
-.user-view-section > section {
-    max-width: 1200px;
-    width: 90%;
-    margin-left: auto;
-    margin-right: auto;
-}
+
 .user-view-section > .section > .span12{
 	margin-left: 0px;
 }
