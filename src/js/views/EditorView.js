@@ -551,23 +551,12 @@ define(['underscore',
 
           this.toggleControls();
 
-          // Review message for themes that have contentIsModerated==true in the app config.
-          if (MetacatUI.appModel.get("contentIsModerated")) {
-              var message = this.editorSubmitMessageTemplate({
-                    themeTitle: MetacatUI.themeTitle,
-                    viewURL: MetacatUI.root + "/view/" + this.model.get("id")
-                }),
-                timeout = null;
+          // Construct the save message
+          var message = this.editorSubmitMessageTemplate({
+                viewURL: MetacatUI.root + "/view/" + this.model.get("id")
+            });
 
-          }
-          else {
-              var message = $(document.createElement("div")).append(
-                  $(document.createElement("span")).text("Your changes have been submitted. "),
-                  $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + this.model.get("id")).text("View your dataset.")),
-                timeout = 4000;
-          }
-
-          MetacatUI.appView.showAlert(message, "alert-success", this.$el, timeout, {remove: true});
+          MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
 
           //Rerender the CitationView
           var citationView = _.where(this.subviews, { type: "Citation" });
@@ -632,15 +621,17 @@ define(['underscore',
           }
           else{
 
-            if( this.model.get("draftSaved") && MetacatUI.appModel.get("contentIsModerated") ){
-              messageParagraph.text("Not all of your changes could be submitted " +
-                "due to a technical error. But, we sent a draft of your edits to " +
-                "our support team, who will contact " +
-                "you via email as soon as possible about getting your data package submitted. ");
+            if( this.model.get("draftSaved") && MetacatUI.appModel.get("editorSaveErrorMsgWithDraft") ){
+              messageParagraph.text( MetacatUI.appModel.get("editorSaveErrorMsgWithDraft") );
               messageClasses = "alert-warning"
+            }
+            else if( MetacatUI.appModel.get("editorSaveErrorMsg") ){
+              messageParagraph.text( MetacatUI.appModel.get("editorSaveErrorMsg") );
+              messageClasses = "alert-error";
             }
             else{
               messageParagraph.text("Not all of your changes could be submitted.");
+              messageClasses = "alert-error";
             }
 
             messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))

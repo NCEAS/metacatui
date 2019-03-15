@@ -32,9 +32,6 @@ define(['jquery', 'underscore', 'backbone'],
 
 			maxDownloadSize: 3000000000,
 
-			// set this variable to true, if the content being published is moderated by the data team.
-      contentIsModerated: false,
-
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
@@ -62,14 +59,19 @@ define(['jquery', 'underscore', 'backbone'],
 
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
 
+      //These error messages are displayed when the Editor encounters an error saving
+      editorSaveErrorMsg: "Not all of your changes could be submitted.",
+      editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted, but a draft " +
+        "has been saved which can be accessed by our support team. Please contact us.",
+
 			defaultAccessPolicy: [],
 
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://dev.nceas.ucsb.edu",//window.location.origin || (window.location.protocol + "//" + window.location.host),
 			allowAccessPolicyChanges: true,
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn.dataone.org/",
+			d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
 			d1CNService: "cn/v2",
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,

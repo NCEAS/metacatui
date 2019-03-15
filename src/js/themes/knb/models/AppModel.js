@@ -32,9 +32,6 @@ define(['jquery', 'underscore', 'backbone'],
 
 			maxDownloadSize: 3000000000,
 
-			// set this variable to true, if the content being published is moderated by the data team.
-			contentIsModerated: false,
-
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
@@ -61,6 +58,10 @@ define(['jquery', 'underscore', 'backbone'],
 			},
 
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
+
+      //These error messages are displayed when the Editor encounters an error saving
+      editorSaveErrorMsg: "Not all of your changes could be submitted.",
+      editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted. ",
 
 			defaultAccessPolicy: [{
 
