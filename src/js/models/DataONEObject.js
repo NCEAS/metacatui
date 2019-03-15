@@ -645,8 +645,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             xml.find("serialversion").text(this.get("serialVersion") || "0");
             xml.find("identifier").text((this.get("newPid") || this.get("id")));
             xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
-            xml.find("formatid").text(this.get("formatId") || this.getFormatId());
-
+            var formatId = this.sanitizeFormatId(this.get("formatId") || this.getFormatId());
+            xml.find("formatid").text(formatId);
             //If there is no size, get it
             if( !this.get("size") && this.get("uploadFile")){
               this.set("size", this.get("uploadFile").size);
@@ -1629,7 +1629,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
     			}
 
     			return false;
-    		}
+        },
+        sanitizeFormatId: function(formatId) {
+          if (formatId !== "application/vnd.ms-excel") {
+            return formatId;
+          }
+
+          var fileName = this.get("fileName"); 
+          if ( typeof fileName !== "undefined" && fileName !== null) {
+            ext = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length);
+            if (ext === "csv" && formatId === "application/vnd.ms-excel") {
+              return "text/csv";
+            }
+          }
+          return formatId;
+        }
     },
     {
       /* Generate a unique identifier to be used as an XML id attribute */
