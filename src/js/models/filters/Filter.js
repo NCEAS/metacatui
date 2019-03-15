@@ -211,6 +211,9 @@ define(['jquery', 'underscore', 'backbone'],
         //Trim off whitespace
         value = value.trim();
 
+        //Escape special characters
+        value = this.escapeSpecialChar(value);
+
         //Add the value to the query string. Wrap in wildcards, if specified
         if( value.indexOf(" ") > -1 ){
           valuesQueryString += '"' + value + '"';
@@ -251,6 +254,28 @@ define(['jquery', 'underscore', 'backbone'],
     */
     resetValue: function(){
       this.set("values", this.defaults().values);
+    },
+
+    /*
+    * Escapes Solr query reserved characters so that search terms can include
+    *  those characters without throwing an error.
+    *
+    * @param {string} term - The search term or phrase to escape
+    * @return {string} - The search term or phrase, after special characters are escaped
+    */
+    escapeSpecialChar: function(term) {
+        term = term.replace(/%7B/g, "\\%7B");
+        term = term.replace(/%7D/g, "\\%7D");
+        term = term.replace(/%3A/g, "\\%3A");
+        term = term.replace(/:/g, "\\:");
+        term = term.replace(/\(/g, "\\(");
+        term = term.replace(/\)/g, "\\)");
+        term = term.replace(/\?/g, "\\?");
+        term = term.replace(/%3F/g, "\\%3F");
+        term = term.replace(/\"/g, '\\"');
+        term = term.replace(/\'/g, "\\'");
+
+        return term;
     }
 
   });
