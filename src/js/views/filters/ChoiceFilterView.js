@@ -35,10 +35,31 @@ define(['jquery', 'underscore', 'backbone',
 
       var select = this.$("select");
 
+      //Create the placeholder text for the dropdown menu
+      var placeHolderText;
+
+      //If placeholder text is already provided in the model, use it
+      if( this.model.get("placeholder") ){
+        placeHolderText = this.model.get("placeholder");
+      }
+      //If not, create placeholder text using the model label
+      else{
+
+        //If the label starts with a vowel, use "an"
+        var vowels = ["a", "e", "i", "o", "u"];
+        if( _.contains(vowels, this.model.get("label").toLowerCase().charAt(0)) ){
+          placeHolderText = "Choose an " + this.model.get("label");
+        }
+        //Otherwise use "a"
+        else{
+          placeHolderText = "Choose a " + this.model.get("label");
+        }
+      }
+
       //Create the default option
       var defaultOption = $(document.createElement("option"))
                             .attr("value", "")
-                            .text( this.model.get("placeholder") || "Choose a " + this.model.get("label") );
+                            .text( placeHolderText );
       select.append(defaultOption);
 
       //Create an option element for each choice listen in the model
