@@ -829,8 +829,12 @@ define(["jquery",
                 var category = $(checkbox).attr("data-category");
                 var currentValue = this.searchModel.get(category);
 
-                // If this filter is not available, exit this function
-                if (!this.searchModel.filterIsAvailable(category)) return false;
+                // If this filter is not enabled, exit this function
+                if ( !_.contains(MetacatUI.appModel.get("defaultSearchFilters"), category) ){
+                  return false;
+                }
+
+                //The year filter is handled in a different way
                 if ((category == "pubYear") || (category == "dataYear")) return;
 
                 // If the checkbox has a value, then update as a string value not boolean
@@ -1281,7 +1285,11 @@ define(["jquery",
 
                 // Then reset the model
                 this.searchModel.clear();
-                this.mapModel.clear();
+
+                //Reset the map model
+                if(this.mapModel){
+                  this.mapModel.clear();
+                }
 
                 // Reset the year slider handles
                 $("#year-range").slider("values", [this.searchModel.get("yearMin"), this.searchModel.get("yearMax")])
@@ -1808,7 +1816,7 @@ define(["jquery",
             hideClearButton: function() {
                 if (!this.filters) return;
 
-                // Show the current filters panel
+                // Hide the current filters panel
                 this.$(".current-filters-container").slideUp();
 
                 // Hide the reset button

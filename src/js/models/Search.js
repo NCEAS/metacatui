@@ -36,7 +36,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     geohashes: [],
                     geohashLevel: 9,
                     geohashGroups: {},
-                    //dataSource: [],
+                    dataSource: [],
                     username: [],
                     rightsHolder: [],
                     submitter: [],
