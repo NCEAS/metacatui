@@ -59,4 +59,15 @@ This access policy will be serialized into the system metadata as:
 	</accessPolicy>
 ```
 	
+### Configuring project views
+1. Create a project XML document to describe the project using the [MetacatUI project schema](https://github.com/NCEAS/project-papers/blob/master/schemas/metacatui-project.xsd).
+2. Upload the XML document to Metacat and assign it a `seriesId` in the system metadata. Any images referenced in the project document should also be uploaded to Metacat.
+3. Add the project name and `seriesId` to the MetacatUI [`projectsMap` setting](https://github.com/NCEAS/metacatui/blob/master/src/js/models/AppModel.js#L152). Example:
+``` JS
+// A lookup map of project names to project seriesIds
+projectsMap: {
+  "Project-Name" : "urn:uuid:xxxxxxxx"
+},
+```
+4. Navigate to `/projects/Project-Name` to view the project in MetacatUI. 
 	
