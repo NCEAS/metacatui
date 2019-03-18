@@ -22,12 +22,25 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.fields 	  = options.fields  || "id,title";
 		    this.rows 		  = options.rows    || 25;
 		    this.start 		  = options.start   || 0;
-		    this.sort 		  = options.sort    || 'dateUploaded+desc';
+		    this.sort 		  = options.sort    || 'dateUploaded desc';
 		    this.facet 		  = options.facet   || [];
 		    this.facetCounts  = "nothing";
 		    this.stats 		  = options.stats   || false;
 		    this.minYear 	  = options.minYear || 1900;
 		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
+
+        //If POST queries are disabled in the whole app, don't use POSTs here
+        if( MetacatUI.appModel.get("disableQueryPOSTs") ){
+          this.usePOST = false;
+        }
+        //If this collection was initialized with the usePOST option, use POSTs here
+        else if( options.usePOST ){
+          this.usePOST = true;
+        }
+        //Otherwise default to using GET
+        else{
+          this.usePOST = false;
+        }
 		},
 
 		url: function() {
@@ -80,7 +93,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			this.header.set({"rows" : solr.responseHeader.params.rows});
 
 			//Get the facet counts and store them in this model
-			this.facetCounts = solr.facet_counts.facet_fields;
+      if( solr.facet_counts ){
+        this.facetCounts = solr.facet_counts.facet_fields;
+      }
 
 			//Cache this set of results
 			this.docsCache = solr.response.docs;
@@ -172,6 +187,51 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 				start : this.start,
 				reset: true
 			}
+
+      if( this.usePOST ){
+        options.type = "POST";
+
+        var queryData = new FormData();
+        queryData.append("q", decodeURIComponent(this.currentquery));
+        queryData.append("rows", this.rows);
+        queryData.append("sort", this.sort);
+        queryData.append("fl", this.fields);
+        queryData.append("start", this.start);
+        queryData.append("wt", "json");
+
+        //Add the facet fields to the FormData
+        if( this.facet.length ){
+
+          queryData.append("facet", "true");
+
+    			for (var i=0; i<this.facet.length; i++){
+    				queryData.append("facet.field", this.facet[i]);
+    			}
+
+          queryData.append("facet.mincount", "1");
+          queryData.append("facet.limit", "-1");
+          queryData.append("facet.sort", "index");
+
+        }
+
+        //Add stats to the FormData
+        if( this.stats.length ){
+
+          queryData.append("stats", "true");
+
+          for(var i=0; i<this.stats.length; i++){
+  					queryData.append("stats.field", this.stats[i]);
+  				}
+
+        }
+
+        options.data = queryData;
+        options.contentType = false;
+        options.processData = false;
+        options.dataType = "json";
+        options.url = MetacatUI.appModel.get("queryServiceUrl");
+
+      }
 
 			return _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
 		}

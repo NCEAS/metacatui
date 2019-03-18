@@ -704,6 +704,7 @@ define(["jquery",
                 var provSearchResults = new SearchResults(null, {
                     query: provSearchModel.getQuery(),
                     searchLogs: false,
+                    usePOST: true,
                     rows: 150,
                     fields: provSearchModel.getProvFlList() + ",id,resourceMap"
                 });
