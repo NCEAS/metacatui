@@ -459,13 +459,15 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                     filterValues = _.flatten(filterValues);
 
-                    if( query.length ){
-                      query += " AND ";
-                    }
+                    if( filterValues.length ){
+                      if( query.length ){
+                        query += " AND ";
+                      }
 
-                    query += this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, {
-                        operator: "OR"
-                    });
+                      query += this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, {
+                          operator: "OR"
+                      });  
+                    }
                 }
 
                 //-----Excluded fields-----
