@@ -1252,15 +1252,18 @@ define(["jquery",
                 this.hideFilter(category, value);
 
                 // Find if there is an associated checkbox with this filter
-                var checkbox = $("input[type='checkbox'][data-category='" + category + "']");
-                if (checkbox.length > 0) {
-                    var checkboxWithValue = checkbox.find("[value='" + value + "']");
-                    if (checkboxWithValue.length > 0) {
-                        checkboxWithValue.prop("checked", false);
-                    } else {
-                        checkbox.prop("checked", false);
+                var checkboxes = $("input[type='checkbox'][data-category='" + category + "']");
+                if (checkboxes.length > 0) {
+                    var checkboxWithValue = _.find(checkboxes, function(checkbox){
+                      return $(checkbox).val() == value;
+                    });
+
+                    //If there is a matching checkbox, uncheck it
+                    if (checkboxWithValue) {
+                      $(checkboxWithValue).prop("checked", false);
+                      checkboxes.parents(".ui-controlgroup").buttonset("refresh");
                     }
-                    this.$(".ui-buttonset").buttonset("refresh");
+
                 }
 
                 // Route to page 1
