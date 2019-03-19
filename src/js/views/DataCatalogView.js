@@ -31,9 +31,9 @@ define(["jquery",
             filters: true, // Turn on/off the filters in this view
 
             // The default global models for searching
-            searchModel: new SearchModel(),
+            searchModel: null,
             searchResults: null,
-            statsModel: new StatsModel(),
+            statsModel: null,
             mapModel: null,
 
             // Templates
@@ -133,6 +133,7 @@ define(["jquery",
                 ) {
                     this.searchModel = MetacatUI.appSearchModel;
                     this.mapModel = MetacatUI.mapModel;
+                    this.statsModel = MetacatUI.statsModel;
                 }
 
                 if (!this.mapModel && gmaps) {

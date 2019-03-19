@@ -107,10 +107,8 @@ function ($, _, Backbone) {
 				MetacatUI.appModel.set('page', page-1);
 
 			//Check for a query URL parameter
-			if((typeof query !== "undefined") && query){
-				var customQuery = MetacatUI.appSearchModel.get('additionalCriteria');
-				customQuery.push(query);
-				MetacatUI.appSearchModel.set('additionalCriteria', customQuery);
+			if((typeof query !== "undefined") && query){;
+				MetacatUI.appSearchModel.set('additionalCriteria', [query]);
 			}
 
 			if(!MetacatUI.appView.dataCatalogView){
