@@ -735,10 +735,10 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			return $(document.createElement("div")).addClass("connecter " + isCollapsed).css("top", top);
 		},
-		
-		createPointer: function(position){			
-			var pointer =  $(document.createElement("img")).attr("src", "./img/arrow.gif").addClass("prov-pointer");
-			
+
+		createPointer: function(position){
+			var pointer =  $(document.createElement("img")).attr("src", MetacatUI.root + "/img/arrow.gif").addClass("prov-pointer");
+
 			if(typeof position !== "undefined"){
 				var top = ((this.nodeHeight * position) - (this.pointerHeight/2)),
 					isCollapsed = ((top + (this.nodeHeight/2) + this.offsetTop) > $(this.contextEl).outerHeight()) ? "collapsed" : "expanded";
