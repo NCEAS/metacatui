@@ -1539,10 +1539,6 @@ MDQ items
     }
 
     /* Filter checkboxes */
-    input.filter[type="checkbox"]{
-    	display: none;
-    }
-
    .filter-contain .checkbox-list{
     	margin-left: 0px;
     }

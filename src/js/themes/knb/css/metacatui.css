@@ -1660,9 +1660,6 @@ svg .no-activity,
     }
 
     /* Filter checkboxes */
-    input.filter[type="checkbox"]{
-    	display: none;
-    }
 
    .filter-contain .checkbox-list{
     	margin-left: 0px;

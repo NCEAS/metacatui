@@ -3561,6 +3561,11 @@ body.mapMode{
 #filter-year .filter-input-contain{
 	margin-top: 10px;
 }
+.filter-contain input[type="checkbox"].filter{
+   width: 20px;
+   float: left;
+   margin-right: 5px;
+}
 /*-- Pagination and sort --*/
 .sort-by{
 	float: right;
@@ -3595,7 +3600,6 @@ body.mapMode{
 }
 .checkbox-list label{
  	font-size: .9em;
- 	clear: both;
 }
 .checkbox-list .more-link,
 .checkbox-list .less-link{
@@ -3608,34 +3612,6 @@ body.mapMode{
 	font-size: 1.2em;
 	vertical-align: text-bottom;
   	line-height: .9em;
-}
-/** UI Buttonsets **/
-.ui-buttonset label,
-.ui-buttonset label.ui-state-active{
-    float: none;
-}
-.ui-buttonset label#data-year-label,
-.ui-buttonset label#pub-year-label{
- 	margin: 0px 5px 5px 0px;
- 	float: left;
- 	width: auto;
-}
-.ui-checkboxradio-label input[type="checkbox"]{
-   	display: none;
-}
-.ui-checkboxradio-label .icon-check-empty,
-.ui-checkboxradio-label .icon-check{
-	margin-right: 5px;
-}
-.ui-checkboxradio-label .icon{
-	margin-right: 5px;
-}
-label.ui-state-active .icon-check-empty,
-label .icon-check {
-  display: none;
-}
-label.ui-state-active .icon-check{
-	display: inline;
 }
 /** Filter icons **/
 .filter-contain > label > .icon{

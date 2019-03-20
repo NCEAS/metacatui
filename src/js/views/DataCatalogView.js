@@ -235,10 +235,6 @@ define(["jquery",
                 // Collapse the filters
                 this.toggleFilterCollapse();
 
-                // Initialize the jQueryUI button checkboxes
-                $("#filter-year").buttonset();
-                $("#includes-files-buttonset").buttonset();
-
                 // Iterate through each search model text attribute and show UI filter for each
                 var categories = ["all", "attribute", "creator", "id", "taxon", "spatial",
                     "additionalCriteria", "annotation"];
@@ -846,8 +842,6 @@ define(["jquery",
                     return;
                 } else value = $(checkbox).prop("checked");
 
-                this.$(".ui-buttonset").buttonset("refresh");
-
                 this.searchModel.set(category, value);
 
                 // Add the filter to the UI
@@ -917,9 +911,6 @@ define(["jquery",
 
                                 // And update the search model
                                 model.set("dataYear", true);
-
-                                //refresh the UI buttonset so it appears as checked/unchecked
-                                $("#filter-year").buttonset("refresh");
                             }
 
                             // Add the filter elements
@@ -1070,9 +1061,6 @@ define(["jquery",
                             this.showFilter($("#data_year").attr("data-category"), true, true, minVal + " to " + maxVal, {
                                 replace: true
                             });
-
-                            //refresh the UI buttonset so it appears as checked/unchecked
-                            $("#filter-year").buttonset("refresh");
 
                             // Send this event to Google Analytics
                             if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
@@ -1251,19 +1239,25 @@ define(["jquery",
                 // Hide the filter from the UI
                 this.hideFilter(category, value);
 
-                // Find if there is an associated checkbox with this filter
-                var checkboxes = $("input[type='checkbox'][data-category='" + category + "']");
-                if (checkboxes.length > 0) {
-                    var checkboxWithValue = _.find(checkboxes, function(checkbox){
+                // If there is an associated checkbox with this filter, uncheck it
+                var assocCheckbox,
+                    checkboxes = this.$("input[type='checkbox'][data-category='" + category + "']");
+
+                //If there are more than one checkboxes in this category, match by value
+                if (checkboxes.length > 1) {
+                    assocCheckbox = _.find(checkboxes, function(checkbox){
                       return $(checkbox).val() == value;
                     });
+                }
+                //If there is only one checkbox in this category, default to it
+                else if( checkboxes.length == 1 ){
+                  assocCheckbox = checkboxes[0];
+                }
 
-                    //If there is a matching checkbox, uncheck it
-                    if (checkboxWithValue) {
-                      $(checkboxWithValue).prop("checked", false);
-                      checkboxes.parents(".ui-controlgroup").buttonset("refresh");
-                    }
-
+                //If there is an associated checkbox, uncheck it
+                if (assocCheckbox) {
+                  //Uncheck it
+                  $(assocCheckbox).prop("checked", false);
                 }
 
                 // Route to page 1
@@ -1307,7 +1301,6 @@ define(["jquery",
                 $("#data_year").prop("checked", this.searchModel.get("dataYear"));
                 $("#publish_year").prop("checked", this.searchModel.get("pubYear"));
                 this.listDataSources();
-                $(".ui-buttonset").buttonset("refresh");
 
                 // Zoom out the Google Map
                 this.resetMap();
@@ -1490,8 +1483,7 @@ define(["jquery",
                     // Create a textual label for this data source
                     $(label).addClass("ellipsis")
                         .attr("for", member.identifier)
-                        .html(member.name)
-                        .prepend($(document.createElement("i")).addClass("icon icon-check"), $(document.createElement("i")).addClass("icon icon-check-empty"));
+                        .html(member.name);
 
                     // Create a checkbox for this data source
                     $(input).addClass("filter")
@@ -1549,7 +1541,6 @@ define(["jquery",
                 var container = $(".member-nodes-placeholder");
                 $(container).html(list);
                 $(".tooltip-this").tooltip();
-                $(list).buttonset();
             },
 
             resetDataSourceList: function() {
@@ -1577,8 +1568,6 @@ define(["jquery",
 
                     $(mnFilterContainer).find("checkbox[value='" + value + "']").prop("checked", true);
                 });
-
-                this.$(".ui-buttonset").buttonset("refresh");
 
                 return true;
             },
