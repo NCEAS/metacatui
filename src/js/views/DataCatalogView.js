@@ -2607,9 +2607,11 @@ define(["jquery",
 
                 // Change the label color on hover
                 var div = tile.text.div_;
-                div.style.color = this.mapModel.get("tileLabelColorOnHover");
-                tile.text.div_ = div;
-                $(div).css("color", this.mapModel.get("tileLabelColorOnHover"));
+                if(div){
+                  div.style.color = this.mapModel.get("tileLabelColorOnHover");
+                  tile.text.div_ = div;
+                  $(div).css("color", this.mapModel.get("tileLabelColorOnHover"));
+                }
             },
 
             unhighlightTile: function(tile) {
@@ -2736,14 +2738,18 @@ define(["jquery",
 
                             _.each(docs, function(doc, key, list) {
 
+                              var docGeohashes = doc[geohashName];
+
+                              if(docGeohashes){
                                 // Is this document in this tile?
-                                for (var i = 0; i < doc[geohashName].length; i++) {
-                                    if (doc[geohashName][i] == tile.geohash) {
+                                for (var i = 0; i < docGeohashes.length; i++) {
+                                    if (docGeohashes[i] == tile.geohash) {
                                         // Add this doc to the infoWindow content
                                         infoWindowContent += "<a href='" + MetacatUI.root + "/view/" + doc.id + "'>" + doc.title + "</a> (" + doc.id + ") <br/>"
                                         break;
                                     }
                                 }
+                              }
                             });
 
                             // The center of the tile

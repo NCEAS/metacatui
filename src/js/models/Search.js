@@ -392,10 +392,9 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                     for (var i = 0; i < taxon.length; i++) {
                         var value = (typeof taxon == "object") ? taxon[i].value : taxon[i].trim();
-                        value = value.substring(0, 1).toUpperCase() + value.substring(1);
 
                         query += this.getMultiFieldQuery(this.fieldNameMap["taxon"], value, {
-                            subtext: false
+                            subtext: true
                         });
                     }
                 }
@@ -568,35 +567,67 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     var geohashes = this.get("geohashes");
 
                     if ((typeof geohashes != undefined) && (geohashes.length > 0)) {
-                        var groups = this.get("geohashGroups");
+                        var groups = this.get("geohashGroups"),
+                            numGroups = (typeof groups == "object")? Object.keys(groups).length : 0;
 
-                        if ((typeof groups !== "undefined") && (Object.keys(groups).length > 0)) {
+                        if(numGroups > 0){
+                          //Add the AND operator in front of the geohash filter
                           if( query.length ){
                             query += " AND ";
                           }
 
+                          //If there is more than one geohash group/level, wrap them in paranthesis
+                          if( numGroups > 1){
                             query += "(";
+                          }
 
-                            _.each(Object.keys(groups), function(level) {
-                                var geohashList = groups[level];
+                          _.each(Object.keys(groups), function(level, i, allLevels) {
+                              var geohashList = groups[level];
 
-                                query += "geohash_" + level + ":(";
+                              query += "geohash_" + level + ":";
 
-                                _.each(geohashList, function(g) {
-                                    if (query.length < 7900) //Keep URI's from getting too long for Apache
-                                        query += g + " OR ";
-                                });
+                              if( geohashList.length > 1 ){
+                                query += "(";
+                              }
 
-                                //Remove the last "OR"
-                                query = query.substr(0, (query.length - 8));
+                              _.each(geohashList, function(g, ii, allGeohashes) {
+                                  //Keep URI's from getting too long if we are using GET
+                                  if( MetacatUI.appModel.get("disableQueryPOSTs") && query.length > 1900){
 
-                                query += ") OR ";
+                                    //Remove the last " OR "
+                                    if( query.endsWith(" OR ") ){
+                                      query = query.substring(0, query.length-4)
+                                    }
 
-                            });
+                                    return;
+                                  }
+                                  else{
+                                    //Add the geohash value to the query
+                                    query += g;
 
-                            //Remove the last "OR"
-                            query = query.substr(0, (query.length - 8));
+                                    //Add an " OR " operator inbetween geohashes
+                                    if( ii < allGeohashes.length-1 ){
+                                      query += " OR ";
+                                    }
+                                  }
+                              });
+
+                              //Close the paranthesis
+                              if( geohashList.length > 1 ){
+                                query += ")";
+                              }
+
+                              //Add an " OR " operator inbetween geohash levels
+                              if( i < allLevels.length-1 ){
+                                query += " OR "
+                              }
+
+                          });
+
+                          //Close the paranthesis
+                          if(numGroups > 1){
                             query += ")";
+                          }
                         }
                     }
                 }
