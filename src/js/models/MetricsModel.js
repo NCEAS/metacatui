@@ -76,6 +76,7 @@ define(['jquery', 'underscore', 'backbone'],
                 this.set("pid_list", options.pid_list);
                 this.set("filterType", options.type);
             }
+            this.set("startDate", "01/01/2012");
             // url for the model that is used to for the fetch() call
             this.url = MetacatUI.appModel.get("metricsUrl");
         },
@@ -89,7 +90,7 @@ define(['jquery', 'underscore', 'backbone'],
           // TODO: Set the startDate and endDate based on the datePublished and current date
           // respctively.
           this.metricRequest.filterBy[1].values = [];
-          this.metricRequest.filterBy[1].values.push("01/01/2000");
+          this.metricRequest.filterBy[1].values.push(this.get("startDate"));
           this.metricRequest.filterBy[1].values.push(this.getCurrentDate());
 
           // HTTP GET
