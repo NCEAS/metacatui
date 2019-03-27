@@ -33,6 +33,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Clear the page 
 			this.$el.html("");
 
+			// Adding support for DataONE profile
+			if (typeof this.userType === 'undefined') {
+				var metricsModel = new MetricsModel({pid_list:['urn:node:CN'], type:'repository'});
+				this.metricsModel = metricsModel;
+				this.metricsModel.fetch();
+				this.listenTo(this.metricsModel, "sync" , this.renderMetrics);
+			}
+
 			if (this.userType == "node" || this.userType == "person") {
 				if(this.metricsModel.get("totalViews") !== null) {
 					this.renderMetrics();
