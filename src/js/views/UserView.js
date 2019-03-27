@@ -45,6 +45,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			$(window).bind('scroll', function (ev) {
 				self.onScroll(ev);
 			});
+
+			$("body").attr("data-spy", "scroll");
+			$("body").attr("data-target", "#user-nav");
 		},
 
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
@@ -363,19 +366,48 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			var self = this;
 			if(this.model.noActivity && this.statsView){
 				this.statsView.$el.addClass("no-activity");
-				this.$("#total-download-wrapper, section.downloads").hide();
+				this.$("#total-citation-container, section.citations").hide();
+				this.$("#total-download-container, section.downloads").hide();
+				this.$("#total-view-container, section.views").hide();
 				return;
 			}
+
+			//Create a base query for the statistics
+			var statsSearchModel = this.model.get("searchModel").clone();
+			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
+			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+			MetacatUI.statsModel.set("searchModel", statsSearchModel);
 
 			if (this.model.get("type") == "node" || this.model.get("type") == "person") {
 				var pid_list = [];
 				var metricsModel = new MetricsModel({});
 				this.metricsModel = metricsModel;
 
+				// // Retrieving the first upload date to send to the Metrics Service
+
+				this.listenTo(MetacatUI.statsModel, 'change:firstUpload' , function() {
+					var firstUpload = MetacatUI.statsModel.get("firstUpload");
+					if (typeof firstUpload !== 'undefined') {
+						var dateParts = ((firstUpload).slice(0,10)).split("-");
+						var startDate = dateParts[1] + "/" + dateParts[2] + "/" + dateParts[0];
+						self.metricsModel.set({
+							"startDate": startDate
+						});
+					}
+					else {
+						self.metricsModel.set({
+							"startDate": "01/01/2012"
+						});
+					}
+				});
+
+				
+
 				if (this.model.get("type") == "node") {
+					var dateParts = null;
 					pid_list.push(this.model.get("nodeInfo").identifier);
-					var metricsModel = new MetricsModel({pid_list: pid_list, type: "repository"});
-					
+
+					// Setting request object parameters to retrieve the metrics
 					this.metricsModel.set({
 						"pid_list": pid_list,
 						"filterType": "repository"
@@ -391,6 +423,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 								pid_list.push(user_pids[i])
 							}
 						}
+
+						// Setting request object parameters to retrieve the metrics
 						self.metricsModel.set({
 							"pid_list": pid_list,
 							"filterType": "user"
@@ -403,6 +437,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 					if( MetacatUI.statsModel.get("metadataCount") )
 						view.$("#total-dataset-container").text(MetacatUI.appView.numberAbbreviator(this.get("metadataCount"), 1));
 				});
+				
 
 				// Render the statsView for this profile
 				this.statsView = new StatsView({
@@ -434,22 +469,35 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				view.$("#total-upload-container").text(MetacatUI.appView.numberAbbreviator(MetacatUI.statsModel.get("totalUploads"), 1));
 			});
 
-			// If the user type is not Node then insert download counts from Stats View
+			// If the user type is Node/Person then insert metric counts from Stats View
 
-			if (this.model.get("type") != "node") {
-				MetacatUI.statsModel.once("change:downloads", function(){
-					if( !this.get("downloads") )
+			if (this.model.get("type") == "node" || this.model.get("type") == "person") {
+				// Insert Citations
+				this.metricsModel.once("change:totalCitations", function(){
+					if( !this.get("totalCitations"))
+						view.$("#total-citation-container, section.citations").hide();
+					else
+						view.$("#total-citation-container").text(MetacatUI.appView.numberAbbreviator(this.get("totalCitations"),1));
+				});
+
+				// Insert Downloads
+				this.metricsModel.once("change:totalDownloads", function(){
+					if( !this.get("totalDownloads"))
 						view.$("#total-download-wrapper, section.downloads").hide();
 					else
-						view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
+						view.$("#total-download-container").text(MetacatUI.appView.numberAbbreviator(this.get("totalDownloads"),1));
 				});
-			}
 
-			//Create a base query for the statistics
-			var statsSearchModel = this.model.get("searchModel").clone();
-			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
-			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-			MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+				// Insert Views
+				this.metricsModel.once("change:totalViews", function(){
+					if( !this.get("totalViews"))
+						view.$("#total-view-wrapper, section.views").hide();
+					else
+						view.$("#total-view-container").text(MetacatUI.appView.numberAbbreviator(this.get("totalViews"),1));
+				});
+
+			}
 
 			//Create the description for this profile
 			var description;
@@ -1345,6 +1393,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		},
 
 		onClose: function () {
+			$("body").removeAttr("data-spy");
+			$("body").removeAttr("data-target");
+
 			//Clear the template
 			this.$el.html("");
 
@@ -1380,7 +1431,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				// otherwise remove it
 				$('#user-profile-menu').removeClass('fixed-menu');
 			}
+
 		}
+
 
 	});
 
