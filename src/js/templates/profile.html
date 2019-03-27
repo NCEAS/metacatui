@@ -7,12 +7,12 @@
 	<section id="user-summary" class="stripe quick-stats">
 		<div class="metrics-title">
 			<h3><i class='icon icon-signal'></i></h3>
-            <h3> Summary of holdings </h3>
+			<h3> Summary of holdings </h3>
 		</div>	
 		<section class="charts row-fluid">
 			<div class="span6 packages badge-container">
 				<div id="total-datasets" class="span6 show-loading"></div>
-				<div class="span6">
+				<div class="span8">
 					<p>
 						The total number of publicly-available metadata records. 
 						Only the latest version of each metadata record is counted. 
@@ -23,7 +23,7 @@
 			</div>
 			<div class="span6 packages badge-container">
 				<div id="total-size" class="span6 show-loading"></div>
-				<div class="span6">
+				<div class="span8">
 					<p>
 						The volume of all publicly-available metadata and data files
 						in this repository. Only the latest version of each file is 
@@ -36,8 +36,8 @@
 	<section id="user-citations" class="stripe metrics">
 		<div class="metrics-title">
 			<h3><i class='icon icon-quote-right'></i></h3>
-            <h3 class="citation-count"></h3>
-            <h3>Citations</h3>
+			<h3 class="citation-count"></h3>
+			<h3>Citations</h3>
 		</div>
 		<div class="citations-metrics-list"></div>
 		<div class="clear"></div>
@@ -45,30 +45,30 @@
 	<section id="user-downloads" class="stripe metrics">
 		<div class="metrics-title">
 			<h3><i class='icon icon-cloud-download'></i></h3>
-            <h3 class="download-count"></h3>
-            <h3>Downloads</h3>
+			<h3 class="download-count"></h3>
+			<h3>Downloads</h3>
 		</div>
 		<div class="downloads-metrics">
 			<div class="metric-description">
-                <p>For all versions of this data set, the number of times that all or part of this data set was downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
-                <p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
-        	</div>
-        	<div class='metric-chart'></div>
+				<p>For all versions of this data set, the number of times that all or part of this data set was downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
+				<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
+			</div>
+			<div id="user-downloads-chart" class='metric-chart'></div>
 		</div>
 		<div class="clear"></div>
 	</section>
 	<section id="user-views" class="stripe metrics">
 		<div class="metrics-title">
 			<h3><i class='icon icon-eye-open'></i></h3>
-            <h3 class="view-count"></h3>
-            <h3>Views</h3>
+			<h3 class="view-count"></h3>
+			<h3>Views</h3>
 		</div>
 		<div class="views-metrics">
 			<div class="metric-description">
-                <p>For all versions of this data set, the number of times that all or part of this data set was viewed over time. These view counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that views from some Internet robots and repeat views within a certain time window are excluded.</p>
-                <p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
-        	</div>
-        	<div class='metric-chart'></div>
+				<p>For all versions of this data set, the number of times that all or part of this data set was viewed over time. These view counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that views from some Internet robots and repeat views within a certain time window are excluded.</p>
+				<p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
+			</div>
+			<div id="user-views-chart" class='metric-chart'></div>
 		</div>
 		<div class="clear"></div>
 	</section>
@@ -79,7 +79,7 @@
 				<section class="updates">
 					<div class="metrics-title">
 						<h3><i class='icon icon-refresh'></i></h3>
-			            <h3>Latest Updates</h3>
+						<h3>Latest Updates</h3>
 					</div>
 					<p>When datasets were last updated, separated by content type (science metadata or data).</p>
 				</section>
@@ -90,7 +90,7 @@
 			</section>
 		</div>
 	</section>
-	<% if(userType != "node"){ %>
+	<% if((userType != "node") && (userType != "person")){ %>
 		<section class="stripe format-charts-container">
 			<section class="charts">
 				<section class="chart-title">	
