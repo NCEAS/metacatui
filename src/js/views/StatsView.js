@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'collections/Citations', 'views/MetricsChartView', 'text!templates/metricModalTemplate.html', 'views/CitationListView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'collections/Citations', 'models/MetricsModel', 'views/MetricsChartView', 'text!templates/metricModalTemplate.html', 'views/CitationListView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 			
 	var StatsView = Backbone.View.extend({
@@ -32,8 +32,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Clear the page 
 			this.$el.html("");
+
 			if (this.userType == "node" || this.userType == "person") {
-                console.log(this.metricsModel);
 				if(this.metricsModel.get("totalViews") !== null) {
 					this.renderMetrics();
 				}
@@ -96,7 +96,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			
 			//Start retrieving data from Solr
 			MetacatUI.statsModel.getAll();
-		
+
 			return this;
 		},
 
@@ -104,6 +104,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.renderCitationMetric();
 			this.renderDownloadMetric();
 			this.renderViewMetric();
+
+			var self = this;
+			$(window).on("resize", function(){
+				self.renderDownloadMetric();
+				self.renderViewMetric();
+			});
 		},
 
 		renderCitationMetric: function() {
@@ -111,7 +117,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var citationCountEl = this.$('.citation-count');
 			var metricName = "Citations";
 			var metricCount = this.metricsModel.get("totalCitations");
-            console.log("citations", metricCount);
 			citationCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
 
 			// Displaying Citations
@@ -156,17 +161,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		// Currently only being used for repository profiles
         drawMetricsChart: function(metricName){
 
+            var metricNameLemma     = metricName.toLowerCase()
             var metricMonths        = MetacatUI.appView.currentView.metricsModel.get("months");
-            var metricCount 		= MetacatUI.appView.currentView.metricsModel.get(metricName.toLowerCase());
+            var metricCount 		= MetacatUI.appView.currentView.metricsModel.get(metricNameLemma);
+            var width               = document.getElementById('user-'+metricNameLemma+'-chart' ).offsetWidth;
+
+            if (width < 0) {
+                width = 600;
+            }
 
             //Draw a metric chart
             var modalMetricChart = new MetricsChart({
-                            id: metricName.toLowerCase() + "-chart",
+                            id: metricNameLemma + "-chart",
                             metricCount: metricCount,
                             metricMonths: metricMonths,
                             metricName: metricName,
-                            width: 1125,
-                            height: 375
+                            width: width
                         });
 
             return modalMetricChart.render().el;
