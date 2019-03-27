@@ -796,7 +796,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             vis.select("#displayDates")
                 .text(start_month == end_month ? "in " + start_month : "from " + start_month + " to " + end_month);
         	vis.select("#totalCount")
-        		.text(total_count + " " + convert_metric_name(total_count));
+        		.text(MetacatUI.appView.commaSeparateNumber(total_count) + " " + convert_metric_name(total_count));
 
         	// Fade all years in the bar chart not within the brush
             context.selectAll(".bar_context")
@@ -880,6 +880,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             brush.extent([brush_start_new, brush_end_new]);
 
             // now draw the brush to match our extent
+
             brush(d3.select("#" + self.id + " > .context > .brush").transition());
             // now fire the brushstart, brushmove, and check_bounds events
             brush.event(d3.select("#" + self.id + " > .context > .brush").transition());
