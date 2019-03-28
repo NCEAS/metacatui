@@ -1442,20 +1442,28 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			this.subviews = new Array();
 		},
 
+		// Perform the fixed menu logic for user profile
 		onScroll: function(ev) {
+			$.fn.scrollBottom = function() {
+				return $(document).height() - this.scrollTop() - this.height();
+			};
+
 			// Fix the nav menu once we reach to the top-left corner of the screen
 			var y = 180;
-			var scrollPos = $(document).scrollTop();
+			var gap = $(window).height() - $('#user-profile-menu').height() - 10;
+			var scrollPos = $(window).scrollTop();
+			var visibleFoot = y - $(window).scrollBottom();
 
-			if (y <= scrollPos) {
-				// if so, add the fixed class
-				$('#user-profile-menu').addClass('fixed-menu');
-			} else {
-				// otherwise remove it
+			if(scrollPos < 180){
 				$('#user-profile-menu').removeClass('fixed-menu');
+			} else if (visibleFoot > gap) {
+				$('#user-profile-menu').css({
+					top: "auto",
+					bottom: visibleFoot + "px"
+				});
+			} else {
+				$('#user-profile-menu').addClass('fixed-menu');
 			}
-
-		}
 
 
 	});
