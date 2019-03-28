@@ -215,7 +215,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				var userGroup = new UserGroup([], options);
 
 				//Create the group list and add it to the page
-				var viewOptions = { collapsable: false, showGroupName: false }
+				var viewOptions = { collapsable: true, showGroupName: false }
 				var groupList = this.createGroupList(userGroup, viewOptions);
 				this.$("#user-membership-container").html(groupList);
 			}
@@ -378,7 +378,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
 			MetacatUI.statsModel.set("searchModel", statsSearchModel);
 
-			if (this.model.get("type") == "node" || this.model.get("type") == "person") {
+			if (this.model.get("type") == "node" || this.model.get("type") == "person" || this.model.get("type") == "user") {
 				var pid_list = [];
 				var metricsModel = new MetricsModel({});
 				this.metricsModel = metricsModel;
@@ -387,7 +387,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 
 				this.listenTo(MetacatUI.statsModel, 'change:firstUpload' , function() {
 					var firstUpload = MetacatUI.statsModel.get("firstUpload");
-					if (typeof firstUpload !== 'undefined') {
+					if (firstUpload != null) {
 						var dateParts = ((firstUpload).slice(0,10)).split("-");
 						var startDate = dateParts[1] + "/" + dateParts[2] + "/" + dateParts[0];
 						self.metricsModel.set({
@@ -414,7 +414,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 					});
 					this.metricsModel.fetch();
 				}
-				else if (this.model.get("type") == "person") {
+				else if (this.model.get("type") == "person" || this.model.get("type") == "user") {
 					this.model.get("searchResults").facet.push("id");
 					this.model.get("searchResults").once("sync", function(){
 						var user_pids = self.model.get("searchResults").facetCounts.id
@@ -431,6 +431,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 						});
 						self.metricsModel.fetch();
 					});
+
+					this.listenTo(this.model, "change:isMemberOf", this.getProfileGroups);
+					this.getProfileGroups();
 				}
 
 				MetacatUI.statsModel.once("change:metadataCount", function(){
@@ -772,6 +775,26 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				view.listenTo(userGroup, "sync", function(){
 					var list = view.createGroupList(userGroup);
 					this.$("#group-list-container").append(list);
+					this.$("#profile-group-list-container").append(list);
+				});
+				userGroup.getGroup();
+			});
+		},
+        
+        
+        getProfileGroups: function(){
+			var view = this,
+				groups = [];
+
+			//Create a group Collection for each group this user is a member of
+			_.each(_.sortBy(this.model.get("isMemberOf"), "name"), function(group){
+				var userGroup = new UserGroup([view.model], group);
+				groups.push(userGroup);
+
+				view.listenTo(userGroup, "sync", function(){
+					var list = view.createGroupList(userGroup);
+					$(list).attr("id", userGroup);
+					this.$("#profile-group-list-container").append(list);
 				});
 				userGroup.getGroup();
 			});
