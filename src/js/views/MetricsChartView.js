@@ -27,6 +27,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             this.id           = options.id            || "metrics-chart";
+            this.viewType     = options.type          || "dataset"
             this.width        = options.width         || 600;
             this.height       = options.height        || 370;
             this.metricName   = options.metricName;
@@ -77,6 +78,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
             var metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             var textMessage = "This dataset hasn’t been " + metricNameLemma + "ed yet."
+            if (this.viewType != "dataset") {
+                textMessage = "This " + this.viewType + " has no " + metricNameLemma + "s to display "
+            }
 
             var margin	= {top: 25, right: 40, bottom: 40, left: 40},
                 width	= this.width - margin.left - margin.right,
