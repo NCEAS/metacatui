@@ -120,8 +120,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         // Parsing the response for setting the Model's member variables.
         parse: function(response){
-
-            return {
+            var metricsObject = {
                 "metricRequest": response.metricsRequest,
                 "citations": response.results.citations,
                 "views": response.results.views,
@@ -129,11 +128,32 @@ define(['jquery', 'underscore', 'backbone'],
                 "months": response.results.months,
                 "country": response.results.country,
                 "resultDetails": response.resultDetails,
-                "datasets": response.results.datasets,
-                "totalCitations": response.results.citations.reduce(function(acc, val) { return acc + val; }, 0),
-                "totalDownloads": response.results.downloads.reduce(function(acc, val) { return acc + val; }, 0),
-                "totalViews": response.results.views.reduce(function(acc, val) { return acc + val; }, 0)
+                "datasets": response.results.datasets
             }
+            
+            if (response.results.citations != null) {
+                metricsObject["totalCitations"] =  response.results.citations.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalCitations"] =  0
+            }
+            
+            if (response.results.downloads != null) {
+                metricsObject["totalDownloads"] =  response.results.downloads.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalDownloads"] =  0
+            }
+            
+            if (response.results.views != null) {
+                metricsObject["totalViews"] =  response.results.views.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalViews"] =  0
+            }
+            
+            
+            return metricsObject;
         }
 
     });
