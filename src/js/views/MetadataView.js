@@ -20,6 +20,8 @@ define(['jquery',
     'views/PackageTableView',
     'views/AnnotatorView',
     'views/CitationView',
+    'views/AnnotationView',
+    'views/MarkdownView',
     'text!templates/metadata/metadata.html',
     'text!templates/dataSource.html',
     'text!templates/publishDOI.html',
@@ -36,11 +38,11 @@ define(['jquery',
     'text!templates/annotation.html',
     'text!templates/metaTagsHighwirePress.html',
     'uuid',
-    'views/MetricView'
+    'views/MetricView',
     ],
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
        MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-       AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+       AnnotatorView, CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
        VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, UsageTemplate,
        DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
@@ -131,6 +133,10 @@ define(['jquery',
 
       this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
+      this.once("metadataLoaded", function(){
+				this.insertMarkdownViews();
+      });
+      
       this.getModel();
 
       return this;
@@ -328,6 +334,7 @@ define(['jquery',
       }
 
       this.insertCitationMetaTags();
+      this.createAnnotationViews();
     },
 
     /* If there is no view service available, then display the metadata fields from the index */
@@ -2675,7 +2682,37 @@ define(['jquery',
 
       // Insert
       document.head.insertAdjacentHTML("beforeend", hwpt);
-    }
+    },
+
+		createAnnotationViews: function(){
+			var viewRef = this;
+
+			_.each($(".annotation"), function (annoEl) {
+				var newView = new AnnotationView({
+					el: annoEl
+				});
+				viewRef.subviews.push(newView);
+				newView.render();
+			});
+		},
+
+		insertMarkdownViews: function() {
+			var viewRef = this;
+
+			_.each($(".markdown"), function (markdownEl) {
+				var newView = new MarkdownView({
+					markdown: $(markdownEl).text().trim(),
+					el: $(markdownEl).parent()
+				});
+
+				viewRef.subviews.push(newView);
+
+				// Clear out old content before rendering
+				$(markdownEl).remove();
+
+				newView.render();
+			});
+		}
   });
 
   return MetadataView;

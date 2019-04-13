@@ -76,11 +76,12 @@ define(['jquery', 'underscore', 'backbone'],
 
 			allowAccessPolicyChanges: false,
 
-			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			// baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+			baseUrl: "https://neutral-cat.nceas.ucsb.edu",
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn.dataone.org/",
+			d1CNBaseUrl: "https://cn-stage.test.dataone.org/",
 			d1CNService: "cn/v2",
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,
@@ -168,7 +169,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
-			archivedContentIsIndexed: true
+			archivedContentIsIndexed: true,
+			bioportalAPIKey: "5c385237-ec28-4ef6-8ba1-f5bcfb752142"
 		},
 
 		defaultView: "data",

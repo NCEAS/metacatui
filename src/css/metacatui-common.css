@@ -2119,7 +2119,6 @@ a.btn.metrics-button-disabled {
 .entitydetails table,
 .entitydetails tbody,
 .entitydetails td {
-    display: block;
     word-wrap: break-word;
     box-sizing: border-box;
 }
@@ -2306,12 +2305,22 @@ a.btn.metrics-button-disabled {
 .popover-title {
     text-transform: capitalize;
 }
+
+/* Don't force capitalization on annotation popover titles */
+.annotation-view .popover .popover-title {
+    text-transform: none;
+}
 .annotation-viewer-container .concept a{
 	white-space: pre-wrap;
 }
 .annotation.tag.warning {
     background-color: #999;
     color: #DDD;
+}
+
+/* Force hyperlinks in popovers to wrap */
+.annotation-view .popover .popover-content a {
+	white-space: normal;
 }
 
 /** Hide the search when in the dropdown menu **/
