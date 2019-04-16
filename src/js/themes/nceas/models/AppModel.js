@@ -88,7 +88,8 @@ define(['jquery', 'underscore', 'backbone'],
 			//annotatorUrl: null,
 			accountsUrl: null,
 			isJSONLDEnabled: true,
-			bioportalAPIKey: "5c385237-ec28-4ef6-8ba1-f5bcfb752142"
+			bioportalAPIKey: "5c385237-ec28-4ef6-8ba1-f5bcfb752142",
+			bioportalLookupCache: {}
 		},
 
 		defaultView: "submit",

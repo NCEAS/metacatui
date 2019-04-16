@@ -76,11 +76,18 @@ define(['jquery',
         },
 
         query: function () {
-            var viewRef = this;
-            var popover_content = $(this.$el).find(".popover-content").first();
+            var viewRef = this,
+                popover_content = $(this.$el).find(".popover-content").first(),
+                cache = MetacatUI.appModel.get("bioportalLookupCache"),
+                token = MetacatUI.appModel.get("bioportalAPIKey");
 
-            // Grab and verify token before moving on
-            var token = MetacatUI.appModel.get("bioportalAPIKey");
+            // Attempt to grab from cache first
+            if (cache && cache[this.termURI]) {
+                this.updatePopover(popover_content, cache[this.termURI]);
+                this.resolved = true;
+
+                return;
+            }
 
             if (typeof token !== "string") {
                 this.resolved = true;
@@ -114,17 +121,12 @@ define(['jquery',
                     return;
                 }
 
-                // Render updated popover content
-                var new_content = viewRef.bioportalTooltipTemplate({
-                    definition: match.definition[0],
-                    termURI: viewRef.termURI
-                });
+                viewRef.updatePopover(popover_content, match.definition[0]);
 
-                // Update both the existing DOM and the underlying data
-                // attribute in order to persist the updated content between
-                // displays of the popover
-                $(viewRef.popoverSource).data("content", new_content);
-                $(popover_content).html(new_content);
+                // Cache the result for next time
+                if (cache) {
+                    cache[viewRef.termURI] = match.definition[0];
+                }
 
                 viewRef.resolved = true;
             });
