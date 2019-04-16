@@ -2310,6 +2310,10 @@ a.btn.metrics-button-disabled {
 .annotation-view .popover .popover-title {
     text-transform: none;
 }
+.annotation-view .annotation {
+	cursor: pointer;
+}
+
 .annotation-viewer-container .concept a{
 	white-space: pre-wrap;
 }
