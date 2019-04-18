@@ -89,6 +89,22 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 							if (authors.length > 1) authorText += " ";
 						}
 
+						// Checking for incorrectly escaped characters
+						if (/&amp;[A-Za-z0-9]/.test(author)) {
+
+							// initializing the DOM parser
+							var parser = new DOMParser();
+
+							// parsing the incorrectly escaped `&amp;`
+							var unescapeAmpersand = parser.parseFromString(author, 'text/html');
+
+							// unescaping the & and retrieving the actual character
+							var unescapedString =  parser.parseFromString(unescapeAmpersand.body.textContent, 'text/html');
+
+							// saving the correct author text before displaying
+							author = unescapedString.body.textContent;
+						}
+
 						authorText += author;
 
 						if (count == authors.length) authorText += ". ";
