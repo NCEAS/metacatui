@@ -1448,6 +1448,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 				return $(document).height() - this.scrollTop() - this.height();
 			};
 
+			var width = $('#user-profile-menu').width();
+
 			// Fix the nav menu once we reach to the top-left corner of the screen
 			var y = 180;
 			var gap = $(window).height() - $('#user-profile-menu').height() - 10;
@@ -1462,8 +1464,11 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 					bottom: visibleFoot + "px"
 				});
 			} else {
+				// A temporary hack to fix the `fixed` witdth solution.
 				$('#user-profile-menu').addClass('fixed-menu');
+				$('#user-profile-menu').css("width", width.toString() + "px");
 			}
+		}
 
 
 	});
