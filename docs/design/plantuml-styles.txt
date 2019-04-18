@@ -1,6 +1,7 @@
       ' change the default styles   
       skinparam shadowing false   
       skinparam roundcorner 10
+      skinparam linetype ortho
 
       ' style sequences
       skinparam sequence {

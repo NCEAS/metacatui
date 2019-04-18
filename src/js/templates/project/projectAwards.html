@@ -1,0 +1,6 @@
+<%if (awards.length) {%>
+    <h4>Awards</h4> <hr width="125px"> 
+    <% _.each(awards, function(award){%>
+        <%=award.title%> (<%=award.funderName%> Award <%=award.awardNumber%>)<br>
+    <% }); %>
+<%}%>

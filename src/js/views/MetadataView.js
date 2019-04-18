@@ -2290,7 +2290,7 @@ define(['jquery',
 		 * Generate a string appropriate to be used as the publication date in a
 		 * dataset citation.
 		 */
-		getDatePublishedText() {
+		getDatePublishedText: function() {
 			// Dataset/datePublished
 			// Prefer pubDate, fall back to dateUploaded so we have something to show
 			if (this.model.get("pubDate") !== "") {

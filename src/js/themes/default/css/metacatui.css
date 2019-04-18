@@ -1096,17 +1096,6 @@ select{
 top: 2px;
 position: relative;
  }
- .filter-contain input[type="checkbox"].filter{
- 		width: 20px;
-  	float: left;
- }
-
-  .filter-contain i.more-info{
-  	font-size: 14px;
-  	line-height: 23px;
-  	top: 5px;
-  	float: left;
-  }
 
 /*-- Search buttons next to text inputs --*/
   .filter.btn{
@@ -1149,11 +1138,7 @@ input.filter:-ms-input-placeholder{
 }
 
 /*-- The filter checkboxes --*/
-#filter-year input[type="checkbox"],
-#includes-files input[type="checkbox"]{
-	display: none;
-}
-    .filter-contain .checkbox-list{
+.filter-contain .checkbox-list{
 	margin-left: 36px;
 }
 ul.checkbox-list{
@@ -1175,13 +1160,6 @@ font-size: .9em;
 }
 
 /*-- The 'Year' filter elements --*/
-#filter-year .left-padding{
-	padding-left: 10px;
-}
-
-#data-year-label{
-  	margin-left: 10px;
-}
 #filter-year .filter-input-contain{
  	margin-top: 10px;
 }

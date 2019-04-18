@@ -63,7 +63,20 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 				signInBtnsContainer.find("a.signin").each(function(i, a){
 					var url = $(a).attr("href");
-					url = url.substring(0, url.indexOf("target=")+7) + MetacatUI.root + "/signinsuccess";
+
+          var redirectUrl = decodeURIComponent(url.substring( url.indexOf("target=")+7 ));
+
+          var urlWithoutHttp = redirectUrl.substring( redirectUrl.indexOf("://") +  3 );
+          var routeName = urlWithoutHttp.substring( urlWithoutHttp.indexOf("/") + 1 );
+
+          if( !routeName ){
+            redirectUrl = redirectUrl + "signinsuccess";
+          }
+          else if( _.contains(MetacatUI.uiRouter.getRouteNames(), MetacatUI.uiRouter.getRouteName(routeName)) ){
+            redirectUrl = redirectUrl.substring(0, redirectUrl.indexOf(routeName)) + "signinsuccess";
+          }
+
+					url = url.substring(0, url.indexOf("target=")+7) + encodeURIComponent(redirectUrl);
 					$(a).attr("href", url);
 				});
 

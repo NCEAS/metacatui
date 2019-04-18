@@ -1456,12 +1456,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           isSoftware: function(){
-            //The list of formatIds that are images
+            //The list of formatIds that are programs 
             var softwareIds =  ["text/x-python",
                       "text/x-rsrc",
                       "text/x-matlab",
                       "text/x-sas",
-                      "application/R"];
+                      "application/R",
+                      "application/x-ipynb+json"];
             //Does this data object match one of these IDs?
             if(_.indexOf(softwareIds, this.get('formatId')) == -1) return false;
             else return true;

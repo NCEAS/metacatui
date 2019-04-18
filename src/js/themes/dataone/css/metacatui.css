@@ -1089,9 +1089,6 @@ label.control-label{
     	-moz-border-top-right-radius: 0px;
 		-moz-border-bottom-right-radius: 0px;
     	margin-left: 10px;
-    	-moz-box-shadow: inset 0 0 10px -1px #CCC;
-		-webkit-box-shadow: inset 0 0 10px -1px #CCC;
-		box-shadow: inset 0 0 10px -1px #CCC;
 		color: #555;
     }
 

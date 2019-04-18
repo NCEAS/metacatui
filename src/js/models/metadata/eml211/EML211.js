@@ -1509,6 +1509,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
           this.addEntity(entityModel);
 
+          //If this DataONEObject fails to upload, remove the EML entity
+          this.listenTo(dataONEObject, "errorSaving", function(){
+            this.removeEntity(dataONEObject.get("metadataEntity"));
+
+            //Listen for a successful save so the entity can be added back
+            this.listenToOnce(dataONEObject, "successSaving", function(){
+              this.addEntity(dataONEObject.get("metadataEntity"))
+            });
+          });
+
       },
 
       /*

@@ -1660,9 +1660,6 @@ svg .no-activity,
     }
 
     /* Filter checkboxes */
-    input.filter[type="checkbox"]{
-    	display: none;
-    }
 
    .filter-contain .checkbox-list{
     	margin-left: 0px;
@@ -2037,12 +2034,10 @@ svg .no-activity,
     	cursor: default;
     }
 	.pagination ul > li.active > a{
-		background-color: #006699;
-		color: white;
+		background-color: #eee;
 	}
-	.pagination ul > li > a:hover{
-		color: #FFF;
-		background-color: #00AAFF;
+	.pagination ul>li>a{
+		color: inherit;
 	}
 
 /*-------------- DOCUMENTATION CSS -----------------------------*/

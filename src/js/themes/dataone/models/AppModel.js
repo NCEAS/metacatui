@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// set this variable to true, if the content being published is moderated by the data team.
 			contentIsModerated: false,
-      
+
       // Flag which, when true shows Whole Tale features in the UI
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
@@ -50,7 +50,17 @@ define(['jquery', 'underscore', 'backbone'],
 			packageServiceUrl: null,
 			//publishServiceUrl: null,
 			authServiceUrl: null,
+
 			queryServiceUrl: null,
+
+      //If set to false, some parts of the app will send POST HTTP requests to the
+      // Solr search index via the `/query/solr` DataONE API.
+      // Set this configuration to true if using Metacat 2.10.2 or earlier
+      disableQueryPOSTs: true,
+
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear",
+                             "id", "taxon", "spatial", "dataSource"],
+
 			metaServiceUrl: null,
 			metacatBaseUrl: null,
 			metacatServiceUrl: null,
@@ -75,7 +85,8 @@ define(['jquery', 'underscore', 'backbone'],
 			signInUrlOrcid: null,
 			//signInUrlLdap: null,
 			tokenUrl: null,
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            //mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            mdqBaseUrl: "",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["dataone.suite.1"],
             suiteLabels: ["DataONE Metadata Completeness Suite v1.0"],

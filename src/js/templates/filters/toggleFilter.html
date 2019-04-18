@@ -1,0 +1,16 @@
+<div class="can-toggle can-toggle-small">
+  <input id="toggle-filter-view-<%=id%>" type="checkbox" />
+  <span>
+    <% if(icon){
+         print('<i class="icon icon-on-left icon-' + icon + '"></i>');
+       } %>
+       <%=label%>
+  </span>
+  <label for="toggle-filter-view-<%=id%>">
+    <span class="true-label hidden"><%=trueLabel%></span>
+    <span class="false-label hidden"><%=falseLabel%></span>
+    <div class="can-toggle-switch" data-checked="<%=trueLabel%>" data-unchecked="<%=falseLabel%>"></div>
+  </label>
+  <div class="clear clearfix"></div>
+</div>
+<div class="clear clearfix"></div>

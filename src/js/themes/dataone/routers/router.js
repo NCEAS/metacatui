@@ -144,9 +144,7 @@ function ($, _, Backbone) {
 
 			//Check for a query URL parameter
 			if((typeof query !== "undefined") && query){
-				var customQuery = MetacatUI.appSearchModel.get('additionalCriteria');
-				customQuery.push(query);
-				MetacatUI.appSearchModel.set('additionalCriteria', customQuery);
+        MetacatUI.appSearchModel.set('additionalCriteria', [query]);
 			}
 
 			if(!MetacatUI.appView.dataCatalogView){
