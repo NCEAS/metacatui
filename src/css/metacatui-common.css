@@ -2217,10 +2217,10 @@ section#user-citations {
     margin: 0 auto;
 }
 .citations-metrics-list > .empty-citation-list {
-    width: 70%;
-    height: 6%;
+    width: 66%;
+    height: 5%;
     top: unset;
-    left: unset;
+    left: 25%;
     margin: 0 auto;
 }
 .citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
@@ -3107,6 +3107,15 @@ section #user-profile-menu > .hgroup > .logo {
     margin-right: auto;
     width: 50%;
 }
+#user-profile-menu > #user-membership-container > ul > li.list-group-item {
+    padding: none;
+    display: block;
+}
+#user-profile-menu > #user-membership-container > ul > li.list-group-item:hover,
+#user-profile-menu > #user-membership-container > ul > li.list-group-item > a:hover {
+    background-color: #208095;
+    color: #fff;
+}
 .section.profile {
     position: relative;
 }
@@ -3486,6 +3495,13 @@ svg .no-activity,
 }
 #profile-group-list-container > ul > li.list-group-item.member.current-page:hover{
     background-color: #fff;
+}
+#profile-group-list-container > ul > .pager.list-group-item:hover {
+    background-color: #fff;
+}
+#profile-group-list-container > ul > .pager > .pager-link:hover {
+    background-color: #208095;
+    color: #fff;
 }
 
 .panel>.list-group .list-group-item.active{
