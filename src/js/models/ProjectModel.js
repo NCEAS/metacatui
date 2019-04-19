@@ -1,25 +1,26 @@
 /* global define */
-define(["jquery", 
-        "underscore", 
-        "backbone", 
-        "gmaps", 
-        "collections/Filters", 
+define(["jquery",
+        "underscore",
+        "backbone",
+        "gmaps",
+        "collections/Filters",
         "collections/SolrResults",
-        "models/metadata/eml211/EMLParty", 
+        "models/ProjectSectionModel",
+        "models/metadata/eml211/EMLParty",
         "models/metadata/eml220/EMLText",
-        "models/CollectionModel", 
-        "models/Search", 
-        "models/filters/FilterGroup", 
+        "models/CollectionModel",
+        "models/Search",
+        "models/filters/FilterGroup",
         "models/Map"
     ],
-    function($, _, Backbone, gmaps, Filters, SolrResults, EMLParty, EMLText, CollectionModel,
-        SearchModel, FilterGroup, MapModel) {
+    function($, _, Backbone, gmaps, Filters, SolrResults, ProjectSectionModel,
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
 
         /**
          * A ProjectModel is a specialized collection that represents a project,
-         * including the associated data, people, project descriptions, results and 
-         * visualizations.  It also includes settings for customized filtering of the 
-         * associated data, and properties used to customized the map display and the 
+         * including the associated data, people, project descriptions, results and
+         * visualizations.  It also includes settings for customized filtering of the
+         * associated data, and properties used to customized the map display and the
          * overall branding of the project.
          */
         var ProjectModel = CollectionModel.extend({
@@ -27,8 +28,7 @@ define(["jquery",
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
                     logo: null,
-                    overview: null,
-                    results: null,
+                    sections: [],
                     associatedParties: [],
                     acknowledgments: null,
                     acknowledgmentsLogos: [],
@@ -40,7 +40,7 @@ define(["jquery",
                     searchResults: new SolrResults(),
                     //The project document options may specify section to hide
                     hideMetrics: false,
-                    hideHome: false,
+                    hideData: false,
                     hidePeople: false,
                     hideMap: false,
                     //Map options, as specified in the project document options
@@ -58,7 +58,7 @@ define(["jquery",
             },
 
             initialize: function(options) {},
-            
+
             /*
              * Return the project URL
              */
@@ -130,15 +130,22 @@ define(["jquery",
                 modelJSON.acknowledgmentsLogos = [];
                 _.each(logos, function(logo, i) {
                     if ( !logo ) return;
-                    
+
                     modelJSON.acknowledgmentsLogos.push(
                         MetacatUI.appModel.get("objectServiceUrl") + logo
                     );
                 });
 
+                //Parse the project content sections
+                modelJSON.sections = [];
+                $(projectNode).children("section").each(function(i, section){
+                  //Create a new ProjectSectionModel
+                  modelJSON.sections.push( new ProjectSectionModel({ objectDOM: section }) );
+                  //Parse the ProjectSectionModel
+                  modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
+                });
+
                 //Parse the EMLText elements
-                modelJSON.overview = this.parseEMLTextNode(projectNode, "overview");
-                modelJSON.results = this.parseEMLTextNode(projectNode, "results");
                 modelJSON.acknowledgments = this.parseEMLTextNode(projectNode, "acknowledgments");
 
                 //Parse the awards
@@ -270,9 +277,9 @@ define(["jquery",
              * models associated with this project
              */
             createFilters: function() {
-                
+
                 var filters = this.get("searchModel").get("filters") || new Filters();
-                
+
                 // Add each filter in the filter groups to this filter collection
                 _.each(this.get("filterGroups"), function(filterGroup) {
                     filters.add(filterGroup.get("filters").models);

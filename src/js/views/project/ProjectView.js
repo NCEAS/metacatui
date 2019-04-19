@@ -7,13 +7,14 @@ define(["jquery",
         "text!templates/alert.html",
         "text!templates/project/project.html",
         "views/project/ProjectHeaderView",
-        "views/project/ProjectHomeView",
+        "views/project/ProjectDataView",
+        "views/project/ProjectSectionView",
         "views/project/ProjectMembersView",
         "views/StatsView",
         "views/project/ProjectLogosView"
     ],
     function($, _, Backbone, Project, SearchModel, StatsModel, AlertTemplate, ProjectTemplate, ProjectHeaderView,
-        ProjectHomeView, ProjectMembersView, StatsView, ProjectLogosView) {
+        ProjectDataView, ProjectSectionView, ProjectMembersView, StatsView, ProjectLogosView) {
         "use_strict";
         /* The ProjectView is a generic view to render
          * projects, it will hold project sections
@@ -54,6 +55,8 @@ define(["jquery",
              */
             render: function() {
 
+                $("body").addClass("ProjectView");
+
                 // Create a new Project model
                 this.model = new Project({
                     id: this.projectId
@@ -81,6 +84,7 @@ define(["jquery",
                 this.headerView = new ProjectHeaderView({
                     model: this.model
                 });
+                this.headerView.render();
                 this.subviews.push(this.headerView);
 
                 // Create a Filters collection in the search model for all search constraints in this view
@@ -90,31 +94,94 @@ define(["jquery",
                 MetacatUI.projects = MetacatUI.projects || {};
                 MetacatUI.projects[this.model.get("id")] = this.model.clone();
 
-                // Render the Home section
-                if (!this.model.get("hideHome")) {
-                    this.sectionHomeView = new ProjectHomeView({
+                //Render the content sections
+                _.each(this.model.get("sections"), function(section){
+                  this.addSection(section);
+                }, this);
+
+                // Render the Data section
+                if(!this.model.get("hideData")) {
+                    this.sectionDataView = new ProjectDataView({
                         model: this.model,
-                        el: "#project-home"
+                        id: "data"
                     });
-                    this.subviews.push(this.sectionHomeView);
+                    this.subviews.push(this.sectionDataView);
+
+                    //Render the section view and add it to the page
+                    this.sectionDataView.render();
+                    this.$("#project-sections").append(this.sectionDataView.el);
+
+                    this.addSectionLink( this.sectionDataView, "Data" );
                 }
 
                 // Render the members section
                 if (!this.model.get("hideMembers")) {
                     this.sectionMembersView = new ProjectMembersView({
                         model: this.model,
-                        el: "#project-members"
+                        id: "members"
                     });
                     this.subviews.push(this.sectionMembersView);
+
+                    //Render the section view and add it to the page
+                    this.sectionMembersView.render();
+                    this.$("#project-sections").append(this.sectionMembersView.el);
+
+                    this.addSectionLink( this.sectionMembersView, "Members" );
                 }
+
+                //After all the sections are rendered, mark the first one as active
+                this.$("#project-sections").children().first().addClass("active");
+                this.$("#project-section-tabs").children().first().addClass("active");
+
+                //Space out the tabs evenly
+                var widthEach = 100/this.$("#project-section-tabs").children().length;
+                this.$("#project-section-tabs").children().css("width", widthEach + "%");
+
+                //Render the logos at the bottom of the project page
                 var ackLogos = this.model.get("acknowledgmentsLogos") || [];
                 this.logosView = new ProjectLogosView();
                 this.logosView.logos = ackLogos;
                 this.subviews.push(this.logosView);
-
-                _.invoke(this.subviews, 'render');
-
+                this.logosView.render();
                 this.$(".project-view").append(this.logosView.el);
+
+            },
+
+            /*
+            * Creates a ProjectSectionView to display the content in the given project
+            * section. Also creates a navigation link to the section.
+            *
+            * @param {ProjectSectionModel} sectionModel - The section to render in this view
+            */
+            addSection: function(sectionModel){
+
+              //Create a new ProjectSectionView
+              var sectionView = new ProjectSectionView({
+                model: sectionModel
+              });
+
+              //Render the section
+              sectionView.render();
+
+              //Add the section view to this project view
+              this.$("#project-sections").append(sectionView.el);
+
+              this.addSectionLink(sectionView, sectionModel.get("label"));
+
+            },
+
+            /*
+            * Add a link to a section of this project page
+            */
+            addSectionLink: function(sectionView, label){
+
+              //Create a navigation link
+              this.$("#project-section-tabs").append(
+                $(document.createElement("li"))
+                  .append( $(document.createElement("a"))
+                             .text(label)
+                             .attr("href", "#" + sectionView.$el.attr("id") )
+                             .attr("data-toggle", "tab")));
 
             },
 
@@ -185,7 +252,11 @@ define(["jquery",
               });
 
               this.sectionMetricsView.render();
+              this.sectionMetricsView.$el.attr("id", "metrics");
+
               this.subviews.push(this.sectionMetricsView);
+
+              this.addSectionLink(this.sectionMetricsView, "Metrics");
 
             },
 
@@ -217,6 +288,8 @@ define(["jquery",
                 this.subviews = new Array();
 
                 delete this.sectionMetricsView;
+
+                $("body").removeClass("ProjectView");
             }
         });
 
