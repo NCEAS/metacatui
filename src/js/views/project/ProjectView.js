@@ -121,9 +121,10 @@ define(["jquery",
                     });
                     this.subviews.push(this.sectionDataView);
 
+                    this.$("#project-sections").append(this.sectionDataView.el);
+
                     //Render the section view and add it to the page
                     this.sectionDataView.render();
-                    this.$("#project-sections").append(this.sectionDataView.el);
 
                     this.addSectionLink( this.sectionDataView, "Data" );
                 }
@@ -136,9 +137,10 @@ define(["jquery",
                     });
                     this.subviews.push(this.sectionMembersView);
 
+                    this.$("#project-sections").append(this.sectionMembersView.el);
+
                     //Render the section view and add it to the page
                     this.sectionMembersView.render();
-                    this.$("#project-sections").append(this.sectionMembersView.el);
 
                     this.addSectionLink( this.sectionMembersView, "Members" );
                 }

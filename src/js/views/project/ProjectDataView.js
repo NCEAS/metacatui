@@ -52,8 +52,9 @@ define(["jquery",
             filters: false
           });
 
-          dataCatalogView.render();
           this.$el.append(dataCatalogView.el);
+
+          dataCatalogView.render();
 
         }
 
