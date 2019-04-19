@@ -77,8 +77,22 @@ define(["jquery",
 
             renderProject: function() {
 
+                //Make the JSON to send to the template
+                var templateVariables = this.model.toJSON();
+
+                //Make the color rgba string
+                templateVariables.primaryColorTransparent = "rgba(" + this.model.get("primaryColorRGB").r +
+                  "," + this.model.get("primaryColorRGB").g + "," + this.model.get("primaryColorRGB").b +
+                  ", .5)";
+                templateVariables.secondaryColorTransparent = "rgba(" + this.model.get("secondaryColorRGB").r +
+                  "," + this.model.get("secondaryColorRGB").g + "," + this.model.get("secondaryColorRGB").b +
+                  ", .5)";
+                templateVariables.accentColorTransparent = "rgba(" + this.model.get("accentColorRGB").r +
+                  "," + this.model.get("accentColorRGB").g + "," + this.model.get("accentColorRGB").b +
+                  ", .5)";
+
                 // Insert the overall project template
-                this.$el.html(this.template(this.model.toJSON()));
+                this.$el.html(this.template(templateVariables));
 
                 //Render the header view
                 this.headerView = new ProjectHeaderView({

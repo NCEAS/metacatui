@@ -2510,7 +2510,7 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .project-display-text{
   box-sizing: border-box;
-background-color: rgba(0,0,0,.5);
+background-color: var(--project-primary-color-transparent);
 padding: 20px;
 }
 .logo-container{

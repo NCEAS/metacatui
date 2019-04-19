@@ -51,9 +51,12 @@ define(["jquery",
                     //The MapModel
                     mapModel: gmaps ? new MapModel() : null,
                     //Project view colors, as specified in the project document options
-                    primaryColor: "#333",
-                    secondaryColor: "#333",
-                    accentColor: "#333"
+                    primaryColor: "",
+                    secondaryColor: "",
+                    accentColor: "",
+                    primaryColorRGB: null,
+                    secondaryColorRGB: null,
+                    accentColorRGB: null,
                 });
             },
 
@@ -199,6 +202,17 @@ define(["jquery",
 
                 });
 
+                //Convert all the hex colors to rgb
+                if(modelJSON.primaryColor){
+                  modelJSON.primaryColorRGB = this.hexToRGB(modelJSON.primaryColor);
+                }
+                if(modelJSON.secondaryColor){
+                  modelJSON.secondaryColorRGB = this.hexToRGB(modelJSON.secondaryColor);
+                }
+                if(modelJSON.accentColor){
+                  modelJSON.accentColorRGB = this.hexToRGB(modelJSON.accentColor);
+                }
+
                 if (gmaps) {
                     //Create a MapModel with all the map options
                     modelJSON.mapModel = new MapModel();
@@ -286,6 +300,15 @@ define(["jquery",
                 });
 
                 return filters;
+            },
+
+            hexToRGB: function(hex){
+              var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+              return result ? {
+                  r: parseInt(result[1], 16),
+                  g: parseInt(result[2], 16),
+                  b: parseInt(result[3], 16)
+              } : null;
             }
 
         });
