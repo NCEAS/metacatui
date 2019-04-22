@@ -161,6 +161,12 @@ define(["jquery",
                 this.logosView.render();
                 this.$(".project-view").append(this.logosView.el);
 
+                //When each tab is clicked and shown
+                this.$('a[data-toggle="tab"]').on('shown', function(e) {
+                  var sectionView = $(e.target).data("view");
+                  sectionView.postRender();
+                });
+
             },
 
             /*
@@ -197,7 +203,8 @@ define(["jquery",
                   .append( $(document.createElement("a"))
                              .text(label)
                              .attr("href", "#" + sectionView.$el.attr("id") )
-                             .attr("data-toggle", "tab")));
+                             .attr("data-toggle", "tab")
+                             .data("view", sectionView)));
 
             },
 

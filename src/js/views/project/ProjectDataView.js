@@ -17,6 +17,9 @@ define(["jquery",
         // @type {ProjectModel} - The Project associated with this view
         model: null,
 
+        // @type Array - An array of subviews in this view
+        subviews: [],
+
         render: function(){
 
           if( this.id ){
@@ -39,8 +42,9 @@ define(["jquery",
             filters: this.model.get("searchModel").get("filters")
           });
 
-          filterGroupsView.render();
           this.$el.append(filterGroupsView.el);
+          filterGroupsView.render();
+          this.subviews.push(filterGroupsView);
 
           //Create a DataCatalogView
           var dataCatalogView = new DataCatalogView({

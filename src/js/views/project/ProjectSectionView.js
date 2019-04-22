@@ -81,6 +81,20 @@ define(["jquery",
         },
 
         /*
+        * This funciton is called after this view has fully rendered and is
+        * visible on the webpage
+        */
+        postRender: function(){
+
+          _.each(this.subviews, function(subview){
+              if(subview.postRender){
+                subview.postRender();
+              }
+          });
+
+        },
+
+        /*
         * When the project section markdown is rendered in a MarkdownView, format the
         * resulting HTML as needed for this view
         */
