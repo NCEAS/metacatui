@@ -57,6 +57,9 @@ define(["jquery",
                     primaryColorRGB: null,
                     secondaryColorRGB: null,
                     accentColorRGB: null,
+                    primaryColorTransparent: null,
+                    secondaryColorTransparent: null,
+                    accentColorTransparent: null
                 });
             },
 
@@ -139,11 +142,28 @@ define(["jquery",
                     );
                 });
 
+                // Parse the literature cited
+                // This will only work for bibtex at the moment
+                var bibtex = $(projectNode).children("literatureCited").children("bibtex");
+                if (bibtex.length > 0) {
+                    modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
+                    // I'm not sure we actually need to set this on the model?
+                    thisModel = this;
+                    require(["citation"], function(citation) {
+                        const Cite = require("citation-js");
+                        thisModel.set("literatureCited", thisModel.parseTextNode(projectNode, "literatureCited"));
+                        // Maybe inject the BibTex into the Markdown here?
+                    });
+                }
+
                 //Parse the project content sections
                 modelJSON.sections = [];
                 $(projectNode).children("section").each(function(i, section){
                   //Create a new ProjectSectionModel
-                  modelJSON.sections.push( new ProjectSectionModel({ objectDOM: section }) );
+                  modelJSON.sections.push( new ProjectSectionModel({
+                    objectDOM: section,
+                    literatureCited: modelJSON.literatureCited
+                  }) );
                   //Parse the ProjectSectionModel
                   modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
                 });
@@ -161,20 +181,6 @@ define(["jquery",
                     });
                     modelJSON.awards.push(award_parsed);
                 });
-
-                // Parse the literature cited
-                // This will only work for bibtex at the moment
-                var bibtex = $(projectNode).children("literatureCited").children("bibtex");
-                if (bibtex.length > 0) {
-                    modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
-                    // I'm not sure we actually need to set this on the model?
-                    thisModel = this;
-                    require(["citation"], function(citation) {
-                        const Cite = require("citation-js");
-                        thisModel.set("literatureCited", thisModel.parseTextNode(projectNode, "literatureCited"));
-                        // Maybe inject the BibTex into the Markdown here?
-                    });
-                }
 
                 //Parse the associatedParties
                 modelJSON.associatedParties = [];
@@ -205,12 +211,21 @@ define(["jquery",
                 //Convert all the hex colors to rgb
                 if(modelJSON.primaryColor){
                   modelJSON.primaryColorRGB = this.hexToRGB(modelJSON.primaryColor);
+                  modelJSON.primaryColorTransparent = "rgba(" +  modelJSON.primaryColorRGB.r +
+                    "," + modelJSON.primaryColorRGB.g + "," + modelJSON.primaryColorRGB.b +
+                    ", .5)";
                 }
                 if(modelJSON.secondaryColor){
                   modelJSON.secondaryColorRGB = this.hexToRGB(modelJSON.secondaryColor);
+                  modelJSON.secondaryColorTransparent = "rgba(" +  modelJSON.secondaryColorRGB.r +
+                    "," + modelJSON.secondaryColorRGB.g + "," + modelJSON.secondaryColorRGB.b +
+                    ", .5)";
                 }
                 if(modelJSON.accentColor){
                   modelJSON.accentColorRGB = this.hexToRGB(modelJSON.accentColor);
+                  modelJSON.accentColorTransparent = "rgba(" +  modelJSON.accentColorRGB.r +
+                    "," + modelJSON.accentColorRGB.g + "," + modelJSON.accentColorRGB.b +
+                    ", .5)";
                 }
 
                 if (gmaps) {

@@ -17,6 +17,7 @@ define(["jquery",
             title: "",
             introduction: "",
             content: null,
+            literatureCited: null,
             objectDOM: null
           }
         },
