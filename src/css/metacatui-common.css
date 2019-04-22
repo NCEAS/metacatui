@@ -2503,7 +2503,8 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .project-display-image{
   background-repeat: no-repeat;
-  background-size: cover;
+  background-position-x: 50%;
+  background-position-y: 50%;
   min-height: 500px;
   padding-top: 60px;
   color: #FFF;
@@ -2552,6 +2553,8 @@ padding: 20px;
 .project-logos-view{
 	border-top: 1px solid #DDD;
   padding-top: 40px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 .project-logos-view .img-logo{
 	max-width: 120px;
