@@ -1,7 +1,7 @@
 define(["jquery",
         "underscore",
         "backbone",
-        "models/ProjectModel",
+        "models/project/ProjectModel",
         "models/Search",
         "models/Stats",
         "text!templates/alert.html",
