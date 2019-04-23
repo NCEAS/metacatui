@@ -44,9 +44,6 @@ define(["jquery",
         */
         topLevelItems: {},
 
-        //Max number of characters in the link text
-        maxCharacters: 15,
-
         //If set to true, will render one level of sub items/links
         showSubItems: true,
 
@@ -60,14 +57,6 @@ define(["jquery",
                   this.showSubItems = false;
                 }
             }
-        },
-
-        truncateCleanly: function(str, nCharacters) {
-            if ( !nCharacters ) {
-                var nCharacters = this.maxCharacters;
-            }
-            var re = new RegExp("^(.{" + nCharacters + "}[^\\s]*).*");
-            return str.replace(re, "$1...");
         },
 
         /* Render the view */
@@ -150,23 +139,11 @@ define(["jquery",
           var headers = $(contentEl).find(headerLevel);
 
           _.each(headers, function(header) {
-              var headerText = $(header).text();
-
-              // if TOC item text is longer than `maxCharacters`, then truncate
-              // after the end of the word and add `...` to the end.
-              if (headerText.length > this.maxCharacters) {
-                  var truncated = this.truncateCleanly(headerText, this.maxCharacters);
-                  // only use the truncated version if it's shorter than the
-                  // original (might be longer because of addition of `...`)
-                  if(truncated.length < headerText.length) {
-                      headerText = truncated;
-                  }
-              }
 
               //Create the link HTML
               var linkItem = $(this.templateLI({
                   "link": "#" + $(header).attr("id"),
-                  "text": headerText
+                  "text": $(header).text()
               }));
 
               //If we want to show subitems in the table of contents, find them
