@@ -2373,7 +2373,7 @@ a.btn.metrics-button-disabled {
 ********************************************/
 .thumbnail{
 	height: auto;
-	width: 90%;
+	max-width: 90%;
 	padding: 20px;
 	margin-bottom: 20px;
 }
@@ -2505,6 +2505,7 @@ img[src*="googleapis.com/"].georegion-map{
   background-repeat: no-repeat;
   background-position-x: 50%;
   background-position-y: 50%;
+  background-size: cover;
   min-height: 500px;
   padding-top: 60px;
   color: #FFF;
