@@ -145,6 +145,14 @@ define(["jquery",
                     (MetacatUI.appSearchResults && (Object.keys(MetacatUI.appSearchResults).length > 0))
                 ) {
                     this.searchResults = MetacatUI.appSearchResults;
+
+                    if( !this.statsModel ){
+                      this.statsModel = MetacatUI.statsModel;
+                    }
+
+                    if( !this.mapModel ){
+                      this.mapModel = MetacatUI.mapModel;
+                    }
                 }
 
                 // Get the search mode - either "map" or "list"
