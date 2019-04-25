@@ -2563,6 +2563,10 @@ padding: 20px;
 }
 .project-logos-view .img-logo{
 	max-width: 120px;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .well.awards-info {
 	background: inherit;
@@ -2615,6 +2619,9 @@ i.toc-sub-item{
 }
 .project-view .logo-row{
 	margin-bottom: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .project-view .profile .profile-title,
 .project-view .profile .charts-container > p{
