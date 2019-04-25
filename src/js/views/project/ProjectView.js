@@ -36,9 +36,8 @@ define(["jquery",
             //A template to display a notification message
             alertTemplate: _.template(AlertTemplate),
 
-            /* The events that this view listens to*/
             events: {
-                "click #project-metrics-tab": "renderMetricsView"
+              "click #metrics-link" : "renderMetricsView"
             },
 
             initialize: function(options) {
@@ -114,6 +113,20 @@ define(["jquery",
 
                     this.addSectionLink( this.sectionDataView, "Data" );
                 }
+
+                //Render the metrics section
+                //Create a navigation link
+                this.$("#project-section-tabs").append(
+                  $(document.createElement("li"))
+                    .append( $(document.createElement("a"))
+                               .text("Metrics")
+                               .attr("id", "metrics-link")
+                               .attr("href", "#metrics" )
+                               .attr("data-toggle", "tab")));
+
+                this.$("#project-sections").append( $(document.createElement("div"))
+                                                    .attr("id", "metrics")
+                                                     .addClass("tab-pane") );
 
                 // Render the members section
                 if (!this.model.get("hideMembers")) {
@@ -256,16 +269,13 @@ define(["jquery",
               this.sectionMetricsView = new StatsView({
                   title: "Statistics and Figures",
                   description: "A summary of all datasets from " + this.model.get("label"),
-                  el: "#project-metrics",
+                  el: "#metrics",
                   model: statsModel
               });
 
               this.sectionMetricsView.render();
-              this.sectionMetricsView.$el.attr("id", "metrics");
 
               this.subviews.push(this.sectionMetricsView);
-
-              this.addSectionLink(this.sectionMetricsView, "Metrics");
 
             },
 

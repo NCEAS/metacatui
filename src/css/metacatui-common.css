@@ -2471,6 +2471,13 @@ img[src*="googleapis.com/"].georegion-map{
   list-style: none;
 }
 /******************************************
+* EML Party display
+********************************************/
+.eml-party .name{
+  font-weight: bold;
+}
+
+/******************************************
 * Projects
 ********************************************/
 .project-view{
@@ -2481,6 +2488,7 @@ img[src*="googleapis.com/"].georegion-map{
 #project-header-container{
   margin-bottom: 20px;
   padding-left: 40px;
+  box-sizing: border-box;
 }
 #project-section-tabs{
   margin-bottom: 0px;
@@ -2493,8 +2501,7 @@ img[src*="googleapis.com/"].georegion-map{
 #project-section-tabs a{
   text-align: center;
 }
-#project-sections #data,
-#project-sections #members{
+#project-sections #data{
   padding: 20px;
 }
 .project-section-content{
@@ -2562,7 +2569,7 @@ padding: 20px;
 }
 .well.awards-info {
 	background: inherit;
-	margin-top: 20px;
+	margin: 20px;
 }
 .project-view .toc-ul{
 	position: sticky;
@@ -2611,6 +2618,20 @@ i.toc-sub-item{
 }
 .project-view .logo-row{
 	margin-bottom: 40px;
+}
+.project-view .profile .profile-title,
+.project-view .profile .charts-container > p{
+  padding-left: 20px;
+}
+.project-view .profile .profile-title{
+  font-size: 1.5em;
+}
+.project-view #members .row-fluid{
+  padding: 20px;
+  box-sizing: border-box;
+}
+.project-view #members .row-fluid:nth-child(odd) {
+    background-color: #EEE;
 }
 
 /*** Colors used in the Project View ***/
@@ -4898,7 +4919,7 @@ textarea.xlarge{
 }
 
 /* ---- People / Parties ---- */
-.eml-party{
+.Editor .eml-party{
 	position: relative;
 }
 .controls-well > .party{
@@ -4915,7 +4936,7 @@ textarea.xlarge{
     margin-top: 2em;
     margin-bottom: 1em;
 }
-.eml-party .phone{
+.Editor .eml-party .phone{
 	font-size: .8em;
     padding: 5px;
     height: 3em;
