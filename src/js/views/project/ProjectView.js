@@ -26,6 +26,15 @@ define(["jquery",
 
             type: "Project",
 
+            //@type {string} - the section in this ProjectView that is currently active/being viewed
+            activeSection: "",
+
+            //@type {string} - The seriesId of the project document
+            projectId: "",
+
+            //@type {string} - The unique short name of the project
+            projectName: "",
+
             subviews: new Array(), // Could be a literal object {} */
 
             // @type {Project} - A Project Model is associated with this view and gets created during render()
@@ -44,7 +53,7 @@ define(["jquery",
                 // Set the current ProjectView properties
                 this.projectId = options.projectId ? options.projectId : undefined;
                 this.projectName = options.projectName ? options.projectName : undefined;
-                this.projectSection = options.projectSection ? options.projectSectrion : undefined;
+                this.activeSection = options.activeSection ? options.activeSection : undefined;
             },
 
             /*
@@ -160,11 +169,47 @@ define(["jquery",
                 this.logosView.render();
                 this.$(".project-view").append(this.logosView.el);
 
+                var view = this;
+
                 //When each tab is clicked and shown
                 this.$('a[data-toggle="tab"]').on('shown', function(e) {
                   var sectionView = $(e.target).data("view");
-                  sectionView.postRender();
+
+                  if( typeof sectionView !== "undefined"){
+                    sectionView.postRender();
+                  }
+
+                  //Get the href of the clicked link
+                  var linkTarget = $(e.target).attr("href");
+                  linkTarget = linkTarget.substring(1);
+
+                  //Set this view's active section name to the link href
+                  view.activeSection = linkTarget;
+
+                  //Get the new pathname using the active section
+                  if( !MetacatUI.root.length || MetacatUI.root == "/" ){
+                    var newPathName = window.location.pathname.substring(0, window.location.pathname.indexOf(view.projectName)) +
+                                        view.projectName + "/" + view.activeSection;
+                  }
+                  else{
+                    var newPathName = window.location.pathname.substring( window.location.pathname.indexOf(MetacatUI.root) + MetacatUI.root.length );
+                    newPathName = newPathName.substring(0, newPathName.indexOf(view.projectName)) +
+                                        view.projectName + "/" + view.activeSection;
+                  }
+
+                  //Update the window location
+                  MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
                 });
+
+                //Switch to the active section tab
+                if( this.activeSection ){
+                  this.$('#project-section-tabs a[href="#' + this.activeSection + '"]').tab("show");
+                }
+
+                //Scroll to an inner-page link if there is one specified
+                if( window.location.hash && this.$(window.location.hash).length ){
+                  MetacatUI.appView.scrollTo(this.$(window.location.hash));
+                }
 
             },
 

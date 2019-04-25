@@ -45,7 +45,7 @@ define(["jquery",
             });
 
             //Listen to the markdown view and when it is rendered, format the rendered markdown
-            this.listenTo(sectionMarkdownView, "mdRendered", this.formatMarkdown);
+            this.listenTo(sectionMarkdownView, "mdRendered", this.postMarkdownRender);
 
             //Render the view
             sectionMarkdownView.render();
@@ -98,9 +98,21 @@ define(["jquery",
         * When the project section markdown is rendered in a MarkdownView, format the
         * resulting HTML as needed for this view
         */
-        formatMarkdown: function(){
+        postMarkdownRender: function(){
 
           this.$(".markdown img").addClass("thumbnail").after("<div class='clear'></div>");
+
+          //If the window location has a hash, scroll to it
+          if( window.location.hash && this.$(window.location.hash).length ){
+
+            var view = this;
+
+            //Wait one second to allow images time to load before we scroll down the page
+            setTimeout(function(){
+              //Scroll to the element specified in the hash
+              MetacatUI.appView.scrollTo( view.$(window.location.hash) );
+            }, 1000);
+          }
 
         }
 

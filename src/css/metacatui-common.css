@@ -2501,9 +2501,6 @@ img[src*="googleapis.com/"].georegion-map{
 #project-section-tabs a{
   text-align: center;
 }
-#project-sections #data{
-  padding: 20px;
-}
 .project-section-content{
   padding: 20px;
   margin-top: 40px;
@@ -3768,6 +3765,9 @@ a.disabled {
 }
 
 /********* Filter Views ***********/
+.project-view .filter-group{
+  padding: 0px 20px;
+}
 .filter-group .filter {
   display: inline-block;
   margin-right: 20px;
@@ -3778,6 +3778,9 @@ a.disabled {
 }
 .filter-group .filter input{
 	box-shadow: none;
+}
+.filter-group-links{
+  border-top: 1px solid #DDD;
 }
 .filter-group-link a,
 .nav-tabs .filter-group-link a,
