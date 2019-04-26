@@ -6,6 +6,7 @@ define(["jquery",
         "collections/Filters",
         "collections/SolrResults",
         "models/project/ProjectSectionModel",
+        "models/project/ProjectImage",
         "models/metadata/eml211/EMLParty",
         "models/metadata/eml220/EMLText",
         "models/CollectionModel",
@@ -13,7 +14,7 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map"
     ],
-    function($, _, Backbone, gmaps, Filters, SolrResults, ProjectSectionModel,
+    function($, _, Backbone, gmaps, Filters, SolrResults, ProjectSectionModel, ProjectImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
 
         /**
@@ -132,14 +133,15 @@ define(["jquery",
                 modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
 
                 //Parse acknowledgement logos into urls
-                var logos = this.parseTextNode(projectNode, "acknowledgmentsLogo", true);
+                var logos = $(projectNode).children("acknowledgmentsLogo");
                 modelJSON.acknowledgmentsLogos = [];
                 _.each(logos, function(logo, i) {
                     if ( !logo ) return;
 
-                    modelJSON.acknowledgmentsLogos.push(
-                        MetacatUI.appModel.get("objectServiceUrl") + logo
-                    );
+                    var imageModel = new ProjectImage({ objectDOM: logo });
+                    imageModel.set(imageModel.parse());
+
+                    modelJSON.acknowledgmentsLogos.push( imageModel );
                 });
 
                 // Parse the literature cited
