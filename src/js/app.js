@@ -55,6 +55,7 @@ require.config({
     rdflib: MetacatUI.root + '/components/rdflib.min',
     x2js: MetacatUI.root + '/components/xml2json',
     he: MetacatUI.root + '/components/he',
+    citation: MetacatUI.root + '/components/citation.min',
 	// showdown + extensions (used in the markdownView to convert markdown to html)
 	showdown: MetacatUI.root + '/components/showdown/showdown.min',
 	showdownHighlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/showdown-highlight',
@@ -63,7 +64,6 @@ require.config({
 	showdownBootstrap: MetacatUI.root + '/components/showdown/extensions/showdown-bootstrap',
 	showdownDocbook: MetacatUI.root + '/components/showdown/extensions/showdown-docbook',
 	showdownKatex: MetacatUI.root + '/components/showdown/extensions/showdown-katex/showdown-katex.min',
-	citation: MetacatUI.root + '/components/showdown/extensions/showdown-citation/citation-0.4.0-9.min',
 	showdownCitation:  MetacatUI.root + '/components/showdown/extensions/showdown-citation/showdown-citation',
 	showdownImages:  MetacatUI.root + '/components/showdown/extensions/showdown-images',
 	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
@@ -115,7 +115,7 @@ require.config({
 		exports: 'filterXSS'
 	},
 	citation: {
-		exports: 'Cite'
+		exports: 'citationRequire'
 	}
   }
 });
