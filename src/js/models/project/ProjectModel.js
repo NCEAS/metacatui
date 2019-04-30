@@ -152,7 +152,6 @@ define(["jquery",
                     // I'm not sure we actually need to set this on the model?
                     thisModel = this;
                     require(["citation"], function(citation) {
-                        const Cite = require("citation-js");
                         thisModel.set("literatureCited", thisModel.parseTextNode(projectNode, "literatureCited"));
                         // Maybe inject the BibTex into the Markdown here?
                     });
