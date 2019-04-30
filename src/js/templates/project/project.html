@@ -2,45 +2,26 @@
   <div id="project-header-container" class="row-fluid"></div>
 
   <div class="row-fluid">
-    <div id="project-toc-container" class="span2"></div>
-
-    <article class="span10 tabbable">
+    <article class="tabbable">
 
       <ul id="project-section-tabs" class="nav nav-tabs">
-        <% if( !hideHome ){ %>
-          <li class="active"><a id = "project-home-tab" href="#project-home" data-toggle="tab">Home</a></li>
-        <% } %>
-        <% if( !hideMetrics ){ %>
-          <li class=""><a id = "project-metrics-tab" href="#project-metrics" data-toggle="tab">Metrics</a></li>
-        <% } %>
-        <% if( !hidePeople ){ %>
-          <li class=""><a id = "project-members-tab" href="#project-members" data-toggle="tab">People</a></li>
-        <% } %>
       </ul>
 
-      <section id="project-section-content" class="row-fluid tab-content" data-section="project">
-        <% if( !hideHome ){ %>
-          <div class="tab-pane active" id="project-home"></div>
-        <% } %>
-        <% if( !hideMetrics ){ %>
-          <div class="tab-pane" id="project-metrics"></div>
-        <% } %>
-        <% if( !hidePeople ){ %>
-          <div class="tab-pane" id="project-members"></div>
-        <% } %>
+      <section id="project-sections" class="row-fluid tab-content" data-section="project">
       </section>
 
     </article>
-
   </div>
-
-  <div id="markdown-container" class="markdown"></div>
 
   <style type="text/css">
   :root {
     --project-primary-color: <%=primaryColor%>;
     --project-secondary-color: <%=secondaryColor%>;
     --project-accent-color: <%=accentColor%>;
+    --project-primary-color-transparent: <%=primaryColorTransparent%>;
+    --project-secondary-color-transparent: <%=secondaryColorTransparent%>;
+    --project-accent-color-transparent: <%=accentColorTransparent%>;
+
   }
   </style>
 </div>

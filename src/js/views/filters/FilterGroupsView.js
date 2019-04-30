@@ -40,7 +40,7 @@ define(['jquery', 'underscore', 'backbone',
     render: function () {
 
       //Create an unordered list for all the filter tabs
-      var groupTabs = $(document.createElement("ul")).addClass("nav nav-tabs");
+      var groupTabs = $(document.createElement("ul")).addClass("nav nav-tabs filter-group-links");
 
       //Create a container div for the filter groups
       var filterGroupContainer = $(document.createElement("div")).addClass("tab-content");
@@ -95,25 +95,6 @@ define(['jquery', 'underscore', 'backbone',
       //Add the filter group elements to this view
       this.$el.append(groupTabs, filterGroupContainer);
 
-      //Check if there is a difference in heights
-      var maxHeight = 0;
-
-      _.each( groupTabs.find("a"), function(link){
-
-        if( $(link).height() > maxHeight ){
-          maxHeight = $(link).height();
-        }
-
-      });
-
-      //Set the height of each filter group link so they are all equal
-      _.each( groupTabs.find("a"), function(link){
-
-        if( $(link).height() < maxHeight ){
-          $(link).css("line-height", maxHeight + "px");
-        }
-
-      });
 
       //When each filter group tab is shown, perform any post render function, if needed.
       this.$('a[data-toggle="tab"]').on('shown', function (e) {
@@ -216,6 +197,31 @@ define(['jquery', 'underscore', 'backbone',
       filterView.render();
       this.$(".filters-header").prepend(filterView.el);
 
+    },
+
+    postRender: function(){
+
+      var groupTabs = this.$(".filter-group-links");
+
+      //Check if there is a difference in heights
+      var maxHeight = 0;
+
+      _.each( groupTabs.find("a"), function(link){
+
+        if( $(link).height() > maxHeight ){
+          maxHeight = $(link).height();
+        }
+
+      });
+
+      //Set the height of each filter group link so they are all equal
+      _.each( groupTabs.find("a"), function(link){
+
+        if( $(link).height() < maxHeight ){
+          $(link).css("line-height", maxHeight + "px");
+        }
+
+      });
     },
 
     /*

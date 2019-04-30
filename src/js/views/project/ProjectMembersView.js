@@ -13,7 +13,6 @@ define(["jquery",
      * project members tab (within ProjectSectionView)
      */
      var ProjectMembersView = ProjectSectionView.extend({
-        el: "#project-members",
         type: "ProjectMembers",
 
       //   /* The list of subview instances contained in this view*/
@@ -36,6 +35,11 @@ define(["jquery",
 
       //   /* Render the view */
         render: function() {
+
+          if( this.id ){
+            this.$el.attr("id", this.id);
+          }
+
             var parties = this.model.get("associatedParties");
             var thisview = this;
             // Group parties into sets of 2 to do 2 per row

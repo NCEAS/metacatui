@@ -364,14 +364,14 @@ function ($, _, Backbone) {
 					MetacatUI.appView.projectView = new ProjectView({
                         projectId: projectId,
                         projectName: projectName,
-                        projectSection: projectSection
+                        activeSection: projectSection
                     });
 					MetacatUI.appView.showView(MetacatUI.appView.projectView);
 				});
 			} else {
                 MetacatUI.appView.projectView.projectName = projectName;
                 MetacatUI.appView.projectView.projectId = projectId;
-                MetacatUI.appView.projectView.projectSection = projectSection;
+                MetacatUI.appView.projectView.activeSection = projectSection;
 				MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},

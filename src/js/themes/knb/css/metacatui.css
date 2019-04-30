@@ -172,7 +172,35 @@
       margin: 35px auto auto auto;
     }
 
-
+/*
+* Project View
+*/
+.ProjectView #HeaderContainer{
+  display: none !important;
+}
+.ProjectView #Navbar{
+  position: relative;
+  width: 100%;
+  left: 0px;
+  margin: 0px;
+}
+.ProjectView .navbar{
+  margin: 0px;
+}
+.ProjectView .navbar-inner{
+  background-image: none;
+  box-shadow: none;
+  background-color: #FFF;
+  border-bottom: 1px solid #CCC;
+}
+.ProjectView .navbar .nav > li > a.brand{
+  font-size: 25px;
+  letter-spacing: -2px;
+}
+.ProjectView .navbar .nav > li > a,
+.ProjectView .nav .input > form > label{
+  font-size: 12px;
+}
 /* Editor
 -------------------------------------------------- */
 .Editor #Content {

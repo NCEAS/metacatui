@@ -56,7 +56,10 @@ define(["jquery",
                     this.$el.append(row);
                 }
 
-                row.append(this.template({logoURL: logo, spanX: spanX}));
+                var templateVars = logo.toJSON();
+                templateVars.spanX = spanX;
+
+                row.append(this.template(templateVars));
 
             }, this);
 

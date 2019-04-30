@@ -2373,7 +2373,7 @@ a.btn.metrics-button-disabled {
 ********************************************/
 .thumbnail{
 	height: auto;
-	width: 350px;
+	max-width: 90%;
 	padding: 20px;
 	margin-bottom: 20px;
 }
@@ -2471,18 +2471,53 @@ img[src*="googleapis.com/"].georegion-map{
   list-style: none;
 }
 /******************************************
+* EML Party display
+********************************************/
+.eml-party .name{
+  font-weight: bold;
+}
+
+/******************************************
 * Projects
 ********************************************/
-.projectHeader {
-	border-spacing: 10px;
-	border-collapse: separate;
+.project-view{
+  width: calc(100% + 80px);
+  margin-left: -40px;
+  margin-top: -20px;
 }
-.projectHeader td{
-	vertical-align: middle;
+#project-header-container{
+  margin-bottom: 20px;
+  padding-left: 40px;
+  box-sizing: border-box;
 }
-.top-buffer {
-	margin-top:5px;
-	margin-bottom:8px;
+#project-section-tabs{
+  margin-bottom: 0px;
+}
+#project-section-tabs li a {
+  background-color: transparent;
+  border-radius: 0px;
+  border: 0px;
+}
+#project-section-tabs a{
+  text-align: center;
+}
+.project-section-content{
+  padding: 20px;
+  margin-top: 40px;
+}
+.project-display-image{
+  background-repeat: no-repeat;
+  background-position-x: 50%;
+  background-position-y: 50%;
+  background-size: cover;
+  min-height: 500px;
+  padding-top: 60px;
+  color: #FFF;
+}
+.project-display-text{
+  box-sizing: border-box;
+background-color: var(--project-primary-color-transparent);
+padding: 20px;
 }
 .logo-container{
 	height: 100px;
@@ -2498,7 +2533,9 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .project-view .project-logo{
 	max-width: 100%;
-	max-height: 120px;
+	max-height: 70px;
+  display: inline-block;
+  margin-right: 20px;
 }
 .project-view #results-container{
 	width: 100%;
@@ -2508,35 +2545,67 @@ img[src*="googleapis.com/"].georegion-map{
 .project-view .mapMode #map-container{
 	width: 50%;
 }
-#project-search-results #clear-all{
+.project-view .data-catalog #clear-all{
 	display: none;
 }
-#project-description-container{
-	border-top: 1px solid #DDD;
-	margin-top: 20px;
-	padding-top: 10px;
-}
-#project-description-container img{
-	margin: 20px;
-	max-width: 80%;
-	width: auto;
+.project-view .project-title{
+  font-weight: 100;
+  line-height: 70px;
+  margin: 0px;
+  font-size: 2em;
+  display: inline-block;
 }
 .project-logos-view{
 	border-top: 1px solid #DDD;
   padding-top: 40px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 .project-logos-view .img-logo{
 	max-width: 120px;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .well.awards-info {
 	background: inherit;
-	margin-top: 20px;
+	margin: 20px;
 }
-#project-toc-container{
+.project-view .toc-ul{
 	position: sticky;
 	position: -webkit-sticky;
-	top: 20px;
-	margin-top: 58px;
+  background-color: var(--project-primary-color);
+  margin-left: -20px;
+  padding: 0px;
+}
+.project-view .toc-ul > li > a{
+  padding-left: 20px;
+  padding-right: 20px;
+  margin: 0px;
+}
+.project-view .toc-ul a{
+  line-height: 2em;
+  font-weight: lighter;
+}
+.project-view .toc-ul > li > ul{
+  margin-left: 0px;
+  list-style: none;
+}
+.project-view .toc-ul > li > ul > li > a{
+  padding-left: 40px;
+}
+.project-view .toc-ul li,
+.project-view .toc-ul a{
+  background-color: transparent;
+  color: #FFF;
+  border:0px;
+  border-radius: 0px;
+  text-shadow: none;
+}
+.project-view .toc-ul a:hover{
+  color: #FFF;
+  background-color: transparent;
 }
 .toc a{
 	color: #555;
@@ -2550,6 +2619,23 @@ i.toc-sub-item{
 }
 .project-view .logo-row{
 	margin-bottom: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.project-view .profile .profile-title,
+.project-view .profile .charts-container > p{
+  padding-left: 20px;
+}
+.project-view .profile .profile-title{
+  font-size: 1.5em;
+}
+.project-view #members .row-fluid{
+  padding: 20px;
+  box-sizing: border-box;
+}
+.project-view #members .row-fluid:nth-child(odd) {
+    background-color: #EEE;
 }
 
 /*** Colors used in the Project View ***/
@@ -2559,11 +2645,24 @@ i.toc-sub-item{
 .project-view a:hover{
 	color: var(--project-secondary-color);
 }
+.project-view #project-section-tabs li{
+  background-color: var(--project-primary-color);
+}
+.project-view #project-section-tabs a:hover{
+  background-color: var(--project-secondary-color);
+  color: #FFF;
+}
+.project-view #project-section-tabs li.active{
+  background-color: var(--project-secondary-color);
+}
 .project-view #project-section-tabs a{
-	color: var(--project-primary-color);
+	color: #FFF;
 }
 .project-view #project-section-tabs .active a{
-	color: #555;
+	color: #FFF;
+}
+.project-view .toc-ul li > a:hover{
+  background-color: var(--project-secondary-color);
 }
 .project-view .result-row .citation .title{
 	color: var(--project-primary-color);
@@ -3673,6 +3772,9 @@ a.disabled {
 }
 
 /********* Filter Views ***********/
+.project-view .filter-group{
+  padding: 0px 20px;
+}
 .filter-group .filter {
   display: inline-block;
   margin-right: 20px;
@@ -3683,6 +3785,9 @@ a.disabled {
 }
 .filter-group .filter input{
 	box-shadow: none;
+}
+.filter-group-links{
+  border-top: 1px solid #DDD;
 }
 .filter-group-link a,
 .nav-tabs .filter-group-link a,
@@ -4824,7 +4929,7 @@ textarea.xlarge{
 }
 
 /* ---- People / Parties ---- */
-.eml-party{
+.Editor .eml-party{
 	position: relative;
 }
 .controls-well > .party{
@@ -4841,7 +4946,7 @@ textarea.xlarge{
     margin-top: 2em;
     margin-bottom: 1em;
 }
-.eml-party .phone{
+.Editor .eml-party .phone{
 	font-size: .8em;
     padding: 5px;
     height: 3em;

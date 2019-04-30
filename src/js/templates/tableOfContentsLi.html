@@ -1,6 +1,8 @@
 <li>
-    <a href="#<%=tocItem.linkDisplay%>">
-        <i class="icon <%=tocItem.icon%>"></i>
-        <%=tocItem.text%>
+    <a href="<%=link%>" class="ellipsis">
+      <% if( typeof icon !== "undefined" ){ %>
+        <i class="icon <%=icon%>"></i>
+      <% } %>
+      <%=text%>
     </a>
 </li>
