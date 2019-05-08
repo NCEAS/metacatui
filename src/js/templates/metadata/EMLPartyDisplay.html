@@ -5,7 +5,9 @@
         <%=individualName.salutation.join(', ')%>
         <%=individualName.givenName.join(' ')%>
         <%=individualName.surName%>
-        <%=organizationName%>
+        <% if(organizationName){ %>
+          (<%=organizationName%>)
+        <% } %>
       </span>
       <span class="position">
         <br>
