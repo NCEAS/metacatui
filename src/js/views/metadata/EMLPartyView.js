@@ -104,15 +104,6 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         	updateModel: function(e){
         		if(!e) return false;
 
-        		//If this is a new EML Party, add it to the parent EML211 model
-        		if(this.isNew){
-        			var mergeSuccess = this.model.mergeIntoParent();
-
-              //If the merge was sucessfull, mark this as not new
-              if( mergeSuccess  )
-        			   this.notNew();
-        		}
-
         		//Get the attribute that was changed
         		var changedAttr = $(e.target).attr("data-attribute");
         		if(!changedAttr) return false;
@@ -193,6 +184,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
               }
             }
 
+            //If this is a new EML Party, add it to the parent EML211 model
+            if(this.isNew){
+              var mergeSuccess = this.model.mergeIntoParent();
+
+              //If the merge was sucessfull, mark this as not new
+              if( mergeSuccess  )
+                 this.notNew();
+            }
+
             //If this EMLParty model has been removed from the parent EML model,
             //then add it back
             if( this.model.get("removed") ){
@@ -244,6 +244,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
     			var allAddresses = this.model.get("address");
     			allAddresses[0] = address;
     			this.model.set("address", allAddresses);
+
+          //If this is a new EML Party, add it to the parent EML211 model
+          if(this.isNew){
+            var mergeSuccess = this.model.mergeIntoParent();
+
+            //If the merge was sucessfull, mark this as not new
+            if( mergeSuccess  )
+               this.notNew();
+          }
 
           //If this EMLParty model has been removed from the parent EML model,
           //then add it back
@@ -298,6 +307,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
 
             //Update the value on the model
             this.model.set("individualName", name);
+
+            //If this is a new EML Party, add it to the parent EML211 model
+            if(this.isNew){
+              var mergeSuccess = this.model.mergeIntoParent();
+
+              //If the merge was sucessfull, mark this as not new
+              if( mergeSuccess  )
+                 this.notNew();
+            }
 
             //If this EMLParty model has been removed from the parent EML model,
             //then add it back
