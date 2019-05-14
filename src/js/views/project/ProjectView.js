@@ -204,6 +204,10 @@ define(["jquery",
                 //Switch to the active section tab
                 if( this.activeSection ){
                   this.$('#project-section-tabs a[href="#' + this.activeSection + '"]').tab("show");
+
+                  if( this.activeSection == "metrics" ){
+                    this.renderMetricsView();
+                  }
                 }
 
                 //Scroll to an inner-page link if there is one specified
