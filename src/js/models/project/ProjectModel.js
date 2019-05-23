@@ -141,7 +141,9 @@ define(["jquery",
                     var imageModel = new ProjectImage({ objectDOM: logo });
                     imageModel.set(imageModel.parse());
 
-                    modelJSON.acknowledgmentsLogos.push( imageModel );
+                    if( imageModel.get("imageURL") ){
+                      modelJSON.acknowledgmentsLogos.push( imageModel );
+                    }
                 });
 
                 // Parse the literature cited
