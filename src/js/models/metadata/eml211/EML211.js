@@ -1720,7 +1720,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
 
         //Max title length
-        var maxLength = 30;
+        var maxLength = 50;
 
         //trim the string to the maximum length
         var trimmedTitle = title.substr(0, maxLength);
@@ -1733,7 +1733,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         trimmedTitle = trimmedTitle.replace(/[^a-zA-Z0-9]/g, "_").replace(/_{2,}/g, "_");
 
         //Set the fileName on the model
-        this.set("fileName", "science_metadata_" + trimmedTitle + ".xml");
+        this.set("fileName", trimmedTitle + ".xml");
       },
 
       trickleUpChange: function(){
