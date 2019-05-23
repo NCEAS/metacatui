@@ -108,8 +108,8 @@ define([    "jquery", "underscore", "backbone",
                 regexFootnotes1     = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/mg,
                 regexFootnotes2     = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/mg,
                 regexFootnotes3     = /\[\^([\d\w]+)\]/m,
-                // test for all of the math/katex delimiters (TODO: see what katex uses for regex. this is too general.)
-                regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
+                // test for all of the math/katex delimiters
+                regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|$.*$|```asciimath.*```|```latex.*```"),
                 regexCitation   = /\[@.+\]/g;
                 // test for any <h.> tags
                 regexHtags      = new RegExp('#\\s'),
@@ -133,9 +133,10 @@ define([    "jquery", "underscore", "backbone",
                     // custom config needed for katex
                     var katex = showdownKatex({
                         delimiters: [
-                            { left: "$",    right: "$",      display: false,    asciimath: true },
-                            { left: '$$',   right: '$$',     display: true,     asciimath: true },
-                        ],
+                            { left: "$", right: "$", display: false },
+                            { left: "$$", right: "$$", display: false},
+                            { left: '~', right: '~', display: false }
+                        ]
                     });
                     // because custom config, register katex with showdown
                     showdown.extension("katex", katex);
