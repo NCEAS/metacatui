@@ -2079,11 +2079,15 @@ define(['jquery',
 			//When the latest version is found,
 			this.listenTo(this.model, "change:newestVersion", function(){
 				//Make sure it has a newer version, and if so,
-				if(view.model.get("newestVersion") != view.model.get("id"))
+				if(view.model.get("newestVersion") != view.model.get("id")){
 					//Put a link to the newest version in the content
 					view.$(".newer-version").replaceWith(view.versionTemplate({
             pid: view.model.get("newestVersion")
           }));
+        }
+        else{
+          	view.$(".newer-version").remove();
+        }
 			});
 
       //Insert the newest version template with a loading message

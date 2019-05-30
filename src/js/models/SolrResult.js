@@ -555,9 +555,12 @@ define(['jquery', 'underscore', 'backbone'],
 
 				},
 				error: function(xhr){
-					//If this newer version isn't accessible, link to the latest version that is
-					if(xhr.status == "401")
-						model.set("newestVersion", newestVersion);
+					//If this newer version isn't found or accessible, then save the last
+          // accessible id as the newest version
+          if(xhr.status == 401 || xhr.status == 404 || xhr.status == "401" ||
+             xhr.status == "404"){
+            model.set("newestVersion", newestVersion);
+          }
 				}
 			}
 
