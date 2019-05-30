@@ -1723,10 +1723,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         var maxLength = 50;
 
         //trim the string to the maximum length
-        var trimmedTitle = title.substr(0, maxLength);
+        var trimmedTitle = title.trim().substr(0, maxLength);
 
         //re-trim if we are in the middle of a word
-        trimmedTitle = trimmedTitle.substr(0, Math.min(trimmedTitle.length, trimmedTitle.lastIndexOf(" ")));
+        if( trimmedTitle.indexOf(" ") > -1 ){
+          trimmedTitle = trimmedTitle.substr(0, Math.min(trimmedTitle.length, trimmedTitle.lastIndexOf(" ")));
+        }
 
         //Replace all non alphanumeric characters with underscores
         // and make sure there isn't more than one underscore in a row
