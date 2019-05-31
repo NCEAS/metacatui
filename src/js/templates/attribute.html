@@ -1,8 +1,13 @@
-<% 
+<%
 if(!formattedAttribute || (formattedAttribute === undefined)) var formattedAttribute = attribute;
 %>
 
 	<div class="control-group <%=attribute%>" id="<%=id%>" type="<%=type%>" resource="<%=resource%>">
 		<label class="control-label <%=attribute%>"><%=formattedAttribute%></label>
+
+    <% if( value.startsWith("http") ){
+      value = '<a href="' + value + '" target="_blank">' + value + '</a>';
+    } %>
+    
 		<div class="controls controls-well"><%=value%></div>
 	</div>

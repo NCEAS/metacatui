@@ -267,11 +267,11 @@ define(['jquery',
 			
 			//If this is a multi-valued field from Solr, the attribute value is actually multiple embedded attribute templates
 			var numAttributes = (Array.isArray(value) && (value.length > 1)) ? value.length : 0;
-			for(var i=0; i<numAttributes; i++){				
+			for(var i=0; i<numAttributes; i++){
 				embeddedAttributes += view.attributeTemplate({
 					attribute: "",
 					formattedAttribute: view.transformCamelCase(attribute),
-					value: value[i],
+					value: value[i].toString(),
 					id: attribute + "_" + (i+1),
 					type: type,
 					resource: "#xpointer(//" + attribute + "[" + (i+1) + "])"
@@ -285,7 +285,7 @@ define(['jquery',
 			html += view.attributeTemplate({
 				attribute: attribute,
 				formattedAttribute: view.transformCamelCase(attribute),
-				value: embeddedAttributes || value,
+				value: embeddedAttributes || value.toString(),
 				id: attribute,
 				type: type,
 				resource: "#xpointer(//" + attribute + ")"
