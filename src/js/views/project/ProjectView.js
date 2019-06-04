@@ -209,6 +209,9 @@ define(["jquery",
                     this.renderMetricsView();
                   }
                 }
+                else{
+                  this.$(".project-section-view").first().data("view").postRender();
+                }
 
                 //Scroll to an inner-page link if there is one specified
                 if( window.location.hash && this.$(window.location.hash).length ){

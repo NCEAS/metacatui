@@ -16,7 +16,7 @@ define(["jquery",
 
         //The properties of this view's element
         tagName: "div",
-        className: "tab-pane",
+        className: "tab-pane project-section-view",
 
         // @type {boolean} - Specifies if this section is active or not
         active: false,
@@ -35,6 +35,8 @@ define(["jquery",
           this.$el.attr("id", this.model.get("label").replace(/[^a-zA-Z0-9]/g, ""));
 
           this.$el.html(this.template(this.model.toJSON()));
+
+          this.$el.data("view", this);
 
           //If there is Markdown, render it
           if( this.model.get("content").get("markdown") ){
@@ -68,6 +70,8 @@ define(["jquery",
             contentEl: this.markdownView.el
           });
 
+          this.tocView = tocView;
+
           tocView.render();
 
           //If at least one link was created in the TOCView, add it to this view
@@ -91,6 +95,23 @@ define(["jquery",
                 subview.postRender();
               }
           });
+
+          //Affix the TOC to the top of the window when scrolling past it
+          if( !this.tocView && this.markdownView ){
+            this.listenToOnce(this.markdownView, "mdRendered", function(){
+
+              this.tocView.$el.affix({
+                offset: this.tocView.$el.offset().top
+              });
+
+            });
+          }
+          else if( this.tocView ){
+            this.tocView.$el.affix({
+              offset: this.tocView.$el.offset().top
+            });
+          }
+
 
         },
 
