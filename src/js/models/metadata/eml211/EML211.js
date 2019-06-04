@@ -1659,6 +1659,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         textString = textString.trim();
 
+        //Check for XML/HTML elements
+        _.each(textString.match(/<\s*[^>]*>/g), function(xmlNode){
+
+          //Encode <, >, and </ substrings
+          var tagName = xmlNode.replace(/>/g, "&gt;");
+          tagName = tagName.replace(/</g, "&lt;");
+
+          //Replace the xmlNode in the full text string
+          textString = textString.replace(xmlNode, tagName);
+
+        });
+
         return textString;
 
       },
