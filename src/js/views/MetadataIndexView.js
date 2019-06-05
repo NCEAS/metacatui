@@ -387,6 +387,27 @@ define(['jquery',
       });
       this.$el.append(message);
 
+      //If this metadata doc is not indexed, we need to search the system metadata
+      //to see if it is publicly accessible.
+      if( this.parentView && this.parentView.model ){
+        //Get the system metadata string
+        var sysMeta = this.parentView.model.get("systemMetadata");
+        if(sysMeta){
+          //Parse it into XML nodes
+          sysMeta = $.parseXML(sysMeta);
+          //Find the allow permission for the public
+          var publicPermission = $(sysMeta).find("allow subject:contains('public')");
+          if( publicPermission.length ){
+            //Remove the "private" icon
+            $("#metadata-controls-container .private").remove();
+          }
+        }
+        //If there is no system metadata, default to hiding the private icon
+        else{
+          $("#metadata-controls-container .private").remove();
+        }
+      }
+
     },
 
 		flagComplete: function(){
