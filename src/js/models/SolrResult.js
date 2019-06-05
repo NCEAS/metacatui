@@ -50,6 +50,8 @@ define(['jquery', 'underscore', 'backbone'],
 			serviceOutput: null,
 			notFound: false,
 			newestVersion: null,
+      //@type {string} - The system metadata XML as a string
+      systemMetadata: null,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -462,6 +464,11 @@ define(['jquery', 'underscore', 'backbone'],
 				type: "GET",
 				dataType: "text",
 				success: function(data, response, xhr){
+
+          if( data && data.length ){
+            model.set("systemMetadata", data);
+          }
+
 					//Check if this is archvied
 					var archived = ($(data).find("archived").text() == "true");
 					model.set("archived", archived);
