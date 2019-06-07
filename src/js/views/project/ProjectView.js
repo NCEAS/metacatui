@@ -95,9 +95,6 @@ define(["jquery",
                 this.headerView.render();
                 this.subviews.push(this.headerView);
 
-                // Create a Filters collection in the search model for all search constraints in this view
-                this.model.get("searchModel").set("filters", this.model.createFilters());
-
                 // Cache this model for later use
                 MetacatUI.projects = MetacatUI.projects || {};
                 MetacatUI.projects[this.model.get("id")] = this.model.clone();
