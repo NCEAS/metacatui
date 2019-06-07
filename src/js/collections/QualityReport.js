@@ -60,7 +60,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               },
               success: function (collection, jqXhr, options) {
                 //collectionRef.run = data;
-                console.log("jqXhr.status: " + jqXhr.status)
                 collectionRef.trigger("fetchComplete");
               },
               error: function (collection, jqXhr, options) {
