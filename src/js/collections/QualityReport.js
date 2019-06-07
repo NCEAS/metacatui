@@ -60,7 +60,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               },
               success: function (collection, jqXhr, options) {
                 //collectionRef.run = data;
-                console.log("jqXhr.status: " + jqXhr.status)
                 collectionRef.trigger("fetchComplete");
               },
               error: function (collection, jqXhr, options) {
@@ -148,7 +147,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             return "removeMe";
           }
 
-          return check.type || "uncategorized";
+          var type = ""
+          // Convert check type to lower case, so that the checks will be
+          // grouped correctly, even if one check type has an incorrect capitalization.
+          if(check.type != null) {
+            // Normalize check type by converting entire string to lowercase
+            type = check.type.toLowerCase()
+            // Now convert to title case
+            type = type.charAt(0).toUpperCase() + type.slice(1);
+          }
+
+          return type || "uncategorized";
         });
 
         // get rid of the ones that should not be counted in our totals
