@@ -157,7 +157,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             type = type.charAt(0).toUpperCase() + type.slice(1);
           }
 
-          console.log("type: ", type);
           return type || "uncategorized";
         });
 
