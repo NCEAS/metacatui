@@ -272,13 +272,13 @@ define(["jquery",
 
               //If the search results haven't been fetched yet, wait. We need the
               // facet counts for the metrics view.
-              if( !this.model.get("searchResults").models.length ){
+              if( !this.model.get("searchResults").length ){
                 this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetricsView );
                 return;
               }
 
               //Get all the facet counts from the search results collection
-              var facetCounts = this.model.get("searchResults").facetCounts,
+              var facetCounts = this.model.get("allSearchResults").facetCounts,
                   //Get the id facet counts
                   idFacets = facetCounts? facetCounts.id : [],
                   //Get the documents facet counts
