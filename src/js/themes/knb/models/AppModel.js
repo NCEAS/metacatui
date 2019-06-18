@@ -122,7 +122,7 @@ define(['jquery', 'underscore', 'backbone'],
 			groupsUrl: null,
 			portalUrl: null,
 
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["knb.suite.1"],
             suiteLabels: ["KNB Metadata Completeness Suite v1.0"],
