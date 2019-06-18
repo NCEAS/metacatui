@@ -121,7 +121,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//signInUrlLdap: null,
 			tokenUrl: null,
 
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["arctic.data.center.suite.1"],
             suiteLabels: ["Arctic Data Center Conformance Suite v1.0"],

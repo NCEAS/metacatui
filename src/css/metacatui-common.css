@@ -2572,6 +2572,17 @@ padding: 20px;
 	background: inherit;
 	margin: 20px;
 }
+.project-section-content .toc-view.affix{
+  top: 20px;
+}
+.project-section-content .toc-view.affix-bottom{
+  top: 20px;
+  position: fixed;
+}
+.project-section-content .toc-view.span3.affix + .span9,
+.project-section-content .toc-view.span3.affix-bottom + .span9{
+  margin-left: 26.5%;
+}
 .project-view .toc-ul{
 	position: sticky;
 	position: -webkit-sticky;

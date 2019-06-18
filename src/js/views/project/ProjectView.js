@@ -95,9 +95,6 @@ define(["jquery",
                 this.headerView.render();
                 this.subviews.push(this.headerView);
 
-                // Create a Filters collection in the search model for all search constraints in this view
-                this.model.get("searchModel").set("filters", this.model.createFilters());
-
                 // Cache this model for later use
                 MetacatUI.projects = MetacatUI.projects || {};
                 MetacatUI.projects[this.model.get("id")] = this.model.clone();
@@ -204,6 +201,13 @@ define(["jquery",
                 //Switch to the active section tab
                 if( this.activeSection ){
                   this.$('#project-section-tabs a[href="#' + this.activeSection + '"]').tab("show");
+
+                  if( this.activeSection == "metrics" ){
+                    this.renderMetricsView();
+                  }
+                }
+                else{
+                  this.$(".project-section-view").first().data("view").postRender();
                 }
 
                 //Scroll to an inner-page link if there is one specified
@@ -268,13 +272,13 @@ define(["jquery",
 
               //If the search results haven't been fetched yet, wait. We need the
               // facet counts for the metrics view.
-              if( !this.model.get("searchResults").models.length ){
+              if( !this.model.get("searchResults").length ){
                 this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetricsView );
                 return;
               }
 
               //Get all the facet counts from the search results collection
-              var facetCounts = this.model.get("searchResults").facetCounts,
+              var facetCounts = this.model.get("allSearchResults").facetCounts,
                   //Get the id facet counts
                   idFacets = facetCounts? facetCounts.id : [],
                   //Get the documents facet counts

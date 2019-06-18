@@ -12,6 +12,7 @@ define(["jquery",
         defaults: function(){
           return {
             identifier: "",
+            imageURL: "",
             label: "",
             associatedURL: "",
             objectDOM: null

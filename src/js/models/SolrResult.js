@@ -50,6 +50,8 @@ define(['jquery', 'underscore', 'backbone'],
 			serviceOutput: null,
 			notFound: false,
 			newestVersion: null,
+      //@type {string} - The system metadata XML as a string
+      systemMetadata: null,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -462,6 +464,11 @@ define(['jquery', 'underscore', 'backbone'],
 				type: "GET",
 				dataType: "text",
 				success: function(data, response, xhr){
+
+          if( data && data.length ){
+            model.set("systemMetadata", data);
+          }
+
 					//Check if this is archvied
 					var archived = ($(data).find("archived").text() == "true");
 					model.set("archived", archived);
@@ -555,9 +562,12 @@ define(['jquery', 'underscore', 'backbone'],
 
 				},
 				error: function(xhr){
-					//If this newer version isn't accessible, link to the latest version that is
-					if(xhr.status == "401")
-						model.set("newestVersion", newestVersion);
+					//If this newer version isn't found or accessible, then save the last
+          // accessible id as the newest version
+          if(xhr.status == 401 || xhr.status == 404 || xhr.status == "401" ||
+             xhr.status == "404"){
+            model.set("newestVersion", newestVersion);
+          }
 				}
 			}
 

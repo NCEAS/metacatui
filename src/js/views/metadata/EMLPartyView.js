@@ -8,64 +8,64 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         */
         var EMLPartyView = Backbone.View.extend({
 
-        	type: "EMLPartyView",
+          type: "EMLPartyView",
 
-        	tagName: "div",
+          tagName: "div",
 
-        	className: "row-fluid eml-party",
+          className: "row-fluid eml-party",
 
-        	editTemplate: _.template(EMLPartyTemplate),
+          editTemplate: _.template(EMLPartyTemplate),
 
-        	initialize: function(options){
-        		if(!options)
-        			var options = {};
+          initialize: function(options){
+            if(!options)
+              var options = {};
 
-        		this.isNew = options.isNew || (options.model? false : true);
-        		this.model = options.model || new EMLParty();
-        		this.edit  = options.edit  || false;
+            this.isNew = options.isNew || (options.model? false : true);
+            this.model = options.model || new EMLParty();
+            this.edit  = options.edit  || false;
 
-        		this.$el.data({ model: this.model });
+            this.$el.data({ model: this.model });
 
-        	},
+          },
 
-        	events: {
-            "change" 		        : "updateModel",
+          events: {
+            "change"             : "updateModel",
             "focusout"          : "showValidation",
-        		"keyup .phone"      : "formatPhone",
-        		"mouseover .remove" : "previewRemove",
-        		"mouseout .remove"  : "previewRemove"
-        	},
+            "keyup .phone"      : "formatPhone",
+            "mouseover .remove" : "previewRemove",
+            "mouseout .remove"  : "previewRemove"
+          },
 
-        	render: function(){
+          render: function(){
 
-        		//Format the given names
-        		var name = this.model.get("individualName") || {},
-        			fullGivenName = "";
+            //Format the given names
+            var name = this.model.get("individualName") || {},
+              fullGivenName = "";
 
-        		//Take multiple given names and combine into one given name.
-        		//TODO: Support multiple given names as an array
-        		if (Array.isArray(name.givenName)) {
-					fullGivenName = _.map(name.givenName, function(name) {
-							if(typeof name != "undefined" && name)
-								return name.trim();
-							else
-								return "";
-						}).join(' ');
-				}
-        		else
-        			fullGivenName = name.givenName;
+            //Take multiple given names and combine into one given name.
+            //TODO: Support multiple given names as an array
+            if (Array.isArray(name.givenName)) {
+          fullGivenName = _.map(name.givenName, function(name) {
+              if(typeof name != "undefined" && name)
+                return name.trim();
+              else
+                return "";
+            }).join(' ');
+        }
+            else
+              fullGivenName = name.givenName;
 
-        		//Get the address object
-        		var address = Array.isArray(this.model.get("address"))?
-        						(this.model.get("address")[0] || {}) : (this.model.get("address") || {});
+            //Get the address object
+            var address = Array.isArray(this.model.get("address"))?
+                    (this.model.get("address")[0] || {}) : (this.model.get("address") || {});
 
-        		//Use the template with the editing elements if this view has the "edit" flag on
-        		if(this.edit){
+            //Use the template with the editing elements if this view has the "edit" flag on
+            if(this.edit){
 
-	        		//Send all the EMLParty info to the template
-	        		this.$el.html(this.editTemplate({
-	        			uniqueId   : this.model.cid
-	        		}));
+              //Send all the EMLParty info to the template
+              this.$el.html(this.editTemplate({
+                uniqueId   : this.model.cid
+              }));
 
               //Populate the form with all the EMLParty values
               this.$("#" + this.model.cid + "-givenName").val(fullGivenName || "");
@@ -83,75 +83,66 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
               this.$("#" + this.model.cid + "-state").val(address.administrativeArea || "");
               this.$("#" + this.model.cid + "-zip").val(address.postalCode || "");
               this.$("#" + this.model.cid + "-country").val(address.country || "");
-        		}
+            }
 
-        		//If this EML Party is new/empty, then add the new class
-        		if(this.isNew){
-        			this.$el.addClass("new");
-        		}
+            //If this EML Party is new/empty, then add the new class
+            if(this.isNew){
+              this.$el.addClass("new");
+            }
 
-        		//Save the view and model on the element
-        		this.$el.data({
-        			model: this.model,
-        			view: this
-        		});
+            //Save the view and model on the element
+            this.$el.data({
+              model: this.model,
+              view: this
+            });
 
-        		this.$el.attr("data-category", this.model.get("type"));
+            this.$el.attr("data-category", this.model.get("type"));
 
-        		return this;
-        	},
+            return this;
+          },
 
-        	updateModel: function(e){
-        		if(!e) return false;
+          updateModel: function(e){
+            if(!e) return false;
 
-        		//If this is a new EML Party, add it to the parent EML211 model
-        		if(this.isNew){
-        			var mergeSuccess = this.model.mergeIntoParent();
+            //Get the attribute that was changed
+            var changedAttr = $(e.target).attr("data-attribute");
+            if(!changedAttr) return false;
 
-              //If the merge was sucessfull, mark this as not new
-              if( mergeSuccess  )
-        			   this.notNew();
-        		}
+            //Get the current value
+            var currentValue = this.model.get(changedAttr);
 
-        		//Get the attribute that was changed
-        		var changedAttr = $(e.target).attr("data-attribute");
-        		if(!changedAttr) return false;
+            //Addresses and Names have special rules for updating
+            switch(changedAttr){
+              case "deliveryPoint":
+                this.updateAddress(e);
+                return;
+              case "city":
+                this.updateAddress(e);
+                return;
+              case "administrativeArea":
+                this.updateAddress(e);
+                return;
+              case "country":
+                this.updateAddress(e);
+                return;
+              case "postalCode":
+                this.updateAddress(e);
+                return;
+              case "surName":
+                this.updateName(e);
+                return;
+              case "givenName":
+                this.updateName(e);
+                return;
+              case "salutation":
+                this.updateName(e);
+                return;
+            }
 
-        		//Get the current value
-        		var currentValue = this.model.get(changedAttr);
-
-        		//Addresses and Names have special rules for updating
-        		switch(changedAttr){
-        			case "deliveryPoint":
-        				this.updateAddress(e);
-        				return;
-        			case "city":
-        				this.updateAddress(e);
-        				return;
-        			case "administrativeArea":
-        				this.updateAddress(e);
-        				return;
-        			case "country":
-        				this.updateAddress(e);
-        				return;
-        			case "postalCode":
-        				this.updateAddress(e);
-        				return;
-        			case "surName":
-        				this.updateName(e);
-        				return;
-        			case "givenName":
-        				this.updateName(e);
-        				return;
-        			case "salutation":
-        				this.updateName(e);
-        				return;
-        		}
-
-        		//Update the EMLParty model with the new value
-        		if(Array.isArray(currentValue)){
-        			//Get the position that this new value should go in
-        			var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
+            //Update the EMLParty model with the new value
+            if(Array.isArray(currentValue)){
+              //Get the position that this new value should go in
+              var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
 
               if( $(e.target).val() == "" ){
                 //Remove the current value from the array if there is no value in the input field
@@ -170,12 +161,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
                 currentValue[position] = value;
               }
 
-        			this.model.set(changedAttr, currentValue);
+              this.model.set(changedAttr, currentValue);
 
-        			this.model.trigger("change:" + changedAttr);
-        			this.model.trigger("change");
-        		}
-        		else{
+              this.model.trigger("change:" + changedAttr);
+              this.model.trigger("change");
+            }
+            else{
               //If the value of the input field is nothing, then reset the field
               if( $(e.target).val() == "" ){
                 this.model.set(changedAttr, this.model.defaults()[changedAttr]);
@@ -193,6 +184,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
               }
             }
 
+            //If this is a new EML Party, add it to the parent EML211 model
+            if(this.isNew){
+              var mergeSuccess = this.model.mergeIntoParent();
+
+              //If the merge was sucessfull, mark this as not new
+              if( mergeSuccess  )
+                 this.notNew();
+            }
+
             //If this EMLParty model has been removed from the parent EML model,
             //then add it back
             if( this.model.get("removed") ){
@@ -201,20 +201,20 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
               this.model.set("removed", false);
             }
 
-        		this.model.trickleUpChange();
+            this.model.trickleUpChange();
 
-        	},
+          },
 
-        	updateAddress: function(e){
-        		if(!e) return false;
+          updateAddress: function(e){
+            if(!e) return false;
 
-        		//Get the address part that was changed
-        		var changedAttr = $(e.target).attr("data-attribute");
-        		if(!changedAttr) return false;
+            //Get the address part that was changed
+            var changedAttr = $(e.target).attr("data-attribute");
+            if(!changedAttr) return false;
 
-        		//TODO: Allow multiple addresses - right now we only support editing the first address
-        		var address = this.model.get("address")[0] || {},
-        			currentValue = address[changedAttr];
+            //TODO: Allow multiple addresses - right now we only support editing the first address
+            var address = this.model.get("address")[0] || {},
+              currentValue = address[changedAttr];
 
             //Get the parent EML model and the value from the input element
             var emlModel = this.model.getParentEML(),
@@ -225,25 +225,34 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
               value = emlModel.cleanXMLText(value);
             }
 
-        		//Update the address
-        		if(Array.isArray(currentValue)){
-	        		//Get the position that this new value should go in
-	    			  var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
+            //Update the address
+            if(Array.isArray(currentValue)){
+              //Get the position that this new value should go in
+              var position = this.$("[data-attribute='" + changedAttr + "']").index(e.target);
 
-	    			  //Put the new value in the array at the correct position
-	    			  currentValue[position] = value;
-        		}
-        		//Make sure delivery points are saved as arrays
-        		else if(changedAttr == "deliveryPoint"){
-        			address[changedAttr] = [value];
-        		}
-        		else
-        			address[changedAttr] = value;
+              //Put the new value in the array at the correct position
+              currentValue[position] = value;
+            }
+            //Make sure delivery points are saved as arrays
+            else if(changedAttr == "deliveryPoint"){
+              address[changedAttr] = [value];
+            }
+            else
+              address[changedAttr] = value;
 
-        		//Update the model
-    			var allAddresses = this.model.get("address");
-    			allAddresses[0] = address;
-    			this.model.set("address", allAddresses);
+            //Update the model
+          var allAddresses = this.model.get("address");
+          allAddresses[0] = address;
+          this.model.set("address", allAddresses);
+
+          //If this is a new EML Party, add it to the parent EML211 model
+          if(this.isNew){
+            var mergeSuccess = this.model.mergeIntoParent();
+
+            //If the merge was sucessfull, mark this as not new
+            if( mergeSuccess  )
+               this.notNew();
+          }
 
           //If this EMLParty model has been removed from the parent EML model,
           //then add it back
@@ -253,12 +262,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
             this.model.set("removed", false);
           }
 
-    			//Manually trigger the change event since it's an object
-        		this.model.trigger("change:address");
-        		this.model.trigger("change");
+          //Manually trigger the change event since it's an object
+            this.model.trigger("change:address");
+            this.model.trigger("change");
 
-        		this.model.trickleUpChange();
-        	},
+            this.model.trickleUpChange();
+          },
 
           updateName: function(e){
             if(!e) return false;
@@ -299,6 +308,15 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
             //Update the value on the model
             this.model.set("individualName", name);
 
+            //If this is a new EML Party, add it to the parent EML211 model
+            if(this.isNew){
+              var mergeSuccess = this.model.mergeIntoParent();
+
+              //If the merge was sucessfull, mark this as not new
+              if( mergeSuccess  )
+                 this.notNew();
+            }
+
             //If this EMLParty model has been removed from the parent EML model,
             //then add it back
             if( this.model.get("removed") ){
@@ -320,10 +338,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
              *
              * @function showValidation
              */
-        	showValidation: function() {
+          showValidation: function() {
 
-        		//Remove the error styling
-        		this.$(".notification").empty();
+            //Remove the error styling
+            this.$(".notification").empty();
                 this.$(".error").removeClass("error");
 
                 // Check if there are values to validate
@@ -341,22 +359,22 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
                     return;
                 }
                 else{
-                	//Start the full error message string for all the EMLParty errors
-                	var errorMessages = "";
+                  //Start the full error message string for all the EMLParty errors
+                  var errorMessages = "";
 
-                	//Iterate over each field that has a validation error
-                	_.mapObject( this.model.validationError, function(errorMsg, attribute){
+                  //Iterate over each field that has a validation error
+                  _.mapObject( this.model.validationError, function(errorMsg, attribute){
 
-                		//Find the input element for this attribute and add the error styling
-                		this.$("[data-attribute='" + attribute + "']").addClass("error");
+                    //Find the input element for this attribute and add the error styling
+                    this.$("[data-attribute='" + attribute + "']").addClass("error");
 
-                		//Add this error message to the full error messages string
-                		errorMessages += errorMsg + " ";
+                    //Add this error message to the full error messages string
+                    errorMessages += errorMsg + " ";
 
-                	}, this);
+                  }, this);
 
-            		//Add the full error message text to the notification area and add the error styling
-            		this.$(".notification").text(errorMessages).addClass("error");
+                //Add the full error message text to the notification area and add the error styling
+                this.$(".notification").text(errorMessages).addClass("error");
 
                }
             },
@@ -381,45 +399,45 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
                  return true;
             },
 
-        	// A function to format text to look like a phone number
-        	formatPhone: function(e){
-        	        // Strip all characters from the input except digits
-        	        var input = $(e.target).val().replace(/\D/g,'');
+          // A function to format text to look like a phone number
+          formatPhone: function(e){
+                  // Strip all characters from the input except digits
+                  var input = $(e.target).val().replace(/\D/g,'');
 
-        	        // Trim the remaining input to ten characters, to preserve phone number format
-        	        input = input.substring(0,10);
+                  // Trim the remaining input to ten characters, to preserve phone number format
+                  input = input.substring(0,10);
 
-        	        // Based upon the length of the string, we add formatting as necessary
-        	        var size = input.length;
-        	        if(size == 0){
-        	                input = input;
-        	        }else if(size < 4){
-        	                input = '('+input;
-        	        }else if(size < 7){
-        	                input = '('+input.substring(0,3)+') '+input.substring(3,6);
-        	        }else{
-        	                input = '('+input.substring(0,3)+') '+input.substring(3,6)+' - '+input.substring(6,10);
-        	        }
+                  // Based upon the length of the string, we add formatting as necessary
+                  var size = input.length;
+                  if(size == 0){
+                          input = input;
+                  }else if(size < 4){
+                          input = '('+input;
+                  }else if(size < 7){
+                          input = '('+input.substring(0,3)+') '+input.substring(3,6);
+                  }else{
+                          input = '('+input.substring(0,3)+') '+input.substring(3,6)+' - '+input.substring(6,10);
+                  }
 
-        	        $(e.target).val(input);
-        	},
+                  $(e.target).val(input);
+          },
 
-        	previewRemove: function(){
-        		this.$("input, img, label").toggleClass("remove-preview");
-        	},
+          previewRemove: function(){
+            this.$("input, img, label").toggleClass("remove-preview");
+          },
 
-        	/*
-        	 * Changes this view and its model from -new- to -not new-
-        	 * "New" means this EMLParty model is not referenced or stored on a
-        	 * parent model, and this view is being displayed to the user so they can
-        	 * add a new party to their EML (versus edit an existing one).
-        	 */
-        	notNew: function(){
-        		this.isNew = false;
+          /*
+           * Changes this view and its model from -new- to -not new-
+           * "New" means this EMLParty model is not referenced or stored on a
+           * parent model, and this view is being displayed to the user so they can
+           * add a new party to their EML (versus edit an existing one).
+           */
+          notNew: function(){
+            this.isNew = false;
 
-        		this.$el.removeClass("new");
-        		this.$el.find(".new").removeClass("new");
-        	}
+            this.$el.removeClass("new");
+            this.$el.find(".new").removeClass("new");
+          }
         });
 
         return EMLPartyView;

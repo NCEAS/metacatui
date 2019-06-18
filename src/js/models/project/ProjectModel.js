@@ -26,6 +26,9 @@ define(["jquery",
          */
         var ProjectModel = CollectionModel.extend({
 
+            //@type {string} - The name of this type of model
+            type: "Project",
+
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
                     logo: null,
@@ -36,9 +39,15 @@ define(["jquery",
                     awards: [],
                     literatureCited: [],
                     filterGroups: [],
-                    // A Search model with a Filters collection that contains the filters associated with this project
-                    searchModel: new SearchModel({filters: new Filters()}),
+                    //@type {Search} - A Search model with a Filters collection
+                    // that contains the filters associated with this project
+                    searchModel: null,
+                    //@type {SolrResults} - A SolrResults collection that contains the
+                    // filtered search results of datasets in this project
                     searchResults: new SolrResults(),
+                    //@type {SolrResults} - A SolrResults collection that contains the
+                    // unfiltered search results of all datasets in this project
+                    allSearchResults: null,
                     //The project document options may specify section to hide
                     hideMetrics: false,
                     hideData: false,
@@ -64,7 +73,9 @@ define(["jquery",
                 });
             },
 
-            initialize: function(options) {},
+            initialize: function(options) {
+              this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+            },
 
             /*
              * Return the project URL
@@ -141,7 +152,9 @@ define(["jquery",
                     var imageModel = new ProjectImage({ objectDOM: logo });
                     imageModel.set(imageModel.parse());
 
-                    modelJSON.acknowledgmentsLogos.push( imageModel );
+                    if( imageModel.get("imageURL") ){
+                      modelJSON.acknowledgmentsLogos.push( imageModel );
+                    }
                 });
 
                 // Parse the literature cited
@@ -241,13 +254,19 @@ define(["jquery",
                     }
                 }
 
-                //Parse the filterGroups
+                //Parse the FilterGroups
                 modelJSON.filterGroups = [];
+                var allFilters = modelJSON.searchModel.get("filters");
                 $(projectNode).find("filterGroup").each(function(i, filterGroup) {
 
-                    modelJSON.filterGroups.push(new FilterGroup({
-                        objectDOM: filterGroup
-                    }));
+                  //Create a FilterGroup model
+                  var filterGroupModel = new FilterGroup({
+                      objectDOM: filterGroup
+                  });
+                  modelJSON.filterGroups.push(filterGroupModel);
+
+                  //Add the Filters from this FilterGroup to the project's Search model
+                  allFilters.add(filterGroupModel.get("filters").models);
 
                 });
 
@@ -294,22 +313,21 @@ define(["jquery",
             },
 
             /*
-             * Creates a Filters collection with all filters associated with this collection
-             * and project. Sets it on the `searchModel.filters` attribute.
-             *
-             * @return {Filters} - Returns a Filters collection that contains all the Filter
-             * models associated with this project
-             */
-            createFilters: function() {
+            * Creates a copy of the SolrResults collection and saves it in this
+            * model so that there is always access to the unfiltered list of datasets
+            *
+            * @param {SolrResults} - The SolrResults collection to cache
+            */
+            cacheSearchResults: function(searchResults){
 
-                var filters = this.get("searchModel").get("filters") || new Filters();
+              //Save a copy of the SolrResults so that we always have a copy of
+              // the unfiltered list of datasets
+              this.set("allSearchResults", searchResults.clone());
 
-                // Add each filter in the filter groups to this filter collection
-                _.each(this.get("filterGroups"), function(filterGroup) {
-                    filters.add(filterGroup.get("filters").models);
-                });
+              //Make a copy of the facetCounts object
+              var allSearchResults = this.get("allSearchResults");
+              allSearchResults.facetCounts = Object.assign({}, searchResults.facetCounts);
 
-                return filters;
             },
 
             hexToRGB: function(hex){

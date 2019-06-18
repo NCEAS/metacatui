@@ -908,19 +908,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           this.trigger("valid");
         }
 
-        // Update the file name to match the title
-        if( Array.isArray(this.get("title")) ){
-          this.set("fileName", this.get("title")[0] + ".xml");
-        }
-        else if( typeof this.get("title") == "string" ){
-          this.set("fileName", this.get("title") + ".xml");
-        }
-
-        //If that doesn't work for some reason, set the missing file name via the
-        // DataONEObject inherited function setMissingFileName()
-        if ( ! this.get("fileName") ) {
-            this.setMissingFileName();
-        }
+        this.setFileName();
 
         //Set the upload transfer as in progress
         this.set("uploadStatus", "p");
@@ -1671,6 +1659,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         textString = textString.trim();
 
+        //Check for XML/HTML elements
+        _.each(textString.match(/<\s*[^>]*>/g), function(xmlNode){
+
+          //Encode <, >, and </ substrings
+          var tagName = xmlNode.replace(/>/g, "&gt;");
+          tagName = tagName.replace(/</g, "&lt;");
+
+          //Replace the xmlNode in the full text string
+          textString = textString.replace(xmlNode, tagName);
+
+        });
+
         return textString;
 
       },
@@ -1714,6 +1714,40 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }, xmlDOM);
           }
           return (new XMLSerializer()).serializeToString(xmlDOM);
+      },
+
+      /*
+      * Uses the EML `title` to set the `fileName` attribute on this model.
+      */
+      setFileName: function(){
+
+        var title = "";
+
+        // Get the title from the metadata
+        if( Array.isArray(this.get("title")) ){
+          title = this.get("title")[0];
+        }
+        else if( typeof this.get("title") == "string" ){
+          title = this.get("title");
+        }
+
+        //Max title length
+        var maxLength = 50;
+
+        //trim the string to the maximum length
+        var trimmedTitle = title.trim().substr(0, maxLength);
+
+        //re-trim if we are in the middle of a word
+        if( trimmedTitle.indexOf(" ") > -1 ){
+          trimmedTitle = trimmedTitle.substr(0, Math.min(trimmedTitle.length, trimmedTitle.lastIndexOf(" ")));
+        }
+
+        //Replace all non alphanumeric characters with underscores
+        // and make sure there isn't more than one underscore in a row
+        trimmedTitle = trimmedTitle.replace(/[^a-zA-Z0-9]/g, "_").replace(/_{2,}/g, "_");
+
+        //Set the fileName on the model
+        this.set("fileName", trimmedTitle + ".xml");
       },
 
       trickleUpChange: function(){
