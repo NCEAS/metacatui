@@ -1613,6 +1613,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             var lastRef = false;
             //var graph = this.dataPackageGraph;
 
+            //Find the existing nodes for the subject
+
             switch (predicate) {
                 case "prov_wasDerivedFrom":
                     derivedDataNode = rdf.sym(cnResolveUrl + encodeURIComponent(subject));
@@ -1982,7 +1984,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             serialize: function() {
               //Create an RDF serializer
               var serializer = this.rdf.Serializer(),
-                  cnResolveUrl,
                   idNode,
                   idStatements,
                   idStatement,
@@ -2006,7 +2007,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
               //Get the pid of this package - depends on whether we are updating or creating a resource map
               var pid = this.packageModel.get("id"),
-                  oldPid = this.packageModel.get("oldPid");
+                  oldPid = this.packageModel.get("oldPid"),
+                  cnResolveUrl = this.getCnURI();
 
               //Get a list of the models that are not in progress or failed uploading
               var modelsToAggregate = this.reject(function(packageMember){
@@ -2018,30 +2020,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               this.idsToAggregate = idsFromModel;
 
               //Update the pids in the RDF graph only if we are updating the resource map with a new pid
-              if( !this.packageModel.isNew() ) {
-
-                //Find the identifier statement in the resource map
-                idNode =  this.rdf.lit(oldPid);
-                idStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
-                idStatement = idStatements[0];
+              if( !this.packageModel.isNew() ){
 
                 // Remove all describes/isDescribedBy statements (they'll be rebuilt)
                 this.dataPackageGraph.removeMany(undefined, ORE("describes"), undefined, undefined, undefined);
                 this.dataPackageGraph.removeMany(undefined, ORE("isDescribedBy"), undefined, undefined, undefined);
 
-                //Get the CN Resolve Service base URL from the resource map
-                // (mostly important in dev environments where it will not always be cn.dataone.org)
-                if ( typeof this.dataPackageGraph.cnResolveUrl !== "undefined" ) {
-                  cnResolveUrl = this.dataPackageGraph.cnResolveUrl;
-
-                } else if ( typeof idStatement !== "undefined" ) {
-                  cnResolveUrl =
-                          idStatement.subject.value.substring(0, idStatement.subject.value.indexOf(oldPid)) ||
-                          idStatement.subject.value.substring(0, idStatement.subject.value.indexOf(encodeURIComponent(oldPid)));
-
-                }
-
-                this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
+                //Find the identifier statement in the resource map
+                idNode = this.rdf.lit(oldPid);
+                idStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode);
+                idStatement = idStatements[0];
 
                 //Change all the resource map identifier literal node in the RDF graph
                 if ( typeof idStatement != "undefined" ) {
@@ -2217,12 +2205,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   this.addToAggregation(id);
                 }, this);
 
-              } else {
+              }
+              else {
 
                 // Create the OAI-ORE graph from scratch
                 this.dataPackageGraph = this.rdf.graph();
-                cnResolveUrl = MetacatUI.appModel.get("resolveServiceUrl") || "https://cn.dataone.org/cn/v2/resolve/";
-                this.dataPackageGraph.cnResolveUrl = cnResolveUrl;
+                cnResolveUrl = this.getCnURI();
 
                 //Create a resource map node
                 var rMapNode = this.rdf.sym(cnResolveUrl + encodeURIComponent(this.packageModel.id));
@@ -2294,10 +2282,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             // Adds a new object to the resource map RDF graph
             addToAggregation: function(id){
 
-              if(id.indexOf(this.dataPackageGraph.cnResolveUrl) < 0)
-                var fullID = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
+              var fullID = this.getURIFromRDF(id);
+
+              if( !fullID && id.indexOf(this.dataPackageGraph.cnResolveUrl) < 0)
+                fullID = this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id);
               else{
-                var fullID = id;
+                fullID = id;
                 id = id.substring(this.dataPackageGraph.cnResolveUrl.lastIndexOf("/") + 1);
               }
 
@@ -2309,8 +2299,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
               // Create a node for this object, the identifier, the resource map, and the aggregation
               var objectNode = this.rdf.sym(fullID),
-                  mapNode    = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id"))),
-                  aggNode    = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id")) + "#aggregation"),
+                  rMapURI    = this.getURIFromRDF(this.packageModel.get("id")) || this.dataPackageGraph.cnResolveUrl + encodeURIComponent(this.packageModel.get("id")),
+                  mapNode    = this.rdf.sym(rMapURI),
+                  aggNode    = this.rdf.sym(rMapURI + "#aggregation"),
                   idNode     = this.rdf.literal(id, undefined, XSD("string")),
                   idStatements = [],
                   aggStatements = [],
@@ -2376,8 +2367,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 // For each metadata that documents this object, add a CITO:isDocumentedBy and CITO:documents statement
                 _.each(metadataIds, function(metaId){
                   //Create the named nodes and statements
-                  var dataNode       = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id)),
-                    metadataNode     = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(metaId)),
+                  var dataNode       = this.rdf.sym( this.getURIFromRDF(id) || this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id)),
+                    metadataNode     = this.rdf.sym( this.getURIFromRDF(metaId) || this.dataPackageGraph.cnResolveUrl + encodeURIComponent(metaId)),
                     isDocByStatement = this.rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode),
                     documentsStatement = this.rdf.st(metadataNode, CITO("documents"), dataNode);
 
@@ -2395,8 +2386,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
               // If this object documents a data object
               if(documents && documents.length){
+
                 // Create a literal node for it
-                var metadataNode = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id));
+                var metadataNode = this.rdf.sym( this.getURIFromRDF(id) || this.dataPackageGraph.cnResolveUrl + encodeURIComponent(id));
 
                 _.each(documents, function(dataID){
 
@@ -2404,74 +2396,50 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                   if( _.contains(this.idsToAggregate, dataID) ){
 
                     //Find the identifier statement for this data object
-                    var dataIdNode = this.rdf.literal(dataID, undefined, XSD("string")),
-                        dataIdStatements = this.dataPackageGraph.statementsMatching(undefined, DCTERMS("identifier"), dataIdNode),
-                        dataNode,
-                        documentsStatement,
-                        isDocByStatement;
+                    var dataURI = this.getURIFromRDF(dataID);
 
-                    //If this data object has an identifier statement,
-                    if( dataIdStatements.length > 0 ){
+                    //If this data object exists in the RDF already,
+                    if( dataURI ){
 
-                      //Create a data node using the exact way the identifier statement subject is written
-                      dataNode = this.rdf.sym(dataIdStatements[0].subject.value);
+                      //Create a data node using the exact way the identifier URI is written
+                      var dataNode = this.rdf.sym(dataURI);
 
-                      if(dataNode){
+                      //Get the statements for data isDocumentedBy metadata
+                      isDocumentedByStatements = this.dataPackageGraph.statementsMatching(dataNode, CITO("isDocumentedBy"), metadataNode);
 
-                        //Get the statements for data isDocumentedBy metadata
-                        isDocumentedByStatements = this.dataPackageGraph.statementsMatching(dataNode, CITO("isDocumentedBy"), metadataNode);
+                      //If that statement is not in the RDF already...
+                      if ( isDocumentedByStatements.length < 1 ) {
+                        // Create a statement: This data is documented by this metadata
+                        var isDocByStatement = this.rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode);
+                        //Add the "isDocumentedBy" statement
+                        this.dataPackageGraph.add(isDocByStatement);
+                      }
 
-                        //If that statement is not in the RDF already...
-                        if ( isDocumentedByStatements.length < 1 ) {
-                          // Create a statement: This data is documented by this metadata
-                          isDocByStatement = this.rdf.st(dataNode, CITO("isDocumentedBy"), metadataNode);
-                          //Add the "isDocumentedBy" statement
-                          this.dataPackageGraph.add(isDocByStatement);
-                        }
+                      //Get the statements for metadata documents data
+                      documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), dataNode);
 
-                        //Get the statements for metadata documents data
-                        documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), dataNode);
-
-                        //If that statement is not in the RDF already...
-                        if ( documentsStatements.length < 1 ) {
-                          // Create a statement: This metadata documents data
-                          documentsStatement = this.rdf.st(metadataNode, CITO("documents"), dataNode);
-                          //Add the "isDocumentedBy" statement
-                          this.dataPackageGraph.add(documentsStatement);
-                        }
-
+                      //If that statement is not in the RDF already...
+                      if ( documentsStatements.length < 1 ) {
+                        // Create a statement: This metadata documents data
+                        var documentsStatement = this.rdf.st(metadataNode, CITO("documents"), dataNode);
+                        //Add the "isDocumentedBy" statement
+                        this.dataPackageGraph.add(documentsStatement);
                       }
 
                     }
+                    //Otherwise, if this data object doesn't exist in the RDF already,
                     else{
 
-                      // Create a named node for the data object
-                      var encodedDataNode   = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(dataID)),
-                          unencodedDataNode = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + dataID);
+                      var encodedDataNode   = this.rdf.sym(this.dataPackageGraph.cnResolveUrl + encodeURIComponent(dataID));
 
-                      //Get the statements for data isDocumentedBy metadata
-                      isDocumentedByStatements = this.dataPackageGraph.statementsMatching(encodedDataNode, CITO("isDocumentedBy"), metadataNode);
-                      //If the isDocumentedBy statement doesn't already exist,
-                      if ( isDocumentedByStatements.length < 1 ) {
-                        //Check for the unencoded version of the data ID too
-                        isDocumentedByStatements = this.dataPackageGraph.statementsMatching(unencodedDataNode, CITO("isDocumentedBy"), metadataNode);
-                        //If the encoded or unencoded statement doesn't exist,
-                        if ( isDocumentedByStatements.length < 1 ) {
-                          // Create a statement: This data is documented by this metadata
-                          isDocByStatement = this.rdf.st(encodedDataNode, CITO("isDocumentedBy"), metadataNode);
-                          //Add the "isDocumentedBy" statement
-                          this.dataPackageGraph.add(isDocByStatement);
-                        }
-                      }
+                      // Create a statement: This data is documented by this metadata
+                      var isDocByStatement = this.rdf.st(encodedDataNode, CITO("isDocumentedBy"), metadataNode);
+                      //Add the "isDocumentedBy" statement
+                      this.dataPackageGraph.add(isDocByStatement);
 
-                      // Add the "documents" statements
-                      documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), encodedDataNode);
-                      if ( documentsStatements.length < 1 ) {
-                          documentsStatements = this.dataPackageGraph.statementsMatching(metadataNode, CITO("documents"), unencodedDataNode);
-                          if ( documentsStatements.length < 1 ) {
-                            this.dataPackageGraph.add(documentsStatement);
-                          }
-                      }
+                      var documentsStatement = this.rdf.st(metadataNode, CITO("documents"), encodedDataNode);
+                      this.dataPackageGraph.add(documentsStatement);
+
                     }
 
                   }
@@ -2502,6 +2470,76 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 } catch (error) {
                     console.log(error);
                 }
+            },
+
+            /**
+            * Finds the given identifier in the RDF graph and returns the subject
+            * URI of that statement. This is useful when adding additional statements
+            * to the RDF graph for an object that already exists in that graph.
+            *
+            * @param {string} id - The identifier to search for
+            * @return {string} - The full URI for the given id as it exists in the RDF. Or an empty string if it doesn't.
+            */
+            getURIFromRDF: function(id){
+
+              //Exit if no id was given
+              if( !id )
+                return "";
+
+              //Create a literal node with the identifier as the value
+              var XSD = this.rdf.Namespace(this.namespaces.XSD),
+                  DCTERMS = this.rdf.Namespace(this.namespaces.DCTERMS),
+                  idNode = this.rdf.literal(id, undefined, XSD("string")),
+                  //Find the identifier statements for the given id
+                  idStatements = this.dataPackageGraph.statementsMatching(undefined, DCTERMS("identifier"), idNode);
+
+              //If this object has an identifier statement,
+              if( idStatements.length > 0 ){
+                //Return the subject of the statement
+                return idStatements[0].subject.value;
+              }
+              else{
+                return "";
+              }
+            },
+
+            /**
+            * Parses out the CN Resolve URL from the existing statements in the RDF
+            * or if not found in the RDF, from the app configuration.
+            *
+            * @return {string} - The CN resolve URL
+            */
+            getCnURI: function(){
+
+              //If the CN resolve URL was already found, return it
+              if( this.dataPackageGraph.cnResolveUrl ){
+                return this.dataPackageGraph.cnResolveUrl;
+              }
+              else if( this.packageModel.get("oldPid") ){
+
+                //Find the identifier statement for the resource map in the  RDF graph
+                var idNode =  this.rdf.lit( this.packageModel.get("oldPid") ),
+                    idStatements = this.dataPackageGraph.statementsMatching(undefined, undefined, idNode),
+                    idStatement = idStatements.length? idStatements[0] : null;
+
+                if ( idStatement ) {
+                  //Parse the CN resolve URL from the statement subject URI
+                  this.dataPackageGraph.cnResolveUrl =
+                          idStatement.subject.value.substring(0, idStatement.subject.value.indexOf(this.packageModel.get("oldPid"))) ||
+                          idStatement.subject.value.substring(0, idStatement.subject.value.indexOf(encodeURIComponent(this.packageModel.get("oldPid"))));
+
+                }
+                else{
+                  this.dataPackageGraph.cnResolveUrl = MetacatUI.appModel.get("resolveServiceUrl");
+                }
+              }
+              else{
+                this.dataPackageGraph.cnResolveUrl = MetacatUI.appModel.get("resolveServiceUrl");
+              }
+
+              //Return the CN resolve URL
+              return this.dataPackageGraph.cnResolveUrl;
+
             },
 
             /*
