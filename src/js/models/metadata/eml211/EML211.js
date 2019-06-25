@@ -179,6 +179,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "researchtopic" : "researchTopic",
                 "recorddelimiter" : "recordDelimiter",
                 "samplingdescription" : "samplingDescription",
+                "shortname" : "shortName",
                 "simpledelimited" : "simpleDelimited",
                 "standardunit" : "standardUnit",
                 "storagetype" : "storageType",
@@ -471,16 +472,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           }
         });
 
-        // Insert new nodes
-        if (fieldName.toLowerCase() === "alternateidentifier") {
-          datasetNode.prepend(nodes);
+        var insertAfter = this.getEMLPosition(eml, fieldName.toLowerCase());
+
+        if(insertAfter){
+          insertAfter.after(nodes);
         }
-        else if (fieldName.toLowerCase() === "title") {
-          if (datasetNode.find("alternateidentifier").length > 0) {
-            datasetNode.find("alternateidentifier").last().after(nodes);
-          } else {
-            datasetNode.prepend(nodes);
-          }
+        else{
+          datasetNode.prepend(nodes);
         }
 
       }, this);
