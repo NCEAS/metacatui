@@ -1566,17 +1566,46 @@ define(['jquery',
       return (this.$(".entitydetails").length > 0);
     },
 
-    findEntityDetailsContainer: function(id, el){
+
+    /**
+    * Finds the element in the rendered metadata that describes the given data entity.
+    *
+    * @param {(DataONEObject|SolrResult|string)} model - Either a model that represents the data object or the identifier of the data object
+    * @param {DOM Element} [el] - The DOM element to exclusivly search inside.
+    * @return {DOM Element} - The DOM element that describbbes the given data entity.
+    */
+    findEntityDetailsContainer: function(model, el){
       if(!el) var el = this.el;
+
+      //Get the id and file name for this data object
+      var id = "",
+          fileName = "";
+
+      //If a model is given, get the id and file name from the object
+      if( model && (DataONEObject.prototype.isPrototypeOf(model) || SolrResult.prototype.isPrototypeOf(model)) ) {
+        id = model.get("id");
+        fileName = model.get("fileName");
+      }
+      //If a string is given instead, it must be the id of the data object
+      else if( typeof model == "string" ){
+        id = model;
+      }
+      //Otherwise, there isn't enough info to find the element, so exit
+      else{
+        return;
+      }
 
       //If we already found it earlier, return it now
       var container = this.$(".entitydetails[data-id='" + id + "']");
-      if(container.length) return container;
+      if(container.length)
+        return container;
 
       //Are we looking for the main object that this MetadataView is displaying?
       if(id == this.pid){
-        if(this.$("#Metadata").length > 0) return this.$("#Metadata");
-        else return this.el;
+        if(this.$("#Metadata").length > 0)
+          return this.$("#Metadata");
+        else
+          return this.el;
       }
 
       //Metacat 2.4.2 and up will have the Online Distribution Link marked
@@ -1617,42 +1646,45 @@ define(['jquery',
         return container;
       }
 
-      //Find by file name rather than id
-      //Get the name of the object first
-      var name = "";
-      for(var i=0; i<this.packageModels.length; i++){
-        var model = _.findWhere(this.packageModels[i].get("members"), {id: id});
-        if(model){
-          name = model.get("fileName");
-          break;
+      //----Find by file name rather than id-----
+      if( !fileName ){
+        //Get the name of the object first
+        for(var i=0; i<this.packageModels.length; i++){
+          var model = _.findWhere(this.packageModels[i].get("members"), {id: id});
+          if(model){
+            fileName = model.get("fileName");
+            break;
+          }
         }
       }
-      if(name){
-        var entityNames = this.$(".entitydetails .control-label:contains('Entity Name') + .controls-well");
-        if(entityNames.length){
-          //Try to find the match by exact name
-          var matches = entityNames.find("strong:contains('" + name + "')");
-          //Try to find the match by the file name without the file extension
-          if(!matches.length && (name.lastIndexOf(".") > -1)){
-            name = name.substring(0, name.lastIndexOf("."));
-            matches = entityNames.find("strong:contains('" + name + "')");
-          }
 
-          //If we found more than one match, filter out the substring matches
-          if(matches.length > 1){
-            matches = _.filter(matches, function(div){
-              return (div.textContent == name);
-            });
-          }
+      if(fileName){
+        var possibleLocations = [".entitydetails [data-object-name='" + fileName + "']",
+                                 ".entitydetails .control-label:contains('Object Name') + .controls-well:contains('" + fileName +"')",
+                                 ".entitydetails .control-label:contains('Entity Name') + .controls-well:contains('" + fileName +"')"];
 
-          if(matches.length){
+        //Search through each possible location in the DOM where the file name might be
+        for(var i=0; i<possibleLocations.length; i++){
+          //Get the elements in this view that match the possible location
+          var matches = this.$(possibleLocations[i]);
+
+          //If exactly one match is found
+          if( matches.length == 1 ){
+            //Get the entity details parent element
             container = $(matches).parents(".entitydetails").first();
+            //Set the object ID on the element for easier locating later
             container.attr("data-id", id);
-            return container;
+            if(container.length)
+              break;
           }
         }
+
+        if( container.length )
+          return container;
+
       }
 
+      //--- The last option:----
       //If this package has only one item, we can assume the only entity details are about that item
       var members = this.packageModels[0].get("members"),
         dataMembers = _.filter(members, function(m){ return (m.get("formatType") == "DATA"); });
@@ -2165,7 +2197,7 @@ define(['jquery',
         return false;
 
       //If we are on the Metadata view, then let's scroll to the anchor
-      MetacatUI.appView.scrollTo(this.findEntityDetailsContainer(id));
+      MetacatUI.appView.scrollTo( this.findEntityDetailsContainer(id) );
 
       return true;
     },

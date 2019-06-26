@@ -196,7 +196,7 @@ define(['jquery', 'underscore', 'backbone',
 					_.each(models, function(model){
 						if(currentMetadata == model) return;
 
-						var container = view.parentView.findEntityDetailsContainer(model.get("id"));
+						var container = view.parentView.findEntityDetailsContainer(model);
 						if(container) model.offsetTop = $(container)[0].offsetTop;
 						else{
 							model.offsetTop = window.outerHeight;
@@ -317,7 +317,7 @@ define(['jquery', 'underscore', 'backbone',
 			var moreInfoCell = $(document.createElement("td")).addClass("more-info");
 
 			//If we are on the metadata view and there is no entity details section, then append a blank cell
-			var	entityDetails = this.hasEntityDetails? this.parentView.findEntityDetailsContainer(id) : false,
+			var	entityDetails = this.hasEntityDetails? this.parentView.findEntityDetailsContainer(memberModel) : false,
 				currentlyViewing = (id == this.currentlyViewing);
 			if((this.onMetadataView && !this.hasEntityDetails) || (this.onMetadataView && !entityDetails) || currentlyViewing || this.nested){
 				$(tr).append(moreInfoCell);

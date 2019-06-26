@@ -123,6 +123,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "attributelist" : "attributeList",
                 "attributename" : "attributeName",
                 "attributeorientation" : "attributeOrientation",
+                "blockedmembernode" : "blockedMemberNode",
                 "casesensitive" : "caseSensitive",
                 "changehistory" : "changeHistory",
                 "changedate" : "changeDate",
@@ -132,29 +133,48 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "codeexplanation" : "codeExplanation",
                 "codesetname" : "codesetName",
                 "codeseturl" : "codesetURL",
+                "collapsedelimiters" : "collapseDelimiters",
+                "constanttosi" : "constantToSI",
                 "customunit" : "customUnit",
                 "dataformat" : "dataFormat",
                 "datatable" : "dataTable",
+                "datatype" : "dataType",
                 "datetime" : "dateTime",
                 "datetimedomain" : "dateTimeDomain",
                 "datetimeprecision" : "dateTimePrecision",
                 "definitionattributereference" : "definitionAttributeReference",
+                "dictref" : "dictRef",
+                "endcondition" : "endCondition",
                 "entitycodelist" : "entityCodeList",
                 "entitydescription" : "entityDescription",
                 "entityname" : "entityName",
                 "entityreference" : "entityReference",
                 "entitytype" : "entityType",
                 "enumerateddomain" : "enumeratedDomain",
+                "errorbasis" : "errorBasis",
+                "errorvalues" : "errorValues",
                 "externalcodeset" : "externalCodeSet",
                 "externallydefinedformat" : "externallyDefinedFormat",
                 "fielddelimiter" : "fieldDelimiter",
                 "formatname" : "formatName",
                 "formatstring" : "formatString",
+                "fractiondigits" : "fractionDigits",
                 "intellectualrights" : "intellectualRights",
+                "literalcharacter" : "literalCharacter",
+                "literallayout" : "literalLayout",
                 "maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
+                "matrixtype" : "matrixType",
+                "maxexclusive" : "maxExclusive",
+                "maxinclusive" : "maxInclusive",
+                "maxlength" : "maxLength",
                 "maxrecordlength" : "maxRecordLength",
+                "maxvalues" : "maxValues",
                 "measurementscale" : "measurementScale",
                 "methodstep" : "methodStep",
+                "minexclusive" : "minExclusive",
+                "mininclusive" : "minInclusive",
+                "minlength" : "minLength",
+                "minvalues" : "minValues",
                 "missingvaluecode" : "missingValueCode",
                 "multipliertosi" : "multiplierToSI",
                 "nonnumericdomain" : "nonNumericDomain",
@@ -173,24 +193,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "packageid" : "packageId",
                 "parentsi" : "parentSI",
                 "physicallinedelimiter" : "physicalLineDelimiter",
+                "preferredmembernode" : "preferredMemberNode",
                 "pubdate" : "pubDate",
                 "pubplace" : "pubPlace",
                 "quantitativeattributeaccuracyassessment" : "quantitativeAttributeAccuracyAssessment",
+                "quotecharacter" : "quoteCharacter",
+                "recommendedunits" : "recommendedUnits",
                 "researchtopic" : "researchTopic",
                 "recorddelimiter" : "recordDelimiter",
                 "samplingdescription" : "samplingDescription",
+                "shortname" : "shortName",
                 "simpledelimited" : "simpleDelimited",
                 "standardunit" : "standardUnit",
+                "startcondition" : "startCondition",
                 "storagetype" : "storageType",
                 "studyextent" : "studyExtent",
                 "studytype" : "studyType",
                 "textdomain" : "textDomain",
                 "textformat" : "textFormat",
+                "totaldigits" : "totalDigits",
                 "typesystem" : "typeSystem",
                 "unittype" : "unitType",
                 "unitlist" : "unitList",
                 "valueattributereference" : "valueAttributeReference",
-                        "xsi:schemalocation" : "xsi:schemaLocation"
+                "whitespace" : "whiteSpace",
+                "xsi:schemalocation" : "xsi:schemaLocation"
               }
           );
         },
@@ -471,16 +498,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           }
         });
 
-        // Insert new nodes
-        if (fieldName.toLowerCase() === "alternateidentifier") {
-          datasetNode.prepend(nodes);
+        var insertAfter = this.getEMLPosition(eml, fieldName.toLowerCase());
+
+        if(insertAfter){
+          insertAfter.after(nodes);
         }
-        else if (fieldName.toLowerCase() === "title") {
-          if (datasetNode.find("alternateidentifier").length > 0) {
-            datasetNode.find("alternateidentifier").last().after(nodes);
-          } else {
-            datasetNode.prepend(nodes);
-          }
+        else{
+          datasetNode.prepend(nodes);
         }
 
       }, this);
