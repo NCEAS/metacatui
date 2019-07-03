@@ -97,7 +97,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Set this configuration to true if using Metacat 2.10.2 or earlier
       disableQueryPOSTs: false,
 
-      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial", "annotation"],
 
 			metaServiceUrl: null,
 			//ldapwebServiceUrl: null,

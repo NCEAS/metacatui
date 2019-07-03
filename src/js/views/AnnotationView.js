@@ -43,19 +43,16 @@ define(['jquery',
         valueResolved: null,
 
         events: {
-            "click" : "togglePopover"
+            "click" : "onClick",
+            "click .annotation-popover-findmore" : "findMore"
         },
 
         initialize: function () {
-            this.context = this.$el.data('context') || "CONTEXT";
+            this.context = this.$el.data('context');
             this.propertyLabel = this.$el.data('propertyLabel');
             this.propertyURI = this.$el.data('propertyUri');
             this.valueLabel = this.$el.data('valueLabel');
             this.valueURI = this.$el.data('valueUri');
-
-            // TODO: Not sure if I have to have these
-            this.valueDefinition = null;
-            this.valueOntology = null;
 
             this.propertyResolved = false;
             this.valueResolved = false;
@@ -67,9 +64,8 @@ define(['jquery',
             return this;
         },
 
-        // Destroy the popover if it's visible, stale
-        // Allows the user to copy and paste text from popovers
-        togglePopover: function (e) {
+        // Helps us fetch data from the API on first interaction
+        onClick: function () {
             this.queryAndUpdateProperty();
             this.queryAndUpdateValue();
         },
@@ -103,19 +99,6 @@ define(['jquery',
 
                 return;
             }
-
-            // // Temporary to avoid hitting the API
-            // setTimeout(function() {
-            //     viewRef.propertyDefinition = "There's a voice that keeps on calling me. Down the road, that's where I'll always be. Every stop I make, I make a new friend."
-            //     viewRef.propertyOntology = "https://example.org/ontology"
-            //     viewRef.updatePopover();
-            //     viewRef.propertyResolved = true;
-            // }, 500);
-
-
-            // return;
-
-            // End temporary
 
             // Query the API and handle the response
             // TODO: Looks like we should proxy this so the token doesn't leak
@@ -186,20 +169,6 @@ define(['jquery',
 
                 return;
             }
-
-
-            // // Temporary to avoid hitting the API
-            // setTimeout(function() {
-            //     viewRef.valueDefinition = "There's a voice that keeps on calling me. Down the road, that's where I'll always be. Every stop I make, I make a new friend."
-            //     viewRef.valueOntology = "https://example.org/ontology"
-            //     viewRef.updatePopover();
-            //     viewRef.valueResolved = true;
-            // }, 500);
-
-            // return;
-
-
-
 
             // Query the API and handle the response
             // TODO: Looks like we should proxy this so the token doesn't leak
@@ -287,7 +256,23 @@ define(['jquery',
             // Update both the existing DOM and the underlying data
             // attribute in order to persist the updated content between
             // displays of the popover
-            $(this.$el).data("content", new_content);
+
+            // Update the Popover first
+            //
+            // This is a hack to work around the fact that we're updating the
+            // content of the popover after it is created. I read the source
+            // for Bootstrap's Popover and it showed the popover is generated
+            // from the data-popover attribute's content which has an
+            // options.content member we can modify directly
+            var popover_data = $(this.$el).data('popover');
+
+            if (popover_data && popover_data.options && popover_data.options) {
+                popover_data.options.content = new_content;
+            }
+
+            $(this.$el).data('popover', popover_data);
+
+            // Then update the DOM on the open popover
             $(popover_content).html(new_content);
         },
 
@@ -300,6 +285,17 @@ define(['jquery',
                 typeof match === "string") {
                 cache[term] = match;
             }
+        },
+
+        findMore: function(e) {
+            e.preventDefault();
+
+            var term = $(e.target).text();
+
+            // Direct the user towards a search for the annotation
+            MetacatUI.appSearchModel.clear();
+			MetacatUI.appSearchModel.set('annotation', [term]);
+			MetacatUI.uiRouter.navigate('data', {trigger: true});
         }
     });
 

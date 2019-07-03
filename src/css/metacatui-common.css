@@ -2307,10 +2307,11 @@ a.btn.metrics-button-disabled {
 }
 
 /* Don't force capitalization on annotation popover titles */
-.annotation-view .popover .popover-title {
+.annotation > .popover-title {
     text-transform: none;
 }
-.annotation-view .annotation {
+.annotation .annotation-property,
+.annotation .annotation-value {
 	cursor: pointer;
 }
 
@@ -2323,10 +2324,51 @@ a.btn.metrics-button-disabled {
 }
 
 /* Force hyperlinks in popovers to wrap */
-.annotation-view .popover .popover-content a {
+.annotation .popover .popover-content a {
 	white-space: normal;
 }
 
+/* Annotation pill stuff */
+.annotations-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.annotation {
+  display: flex;
+  margin: 0 6px 6px 0;
+}
+
+.annotation .annotation-property,
+.annotation .annotation-value {
+  padding: 3px 6px;
+}
+
+.annotation .annotation-property {
+  background-color: #EEE;
+  border-width: 1px 0 1px 1px;
+  border-style: solid;
+  border-color: black;
+	border-radius: 5px 0px 0px 5px;
+}
+
+.annotation .annotation-value {
+  background-color: teal;
+  border-width: 1px 1px 1px 0px;
+  border-style: solid;
+  border-color: black;
+  border-radius: 0px 5px 5px 0px;
+	color: white;
+}
+
+ .annotation-popover-definition {
+	padding: 0.5rem 0;
+	margin: 0.5rem 0;
+}
+
+.annotation-popover-definition {
+	border-top: 1px solid #CCC;
+}
 /** Hide the search when in the dropdown menu **/
 .dropdown-menu .ncboAutocomplete {
 	display: none;

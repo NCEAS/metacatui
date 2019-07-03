@@ -5,19 +5,19 @@
     <% if (propertyDefinition === null) { %>
         No extra information could be found for <a href="<%= propertyURI %>"><%= propertyLabel %></a>.
     <% } else {%>
-        <a href="<%= propertyURI %>"><%= propertyLabel %></a> is defined as "<%= propertyDefinition %>" in the <a href="<%= propertyOntology %>"><%= propertyOntology %></a> ontology.
+        <i class="icon-link"></i> <a href="<%= propertyURI %>"><%= propertyLabel %></a> is defined as "<%= propertyDefinition %>" in the <a href="<%= propertyOntology %>"><%= propertyOntology %></a> ontology.
     <% } %>
 </div>
 <div class="annotation-popover-findmore">
-    Find more datasets annotated with the term <a href="<%= propertyURI %>"><%= propertyURI %></a>.
+    <i class="icon-search"></i> Find more datasets annotated with the term <a href="<%= propertyURI %>"><%= propertyURI %></a>.
 </div>
 <div class="annotation-popover-definition">
     <% if (valueDefinition === null) { %>
         No extra information could be found for <a href="<%= valueURI %>"><%= valueLabel %></a>.
     <% } else {%>
-        <a href="<%= valueURI %>"><%= valueLabel %></a> is defined as "<%= valueDefinition %>" in the <a href="<%= valueOntology %>"><%= valueOntology %> </a> ontology.
+        <i class="icon-link"></i> <a href="<%= valueURI %>"><%= valueLabel %></a> is defined as "<%= valueDefinition %>" in the <a href="<%= valueOntology %>"><%= valueOntology %> </a> ontology.
     <% } %>
 </div>
 <div class="annotation-popover-findmore">
-    Find more datasets annotated with the term <a href="<%= valueURI %>"><%= valueURI %></a>.
+    <i class="icon-search"></i> Find more datasets annotated with the term <a href="<%= valueURI %>"><%= valueURI %></a>.
 </div>

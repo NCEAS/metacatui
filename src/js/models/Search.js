@@ -42,7 +42,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     submitter: [],
                     spatial: [],
                     attribute: [],
-                    //annotation: [],
+                    annotation: [],
                     additionalCriteria: [],
                     id: [],
                     seriesId: [],
