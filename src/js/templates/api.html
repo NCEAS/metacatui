@@ -136,6 +136,11 @@
                                         <td><a href="#getSystemMetadata">Get System Metadata for an Object</a></td>
                                     </tr>
                                     <tr>
+                                        <td><code>/meta/&lt;pid&gt;</code></td>
+                                        <td>PUT</td>
+                                        <td><a href="#updateSystemMetadata">Update System Metadata for an Object</a></td>
+                                    </tr>
+                                    <tr>
                                         <td><code>/generate</code></td>
                                         <td>POST</td>
                                         <td><a href="#generateId">Generate an Identifier</a></td>
@@ -180,7 +185,7 @@
                             this format MUST be used when communicating with the <%=title%>.
                             Request and response documents MUST also be encoded using UTF-8.</p>
 
-                            <h3 id="auth">Authentication and Authorization</h3>
+                            <h3 id="auth">Authentication</h3>
                             <p>Two mechanisms are supported for authentication:
                             <ul>
                                 <li>Authentication Tokens passed in the HTTP "Authorization" header</li>
@@ -238,9 +243,48 @@ $ curl -H "Authorization: Bearer $TOKEN" <%=apiBaseUrl%>/object
                                 is being explored, as the behavior differs in Mavericks and Yosemite.
                             </p></blockquote>
                             </p>
+
+                            <h3 id="authz">Authorization</h3>
+                            <p>Authorizing access for each object in the system is determined by the policies in its associated SystemMetadata document, 
+                            which contains fields for <code>rightsHolder</code>, <code>authoritativeMemberNode</code>, and <code>accessPolicy</code>. 
+                            Here’s an example SystemMetadata document showing these fields on a test server:</p>
+                            <code class="code_example">
+&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
+&lt;d1:systemMetadata xmlns:d1v1="http://ns.dataone.org/service/types/v1" xmlns:d1="http://ns.dataone.org/service/types/v2.0"&gt;
+  &lt;serialVersion&gt;0&lt;/serialVersion&gt;
+  &lt;identifier&gt;02281a16-763e-4be0-8d2e-cd75da8c83a5&lt;/identifier&gt;
+  &lt;formatId&gt;eml://ecoinformatics.org/eml-2.1.1&lt;/formatId&gt;
+  &lt;size&gt;1197&lt;/size&gt;
+  &lt;checksum algorithm="MD5"&gt;f1bb96fe0239e72e993e172d8c410bd6&lt;/checksum&gt;
+  &lt;submitter&gt;https://orcid.org/0000-0002-7136-9046&lt;/submitter&gt;
+  <strong>&lt;rightsHolder&gt;https://orcid.org/0000-0002-7136-9046&lt;/rightsHolder&gt;
+  &lt;accessPolicy&gt;
+    &lt;allow&gt;
+      &lt;subject&gt;public&lt;/subject&gt;
+      &lt;permission&gt;read&lt;/permission&gt;
+    &lt;/allow&gt;
+  &lt;/accessPolicy&gt;</strong>
+  &lt;archived&gt;false&lt;/archived&gt;
+  &lt;dateUploaded&gt;2019-07-05T18:00:42.337+00:00&lt;/dateUploaded&gt;
+  &lt;dateSysMetadataModified&gt;2019-07-05T18:00:42.337+00:00&lt;/dateSysMetadataModified&gt;
+  &lt;originMemberNode&gt;urn:node:mnTestKNB&lt;/originMemberNode&gt;
+  &lt;authoritativeMemberNode&gt;urn:node:mnTestKNB&lt;/authoritativeMemberNode&gt;
+&lt;/d1:systemMetadata&gt;
+                            </code>
+                            <p>Each user in the DataONE network can be identified as a <code>Subject</code> string
+                            which links to that user's authenticated identity such as its ORCID identifier. These Subject strings
+                            can then be used to grant access to objects within the system. </p>
+
+                            <p>Note how the object is owned by the ORCID on the <code>rightsHolder</code> field — that user can always do anything to the object.  
+                            Additional rules are specified in <code>accessPolicy</code>.  For each user, you can grant <code>read</code>, <code>write</code>, 
+                            and <code>changePermission</code> permissions. Note that the special user <code>public</code> has been granted <code>read</code>, 
+                            which makes the document globally readable by all users, even if they are not logged in.  If you want to allow another account to 
+                            make changes, you could add an <code>allow</code> rule to grant their ORCID the <code>write</code> permission in the SystemMetadata 
+                            document, and then update that using the <code>updateSystemMetadata</code> API.
+                            </p>
                         </section>
 
-                        <h3 id="auth">Method Details and Examples</h3>
+                        <h3 id="examples">Method Details and Examples</h3>
                         <section name="examples">
 
                             <section class="example">
@@ -330,12 +374,30 @@ curl -X PUT \
                             <section class="example">
                                 <a id="getSystemMetadata"></a>
                                 <h3 name="getSystemMetadata">Get System Metadata for an Object</h3>
-                                Use the <code>getSystemMetadata</code> to access the <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical
+                                Use <code>getSystemMetadata</code> to access the <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical
                                 information about each object on the repository, including its identifier, its type, access
                                 control policies, and replication policies, and other details like size and checksum.
                                 <code class="code_example">
 curl -X GET \
      -H "Accept: text/xml" \
+     "${ENDPOINT}/meta/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
+                                </code>
+                            </section>
+
+                            <section class="example">
+                                <a id="updateSystemMetadata"></a>
+                                <h3 name="updateSystemMetadata">Update System Metadata for an Object</h3>
+                                Use <code>updateSystemMetadata</code> to update the <a href="https://purl.dataone.org/architecture/apis/Types.html#Types.SystemMetadata">SystemMetadata</a> for an object, which represents critical
+                                information about each object on the repository, including its identifier, its type, access
+                                control policies, and replication policies, and other details like size and checksum.
+                                <code class="code_example">
+curl -X PUT \
+     --cert /tmp/x509up_u501 \
+     -H "Charset: utf-8" \
+     -H "Content-Type: multipart/mixed; boundary=----------4A2D135C-52CC-017FC-B269-B711ED211576_$" \
+     -H "Accept: text/xml" \
+     -F pid=urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a \
+     -F sysmeta=@mysystemmetadata.xml \
      "${ENDPOINT}/meta/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
                                 </code>
                             </section>
