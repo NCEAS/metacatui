@@ -189,13 +189,13 @@
                             <p>Two mechanisms are supported for authentication:
                             <ul>
                                 <li>Authentication Tokens passed in the HTTP "Authorization" header</li>
-                                <li>Client-side SSL certificates</li>
+                                <li>Client-side SSL certificates (deprecated)</li>
                             </ul></p>
                             <p><strong>Using Authentication Tokens</strong>.
-                            In this scenario, users sign in to the <a href="<%= MetacatUI.root %>/signin"><%=window.themeTitle%></a>, and copy an
+                            In this preferred approach, users sign in to the <a href="<%= MetacatUI.root %>/signin"><%=window.themeTitle%></a>, and copy an
                             <strong>authentication token</strong> from their
                             <a href="<%= MetacatUI.root %>/my-profile/s=settings/s=token">profile page</a> which can then be included
-                            in HTTPS requests in the HTTP header "Authorization:".</p>
+                            in HTTPS requests in the HTTP header "Authorization:" to establish their identity.</p>
 
                             <div>
                                 <a href="<%= MetacatUI.root %>/img/token-example.gif"><img src="<%= MetacatUI.root %>/img/token-example.gif" class="img-polaroid figure" /></a>
@@ -205,11 +205,11 @@
                             <p>The Authentication Token is a long base64-encoded string of characters that encodes the user's credentials
                             in a signed and validatable <a href="https://jwt.io" target="_external">JWT token</a>. Each language or
                             tool will have is own mechanism for setting HTTP headers.  For example, for curl an authenticated request
-                            can be made using the '-H' command line option, such as:<code class="code_example">
+                            can be made using the '-H' command line option to set the header, such as:<code class="code_example">
 $ export TOKEN='eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJodHRwOlwvXC9vcmNp...'
 $ curl -H "Authorization: Bearer $TOKEN" <%=apiBaseUrl%>/object
                             </code>
-                            The token expires in 18 hours, and so a new token can be retrieved beforehand.
+                            The token expires in 18 hours, and so a new token will need to be retrieved periodically.
                             <blockquote><i class="icon icon-warning-sign icon-warning"></i>
                                 <p class="text-warning">The authentication token should be carefully protected just as you would
                                 an account password, as it gives the holder full rights to the account.  Do not save
@@ -219,6 +219,12 @@ $ curl -H "Authorization: Bearer $TOKEN" <%=apiBaseUrl%>/object
                             </p>
 
                             <p><strong>Using client-side certificates over SSL</strong>.
+                            
+                            <blockquote><i class="icon icon-warning-sign icon-warning"></i>
+                                <p class="text-warning">Deprecated.  Client-side SSL certificates are deprecated 
+                                because certain clients and browsers do not fully support them. Use JWT Authentication
+                                tokens as described above instead.
+                            </p></blockquote>
                             Users can
                             <a href="https://cilogon.org/?skin=DataONE" target="_external">log into CILogon</a>
                             to download a client certificate,
@@ -239,8 +245,7 @@ $ curl -H "Authorization: Bearer $TOKEN" <%=apiBaseUrl%>/object
                                 <a href="http://curl.haxx.se/mail/archive-2014-10/0053.html">curl mailing list</a>.
                                 Thus, calls to the <%=title%> that require a certificate will fail on the standard Mac curl
                                 version, which can be fixed by replacing this with the MacPorts version
-                                of curl, or by using a certificate converted to PK12 format. A workaround for these issues
-                                is being explored, as the behavior differs in Mavericks and Yosemite.
+                                of curl, or by using a certificate converted to PK12 format. 
                             </p></blockquote>
                             </p>
 
@@ -320,8 +325,10 @@ curl -X GET \
                                 (<code>sysmeta</code>) document describing core metadata
                                 properties about the object, including who owns it, its format, etc.
                                 <code class="code_example">
+export TOKEN='eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJodHRwOlwvXC9vcmNp...'
+
 curl -X POST \
-     --cert /tmp/x509up_u501 \
+     -H "Authorization: Bearer $TOKEN"
      -H "Charset: utf-8" \
      -H "Content-Type: multipart/mixed; boundary=----------4A2D135C-52CC-017FC-B269-B711ED211576_$" \
      -H "Accept: text/xml" \
@@ -345,7 +352,7 @@ curl -X POST \
                                 occurs against the original object by including its <code>pid</code> in the REST URL.
                                 <code class="code_example">
 curl -X PUT \
-     --cert /tmp/x509up_u501 \
+     -H "Authorization: Bearer $TOKEN"
      -H "Charset: utf-8" \
      -H "Content-Type: multipart/mixed; boundary=----------4A2D135C-52CC-017FC-B269-B711ED211576_$" \
      -H "Accept: text/xml" \
@@ -365,7 +372,7 @@ curl -X PUT \
                                 <code>pid</code> in the service endpoint.
                                 <code class="code_example">
 curl -X PUT \
-     --cert /tmp/x509up_u501 \
+     -H "Authorization: Bearer $TOKEN"
      -H "Accept: text/xml" \
      "${ENDPOINT}/archive/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
                                 </code>
@@ -392,7 +399,7 @@ curl -X GET \
                                 control policies, and replication policies, and other details like size and checksum.
                                 <code class="code_example">
 curl -X PUT \
-     --cert /tmp/x509up_u501 \
+     -H "Authorization: Bearer $TOKEN"
      -H "Charset: utf-8" \
      -H "Content-Type: multipart/mixed; boundary=----------4A2D135C-52CC-017FC-B269-B711ED211576_$" \
      -H "Accept: text/xml" \
@@ -414,7 +421,7 @@ curl -X PUT \
                                 an overall data package.
                                 <code class="code_example">
 curl -X POST \
-     --cert /tmp/x509up_u501 \
+     -H "Authorization: Bearer $TOKEN"
      -H "Accept: text/xml" \
      -F scheme=UUID \
      "${ENDPOINT}/generate"
@@ -477,7 +484,7 @@ curl -X GET -H "Accept: text/xml" "${ENDPOINT}/object?start=0&amp;count=100"
                                 links while still hiding content from search.
                                 <code class="code_example">
 curl -X DELETE \
-     --cert /tmp/x509up_u501 \
+     -H "Authorization: Bearer $TOKEN"
      -H "Accept: text/xml" \
      "${ENDPOINT}/object/urn:uuid:56eafcec-8b0a-11e3-a5e8-00334b2a1a0a"
                                 </code>
