@@ -1235,7 +1235,7 @@ define(['jquery',
         _.each(dataPackage.toArray(), function(member, i){
           // Don't draw prov charts for metadata objects.
           if(member.get("type").toLowerCase() == "metadata") return;
-          var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
+          var entityDetailsSection = view.findEntityDetailsContainer(member);
 
           if( !entityDetailsSection ){
             return;
@@ -1504,7 +1504,7 @@ define(['jquery',
                 if(solrResult.get("formatType") == "METADATA")
                   entityName = solrResult.get("title");
 
-                var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
+                var container = viewRef.findEntityDetailsContainer(solrResult, parsedMetadata);
                 if(container) entityName = viewRef.getEntityName(container);
 
                 //Set the entity name
@@ -1533,7 +1533,7 @@ define(['jquery',
           else if(solrResult.get("formatType") == "RESOURCE")
             return;
           else{
-            var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
+            var container = viewRef.findEntityDetailsContainer(solrResult);
 
             if(container && container.length > 0)
               entityName = viewRef.getEntityName(container);
@@ -1613,7 +1613,7 @@ define(['jquery',
 
       //Otherwise, try looking for an anchor with the id matching this object's id
       if(!link.length)
-        link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
+        link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "\\$&"));
 
       //Get metadata index view
       var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
@@ -1621,7 +1621,7 @@ define(['jquery',
 
       //Otherwise, find the Online Distribution Link the hard way
       if((link.length < 1) && (!metadataFromIndex))
-        link = $(el).find(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
+        link = $(el).find(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id.replace(/[^A-Za-z0-9]/g, "\\$&") + "']");
 
       if(link.length > 0){
         //Get the container element
