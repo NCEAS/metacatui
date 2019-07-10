@@ -9,6 +9,8 @@ require.config({
     // urlArgs: "buster=" + (new Date()).getTime(),
     paths: {
         // Pull common libs from the app components library
+        "async": '../src/components/async',
+        "text": '../src/components/require-text',
         "jquery": "../src/components/jquery-1.9.1.min",
         "underscore": "../src/components/underscore-min",
         "backbone": "../src/components/backbone",
@@ -16,6 +18,7 @@ require.config({
         "chai": "./js/chai",
         "chai-jquery": "./js/chai-jquery",
         "chai-backbone": "./js/chai-backbone",
+        "he": "../src/components/he",
         "uuid": "../src/components/uuid",
         "md5": "../src/components/md5",
         "x2js": "../src/components/xml2json",
