@@ -10,7 +10,7 @@ define(['jquery',
         className: 'annotation-view',
 
         // TODO: Consider removing this and just using the underlying HTML as the template
-        template: _.template('<div class="annotation" title="<%= propertyLabel %> <%= valueLabel %>" data-content=""><div class="annotation-property"><%= propertyLabel %></div><div class="annotation-value"><%= valueLabel %></div></span>'),
+        template: _.template('<div class="annotation" title="<%= valueLabel %>" data-content=""><div class="annotation-property"><%= propertyLabel %></div><div class="annotation-value"><%= valueLabel %></div></span>'),
 
         // TODO: XSS protect
         // TODO: Consider adding a template for this
@@ -20,8 +20,6 @@ define(['jquery',
         context: null,
         propertyLabel: null,
         propertyURI: null,
-        propertyDefinition: null,
-        properyOntology: null,
         valueLabel: null,
         valueURI: null,
         valueDefinition: null,
@@ -37,9 +35,8 @@ define(['jquery',
         visible: null,
 
         // Stores whether we successfully looked and did or did not find the
-        // definition of the annotation's property or label, either from cache
-        // or from Bioportal
-        propertyResolved: null,
+        // definition of the annotation value, either from cache or from
+        // Bioportal
         valueResolved: null,
 
         events: {
@@ -54,7 +51,6 @@ define(['jquery',
             this.valueLabel = this.$el.data('valueLabel');
             this.valueURI = this.$el.data('valueUri');
 
-            this.propertyResolved = false;
             this.valueResolved = false;
         },
 
@@ -66,80 +62,7 @@ define(['jquery',
 
         // Helps us fetch data from the API on first interaction
         onClick: function () {
-            this.queryAndUpdateProperty();
             this.queryAndUpdateValue();
-        },
-
-        /* Either look up from cache or query Bioportal to find definitions for
-        the annotation property and value and then update the tooltip */
-        queryAndUpdateProperty: function () {
-            if (this.propertyResolved) {
-                return;
-            }
-
-            var viewRef = this,
-                cache = MetacatUI.appModel.get("bioportalLookupCache"),
-                token = MetacatUI.appModel.get("bioportalAPIKey");
-
-            // Attempt to grab from cache first
-
-            // TODO: Update for new popover model
-            if (cache && cache[this.propertyURI]) {
-                this.propertyDefinition = cache[this.propertyURI].definition;
-                this.propertyOntology = cache[this.propertyURI].links.ontology;
-                this.updatePopover();
-                this.propertyResolved = true;
-
-                return;
-            }
-
-            // Verify token before moving on
-            if (typeof token !== "string") {
-                this.propertyResolved = true;
-
-                return;
-            }
-
-            // Query the API and handle the response
-            // TODO: Looks like we should proxy this so the token doesn't leak
-            var url = "https://data.bioontology.org/search?q=" +
-                encodeURIComponent(this.propertyURI) +
-                "&apikey=" +
-                token;
-
-            $.get(url, function (data) {
-                var match = null;
-
-                // Verify response structure before trusting it
-                if (!data.collection ||
-                    !data.collection.length ||
-                    !data.collection.length > 0) {
-                    return;
-                }
-
-                // Find the first match by URI
-                match = _.find(data.collection, function(result) {
-                    return result["@id"] && result["@id"] === viewRef.propertyURI;
-                });
-
-                // Verify structure of response looks right and bail out if it
-                // doesn't
-                if (!match ||
-                    !match.definition ||
-                    !match.definition.length ||
-                    !match.definition.length > 0) {
-                    viewRef.propertyResolved = true;
-
-                    return;
-                }
-
-                viewRef.propertyDefinition = match.definition[0];
-                viewRef.propertyOntology = match.links.ontology;
-                viewRef.updatePopover();
-                viewRef.updateCache(viewRef.propertyURI, match);
-
-                viewRef.propertyResolved = true;
-            });
         },
 
         queryAndUpdateValue: function () {
@@ -153,7 +76,6 @@ define(['jquery',
 
             // Attempt to grab from cache first
 
-            // TODO: Update for new popover model
             if (cache && cache[this.valueURI]) {
                 this.valueDefinition = cache[this.valueURI].definition;
                 this.valueOntology = cache[this.valueURI].links.ontology;
@@ -222,8 +144,6 @@ define(['jquery',
                 context: this.context,
                 propertyLabel: this.propertyLabel,
                 propertyURI: this.propertyURI,
-                propertyDefinition: this.propertyDefinition,
-                propertyOntology: this.propertyOntology,
                 valueLabel: this.valueLabel,
                 valueURI: this.valueURI,
                 valueDefinition: this.valueDefinition,
@@ -245,8 +165,6 @@ define(['jquery',
                 context: this.context,
                 propertyLabel: this.propertyLabel,
                 propertyURI: this.propertyURI,
-                propertyDefinition: this.propertyDefinition,
-                propertyOntology: this.propertyOntology,
                 valueLabel: this.valueLabel,
                 valueURI: this.valueURI,
                 valueDefinition: this.valueDefinition,
