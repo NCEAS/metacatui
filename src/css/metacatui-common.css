@@ -206,7 +206,6 @@ footer{
 .nav .right .dropdown-menu {
   left: -50%;
 }
-
 /******************************************
 ** Titles ***
 ******************************************/
@@ -2485,6 +2484,60 @@ img[src*="googleapis.com/"].georegion-map{
   margin-left: -40px;
   margin-top: -20px;
 }
+.ProjectView #Content{
+  padding-top: 0px;
+}
+
+/** Top level app navigation in the ProjectView **/
+.ProjectView #Navbar{
+  position: relative;
+  width: 100%;
+  left: 0px;
+  margin: 0px;
+}
+.ProjectView .navbar{
+  margin: 0px;
+}
+.ProjectView .navbar-inner{
+  background-image: none;
+  box-shadow: none;
+  background-color: #FFF;
+}
+.ProjectView .navbar .nav > li > a.brand{
+  font-size: 25px;
+  letter-spacing: -2px;
+}
+.ProjectView .navbar .nav > li > a,
+.ProjectView .nav .input > form > label{
+  font-size: 12px;
+}
+.ProjectView #Navbar .minimal-nav > a,
+.ProjectView #Navbar .minimal-nav > .icon,
+.ProjectView #Navbar .minimal-nav > a > .icon{
+    color: inherit;
+}
+.ProjectView #Navbar .nav > li {
+    display: none;
+}
+.ProjectView #Navbar .nav .minimal-nav {
+    display: block;
+}
+.ProjectView #Navbar .nav .minimal-nav a {
+    font-size: 1em;
+    text-transform: none;
+    font-weight: 300;
+    text-shadow: none;
+}
+
+.ProjectView #Navbar .nav .minimal-nav.subtle a {
+    color: #999;
+}
+
+.ProjectView #Navbar .nav {
+    float: right;
+}
+/** ---end top level navigation ---**/
+
 #project-header-container{
   margin-bottom: 20px;
   padding-left: 40px;
@@ -2516,8 +2569,11 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .project-display-text{
   box-sizing: border-box;
-background-color: var(--project-primary-color-transparent);
-padding: 20px;
+  background-color: var(--project-primary-color-transparent);
+  padding: 20px;
+}
+.project-display-text h2{
+  color: #FFF;
 }
 .logo-container{
 	height: 100px;
@@ -2549,7 +2605,6 @@ padding: 20px;
 	display: none;
 }
 .project-view .project-title{
-  font-weight: 100;
   line-height: 70px;
   margin: 0px;
   font-size: 2em;
@@ -2597,7 +2652,6 @@ padding: 20px;
 }
 .project-view .toc-ul a{
   line-height: 2em;
-  font-weight: lighter;
 }
 .project-view .toc-ul > li > ul{
   margin-left: 0px;
