@@ -208,7 +208,7 @@ define(['jquery',
         findMore: function(e) {
             e.preventDefault();
 
-            var term = $(e.target).text();
+            var term = $(e.target).data("uri");
 
             // Direct the user towards a search for the annotation
             MetacatUI.appSearchModel.clear();
