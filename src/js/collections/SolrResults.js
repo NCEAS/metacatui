@@ -70,15 +70,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			}
 
 			//create the query url
-			var endpoint = MetacatUI.appModel.get('queryServiceUrl') +
-						   "fl=" + this.fields +
-						   "&q=" + this.currentquery +
-						   "&sort=" + this.sort +
-						   "&rows=" + this.rows +
-						   "&start=" + this.start +
-						   "&facet=true&facet.sort=index" + facetFields +
-						   stats +
-						   "&wt=json";
+			var endpoint = MetacatUI.appModel.get('queryServiceUrl') + "q=" + this.currentquery;
+
+      if(this.fields)
+        endpoint += "&fl=" + this.fields;
+      if(this.sort)
+        endpoint += "&sort=" + this.sort;
+      if( typeof this.rows == "number" || (typeof this.rows == "string" && this.rows.length))
+        endpoint += "&rows=" + this.rows;
+      if( typeof this.start == "number" || (typeof this.start == "string" && this.start.length))
+        endpoint += "&start=" + this.start;
+      if( this.facet.length > 0 )
+        endpoint += "&facet=true&facet.sort=index" + facetFields;
+
+      endpoint += stats + "&wt=json";
 
 			return endpoint;
 		},
@@ -151,14 +156,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		},
 
 		query: function(newquery) {
-			if (this.currentquery != newquery) {
+
+      if(typeof newquery != "undefined" && this.currentquery != newquery){
 				this.currentquery = newquery;
 				this.start = 0;
-
 			}
+
 			var fetchOptions = this.createFetchOptions();
 			this.fetch(fetchOptions);
-			//this.fetch({data: {start: this.start}, reset: true});
 		},
 
 		setQuery: function(newquery) {

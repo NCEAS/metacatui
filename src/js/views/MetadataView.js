@@ -141,14 +141,32 @@ define(['jquery',
             //var metadataModel = new ScienceMetadata({ id: this.pid });
             // Once the ScienceMetadata is populated, populate the associated package
             //this.metadataModel = metadataModel;
+
+      //Create a DataONEObject model to use in the DataPackage collection.
+    //  var combinedAttr = _.extend(this.model.toJSON());
+      var solrResultDefaults = this.model.defaults,
+          solrResultAttr     = this.model.toJSON(),
+          omitKeys = [];
+
+      _.each(solrResultAttr, function(val, key){
+        if( solrResultDefaults[key] === val )
+          omitKeys.push(key);
+      });
+
+      var dataOneObject = new ScienceMetadata(_.omit(solrResultAttr, omitKeys));
+
       // Create a new data package with this id
-      this.dataPackage = new DataPackage([], {id: pid});
+      this.dataPackage = new DataPackage([dataOneObject], {id: pid});
+
       //Fetch the data package. DataPackage.parse() triggers 'complete'
-      this.dataPackage.fetch();
-      this.listenTo(this.dataPackage, "complete", function() {
+      this.dataPackage.fetch({
+        fetchModels: false
+      });
+
+      this.listenToOnce(this.dataPackage, "complete", function() {
         // parseProv triggers "queryComplete"
         this.dataPackage.parseProv();
-                this.checkForProv();
+        this.checkForProv();
       });
     },
     /*
@@ -1202,6 +1220,32 @@ define(['jquery',
         editModeOn = false;
       }
 
+      if( editModeOn ){
+        //If none of the models in this package have the formatId attributes,
+        // we should fetch the DataPackage since it likely has only had a shallow fetch so far
+        var formats = _.compact(dataPackage.pluck("formatId"));
+
+        if( formats.length < dataPackage.length ){
+
+          this.listenToOnce(dataPackage, "complete", function(){
+            this.drawProvCharts(dataPackage);
+          });
+
+
+          dataPackage.solrResults.currentquery = dataPackage.filterModel.getQuery() +
+            "%20AND%20-formatType:METADATA";
+          dataPackage.solrResults.fields = "id,seriesId,formatId,fileName";
+          dataPackage.solrResults.rows   = dataPackage.length;
+          dataPackage.solrResults.sort   = null;
+          dataPackage.solrResults.start  = 0;
+          dataPackage.solrResults.facet  = [];
+          dataPackage.solrResults.stats  = null;
+          dataPackage.fetch({ fromIndex: true });
+
+          return;
+        }
+      }
+
       var view = this;
       //Draw two flow charts to represent the sources and derivations at a package level
       var packageSources     = dataPackage.sourcePackages;
@@ -1234,7 +1278,9 @@ define(['jquery',
         //Draw the provenance charts for each member of this package at an object level
         _.each(dataPackage.toArray(), function(member, i){
           // Don't draw prov charts for metadata objects.
-          if(member.get("type").toLowerCase() == "metadata") return;
+          if(member.get("type").toLowerCase() == "metadata" || member.get("formatType").toLowerCase() == "metadata"){
+            return;
+          }
           var entityDetailsSection = view.findEntityDetailsContainer(member);
 
           if( !entityDetailsSection ){

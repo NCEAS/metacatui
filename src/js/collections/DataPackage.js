@@ -2,8 +2,11 @@
 "use strict";
 
 define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
+        'collections/SolrResults',
+        'models/filters/Filter',
         'models/DataONEObject', 'models/metadata/ScienceMetadata', 'models/metadata/eml211/EML211'],
-    function($, _, Backbone, rdf, uuid, md5, DataONEObject, ScienceMetadata, EML211) {
+    function($, _, Backbone, rdf, uuid, md5, SolrResults, Filter,
+      DataONEObject, ScienceMetadata, EML211) {
 
       /*
        A DataPackage represents a hierarchical collection of
@@ -56,6 +59,19 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
         // The nesting level in a data package hierarchy
         nodeLevel: 0,
+
+        /**
+        * @type {SolrResults} - The SolrResults collection associated with this DataPackage.
+        * This can be used to fetch the package from Solr by passing the 'fromIndex' option
+        * to fetch().
+        */
+        solrResults: new SolrResults(),
+
+        /**
+        * @type {Filter} - A Filter model that should filter the Solr index for only the
+        * objects aggregated by this package.
+        */
+        filterModel: null,
 
         //Define the namespaces used in the RDF XML
         namespaces: {
@@ -110,6 +126,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             }
             this.id = this.packageModel.id;
+
+            //Create a Filter for this DataPackage using the id
+            this.filterModel = new Filter({
+              fields: ["resourceMap"],
+              values: [this.id],
+              matchSubstring: false
+            });
+            //If the id is ever changed, update the id in the Filter
+            this.listenTo(this.packageModel, "change:id", function(){
+              this.filterModel.set("values", [this.packageModel.get("id")]);
+            });
 
             this.on("add", this.handleAdd);
             this.on("add", this.triggerComplete);
@@ -320,13 +347,40 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               }
           },
 
-          /*
+          /**
            *  Overload fetch calls for a DataPackage
+           *
+           * @param {Object} [options] - Optional options for this fetch that get sent with the XHR request
+           *  @property {boolean} fetchModels - If false, this fetch will not fetch
+           *  each model in the collection. It will only get the resource map object.
+           *  @property {boolean} fromIndex - If true, the collection will be fetched from Solr rather than
+           *  fetching the system metadata of each model. Useful when you only need to retrieve limited information about
+           *  each package member. Set query-specific parameters on the `solrResults` SolrResults set on this collection.
            */
           fetch: function(options) {
 
               //Fetch the system metadata for this resource map
               this.packageModel.fetch();
+
+              if(typeof options == "object"){
+
+                //If the fetchModels property is set to false,
+                if(options.fetchModels === false){
+                  //Save the property to the Collection itself so it is accessible in other functions
+                  this.fetchModels = false;
+                  //Remove the property from the options Object since we don't want to send it with the XHR
+                  delete options.fetchModels;
+
+                  this.once("reset", this.triggerComplete);
+                }
+                //If the fetchFromIndex property is set to true
+                else if( options.fromIndex ){
+
+                  this.fetchFromIndex();
+                  return;
+
+                }
+              }
 
               //Set some custom fetch options
               var fetchOptions = _.extend({dataType: "text"}, options);
@@ -396,16 +450,20 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     //Create a DataONEObject model to represent this collection member and add to the collection
                     if(!_.contains(this.pluck("id"), memberPID)){
 
-                       memberModel = this.add(new DataONEObject({
+                       memberModel = new DataONEObject({
                         id: memberPID,
                         resourceMap: [this.packageModel.get("id")],
                         collections: [this]
-                      }), { silent: true });
+                      });
+
+                      models.push(memberModel);
 
                     }
                     //If the model already exists, add this resource map ID to it's list of resource maps
                     else{
                       memberModel = this.get(memberPID);
+                      models.push(memberModel);
+
                       var rMaps = memberModel.get("resourceMap");
                       if(rMaps && Array.isArray(rMaps) && !_.contains(rMaps, this.packageModel.get("id"))) rMaps.push(this.packageModel.get("id"));
                       else if(rMaps && !Array.isArray(rMaps)) rMaps = [rMaps, this.packageModel.get("id")];
@@ -444,7 +502,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     this.originalIsDocBy[scidataID] = _.uniq([this.originalIsDocBy[scidataID], scimetaID]);
 
                   //Find the model in this collection for this data object
-                  var dataObj = this.get(scidataID);
+                  //var dataObj = this.get(scidataID);
+                  var dataObj = _.find(models, function(m){ return m.get("id") == scidataID });
 
                   if(dataObj){
                     //Get the isDocumentedBy field
@@ -465,54 +524,62 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 memberPIDs = _.difference(memberPIDs, sciMetaPids);
                 _.each(_.uniq(sciMetaPids), function(id){ memberPIDs.unshift(id); });
 
-                //Retrieve the model for each member
-                _.each(memberPIDs, function(pid){
+                //Don't fetch each member model if the fetchModels property on this Collection is set to false
+                if( this.fetchModels !== false ){
 
-                  memberModel = this.get(pid);
+                  //Add the models to the collection now, silently
+                  //this.add(models, {silent: true});
 
-                  var collection = this;
+                  //Retrieve the model for each member
+                  _.each(models, function(memberModel){
 
-                  memberModel.fetch();
-                  memberModel.once("sync",
-                    function(oldModel){
+                    var collection = this;
 
-                      //Get the right model type based on the model values
-                      var newModel = collection.getMember(oldModel);
+                    memberModel.fetch();
+                    memberModel.once("sync",
+                      function(oldModel){
 
-                      //If the model type has changed, then mark the model as unsynced, since there may be custom fetch() options for the new model
-                      if(oldModel.type != newModel.type){
+                        //Get the right model type based on the model values
+                        var newModel = collection.getMember(oldModel);
 
-                        // DataPackages shouldn't be fetched until we support nested packages better in the UI
-                        if(newModel.type == "DataPackage"){
-                          //Trigger a replace event so other parts of the app know when a model has been replaced with a different type
-                          oldModel.trigger("replace", newModel);
+                        //If the model type has changed, then mark the model as unsynced, since there may be custom fetch() options for the new model
+                        if(oldModel.type != newModel.type){
+
+                          // DataPackages shouldn't be fetched until we support nested packages better in the UI
+                          if(newModel.type == "DataPackage"){
+                            //Trigger a replace event so other parts of the app know when a model has been replaced with a different type
+                            oldModel.trigger("replace", newModel);
+                          }
+                          else{
+                            newModel.set("synced", false);
+
+                            newModel.fetch();
+                            newModel.once("sync", function(fetchedModel){
+                                fetchedModel.set("synced", true);
+
+                                //Remove the model from the collection and add it back
+                                collection.remove(oldModel);
+                                collection.add(fetchedModel);
+
+                                //Trigger a replace event so other parts of the app know when a model has been replaced with a different type
+                                oldModel.trigger("replace", newModel);
+
+                                if(newModel.type == "EML")
+                                  collection.trigger("add:EML");
+                              });
+                          }
                         }
                         else{
-                          newModel.set("synced", false);
+                          newModel.set("synced", true);
+                          collection.add(newModel, { merge: true });
 
-                          newModel.fetch();
-                          newModel.once("sync", function(fetchedModel){
-                              fetchedModel.set("synced", true);
-                              collection.add(fetchedModel, { merge: true });
+                          if(newModel.type == "EML")
+                            collection.trigger("add:EML");
+                          }
+                      });
 
-                              //Trigger a replace event so other parts of the app know when a model has been replaced with a different type
-                              oldModel.trigger("replace", newModel);
-
-                              if(newModel.type == "EML")
-                                collection.trigger("add:EML");
-                            });
-                        }
-                      }
-                      else{
-                        newModel.set("synced", true);
-                        collection.add(newModel, { replace: true });
-
-                        if(newModel.type == "EML")
-                      collection.trigger("add:EML");
-                      }
-                    });
-
-                  }, this);
+                    }, this);
+                }
 
               } catch (error) {
                    console.log(error);
@@ -1486,6 +1553,17 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
         },
 
         triggerComplete: function(model){
+
+          //If the last fetch did not fetch the models of the collection, then mark as complete now.
+          if(this.fetchModels === false){
+            // Delete the fetchModels property since it is set only once per fetch.
+            delete this.fetchModels;
+
+            this.trigger("complete", this);
+
+            return;
+          }
+
           //Check if the collection is done being retrieved
           var notSynced = this.reject(function(m){
             return (m.get("synced") || m.get("id") == model.get("id"));
@@ -2630,7 +2708,49 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
             },
 
-            /*
+            /**
+            * Fetches this DataPackage from the Solr index by using a SolrResults collection
+            * and merging the models in.
+            */
+            fetchFromIndex: function(){
+
+              if( typeof this.solrResults == "undefined" || !this.solrResults ){
+                this.solrResults = new SolrResults();
+              }
+
+              //If no query is set yet, use the FilterModel associated with this DataPackage
+              if( !this.solrResults.currentquery.length ){
+                this.solrResults.currentquery = this.filterModel.getQuery();
+              }
+
+              this.listenToOnce(this.solrResults, "reset", function(solrResults){
+                solrResults.each(function(solrResult){
+
+                  var modelInDataPackage = this.findWhere({ id: solrResult.get("id") });
+
+                  if( modelInDataPackage ){
+
+                    var fieldsToExtract = this.solrResults.fields ? this.solrResults.fields.split(",") : [];
+
+                    if( fieldsToExtract.length ){
+                      var valuesFromSolr = _.pick(solrResult.toJSON(), fieldsToExtract);
+
+                      modelInDataPackage.set(valuesFromSolr);
+                    }
+
+                  }
+
+                }, this);
+
+                this.trigger("complete");
+              });
+
+              //Query the index for this data package
+              this.solrResults.query();
+
+            },
+
+            /**
              * Update the relationships in this resource map when its been udpated
              */
             updateRelationships: function(){
