@@ -2252,11 +2252,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                       //Update the subject to the new pid
                       subjectClone.value = this.getURIFromRDF(pid);
 
-                      //Add the statement with the new subject pid, but the same predicate and object
-                      this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
-
                       //Remove the old resource map statement
                       this.dataPackageGraph.remove(statement);
+
+                      //Add the statement with the new subject pid, but the same predicate and object
+                      this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
 
                   }, this);
 
@@ -2341,7 +2341,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         }
                         break;
                     case "BlankNode":
-                        return(this.rdf.bnode(nodeToClone.value));
+                        //Blank nodes don't need to be cloned
+                        return nodeToClone;//(this.rdf.blankNode(nodeToClone.value));
                         break;
                     case "Collection":
                         // TODO: construct a list of nodes for this term type.
