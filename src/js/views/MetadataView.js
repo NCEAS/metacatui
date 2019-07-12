@@ -143,20 +143,12 @@ define(['jquery',
             //this.metadataModel = metadataModel;
 
       //Create a DataONEObject model to use in the DataPackage collection.
-    //  var combinedAttr = _.extend(this.model.toJSON());
-      var solrResultDefaults = this.model.defaults,
-          solrResultAttr     = this.model.toJSON(),
-          omitKeys = [];
-
-      _.each(solrResultAttr, function(val, key){
-        if( solrResultDefaults[key] === val )
-          omitKeys.push(key);
-      });
-
-      var dataOneObject = new ScienceMetadata(_.omit(solrResultAttr, omitKeys));
+      var dataOneObject = new ScienceMetadata({ id: this.model.get("id") });
 
       // Create a new data package with this id
       this.dataPackage = new DataPackage([dataOneObject], {id: pid});
+
+      this.dataPackage.mergeModels([ this.model ]);
 
       //Fetch the data package. DataPackage.parse() triggers 'complete'
       this.dataPackage.fetch({
@@ -1227,22 +1219,42 @@ define(['jquery',
 
         if( formats.length < dataPackage.length ){
 
-          this.listenToOnce(dataPackage, "complete", function(){
-            this.drawProvCharts(dataPackage);
-          });
+          var modelsToMerge = [];
+
+          //Get the PackageModel associated with this view
+          if( this.packageModels.length ){
+            var packageModel = _.find(this.packageModels, function(packageModel){ return packageModel.get("id") == dataPackage.id });
+
+            if(packageModel && packageModel.get("members").length){
+              //Merge the SolrResult models into the DataONEObject models
+              modelsToMerge = packageModel.get("members");
+            }
+          }
+
+          if( modelsToMerge.length ){
+            dataPackage.mergeModels(modelsToMerge);
+          }
+          else{
+
+            this.listenToOnce(dataPackage, "complete", function(){
+              this.drawProvCharts(dataPackage);
+            });
 
 
-          dataPackage.solrResults.currentquery = dataPackage.filterModel.getQuery() +
-            "%20AND%20-formatType:METADATA";
-          dataPackage.solrResults.fields = "id,seriesId,formatId,fileName";
-          dataPackage.solrResults.rows   = dataPackage.length;
-          dataPackage.solrResults.sort   = null;
-          dataPackage.solrResults.start  = 0;
-          dataPackage.solrResults.facet  = [];
-          dataPackage.solrResults.stats  = null;
-          dataPackage.fetch({ fromIndex: true });
+            dataPackage.solrResults.currentquery = dataPackage.filterModel.getQuery() +
+              "%20AND%20-formatType:METADATA";
+            dataPackage.solrResults.fields = "id,seriesId,formatId,fileName";
+            dataPackage.solrResults.rows   = dataPackage.length;
+            dataPackage.solrResults.sort   = null;
+            dataPackage.solrResults.start  = 0;
+            dataPackage.solrResults.facet  = [];
+            dataPackage.solrResults.stats  = null;
+            dataPackage.fetch({ fromIndex: true });
 
-          return;
+            return;
+
+          }
+
         }
       }
 

@@ -2727,29 +2727,69 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               }
 
               this.listenToOnce(this.solrResults, "reset", function(solrResults){
-                solrResults.each(function(solrResult){
+                //Merge the SolrResults into this collection
+                this.mergeModels(solrResults.models);
 
-                  var modelInDataPackage = this.findWhere({ id: solrResult.get("id") });
-
-                  if( modelInDataPackage ){
-
-                    var fieldsToExtract = this.solrResults.fields ? this.solrResults.fields.split(",") : [];
-
-                    if( fieldsToExtract.length ){
-                      var valuesFromSolr = _.pick(solrResult.toJSON(), fieldsToExtract);
-
-                      modelInDataPackage.set(valuesFromSolr);
-                    }
-
-                  }
-
-                }, this);
-
+                //Trigger the fetch as complete
                 this.trigger("complete");
               });
 
               //Query the index for this data package
               this.solrResults.query();
+
+            },
+
+            /**
+            * Merge the attributes of other models into the corresponding models in this collection.
+            * This should be used when merging models of other types (e.g. SolrResult) that represent the same
+            * object that the DataONEObject models in the collection represent.
+            *
+            * @param {Backbone.Model[]} otherModels - the other models to merge with the models in this collection
+            * @param {string[]} [fieldsToMerge] - If specified, only these fields will be extracted from the otherModels
+            */
+            mergeModels: function(otherModels, fieldsToMerge){
+
+              if(typeof otherModels == "undefined" || !otherModels || !otherModels.length){
+                return false;
+              }
+
+              _.each(otherModels, function(otherModel){
+
+                var modelInDataPackage = this.findWhere({ id: otherModel.get("id") });
+
+                if( modelInDataPackage ){
+
+                  var valuesFromOtherModel;
+
+                  if( fieldsToMerge && fieldsToMerge.length ){
+                    valuesFromOtherModel = _.pick(otherModel.toJSON(), fieldsToMerge);
+                  }
+                  else{
+
+                    //Get the default values for this model type
+                    var otherModelDefaults = otherModel.defaults,
+                    //Get a JSON object of all the attributes on this model
+                        otherModelAttr     = otherModel.toJSON(),
+                    //Start an array of attributes to omit during the merge
+                        omitKeys = [];
+
+                    _.each(otherModelAttr, function(val, key){
+                      //If this model's attribute is the default, don't set it on our DataONEObject model
+                      //  because whatever value is in the DataONEObject model is better information than the default
+                      //  value of the other model.
+                      if( otherModelDefaults[key] === val )
+                        omitKeys.push(key);
+                    });
+
+                    valuesFromOtherModel = _.omit(otherModelAttr, omitKeys);
+                  }
+
+                  //Set the values from the other model on the model in this collection
+                  modelInDataPackage.set(valuesFromOtherModel);
+
+                }
+
+              }, this);
 
             },
 
