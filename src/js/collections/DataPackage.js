@@ -2240,9 +2240,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                   // then repopulate them with correct values
                   _.each(rMapStatements, function(statement) {
-                      subjectClone = this.rdf.Node.fromValue(statement.subject);
-                      predicateClone = this.rdf.Node.fromValue(statement.predicate);
-                      objectClone = this.rdf.Node.fromValue(statement.object);
+                      subjectClone   = this.cloneNode(statement.subject);
+                      predicateClone = this.cloneNode(statement.predicate);
+                      objectClone    = this.cloneNode(statement.object);
 
                       // In the case of modified date, reset it to now()
                       if ( predicateClone.value === DC("modified") ) {
@@ -2254,6 +2254,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                       //Add the statement with the new subject pid, but the same predicate and object
                       this.dataPackageGraph.add(subjectClone, predicateClone, objectClone);
+
+                      //Remove the old resource map statement
+                      this.dataPackageGraph.remove(statement);
+
                   }, this);
 
                 }, this);
@@ -2289,10 +2293,9 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
                 // Describe the resource map with a Creator
                 var creatorNode = this.rdf.blankNode();
-                var creatorName = (this.rdf.lit(MetacatUI.appUserModel.get("firstName") || "") +
-                    " " +
-                    (MetacatUI.appUserModel.get("lastName") || "") +
-                    "" +
+                var creatorName = this.rdf.lit((MetacatUI.appUserModel.get("firstName") || "") +
+                    " " + (MetacatUI.appUserModel.get("lastName") || ""),
+                    "",
                     XSD("string"));
                 this.dataPackageGraph.add(creatorNode, FOAF("name"), creatorName);
                 this.dataPackageGraph.add(creatorNode, RDF("type"), DCTERMS("Agent"));
