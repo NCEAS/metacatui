@@ -1,3 +1,6 @@
+/**
+ * @exports ProjectModel
+ */
 /* global define */
 define(["jquery",
         "underscore",
@@ -14,23 +17,34 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map"
     ],
+    /** @lends ProjectModel.prototype */
     function($, _, Backbone, gmaps, Filters, SolrResults, ProjectSectionModel, ProjectImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
-
         /**
          * A ProjectModel is a specialized collection that represents a project,
          * including the associated data, people, project descriptions, results and
          * visualizations.  It also includes settings for customized filtering of the
          * associated data, and properties used to customized the map display and the
          * overall branding of the project.
+         *
+         * @class ProjectModel
+         * @module models/ProjectModel
+         * @name ProjectModel
+         * @constructor
+         * @return
          */
         var ProjectModel = CollectionModel.extend({
 
-            //@type {string} - The name of this type of model
+            /** @type {string} - The name of this type of model */
             type: "Project",
 
+            /**
+              * Overrides the default Backbone.Model.defaults() function to
+              * specify default attributes for the project model
+            */
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
+                    objectXML: null,
                     logo: null,
                     sections: [],
                     associatedParties: [],
@@ -39,28 +53,28 @@ define(["jquery",
                     awards: [],
                     literatureCited: [],
                     filterGroups: [],
-                    //@type {Search} - A Search model with a Filters collection
+                    /** @type {Search} - A Search model with a Filters collection */
                     // that contains the filters associated with this project
                     searchModel: null,
-                    //@type {SolrResults} - A SolrResults collection that contains the
+                    /** @type {SolrResults} - A SolrResults collection that contains the */
                     // filtered search results of datasets in this project
                     searchResults: new SolrResults(),
-                    //@type {SolrResults} - A SolrResults collection that contains the
+                    /**  @type {SolrResults} - A SolrResults collection that contains the */
                     // unfiltered search results of all datasets in this project
                     allSearchResults: null,
-                    //The project document options may specify section to hide
+                    // The project document options may specify section to hide
                     hideMetrics: false,
                     hideData: false,
                     hidePeople: false,
                     hideMap: false,
-                    //Map options, as specified in the project document options
+                    // Map options, as specified in the project document options
                     mapZoomLevel: 3,
                     mapCenterLatitude: null,
                     mapCenterLongitude: null,
                     mapShapeHue: 200,
-                    //The MapModel
+                    // The MapModel
                     mapModel: gmaps ? new MapModel() : null,
-                    //Project view colors, as specified in the project document options
+                    // Project view colors, as specified in the project document options
                     primaryColor: "",
                     secondaryColor: "",
                     accentColor: "",
@@ -73,22 +87,41 @@ define(["jquery",
                 });
             },
 
+            /**
+             * Overrides the default Backbone.Model.initialize() function to
+             * provide some custom initialize options
+             *
+             * @param {} options -
+            */
             initialize: function(options) {
+
+              // TODO: when do we create empty project XML?
+              this.parse(this.createXML());
+
               this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+
+              // TODO: remove this. Calling serialize from here for now to build/test.
+              // Will be called from projEditor view when fields are updated.
+              this.listenToOnce(this.get("searchResults"), "sync", this.serialize);
+
             },
 
-            /*
-             * Return the project URL
-             */
+             /**
+              * Returns the project URL
+              *
+              * @return {string} The project URL
+            */
             url: function() {
                 return MetacatUI.appModel.get("objectServiceUrl") +
                     encodeURIComponent(this.get("id"));
             },
 
-            /*
+            /**
              * Overrides the default Backbone.Model.fetch() function to provide some custom
              * fetch options
-             */
+             *
+             * @return {XMLDocument} The XMLDocument returned from the fetch() AJAX call
+            */
             fetch: function() {
 
                 var requestSettings = {
@@ -100,7 +133,7 @@ define(["jquery",
                           model.trigger("notFound");
                         }
                     }
-                }
+                };
 
                 //Add the user settings to the fetch settings
                 requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
@@ -110,13 +143,13 @@ define(["jquery",
 
             },
 
-            /*
+            /**
              * Overrides the default Backbone.Model.parse() function to parse the custom
              * project XML document
              *
              * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
              * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
-             */
+            */
             parse: function(response) {
 
                 //Start the empty JSON object
@@ -131,13 +164,18 @@ define(["jquery",
                     }
                 });
 
+
                 //If a project XML node wasn't found, return an empty JSON object
                 if (typeof projectNode == "undefined" || !projectNode) {
                     return {};
                 }
 
+
                 //Parse the collection elements
                 modelJSON = this.parseCollectionXML(projectNode);
+
+                //save the xml for serialize
+                modelJSON.objectXML = response;
 
                 //Parse the simple text nodes
                 var projLogo = this.parseTextNode(projectNode, "logo");
@@ -269,18 +307,17 @@ define(["jquery",
                   allFilters.add(filterGroupModel.get("filters").models);
 
                 });
-
                 return modelJSON;
             },
 
-            /*
+            /**
              * Parses the XML nodes that are of type EMLText
              *
              * @param {Element} parentNode - The XML Element that contains all the EMLText nodes
              * @param {string} nodeName - The name of the XML node to parse
              * @param {boolean} isMultiple - If true, parses the nodes into an array
-             * @return {(string|Array)} - Returns a string or array of strings of the text content
-             */
+             * @return {(string|Array)} A string or array of strings of the text content
+            */
             parseEMLTextNode: function(parentNode, nodeName, isMultiple) {
 
                 var node = $(parentNode).children(nodeName);
@@ -312,11 +349,11 @@ define(["jquery",
 
             },
 
-            /*
-            * Creates a copy of the SolrResults collection and saves it in this
-            * model so that there is always access to the unfiltered list of datasets
-            *
-            * @param {SolrResults} - The SolrResults collection to cache
+            /**
+             * Creates a copy of the SolrResults collection and saves it in this
+             * model so that there is always access to the unfiltered list of datasets
+             *
+             * @param {SolrResults} searchResults - The SolrResults collection to cache
             */
             cacheSearchResults: function(searchResults){
 
@@ -330,6 +367,19 @@ define(["jquery",
 
             },
 
+            /**
+             * @typedef {Object} rgb - An RGB color value
+             * @property {number} r - a value between 0 and 255 defining the intensity of red
+             * @property {number} g - a value between 0 and 255 defining the intensity of green
+             * @property {number} b - a value between 0 and 255 defining the intensity of blue
+            */
+
+            /**
+             * Converts hex color values to RGB
+             *
+             * @param {string} hex - a color in hexadecimal format
+             * @return {rgb} a color in RGB format
+            */
             hexToRGB: function(hex){
               var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
               return result ? {
@@ -337,6 +387,249 @@ define(["jquery",
                   g: parseInt(result[2], 16),
                   b: parseInt(result[3], 16)
               } : null;
+              },
+
+            /**
+             * Finds the node in the given project XML document afterwhich the
+             * given node type should be inserted
+             * @param {Element} xml - The project element of an XML document
+             * @param {string} nodeName - the name of the node to be inserted
+             *                             into xml
+             * @return {(jQuery\|boolean)} a jQuery object indicating a position,
+             *                            or false when nodeName is not in the
+             *                            project schema
+            */
+            getXMLPosition: function(xml, nodeName){
+
+              var nodeOrder = [ "name", "label", "description", "definition",
+                                "logo", "section", "associatedParty",
+                                "acknowledgments", "acknowledgmentsLogo",
+                                "award", "literatureCited", "filterGroup",
+                                "option"];
+              var position = _.indexOf(nodeOrder, nodeName);
+
+              // first check that nodeName is in the list of nodes
+              if ( position == -1 ) {
+                  return false;
+              };
+
+              // Go through each node in the node list and find the position
+              // where this node will be inserted after
+              for (var i = position - 1; i >= 0; i--) {
+                if ( $(xml).find(nodeOrder[i]).length ) {
+                  return $(xml).children(nodeOrder[i]).last();
+                }
+              };
+              return false;
+            },
+
+            /**
+             * Retireves the model attributes and serializes into project XML,
+             * to produce the new or modified project document.
+             *
+             * @return {string} - Returns the project XML as a string.
+            */
+            serialize: function(){
+
+              // Get the project model
+              var xmlDoc,
+                  projectNode,
+                  xmlString;
+
+              xmlDoc = this.get("objectXML");
+
+              // Check if there is a project doc already, if not create one
+              if (xmlDoc == null){
+                xmlDoc = $(this.createXML());
+              } else {
+                xmlDoc = $(xmlDoc.cloneNode(true));
+              };
+
+              // Iterate over each root XML node to find the project node
+              xmlDoc.children().each(function(i, el) {
+                  if (el.tagName.indexOf("project") > -1) {
+                      projectNode = el;
+                  }
+              });
+
+              // Serialize the collection elements ("name", "label", "description", "definition")
+              // TODO
+
+              // Serialize project logo
+              // Create new project logo node
+              var newLogo = $(document.createElement("logo"));
+              $(newLogo).text(this.get("logo"));
+              // Remove logo node if it exists already
+              xmlDoc.find("logo").remove(); // remove if it exists
+
+              // Insert the new logo node in the correct position
+              var insertAfter = this.getXMLPosition(projectNode, "logo");
+              if(insertAfter){
+                insertAfter.after(newLogo);
+              }
+              else{
+                projectNode.prepend(newLogo);
+              }
+
+              // Serialize acknowledgment logos [ARRAY]
+              // TODO
+              // ProjectImage.serialize();
+
+              // Create new acknowledgment logos nodes
+              // TODO
+
+              // serialize literature cited [ARRAY]
+              // TODO
+
+              // Serialize the project content sections
+              // TODO
+              // ProjectSectionModel.serialize();
+
+              // Serialize the EMLText elements ("acknowledgments")
+              var textFields = ["acknowledgments"];
+
+              _.each(textFields, function(field){
+
+                var fieldName = field;
+
+                // Get the EMLText model
+                var emlTextModels = Array.isArray(this.get(field)) ? this.get(field) : [this.get(field)];
+                if( ! emlTextModels.length ) return;
+
+                // Get the node from the XML doc
+                var nodes = xmlDoc.find(fieldName);
+
+                // Update the DOMs for each model
+                _.each(emlTextModels, function(thisTextModel, i){
+                  //Don't serialize falsey values
+                  if(!thisTextModel) return;
+
+                  var node;
+
+                  //Get the existing node or create a new one
+                  if(nodes.length < i+1){
+                    node = document.createElement(fieldName);
+                    this.getEMLPosition(eml, fieldName).after(node);
+
+                  }
+                  else {
+                     node = nodes[i];
+                  }
+
+                  $(node).html( $(thisTextModel.updateDOM() ).html());
+
+                }, this);
+
+                // Remove the extra nodes
+                this.removeExtraNodes(nodes, emlTextModels);
+
+              }, this);
+
+              // Serialize the awards
+              // TODO
+
+              // Serialize the associatedParties
+              // TODO
+
+              // Serialize the options
+              // TODO
+
+              // Serialize the colors
+              // TODO
+
+              // Serialize the map options
+              if (gmaps) {
+
+              }
+
+              // Serialize the FilterGroups
+              // SKIP FOR NOW
+
+              // Convert xml to xmlString and return xmlString
+              xmlString = new XMLSerializer().serializeToString(projectNode);
+              return (xmlString)
+            },
+
+            /**
+             * Initialize the object XML for a brand spankin' new project
+             *
+             * @return {XMLDocument} An empty project XML document
+            */
+            createXML: function() {
+
+              // ToDo: which attributes should a new XML project doc should have?
+              var xmlString = "<proj:project xmlns:proj=\"http://ecoinformatics.org/datasetproject-beta1\"></proj:project>",
+                  xmlNew = $.parseXML(xmlString),
+                  projectNode = xmlNew.getElementsByTagName("proj:project")[0];
+
+              // set attributes
+              projectNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+              projectNode.setAttribute("xsi:schemaLocation", "http://ecoinformatics.org/datasetproject-beta1");
+
+              // TODO: should a new XML project doc be created with empty elements?
+              // projectNode.appendChild(document.createElement("label"));
+              // projectNode.appendChild(document.createElement("section"));
+              return(xmlNew);
+            },
+
+
+            /**
+             * Overrides the default Backbone.Model.validate.function() to
+             * check if this project model has all the required values necessary
+             * to save to the server
+             *
+             * @return {Object} If there are errors, an object comprising error
+             *                   messages. If no errors, returns nothing.
+            */
+            validate: function() {
+              var errors = {};
+
+              // TODO: validate all the project elements here
+
+              if( Object.keys(errors).length )
+                return errors;
+              else{
+                return;
+              }
+
+            },
+
+            /**
+             * Removes nodes from the XML that do not have an accompanying model
+             * (i.e. nodes which were probably removed by the user during editing)
+             *
+             * @param {jQuery} nodes - The nodes to potentially remove
+             * @param {Array} models - The model to compare to
+            */
+            removeExtraNodes: function(nodes, models){
+              // Remove the extra nodes
+               var extraNodes =  nodes.length - models.length;
+               if(extraNodes > 0){
+                 for(var i = models.length; i < nodes.length; i++){
+                   $(nodes[i]).remove();
+                 }
+               }
+            },
+
+            /**
+             * Saves the project XML document to the server using the DataONE API
+             *
+             * @param {} attributes -
+             * @param {} options -
+             * @return {}
+            */
+            save: function(attributes, options){
+                // TODO
+
+                // validate
+                // ....
+
+                // Serialize the XML
+                var xml = this.serialize();
+                var xmlBlob = new Blob([xml], {type : 'application/xml'});
+
+                //Get the size of the new EML XML
+                this.set("size", xmlBlob.size);
             }
 
         });
