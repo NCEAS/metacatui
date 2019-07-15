@@ -618,7 +618,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               model.trigger("change:isAuthorized");
             },
             error: function(xhr, textStatus, errorThrown) {
-              model.set("isAuthorized", false);
+              if(errorThrown == 404){
+                model.set("notFound", true);
+              }
+              else{
+                model.set("isAuthorized", false);
+              }
             }
           }
           $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
@@ -1481,7 +1486,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           isSoftware: function(){
-            //The list of formatIds that are programs 
+            //The list of formatIds that are programs
             var softwareIds =  ["text/x-python",
                       "text/x-rsrc",
                       "text/x-matlab",
