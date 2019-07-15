@@ -1212,50 +1212,57 @@ define(['jquery',
         editModeOn = false;
       }
 
-      if( editModeOn ){
-        //If none of the models in this package have the formatId attributes,
-        // we should fetch the DataPackage since it likely has only had a shallow fetch so far
-        var formats = _.compact(dataPackage.pluck("formatId"));
+      //If none of the models in this package have the formatId attributes,
+      // we should fetch the DataPackage since it likely has only had a shallow fetch so far
+      var formats = _.compact(dataPackage.pluck("formatId"));
 
-        if( formats.length < dataPackage.length ){
+      //If the number of formatIds is less than the number of models in this collection,
+      // then we need to get them.
+      if( formats.length < dataPackage.length ){
 
-          var modelsToMerge = [];
+        var modelsToMerge = [];
 
-          //Get the PackageModel associated with this view
-          if( this.packageModels.length ){
-            var packageModel = _.find(this.packageModels, function(packageModel){ return packageModel.get("id") == dataPackage.id });
+        //Get the PackageModel associated with this view
+        if( this.packageModels.length ){
+          //Get the PackageModel for this DataPackage
+          var packageModel = _.find(this.packageModels, function(packageModel){ return packageModel.get("id") == dataPackage.id });
 
-            if(packageModel && packageModel.get("members").length){
-              //Merge the SolrResult models into the DataONEObject models
-              modelsToMerge = packageModel.get("members");
-            }
+          //Merge the SolrResult models into the DataONEObject models
+          if(packageModel && packageModel.get("members").length){
+            modelsToMerge = packageModel.get("members");
           }
+        }
 
-          if( modelsToMerge.length ){
-            dataPackage.mergeModels(modelsToMerge);
-          }
-          else{
+        //If there is at least one model to merge into this data package, do so
+        if( modelsToMerge.length ){
+          dataPackage.mergeModels(modelsToMerge);
+        }
+        //If there are no models to merge in, get them from the index
+        else{
 
-            this.listenToOnce(dataPackage, "complete", function(){
-              this.drawProvCharts(dataPackage);
-            });
+          //Listen to the DataPackage fetch to complete and re-execute this function
+          this.listenToOnce(dataPackage, "complete", function(){
+            this.drawProvCharts(dataPackage);
+          });
 
+          //Create a query that searches for all the members of this DataPackage in Solr
+          dataPackage.solrResults.currentquery = dataPackage.filterModel.getQuery() +
+            "%20AND%20-formatType:METADATA";
+          dataPackage.solrResults.fields = "id,seriesId,formatId,fileName";
+          dataPackage.solrResults.rows   = dataPackage.length;
+          dataPackage.solrResults.sort   = null;
+          dataPackage.solrResults.start  = 0;
+          dataPackage.solrResults.facet  = [];
+          dataPackage.solrResults.stats  = null;
 
-            dataPackage.solrResults.currentquery = dataPackage.filterModel.getQuery() +
-              "%20AND%20-formatType:METADATA";
-            dataPackage.solrResults.fields = "id,seriesId,formatId,fileName";
-            dataPackage.solrResults.rows   = dataPackage.length;
-            dataPackage.solrResults.sort   = null;
-            dataPackage.solrResults.start  = 0;
-            dataPackage.solrResults.facet  = [];
-            dataPackage.solrResults.stats  = null;
-            dataPackage.fetch({ fromIndex: true });
+          //Fetch the data package with the "fromIndex" option
+          dataPackage.fetch({ fromIndex: true });
 
-            return;
-
-          }
+          //Exit this function since it will be executed again when the fetch is complete
+          return;
 
         }
+
       }
 
       var view = this;

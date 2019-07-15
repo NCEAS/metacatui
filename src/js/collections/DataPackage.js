@@ -2750,21 +2750,26 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             */
             mergeModels: function(otherModels, fieldsToMerge){
 
+              //If no otherModels are given, exit the function since there is nothing to merge
               if(typeof otherModels == "undefined" || !otherModels || !otherModels.length){
                 return false;
               }
 
               _.each(otherModels, function(otherModel){
 
+                //Get the model from this collection that matches ids with the other model
                 var modelInDataPackage = this.findWhere({ id: otherModel.get("id") });
 
+                //If a match is found,
                 if( modelInDataPackage ){
 
                   var valuesFromOtherModel;
 
+                  //If specific fields to merge are given, get the values for those from the other model
                   if( fieldsToMerge && fieldsToMerge.length ){
                     valuesFromOtherModel = _.pick(otherModel.toJSON(), fieldsToMerge);
                   }
+                  //If no specific fields are given, merge (almost) all others
                   else{
 
                     //Get the default values for this model type
@@ -2782,6 +2787,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         omitKeys.push(key);
                     });
 
+                    //Remove the properties that are still the default value
                     valuesFromOtherModel = _.omit(otherModelAttr, omitKeys);
                   }
 
