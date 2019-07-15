@@ -1221,11 +1221,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 		downloadWithCredentials: function(){
 			//Get info about this object
-			var filename = this.get("fileName") || "",
-				url = this.get("url"),
-				model = this;
-
-			if(filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4))) filename += ".zip";
+			var	url = this.get("url"),
+				  model = this;
 
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
@@ -1233,6 +1230,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
+
+        //Get the file name from the Content-Disposition header
+        var filename = xhr.getResponseHeader('Content-Disposition');
+
+        //As a backup, use the system metadata file name or the id
+        if(!filename){
+          filename = model.get("filename") || model.get("id");
+        }
+
+        //Add a ".zip" extension if it doesn't exist
+  			if( filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4)) ){
+          filename += ".zip";
+        }
 
 			   //For IE, we need to use the navigator API
 			   if (navigator && navigator.msSaveOrOpenBlob) {
