@@ -1,13 +1,14 @@
 /* global define */
-define(["jquery", 
-        "underscore", 
-        "backbone", 
-        "collections/Filters", 
+define(["jquery",
+        "underscore",
+        "backbone",
+        "collections/Filters",
+        "models/DataONEObject",
         "models/filters/Filter",
         "models/Search"],
-    function($, _, Backbone, Filters, Filter, Search) {
+    function($, _, Backbone, Filters, DataONEObject, Filter, Search) {
 
-	var CollectionModel = Backbone.Model.extend({
+	var CollectionModel = DataONEObject.extend({
 
     //The default attributes for this model
 		defaults: function(){
