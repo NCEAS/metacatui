@@ -30,7 +30,8 @@ function ($, _, Backbone) {
 			'submit(/*pid)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)'                : 'renderAPI', // API page
-			'projects(/:projectId)(/:projectSection)': 'renderProject' // project page
+			'projects(/:projectId)(/:projectSection)': 'renderProject', // project page
+      'edit/project(/:projectIdentifier)'     : 'renderProjectEditor'
 		},
 
 		helpPages: {
@@ -155,37 +156,37 @@ function ($, _, Backbone) {
     */
 		renderEditor: function (pid) {
 
-			//If there is no EditorView yet, create one
-			if( ! MetacatUI.appView.editorView ){
+			//If there is no EML211EditorView yet, create one
+			if( ! MetacatUI.appView.eml211EditorView ){
 
 				var router = this;
 
-				//Load the EditorView file
-				require(['views/EditorView'], function(EditorView) {
+				//Load the EML211EditorView file
+				require(['views/metadata/EML211EditorView'], function(EML211EditorView) {
 					//Add the submit route to the router history
 					router.routeHistory.push("submit");
 
-					//Create a new EditorView
-					MetacatUI.appView.editorView = new EditorView({pid: pid});
+					//Create a new EML211EditorView
+					MetacatUI.appView.eml211EditorView = new EML211EditorView({pid: pid});
 
 					//Set the pid from the pid given in the URL
-					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.eml211EditorView.pid = pid;
 
-					//Render the EditorView
-					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+					//Render the EML211EditorView
+					MetacatUI.appView.showView(MetacatUI.appView.eml211EditorView);
 				});
 
 			}
 			else {
 
 					//Set the pid from the pid given in the URL
-					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.eml211EditorView.pid = pid;
 
 					//Add the submit route to the router history
 					this.routeHistory.push("submit");
 
 					//Render the Editor View
-					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+					MetacatUI.appView.showView(MetacatUI.appView.eml211EditorView);
 
 			}
 		},
@@ -375,6 +376,24 @@ function ($, _, Backbone) {
 				MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},
+
+    /**
+    * Renders the ProjectEditorView
+    * @param {string} [projectIdentifier] - The id or name of the project
+    */
+    renderProjectEditor: function(projectIdentifier){
+      if ( !MetacatUI.appView.projectEditorView ) {
+        require(['views/project/ProjectEditorView'], function(ProjectEditorView){
+          MetacatUI.appView.projectEditorView = new ProjectEditorView({
+              projectIdentifier: projectIdentifier
+          });
+          MetacatUI.appView.showView(MetacatUI.appView.projectEditorView);
+        });
+      } else {
+        MetacatUI.appView.projectEditorView.projectIdentifier = projectIdentifier;
+        MetacatUI.appView.showView(MetacatUI.appView.projectEditorView);
+      }
+    },
 
 		renderMetadata: function (pid) {
 			this.routeHistory.push("metadata");

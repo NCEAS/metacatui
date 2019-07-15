@@ -211,7 +211,7 @@ define(['underscore', 'jquery', 'backbone',
 
             /*
              * Resets the error messaging and displays the current error messages for this model
-             * This function is used by the EditorView during the package validation process
+             * This function is used by the EML211EditorView during the package validation process
              */
             showValidation: function(){
             	this.$(".error").removeClass("error");
