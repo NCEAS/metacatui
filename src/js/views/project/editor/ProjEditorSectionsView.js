@@ -3,9 +3,12 @@ define(['underscore',
         'backbone',
         'models/project/ProjectModel',
         "views/project/editor/ProjEditorSettingsView",
+        "views/project/editor/ProjEditorDataView",
+        "views/project/editor/ProjEditorMdSectionView",
         "text!templates/project/editor/projEditorSections.html",
         "text!templates/project/editor/projEditorSectionLink.html"],
-function(_, $, Backbone, Project, ProjEditorSettingsView,
+function(_, $, Backbone, Project, ProjEditorSettingsView, ProjEditorDataView,
+         ProjEditorMdSectionView,
          Template, SectionLinkTemplate){
 
   /**
