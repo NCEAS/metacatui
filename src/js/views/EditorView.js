@@ -38,6 +38,13 @@ function(_, $, Backbone, SignInView){
     },
 
     /**
+    * Saves the model
+    */
+    save: function(){
+      this.model.save();
+    },
+
+    /**
      * Cancel all edits in the editor by simply re-rendering the view
      */
     cancel: function(){

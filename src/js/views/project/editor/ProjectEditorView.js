@@ -2,8 +2,10 @@ define(['underscore',
         'jquery',
         'backbone',
         'models/project/ProjectModel',
-        'views/EditorView'],
-function(_, $, Backbone, Project, EditorView){
+        'views/EditorView',
+        "views/project/editor/ProjEditorSectionsView",
+        "text!templates/project/editor/projectEditor.html"],
+function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, Template){
 
   /**
   * @class ProjectEditorView
@@ -29,12 +31,16 @@ function(_, $, Backbone, Project, EditorView){
     model: undefined,
 
     /**
+    * References to templates for this view. HTML files are converted to Underscore.js templates
+    */
+    template: _.template(Template),
+
+    /**
     * The events this view will listen to and the associated function to call.
     * This view will inherit events from the parent class, EditorView.
     * @type {Object}
     */
     events: _.extend(EditorView.prototype.events, {
-      "click #save-editor" : "test"
     }),
 
     /**
@@ -51,8 +57,13 @@ function(_, $, Backbone, Project, EditorView){
     */
     render: function(){
 
-      this.$el.html("project editor view");
-      console.log(this.events);
+      //Add the template to the view and give the body the "Editor" class
+      this.$el.html(this.template());
+      $("body").addClass("Editor");
+
+      var sectionsView = new ProjEditorSectionsView();
+      sectionsView.render();
+      this.$(".proj-editor-sections-container").html(sectionsView.el);
 
     },
 

@@ -383,7 +383,7 @@ function ($, _, Backbone) {
     */
     renderProjectEditor: function(projectIdentifier){
       if ( !MetacatUI.appView.projectEditorView ) {
-        require(['views/project/ProjectEditorView'], function(ProjectEditorView){
+        require(['views/project/editor/ProjectEditorView'], function(ProjectEditorView){
           MetacatUI.appView.projectEditorView = new ProjectEditorView({
               projectIdentifier: projectIdentifier
           });
