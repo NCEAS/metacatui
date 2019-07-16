@@ -3,8 +3,10 @@ define(['underscore',
         'backbone',
         'models/project/ProjectSectionModel',
         "views/project/editor/ProjEditorSectionView",
+        "views/AccessPolicyView",
         "text!templates/project/editor/projEditorSettings.html"],
-function(_, $, Backbone, ProjectSection, ProjEditorSectionView, Template){
+function(_, $, Backbone, ProjectSection, ProjEditorSectionView, AccessPolicyView,
+  Template){
 
   /**
   * @class ProjEditorSettingsView
@@ -54,6 +56,9 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, Template){
     */
     initialize: function(options){
 
+      //Call the superclass initialize() function
+      ProjEditorSectionView.prototype.initialize();
+
     },
 
     /**
@@ -63,6 +68,12 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, Template){
 
       //Insert the template into the view
       this.$el.html(this.template());
+
+      //Render the AccessPolicyView
+      //TODO: Get the AccessPolicy collection for this ProjectModel and send it to the view
+      var accessPolicyView = new AccessPolicyView();
+      accessPolicyView.render();
+      this.$(".permissions-container").html(accessPolicyView.el);
 
     }
 

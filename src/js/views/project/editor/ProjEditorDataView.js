@@ -47,6 +47,9 @@ function(_, $, Backbone, ProjEditorSectionView, Template){
     */
     initialize: function(options){
 
+      //Call the superclass initialize() function
+      ProjEditorSectionView.prototype.initialize();
+      
     },
 
     /**

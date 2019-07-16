@@ -59,6 +59,10 @@ function(_, $, Backbone, ProjectSection, Template){
     */
     initialize: function(options){
 
+      if( typeof options == "object" ){
+        this.model = options.model || undefined;
+      }
+
     },
 
     /**
