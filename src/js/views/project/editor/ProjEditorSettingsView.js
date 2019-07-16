@@ -3,9 +3,11 @@ define(['underscore',
         'backbone',
         'models/project/ProjectSectionModel',
         "views/project/editor/ProjEditorSectionView",
+        "views/project/editor/ProjEditorLogosView",
         "views/AccessPolicyView",
         "text!templates/project/editor/projEditorSettings.html"],
-function(_, $, Backbone, ProjectSection, ProjEditorSectionView, AccessPolicyView,
+function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosView,
+  AccessPolicyView,
   Template){
 
   /**
@@ -74,6 +76,12 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, AccessPolicyView
       var accessPolicyView = new AccessPolicyView();
       accessPolicyView.render();
       this.$(".permissions-container").html(accessPolicyView.el);
+
+      //Render the ProjEditorLogosView
+      var logosView = new ProjEditorLogosView({ model: this.model });
+      logosView.render();
+      this.$(".logos-container").html(logosView.el);
+
 
     }
 

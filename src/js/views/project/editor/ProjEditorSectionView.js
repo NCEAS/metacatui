@@ -56,6 +56,7 @@ function(_, $, Backbone, ProjectSection, Template){
     * Creates a new ProjEditorSectionView
     * @constructs ProjEditorSectionView
     * @param {Object} options - A literal object with options to pass to the view
+    * @property {ProjectSection} options.model - The ProjectSection rendered in this view
     */
     initialize: function(options){
 
