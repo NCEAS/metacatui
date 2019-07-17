@@ -19,8 +19,11 @@ define(["jquery",
           }
         },
 
-        /*
-        * Parses an ImageType XML element from a project document
+        /**
+         * Parses an ImageType XML element from a project document
+         *
+         *  @param {XMLElement} objectDOM - An ImageType XML element from a project document
+         *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
         */
         parse: function(objectDOM){
 
@@ -52,7 +55,50 @@ define(["jquery",
 
           return modelJSON;
 
+        },
+
+        /**
+    		 * Makes a copy of the original XML DOM and updates it with the new values from the model
+         *
+         *  @return {XMLElement} An updated ImageType XML element from a project document
+    		 */
+        updateDOM: function() {
+
+          // Namespace for the project XML (required for document.createElementNS())
+          var namespace = "http://ecoinformatics.org/datasetproject-beta";
+
+          if (this.get("objectDOM")) {
+    				objectDOM = this.get("objectDOM").cloneNode(true);
+            $(objectDOM).empty();
+    			} else {
+    				objectDOM = $(
+              document.createElementNS(namespace, "acknowledgmentsLogo")
+            );
+    			}
+
+          // get new image data
+          var imageData = {
+            identifier: this.get("identifier"),
+            label: this.get("label"),
+            associatedURL: this.get("associatedURL")
+          };
+
+          _.map(imageData, function(value, nodeName){
+
+            // Don't serialize falsey values
+            if(value){
+              // Make new sub-node
+              var imageSubnodeSerialized = document.createElementNS(namespace, nodeName);
+              $(imageSubnodeSerialized).text(value);
+              // Append new sub-node to objectDOM
+              $(objectDOM).append(imageSubnodeSerialized);
+
+            }
+
+          });
+          return objectDOM;
         }
+
       });
 
       return ProjectImageModel;
