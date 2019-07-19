@@ -32,15 +32,15 @@ define(["jquery",
          * @name ProjectModel
          * @constructor
          * @return
-         */
+        */
         var ProjectModel = CollectionModel.extend({
 
             /** @type {string} - The name of this type of model */
             type: "Project",
 
             /**
-              * Overrides the default Backbone.Model.defaults() function to
-              * specify default attributes for the project model
+             * Overrides the default Backbone.Model.defaults() function to
+             * specify default attributes for the project model
             */
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
@@ -99,10 +99,10 @@ define(["jquery",
 
             },
 
-             /**
-              * Returns the project URL
-              *
-              * @return {string} The project URL
+            /**
+             * Returns the project URL
+             *
+             * @return {string} The project URL
             */
             url: function() {
                 return MetacatUI.appModel.get("objectServiceUrl") +
@@ -390,14 +390,14 @@ define(["jquery",
              * Finds the node in the given project XML document afterwhich the
              * given node type should be inserted
              *
-             * @param {Element} xml - The project element of an XML document
+             * @param {Element} projectNode - The project element of an XML document
              * @param {string} nodeName - The name of the node to be inserted
              *                             into xml
              * @return {(jQuery\|boolean)} A jQuery object indicating a position,
              *                            or false when nodeName is not in the
              *                            project schema
             */
-            getXMLPosition: function(xml, nodeName){
+            getXMLPosition: function(projectNode, nodeName){
 
               var nodeOrder = [ "name", "label", "description", "definition",
                                 "logo", "section", "associatedParty",
@@ -412,15 +412,19 @@ define(["jquery",
                   return false;
               };
 
-              // Go through each node in the node list and find the position
-              // after which this node will be inserted
-              for (var i = position - 1; i >= 0; i--) {
-                if ( $(xml).find(nodeOrder[i]).length ) {
-
-                    return $(xml).children(nodeOrder[i]).last();
-
+              // If there's already an occurence of nodeName...
+              if($(projectNode).children(nodeName).length > 0){
+                // ...insert it after the last occurence
+                return $(projectNode).children(nodeName).last();
+              } else {
+                // Go through each node in the node list and find the position
+                // after which this node will be inserted
+                for (var i = position - 1; i >= 0; i--) {
+                  if ( $(projectNode).children(nodeOrder[i]).length ) {
+                    return $(projectNode).children(nodeOrder[i]).last();
+                  }
                 }
-              };
+              }
 
               return false;
             },
@@ -433,8 +437,6 @@ define(["jquery",
             */
             serialize: function(){
 
-              // ns used as first argument in document.createElementNS()
-              var namespace = "http://ecoinformatics.org/datasetproject-beta";
               // So we can call getXMLPosition() from within if{}
               var model = this;
 
@@ -447,14 +449,14 @@ define(["jquery",
               // Check if there is a project doc already
               if (xmlDoc == null){
                 // If not create one
-                xmlDoc = $(this.createXML());
+                xmlDoc = this.createXML();
               } else {
                 // If yes, clone it
-                xmlDoc = $(xmlDoc.cloneNode(true));
+                xmlDoc = xmlDoc.cloneNode(true);
               };
 
               // Iterate over each root XML node to find the project node
-              xmlDoc.children().each(function(i, el) {
+              $(xmlDoc).children().each(function(i, el) {
                   if (el.tagName.indexOf("project") > -1) {
                       projectNode = el;
                   }
@@ -462,13 +464,12 @@ define(["jquery",
 
               // Serialize the collection elements
               // ("name", "label", "description", "definition")
-
               projectNode = this.serializeCollectionXML(projectNode);
 
               /* ==== Serialize project logo ==== */
 
               // Remove node if it exists already
-              xmlDoc.find("logo").remove();
+              $(xmlDoc).find("logo").remove();
 
               // Get new values
               var logo = this.get("logo");
@@ -477,7 +478,7 @@ define(["jquery",
               if(logo){
 
                 // Make new node
-                var logoSerialized = $(document.createElementNS(namespace, "logo"));
+                var logoSerialized = xmlDoc.createElement("logo");
                 $(logoSerialized).text(logo);
 
                 // Insert new node at correct position
@@ -494,14 +495,14 @@ define(["jquery",
               /* ==== Serialize acknowledgment logos ==== */
 
               // Remove element if it exists already
-              xmlDoc.find("acknowledgmentsLogo").remove();
+              $(xmlDoc).find("acknowledgmentsLogo").remove();
 
               var acknowledgmentsLogos = this.get("acknowledgmentsLogos");
 
               // Don't serialize falsey values
               if(acknowledgmentsLogos){
-                // Reverse to maintain correct order
-                _.each(acknowledgmentsLogos.reverse(), function(imageModel) {
+
+                _.each(acknowledgmentsLogos, function(imageModel) {
 
                   var ackLogosSerialized = imageModel.updateDOM();
 
@@ -520,7 +521,7 @@ define(["jquery",
               // Assumes the value of literatureCited is a block of bibtex text
 
               // Remove node if it exists already
-              xmlDoc.find("literatureCited").remove();
+              $(xmlDoc).find("literatureCited").remove();
 
               // Get new values
               var litCit = this.get("literatureCited");
@@ -530,12 +531,13 @@ define(["jquery",
 
                 // Make new element
                 // <bibxtex> is a subelement of <literatureCited>
-                var litCitSerialized = $(document.createElementNS(namespace, "literatureCited"));
-                var bibtexSerialized = $(document.createElementNS(namespace, "bibtex"));
+                var litCitSerialized = $(xmlDoc.createElement("literatureCited"));
+                var bibtexSerialized = $(xmlDoc.createElement("bibtex"));
 
-                // Wrap in cdata tags
-                // TODO: this gets escaped, use .createCDATASection() instead
-                $(bibtexSerialized).text("<![CDATA[\n" + litCit + "\n]]>");
+                // Wrap in literature cited in cdata tags
+                var cdataLitCit = xmlDoc.createCDATASection(litCit);
+
+                $(bibtexSerialized).append(cdataLitCit);
                 $(litCitSerialized).append(bibtexSerialized);
 
                 // Insert new element at correct position
@@ -552,15 +554,14 @@ define(["jquery",
               /* ==== Serialize project content sections ==== */
 
               // Remove node if it exists already
-              xmlDoc.find("section").remove();
+              $(xmlDoc).find("section").remove();
 
               var sections = this.get("sections");
 
               // Don't serialize falsey values
               if(sections){
 
-                // Reverse to maintain correct order
-                _.each(sections.reverse(), function(sectionModel) {
+                _.each(sections, function(sectionModel) {
 
                   var sectionSerialized = sectionModel.updateDOM();
 
@@ -588,7 +589,7 @@ define(["jquery",
                 if( ! emlTextModels.length ) return;
 
                 // Get the node from the XML doc
-                var nodes = xmlDoc.find(fieldName);
+                var nodes = $(xmlDoc).find(fieldName);
 
                 // Update the DOMs for each model
                 _.each(emlTextModels, function(thisTextModel, i){
@@ -600,7 +601,7 @@ define(["jquery",
                   //Get the existing node or create a new one
                   if(nodes.length < i+1){
                     node = document.createElement(fieldName);
-                    this.getXMLPosition(xml, fieldName).after(node);
+                    this.getXMLPosition(projectNode, fieldName).after(node);
 
                   }
                   else {
@@ -619,7 +620,7 @@ define(["jquery",
               /* ====  Serialize awards ==== */
 
               // Remove award node if it exists already
-              xmlDoc.find("award").remove();
+              $(xmlDoc).find("award").remove();
 
               // Get new values
               var awards = this.get("awards");
@@ -627,11 +628,10 @@ define(["jquery",
               // Don't serialize falsey values
               if(awards && awards.length>0){
 
-                // reverse to maintain correct order
-                _.each(awards.reverse(), function(award){
+                _.each(awards, function(award){
 
                   // Make new node
-                  var awardSerialized = document.createElementNS(namespace, "award");
+                  var awardSerialized = xmlDoc.createElement("award");
 
                   // create the <award> subnodes
                   _.map(award, function(value, nodeName){
@@ -639,7 +639,7 @@ define(["jquery",
                     // Don't serialize falsey values
                     if(value){
                       // Make new sub-nodes
-                      var awardSubnodeSerialized = document.createElementNS(namespace, nodeName);
+                      var awardSubnodeSerialized = xmlDoc.createElement(nodeName);
                       $(awardSubnodeSerialized).text(value);
 
                       $(awardSerialized).append(awardSubnodeSerialized);
@@ -657,13 +657,12 @@ define(["jquery",
 
                 });
 
-
               }
 
               /* ====  Serialize associatedParties ==== */
 
               // Remove element if it exists already
-              xmlDoc.find("associatedParty").remove();
+              $(xmlDoc).find("associatedParty").remove();
 
               // Get new values
               var parties = this.get("associatedParties");
@@ -708,14 +707,14 @@ define(["jquery",
               // Functionality needed in order to serialize new or custom options
 
               // Remove node if it exists already
-              xmlDoc.find("option").remove();
+              $(xmlDoc).find("option").remove();
 
               // The standard list of options used in projects
               var optNames = ["primaryColor", "secondaryColor", "accentColor",
                       "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
                       "mapShapeHue", "hideMetrics"];
 
-              _.each(optNames.reverse(), function(optName){
+              _.each(optNames, function(optName){
                 var optValue = model.get(optName);
 
                   // Don't serialize falsey values
@@ -723,9 +722,9 @@ define(["jquery",
 
                     // Make new node
                     // <optionName> and <optionValue> are subelements of <option>
-                    var optionSerialized   = document.createElementNS(namespace, "option"),
-                        optNameSerialized  = document.createElementNS(namespace, "optionName"),
-                        optValueSerialized = document.createElementNS(namespace, "optionValue");
+                    var optionSerialized   = xmlDoc.createElement("option"),
+                        optNameSerialized  = xmlDoc.createElement("optionName"),
+                        optValueSerialized = xmlDoc.createElement("optionValue");
 
                     $(optNameSerialized).text(optName);
                     $(optValueSerialized).text(optValue);
@@ -787,7 +786,6 @@ define(["jquery",
 
               // Convert xml to xmlString and return xmlString
               xmlString = new XMLSerializer().serializeToString(projectNode);
-              // TODO: how to serialize without adding xmlns attributes to sub-elements
               return (xmlString)
             },
 

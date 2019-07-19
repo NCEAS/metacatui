@@ -164,8 +164,17 @@ define(["jquery",
     */
     serializeCollectionXML: function(objectDOM){
 
-      // Namespace for the project XML (required for document.createElementNS())
-      var namespace = "http://ecoinformatics.org/datasetproject-beta";
+      if(!objectDOM){
+        if (this.get("objectDOM")) {
+          objectDOM = this.get("objectDOM").cloneNode(true);
+          $(objectDOM).empty();
+        } else {
+            // create an XML collection element from scratch
+            var xmlText = "<collection></collection>",
+                objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+                objectDOM = $(objectDOM).children()[0];
+        }
+      };
 
       // Get and update the simple text strings (everything but definition)
       // in reverse order because we prepend them consecutively to objectDOM
@@ -177,14 +186,14 @@ define(["jquery",
 
       _.map(collectionTextData, function(value, nodeName){
 
-        // remove the node if it exists
-        // use children() and not find() as there are sub-children named label
+        // Remove the node if it exists
+        // Use children() and not find() as there are sub-children named label
         $(objectDOM).children(nodeName).remove();
 
         // Don't serialize falsey values
         if(value){
           // Make new sub-node
-          var collectionSubnodeSerialized = document.createElementNS(namespace, nodeName);
+          var collectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
           $(collectionSubnodeSerialized).text(value);
           // Append new sub-node to the start of the objectDOM
           $(objectDOM).prepend(collectionSubnodeSerialized);

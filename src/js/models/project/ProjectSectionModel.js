@@ -67,22 +67,17 @@ define(["jquery",
          *  @return {XMLElement} An updated ContentSectionType XML element from a project document
         */
         updateDOM: function(){
-          // label: "",
-          // image: "",
-          // title: "",
-          // introduction: "",
-          // content: null,
 
-          // Namespace for the project XML (required for document.createElementNS())
-          var namespace = "http://ecoinformatics.org/datasetproject-beta";
+          var objectDOM = this.get("objectDOM");
 
-          if (this.get("objectDOM")) {
-            objectDOM = this.get("objectDOM").cloneNode(true);
+          if (objectDOM) {
+            objectDOM = objectDOM.cloneNode(true);
             $(objectDOM).empty();
           } else {
-            objectDOM = $(
-              document.createElementNS(namespace, "acknowledgmentsLogo")
-            )
+            // create an XML section element from scratch
+            var xmlText = "<section></section>",
+                objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+                objectDOM = $(objectDOM).children()[0];
           };
 
           // Get and update the simple text strings (everything but content)
@@ -98,7 +93,7 @@ define(["jquery",
             // Don't serialize falsey values
             if(value){
               // Make new sub-node
-              var sectionSubnodeSerialized = document.createElementNS(namespace, nodeName);
+              var sectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
               $(sectionSubnodeSerialized).text(value);
               // Append new sub-node to objectDOM
               $(objectDOM).append(sectionSubnodeSerialized);
@@ -112,12 +107,12 @@ define(["jquery",
           if(markdown){
 
             // Create markdown element
-            var markdownSerialized = document.createElementNS(namespace, "markdown");
-            // TODO: this gets escaped, use .createCDATASection() instead
-            $(markdownSerialized).text("<![CDATA[\n" + markdown + "\n]]>");
+            var markdownSerialized = objectDOM.ownerDocument.createElement("markdown");
+            var cdataMarkdown = objectDOM.ownerDocument.createCDATASection(markdown);
+            $(markdownSerialized).append(cdataMarkdown);
 
             // Make content element and append markdown
-            var contentSerialized = document.createElementNS(namespace, "content");
+            var contentSerialized = objectDOM.ownerDocument.createElement("content");
             $(contentSerialized).append(markdownSerialized);
 
             // Add content to objectDOM

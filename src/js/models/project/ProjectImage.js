@@ -64,16 +64,16 @@ define(["jquery",
     		 */
         updateDOM: function() {
 
-          // Namespace for the project XML (required for document.createElementNS())
-          var namespace = "http://ecoinformatics.org/datasetproject-beta";
+          var objectDOM = this.get("objectDOM");
 
-          if (this.get("objectDOM")) {
-    				objectDOM = this.get("objectDOM").cloneNode(true);
+          if (objectDOM) {
+            objectDOM = objectDOM.cloneNode(true);
             $(objectDOM).empty();
     			} else {
-    				objectDOM = $(
-              document.createElementNS(namespace, "acknowledgmentsLogo")
-            );
+              // create an XML acknowledgmentsLogo element from scratch
+              var xmlText = "<acknowledgmentsLogo></acknowledgmentsLogo>",
+                  objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+                  objectDOM = $(objectDOM).children()[0];
     			}
 
           // get new image data
@@ -88,7 +88,7 @@ define(["jquery",
             // Don't serialize falsey values
             if(value){
               // Make new sub-node
-              var imageSubnodeSerialized = document.createElementNS(namespace, nodeName);
+              var imageSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
               $(imageSubnodeSerialized).text(value);
               // Append new sub-node to objectDOM
               $(objectDOM).append(imageSubnodeSerialized);
@@ -96,6 +96,7 @@ define(["jquery",
             }
 
           });
+
           return objectDOM;
         }
 
