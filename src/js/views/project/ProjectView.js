@@ -207,7 +207,10 @@ define(["jquery",
                   }
                 }
                 else{
-                  this.$(".project-section-view").first().data("view").postRender();
+                  var sectionView = this.$(".project-section-view").first().data("view");
+                  if(sectionView){
+                    sectionView.postRender();
+                  }
                 }
 
                 //Scroll to an inner-page link if there is one specified
