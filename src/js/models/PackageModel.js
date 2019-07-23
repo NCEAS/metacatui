@@ -750,11 +750,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						metadata = (metadataList && metadataList.doclist)? metadataList.doclist.docs : [],
 						metadataModels = [];
 
-					_.each(metadata, function(m){
-						//If this metadata doc is in one of the filtered parent resource maps
-						if(_.intersection(parentIds, m.resourceMap).length)
-							metadataModels.push(new SolrResult(m));
-					})
+            //As long as this map isn't obsoleted by another map in our results list, we will show it
+  					_.each(metadata, function(m){
+
+              //Find the metadata doc that obsoletes this one
+              var isObsoletedBy = _.findWhere(metadata, { id: m.obsoletedBy });
+
+              //If one isn't found, then this metadata doc is the most recent
+  						if(typeof isObsoletedBy == "undefined"){
+                //If this metadata doc is in one of the filtered parent resource maps
+    						if(_.intersection(parentIds, m.resourceMap).length){
+                  //Create a SolrResult model and add to an array
+    							metadataModels.push(new SolrResult(m));
+                }
+  						}
+  					});
+
 					model.set("parentPackageMetadata", metadataModels);
 					model.trigger("change:parentPackageMetadata");
 				}
