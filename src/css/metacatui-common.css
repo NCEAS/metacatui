@@ -2601,6 +2601,12 @@ img[src*="googleapis.com/"].georegion-map{
 .project-view .mapMode #map-container{
 	width: 50%;
 }
+.project-view .data-catalog,
+.project-view .data-catalog #results-container,
+.project-view .data-catalog #map-container,
+.project-view .data-catalog #map-canvas{
+  min-height: 700px;
+}
 .project-view .data-catalog #clear-all{
 	display: none;
 }

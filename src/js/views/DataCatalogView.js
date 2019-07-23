@@ -30,13 +30,23 @@ define(["jquery",
             isSubView: false,
             filters: true, // Turn on/off the filters in this view
 
+            /**
+            * If true, the view height will be adjusted to fit the height of the window
+            * If false, the view height will be fixed via CSS
+            * @type {Boolean}
+            */
+            fixedHeight: false,
+
             // The default global models for searching
             searchModel: null,
             searchResults: null,
             statsModel: null,
             mapModel: null,
 
-            // Templates
+            /**
+            * The templates for this view
+            * @type {Underscore.template}
+            */
             template: _.template(CatalogTemplate),
             statsTemplate: _.template(CountTemplate),
             pagerTemplate: _.template(PagerTemplate),
@@ -295,7 +305,7 @@ define(["jquery",
                 this.getResults();
 
                 // Set a custom height on any elements that have the .auto-height class
-                if ($(".auto-height").length > 0) {
+                if ($(".auto-height").length > 0 && !this.fixedHeight) {
                     // Readjust the height whenever the window is resized
                     $(window).resize(this.setAutoHeight);
                     $(".auto-height-member").resize(this.setAutoHeight);
@@ -526,7 +536,7 @@ define(["jquery",
              */
             setAutoHeight: function() {
                 // If we are in list mode, don't determine the height of any elements because we are not "full screen"
-                if (MetacatUI.appModel.get("searchMode") == "list") {
+                if (MetacatUI.appModel.get("searchMode") == "list" || this.fixedHeight) {
                     MetacatUI.appView.$(".auto-height").height("auto");
                     return;
                 }
