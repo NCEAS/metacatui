@@ -3606,7 +3606,7 @@ body.mapMode{
   	overflow: hidden;
 }
 .filter-input-contain{
-	clear: both;
+	width: 100%;
 }
 .filter.btn{
 	margin-bottom: 0px;
@@ -3846,9 +3846,16 @@ a.disabled {
 .project-view .filter-group{
   padding: 0px 20px;
 }
+.filter-group .filters-container{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
 .filter-group .filter {
-  display: inline-block;
-  margin-right: 20px;
+  flex-grow: 1;
+  padding-right: 20px;
+  max-width: 350px;
 }
 .filter-group .filter .btn{
 	box-shadow: none;
@@ -3924,7 +3931,6 @@ a.disabled {
 }
 .filter.date .min{
 	float: left;
-	margin-right: 10px;
 }
 .filter.date .max{
 	float: right;
@@ -3949,6 +3955,9 @@ a.disabled {
 }
 .filter-group .filter input[type='text']{
 	width: 80%;
+}
+.filter-group .filter select{
+  width: 100%;
 }
 .filter-group > .row-fluid:not(:first-child){
 	margin-top: 20px;
