@@ -21,7 +21,8 @@ function ($, _, Backbone) {
 			'submit(/*pid)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)'           : 'renderAPI',       // API page
-			'projects(/:projectId)(/:projectSection)': 'renderProject' // project page
+			'projects(/:projectId)(/:projectSection)': 'renderProject', // project page
+      'portals(/:projectId)(/:projectSection)': 'renderProject' // project page
 		},
 
 		helpPages: {
@@ -395,7 +396,7 @@ function ($, _, Backbone) {
 			}
 		},
 
-    /*
+    /**
      * Render the project view based on the given name, id, or section
      */
      renderProject: function(projectId, projectSection) {
@@ -411,9 +412,9 @@ function ($, _, Backbone) {
                     projectId = projectsMap[projectId];
                     // Then set the history
                     if ( projectSection ) {
-                        this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                        this.routeHistory.push("portals/" + projectName + "/" + projectSection);
                     } else {
-                        this.routeHistory.push("projects/" + projectName);
+                        this.routeHistory.push("portals/" + projectName);
                     }
                 } else {
                     // Try a reverse lookup of the project name by values
@@ -423,9 +424,9 @@ function ($, _, Backbone) {
 
                     if ( typeof projectName !== "undefined" ) {
                         if ( projectSection ) {
-                            this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                            this.routeHistory.push("portals/" + projectName + "/" + projectSection);
                         } else {
-                            this.routeHistory.push("projects/" + projectName);
+                            this.routeHistory.push("portals/" + projectName);
                         }
                     } else {
 
@@ -442,16 +443,16 @@ function ($, _, Backbone) {
 
                         // Then set the history
                         if ( projectSection ) {
-                          this.navigate("projects/" + projectName + "/" + projectSection, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                          this.navigate("portals/" + projectName + "/" + projectSection, { trigger: false, replace: true });
+                          this.routeHistory.push("portals/" + projectName + "/" + projectSection);
                         } else {
-                          this.navigate("projects/" + projectName, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName);
+                          this.navigate("portals/" + projectName, { trigger: false, replace: true });
+                          this.routeHistory.push("portals/" + projectName);
                         }
                       }
                       else{
                         // Fall back to routing to the project by id, not name
-                        this.routeHistory.push("projects/" + projectId);
+                        this.routeHistory.push("portals/" + projectId);
                       }
                     }
                 }
