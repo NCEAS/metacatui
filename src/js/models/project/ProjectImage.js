@@ -19,8 +19,11 @@ define(["jquery",
           }
         },
 
-        /*
-        * Parses an ImageType XML element from a project document
+        /**
+         * Parses an ImageType XML element from a project document
+         *
+         *  @param {XMLElement} objectDOM - An ImageType XML element from a project document
+         *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
         */
         parse: function(objectDOM){
 
@@ -52,7 +55,51 @@ define(["jquery",
 
           return modelJSON;
 
+        },
+
+        /**
+    		 * Makes a copy of the original XML DOM and updates it with the new values from the model
+         *
+         *  @return {XMLElement} An updated ImageType XML element from a project document
+    		 */
+        updateDOM: function() {
+
+          var objectDOM = this.get("objectDOM");
+
+          if (objectDOM) {
+            objectDOM = objectDOM.cloneNode(true);
+            $(objectDOM).empty();
+    			} else {
+              // create an XML acknowledgmentsLogo element from scratch
+              var xmlText = "<acknowledgmentsLogo></acknowledgmentsLogo>",
+                  objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+                  objectDOM = $(objectDOM).children()[0];
+    			}
+
+          // get new image data
+          var imageData = {
+            identifier: this.get("identifier"),
+            label: this.get("label"),
+            associatedURL: this.get("associatedURL")
+          };
+
+          _.map(imageData, function(value, nodeName){
+
+            // Don't serialize falsey values
+            if(value){
+              // Make new sub-node
+              var imageSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+              $(imageSubnodeSerialized).text(value);
+              // Append new sub-node to objectDOM
+              $(objectDOM).append(imageSubnodeSerialized);
+
+            }
+
+          });
+
+          return objectDOM;
         }
+
       });
 
       return ProjectImageModel;

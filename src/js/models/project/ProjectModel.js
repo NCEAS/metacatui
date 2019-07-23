@@ -32,15 +32,15 @@ define(["jquery",
          * @name ProjectModel
          * @constructor
          * @return
-         */
+        */
         var ProjectModel = CollectionModel.extend({
 
             /** @type {string} - The name of this type of model */
             type: "Project",
 
             /**
-              * Overrides the default Backbone.Model.defaults() function to
-              * specify default attributes for the project model
+             * Overrides the default Backbone.Model.defaults() function to
+             * specify default attributes for the project model
             */
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
@@ -95,21 +95,14 @@ define(["jquery",
             */
             initialize: function(options) {
 
-              // TODO: when do we create empty project XML?
-              this.parse(this.createXML());
-
               this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
-
-              // TODO: remove this. Calling serialize from here for now to build/test.
-              // Will be called from projEditor view when fields are updated.
-              this.listenToOnce(this.get("searchResults"), "sync", this.serialize);
 
             },
 
-             /**
-              * Returns the project URL
-              *
-              * @return {string} The project URL
+            /**
+             * Returns the project URL
+             *
+             * @return {string} The project URL
             */
             url: function() {
                 return MetacatUI.appModel.get("objectServiceUrl") +
@@ -135,10 +128,10 @@ define(["jquery",
                     }
                 };
 
-                //Add the user settings to the fetch settings
+                // Add the user settings to the fetch settings
                 requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
 
-                //Call Backbone.Model.fetch()
+                // Call Backbone.Model.fetch()
                 return Backbone.Model.prototype.fetch.call(this, requestSettings);
 
             },
@@ -156,7 +149,7 @@ define(["jquery",
                 var modelJSON = {},
                     projectNode;
 
-                //Iterate over each root XML node to find the project node
+                // Iterate over each root XML node to find the project node
                 $(response).children().each(function(i, el) {
                     if (el.tagName.indexOf("project") > -1) {
                         projectNode = el;
@@ -164,24 +157,22 @@ define(["jquery",
                     }
                 });
 
-
-                //If a project XML node wasn't found, return an empty JSON object
+                // If a project XML node wasn't found, return an empty JSON object
                 if (typeof projectNode == "undefined" || !projectNode) {
                     return {};
                 }
 
-
-                //Parse the collection elements
+                // Parse the collection elements
                 modelJSON = this.parseCollectionXML(projectNode);
 
-                //save the xml for serialize
+                // Save the xml for serialize
                 modelJSON.objectXML = response;
 
-                //Parse the simple text nodes
+                // Parse the simple text nodes
                 var projLogo = this.parseTextNode(projectNode, "logo");
                 modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
 
-                //Parse acknowledgement logos into urls
+                // Parse acknowledgement logos into urls
                 var logos = $(projectNode).children("acknowledgmentsLogo");
                 modelJSON.acknowledgmentsLogos = [];
                 _.each(logos, function(logo, i) {
@@ -202,10 +193,10 @@ define(["jquery",
                     modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
                 }
 
-                //Parse the project content sections
+                // Parse the project content sections
                 modelJSON.sections = [];
                 $(projectNode).children("section").each(function(i, section){
-                  //Create a new ProjectSectionModel
+                  // Create a new ProjectSectionModel
                   modelJSON.sections.push( new ProjectSectionModel({
                     objectDOM: section,
                     literatureCited: modelJSON.literatureCited
@@ -214,10 +205,10 @@ define(["jquery",
                   modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
                 });
 
-                //Parse the EMLText elements
+                // Parse the EMLText elements
                 modelJSON.acknowledgments = this.parseEMLTextNode(projectNode, "acknowledgments");
 
-                //Parse the awards
+                // Parse the awards
                 modelJSON.awards = [];
                 var parse_it = this.parseTextNode;
                 $(projectNode).children("award").each(function(i, award) {
@@ -228,7 +219,7 @@ define(["jquery",
                     modelJSON.awards.push(award_parsed);
                 });
 
-                //Parse the associatedParties
+                // Parse the associatedParties
                 modelJSON.associatedParties = [];
                 $(projectNode).children("associatedParty").each(function(i, associatedParty) {
 
@@ -238,7 +229,7 @@ define(["jquery",
 
                 });
 
-                //Parse the options
+                // Parse the options
                 $(projectNode).find("option").each(function(i, option) {
 
                     var optionName = $(option).find("optionName")[0].textContent,
@@ -250,11 +241,16 @@ define(["jquery",
                         optionValue = false;
                     }
 
+                    // TODO: keep a list of optionNames so that in the case of
+                    // custom options, we can serialize them in serialize()
+                    // otherwise it's not saved in the model which attributes
+                    // are <option></option>s
+
                     modelJSON[optionName] = optionValue;
 
                 });
 
-                //Convert all the hex colors to rgb
+                // Convert all the hex colors to rgb
                 if(modelJSON.primaryColor){
                   modelJSON.primaryColorRGB = this.hexToRGB(modelJSON.primaryColor);
                   modelJSON.primaryColorTransparent = "rgba(" +  modelJSON.primaryColorRGB.r +
@@ -275,7 +271,7 @@ define(["jquery",
                 }
 
                 if (gmaps) {
-                    //Create a MapModel with all the map options
+                    // Create a MapModel with all the map options
                     modelJSON.mapModel = new MapModel();
                     var mapOptions = modelJSON.mapModel.get("mapOptions");
 
@@ -292,21 +288,22 @@ define(["jquery",
                     }
                 }
 
-                //Parse the FilterGroups
+                // Parse the FilterGroups
                 modelJSON.filterGroups = [];
                 var allFilters = modelJSON.searchModel.get("filters");
                 $(projectNode).find("filterGroup").each(function(i, filterGroup) {
 
-                  //Create a FilterGroup model
+                  // Create a FilterGroup model
                   var filterGroupModel = new FilterGroup({
                       objectDOM: filterGroup
                   });
                   modelJSON.filterGroups.push(filterGroupModel);
 
-                  //Add the Filters from this FilterGroup to the project's Search model
+                  // Add the Filters from this FilterGroup to the project's Search model
                   allFilters.add(filterGroupModel.get("filters").models);
 
                 });
+
                 return modelJSON;
             },
 
@@ -316,29 +313,29 @@ define(["jquery",
              * @param {Element} parentNode - The XML Element that contains all the EMLText nodes
              * @param {string} nodeName - The name of the XML node to parse
              * @param {boolean} isMultiple - If true, parses the nodes into an array
-             * @return {(string|Array)} A string or array of strings of the text content
+             * @return {(string|Array)} A string or array of strings comprising the text content
             */
             parseEMLTextNode: function(parentNode, nodeName, isMultiple) {
 
                 var node = $(parentNode).children(nodeName);
 
-                //If no matching nodes were found, return falsey values
+                // If no matching nodes were found, return falsey values
                 if (!node || !node.length) {
 
-                    //Return an empty array if the isMultiple flag is true
+                    // Return an empty array if the isMultiple flag is true
                     if (isMultiple)
                         return [];
-                    //Return null if the isMultiple flag is false
+                    // Return null if the isMultiple flag is false
                     else
                         return null;
                 }
-                //If exactly one node is found and we are only expecting one, return the text content
+                // If exactly one node is found and we are only expecting one, return the text content
                 else if (node.length == 1 && !isMultiple) {
                     return new EMLText({
                         objectDOM: node[0]
                     });
                 } else {
-                //If more than one node is found, parse into an array
+                // If more than one node is found, parse into an array
                     return _.map(node, function(node) {
                         return new EMLText({
                             objectDOM: node
@@ -369,9 +366,9 @@ define(["jquery",
 
             /**
              * @typedef {Object} rgb - An RGB color value
-             * @property {number} r - a value between 0 and 255 defining the intensity of red
-             * @property {number} g - a value between 0 and 255 defining the intensity of green
-             * @property {number} b - a value between 0 and 255 defining the intensity of blue
+             * @property {number} r - A value between 0 and 255 defining the intensity of red
+             * @property {number} g - A value between 0 and 255 defining the intensity of green
+             * @property {number} b - A value between 0 and 255 defining the intensity of blue
             */
 
             /**
@@ -392,34 +389,43 @@ define(["jquery",
             /**
              * Finds the node in the given project XML document afterwhich the
              * given node type should be inserted
-             * @param {Element} xml - The project element of an XML document
-             * @param {string} nodeName - the name of the node to be inserted
+             *
+             * @param {Element} projectNode - The project element of an XML document
+             * @param {string} nodeName - The name of the node to be inserted
              *                             into xml
-             * @return {(jQuery\|boolean)} a jQuery object indicating a position,
+             * @return {(jQuery\|boolean)} A jQuery object indicating a position,
              *                            or false when nodeName is not in the
              *                            project schema
             */
-            getXMLPosition: function(xml, nodeName){
+            getXMLPosition: function(projectNode, nodeName){
 
               var nodeOrder = [ "name", "label", "description", "definition",
                                 "logo", "section", "associatedParty",
                                 "acknowledgments", "acknowledgmentsLogo",
                                 "award", "literatureCited", "filterGroup",
                                 "option"];
+
               var position = _.indexOf(nodeOrder, nodeName);
 
-              // first check that nodeName is in the list of nodes
+              // First check that nodeName is in the list of nodes
               if ( position == -1 ) {
                   return false;
               };
 
-              // Go through each node in the node list and find the position
-              // where this node will be inserted after
-              for (var i = position - 1; i >= 0; i--) {
-                if ( $(xml).find(nodeOrder[i]).length ) {
-                  return $(xml).children(nodeOrder[i]).last();
+              // If there's already an occurence of nodeName...
+              if($(projectNode).children(nodeName).length > 0){
+                // ...insert it after the last occurence
+                return $(projectNode).children(nodeName).last();
+              } else {
+                // Go through each node in the node list and find the position
+                // after which this node will be inserted
+                for (var i = position - 1; i >= 0; i--) {
+                  if ( $(projectNode).children(nodeOrder[i]).length ) {
+                    return $(projectNode).children(nodeOrder[i]).last();
+                  }
                 }
-              };
+              }
+
               return false;
             },
 
@@ -431,61 +437,147 @@ define(["jquery",
             */
             serialize: function(){
 
-              // Get the project model
+              // So we can call getXMLPosition() from within if{}
+              var model = this;
+
               var xmlDoc,
                   projectNode,
                   xmlString;
 
               xmlDoc = this.get("objectXML");
 
-              // Check if there is a project doc already, if not create one
+              // Check if there is a project doc already
               if (xmlDoc == null){
-                xmlDoc = $(this.createXML());
+                // If not create one
+                xmlDoc = this.createXML();
               } else {
-                xmlDoc = $(xmlDoc.cloneNode(true));
+                // If yes, clone it
+                xmlDoc = xmlDoc.cloneNode(true);
               };
 
               // Iterate over each root XML node to find the project node
-              xmlDoc.children().each(function(i, el) {
+              $(xmlDoc).children().each(function(i, el) {
                   if (el.tagName.indexOf("project") > -1) {
                       projectNode = el;
                   }
               });
 
-              // Serialize the collection elements ("name", "label", "description", "definition")
-              // TODO
+              // Serialize the collection elements
+              // ("name", "label", "description", "definition")
+              projectNode = this.serializeCollectionXML(projectNode);
 
-              // Serialize project logo
-              // Create new project logo node
-              var newLogo = $(document.createElement("logo"));
-              $(newLogo).text(this.get("logo"));
-              // Remove logo node if it exists already
-              xmlDoc.find("logo").remove(); // remove if it exists
+              /* ==== Serialize project logo ==== */
 
-              // Insert the new logo node in the correct position
-              var insertAfter = this.getXMLPosition(projectNode, "logo");
-              if(insertAfter){
-                insertAfter.after(newLogo);
+              // Remove node if it exists already
+              $(xmlDoc).find("logo").remove();
+
+              // Get new values
+              var logo = this.get("logo");
+
+              // Don't serialize falsey values
+              if(logo){
+
+                // Make new node
+                var logoSerialized = xmlDoc.createElement("logo");
+                $(logoSerialized).text(logo);
+
+                // Insert new node at correct position
+                var insertAfter = this.getXMLPosition(projectNode, "logo");
+                if(insertAfter){
+                  insertAfter.after(logoSerialized);
+                }
+                else{
+                  projectNode.append(logoSerialized);
+                }
+
+              };
+
+              /* ==== Serialize acknowledgment logos ==== */
+
+              // Remove element if it exists already
+              $(xmlDoc).find("acknowledgmentsLogo").remove();
+
+              var acknowledgmentsLogos = this.get("acknowledgmentsLogos");
+
+              // Don't serialize falsey values
+              if(acknowledgmentsLogos){
+
+                _.each(acknowledgmentsLogos, function(imageModel) {
+
+                  var ackLogosSerialized = imageModel.updateDOM();
+
+                  // Insert new node at correct position
+                  var insertAfter = model.getXMLPosition(projectNode, "acknowledgmentsLogo");
+                  if(insertAfter){
+                    insertAfter.after(ackLogosSerialized);
+                  }
+                  else {
+                    projectNode.append(ackLogosSerialized);
+                  }
+                })
+              };
+
+              /* ==== Serialize literature cited ==== */
+              // Assumes the value of literatureCited is a block of bibtex text
+
+              // Remove node if it exists already
+              $(xmlDoc).find("literatureCited").remove();
+
+              // Get new values
+              var litCit = this.get("literatureCited");
+
+              // Don't serialize falsey values
+              if(litCit){
+
+                // Make new element
+                // <bibxtex> is a subelement of <literatureCited>
+                var litCitSerialized = $(xmlDoc.createElement("literatureCited"));
+                var bibtexSerialized = $(xmlDoc.createElement("bibtex"));
+
+                // Wrap in literature cited in cdata tags
+                var cdataLitCit = xmlDoc.createCDATASection(litCit);
+
+                $(bibtexSerialized).append(cdataLitCit);
+                $(litCitSerialized).append(bibtexSerialized);
+
+                // Insert new element at correct position
+                var insertAfter = this.getXMLPosition(projectNode, "literatureCited");
+                if(insertAfter){
+                  insertAfter.after(litCitSerialized);
+                }
+                else{
+                  projectNode.append(litCitSerialized);
+                }
               }
-              else{
-                projectNode.prepend(newLogo);
-              }
 
-              // Serialize acknowledgment logos [ARRAY]
-              // TODO
-              // ProjectImage.serialize();
 
-              // Create new acknowledgment logos nodes
-              // TODO
+              /* ==== Serialize project content sections ==== */
 
-              // serialize literature cited [ARRAY]
-              // TODO
+              // Remove node if it exists already
+              $(xmlDoc).find("section").remove();
 
-              // Serialize the project content sections
-              // TODO
-              // ProjectSectionModel.serialize();
+              var sections = this.get("sections");
 
-              // Serialize the EMLText elements ("acknowledgments")
+              // Don't serialize falsey values
+              if(sections){
+
+                _.each(sections, function(sectionModel) {
+
+                  var sectionSerialized = sectionModel.updateDOM();
+
+                  // Insert new node at correct position
+                  var insertAfter = model.getXMLPosition(projectNode, "section");
+                  if(insertAfter){
+                    insertAfter.after(sectionSerialized);
+                  }
+                  else {
+                    projectNode.append(sectionSerialized);
+                  }
+                })
+              };
+
+              /* ====  Serialize the EMLText elements ("acknowledgments") ==== */
+
               var textFields = ["acknowledgments"];
 
               _.each(textFields, function(field){
@@ -497,7 +589,7 @@ define(["jquery",
                 if( ! emlTextModels.length ) return;
 
                 // Get the node from the XML doc
-                var nodes = xmlDoc.find(fieldName);
+                var nodes = $(xmlDoc).find(fieldName);
 
                 // Update the DOMs for each model
                 _.each(emlTextModels, function(thisTextModel, i){
@@ -509,7 +601,7 @@ define(["jquery",
                   //Get the existing node or create a new one
                   if(nodes.length < i+1){
                     node = document.createElement(fieldName);
-                    this.getEMLPosition(eml, fieldName).after(node);
+                    this.getXMLPosition(projectNode, fieldName).after(node);
 
                   }
                   else {
@@ -525,25 +617,172 @@ define(["jquery",
 
               }, this);
 
-              // Serialize the awards
-              // TODO
+              /* ====  Serialize awards ==== */
 
-              // Serialize the associatedParties
-              // TODO
+              // Remove award node if it exists already
+              $(xmlDoc).find("award").remove();
 
-              // Serialize the options
-              // TODO
+              // Get new values
+              var awards = this.get("awards");
 
-              // Serialize the colors
-              // TODO
+              // Don't serialize falsey values
+              if(awards && awards.length>0){
 
-              // Serialize the map options
-              if (gmaps) {
+                _.each(awards, function(award){
+
+                  // Make new node
+                  var awardSerialized = xmlDoc.createElement("award");
+
+                  // create the <award> subnodes
+                  _.map(award, function(value, nodeName){
+
+                    // Don't serialize falsey values
+                    if(value){
+                      // Make new sub-nodes
+                      var awardSubnodeSerialized = xmlDoc.createElement(nodeName);
+                      $(awardSubnodeSerialized).text(value);
+
+                      $(awardSerialized).append(awardSubnodeSerialized);
+                    }
+                  });
+
+                  // Insert new node at correct position
+                  var insertAfter = model.getXMLPosition(projectNode, "award");
+                  if(insertAfter){
+                    insertAfter.after(awardSerialized);
+                  }
+                  else{
+                    projectNode.append(awardSerialized);
+                  }
+
+                });
 
               }
 
-              // Serialize the FilterGroups
+              /* ====  Serialize associatedParties ==== */
+
+              // Remove element if it exists already
+              $(xmlDoc).find("associatedParty").remove();
+
+              // Get new values
+              var parties = this.get("associatedParties");
+
+              // Don't serialize falsey values
+              if(parties){
+
+                // Serialize each associatedParty
+                _.each(parties, function(party){
+
+                  // Update the DOM of the EMLParty
+                  // party.updateDOM() changes camel-casing to lowercase,
+                  // and makes mistakes with <role> <--- TODO: fix.
+                  var partyDOM  = party.updateDOM(),
+                      //re-Camel-case the XML
+                      xmlString = partyDOM[0].outerHTML,
+                      xmlString = party.formatXML(xmlString).replace(/associatedparty/g, "associatedParty");
+                      partySerialized = $($.parseXML(xmlString)).find("associatedParty");
+
+                  // Get the last node of this type to insert after
+                  var insertAfter = $(xmlDoc).find("associatedParty").last();
+
+                  // If there isn't a node found, find the EML position to insert after
+                  if( !insertAfter.length ) {
+                    insertAfter = model.getXMLPosition(projectNode, "associatedParty");
+                  }
+
+                  // Make sure we don't insert empty EMLParty nodes into the EML
+                  if( $(partySerialized).children().length ){
+                    //Insert the party DOM at the insert position
+                    if ( insertAfter && insertAfter.length ){
+                      insertAfter.after(partySerialized);
+                    } else {
+                      projectNode.append(partySerialized);
+                    }
+                  }
+                });
+              }
+
+              /* ====  Serialize options (including map options) ==== */
+              // This will only serialize the options named in `optNames` (below)
+              // Functionality needed in order to serialize new or custom options
+
+              // Remove node if it exists already
+              $(xmlDoc).find("option").remove();
+
+              // The standard list of options used in projects
+              var optNames = ["primaryColor", "secondaryColor", "accentColor",
+                      "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
+                      "mapShapeHue", "hideMetrics"];
+
+              _.each(optNames, function(optName){
+                var optValue = model.get(optName);
+
+                  // Don't serialize falsey values
+                  if(optValue){
+
+                    // Make new node
+                    // <optionName> and <optionValue> are subelements of <option>
+                    var optionSerialized   = xmlDoc.createElement("option"),
+                        optNameSerialized  = xmlDoc.createElement("optionName"),
+                        optValueSerialized = xmlDoc.createElement("optionValue");
+
+                    $(optNameSerialized).text(optName);
+                    $(optValueSerialized).text(optValue);
+
+                    $(optionSerialized).append(optNameSerialized);
+                    $(optionSerialized).append(optValueSerialized);
+
+                    // Insert new node at correct position
+                    var insertAfter = model.getXMLPosition(projectNode, "option");
+
+                    if(insertAfter){
+                      insertAfter.after(optionSerialized);
+                    }
+                    else{
+                      projectNode.append(optionSerialized);
+                    }
+
+                  }
+              });
+
+              /* ====  Serialize FilterGroups ==== */
               // SKIP FOR NOW
+
+
+              /* ====  Remove duplicates ==== */
+
+              //Do a final check to make sure there are no duplicate ids in the XML
+              var elementsWithIDs = $(xmlDoc).find("[id]"),
+              //Get an array of all the ids in this EML doc
+                  allIDs = _.map(elementsWithIDs, function(el){ return $(el).attr("id") });
+
+              //If there is at least one id in the EML...
+              if(allIDs && allIDs.length){
+                //Boil the array down to just the unique values
+                var uniqueIDs = _.uniq(allIDs);
+
+                //If the unique array is shorter than the array of all ids,
+                // then there is a duplicate somewhere
+                if(uniqueIDs.length < allIDs.length){
+
+                  //For each element in the EML that has an id,
+                  _.each(elementsWithIDs, function(el){
+
+                    //Get the id for this element
+                    var id = $(el).attr("id");
+
+                    //If there is more than one element in the EML with this id,
+                    if( $(xmlDoc).find("[id='" + id + "']").length > 1 ){
+                      //And if it is not a unit node, which we don't want to change,
+                      if( !$(el).is("unit") )
+                        //Then change the id attribute to a random uuid
+                        $(el).attr("id", "urn-uuid-" + uuid.v4());
+                    }
+
+                  });
+
+                }
+              }
 
               // Convert xml to xmlString and return xmlString
               xmlString = new XMLSerializer().serializeToString(projectNode);
@@ -553,11 +792,10 @@ define(["jquery",
             /**
              * Initialize the object XML for a brand spankin' new project
              *
-             * @return {XMLDocument} An empty project XML document
             */
             createXML: function() {
 
-              // ToDo: which attributes should a new XML project doc should have?
+              // TODO: which attributes should a new XML project doc should have?
               var xmlString = "<proj:project xmlns:proj=\"http://ecoinformatics.org/datasetproject-beta1\"></proj:project>",
                   xmlNew = $.parseXML(xmlString),
                   projectNode = xmlNew.getElementsByTagName("proj:project")[0];
@@ -571,7 +809,6 @@ define(["jquery",
               // projectNode.appendChild(document.createElement("section"));
               return(xmlNew);
             },
-
 
             /**
              * Overrides the default Backbone.Model.validate.function() to
@@ -599,7 +836,7 @@ define(["jquery",
              * (i.e. nodes which were probably removed by the user during editing)
              *
              * @param {jQuery} nodes - The nodes to potentially remove
-             * @param {Array} models - The model to compare to
+             * @param {Model[]} models - The model to compare to
             */
             removeExtraNodes: function(nodes, models){
               // Remove the extra nodes

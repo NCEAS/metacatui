@@ -22,8 +22,11 @@ define(["jquery",
           }
         },
 
-        /*
-        * Parses a <section> element from a project document
+        /**
+         * Parses a <section> element from a project document
+         *
+         *  @param {XMLElement} objectDOM - A ContentSectionType XML element from a project document
+         *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
         */
         parse: function(objectDOM){
 
@@ -56,7 +59,72 @@ define(["jquery",
 
           return modelJSON;
 
+        },
+
+        /**
+         *  Makes a copy of the original XML DOM and updates it with the new values from the model.
+         *
+         *  @return {XMLElement} An updated ContentSectionType XML element from a project document
+        */
+        updateDOM: function(){
+
+          var objectDOM = this.get("objectDOM");
+
+          if (objectDOM) {
+            objectDOM = objectDOM.cloneNode(true);
+            $(objectDOM).empty();
+          } else {
+            // create an XML section element from scratch
+            var xmlText = "<section></section>",
+                objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+                objectDOM = $(objectDOM).children()[0];
+          };
+
+          // Get and update the simple text strings (everything but content)
+          var sectionTextData = {
+            label: this.get("label"),
+            image: this.get("image"),
+            title: this.get("title"),
+            introduction: this.get("introduction")
+          };
+
+          _.map(sectionTextData, function(value, nodeName){
+
+            // Don't serialize falsey values
+            if(value){
+              // Make new sub-node
+              var sectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+              $(sectionSubnodeSerialized).text(value);
+              // Append new sub-node to objectDOM
+              $(objectDOM).append(sectionSubnodeSerialized);
+            }
+
+          });
+
+          // Get markdown which is a child of content
+          var markdown = this.get("content").get("markdown");
+
+          if(markdown){
+
+            // Create markdown element
+            var markdownSerialized = objectDOM.ownerDocument.createElement("markdown");
+            var cdataMarkdown = objectDOM.ownerDocument.createCDATASection(markdown);
+            $(markdownSerialized).append(cdataMarkdown);
+
+            // Make content element and append markdown
+            var contentSerialized = objectDOM.ownerDocument.createElement("content");
+            $(contentSerialized).append(markdownSerialized);
+
+            // Add content to objectDOM
+            $(objectDOM).append(contentSerialized);
+
+          };
+
+          return objectDOM
+
         }
+
+
       });
 
       return ProjectSectionModel;

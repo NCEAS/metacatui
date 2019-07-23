@@ -20,17 +20,26 @@ define(["jquery",
   		}
     },
 
+    /**
+     * The default Backbone.Model.initialize() function
+     *
+    */
 		initialize: function(options){
 
 		},
 
+    /**
+     *
+     *
+    */
     url: function(){
 			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
 		},
 
-    /*
-    * Overrides the default Backbone.Model.fetch() function to provide some custom
-    * fetch options
+    /**
+     * Overrides the default Backbone.Model.fetch() function to provide some custom
+     * fetch options
+     *
     */
     fetch: function(){
       var model = this;
@@ -47,12 +56,12 @@ define(["jquery",
       return Backbone.Model.prototype.fetch.call(this, requestSettings);
     },
 
-    /*
-    * Overrides the default Backbone.Model.parse() function to parse the custom
-    * collection XML document
-    *
-    * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
-    * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+    /**
+     * Overrides the default Backbone.Model.parse() function to parse the custom
+     * collection XML document
+     *
+     * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
+     * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
     */
     parse: function(json){
 
@@ -77,11 +86,11 @@ define(["jquery",
 
     },
 
-    /*
-    * Parses the collection XML into a JSON object
-    *
-    * @param {Element} rootNode - The XML Element that contains all the collection nodes
-    * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+    /**
+     * Parses the collection XML into a JSON object
+     *
+     * @param {Element} rootNode - The XML Element that contains all the collection nodes
+     * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
     */
     parseCollectionXML: function( rootNode ){
       var modelJSON = {};
@@ -112,13 +121,13 @@ define(["jquery",
 
     },
 
-    /*
-    * Gets the text content of the XML node matching the given node name
-    *
-    * @param {Element} parentNode - The parent node to select from
-    * @param {string} nodeName - The name of the XML node to parse
-    * @param {boolean} isMultiple - If true, parses the nodes into an array
-    * @return {(string|Array)} - Returns a string or array of strings of the text content
+    /**
+     * Gets the text content of the XML node matching the given node name
+     *
+     * @param {Element} parentNode - The parent node to select from
+     * @param {string} nodeName - The name of the XML node to parse
+     * @param {boolean} isMultiple - If true, parses the nodes into an array
+     * @return {(string|Array)} - Returns a string or array of strings of the text content
     */
     parseTextNode: function( parentNode, nodeName, isMultiple ){
       var node = $(parentNode).children(nodeName);
@@ -145,6 +154,57 @@ define(["jquery",
         });
 
       }
+    },
+
+    /**
+     * Updates collection XML with values in the collection model
+     *
+     * @param {XMLDocument} objectDOM the XML element to be updated
+     * @return {XMLElement} An updated XML element
+    */
+    serializeCollectionXML: function(objectDOM){
+
+      if(!objectDOM){
+        if (this.get("objectDOM")) {
+          objectDOM = this.get("objectDOM").cloneNode(true);
+          $(objectDOM).empty();
+        } else {
+            // create an XML collection element from scratch
+            var xmlText = "<collection></collection>",
+                objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+                objectDOM = $(objectDOM).children()[0];
+        }
+      };
+
+      // Get and update the simple text strings (everything but definition)
+      // in reverse order because we prepend them consecutively to objectDOM
+      var collectionTextData = {
+        description: this.get("description"),
+        label: this.get("label"),
+        name: this.get("name")
+      }
+
+      _.map(collectionTextData, function(value, nodeName){
+
+        // Remove the node if it exists
+        // Use children() and not find() as there are sub-children named label
+        $(objectDOM).children(nodeName).remove();
+
+        // Don't serialize falsey values
+        if(value){
+          // Make new sub-node
+          var collectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+          $(collectionSubnodeSerialized).text(value);
+          // Append new sub-node to the start of the objectDOM
+          $(objectDOM).prepend(collectionSubnodeSerialized);
+        }
+
+      });
+
+      // TODO: serialize filters here
+
+      return objectDOM;
+
     }
 
 	});
