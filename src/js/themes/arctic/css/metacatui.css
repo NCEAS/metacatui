@@ -552,6 +552,11 @@ footer .logos a:hover, a:focus{
   max-height: 1em;
   margin-left: 3px;
 }
+.filters-header .filter-input-contain.input-append .btn{
+  padding: 4px;
+  color: #AAA;
+  border-color: #AAA;
+}
 
 /* EDITOR
 ----------------------- */

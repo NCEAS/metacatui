@@ -3856,6 +3856,7 @@ a.disabled {
   flex-grow: 1;
   padding-right: 20px;
   max-width: 350px;
+  min-width: 200px;
 }
 .filter-group .filter .btn{
 	box-shadow: none;

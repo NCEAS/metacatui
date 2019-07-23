@@ -12,16 +12,14 @@
   <input class="max" type="number" value="<%=max%>">
   <div class="clear"></div>
 <% } else { %>
-  <div class="filter-input-contain input-append">
-    <label>
-      <% if(icon){
-           print('<i class="icon icon-on-left icon-' + icon + '"></i>');
-         } %>
-      <%=label%>
-    </label>
-    <input type="number" value="" class="single-number"></input>
-    <button class="btn">
-      <i class="icon-search"></i>
-    </button>
-  </div>
+  <label>
+    <% if(icon){
+         print('<i class="icon icon-on-left icon-' + icon + '"></i>');
+       } %>
+    <%=label%>
+  </label>
+  <input type="number" value="" class="single-number"></input>
+  <button class="btn">
+    <i class="icon-search"></i>
+  </button>
 <% } %>
