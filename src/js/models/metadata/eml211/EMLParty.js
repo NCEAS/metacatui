@@ -16,7 +16,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				fax: [],
 				email: [],
 				onlineUrl: [],
-				role: null,
+				role: [],
 				references: null,
 				userId: [],
 				xmlID: null,
@@ -106,7 +106,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			//Set the text fields
 			modelJSON.organizationName = $(objectDOM).children("organizationname, organizationName").text() || null;
 			modelJSON.positionName     = $(objectDOM).children("positionname, positionName").text() || null;
-			modelJSON.role 			   = $(objectDOM).find("role").text() || null;
+			modelJSON.role 			       = $(objectDOM).find("role").each(function(i,r){
+                                                                    $(r).text()
+                                                                  });
 
 			//Set the id attribute
 			modelJSON.xmlID = $(objectDOM).attr("id");
@@ -569,17 +571,25 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				$(objectDOM).find("role").remove();
 			}
 			//Otherwise, change the value of the role element
-			else{
+			else {
 				//If for some reason there is no role, create a default role
 				if( !this.get("role") )
-					var role = "Associated Party";
+					var roles = ["Associated Party"];
 				else
-					var role = this.get("role");
+					var roles = this.get("role");
 
-				if($(objectDOM).find("role").length)
-					$(objectDOM).find("role").text(role);
-				else
-					this.getEMLPosition(objectDOM, "role").after( $(document.createElement("role")).text(role) );
+        roles.each(function(i, role){
+          var roleText = $(role).text();
+          var roleSerialized = $(objectDOM).find("role");
+          if(roleSerialized.length){
+            $(roleSerialized[i]).text(roleText)
+          } else {
+          	this.getEMLPosition(objectDOM, "role").after( $(document.createElement("role")).text(roleText) );
+          }
+        });
+
+
+
 			}
 
 			//XML id attribute
