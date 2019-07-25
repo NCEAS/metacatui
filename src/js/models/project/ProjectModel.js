@@ -531,6 +531,11 @@ define(["jquery",
               /* ==== Serialize literature cited ==== */
               // Assumes the value of literatureCited is a block of bibtex text
 
+              // var bibtex = $(projectNode).children("literatureCited").children("bibtex");
+              // if (bibtex.length > 0) {
+              //     modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
+              // }
+
               // Remove node if it exists already
               $(xmlDoc).find("literatureCited").remove();
 
@@ -540,16 +545,26 @@ define(["jquery",
               // Don't serialize falsey values
               if(litCit){
 
-                // Make new element
-                // <bibxtex> is a subelement of <literatureCited>
+                // If there's only one element in litCited, it will be a string
+                // turn it into an array so that we can use _.each
+                if(typeof litCit == "string"){
+                  litCit = [litCit]
+                }
+
+                // Make new <literatureCited> element
                 var litCitSerialized = $(xmlDoc.createElement("literatureCited"));
-                var bibtexSerialized = $(xmlDoc.createElement("bibtex"));
 
-                // Wrap in literature cited in cdata tags
-                var cdataLitCit = xmlDoc.createCDATASection(litCit);
+                _.each(litCit, function(bibtex){
 
-                $(bibtexSerialized).append(cdataLitCit);
-                $(litCitSerialized).append(bibtexSerialized);
+                  // Wrap in literature cited in cdata tags
+                  var cdataLitCit = xmlDoc.createCDATASection(bibtex);
+                  var bibtexSerialized = $(xmlDoc.createElement("bibtex"));
+                  // wrap in CDATA tags so that bibtex characters aren't escaped
+                  $(bibtexSerialized).append(cdataLitCit);
+                  // <bibxtex> is a subelement of <literatureCited>
+                  $(litCitSerialized).append(bibtexSerialized);
+
+                });
 
                 // Insert new element at correct position
                 var insertAfter = this.getXMLPosition(projectNode, "literatureCited");
