@@ -168,9 +168,13 @@ define(["jquery",
                 // Save the xml for serialize
                 modelJSON.objectXML = response;
 
-                // Parse the simple text nodes
-                var projLogo = this.parseTextNode(projectNode, "logo");
-                modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
+                // Parse the project logo
+                var projLogo = $(projectNode).children("logo")[0];
+                if (projLogo) {
+                  var projImageModel = new ProjectImage({ objectDOM: projLogo });
+                  projImageModel.set(projImageModel.parse());
+                  modelJSON.logo = projImageModel
+                };
 
                 // Parse acknowledgement logos into urls
                 var logos = $(projectNode).children("acknowledgmentsLogo");
@@ -214,7 +218,15 @@ define(["jquery",
                 $(projectNode).children("award").each(function(i, award) {
                     var award_parsed = {};
                     $(award).children().each(function(i, award_attr) {
-                        award_parsed[award_attr.nodeName] = parse_it(award, award_attr.nodeName);
+                        if(award_attr.nodeName != "funderLogo"){
+                          // parse the text nodes
+                          award_parsed[award_attr.nodeName] = parse_it(award, award_attr.nodeName);
+                        } else {
+                          // parse funderLogo which is type ImageType
+                          var imageModel = new ProjectImage({ objectDOM: award_attr });
+                          imageModel.set(imageModel.parse());
+                          award_parsed[award_attr.nodeName] = imageModel;
+                        }
                     });
                     modelJSON.awards.push(award_parsed);
                 });
@@ -430,7 +442,7 @@ define(["jquery",
             },
 
             /**
-             * Retireves the model attributes and serializes into project XML,
+             * Retrieves the model attributes and serializes into project XML,
              * to produce the new or modified project document.
              *
              * @return {string} - Returns the project XML as a string.
@@ -478,8 +490,7 @@ define(["jquery",
               if(logo){
 
                 // Make new node
-                var logoSerialized = xmlDoc.createElement("logo");
-                $(logoSerialized).text(logo);
+                var logoSerialized = logo.updateDOM();
 
                 // Insert new node at correct position
                 var insertAfter = this.getXMLPosition(projectNode, "logo");
@@ -550,7 +561,6 @@ define(["jquery",
                 }
               }
 
-
               /* ==== Serialize project content sections ==== */
 
               // Remove node if it exists already
@@ -600,7 +610,7 @@ define(["jquery",
 
                   //Get the existing node or create a new one
                   if(nodes.length < i+1){
-                    node = document.createElement(fieldName);
+                    node = xmlDoc.createElement(fieldName);
                     this.getXMLPosition(projectNode, fieldName).after(node);
 
                   }
@@ -636,14 +646,22 @@ define(["jquery",
                   // create the <award> subnodes
                   _.map(award, function(value, nodeName){
 
-                    // Don't serialize falsey values
-                    if(value){
-                      // Make new sub-nodes
-                      var awardSubnodeSerialized = xmlDoc.createElement(nodeName);
-                      $(awardSubnodeSerialized).text(value);
-
-                      $(awardSerialized).append(awardSubnodeSerialized);
+                    // serialize the simple text nodes
+                    if(nodeName != "funderLogo"){
+                      // Don't serialize falsey values
+                      if(value){
+                        // Make new sub-nodes
+                        var awardSubnodeSerialized = xmlDoc.createElement(nodeName);
+                        $(awardSubnodeSerialized).text(value);
+                        $(awardSerialized).append(awardSubnodeSerialized);
+                      }
+                    } else {
+                      // serialize "funderLogo" which is ImageType
+                      var funderLogoSerialized = value.updateDOM();
+                      $(awardSerialized).append(funderLogoSerialized);
                     }
+
+
                   });
 
                   // Insert new node at correct position
@@ -783,7 +801,6 @@ define(["jquery",
 
                 }
               }
-
               // Convert xml to xmlString and return xmlString
               xmlString = new XMLSerializer().serializeToString(projectNode);
               return (xmlString)

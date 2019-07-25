@@ -16,12 +16,14 @@ define(["jquery",
         /* Renders the compiled template into HTML */
         template: _.template(ProjectHeaderTemplate),
 
+
         /* Render the view */
         render: function() {
             this.$el.append(this.template({
               label: this.model.get("label"),
               description: this.model.get("description"),
-              logo: this.model.get("logo")
+              logo: this.model.get("logo").get("imageURL"),
+              shortname: this.model.get("name")
             }));
             return this;
         }
