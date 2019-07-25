@@ -1558,10 +1558,20 @@ body > .alert-container {
   max-height: 700px;
   overflow: scroll;
 }
-.attributeList a{
+.attributeListTable tr td:last-child a{
 	white-space: nowrap;
 	max-width: 100%;
 }
+.attributeListTable {
+	table-layout: fixed;
+	width: 100%;
+}
+
+/* Make the icon column 16px wide */
+.attributeListTable tr td:first-child {
+	width: 16px;
+}
+
 .controls-well > .party{
 	margin-bottom: 30px;
 	border-bottom: 1px solid #DDD;
