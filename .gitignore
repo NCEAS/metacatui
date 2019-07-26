@@ -1,3 +1,5 @@
 *.DS_Store
 /.project
 src/js/themes/ess-dive
+node_modules
+package-lock.json

@@ -153,6 +153,31 @@ The FallbackResource directive requires your Apache version to be `2.2.16` and a
 
 - Open a web browser and navigate to `metacatui.localhost/metacatui` and your MetacatUI application should be ready to go!
 
+## Development
+
+### Running
+
+While developing on MetacatUI, it's necessary to run a web server of some sort in order for the application to work completely.
+You can set up a web server such as Apache as described above in the Installation section but MetacatUI also comes with a simple [Express.js](https://expressjs.com) application that uses [node.js](https://nodejs.org).
+
+Pre-requisites:
+
+1. [node.js](https://nodejs.org) and `npm`
+2. [Express.js](https://expressjs.com): Install with `npm install express`
+
+Steps:
+
+1. Set up `index.html` and `loader.js` as described above in the Installation section.
+2. Run the folowing commands in a terminal:
+
+```sh
+# from this repository's top level directory
+npm install express
+node server.js
+```
+
+Now MetacatUI should be serving at http://localhost:3000 and you should be able to visit it in your web browser.
+
 ## License
 ```
 Copyright [2013] [Regents of the University of California]
