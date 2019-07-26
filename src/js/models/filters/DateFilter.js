@@ -84,6 +84,35 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
       return queryString;
 
+    },
+
+    /**
+     * Updates the XML DOM with the new values from the model
+     *
+     *  @return {XMLElement} An updated dateFilter XML element from a project document
+    */
+    updateDOM: function(){
+
+      var objectDOM = Filter.prototype.updateDOM.call(this);
+
+      // Get new date data
+      var dateData = {
+        min: this.get("min"),
+        max: this.get("max")
+      };
+
+      // Make subnodes <min> and <max> and append to DOM
+      _.map(dateData, function(value, nodeName){
+
+        if(value){
+          var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+          $(nodeSerialized).text(value);
+          $(objectDOM).append(nodeSerialized);
+        }
+
+      });
+
+      return objectDOM
     }
 
   });

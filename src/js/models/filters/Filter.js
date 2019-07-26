@@ -25,7 +25,7 @@ define(['jquery', 'underscore', 'backbone'],
       }
     },
 
-    /*
+    /**
     * This function is executed whenever a new FilterModel is created.
     */
     initialize: function(){
@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone'],
       }
     },
 
-    /*
+    /**
     * Parses the given XML node into a JSON object to be set on the model
     *
     * @param {Element} xml - The XML element that contains all the filter elements
@@ -78,7 +78,7 @@ define(['jquery', 'underscore', 'backbone'],
 
     },
 
-    /*
+    /**
     * Gets the text content of the XML node matching the given node name
     *
     * @param {Element} parentNode - The parent node to select from
@@ -121,7 +121,7 @@ define(['jquery', 'underscore', 'backbone'],
       }
     },
 
-    /*
+    /**
      * Builds a query string that represents this filter.
      *
      * @return {string} The query string to send to Solr
@@ -181,7 +181,7 @@ define(['jquery', 'underscore', 'backbone'],
 
     },
 
-    /*
+    /**
     * Constructs a query substring for each of the values set on this model
     *
     * @example
@@ -256,7 +256,7 @@ define(['jquery', 'underscore', 'backbone'],
       this.set("values", this.defaults().values);
     },
 
-    /*
+    /**
     * Escapes Solr query reserved characters so that search terms can include
     *  those characters without throwing an error.
     *
@@ -276,6 +276,69 @@ define(['jquery', 'underscore', 'backbone'],
         term = term.replace(/\'/g, "\\'");
 
         return term;
+    },
+
+    /**
+     * Updates XML DOM with the new values from the model
+     *
+     *  @return {XMLElement} An updated filter XML element from a project document
+    */
+    updateDOM: function(objectDOM){
+
+      var objectDOM = this.get("objectDOM");
+
+      if (objectDOM) {
+        // Empty to DOM so we can replace with new subnodes
+        objectDOM = objectDOM.cloneNode(true);
+        $(objectDOM).empty();
+      } else {
+          // Create an XML filter element from scratch
+          var objectDOM = new DOMParser().parseFromString("<filter></filter>", "text/xml"),
+              objectDOM = $(objectDOM).children()[0];
+      }
+
+      // Get new values
+      var filterData = {
+        // The following values are common to all FilterType elements
+        field: this.get("fields"),
+        value: this.get("values"),
+        operator: this.get("operator"),
+        exclude: this.get("exclude"),
+        matchSubstring: this.get("matchSubstring"),
+        // The following values are set for UserInterfaceFilterType,
+        // a subtype of FilterType
+        label: this.get("label"),
+        placeholder: this.get("placeholder"),
+        icon: this.get("icon"),
+        description: this.get("description")
+      };
+
+      // Make new sub nodes using the new model data
+      _.map(filterData, function(values, nodeName){
+
+        // Serialize the nodes with multiple occurences
+        if(nodeName == "field" || nodeName == "value"){
+          if(values){
+            _.each(values, function(value){
+              if(value){
+                var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+                $(nodeSerialized).text(value);
+                $(objectDOM).append(nodeSerialized);
+              }
+            })
+          }
+        // Serialize the single occurence nodes
+        } else {
+          if(values){
+            var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+            $(nodeSerialized).text(values);
+            $(objectDOM).append(nodeSerialized);
+          }
+        }
+
+      });
+
+      return objectDOM
     }
 
   });

@@ -103,13 +103,16 @@ define(["jquery",
       modelJSON.searchModel.set("filters", new Filters());
       modelJSON.searchModel.get("filters").createCatalogFilters();
 
-      //Parse the collection definition
+      // Parse the collection definition
       _.each( $(rootNode).find("definition > filter"), function(filterNode){
 
         //Create a new Filter model
         var filterModel = new Filter({
           objectDOM: filterNode,
-          isInvisible: true
+          isInvisible: true,
+          // projDefFilter allows us to distinguish this type of filter
+          // from the filters during serialization
+          projDefFilter: true
         });
 
         //Add the filter to the Filters collection
@@ -164,6 +167,7 @@ define(["jquery",
     */
     serializeCollectionXML: function(objectDOM){
 
+      // Get or make objectDOM
       if(!objectDOM){
         if (this.get("objectDOM")) {
           objectDOM = this.get("objectDOM").cloneNode(true);
@@ -175,6 +179,26 @@ define(["jquery",
                 objectDOM = $(objectDOM).children()[0];
         }
       };
+
+      // Serialize filters
+      // Get all the search filter models (not all of which are project definition filters)
+      var filterModels = this.get("searchModel").get("filters").models;
+
+      // Remove definition node if it exists in XML already
+      $(objectDOM).find("definition").remove();
+      // Create new definition element
+      var definitionSerialized = objectDOM.ownerDocument.createElement("definition");
+
+      // Iterate through the filter models
+      $(filterModels).each(function(i, filterModel){
+          // Find the filter that is the project definition filter and update the DOM
+          if(filterModel.get("projDefFilter")){
+            var filterSerialized = filterModel.updateDOM();
+            $(definitionSerialized).append(filterSerialized);
+          };
+      });
+
+      $(objectDOM).prepend(definitionSerialized);
 
       // Get and update the simple text strings (everything but definition)
       // in reverse order because we prepend them consecutively to objectDOM
@@ -200,8 +224,6 @@ define(["jquery",
         }
 
       });
-
-      // TODO: serialize filters here
 
       return objectDOM;
 

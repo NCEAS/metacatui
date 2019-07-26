@@ -36,6 +36,29 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       }
 
       return modelJSON;
+    },
+
+    /**
+     * Updates the XML DOM with the new values from the model
+     *
+     *  @return {XMLElement} An updated booleanFilter XML element from a project document
+    */
+    updateDOM: function() {
+
+      var objectDOM = Filter.prototype.updateDOM.call(this);
+
+      // Get the new boolean value
+      var value = this.get("value");
+
+      // Make a <value> node with the new boolean value and append it to DOM
+      if(value){
+        var valueSerialized = objectDOM.ownerDocument.createElement("value");
+        $(valueSerialized).text(value);
+        $(objectDOM).append(valueSerialized);
+      }
+
+      return objectDOM
+
     }
 
   });

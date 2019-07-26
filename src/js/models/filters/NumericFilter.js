@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       });
     },
 
-    /*
+    /**
     * Parses the numericFilter XML node into JSON
     *
     * @param {Element} xml - The XML Element that contains all the NumericFilter elements
@@ -67,7 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       return modelJSON;
     },
 
-    /*
+    /**
      * Builds a query string that represents this filter.
      *
      * @return {string} The query string to send to Solr
@@ -106,6 +106,38 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       }
 
       return queryString;
+
+    },
+
+    /**
+     * Updates the XML DOM with the new values from the model
+     *
+     *  @return {XMLElement} An updated numericFilter XML element from a project document
+    */
+    updateDOM:function(){
+
+      var objectDOM = Filter.prototype.updateDOM.call(this);
+
+      // Get new numeric data
+      var numericData = {
+        min: this.get("min"),
+        max: this.get("max"),
+        range: this.get("range"),
+        step: this.get("step")
+      };
+
+      // Make subnodes and append to DOM
+      _.map(numericData, function(value, nodeName){
+
+        if(value){
+          var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+          $(nodeSerialized).text(value);
+          $(objectDOM).append(nodeSerialized);
+        }
+
+      });
+
+      return objectDOM
 
     }
 

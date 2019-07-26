@@ -60,9 +60,10 @@ define(["jquery",
         /**
     		 * Makes a copy of the original XML DOM and updates it with the new values from the model
          *
+         *  @param {string} imageType - a string indicating the name for the outer xml element (i.e. funderLogo, acknowledgmentsLogo, logo, etc.). Used in case there is no exisiting xmlDOM.
          *  @return {XMLElement} An updated ImageType XML element from a project document
     		 */
-        updateDOM: function() {
+        updateDOM: function(imageType) {
 
           var objectDOM = this.get("objectDOM");
 
@@ -70,8 +71,8 @@ define(["jquery",
             objectDOM = objectDOM.cloneNode(true);
             $(objectDOM).empty();
     			} else {
-              // create an XML acknowledgmentsLogo element from scratch
-              var xmlText = "<acknowledgmentsLogo></acknowledgmentsLogo>",
+              // create an XML image element from scratch
+              var xmlText = "<" + imageType + "></" + imageType + ">",
                   objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
                   objectDOM = $(objectDOM).children()[0];
     			}

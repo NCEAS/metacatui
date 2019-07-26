@@ -48,6 +48,52 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       });
 
       return modelJSON;
+    },
+
+    /**
+     * Updates the XML DOM with the new values from the model
+     *
+     *  @return {XMLElement} An updated choiceFilter XML element from a project document
+    */
+    updateDOM:function(){
+
+      var objectDOM = Filter.prototype.updateDOM.call(this);
+
+      // Serialize <choice> elements
+      var choices = this.get("choices");
+
+      if(choices){
+        _.each(choices, function(choice){
+          // Make new <choice> node
+          choiceSerialized = objectDOM.ownerDocument.createElement("choice");
+          // Make choice subnodes <label> and <value>
+          _.map(choice, function(value, nodeName){
+
+            if(value){
+              var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+              $(nodeSerialized).text(value);
+              $(choiceSerialized).append(nodeSerialized);
+            }
+
+          });
+        // append subnodes
+        $(objectDOM).append(choiceSerialized);
+
+        });
+
+      }
+
+      // Serialize the <chooseMultiple> element
+      var chooseMultiple = this.get("chooseMultiple");
+      if(chooseMultiple){
+        chooseMultipleSerialized = objectDOM.ownerDocument.createElement("chooseMultiple");
+        $(chooseMultipleSerialized).text(chooseMultiple);
+        $(objectDOM).append(chooseMultipleSerialized);
+      };
+
+
+      return objectDOM
+
     }
 
   });

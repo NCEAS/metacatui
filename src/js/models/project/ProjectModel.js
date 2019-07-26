@@ -315,7 +315,6 @@ define(["jquery",
                   allFilters.add(filterGroupModel.get("filters").models);
 
                 });
-
                 return modelJSON;
             },
 
@@ -490,7 +489,7 @@ define(["jquery",
               if(logo){
 
                 // Make new node
-                var logoSerialized = logo.updateDOM();
+                var logoSerialized = logo.updateDOM("logo");
 
                 // Insert new node at correct position
                 var insertAfter = this.getXMLPosition(projectNode, "logo");
@@ -515,7 +514,7 @@ define(["jquery",
 
                 _.each(acknowledgmentsLogos, function(imageModel) {
 
-                  var ackLogosSerialized = imageModel.updateDOM();
+                  var ackLogosSerialized = imageModel.updateDOM("acknowledgmentsLogos");
 
                   // Insert new node at correct position
                   var insertAfter = model.getXMLPosition(projectNode, "acknowledgmentsLogo");
@@ -672,10 +671,9 @@ define(["jquery",
                       }
                     } else {
                       // serialize "funderLogo" which is ImageType
-                      var funderLogoSerialized = value.updateDOM();
+                      var funderLogoSerialized = value.updateDOM("funderLogo");
                       $(awardSerialized).append(funderLogoSerialized);
                     }
-
 
                   });
 
@@ -707,8 +705,6 @@ define(["jquery",
                 _.each(parties, function(party){
 
                   // Update the DOM of the EMLParty
-                  // party.updateDOM() changes camel-casing to lowercase,
-                  // and makes mistakes with <role> <--- TODO: fix.
                   var partyDOM  = party.updateDOM(),
                       //re-Camel-case the XML
                       xmlString = partyDOM[0].outerHTML,
@@ -779,8 +775,28 @@ define(["jquery",
               });
 
               /* ====  Serialize FilterGroups ==== */
-              // SKIP FOR NOW
 
+              // Get new filter group values
+              var filterGroups = this.get("filterGroups");
+
+              // Remove any filter groups in the current objectDOM
+              $(xmlDoc).find("filterGroup").remove();
+
+              // Make a new node for each filter group in the model
+              _.each(filterGroups, function(filterGroup){
+
+                filterGroupSerialized = filterGroup.updateDOM();
+
+                // Insert new node at correct position
+                var insertAfter = model.getXMLPosition(projectNode, "filterGroup");
+
+                if(insertAfter){
+                  insertAfter.after(filterGroupSerialized);
+                }
+                else{
+                  projectNode.append(filterGroupSerialized);
+                }
+              });
 
               /* ====  Remove duplicates ==== */
 
@@ -836,9 +852,6 @@ define(["jquery",
               projectNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
               projectNode.setAttribute("xsi:schemaLocation", "http://ecoinformatics.org/datasetproject-beta1");
 
-              // TODO: should a new XML project doc be created with empty elements?
-              // projectNode.appendChild(document.createElement("label"));
-              // projectNode.appendChild(document.createElement("section"));
               return(xmlNew);
             },
 
