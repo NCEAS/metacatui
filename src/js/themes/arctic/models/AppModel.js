@@ -76,12 +76,11 @@ define(['jquery', 'underscore', 'backbone'],
 
 			allowAccessPolicyChanges: false,
 
-			// baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
-			baseUrl: "https://neutral-cat.nceas.ucsb.edu",
+			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			// the most likely item to change is the Metacat deployment context
 			context: '/metacat',
 			d1Service: '/d1/mn/v2',
-			d1CNBaseUrl: "https://cn-stage.test.dataone.org/",
+			d1CNBaseUrl: "https://cn.dataone.org/",
 			d1CNService: "cn/v2",
 			d1LogServiceUrl: null,
 			nodeServiceUrl: null,

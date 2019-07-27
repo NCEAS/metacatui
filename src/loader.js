@@ -19,7 +19,7 @@ MetacatUI.useD3 = true;
 // of assets and, if not set correctly, a lot of things break. Your web server
 // should also set a FallbackResource directive accordingly in order to support
 // users entering MetacatUI from URLs other than the root
-MetacatUI.root = "/"
+MetacatUI.root = "/metacatui"
 // Remove trailing slash if one is present
 MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
 
