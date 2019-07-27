@@ -335,7 +335,6 @@ define(['jquery',
       }
 
       this.insertCitationMetaTags();
-      this.createAnnotationViews();
     },
 
     /* If there is no view service available, then display the metadata fields from the index */
