@@ -134,7 +134,8 @@ define(['jquery',
       this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
       this.once("metadataLoaded", function(){
-				this.insertMarkdownViews();
+        this.createAnnotationViews();
+        this.insertMarkdownViews();
       });
       
       this.getModel();
