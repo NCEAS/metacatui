@@ -1,13 +1,17 @@
 <div clas="annotation-popover-context">
-    <%= context %> <a href="<%= propertyURI %>"><%= propertyLabel %></a> <a href="<%= valueURI %>"><%= valueLabel %></a>
+    <%= context %> <em><a href="<%= propertyURI %>"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong>
 </div>
 <div class="annotation-popover-definition">
     <% if (valueDefinition === null) { %>
         No extra information could be found for <a href="<%= valueURI %>"><%= valueLabel %></a>.
-    <% } else {%>
-        <i class="icon-link"></i> <a href="<%= valueURI %>"><%= valueLabel %></a> is defined as "<%= valueDefinition %>" in the <a href="<%= valueOntology %>"><%= valueOntology %> </a> ontology.
+    <% } else { %>
+        <i class="icon-link"></i> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong> is defined as "<%= valueDefinition %>" in the <a href="<%= valueOntology %>"><% if (valueOntologyName) { %>
+                <%= valueOntologyName %>
+            <% } else { %>
+                <%= valueOntology %>
+            <% } %></a> ontology as <a href="<%= valueURI %>"><%= valueURI %></a>".
     <% } %>
 </div>
 <div class="annotation-popover-findmore">
-    <i class="icon-search"></i> Find more datasets annotated with the term <a href="#" data-uri="<%= valueURI %>"><%= valueLabel %></a>.
+    <i class="icon-search"></i> Find more datasets annotated with the term <strong><a href="#" data-uri="<%= valueURI %>"><%= valueLabel %></a></strong>.
 </div>

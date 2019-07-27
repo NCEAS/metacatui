@@ -8,12 +8,6 @@ define(['jquery',
 
     var AnnotationView = Backbone.View.extend({
         className: 'annotation-view',
-
-        // TODO: Consider removing this and just using the underlying HTML as the template
-        template: _.template('<div class="annotation" title="<%= valueLabel %>" data-content=""><div class="annotation-property"><%= propertyLabel %></div><div class="annotation-value"><%= valueLabel %></div></span>'),
-
-        // TODO: XSS protect
-        // TODO: Consider adding a template for this
         annotationPopoverTemplate: _.template(AnnotationPopoverTemplate),
 
         el: null,
@@ -24,6 +18,7 @@ define(['jquery',
         valueURI: null,
         valueDefinition: null,
         valueOntology: null,
+        valueOntologyName: null,
 
         // Stores a reference to the child .annotation el which is handy but
         // I'm no sure it's needed
@@ -41,7 +36,8 @@ define(['jquery',
 
         events: {
             "click" : "onClick",
-            "click .annotation-popover-findmore" : "findMore"
+            "click .annotation-popover-findmore" : "findMore",
+            "click .annotation-findmore" : "findMore"
         },
 
         initialize: function () {
@@ -50,6 +46,11 @@ define(['jquery',
             this.propertyURI = this.$el.data('propertyUri');
             this.valueLabel = this.$el.data('valueLabel');
             this.valueURI = this.$el.data('valueUri');
+
+            // Decode HTML tags in the context string, which is passed in as
+            // an HTML attribute from the XSLT so it needs encoding of some sort
+            // Note: Only supports < and > at this point
+            this.context = this.context.replace("&lt;", "<").replace("&gt;", ">");
 
             this.valueResolved = false;
         },
@@ -65,6 +66,10 @@ define(['jquery',
             this.queryAndUpdateValue();
         },
 
+        /**
+         * Find a definition for the value URI either from cache or from
+         * Bioportal. Updates the popover if necessary.
+         */
         queryAndUpdateValue: function () {
             if (this.valueResolved) {
                 return;
@@ -79,6 +84,11 @@ define(['jquery',
             if (cache && cache[this.valueURI]) {
                 this.valueDefinition = cache[this.valueURI].definition;
                 this.valueOntology = cache[this.valueURI].links.ontology;
+
+                // Try to get a simpler name for the ontology, rather than just
+                // using the ontology URI, which is all Bioportal gives back
+                this.valueOntologyName = this.getFriendlyOntologyName(cache[this.valueURI].links.ontology);
+
                 this.updatePopover();
                 this.valueResolved = true;
 
@@ -128,6 +138,10 @@ define(['jquery',
                 viewRef.valueDefinition = match.definition[0];
                 viewRef.valueOntology = match.links.ontology;
 
+                // Try to get a simpler name for the ontology, rather than just
+                // using the ontology URI, which is all Bioportal gives back
+                viewRef.valueOntologyName = viewRef.getFriendlyOntologyName(match.links.ontology);
+
                 viewRef.updatePopover();
                 viewRef.updateCache(viewRef.valueURI, match);
                 viewRef.valueResolved = true;
@@ -147,7 +161,8 @@ define(['jquery',
                 valueLabel: this.valueLabel,
                 valueURI: this.valueURI,
                 valueDefinition: this.valueDefinition,
-                valueOntology: this.valueOntology
+                valueOntology: this.valueOntology,
+                valueOntologyName: this.valueOntologyName
             });
 
             $(this.$el).data("content", new_content);
@@ -158,6 +173,15 @@ define(['jquery',
         },
 
 
+        /**
+         * Update the popover data and raw HTML. This is necessary because
+         * we want to create the popover before we fetch the data to populate
+         * it from BioPortal and Bootstrap Popovers are designed to be static.
+         * 
+         * The main trick I had to figure out here was that I could access
+         * the underlying content member of the popover with 
+         * popover_data.options.content which wasn't documented in the API.
+         */
         updatePopover: function() {
             var popover_content = $(this.$el).find(".popover-content").first();
 
@@ -168,7 +192,8 @@ define(['jquery',
                 valueLabel: this.valueLabel,
                 valueURI: this.valueURI,
                 valueDefinition: this.valueDefinition,
-                valueOntology: this.valueOntology
+                valueOntology: this.valueOntology,
+                valueOntologyName: this.valueOntologyName
             });
 
             // Update both the existing DOM and the underlying data
@@ -194,7 +219,11 @@ define(['jquery',
             $(popover_content).html(new_content);
         },
 
-        /** */
+        /** 
+         * Update the cache for a given term.
+         * @param term: (string) The URI
+         * @param match: (object) The BioPortal match object for the term
+        */
         updateCache: function(term, match) {
             var cache = MetacatUI.appModel.get("bioportalLookupCache");
 
@@ -205,15 +234,48 @@ define(['jquery',
             }
         },
 
+        /**
+         * Send the user to a pre-canned search for a term.
+         * 
+         * This gets called either from the popover or from clicking on the pill
+         * itself.
+         */
         findMore: function(e) {
             e.preventDefault();
 
-            var term = $(e.target).data("uri");
+            var valueURI,
+                valueLabel,
+                pill = $(e.target).parents(".annotation");
+
+            // Decide whether we clicked from the pill first
+            if (pill.length == 1) {
+                valueURI = $(pill).data("value-uri");
+                valueLabel = $(pill).data("value-label");
+            } else {
+                valueURI = $(e.target).data("uri");
+                valueLabel = $(e.target).text();
+            }
+
+            // Bail out if we didn't get a valueURI to search
+            if (typeof valueURI === "undefined") {
+                return;
+            }
 
             // Direct the user towards a search for the annotation
             MetacatUI.appSearchModel.clear();
-			MetacatUI.appSearchModel.set('annotation', [term]);
+			MetacatUI.appSearchModel.set('annotation', [{
+                label: valueLabel,
+                value: valueURI
+            }]);
 			MetacatUI.uiRouter.navigate('data', {trigger: true});
+        },
+
+        getFriendlyOntologyName: function(uri) {
+            if ((typeof uri === "string")) {
+                return uri;
+            }
+
+            return uri.replace("http://data.bioontology.org/ontologies/", "");
         }
     });
 

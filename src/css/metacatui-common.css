@@ -2320,8 +2320,7 @@ a.btn.metrics-button-disabled {
 .annotation > .popover-title {
     text-transform: none;
 }
-.annotation .annotation-property,
-.annotation .annotation-value {
+.annotation {
 	cursor: pointer;
 }
 
@@ -2350,7 +2349,8 @@ a.btn.metrics-button-disabled {
 }
 
 .annotation .annotation-property,
-.annotation .annotation-value {
+.annotation .annotation-value,
+.annotation .annotation-findmore {
   padding: 3px 6px;
 }
 
@@ -2364,11 +2364,25 @@ a.btn.metrics-button-disabled {
 
 .annotation .annotation-value {
   background-color: teal;
+  border-width: 1px;
+	border-style: solid;
+	border-color: black;
+	color: white;
+}
+
+.annotation .annotation-findmore {
+  background-color: #EEE;
   border-width: 1px 1px 1px 0px;
   border-style: solid;
   border-color: black;
   border-radius: 0px 5px 5px 0px;
-	color: white;
+	color: black;
+	padding: 0 10px;
+}
+
+.annotation .annotation-findmore div {
+	transform: rotate(45deg);
+	margin: 2px;
 }
 
  .annotation-popover-definition {
