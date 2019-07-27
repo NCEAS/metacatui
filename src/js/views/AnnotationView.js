@@ -263,11 +263,11 @@ define(['jquery',
 
             // Direct the user towards a search for the annotation
             MetacatUI.appSearchModel.clear();
-			MetacatUI.appSearchModel.set('annotation', [{
+            MetacatUI.appSearchModel.set('annotation', [{
                 label: valueLabel,
                 value: valueURI
             }]);
-			MetacatUI.uiRouter.navigate('data', {trigger: true});
+            MetacatUI.uiRouter.navigate('data', {trigger: true});
         },
 
         getFriendlyOntologyName: function(uri) {

@@ -2684,35 +2684,35 @@ define(['jquery',
       document.head.insertAdjacentHTML("beforeend", hwpt);
     },
 
-		createAnnotationViews: function(){
-			var viewRef = this;
+    createAnnotationViews: function(){
+      var viewRef = this;
 
-			_.each($(".annotation"), function (annoEl) {
-				var newView = new AnnotationView({
-					el: annoEl
-				});
-				viewRef.subviews.push(newView);
-				newView.render();
-			});
-		},
+      _.each($(".annotation"), function (annoEl) {
+        var newView = new AnnotationView({
+          el: annoEl
+        });
+        viewRef.subviews.push(newView);
+        newView.render();
+      });
+    },
 
-		insertMarkdownViews: function() {
-			var viewRef = this;
+    insertMarkdownViews: function() {
+      var viewRef = this;
 
-			_.each($(".markdown"), function (markdownEl) {
-				var newView = new MarkdownView({
-					markdown: $(markdownEl).text().trim(),
-					el: $(markdownEl).parent()
-				});
+      _.each($(".markdown"), function (markdownEl) {
+        var newView = new MarkdownView({
+          markdown: $(markdownEl).text().trim(),
+          el: $(markdownEl).parent()
+        });
 
-				viewRef.subviews.push(newView);
+        viewRef.subviews.push(newView);
 
-				// Clear out old content before rendering
-				$(markdownEl).remove();
+        // Clear out old content before rendering
+        $(markdownEl).remove();
 
-				newView.render();
-			});
-		}
+        newView.render();
+      });
+    }
   });
 
   return MetadataView;
