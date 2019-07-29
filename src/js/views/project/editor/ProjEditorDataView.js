@@ -17,6 +17,12 @@ function(_, $, Backbone, ProjEditorSectionView, Template){
     type: "ProjEditorData",
 
     /**
+    * The display name for this Section
+    * @type {string}
+    */
+    sectionName: "Data",
+
+    /**
     * The HTML classes to use for this view's element
     * @type {string}
     */
@@ -49,7 +55,7 @@ function(_, $, Backbone, ProjEditorSectionView, Template){
 
       //Call the superclass initialize() function
       ProjEditorSectionView.prototype.initialize();
-      
+
     },
 
     /**

@@ -3,7 +3,7 @@ define(['underscore',
         'backbone',
         'models/project/ProjectSectionModel',
         "text!templates/project/editor/projEditorSection.html"],
-function(_, $, Backbone, ProjectSection, Template){
+function(_, $, Backbone, ProjectSectionModel, Template){
 
   /**
   * @class ProjEditorSectionView
@@ -62,6 +62,7 @@ function(_, $, Backbone, ProjectSection, Template){
 
       if( typeof options == "object" ){
         this.model = options.model || undefined;
+        this.sectionName = options.sectionName || "";
       }
 
     },

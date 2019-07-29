@@ -32,7 +32,7 @@ function ($, _, Backbone) {
 			'api(/:anchorId)'                : 'renderAPI', // API page
       'projects(/:projectId)(/:projectSection)': 'renderProject', // project page
       'portals(/:projectId)(/:projectSection)': 'renderProject', // project page
-      'edit/portals(/:projectIdentifier)'     : 'renderProjectEditor'
+      'edit/portals(/:projectIdentifier)(/:projectSection)'     : 'renderProjectEditor'
 		},
 
 		helpPages: {
@@ -382,16 +382,18 @@ function ($, _, Backbone) {
     * Renders the ProjectEditorView
     * @param {string} [projectIdentifier] - The id or name of the project
     */
-    renderProjectEditor: function(projectIdentifier){
+    renderProjectEditor: function(projectIdentifier, projectSection){
       if ( !MetacatUI.appView.projectEditorView ) {
         require(['views/project/editor/ProjectEditorView'], function(ProjectEditorView){
           MetacatUI.appView.projectEditorView = new ProjectEditorView({
-              projectIdentifier: projectIdentifier
+							activeSection: projectSection,
+							projectIdentifier: projectIdentifier
           });
           MetacatUI.appView.showView(MetacatUI.appView.projectEditorView);
         });
       } else {
         MetacatUI.appView.projectEditorView.projectIdentifier = projectIdentifier;
+				MetacatUI.appView.projectEditorView.activeSection = projectSection;
         MetacatUI.appView.showView(MetacatUI.appView.projectEditorView);
       }
     },

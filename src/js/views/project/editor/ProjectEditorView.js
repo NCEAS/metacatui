@@ -33,6 +33,12 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     model: undefined,
 
     /**
+    * The currently active editor section. e.g. Data, Metrics, Settings, etc.
+    * @type {string}
+    */
+    activeSection: "",
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -52,9 +58,11 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
-
-      // initializing the ProjectEditorView properties
-      this.projectIdentifier = options.projectIdentifier ? options.projectIdentifier : undefined;
+      if(typeof options == "object"){
+        // initializing the ProjectEditorView properties
+        this.projectIdentifier = options.projectIdentifier ? options.projectIdentifier : undefined;
+        this.activeSection = options.activeSection || "";
+      }
     },
 
     /**
@@ -82,7 +90,7 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
         // handling the default case where a new project model is created
         this.hideLoading();
       }
-      
+
       return this;
     },
 
@@ -95,7 +103,11 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       this.$el.html(this.template());
       $("body").addClass("Editor");
 
-      var sectionsView = new ProjEditorSectionsView();
+      var sectionsView = new ProjEditorSectionsView({
+        model: this.model,
+        projectIdentifier: this.projectIdentifier,
+        activeSection: this.activeSection
+      });
       sectionsView.render();
       this.$(".proj-editor-sections-container").html(sectionsView.el);
 
@@ -105,7 +117,8 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     * Create a ProjectModel object
     */
     createModel: function(){
-      
+
+
       /**
       * The name of the project
       * @type {string}
@@ -117,16 +130,16 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       * @type {object}
       */
       var projectsMap = MetacatUI.appModel.get("projectsMap");
-      
+
       // Look up the project document seriesId by its registered name if given
       if ( this.projectIdentifier ) {
         if ( projectsMap ) {
-          
+
           // Do a forward lookup by key
           if ( typeof (projectsMap[this.projectIdentifier] ) !== "undefined" ) {
             this.projectName = this.projectIdentifier;
             this.projectIdentifier = projectsMap[this.projectIdentifier];
-          } else { 
+          } else {
             // Try a reverse lookup of the project name by values
             this.projectName = _.invert(projectsMap)[this.projectIdentifier];
 
@@ -158,9 +171,9 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
 
     /**
      * The authorizeUser function checks if the current user is authorized
-     * to edit the given ProjectModel. If not, a message is displayed and 
+     * to edit the given ProjectModel. If not, a message is displayed and
      * the view doesn't render anything else.
-     * 
+     *
      * If the user isn't logged in at all, don't check for authorization and
      * display a message and login button.
      */
@@ -176,7 +189,7 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
           // Display the project editor
           this.renderProjectEditor();
 
-          // Listens to the focus event on the window to detect when a user 
+          // Listens to the focus event on the window to detect when a user
           // switches back to this browser tab from somewhere else
           // When a user checks back, we want to check for log-in status
           MetacatUI.appView.listenForActivity();
@@ -206,10 +219,10 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     },
 
     /**
-     * Hides the loading 
+     * Hides the loading
      */
     hideLoading: function() {
-      
+
       // Find the loading object and remove it.
       if (this.$el.find(".loading")) {
         this.$el.find(".loading").remove();
