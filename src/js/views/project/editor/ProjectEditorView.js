@@ -50,6 +50,7 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     * @type {Object}
     */
     events: _.extend(EditorView.prototype.events, {
+      "focusout .title-container input"        : "updateBasicText",
     }),
 
     /**
@@ -102,7 +103,11 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     renderProjectEditor: function() {
 
       //Add the template to the view and give the body the "Editor" class
-      this.$el.html(this.template());
+      var label = this.model.get("label");
+      if(!label){ label = "Project Title" }
+      this.$el.html(this.template({
+        label: label
+      }));
       $("body").addClass("Editor");
 
       var sectionsView = new ProjEditorSectionsView({
@@ -192,7 +197,54 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       if (this.$el.find(".loading")) {
         this.$el.find(".loading").remove();
       }
-    }
+    },
+
+    /**
+     * When a simple text input field loses focus, the corresponding model
+     * attribute is updated with the value from the input field
+     *
+     *  @param {Event} [e] - The focusout event
+     */
+    updateBasicText: function(e){
+      if(!e) return false;
+
+      //Get the category, new value, and model
+      var category = $(e.target).attr("data-category"),
+      value = $(e.target).val(),
+      model = $(e.target).data("model") || this.model;
+
+      //We can't update anything without a category
+      if(!category) return false;
+
+      //Get the current value
+      var currentValue = model.get(category);
+
+      //Insert the new value into the array
+      if( true ){//Array.isArray(currentValue) ){
+
+        //Find the position this text input is in
+        var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
+
+        //Set the value in that position in the array
+        currentValue[position] = value;
+
+        //Set the changed array on this model
+        model.set(category, currentValue);
+        model.trigger("change:" + category);
+
+      }
+      //Update the model if the current value is a string
+      else if(typeof currentValue == "string" || !currentValue){
+        model.set(category, value);
+        model.trigger("change:" + category);
+      }
+      //Add another blank text input
+      if($(e.target).is(".new") && value != '' && category != "title"){
+        $(e.target).removeClass("new");
+        this.addBasicText(e);
+      }
+
+    },
 
   });
 
