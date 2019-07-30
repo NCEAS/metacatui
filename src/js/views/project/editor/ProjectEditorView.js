@@ -220,7 +220,7 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       var currentValue = model.get(category);
 
       //Insert the new value into the array
-      if( true ){//Array.isArray(currentValue) ){
+      if( Array.isArray(currentValue) ){
 
         //Find the position this text input is in
         var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
