@@ -131,6 +131,7 @@ define(['jquery',
                     !match.definition.length ||
                     !match.definition.length > 0) {
                     viewRef.valueResolved = true;
+                    viewRef.updatePopover();
 
                     return;
                 }
