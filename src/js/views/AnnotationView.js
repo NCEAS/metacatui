@@ -142,9 +142,9 @@ define(['jquery',
                 // using the ontology URI, which is all Bioportal gives back
                 viewRef.valueOntologyName = viewRef.getFriendlyOntologyName(match.links.ontology);
 
+                viewRef.valueResolved = true;
                 viewRef.updatePopover();
                 viewRef.updateCache(viewRef.valueURI, match);
-                viewRef.valueResolved = true;
             });
         },
 
@@ -162,7 +162,8 @@ define(['jquery',
                 valueURI: this.valueURI,
                 valueDefinition: this.valueDefinition,
                 valueOntology: this.valueOntology,
-                valueOntologyName: this.valueOntologyName
+                valueOntologyName: this.valueOntologyName,
+                valueResolved: this.valueResolved
             });
 
             $(this.$el).data("content", new_content);
@@ -193,7 +194,8 @@ define(['jquery',
                 valueURI: this.valueURI,
                 valueDefinition: this.valueDefinition,
                 valueOntology: this.valueOntology,
-                valueOntologyName: this.valueOntologyName
+                valueOntologyName: this.valueOntologyName,
+                valueResolved: this.valueResolved
             });
 
             // Update both the existing DOM and the underlying data

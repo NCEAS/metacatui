@@ -2,7 +2,9 @@
     <%= context %> <em><a href="<%= propertyURI %>"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong>
 </div>
 <div class="annotation-popover-definition">
-    <% if (valueDefinition === null) { %>
+    <% if (!valueResolved) { %>
+        Looking for more information about <a href="<%= valueURI %>"><%= valueLabel %></a>.
+    <% } else if (valueResolved && valueDefinition === null) { %>
         No extra information could be found for <a href="<%= valueURI %>"><%= valueLabel %></a>.
     <% } else { %>
         <i class="icon-link"></i> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong> is defined as "<%= valueDefinition %>" in the <a href="<%= valueOntology %>"><% if (valueOntologyName) { %>
