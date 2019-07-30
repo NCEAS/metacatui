@@ -67,7 +67,8 @@ define(["jquery",
 
                 // Create a new Project model
                 this.model = new Project({
-                    id: this.projectId
+                    seriesId: this.projectId,
+                    name: this.projectName
                 });
 
                 // When the model has been synced, render the results

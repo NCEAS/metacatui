@@ -82,13 +82,15 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       this.stopListening();
       this.listenTo(this.model, "sync", this.authorizeUser);
 
-      if ( this.model.get("id") ) {
+      if ( this.model.get("seriesId") || this.model.get("name") ){
         // If the project model already exists - fetch it.
         this.model.fetch();
       }
       else{
         // handling the default case where a new project model is created
         this.hideLoading();
+
+        //TODO: Render a blank ProjectEditor
       }
 
       return this;
@@ -118,49 +120,12 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     */
     createModel: function(){
 
-
-      /**
-      * The name of the project
-      * @type {string}
-      */
-      var projectName;
-
-      /**
-      * The dictionary object of project names mapped to corresponding identifiers
-      * @type {object}
-      */
-      var projectsMap = MetacatUI.appModel.get("projectsMap");
-
       // Look up the project document seriesId by its registered name if given
       if ( this.projectIdentifier ) {
-        if ( projectsMap ) {
-
-          // Do a forward lookup by key
-          if ( typeof (projectsMap[this.projectIdentifier] ) !== "undefined" ) {
-            this.projectName = this.projectIdentifier;
-            this.projectIdentifier = projectsMap[this.projectIdentifier];
-          } else {
-            // Try a reverse lookup of the project name by values
-            this.projectName = _.invert(projectsMap)[this.projectIdentifier];
-
-            if ( typeof this.projectName === "undefined" ) {
-              //Try looking up the project name with case-insensitive matching
-              this.projectName = _.findKey(projectsMap, function(value, key){
-                return( key.toLowerCase() == this.projectIdentifier.toLowerCase() );
-              });
-
-              //If a matching project name was found, get the corresponding identifier
-              if( this.projectName ){
-                //Get the project ID from the map
-                this.projectIdentifier = projectsMap[this.projectName];
-              }
-            }
-          }
-        }
 
         // Create a new project model with the identifier
         this.model = new Project({
-          id: this.projectIdentifier
+          name: this.projectIdentifier
         });
 
       } else {

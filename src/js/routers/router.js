@@ -298,83 +298,88 @@ function ($, _, Backbone) {
         /*
          * Render the project view based on the given name, id, or section
          */
-		renderProject: function(projectId, projectSection) {
-            var projectName;
-            var projectsMap = MetacatUI.appModel.get("projectsMap");
+    renderProject: function(projectNameFromURL, projectSection) {
+      var projectId;
+      var projectName;
+      var projectsMap = MetacatUI.appModel.get("projectsMap");
 
-            // Look up the project document seriesId by its registered name if given
-            if ( projectId ) {
-                if ( projectsMap ) {
-                    // Do a forward lookup by key
-                    if ( typeof (projectsMap[projectId] ) !== "undefined" ) {
-                        projectName = projectId;
-                        projectId = projectsMap[projectId];
-                        // Then set the history
-                        if ( projectSection ) {
-                            this.routeHistory.push("portals/" + projectName + "/" + projectSection);
-                        } else {
-                            this.routeHistory.push("portals/" + projectName);
-                        }
-                    } else {
-                        // Try a reverse lookup of the project name by values
-                        projectName = _.findKey(projectsMap, function(value){
-                          return( value ==  projectId );
-                        });
+      // Look up the project document seriesId by its registered name if given
+      if ( projectNameFromURL && projectsMap && Object.keys(projectsMap).length ) {
+        // Do a forward lookup by key
+        if ( typeof (projectsMap[projectNameFromURL] ) !== "undefined" ) {
+            projectId = projectsMap[projectNameFromURL];
+            projectName = projectNameFromURL;
 
-                        if ( typeof projectName !== "undefined" ) {
-                            if ( projectSection ) {
-                                this.routeHistory.push("portals/" + projectName + "/" + projectSection);
-                            } else {
-                                this.routeHistory.push("portals/" + projectName);
-                            }
-                        } else {
-
-                          //Try looking up the project name with case-insensitive matching
-                          projectName = _.findKey(projectsMap, function(value, key){
-                            return( key.toLowerCase() == projectId.toLowerCase() );
-                          });
-
-                          //If a matching project name was found, route to it
-                          if( projectName ){
-
-                            //Get the project ID from the map
-                            projectId = projectsMap[projectName];
-
-                            // Then set the history
-                            if ( projectSection ) {
-                              this.navigate("portals/" + projectName + "/" + projectSection, { trigger: false, replace: true });
-                              this.routeHistory.push("portals/" + projectName + "/" + projectSection);
-                            } else {
-                              this.navigate("portals/" + projectName, { trigger: false, replace: true });
-                              this.routeHistory.push("portals/" + projectName);
-                            }
-                          }
-                          else{
-                            // Fall back to routing to the project by id, not name
-                            this.routeHistory.push("portals/" + projectId);
-                          }
-                        }
-                    }
-                }
+            // Then set the history
+            if ( projectSection ) {
+                this.routeHistory.push("portals/" + projectNameFromURL + "/" + projectSection);
             } else {
-                // TODO: Show a ProjectsView here of the Projects collection (no projectId given)
-                return;
+                this.routeHistory.push("portals/" + projectNameFromURL);
             }
+        } else {
 
-			if ( !MetacatUI.appView.projectView ) {
-				require(['views/project/ProjectView'], function(ProjectView){
-					MetacatUI.appView.projectView = new ProjectView({
-                        projectId: projectId,
-                        projectName: projectName,
-                        activeSection: projectSection
-                    });
-					MetacatUI.appView.showView(MetacatUI.appView.projectView);
-				});
-			} else {
-                MetacatUI.appView.projectView.projectName = projectName;
-                MetacatUI.appView.projectView.projectId = projectId;
-                MetacatUI.appView.projectView.activeSection = projectSection;
-				MetacatUI.appView.showView(MetacatUI.appView.projectView);
+          // Look for the project name by searching for the id
+          projectName = _.findKey(projectsMap, function(idFromMap){
+            return( idFromMap == projectNameFromURL );
+          });
+
+          //If a project name was found in the map,
+          if ( typeof projectName !== "undefined" ) {
+
+            //The string from the URL is the project id
+            projectId = projectNameFromURL;
+
+            //Renavigate to the route using the project name
+            if ( projectSection ) {
+                this.routeHistory.push("portals/" + projectName + "/" + projectSection);
+            } else {
+                this.routeHistory.push("portals/" + projectName);
+            }
+          } else {
+
+              //Try looking up the project name with case-insensitive matching
+              projectName = _.findKey(projectsMap, function(idFromMap, nameFromMap){
+                return( nameFromMap.toLowerCase() == projectNameFromURL.toLowerCase() );
+              });
+
+              //If a matching project name was found, route to it
+              if( projectName ){
+
+                //Get the project ID from the map
+                projectId = projectsMap[projectName];
+
+                // Then set the history
+                if ( projectSection ) {
+                  this.navigate("portals/" + projectName + "/" + projectSection, { trigger: false, replace: true });
+                  this.routeHistory.push("portals/" + projectName + "/" + projectSection);
+                } else {
+                  this.navigate("portals/" + projectName, { trigger: false, replace: true });
+                  this.routeHistory.push("portals/" + projectName);
+                }
+              }
+            }
+        }
+      }
+
+      if( typeof projectId === "undefined" && typeof projectName === "undefined" ){
+        //Assume the name from the URL is the project name (rather than the id)
+        projectName = projectNameFromURL;
+      }
+
+      if ( !MetacatUI.appView.projectView ) {
+        require(['views/project/ProjectView'], function(ProjectView){
+          MetacatUI.appView.projectView = new ProjectView({
+              projectId: projectId,
+              projectName: projectName,
+              activeSection: projectSection
+          });
+          MetacatUI.appView.showView(MetacatUI.appView.projectView);
+        });
+      } else {
+        MetacatUI.appView.projectView.projectName = projectName;
+      MetacatUI.appView.projectView.projectId = projectId;
+        MetacatUI.appView.projectView.activeSection = projectSection;
+        MetacatUI.appView.showView(MetacatUI.appView.projectView);
 			}
 		},
 

@@ -106,7 +106,7 @@ define(["jquery",
             */
             url: function() {
                 return MetacatUI.appModel.get("objectServiceUrl") +
-                    encodeURIComponent(this.get("id"));
+                    encodeURIComponent(this.get("seriesId"));
             },
 
             /**
@@ -117,22 +117,73 @@ define(["jquery",
             */
             fetch: function() {
 
-                var requestSettings = {
-                    dataType: "xml",
-                    error: function(model, response) {
-                        model.trigger("error");
+              //If the seriesId has not been found yet, get it from Solr
+              if( !this.get("seriesId") && this.get("name") ){
+                this.once("change:seriesId", this.fetch);
+                this.getSeriesIdByName();
+                return;
+              }
 
-                        if( response.status == 404 ){
-                          model.trigger("notFound");
-                        }
+              var requestSettings = {
+                  dataType: "xml",
+                  error: function(model, response) {
+                      model.trigger("error");
+
+                      if( response.status == 404 ){
+                        model.trigger("notFound");
+                      }
+                  }
+              };
+
+              // Add the user settings to the fetch settings
+              requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+              // Call Backbone.Model.fetch()
+              return Backbone.Model.prototype.fetch.call(this, requestSettings);
+
+            },
+
+            /**
+            * Get the project seriesId by searching for the project by its name in Solr
+            */
+            getSeriesIdByName: function(){
+
+              //Exit if there is no project name set
+              if( !this.get("name") )
+                return;
+
+              var model = this;
+
+              var requestSettings = {
+                  url: MetacatUI.appModel.get("queryServiceUrl") +
+                       "q=projectName:\"" + this.get("name") + "\"" +
+                       "&fl=seriesId,projectName" +
+                       "&sort=dateUploaded%20asc" +
+                       "&rows=1" +
+                       "&wt=json",
+                  error: function(model, response) {
+                      model.trigger("error");
+
+                      if( response.status == 404 ){
+                        model.trigger("notFound");
+                      }
+                  },
+                  success: function(response){
+                    if( response.response.numFound > 0 ){
+
+                      model.set("name", response.response.docs[0].projectName);
+                      model.set("seriesId", response.response.docs[0].seriesId);
+
                     }
-                };
+                    else{
+                      model.trigger("notFound");
+                    }
+                  }
+              }
 
-                // Add the user settings to the fetch settings
-                requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+              requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
 
-                // Call Backbone.Model.fetch()
-                return Backbone.Model.prototype.fetch.call(this, requestSettings);
+              $.ajax(requestSettings);
 
             },
 
