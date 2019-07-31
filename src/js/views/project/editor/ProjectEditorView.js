@@ -81,9 +81,9 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
 
       // When the model has been synced, render the results
       this.stopListening();
-      this.listenTo(this.model, "sync", this.authorizeUser);
+      this.listenTo(this.model, "sync", this.renderProjectEditor);
 
-      if ( this.model.get("seriesId") || this.model.get("name") ){
+      if ( this.model.get("seriesId") || this.model.get("label") ){
         // If the project model already exists - fetch it.
         this.model.fetch();
       }
@@ -103,11 +103,12 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     renderProjectEditor: function() {
 
       //Add the template to the view and give the body the "Editor" class
-      var label = this.model.get("label");
-      if(!label){ label = "Project Title" }
+      var name = this.model.get("name");
+
       this.$el.html(this.template({
-        label: label
+        name: name
       }));
+
       $("body").addClass("Editor");
 
       var sectionsView = new ProjEditorSectionsView({
@@ -130,7 +131,7 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
 
         // Create a new project model with the identifier
         this.model = new Project({
-          name: this.projectIdentifier
+          label: this.projectIdentifier
         });
 
       } else {

@@ -23,7 +23,7 @@ define(["jquery",
               label: this.model.get("label"),
               description: this.model.get("description"),
               logo: this.model.get("logo").get("imageURL"),
-              shortname: this.model.get("name")
+              name: this.model.get("name")
             }));
             return this;
         }

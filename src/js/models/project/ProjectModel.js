@@ -118,7 +118,7 @@ define(["jquery",
             fetch: function() {
 
               //If the seriesId has not been found yet, get it from Solr
-              if( !this.get("seriesId") && this.get("name") ){
+              if( !this.get("seriesId") && this.get("label") ){
                 this.once("change:seriesId", this.fetch);
                 this.getSeriesIdByName();
                 return;
@@ -149,14 +149,14 @@ define(["jquery",
             getSeriesIdByName: function(){
 
               //Exit if there is no project name set
-              if( !this.get("name") )
+              if( !this.get("label") )
                 return;
 
               var model = this;
 
               var requestSettings = {
                   url: MetacatUI.appModel.get("queryServiceUrl") +
-                       "q=projectName:\"" + this.get("name") + "\"" +
+                       "q=projectName:\"" + this.get("label") + "\"" +
                        "&fl=seriesId,projectName" +
                        "&sort=dateUploaded%20asc" +
                        "&rows=1" +
@@ -171,7 +171,7 @@ define(["jquery",
                   success: function(response){
                     if( response.response.numFound > 0 ){
 
-                      model.set("name", response.response.docs[0].projectName);
+                      model.set("label", response.response.docs[0].projectName);
                       model.set("seriesId", response.response.docs[0].seriesId);
 
                     }
