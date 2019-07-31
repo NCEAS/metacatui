@@ -502,7 +502,6 @@ define(['jquery',
     },
 
     getPackageDetails: function(packageIDs){
-      var viewRef = this;
 
       var completePackages = 0;
 
@@ -520,31 +519,31 @@ define(['jquery',
           var thisPackage = new Package({ id: thisPackageID });
 
           //Listen for any parent packages
-          viewRef.listenToOnce(thisPackage, "change:parentPackageMetadata", viewRef.insertParentLink);
+          this.listenToOnce(thisPackage, "change:parentPackageMetadata", this.insertParentLink);
 
           //When the package info is fully retrieved
-          viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
+          this.listenToOnce(thisPackage, 'complete', function(thisPackage){
 
             //When all packages are fully retrieved
             completePackages++;
             if(completePackages >= packageIDs.length){
-              var latestPackages = _.filter(viewRef.packageModels, function(m){
+              var latestPackages = _.filter(this.packageModels, function(m){
                 return !_.contains(packageIDs, m.get("obsoletedBy"));
               });
-              viewRef.packageModels = latestPackages;
-              viewRef.insertPackageDetails(latestPackages);
+              this.packageModels = latestPackages;
+              this.insertPackageDetails(latestPackages);
             }
           });
 
           //Save the package in the view
-          viewRef.packageModels.push(thisPackage);
+          this.packageModels.push(thisPackage);
 
           //Make sure we get archived content, too
           thisPackage.set("getArchivedMembers", true);
 
           //Get the members
           thisPackage.getMembers({getParentMetadata: true });
-        });
+        }, this);
       }
     },
 
@@ -573,11 +572,7 @@ define(['jquery',
         return;
       }
 
-      var viewRef = this;
-      //var dataPackage = this.dataPackage;
-
       if(!packages) var packages = this.packageModels;
-
 
       //Get the entity names from this page/metadata
       this.getEntityNames(packages);
@@ -588,27 +583,56 @@ define(['jquery',
         if(!packageModel.complete) return;
 
         //Insert a package table for each package in viewRef dataset
-        var nestedPckgs = packageModel.getNestedPackages();
-        if(nestedPckgs.length > 0){
+        var nestedPckgs = packageModel.getNestedPackages(),
+            nestedPckgsToDisplay = [];
 
-          var title = 'Current Data Set (1 of ' + (nestedPckgs.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
-          viewRef.insertPackageTable(packageModel, { title: title });
+        //If this metadata is not archived, filter out archived packages
+        if( !this.model.get("archived") ){
 
-          _.each(nestedPckgs, function(nestedPackage, i, list){
-            var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root + '/view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
-            viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
+          nestedPckgsToDisplay = _.reject(nestedPckgs, function(pkg){
+            return (pkg.get("archived"))
           });
+
         }
         else{
-          var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
-          title = "Files in this dataset " + title;
-          viewRef.insertPackageTable(packageModel, {title: title});
+          //Display all packages is this metadata is archived
+          nestedPckgsToDisplay = nestedPckgs;
+        }
+
+        if(nestedPckgsToDisplay.length > 0){
+
+          if( !(!this.model.get("archived") && packageModel.get("archived") == true) ){
+            var title = 'Current Data Set (1 of ' + (nestedPckgsToDisplay.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
+            this.insertPackageTable(packageModel, { title: title });
+          }
+
+          _.each(nestedPckgsToDisplay, function(nestedPackage, i, list){
+            if( !(!this.model.get("archived") && nestedPackage.get("archived") == true) ){
+
+              var title = 'Nested Data Set (' + (i+2) + ' of ' +
+                          (list.length+1) + ') <span class="subtle">Package: ' +
+                          nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root +
+                          '/view/' + nestedPackage.get("id") +
+                          '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+
+              this.insertPackageTable(nestedPackage, { title: title, nested: true });
+
+            }
+          }, this);
+        }
+        else{
+          //If this metadata is not archived, then don't display archived packages
+          if( !(!this.model.get("archived") && packageModel.get("archived") == true) ){
+            var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+            title = "Files in this dataset " + title;
+            this.insertPackageTable(packageModel, {title: title});
+          }
         }
 
         //Remove the extra download button returned from the XSLT since the package table will have all the download links
         $("#downloadPackage").remove();
 
-      });
+      }, this);
 
       //Collapse the table list after the first table
       var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
@@ -640,20 +664,19 @@ define(['jquery',
 
         });
         packageModel.complete = true;
-        viewRef.insertPackageTable(packageModel);
+        this.insertPackageTable(packageModel);
       }
-
 
       //Insert the data details sections
       this.insertDataDetails();
 
-            // Get DataPackge info in order to render prov extraced from the resmap.
-            if(packages.length) this.getDataPackage(packages[0].get("id"));
+      // Get DataPackge info in order to render prov extraced from the resmap.
+      if(packages.length) this.getDataPackage(packages[0].get("id"));
 
       //Initialize tooltips in the package table(s)
       this.$(".tooltip-this").tooltip();
 
-        return this;
+      return this;
     },
 
     insertPackageTable: function(packageModel, options){
