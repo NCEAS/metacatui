@@ -291,24 +291,16 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                     objectDOM = document.createElement(type);
                 }
 
+                //Update the id attribute on this XML node
                 // update the id attribute
-                var xmlID = this.get("xmlID");
-                if ( xmlID ) {
+               if( this.get("dataONEObject") ){
+                 //Ideally, the EMLEntity will use the object's id in it's id attribute, so we wil switch them
+                 var xmlID = this.get("dataONEObject").getXMLSafeID();
 
-                   //Check if the physical section is using this object's id as the id attribute
-                   if( this.get("dataONEObject") && $(objectDOM).find("physical").attr("id") == this.get("dataONEObject").get("id") ){
-                     //Ideally, the EMLEntity will use the object's id in it's id attribute, so we wil switch them
-                     xmlID = this.get("dataONEObject").getXMLSafeID();
-
-                     //Set the xml-safe id on the model and use it as the id attribute
-                     $(objectDOM).attr("id", xmlID);
-                     this.set("xmlID", xmlID);
-
-                     //Use a random uuid as the id for the physical section
-                     $(objectDOM).find("physical").attr("id", "urn-uuid-" + uuid.v4());
-                   }
-
-                }
+                 //Set the xml-safe id on the model and use it as the id attribute
+                 $(objectDOM).attr("id", xmlID);
+                 this.set("xmlID", xmlID);
+               }
 
                 // Update the alternateIdentifiers
                 var altIDs = this.get("alternateIdentifier");

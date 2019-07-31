@@ -11,7 +11,7 @@ define(['jquery',
     'models/PackageModel',
     'models/SolrResult',
     'models/metadata/ScienceMetadata',
-        'models/MetricsModel',
+    'models/MetricsModel',
     'views/DownloadButtonView',
     'views/ProvChartView',
     'views/MetadataIndexView',
@@ -1680,7 +1680,8 @@ define(['jquery',
       }
 
       //If we already found it earlier, return it now
-      var container = this.$(".entitydetails[data-id='" + id + "']");
+      var container = this.$(".entitydetails[data-id='" + id + "'], " +
+                      ".entitydetails[data-id='" + DataONEObject.prototype.getXMLSafeID(id) + "']");
       if(container.length)
         return container;
 
