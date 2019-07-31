@@ -9,19 +9,18 @@ function ($, _, Backbone) {
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'navigateToDefault',         // the default route
-			'about(/:anchorId)'         : 'renderAbout',        // about page anchors
-			'help(/:page)(/:anchorId)'  : 'renderHelp',
-			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
-			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
-			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
-			'my-account'                   : 'renderUserSettings',
-			'external(/*url)'           : 'renderExternal',     // renders the content of the given url in our UI
-			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
-			'logout'                    : 'logout',          // logout the user
-			'signout'                   : 'logout',          // logout the user
-			'signin'					: 'renderTokenSignIn',
-      'portals(/:projectId)(/:projectSection)': 'renderProject' // project page
+			'about(/:anchorId)(/)'         : 'renderAbout',        // about page anchors
+			'help(/:page)(/:anchorId)(/)'  : 'renderHelp',
+			'data/my-data(/page/:page)(/)' : 'renderMyData',    // data search page
+			'data(/mode=:mode)(/query=:query)(/page/:page)(/)' : 'renderData',    // data search page
+			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
+			'my-account(/)'                   : 'renderUserSettings',
+			'external(/*url)(/)'           : 'renderExternal',     // renders the content of the given url in our UI
+			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
+			'logout(/)'                    : 'logout',          // logout the user
+			'signout(/)'                   : 'logout',          // logout the user
+			'signin(/)'					: 'renderTokenSignIn',
 		},
 
 		helpPages: {

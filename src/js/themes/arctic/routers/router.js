@@ -9,20 +9,20 @@ function ($, _, Backbone) {
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'renderData',    // the default route
-			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
-			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
-			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
-			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'signout'					: 'logout',
-			'signin'					: 'renderSignIn',
-			"signinsuccess"             : "renderSignInSuccess",
-			'share(/*pid)'              : 'renderEditor', // registry page
-			'submit(/*pid)'             : 'renderEditor', // registry page
-			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)'           : 'renderAPI',       // API page
-			'projects(/:projectId)(/:projectSection)': 'renderProject', // project page
-      'portals(/:projectId)(/:projectSection)': 'renderProject' // project page
+			'data/my-data(/page/:page)(/)' : 'renderMyData',    // data search page
+			'data(/mode=:mode)(/query=:query)(/page/:page)(/)' : 'renderData',    // data search page
+			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
+			'external(/*url)(/)'           : 'renderExternal', // renders the content of the given url in our UI
+			'signout(/)'					: 'logout',
+			'signin(/)'					: 'renderSignIn',
+			"signinsuccess(/)"             : "renderSignInSuccess",
+			'share(/*pid)(/)'              : 'renderEditor', // registry page
+			'submit(/*pid)(/)'             : 'renderEditor', // registry page
+			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
+			'api(/:anchorId)(/)'           : 'renderAPI',       // API page
+			'projects(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
+      'portals(/:projectId)(/:projectSection)(/)': 'renderProject' // project page
 		},
 
 		helpPages: {

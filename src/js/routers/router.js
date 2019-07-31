@@ -9,29 +9,29 @@ function ($, _, Backbone) {
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                               : 'renderIndex',    // the default route
-			'about(/:anchorId)'              : 'renderAbout',    // about page
-			'help(/:page)(/:anchorId)'       : 'renderHelp',
-			'tools(/:anchorId)'              : 'renderTools',    // tools page
-			'data/my-data(/page/:page)'      : 'renderMyData',    // data search page
-			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'data/my-data'                   : 'renderMyData',
-			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
-			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
+			'about(/:anchorId)(/)'              : 'renderAbout',    // about page
+			'help(/:page)(/:anchorId)(/)'       : 'renderHelp',
+			'tools(/:anchorId)(/)'              : 'renderTools',    // tools page
+			'data/my-data(/page/:page)(/)'      : 'renderMyData',    // data search page
+			'data(/mode=:mode)(/query=:query)(/page/:page)(/)' : 'renderData',    // data search page
+			'data/my-data(/)'                   : 'renderMyData',
+			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
 			//'my-account'                   : 'renderUserSettings',
-			'external(/*url)'                : 'renderExternal', // renders the content of the given url in our UI
-			'logout'                         : 'logout', // logout the user
-			'signout'                        : 'logout', // logout the user
-			'signin'                         : 'renderSignIn', // logout the user
-			"signinsuccess"                  : "renderSignInSuccess",
-			"signinldaperror"                : "renderLdapSignInError",
-			"signinLdap"                     : "renderLdapSignIn",
-			"signinSuccessLdap"              : "renderLdapSignInSuccess",
-			'share(/*pid)'                   : 'renderEditor', // registry page
-			'submit(/*pid)'                  : 'renderEditor', // registry page
-			'quality(/s=:suiteId)(/:pid)'    : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)'                : 'renderAPI', // API page
-			'projects(/:projectId)(/:projectSection)': 'renderProject', // project page
-      'portals(/:projectId)(/:projectSection)': 'renderProject' // project page
+			'external(/*url)(/)'                : 'renderExternal', // renders the content of the given url in our UI
+			'logout(/)'                         : 'logout', // logout the user
+			'signout(/)'                        : 'logout', // logout the user
+			'signin(/)'                         : 'renderSignIn', // logout the user
+			"signinsuccess(/)"                  : "renderSignInSuccess",
+			"signinldaperror(/)"                : "renderLdapSignInError",
+			"signinLdap(/)"                     : "renderLdapSignIn",
+			"signinSuccessLdap(/)"              : "renderLdapSignInSuccess",
+			'share(/*pid)(/)'                   : 'renderEditor', // registry page
+			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
+			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
+			'api(/:anchorId)(/)'                : 'renderAPI', // API page
+      'projects(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
+      'portals(/:projectId)(/:projectSection)(/)': 'renderProject' // project page
 		},
 
 		helpPages: {
