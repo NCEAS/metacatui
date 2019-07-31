@@ -90,8 +90,7 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       else{
         // handling the default case where a new project model is created
         this.hideLoading();
-
-        //TODO: Render a blank ProjectEditor
+        this.renderProjectEditor();
       }
 
       return this;
@@ -102,18 +101,24 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     */
     renderProjectEditor: function() {
 
-      //Add the template to the view and give the body the "Editor" class
+      // Add the template to the view and give the body the "Editor" class
       var name = this.model.get("name");
-
       this.$el.html(this.template({
         name: name
       }));
 
       $("body").addClass("Editor");
 
+      // Get the project identifier
+      // or set it to a default value in the case that it's a new project
+      var projectIdentifier = this.projectIdentifier;
+      if(!projectIdentifier){
+        projectIdentifier = "new-project"
+      }
+
       var sectionsView = new ProjEditorSectionsView({
         model: this.model,
-        projectIdentifier: this.projectIdentifier,
+        projectIdentifier: projectIdentifier,
         activeSection: this.activeSection
       });
       sectionsView.render();
@@ -125,9 +130,8 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     * Create a ProjectModel object
     */
     createModel: function(){
-
       // Look up the project document seriesId by its registered name if given
-      if ( this.projectIdentifier ) {
+      if ( this.projectIdentifier) {
 
         // Create a new project model with the identifier
         this.model = new Project({

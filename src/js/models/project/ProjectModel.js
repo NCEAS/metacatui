@@ -63,7 +63,7 @@ define(["jquery",
                     // unfiltered search results of all datasets in this project
                     allSearchResults: null,
                     // The project document options may specify section to hide
-                    hideMetrics: false,
+                    hideMetrics: true,
                     hideData: false,
                     hidePeople: false,
                     hideMap: false,

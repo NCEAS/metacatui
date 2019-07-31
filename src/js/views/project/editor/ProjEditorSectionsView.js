@@ -132,18 +132,21 @@ function(_, $, Backbone, Project,
       this.subviews.push(dataView);
 
       // Render a ProjEditorSectionView for the Metrics section and corresponding tab
-      var metricsView = new ProjEditorSectionView({
-        model: this.model,
-        sectionName: "Metrics"
-      });
-      metricsView.render();
-      this.$(".proj-editor-metrics-container")
-          .html(metricsView.el)
-          .attr("id", metricsView.getName({ linkFriendly: true }));
-      // Add the tab to the tab navigation
-      this.addSectionLink(metricsView);
-      // Add the data section to the list of subviews
-      this.subviews.push(metricsView);
+      // if the hide metrics view option is not true
+      if(this.model.get("hideMetrics") == false){
+        var metricsView = new ProjEditorSectionView({
+          model: this.model,
+          sectionName: "Metrics"
+        });
+        metricsView.render();
+        this.$(".proj-editor-metrics-container")
+            .html(metricsView.el)
+            .attr("id", metricsView.getName({ linkFriendly: true }));
+        // Add the tab to the tab navigation
+        this.addSectionLink(metricsView);
+        // Add the data section to the list of subviews
+        this.subviews.push(metricsView);
+      };
 
       // Add a "Add section" button/tab
       var addSectionView = new ProjEditorSectionView({
@@ -203,43 +206,53 @@ function(_, $, Backbone, Project,
         };
       });
 
-      var view = this;
-
       // Update path when each tab is clicked and shown
-      this.$('a[data-toggle="tab"]').on('shown', function(e) {
-        var sectionView = $(e.target).data("view");
-
-        if( typeof sectionView !== "undefined"){
-          sectionView.postRender();
-        }
-
-        // Get the href of the clicked link
-        var linkTarget = $(e.target).attr("href");
-        linkTarget = linkTarget.substring(1);
-
-        // Set this view's active section name to the link href
-        view.activeSection = linkTarget;
-
-        // TODO: currently using the name value that's in the model as part of
-        // the project editor path. We should set the projectName on the view
-        // from router.js, as it's set for projects
-        var projName = view.model.get("name");
-        var pathName = window.location.pathname;
-
-        //Get the new pathname using the active section
-        if( !MetacatUI.root.length || MetacatUI.root == "/" ){
-
-          var newPathName = pathName.substring(0, pathName.indexOf(projName)) +
-                              projName + "/" + view.activeSection;
-        }
-        else{
-          var newPathName = pathName.substring( pathName.indexOf(MetacatUI.root) + MetacatUI.root.length );
-          newPathName = newPathName.substring(0, newPathName.indexOf(projName)) +
-                              projName + "/" + view.activeSection;
-        }
-        //Update the window location
-        MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
+      view = this;
+      this.$('a[data-toggle="tab"]').on('shown', function(e){
+        view.updatePath(e)
       });
+
+    },
+
+    /**
+     * Update the path when tabs are clicked
+     * @param {Event} e - The click event on the navigation elements (tabs)
+    */
+    updatePath: function(e){
+
+      var sectionView = $(e.target).data("view");
+
+      if( typeof sectionView !== "undefined"){
+        sectionView.postRender();
+      }
+
+      // Get the href of the clicked link
+      var linkTarget = $(e.target).attr("href");
+      linkTarget = linkTarget.substring(1);
+
+      // Set this view's active section name to the link href
+      this.activeSection = linkTarget;
+
+      var projName = this.projectIdentifier;
+      var pathName = window.location.pathname;
+
+      //Get the new pathname using the active section
+      if( !MetacatUI.root.length || MetacatUI.root == "/" ){
+        // If it's a new project, the project name might not be in the URL yet
+        if(pathName.indexOf(projName) < 0){
+          var newPathName = pathName + "/" + projName + "/" + this.activeSection;
+        } else {
+          var newPathName = pathName.substring(0, pathName.indexOf(projName)) +
+                              projName + "/" + this.activeSection;
+        }
+      }
+      else{
+        var newPathName = pathName.substring( pathName.indexOf(MetacatUI.root) + MetacatUI.root.length );
+        newPathName = newPathName.substring(0, newPathName.indexOf(projName)) +
+                            projName + "/" + this.activeSection;
+      }
+      //Update the window location
+      MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
 
     },
 
