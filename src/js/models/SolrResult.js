@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			datasource: null,
 			rightsHolder: null,
 			size: 0,
-			type: null,
+			type: "",
 			url: null,
 			obsoletedBy: null,
 			geohash_9: null,
@@ -278,12 +278,13 @@ define(['jquery', 'underscore', 'backbone'],
 			   var filename = xhr.getResponseHeader('Content-Disposition');
 
 			   if(!filename){
-				   filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+				   filename = model.get("fileName") || model.get("title") || model.get("id") || "download";
 			   }
 			   else
 				   filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
 
-			   filename = filename.trim();
+         //Replace any whitespaces
+			   filename = filename.trim().replace(/ /g, "_");
 
 			   //For IE, we need to use the navigator API
 			   if (navigator && navigator.msSaveOrOpenBlob) {

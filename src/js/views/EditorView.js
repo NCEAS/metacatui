@@ -65,19 +65,23 @@ define(['underscore',
           else
             var model = new ScienceMetadata({ id: this.pid });
 
-            // Once the ScienceMetadata is populated, populate the associated package
-            this.model = model;
+          // Once the ScienceMetadata is populated, populate the associated package
+          this.model = model;
 
-            //Listen for the replace event on this model
-            var view = this;
-            this.listenTo(this.model, "replace", function(newModel){
-              if(view.model.get("id") == newModel.get("id")){
-                view.model = newModel;
-                view.setListeners();
-              }
-            });
+          //Listen for the replace event on this model
+          var view = this;
+          this.listenTo(this.model, "replace", function(newModel){
+            if(this.model.get("id") == newModel.get("id")){
 
-            this.setListeners();
+              this.model = newModel;
+              this.setListeners();
+
+              //If this model has been upgraded to an EML doc, render the metadata
+              this.renderMember(newModel);
+            }
+          });
+
+          this.setListeners();
         },
 
         /* Render the view */
@@ -365,13 +369,10 @@ define(['underscore',
                         break;
 
                     case "Metadata":
-
-                        // this.renderDataPackageItem(model, collection, options);
                         this.renderMetadata(model, collection, options);
                         break;
 
                     case "Data":
-                        //this.renderDataPackageItem(model, collection, options);
                         break;
 
                     default:

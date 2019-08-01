@@ -74,6 +74,10 @@ define(['jquery', 'underscore', 'backbone'],
       if( $(xml).find("exclude").length )
         modelJSON.exclude = (this.parseTextNode(xml, "exclude") === "true")? true : false;
 
+      //Parse the matchSubstring
+      if( $(xml).find("matchSubstring").length )
+        modelJSON.matchSubstring = (this.parseTextNode(xml, "matchSubstring") === "true")? true : false;
+
       return modelJSON;
 
     },

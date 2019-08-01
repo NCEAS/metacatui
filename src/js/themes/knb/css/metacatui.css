@@ -178,28 +178,24 @@
 .ProjectView #HeaderContainer{
   display: none !important;
 }
-.ProjectView #Navbar{
-  position: relative;
-  width: 100%;
-  left: 0px;
-  margin: 0px;
+.ProjectView #Navbar .brand {
+    color: #992222;
+    float: none;
+    margin: 0px;
+    display: inline;
+    text-shadow: none;
+    padding: 0px;
+    margin-left: 2px;
 }
-.ProjectView .navbar{
-  margin: 0px;
+.ProjectView #Navbar .nav .minimal-nav a:hover {
+    background-color: transparent;
+    color: #660000;
 }
-.ProjectView .navbar-inner{
-  background-image: none;
-  box-shadow: none;
-  background-color: #FFF;
-  border-bottom: 1px solid #CCC;
+.project-view .project-title{
+  font-weight: 100;
 }
-.ProjectView .navbar .nav > li > a.brand{
-  font-size: 25px;
-  letter-spacing: -2px;
-}
-.ProjectView .navbar .nav > li > a,
-.ProjectView .nav .input > form > label{
-  font-size: 12px;
+.project-view .toc-ul a{
+  font-weight: lighter;
 }
 /* Editor
 -------------------------------------------------- */

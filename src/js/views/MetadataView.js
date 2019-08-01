@@ -11,7 +11,7 @@ define(['jquery',
     'models/PackageModel',
     'models/SolrResult',
     'models/metadata/ScienceMetadata',
-        'models/MetricsModel',
+    'models/MetricsModel',
     'views/DownloadButtonView',
     'views/ProvChartView',
     'views/MetadataIndexView',
@@ -27,8 +27,6 @@ define(['jquery',
     'text!templates/loading.html',
     'text!templates/metadataControls.html',
     'text!templates/metadataInfoIcons.html',
-    'text!templates/usageStats.html',
-    'text!templates/downloadContents.html',
     'text!templates/alert.html',
     'text!templates/editMetadata.html',
     'text!templates/dataDisplay.html',
@@ -41,8 +39,8 @@ define(['jquery',
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
        MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
        AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
-       VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, UsageTemplate,
-       DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
+       VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate,
+       AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
   'use strict';
 
@@ -76,13 +74,11 @@ define(['jquery',
     template: _.template(MetadataTemplate),
     alertTemplate: _.template(AlertTemplate),
     doiTemplate: _.template(PublishDoiTemplate),
-    usageTemplate: _.template(UsageTemplate),
     versionTemplate: _.template(VersionTemplate),
     loadingTemplate: _.template(LoadingTemplate),
     controlsTemplate: _.template(ControlsTemplate),
     infoIconsTemplate: _.template(MetadataInfoIconsTemplate),
     dataSourceTemplate: _.template(DataSourceTemplate),
-    downloadContentsTemplate: _.template(DownloadContentsTemplate),
     editMetadataTemplate: _.template(EditMetadataTemplate),
     dataDisplayTemplate: _.template(DataDisplayTemplate),
     mapTemplate: _.template(MapTemplate),
@@ -141,14 +137,24 @@ define(['jquery',
             //var metadataModel = new ScienceMetadata({ id: this.pid });
             // Once the ScienceMetadata is populated, populate the associated package
             //this.metadataModel = metadataModel;
+
+      //Create a DataONEObject model to use in the DataPackage collection.
+      var dataOneObject = new ScienceMetadata({ id: this.model.get("id") });
+
       // Create a new data package with this id
-      this.dataPackage = new DataPackage([], {id: pid});
+      this.dataPackage = new DataPackage([dataOneObject], {id: pid});
+
+      this.dataPackage.mergeModels([ this.model ]);
+
       //Fetch the data package. DataPackage.parse() triggers 'complete'
-      this.dataPackage.fetch();
-      this.listenTo(this.dataPackage, "complete", function() {
+      this.dataPackage.fetch({
+        fetchModels: false
+      });
+
+      this.listenToOnce(this.dataPackage, "complete", function() {
         // parseProv triggers "queryComplete"
         this.dataPackage.parseProv();
-                this.checkForProv();
+        this.checkForProv();
       });
     },
     /*
@@ -492,7 +498,6 @@ define(['jquery',
     },
 
     getPackageDetails: function(packageIDs){
-      var viewRef = this;
 
       var completePackages = 0;
 
@@ -510,31 +515,31 @@ define(['jquery',
           var thisPackage = new Package({ id: thisPackageID });
 
           //Listen for any parent packages
-          viewRef.listenToOnce(thisPackage, "change:parentPackageMetadata", viewRef.insertParentLink);
+          this.listenToOnce(thisPackage, "change:parentPackageMetadata", this.insertParentLink);
 
           //When the package info is fully retrieved
-          viewRef.listenToOnce(thisPackage, 'complete', function(thisPackage){
+          this.listenToOnce(thisPackage, 'complete', function(thisPackage){
 
             //When all packages are fully retrieved
             completePackages++;
             if(completePackages >= packageIDs.length){
-              var latestPackages = _.filter(viewRef.packageModels, function(m){
+              var latestPackages = _.filter(this.packageModels, function(m){
                 return !_.contains(packageIDs, m.get("obsoletedBy"));
               });
-              viewRef.packageModels = latestPackages;
-              viewRef.insertPackageDetails(latestPackages);
+              this.packageModels = latestPackages;
+              this.insertPackageDetails(latestPackages);
             }
           });
 
           //Save the package in the view
-          viewRef.packageModels.push(thisPackage);
+          this.packageModels.push(thisPackage);
 
           //Make sure we get archived content, too
           thisPackage.set("getArchivedMembers", true);
 
           //Get the members
           thisPackage.getMembers({getParentMetadata: true });
-        });
+        }, this);
       }
     },
 
@@ -563,11 +568,7 @@ define(['jquery',
         return;
       }
 
-      var viewRef = this;
-      //var dataPackage = this.dataPackage;
-
       if(!packages) var packages = this.packageModels;
-
 
       //Get the entity names from this page/metadata
       this.getEntityNames(packages);
@@ -578,27 +579,56 @@ define(['jquery',
         if(!packageModel.complete) return;
 
         //Insert a package table for each package in viewRef dataset
-        var nestedPckgs = packageModel.getNestedPackages();
-        if(nestedPckgs.length > 0){
+        var nestedPckgs = packageModel.getNestedPackages(),
+            nestedPckgsToDisplay = [];
 
-          var title = 'Current Data Set (1 of ' + (nestedPckgs.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
-          viewRef.insertPackageTable(packageModel, { title: title });
+        //If this metadata is not archived, filter out archived packages
+        if( !this.model.get("archived") ){
 
-          _.each(nestedPckgs, function(nestedPackage, i, list){
-            var title = 'Nested Data Set (' + (i+2) + ' of ' + (list.length+1) + ') <span class="subtle">Package: ' + nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root + '/view/' + nestedPackage.get("id") + '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
-            viewRef.insertPackageTable(nestedPackage, { title: title, nested: true });
+          nestedPckgsToDisplay = _.reject(nestedPckgs, function(pkg){
+            return (pkg.get("archived"))
           });
+
         }
         else{
-          var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
-          title = "Files in this dataset " + title;
-          viewRef.insertPackageTable(packageModel, {title: title});
+          //Display all packages is this metadata is archived
+          nestedPckgsToDisplay = nestedPckgs;
+        }
+
+        if(nestedPckgsToDisplay.length > 0){
+
+          if( !(!this.model.get("archived") && packageModel.get("archived") == true) ){
+            var title = 'Current Data Set (1 of ' + (nestedPckgsToDisplay.length + 1) + ') <span class="subtle">Package: ' + packageModel.get("id") + '</span>';
+            this.insertPackageTable(packageModel, { title: title });
+          }
+
+          _.each(nestedPckgsToDisplay, function(nestedPackage, i, list){
+            if( !(!this.model.get("archived") && nestedPackage.get("archived") == true) ){
+
+              var title = 'Nested Data Set (' + (i+2) + ' of ' +
+                          (list.length+1) + ') <span class="subtle">Package: ' +
+                          nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root +
+                          '/view/' + nestedPackage.get("id") +
+                          '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
+
+              this.insertPackageTable(nestedPackage, { title: title, nested: true });
+
+            }
+          }, this);
+        }
+        else{
+          //If this metadata is not archived, then don't display archived packages
+          if( !(!this.model.get("archived") && packageModel.get("archived") == true) ){
+            var title = packageModel.get("id") ? '<span class="subtle">Package: ' + packageModel.get("id") + '</span>' : "";
+            title = "Files in this dataset " + title;
+            this.insertPackageTable(packageModel, {title: title});
+          }
         }
 
         //Remove the extra download button returned from the XSLT since the package table will have all the download links
         $("#downloadPackage").remove();
 
-      });
+      }, this);
 
       //Collapse the table list after the first table
       var additionalTables = $(this.$("#additional-tables-for-" + this.cid)),
@@ -630,20 +660,19 @@ define(['jquery',
 
         });
         packageModel.complete = true;
-        viewRef.insertPackageTable(packageModel);
+        this.insertPackageTable(packageModel);
       }
-
 
       //Insert the data details sections
       this.insertDataDetails();
 
-            // Get DataPackge info in order to render prov extraced from the resmap.
-            if(packages.length) this.getDataPackage(packages[0].get("id"));
+      // Get DataPackge info in order to render prov extraced from the resmap.
+      if(packages.length) this.getDataPackage(packages[0].get("id"));
 
       //Initialize tooltips in the package table(s)
       this.$(".tooltip-this").tooltip();
 
-        return this;
+      return this;
     },
 
     insertPackageTable: function(packageModel, options){
@@ -1202,6 +1231,59 @@ define(['jquery',
         editModeOn = false;
       }
 
+      //If none of the models in this package have the formatId attributes,
+      // we should fetch the DataPackage since it likely has only had a shallow fetch so far
+      var formats = _.compact(dataPackage.pluck("formatId"));
+
+      //If the number of formatIds is less than the number of models in this collection,
+      // then we need to get them.
+      if( formats.length < dataPackage.length ){
+
+        var modelsToMerge = [];
+
+        //Get the PackageModel associated with this view
+        if( this.packageModels.length ){
+          //Get the PackageModel for this DataPackage
+          var packageModel = _.find(this.packageModels, function(packageModel){ return packageModel.get("id") == dataPackage.id });
+
+          //Merge the SolrResult models into the DataONEObject models
+          if(packageModel && packageModel.get("members").length){
+            modelsToMerge = packageModel.get("members");
+          }
+        }
+
+        //If there is at least one model to merge into this data package, do so
+        if( modelsToMerge.length ){
+          dataPackage.mergeModels(modelsToMerge);
+        }
+        //If there are no models to merge in, get them from the index
+        else{
+
+          //Listen to the DataPackage fetch to complete and re-execute this function
+          this.listenToOnce(dataPackage, "complete", function(){
+            this.drawProvCharts(dataPackage);
+          });
+
+          //Create a query that searches for all the members of this DataPackage in Solr
+          dataPackage.solrResults.currentquery = dataPackage.filterModel.getQuery() +
+            "%20AND%20-formatType:METADATA";
+          dataPackage.solrResults.fields = "id,seriesId,formatId,fileName";
+          dataPackage.solrResults.rows   = dataPackage.length;
+          dataPackage.solrResults.sort   = null;
+          dataPackage.solrResults.start  = 0;
+          dataPackage.solrResults.facet  = [];
+          dataPackage.solrResults.stats  = null;
+
+          //Fetch the data package with the "fromIndex" option
+          dataPackage.fetch({ fromIndex: true });
+
+          //Exit this function since it will be executed again when the fetch is complete
+          return;
+
+        }
+
+      }
+
       var view = this;
       //Draw two flow charts to represent the sources and derivations at a package level
       var packageSources     = dataPackage.sourcePackages;
@@ -1234,8 +1316,10 @@ define(['jquery',
         //Draw the provenance charts for each member of this package at an object level
         _.each(dataPackage.toArray(), function(member, i){
           // Don't draw prov charts for metadata objects.
-          if(member.get("type").toLowerCase() == "metadata") return;
-          var entityDetailsSection = view.findEntityDetailsContainer(member.get("id"));
+          if(member.get("type").toLowerCase() == "metadata" || member.get("formatType").toLowerCase() == "metadata"){
+            return;
+          }
+          var entityDetailsSection = view.findEntityDetailsContainer(member);
 
           if( !entityDetailsSection ){
             return;
@@ -1504,7 +1588,7 @@ define(['jquery',
                 if(solrResult.get("formatType") == "METADATA")
                   entityName = solrResult.get("title");
 
-                var container = viewRef.findEntityDetailsContainer(solrResult.get("id"), parsedMetadata);
+                var container = viewRef.findEntityDetailsContainer(solrResult, parsedMetadata);
                 if(container) entityName = viewRef.getEntityName(container);
 
                 //Set the entity name
@@ -1533,7 +1617,7 @@ define(['jquery',
           else if(solrResult.get("formatType") == "RESOURCE")
             return;
           else{
-            var container = viewRef.findEntityDetailsContainer(solrResult.get("id"));
+            var container = viewRef.findEntityDetailsContainer(solrResult);
 
             if(container && container.length > 0)
               entityName = viewRef.getEntityName(container);
@@ -1596,7 +1680,8 @@ define(['jquery',
       }
 
       //If we already found it earlier, return it now
-      var container = this.$(".entitydetails[data-id='" + id + "']");
+      var container = this.$(".entitydetails[data-id='" + id + "'], " +
+                      ".entitydetails[data-id='" + DataONEObject.prototype.getXMLSafeID(id) + "']");
       if(container.length)
         return container;
 
@@ -1613,7 +1698,7 @@ define(['jquery',
 
       //Otherwise, try looking for an anchor with the id matching this object's id
       if(!link.length)
-        link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "-"));
+        link = $(el).find("a#" + id.replace(/[^A-Za-z0-9]/g, "\\$&"));
 
       //Get metadata index view
       var metadataFromIndex = _.findWhere(this.subviews, {type: "MetadataIndex"});
@@ -1621,7 +1706,7 @@ define(['jquery',
 
       //Otherwise, find the Online Distribution Link the hard way
       if((link.length < 1) && (!metadataFromIndex))
-        link = $(el).find(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id + "']");
+        link = $(el).find(".control-label:contains('Online Distribution Info') + .controls-well > a[href*='" + id.replace(/[^A-Za-z0-9]/g, "\\$&") + "']");
 
       if(link.length > 0){
         //Get the container element

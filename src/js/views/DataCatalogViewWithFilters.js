@@ -19,14 +19,28 @@ define(["jquery",
 
             el: null,
 
+            /**
+            * The HTML tag name for this view element
+            * @type {string}
+            */
             tagName: "div",
 
+            /**
+            * The HTML class names for this view element
+            * @type {string}
+            */
             className: "data-catalog",
 
-            /* The HTML template for this view */
+            /**
+            * The primary HTML template for this view
+            * @type {Underscore.template}
+            */
             template: _.template(template),
 
-            /* The sort order for the Solr query */
+            /**
+            * The sort order for the Solr query
+            * @type {string}
+            */
             sortOrder: "dateUploaded+desc",
 
             /**
@@ -145,7 +159,7 @@ define(["jquery",
                 this.getResults();
 
                 //Set a custom height on any elements that have the .auto-height class
-                if ($(".auto-height").length > 0) {
+                if ($(".auto-height").length > 0 && !this.fixedHeight) {
                     //Readjust the height whenever the window is resized
                     $(window).resize(this.setAutoHeight);
                     $(".auto-height-member").resize(this.setAutoHeight);
