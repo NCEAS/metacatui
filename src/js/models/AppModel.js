@@ -64,7 +64,10 @@ define(['jquery', 'underscore', 'backbone'],
       editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted, but a draft " +
         "has been saved which can be accessed by our support team. Please contact us.",
 
-			defaultAccessPolicy: [],
+			defaultAccessPolicy: [{
+        subject: "public",
+        read: true
+      }],
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			allowAccessPolicyChanges: true,
