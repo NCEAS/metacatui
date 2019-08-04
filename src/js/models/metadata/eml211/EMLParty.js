@@ -35,8 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			if(!this.get("xmlID"))
 				this.createID();
-
-			this.on("change:role", this.setType);
+			this.on("change:roles", this.setType);
 		},
 
 		/*
@@ -106,9 +105,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			//Set the text fields
 			modelJSON.organizationName = $(objectDOM).children("organizationname, organizationName").text() || null;
 			modelJSON.positionName     = $(objectDOM).children("positionname, positionName").text() || null;
-			modelJSON.roles 			     = $(objectDOM).find("role").each(function(i,r){
-                                                                    $(r).text()
-                                                                  });
+      // roles
+      modelJSON.roles = [];
+      $(objectDOM).find("role").each(function(i,role){
+        modelJSON.roles.push($(role).text());
+      });
 
 			//Set the id attribute
 			modelJSON.xmlID = $(objectDOM).attr("id");
@@ -573,15 +574,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			//Otherwise, change the value of the role element
 			else {
 				// If for some reason there is no role, create a default role
-				if( !this.get("roles") ){
+				if( !this.get("roles").length ){
           var roles = ["Associated Party"];
         } else {
-          var roles = [];
-          this.get("roles").each(function(i, role){
-            roles.push($(role).text());
-          });
+          var roles = this.get("roles");
         }
-
         _.each(roles, function(role, i){
           var roleSerialized = $(objectDOM).find("role");
           if(roleSerialized.length){
@@ -590,7 +587,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             roleSerialized = $(document.createElement("role")).text(role);
           	this.getEMLPosition(objectDOM, "role").after( roleSerialized );
           }
-        });
+        }, this);
 
 			}
 
@@ -717,8 +714,11 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 
 		setType: function(){
-			if(this.get("role") && !this.get("type"))
-				this.set("type", "associatedParty");
+      if(this.get("roles")){
+        if(this.get("roles").length && !this.get("type")){
+          this.set("type", "associatedParty");
+        }
+      }
 		},
 
 		trickleUpChange: function(){
@@ -834,7 +834,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
             modelValues.address[i].deliveryPoint = modelValues.address[i].deliveryPoint.slice(0);
         });
       }
-
       return modelValues;
     },
 
