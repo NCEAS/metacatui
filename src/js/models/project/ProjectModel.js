@@ -581,11 +581,6 @@ define(["jquery",
               /* ==== Serialize literature cited ==== */
               // Assumes the value of literatureCited is a block of bibtex text
 
-              // var bibtex = $(projectNode).children("literatureCited").children("bibtex");
-              // if (bibtex.length > 0) {
-              //     modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
-              // }
-
               // Remove node if it exists already
               $(xmlDoc).find("literatureCited").remove();
 

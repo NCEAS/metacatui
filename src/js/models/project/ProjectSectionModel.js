@@ -54,7 +54,9 @@ define(["jquery",
           }
 
           //Create an EMLText model for the section content
-          modelJSON.content = new EMLText();
+          modelJSON.content = new EMLText({
+            objectDOM: $objectDOM.children("content")[0]
+          });
           modelJSON.content.set(modelJSON.content.parse($objectDOM.children("content")));
 
           return modelJSON;
@@ -102,23 +104,12 @@ define(["jquery",
           });
 
           // Get markdown which is a child of content
-          var markdown = this.get("content").get("markdown");
+          var content = this.get("content");
 
-          if(markdown){
-
-            // Create markdown element
-            var markdownSerialized = objectDOM.ownerDocument.createElement("markdown");
-            var cdataMarkdown = objectDOM.ownerDocument.createCDATASection(markdown);
-            $(markdownSerialized).append(cdataMarkdown);
-
-            // Make content element and append markdown
-            var contentSerialized = objectDOM.ownerDocument.createElement("content");
-            $(contentSerialized).append(markdownSerialized);
-
-            // Add content to objectDOM
+          if(content){
+            var contentSerialized = content.updateDOM("content");
             $(objectDOM).append(contentSerialized);
-
-          };
+          }
 
           return objectDOM
 
