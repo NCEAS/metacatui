@@ -187,8 +187,8 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
             }
           });
           
-          // checking for the changePermission by default
-          this.model.checkAuthority();
+          // checking for the writePermission
+          this.model.checkAuthority("writePermission");
       }
       else if ( !MetacatUI.appUserModel.get("loggedIn") ){
 
