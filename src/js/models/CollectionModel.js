@@ -3,38 +3,50 @@ define(["jquery",
         "underscore",
         "backbone",
         "collections/Filters",
+        "collections/SolrResults",
         "models/DataONEObject",
         "models/filters/Filter",
         "models/Search"],
-    function($, _, Backbone, Filters, DataONEObject, Filter, Search) {
+    function($, _, Backbone, Filters, SolrResults, DataONEObject, Filter, Search) {
 
 	var CollectionModel = DataONEObject.extend({
 
     //The default attributes for this model
-		defaults: function(){
+    defaults: function(){
       return {
         name: null,
         label: null,
         description: null,
-  			filters: null
-  		}
+        filters: null,
+        /** @type {Search} - A Search model with a Filters collection */
+        // that contains the filters associated with this collection
+        searchModel: null,
+        /** @type {SolrResults} - A SolrResults collection that contains the */
+        // filtered search results of datasets in this collection
+        searchResults: new SolrResults(),
+        /**  @type {SolrResults} - A SolrResults collection that contains the */
+        // unfiltered search results of all datasets in this collection
+        allSearchResults: null
+      }
     },
 
     /**
      * The default Backbone.Model.initialize() function
      *
     */
-		initialize: function(options){
+    initialize: function(options){
 
-		},
+      this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+
+    },
 
     /**
      *
      *
     */
     url: function(){
-			return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
-		},
+      return MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.get("id"));
+    },
 
     /**
      * Overrides the default Backbone.Model.fetch() function to provide some custom
@@ -226,6 +238,24 @@ define(["jquery",
       });
 
       return objectDOM;
+
+    },
+
+    /**
+     * Creates a copy of the SolrResults collection and saves it in this
+     * model so that there is always access to the unfiltered list of datasets
+     *
+     * @param {SolrResults} searchResults - The SolrResults collection to cache
+    */
+    cacheSearchResults: function(searchResults){
+
+      //Save a copy of the SolrResults so that we always have a copy of
+      // the unfiltered list of datasets
+      this.set("allSearchResults", searchResults.clone());
+
+      //Make a copy of the facetCounts object
+      var allSearchResults = this.get("allSearchResults");
+      allSearchResults.facetCounts = Object.assign({}, searchResults.facetCounts);
 
     }
 

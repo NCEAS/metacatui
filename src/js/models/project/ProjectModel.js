@@ -53,15 +53,6 @@ define(["jquery",
                     awards: [],
                     literatureCited: [],
                     filterGroups: [],
-                    /** @type {Search} - A Search model with a Filters collection */
-                    // that contains the filters associated with this project
-                    searchModel: null,
-                    /** @type {SolrResults} - A SolrResults collection that contains the */
-                    // filtered search results of datasets in this project
-                    searchResults: new SolrResults(),
-                    /**  @type {SolrResults} - A SolrResults collection that contains the */
-                    // unfiltered search results of all datasets in this project
-                    allSearchResults: null,
                     // The project document options may specify section to hide
                     hideMetrics: true,
                     hideData: false,
@@ -95,7 +86,6 @@ define(["jquery",
             */
             initialize: function(options) {
 
-              this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
 
             },
 
@@ -405,24 +395,6 @@ define(["jquery",
                     });
 
                 }
-
-            },
-
-            /**
-             * Creates a copy of the SolrResults collection and saves it in this
-             * model so that there is always access to the unfiltered list of datasets
-             *
-             * @param {SolrResults} searchResults - The SolrResults collection to cache
-            */
-            cacheSearchResults: function(searchResults){
-
-              //Save a copy of the SolrResults so that we always have a copy of
-              // the unfiltered list of datasets
-              this.set("allSearchResults", searchResults.clone());
-
-              //Make a copy of the facetCounts object
-              var allSearchResults = this.get("allSearchResults");
-              allSearchResults.facetCounts = Object.assign({}, searchResults.facetCounts);
 
             },
 

@@ -1,8 +1,11 @@
 define(['underscore',
         'jquery',
         'backbone',
-        "views/DataCatalogViewWithFilters"],
-function(_, $, Backbone, DataCatalogViewWithFilters){
+        "models/CollectionModel",
+        "views/DataCatalogViewWithFilters",
+        "text!templates/editCollection.html"],
+function(_, $, Backbone, CollectionModel, DataCatalogViewWithFilters,
+         Template){
 
   /**
   * @class EditCollectionView
@@ -28,10 +31,21 @@ function(_, $, Backbone, DataCatalogViewWithFilters){
     className: "edit-collection",
 
     /**
-    * The model that is being edited
-    * @type {model}
+    * The Collection model that is being edited
+    * @type {CollectionModel}
     */
     model: undefined,
+
+    /**
+    * The template for this view. An HTML file is converted to an Underscore.js template
+    */
+    template: _.template(Template),
+
+    /**
+    * A jQuery selector for the element that the DataCatalogViewWithFilters should be inserted into
+    * @type {string}
+    */
+    dataCatalogViewContainer: ".data-catalog-view-container",
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -60,7 +74,18 @@ function(_, $, Backbone, DataCatalogViewWithFilters){
     render: function(){
 
       //TODO: make an edit collection template?
-      this.$el.html("Edit dataset collection")
+      this.$el.html(this.template());
+
+      //Create a DataCatalog view
+      var dataCatalogView = new DataCatalogViewWithFilters({
+        searchModel: this.model.get("searchModel"),
+        searchResults: this.model.get("searchResults")
+      });
+
+      //Render the view and insert it into the page
+      dataCatalogView.render();
+      this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
+
     }
 
   });

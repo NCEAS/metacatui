@@ -3,11 +3,12 @@ define(["jquery",
         "backbone",
         "gmaps",
         "models/filters/SpatialFilter",
+        "models/Stats",
         "views/DataCatalogView",
         "text!templates/datacatalog.html",
         "nGeohash"
     ],
-    function($, _, Backbone, gmaps, SpatialFilter, DataCatalogView, template, nGeohash) {
+    function($, _, Backbone, gmaps, SpatialFilter, Stats, DataCatalogView, template, nGeohash) {
 
         /**
          * A DataCatalogView that uses the Search collection
@@ -52,6 +53,10 @@ define(["jquery",
                         this.mode = "map";
                     }
                     MetacatUI.appModel.set("searchMode", this.mode);
+                }
+
+                if(!this.statsModel){
+                  this.statsModel = new Stats();
                 }
 
                 // Use map mode on tablets and browsers only
