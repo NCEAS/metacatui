@@ -58,7 +58,7 @@ function(_, $, Backbone, CollectionModel, DataCatalogViewWithFilters,
     * Creates a new EditCollectionView
     * @constructs EditCollectionView
     * @param {Object} options - A literal object with options to pass to the view
-    * @property {Project} options.model - The Project whose logos are rendered in this view
+    * @property {CollectionModel} options.model - The collection whose search results will be displayed and edited in this view
     */
     initialize: function(options){
 
@@ -73,7 +73,6 @@ function(_, $, Backbone, CollectionModel, DataCatalogViewWithFilters,
     */
     render: function(){
 
-      //TODO: make an edit collection template?
       this.$el.html(this.template());
 
       //Create a DataCatalog view
