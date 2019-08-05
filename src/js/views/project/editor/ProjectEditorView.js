@@ -160,26 +160,35 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       //Only proceed if the user is logged in
       if ( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
 
-        if ( this.model.checkAuthority() ) {
-          // Display the project editor
-          this.renderProjectEditor();
-
-          // Listens to the focus event on the window to detect when a user
-          // switches back to this browser tab from somewhere else
-          // When a user checks back, we want to check for log-in status
-          MetacatUI.appView.listenForActivity();
-
-          // Determine the length of time until the user's current token expires
-          // Asks to sign in in case of time out
-          MetacatUI.appView.listenForTimeout()
-        }
-        else {
-          // generate error message
-          var msg = "This is a private project. You're not authorized to access this project.";
-
-          //Show the not authorized error message
-          MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
-        }
+          var view = this;
+          
+          // Listening to the checkAuthority funciton
+          this.listenTo(this.model, "change:isAuthorized", function(){
+            
+            if ( view.model.get("isAuthorized") ) {
+              // Display the project editor
+              view.renderProjectEditor();
+    
+              // Listens to the focus event on the window to detect when a user 
+              // switches back to this browser tab from somewhere else
+              // When a user checks back, we want to check for log-in status
+              MetacatUI.appView.listenForActivity();
+    
+              // Determine the length of time until the user's current token expires
+              // Asks to sign in in case of time out
+              MetacatUI.appView.listenForTimeout()
+            }
+            else {
+              // generate error message
+              var msg = "This is a private project. You're not authorized to access this project.";
+    
+              //Show the not authorized error message
+              MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
+            }
+          });
+          
+          // checking for the changePermission by default
+          this.model.checkAuthority();
       }
       else if ( !MetacatUI.appUserModel.get("loggedIn") ){
 
