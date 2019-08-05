@@ -7,11 +7,12 @@ define(['underscore',
         "views/project/editor/ProjEditorDataView",
         "views/project/editor/ProjEditorMdSectionView",
         "text!templates/project/editor/projEditorSections.html",
+        "text!templates/project/editor/projEditorMetrics.html",
         "text!templates/project/editor/projEditorSectionLink.html"],
 function(_, $, Backbone, Project,
           ProjEditorSectionView, ProjEditorSettingsView, ProjEditorDataView,
           ProjEditorMdSectionView,
-          Template, SectionLinkTemplate){
+          Template, MetricsSectionTemplate, SectionLinkTemplate){
 
   /**
   * @class ProjEditorSectionsView
@@ -59,6 +60,28 @@ function(_, $, Backbone, Project,
     */
     template: _.template(Template),
     sectionLinkTemplate: _.template(SectionLinkTemplate),
+    metricsSectionTemplate: _.template(MetricsSectionTemplate),
+
+    /**
+    * A jQuery selector for the element that the ProjEditorDataView should be inserted into
+    * @type {string}
+    */
+    projEditDataViewContainer: ".proj-editor-data-container",
+    /**
+    * A jQuery selector for the element that the Metrics section should be inserted into
+    * @type {string}
+    */
+    projEditMetricsContainer:  ".proj-editor-metrics-container",
+    /**
+    * A jQuery selector for the element that the ProjEditorSettingsView should be inserted into
+    * @type {string}
+    */
+    projSettingsContainer: ".proj-editor-settings-container",
+    /**
+    * A jQuery selector for the element that the section links should be inserted into
+    * @type {string}
+    */
+    sectionLinksContainer: ".section-links-container",
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -92,8 +115,76 @@ function(_, $, Backbone, Project,
       //Insert the template into the view
       this.$el.html(this.template());
 
-      // Iterate over each "markdown" section in the ProjectModel `sections`
+      //Render a Section View for each content section in the Project
+      this.renderContentSections();
+
+      //Render the Data section
+      this.renderDataSection();
+
+      //Render the Metrics section
+      this.renderMetricsSection();
+
+      //Render the Add Section tab
+      this.renderAddSection();
+
+      //Render the Settings
+      this.renderSettings();
+
+      //Switch to the active section
+      this.switchSection();
+
+    },
+
+    /**
+    * Render a section for adding a new section
+    */
+    renderAddSection: function(){
+
+      // Add a "Add section" button/tab
+      var addSectionView = new ProjEditorSectionView({
+        model: this.model,
+        sectionName: "AddSection"
+      });
+
+      // Add markdown section container, insert section HTML
+      var addSectionDiv = $(document.createElement("div"))
+        .addClass("tab-pane")
+        .addClass("proj-editor-add-section-container")
+        .attr("id", addSectionView.getName({ linkFriendly: true }))
+        .html(addSectionView.el);
+
+      //Add the section element to this view
+      this.$(".tab-content").append(addSectionDiv);
+
+      //Render the section view
+      addSectionView.render();
+
+      // Add the tab to the tab navigation
+      this.addSectionLink(addSectionView);
+
+      // Replace the name "AddSection" with fontawsome "+" icon
+      // Note: Select <li> element based on the href attribute of it's child
+      // because adding an id to <li> or <a> breaks Bootstrap's tab function
+      this.$(".nav-tabs").children().each(function(i, li){
+        if($(li).children().attr("href") == "#AddSection"){
+          $(li).children().html("<i class='icon icon-plus'></i>");
+        };
+      });
+
+      //Add the view to the subviews array
+      this.subviews.push(addSectionView);
+
+    },
+
+    /**
+    * Render a section in the editor for each content section in the Project
+    */
+    renderContentSections: function(){
+
+      //Get the sections from the Project
       var sections = this.model.get("sections");
+
+      // Iterate over each "markdown" section in the ProjectModel `sections`
       _.each(sections, function(section){
         if(section){
 
@@ -101,14 +192,19 @@ function(_, $, Backbone, Project,
           var sectionView = new ProjEditorMdSectionView({
             model: section
           });
-          sectionView.render();
+
           // Add markdown section container, insert section HTML
           var markdownSectionDiv = $(document.createElement("div"))
             .addClass("tab-pane")
             .addClass("proj-editor-markdown-container")
             .attr("id", sectionView.getName({ linkFriendly: true }))
             .html(sectionView.el);
+
+          //Insert the ProjEditorMdSectionView element into this view
           this.$(".tab-content").append(markdownSectionDiv);
+
+          //Render the ProjEditorMdSectionView
+          sectionView.render();
 
           // Add the tab to the tab navigation
           this.addSectionLink(sectionView);
@@ -118,99 +214,89 @@ function(_, $, Backbone, Project,
         }
       }, this);
 
+    },
+
+    /**
+    * Renders a Data section in this view
+    */
+    renderDataSection: function(){
       // Render a ProjEditorDataView and corresponding tab
       var dataView = new ProjEditorDataView({
         model: this.model
       });
-      dataView.render();
-      this.$(".proj-editor-data-container")
+
+      //Insert the subview element into this view
+      this.$(this.projEditDataViewContainer)
           .html(dataView.el)
           .attr("id", dataView.getName({ linkFriendly: true }));
+
+      //Render the ProjEditorDataView
+      dataView.render();
+
       // Add the tab to the tab navigation
       this.addSectionLink(dataView);
+
       // Add the data section to the list of subviews
       this.subviews.push(dataView);
+    },
 
+    renderMetricsSection: function(){
       // Render a ProjEditorSectionView for the Metrics section and corresponding tab
       // if the hide metrics view option is not true
-      if(this.model.get("hideMetrics") == false){
+      if(this.model.get("hideMetrics") !== true){
+
+        //Create a ProjEditorSectionView for the Metrics section
         var metricsView = new ProjEditorSectionView({
           model: this.model,
-          sectionName: "Metrics"
+          sectionName: "Metrics",
+          template: this.metricsSectionTemplate
         });
-        metricsView.render();
-        this.$(".proj-editor-metrics-container")
+
+        //Add the view's element to the page
+        this.$(this.projEditMetricsContainer)
             .html(metricsView.el)
             .attr("id", metricsView.getName({ linkFriendly: true }));
+
+        //Render the view
+        metricsView.render();
+
         // Add the tab to the tab navigation
         this.addSectionLink(metricsView);
+
         // Add the data section to the list of subviews
         this.subviews.push(metricsView);
-      };
+      }
+    },
 
-      // Add a "Add section" button/tab
-      var addSectionView = new ProjEditorSectionView({
-        model: this.model,
-        sectionName: "AddSection"
-      });
-      addSectionView.render();
-      // Add markdown section container, insert section HTML
-      var addSectionDiv = $(document.createElement("div"))
-        .addClass("tab-pane")
-        .addClass("proj-editor-add-section-container")
-        .attr("id", addSectionView.getName({ linkFriendly: true }))
-        .html(addSectionView.el);
-      this.$(".tab-content").append(addSectionDiv);
-      // Add the tab to the tab navigation
-      this.addSectionLink(addSectionView);
-      // Replace the name "AddSection" with fontawsome "+" icon
-      // Note: Select <li> element based on the href attribute of it's child
-      // because adding an id to <li> or <a> breaks Bootstrap's tab function
-      this.$(".nav-tabs").children().each(function(i, li){
-        if($(li).children().attr("href") == "#AddSection"){
-          $(li).children().html("<i class='icon icon-plus'></i>");
-        };
-      });
-      this.subviews.push(addSectionView);
+    /**
+    * Render the Settings section of the editor
+    */
+    renderSettings: function(){
 
-
-      //Render a Settings section
+      //Create a ProjEditorSettingsView
       var settingsView = new ProjEditorSettingsView({
         model: this.model
       });
-      settingsView.render();
-      this.$(".proj-editor-settings-container")
+
+      //Add the ProjEditorSettingsView element to this view
+      this.$(this.projSettingsContainer)
           .html(settingsView.el)
           .attr("id", settingsView.getName({ linkFriendly: true }));
+
+      //Render the ProjEditorSettingsView
+      settingsView.render();
+
       this.addSectionLink(settingsView);
+
       // Use bootstrap's 'pull-right' class to right-align Settings tab
       this.$(".nav-tabs").children().each(function(i, li){
         if($(li).children().attr("href") == "#Settings"){
           $(li).addClass("pull-right");
         };
       });
+
       // Add the data section to the list of subviews
       this.subviews.push(settingsView);
-
-      // Switch to the active section, if one is specified.
-      var activeSection = this.activeSection;
-      if(!activeSection){
-        activeSection = "Data"
-      }
-      // Activate the section content
-      this.$(".tab-content").children("#"+activeSection).addClass("active");
-      // Activate the tab
-      this.$(".nav-tabs").children().each(function(i, li){
-        if($(li).children().attr("href") == "#"+activeSection){
-          $(li).addClass("active")
-        };
-      });
-
-      // Update path when each tab is clicked and shown
-      view = this;
-      this.$('a[data-toggle="tab"]').on('shown', function(e){
-        view.updatePath(e)
-      });
 
     },
 
@@ -262,7 +348,7 @@ function(_, $, Backbone, Project,
     */
     addSectionLink: function(sectionView){
 
-      this.$(".section-links-container").append(this.sectionLinkTemplate({
+      this.$(this.sectionLinksContainer).append(this.sectionLinkTemplate({
         href: "#" + sectionView.getName({ linkFriendly: true }),
         sectionName: sectionView.getName()
       }))
@@ -302,6 +388,48 @@ function(_, $, Backbone, Project,
     * @param {string} sectionName - The section to switch to
     */
     switchSection: function(sectionName){
+
+      //If no specific section name is given, default to a section
+      if( !sectionName ){
+
+        //If there is an active section set on this view, switch to that
+        if( this.activeSection ){
+          sectionName = this.activeSection;
+        }
+        //Otherwise, switch to the first section listed
+        else{
+          var sections = this.$(".nav-tabs").children();
+
+          if(sections.length){
+            sectionName = sections.first().children("a[href]").attr("href");
+            if( sectionName ){
+              sectionName = sectionName.substring(sectionName.indexOf("#")+1);
+            }
+          }
+        }
+
+        //If no section name was ever found, exit this function
+        if( !sectionName ){
+          return;
+        }
+
+      }
+
+      // Activate the section content
+      this.$(".tab-content").children("#" + sectionName).addClass("active");
+
+      // Activate the tab
+      this.$(".nav-tabs").children().each(function(i, li){
+        if($(li).children().attr("href") == "#" + sectionName){
+          $(li).addClass("active")
+        };
+      });
+
+      // Update path when each tab is clicked and shown
+      view = this;
+      this.$('a[data-toggle="tab"]').on('shown', function(e){
+        view.updatePath(e)
+      });
 
     },
 

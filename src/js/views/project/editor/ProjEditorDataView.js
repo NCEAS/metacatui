@@ -36,6 +36,12 @@ function(_, $, Backbone, ProjEditorSectionView, EditCollectionView, Template){
     model: undefined,
 
     /**
+    * A jQuery selector for the element that the EditCollectionView should be inserted into
+    * @type {string}
+    */
+    editCollectionViewContainer: ".edit-collection-container",
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -71,8 +77,8 @@ function(_, $, Backbone, ProjEditorSectionView, EditCollectionView, Template){
       var editCollectionView = new EditCollectionView({
         model: this.model
       });
+      this.$(this.editCollectionViewContainer).html(editCollectionView.el);
       editCollectionView.render();
-      this.$(".edit-collection-container").html(editCollectionView.el);
 
     }
 

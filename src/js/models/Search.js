@@ -1,6 +1,6 @@
 /*global define */
 define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Filters"],
-    function($, _, Backbone, SolrResult) {
+    function($, _, Backbone, SolrResult, Filters) {
         'use strict';
 
         // Search Model
@@ -57,12 +57,12 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         value: "*"
                     }],
                     /* The collection of filters used to build a query, an instance of Filters */
-                    filters: null
+                    filters: new Filters()
                 }
             },
 
             //A list of all the filter names that are related to the spatial/map filter
-            spatialFilters: ["useGeohash", "geohashes", "geohashLevel", 
+            spatialFilters: ["useGeohash", "geohashes", "geohashLevel",
                 "geohashGroups", "east", "west", "north", "south"],
 
             initialize: function() {
@@ -465,7 +465,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                       query += this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, {
                           operator: "OR"
-                      });  
+                      });
                     }
                 }
 

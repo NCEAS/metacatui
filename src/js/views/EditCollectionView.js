@@ -1,10 +1,11 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "models/Map",
         "models/CollectionModel",
         "views/DataCatalogViewWithFilters",
         "text!templates/editCollection.html"],
-function(_, $, Backbone, CollectionModel, DataCatalogViewWithFilters,
+function(_, $, Backbone, Map, CollectionModel, DataCatalogViewWithFilters,
          Template){
 
   /**
@@ -78,12 +79,15 @@ function(_, $, Backbone, CollectionModel, DataCatalogViewWithFilters,
       //Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
         searchModel: this.model.get("searchModel"),
-        searchResults: this.model.get("searchResults")
+        searchResults: this.model.get("searchResults"),
+        mapModel: this.model.get("mapModel") || new Map(),
+        isSubView: true,
+        mode: "map"
       });
 
       //Render the view and insert it into the page
-      dataCatalogView.render();
       this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
+      dataCatalogView.render();
 
     }
 

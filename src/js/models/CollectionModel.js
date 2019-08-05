@@ -20,7 +20,7 @@ define(["jquery",
         filters: null,
         /** @type {Search} - A Search model with a Filters collection */
         // that contains the filters associated with this collection
-        searchModel: null,
+        searchModel: new Search(),
         /** @type {SolrResults} - A SolrResults collection that contains the */
         // filtered search results of datasets in this collection
         searchResults: new SolrResults(),
@@ -37,6 +37,11 @@ define(["jquery",
     initialize: function(options){
 
       this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+
+      //If the searchResults collection is replaced at any time, reset the listener
+      this.on("change:searchResults", function(searchResults){
+        this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+      });
 
     },
 

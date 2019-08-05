@@ -54,7 +54,7 @@ define(["jquery",
                     literatureCited: [],
                     filterGroups: [],
                     // The project document options may specify section to hide
-                    hideMetrics: true,
+                    hideMetrics: false,
                     hideData: false,
                     hidePeople: false,
                     hideMap: false,
@@ -86,6 +86,8 @@ define(["jquery",
             */
             initialize: function(options) {
 
+              //Call the super class initialize function
+              CollectionModel.prototype.initialize.call(this, options);
 
             },
 

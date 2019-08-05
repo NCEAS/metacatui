@@ -45,6 +45,12 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
     loadingTemplate: _.template(LoadingTemplate),
 
     /**
+    * A jQuery selector for the element that the ProjEditorSectionsView should be inserted into
+    * @type {string}
+    */
+    projEditSectionsContainer: ".proj-editor-sections-container",
+
+    /**
     * The events this view will listen to and the associated function to call.
     * This view will inherit events from the parent class, EditorView.
     * @type {Object}
@@ -116,13 +122,18 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
         projectIdentifier = "new-project"
       }
 
+      //Create a view for the editor sections
       var sectionsView = new ProjEditorSectionsView({
         model: this.model,
         projectIdentifier: projectIdentifier,
         activeSection: this.activeSection
       });
+      
+      //Add the view element to this view
+      this.$(this.projEditSectionsContainer).html(sectionsView.el);
+
+      //Render the sections view
       sectionsView.render();
-      this.$(".proj-editor-sections-container").html(sectionsView.el);
 
     },
 

@@ -60,9 +60,12 @@ function(_, $, Backbone, ProjectSectionModel, Template){
     */
     initialize: function(options){
 
-      if( typeof options == "object" ){
-        this.model = options.model || undefined;
-        this.sectionName = options.sectionName || "";
+      // Get all the options and apply them to this view
+      if( typeof options == "object" ) {
+          var optionKeys = Object.keys(options);
+          _.each(optionKeys, function(key, i) {
+              this[key] = options[key];
+          }, this);
       }
 
     },
