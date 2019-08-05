@@ -2,8 +2,9 @@ define(['underscore',
         'jquery',
         'backbone',
         "views/project/editor/ProjEditorSectionView",
+        "views/EditCollectionView",
         "text!templates/project/editor/projEditorData.html"],
-function(_, $, Backbone, ProjEditorSectionView, Template){
+function(_, $, Backbone, ProjEditorSectionView, EditCollectionView, Template){
 
   /**
   * @class ProjEditorDataView
@@ -65,6 +66,13 @@ function(_, $, Backbone, ProjEditorSectionView, Template){
 
       //Insert the template into the view
       this.$el.html(this.template());
+
+      // render EditCollectionView
+      var editCollectionView = new EditCollectionView({
+        model: this.model
+      });
+      editCollectionView.render();
+      this.$(".edit-collection-container").html(editCollectionView.el);
 
     }
 
