@@ -150,18 +150,8 @@ define(["jquery",
       modelJSON.searchModel.set("filters", new Filters());
       modelJSON.searchModel.get("filters").createCatalogFilters();
 
-      // This variable changes to true after iterating through all the
-      // definition filters, if the field of one filter == 'isPartOf'.
-      // This is used to decide whether the isPartOf filter should be created.
-      var isPartOfFilterExists = false;
-
       // Parse the collection definition
       _.each( $(rootNode).find("definition > filter"), function(filterNode){
-
-        // Check if this is filter is an 'isPartOf' filter
-        if($(filterNode).find("field").text() == "isPartOf"){
-          isPartOfFilterExists = true
-        }
 
         //Create a new Filter model
         var filterModel = new Filter({
@@ -176,13 +166,6 @@ define(["jquery",
         modelJSON.searchModel.get("filters").add(filterModel);
 
       });
-
-      // If there's no filter with the field 'isPartOf', create one.
-      // There must be a series ID set on this model for this to work
-      if(!isPartOfFilterExists && this.get("seriesId")){
-        isPartOfFilterModel = createIsPartOfFilter(this.get("seriesId"));
-        modelJSON.searchModel.get("filters").add(isPartOfFilterModel);
-      }
 
       return modelJSON;
 
