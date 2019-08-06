@@ -36,6 +36,9 @@ define(["jquery",
     */
     initialize: function(options){
 
+      //Call the super class initialize function
+      DataONEObject.prototype.initialize.call(this, options);
+
       this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
 
       //If the searchResults collection is replaced at any time, reset the listener
@@ -71,6 +74,33 @@ define(["jquery",
       //Add the authorization header and other AJAX settings
       requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
       return Backbone.Model.prototype.fetch.call(this, requestSettings);
+    },
+
+    /**
+     * Sends an AJAX request to fetch the system metadata for this object.
+     * Will not trigger a sync event since it does not use Backbone.Model.fetch
+     */
+    fetchSystemMetadata: function(options){
+
+      if(!options) var options = {};
+      else options = _.clone(options);
+
+      var model = this,
+        fetchOptions = _.extend({
+          url: MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId")),
+          dataType: "text",
+          success: function(response){
+            model.set(DataONEObject.prototype.parse.call(model, response));
+          },
+          error: function(){
+            model.trigger('error');
+          }
+        }, options);
+
+        //Add the authorization header and other AJAX settings
+        _.extend(fetchOptions, MetacatUI.appUserModel.createAjaxSettings());
+
+        $.ajax(fetchOptions);
     },
 
     /**

@@ -79,7 +79,7 @@ define(["jquery",
                 this.listenToOnce(this.model, "notFound", this.showNotFound);
 
                 //Fetch the model
-                this.model.fetch();
+                this.model.fetch({ objectOnly: true });
 
                 return this;
             },

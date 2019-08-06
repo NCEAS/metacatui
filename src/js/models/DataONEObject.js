@@ -23,6 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     formatId: null,
                     size: null,
                     checksum: null,
+                    originalChecksum: null,
                     checksumAlgorithm: "MD5",
                     submitter: null,
                     rightsHolder : null,
@@ -295,6 +296,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 }
               }, this);
 
+              //Save the checksum from the system metadata in a separate attribute on the model
+              sysMetaValues.originalChecksum = sysMetaValues.checksum;
+              sysMetaValues.checksum = this.defaults().checksum;
+
+              //Save the identifier as the id attribute
+              sysMetaValues.id = sysMetaValues.identifier;
 
               //Create a new AccessPolicy collection
               sysMetaValues.accessPolicy = this.createAccessPolicy($(systemMetadata).find("accesspolicy"));
@@ -484,8 +491,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Create a FormData object to send data with our XHR
               var formData = new FormData();
 
-              //Add the identifier to the XHR data
-              formData.append("pid", this.get("id"));
+              //If this is not a new object, update the id. New DataONEObjects will have an id
+              // created during initialize.
+              if( !this.isNew() ){
+                this.updateID();
+                formData.append("pid", this.get("oldPid"));
+                formData.append("newPid", this.get("id"));
+              }
+              else{
+                //Add the identifier to the XHR data
+                formData.append("pid", this.get("id"));
+              }
 
               //Create the system metadata XML
               var sysMetaXML = this.serializeSysMeta();
@@ -495,14 +511,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Add the system metadata XML to the XHR data
               formData.append("sysmeta", xmlBlob, "sysmeta.xml");
 
-              if ( this.isNew() ) {
-                  // Create the new object (MN.create())
-                  formData.append("object", this.get("uploadFile"), this.get("fileName"));
-
-              } else if (this.hasContentChanges) {
-                  // Update the object (MN.update())
-                  //TODO: enable replacement of DATA objects
-              }
+              // Create the new object (MN.create())
+              formData.append("object", this.get("uploadFile"), this.get("fileName"));
 
               var model = this;
 
@@ -550,6 +560,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                       model.fetch({merge: true}); // Get the newest sysmeta set by the MN
                       // Reset the content changes status
                       model.set("hasContentChanges", false);
+
+                      //Set the last-calculated checksum as the original checksum
+                      model.set("originalChecksum", model.get("checksum"));
+                      model.set("checksum", model.defaults().checksum);
                   },
                   error: function(model, response, xhr){
 
@@ -663,7 +677,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               this.set("size", this.get("uploadFile").size);
             }
 
-            xml.find("size").text(this.get("size"));
+            //Get the size of the file, if there is one
+            if( this.get("uploadFile") ){
+              xml.find("size").text( this.get("uploadFile").size );
+            }
+            //Otherwise, use the last known size
+            else{
+              xml.find("size").text(this.get("size"));
+            }
 
             //Update the checksum and checksum algorithm
             xml.find("checksum").text(this.get("checksum"));

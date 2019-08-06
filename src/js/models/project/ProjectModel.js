@@ -104,16 +104,22 @@ define(["jquery",
             /**
              * Overrides the default Backbone.Model.fetch() function to provide some custom
              * fetch options
-             *
+             * @param [options] {object} - Options for this fetch
+             * @property [options.objectOnly] {Boolean} - If true, only the object will be retrieved and not the system metadata
              * @return {XMLDocument} The XMLDocument returned from the fetch() AJAX call
             */
-            fetch: function() {
+            fetch: function(options) {
 
               //If the seriesId has not been found yet, get it from Solr
               if( !this.get("seriesId") && this.get("label") ){
                 this.once("change:seriesId", this.fetch);
                 this.getSeriesIdByName();
                 return;
+              }
+
+              //Fetch the system metadata
+              if( !options.objectOnly ){
+                this.fetchSystemMetadata();
               }
 
               var requestSettings = {
@@ -397,6 +403,25 @@ define(["jquery",
                     });
 
                 }
+
+            },
+
+            /**
+            * Sets the fileName attribute on this model using the project label
+            * @override
+            */
+            setMissingFileName: function(){
+
+              var fileName = this.get("label");
+
+              if( !fileName ){
+                fileName = "project.xml";
+              }
+              else{
+                fileName = fileName.replace(/[^a-zA-Z0-9]/g, "_") + ".xml";
+              }
+
+              this.set("fileName", fileName);
 
             },
 
@@ -915,23 +940,28 @@ define(["jquery",
 
             /**
              * Saves the project XML document to the server using the DataONE API
-             *
-             * @param {} attributes -
-             * @param {} options -
-             * @return {}
             */
-            save: function(attributes, options){
-                // TODO
+            save: function(){
 
-                // validate
-                // ....
-
+              //Check if the checksum has been calculated yet.
+              if( !this.get("checksum") ){
                 // Serialize the XML
                 var xml = this.serialize();
                 var xmlBlob = new Blob([xml], {type : 'application/xml'});
 
-                //Get the size of the new EML XML
-                this.set("size", xmlBlob.size);
+                //Set the Blob as the upload file
+                this.set("uploadFile", xmlBlob);
+
+                //When it is calculated, restart this function
+                this.on("checksumCalculated", this.save);
+                //Calculate the checksum for this file
+                this.calculateChecksum();
+                
+                //Exit this function until the checksum is done
+                return;
+              }
+
+              this.constructor.__super__.save.call(this);
             }
 
         });
