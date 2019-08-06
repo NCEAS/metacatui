@@ -150,15 +150,25 @@ define(["jquery",
       modelJSON.searchModel.set("filters", new Filters());
       modelJSON.searchModel.get("filters").createCatalogFilters();
 
+      // This variable changes to true after iterating through all the
+      // definition filters, if the field of one filter == 'isPartOf'.
+      // This is used to decide whether the isPartOf filter should be created.
+      var isPartOfFilterExists = false;
+
       // Parse the collection definition
       _.each( $(rootNode).find("definition > filter"), function(filterNode){
+
+        // Check if this is filter is an 'isPartOf' filter
+        if($(filterNode).find("field").text() == "isPartOf"){
+          isPartOfFilterExists = true
+        }
 
         //Create a new Filter model
         var filterModel = new Filter({
           objectDOM: filterNode,
           isInvisible: true,
           // projDefFilter allows us to distinguish this type of filter
-          // from the filters during serialization
+          // from other filters during serialization
           projDefFilter: true
         });
 
@@ -167,8 +177,44 @@ define(["jquery",
 
       });
 
+      // If there's no filter with the field 'isPartOf', create one.
+      // There must be a series ID set on this model for this to work
+      if(!isPartOfFilterExists && this.get("seriesId")){
+        isPartOfFilterModel = createIsPartOfFilter(this.get("seriesId"));
+        modelJSON.searchModel.get("filters").add(isPartOfFilterModel);
+      }
+
       return modelJSON;
 
+    },
+
+    /**
+     * Creates a FilterModel that uses the seriesId in the isPartOf filter
+     * @param {string} seriesId - the seriesId of the collection or project
+     * @return {Filter} a filter with the field set to isPartOf and the value set to the given seriesId
+     */
+    createIsPartOfFilter: function(seriesId){
+
+      // Create objectDOM for the filter
+      var filterNode    = $($.parseXML("<filter></filter>")).children()[0],
+          fieldElement  = filterNode.ownerDocument.createElement("field"),
+          valueElement  = filterNode.ownerDocument.createElement("value");
+
+      $(fieldElement).text("isPartOf");
+      $(valueElement).text(seriesId);
+      filterNode.append(fieldElement);
+      filterNode.append(valueElement);
+
+      // Create the new filterModel
+      var filterModel = new Filter({
+        objectDOM: filterNode,
+        isInvisible: true,
+        // projDefFilter allows us to distinguish this type of filter
+        // from other filters during serialization
+        projDefFilter: true
+      });
+
+      return filterModel
     },
 
     /**
@@ -217,13 +263,11 @@ define(["jquery",
       // Get or make objectDOM
       if(!objectDOM){
         if (this.get("objectDOM")) {
-          objectDOM = this.get("objectDOM").cloneNode(true);
+          var objectDOM = this.get("objectDOM").cloneNode(true);
           $(objectDOM).empty();
         } else {
             // create an XML collection element from scratch
-            var xmlText = "<collection></collection>",
-                objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
-                objectDOM = $(objectDOM).children()[0];
+            var objectDOM = $($.parseXML("<collection></collection>")).children()[0];
         }
       };
 
@@ -238,8 +282,9 @@ define(["jquery",
 
       // Iterate through the filter models
       $(filterModels).each(function(i, filterModel){
-          // Find the filter that is the project definition filter and update the DOM
+          // Find the filters that are project definition filters
           if(filterModel.get("projDefFilter")){
+            // updateDOM of project definition filters, then append to <definition>
             var filterSerialized = filterModel.updateDOM();
             $(definitionSerialized).append(filterSerialized);
           };

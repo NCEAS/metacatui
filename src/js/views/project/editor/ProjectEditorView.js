@@ -151,7 +151,11 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
 
       } else {
 
+        // Create a new, default project model
+        this.model = new Project();
+
         // Generate and reserve a series ID for the new project
+        // Add an isPartOf filter model to the search model
         var view = this;
         var options = {
           url: MetacatUI.appModel.get("d1CNBaseUrl") +
@@ -160,15 +164,21 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
           type: "POST",
           data: {scheme: "UUID"},
           success: function(identifierXML){
+            // Get the new seriesId (sid)
             var newSID = $(identifierXML).text();
+            // Save the sid as the projectIdentifier
             view.projectIdentifier = newSID;
+            // set the sid in the project model
+            view.model.set("seriesId", newSID);
+            // make an isPartOf filter, a default filter for each project
+            var isPartOfFilter = view.model.createIsPartOfFilter(newSID);
+            // add the isPartOf filter to the model
+            view.model.get("searchModel").get("filters").add(isPartOfFilter);
           }
         }
         _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
         $.ajax(options);
 
-        // Create a new, default project model
-        this.model = new Project();
       }
     },
 
