@@ -3,7 +3,7 @@
 	<div class="border-image" role="img"></div>
 
 		<div id="inner-header" class="wrap cf">
-			<a href="<%= MetacatUI.root %>/" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
+			<a href="<%= MetacatUI.appModel.get("baseUrl") %>" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
 
 			<a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
 
@@ -46,9 +46,16 @@
 			        <li><a href="/synthesis-working-groups">Synthesis Working Groups</a></li>
 			       </ul>
 					</li>
-			       <li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
+			    <li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
+
+          <li class="minimal-nav subtle hidden">
+            <a href="<%=MetacatUI.appModel.get('baseUrl')%>">Hosted by the
+              <img src="<%= MetacatUI.root %>/js/themes/arctic/img/logo-small-no-title.png" class="logo" />
+              Arctic Data Center</a>
+          </li>
+
 					<% if (loggedIn) { %>
-        				<li class="dropdown">
+        		<li class="dropdown minimal-nav">
 							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="<%= MetacatUI.root %>/submit">Submit data</a></li>
@@ -59,7 +66,7 @@
 							</ul>
 						</li>
 			        <% } else { %>
-			        		<li>
+			        		<li class="minimal-nav">
 			        			<a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="login btn redirect"><img src="<%= MetacatUI.root %>/img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>
 			        		</li>
 			       <%  } %>

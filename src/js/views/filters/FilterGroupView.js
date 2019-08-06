@@ -46,10 +46,8 @@ define(['jquery', 'underscore', 'backbone',
       //Get the collection of filters
       var filters = this.model.get("filters");
 
-      //Create a new row for the filter views
-      var newRowNum = 3, //Start a new row every 3 filter views
-          row = $(document.createElement("div")).addClass("row-fluid");
-      this.$el.append(row);
+      var filtersRow = $(document.createElement("div")).addClass("filters-container");
+      this.$el.append(filtersRow);
 
       //Render each filter model in the FilterGroup model
       filters.each(function(filter, i){
@@ -81,21 +79,8 @@ define(['jquery', 'underscore', 'backbone',
         //Render the view and append it's element to this view
         filterView.render();
 
-        //Create a new row or append the filter view element to the current row
-        if( i < newRowNum ){
-          row.append(filterView.el);
-        }
-        else{
-          //Create a new row
-          row = $(document.createElement("div")).addClass("row-fluid");
-          this.$el.append(row);
-          row.append(filterView.el);
-          //Uptick the next row counter
-          newRowNum += 3;
-        }
-
-        //Add the span3 class so the filter views are shown in columns of three
-        filterView.$el.addClass("span3");
+        //Append the filter view element to the view el
+        filtersRow.append(filterView.el);
 
         //Save a reference to this subview
         this.subviews.push(filterView);

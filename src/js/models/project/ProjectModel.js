@@ -316,7 +316,7 @@ define(["jquery",
                   modelJSON.primaryColorRGB = this.hexToRGB(modelJSON.primaryColor);
                   modelJSON.primaryColorTransparent = "rgba(" +  modelJSON.primaryColorRGB.r +
                     "," + modelJSON.primaryColorRGB.g + "," + modelJSON.primaryColorRGB.b +
-                    ", .5)";
+                    ", .7)";
                 }
                 if(modelJSON.secondaryColor){
                   modelJSON.secondaryColorRGB = this.hexToRGB(modelJSON.secondaryColor);

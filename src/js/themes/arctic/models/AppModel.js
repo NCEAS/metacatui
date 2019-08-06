@@ -163,7 +163,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// A lookup map of project names to project seriesIds
 			projectsMap: {
-			    "DBO": "urn:node:93834148-30ce-420d-8d6d-b6690d93b9bc"
+			    "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb"
 			},
 
 			// If true, then archived content is available in the search index.

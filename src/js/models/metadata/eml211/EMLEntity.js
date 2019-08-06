@@ -89,6 +89,23 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                     "change:references",
                     EMLEntity.trickleUpChange);
 
+                //Listen to changes on the DataONEObject file name
+                if(this.get("dataONEObject")){
+                  this.listenTo(this.get("dataONEObject"), "change:fileName", this.updateFileName);
+                }
+
+                //Listen to changes on the DataONEObject to reset the listener
+                this.on("change:dataONEObject", function(entity, dataONEObj){
+
+                  //Stop listening to the old DataONEObject
+                  if(this.previous("dataONEObject")){
+                    this.stopListening(this.previous("dataONEObject"), "change:fileName");
+                  }
+
+                  //Listen to changes on the file name
+                  this.listenTo(dataONEObj, "change:fileName", this.updateFileName);
+                });
+
             },
 
             /*
@@ -291,24 +308,16 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                     objectDOM = document.createElement(type);
                 }
 
+                //Update the id attribute on this XML node
                 // update the id attribute
-                var xmlID = this.get("xmlID");
-                if ( xmlID ) {
+               if( this.get("dataONEObject") ){
+                 //Ideally, the EMLEntity will use the object's id in it's id attribute, so we wil switch them
+                 var xmlID = this.get("dataONEObject").getXMLSafeID();
 
-                   //Check if the physical section is using this object's id as the id attribute
-                   if( this.get("dataONEObject") && $(objectDOM).find("physical").attr("id") == this.get("dataONEObject").get("id") ){
-                     //Ideally, the EMLEntity will use the object's id in it's id attribute, so we wil switch them
-                     xmlID = this.get("dataONEObject").getXMLSafeID();
-
-                     //Set the xml-safe id on the model and use it as the id attribute
-                     $(objectDOM).attr("id", xmlID);
-                     this.set("xmlID", xmlID);
-
-                     //Use a random uuid as the id for the physical section
-                     $(objectDOM).find("physical").attr("id", "urn-uuid-" + uuid.v4());
-                   }
-
-                }
+                 //Set the xml-safe id on the model and use it as the id attribute
+                 $(objectDOM).attr("id", xmlID);
+                 this.set("xmlID", xmlID);
+               }
 
                 // Update the alternateIdentifiers
                 var altIDs = this.get("alternateIdentifier");
@@ -429,6 +438,27 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
                 // TODO: Update the constraint section
 
                 return objectDOM;
+            },
+
+            /**
+            * Update the file name in the EML
+            */
+            updateFileName: function(){
+
+              var dataONEObj = this.get("dataONEObject");
+
+              //Get the DataONEObject model associated with this EML Entity
+              if(dataONEObj){
+                //If the last file name matched the EML entity name, then update it
+                if( dataONEObj.previous("fileName") == this.get("entityName") ){
+                  this.set("entityName", dataONEObj.get("fileName"));
+                }
+                //If the DataONEObject doesn't have an old file name or entity name, then update it
+                else if( !dataONEObj.previous("fileName") || !this.get("entityName") ){
+                  this.set("entityName", dataONEObj.get("fileName"));
+                }
+              }
+
             },
 
             /*
