@@ -59,7 +59,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       var queryString = "";
 
       //Only construct the query if the min or max is different than the default
-      if( this.get("min") != this.get("minDefault") || this.get("max") != this.get("maxDefault") ){
+      if( ((this.get("min") != this.defaults().min) && (this.get("min") != this.get("minDefault"))) ||
+           ((this.get("max") != this.defaults().max)) && (this.get("max") != this.get("maxDefault")) ){
 
         //Iterate over each filter field and add to the query string
         _.each(this.get("fields"), function(field, i, allFields){
