@@ -168,10 +168,85 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
-			archivedContentIsIndexed: true
+			archivedContentIsIndexed: true,
+
+      /**
+      * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)
+      * This is an array of literal objects that will be converted into FilterGroup models
+      * @type {object[]}
+      */
+      defaultFilterGroups: [
+        {
+          label: "Filter by: ",
+          filters: [
+            {
+              fields: ["attribute"],
+              label: "Data attribute",
+              placeholder: "density, length, etc.",
+              icon: "table",
+              description: "Measurement type, e.g. density, temperature, species"
+            },
+            {
+              filterType: "ToggleFilter",
+              fields: ["documents"],
+              label: "Show only results with data",
+              trueLabel: null,
+              falseLabel: null,
+              trueValue: "*",
+              icon: "table",
+              description: "Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata."
+            },
+            {
+              fields: ["originText"],
+              label: "Creator",
+              placeholder: "Name",
+              icon: "user",
+              description: "The name of the creator or originator of a dataset"
+            },
+            {
+              filterType: "DateFilter",
+              fields: ["datePublished", "dateUploaded"],
+              label: "Publish Year",
+              minDefault: 1800,
+              icon: "calendar",
+              description: "Only show results that were published within the year range"
+            },
+            {
+              filterType: "DateFilter",
+              fields: ["beginDate"],
+              label: "Year of data coverage",
+              minDefault: 1800,
+              icon: "calendar",
+              description: "Only show results with data collected within the year range"
+            },
+            {
+              fields: ["id", "identifier", "documents", "resourceMap", "seriesId"],
+              label: "Identifier",
+              placeholder: "DOI or ID",
+              icon: "bullseye",
+              description: "Find datasets if you have all or part of its DOI or ID"
+            },
+            {
+              fields: ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
+              label: "Taxon",
+              placeholder: "Class, family, etc.",
+              icon: "sitemap",
+              description: "Find data about any taxonomic rank"
+            },
+            {
+              fields: ["siteText"],
+              label: "Location",
+              placeholder: "Geographic region",
+              icon: "globe",
+              description: "The geographic region or study site, as described by the submitter"
+            }
+          ]
+        }
+      ]
 		},
 
 		defaultView: "data",
+
 
 		initialize: function() {
 

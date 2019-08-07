@@ -32,7 +32,7 @@ function ($, _, Backbone) {
 			'api(/:anchorId)(/)'                : 'renderAPI', // API page
       'projects(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
       'portals(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
-      'edit/portals(/:projectIdentifier)(/:projectSection)'     : 'renderProjectEditor'
+      'edit/portals(/:projectIdentifier)(/:projectSection)(/)'     : 'renderProjectEditor'
 		},
 
 		helpPages: {

@@ -31,7 +31,12 @@ define(['jquery', 'underscore', 'backbone',
     },
 
     render: function () {
-      this.$el.html( this.template( this.model.toJSON() ) );
+
+      var templateVars = this.model.toJSON();
+      templateVars.min = this.model.get("minDefault");
+      templateVars.max = this.model.get("maxDefault");
+
+      this.$el.html( this.template( templateVars ) );
 
       var view = this;
 

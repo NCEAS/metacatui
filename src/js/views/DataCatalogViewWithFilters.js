@@ -2,13 +2,18 @@ define(["jquery",
         "underscore",
         "backbone",
         "gmaps",
+        "collections/Filters",
+        "models/filters/FilterGroup",
         "models/filters/SpatialFilter",
         "models/Stats",
         "views/DataCatalogView",
+        "views/filters/FilterGroupsView",
         "text!templates/datacatalog.html",
         "nGeohash"
     ],
-    function($, _, Backbone, gmaps, SpatialFilter, Stats, DataCatalogView, template, nGeohash) {
+    function($, _, Backbone, gmaps, Filters, FilterGroup, SpatialFilter, Stats,
+      DataCatalogView, FilterGroupsView,
+      template, nGeohash) {
 
         /**
          * A DataCatalogView that uses the Search collection
@@ -43,6 +48,9 @@ define(["jquery",
             * @type {string}
             */
             sortOrder: "dateUploaded+desc",
+
+            /** @type {string} - The jQuery selector for the FilterGroupsView container */
+            filterGroupsContainer: ".filter-groups-container",
 
             /**
              * Override DataCatalogView.render() to render this view with filters
@@ -106,6 +114,9 @@ define(["jquery",
                 compiledEl =
                     this.template(_.extend(this.searchModel.toJSON(), templateVars));
                 this.$el.html(compiledEl);
+
+                //Create and render the FilterGroupsView
+                this.createFilterGroups();
 
                 // Store some references to key views that we use repeatedly
                 this.$resultsview = this.$("#results-view");
@@ -175,6 +186,59 @@ define(["jquery",
                 }
 
                 return this;
+            },
+
+            /**
+            * Creates filter groups and renders them in this view
+            */
+            createFilterGroups: function(){
+
+              //If it was already created, then exit
+              if( this.filterGroupsView ){
+                return;
+              }
+
+              //Start an array for the FilterGroups and the individual Filter models
+              var filterGroups = [],
+                  allFilters   = [];
+
+              //Iterate over each default FilterGroup in the app config and create a FilterGroup model
+              _.each( MetacatUI.appModel.get("defaultFilterGroups"), function(filterGroupJSON){
+
+                //Create the FilterGroup model
+                var filterGroup = new FilterGroup(filterGroupJSON);
+
+                //Add to the array
+                filterGroups.push(filterGroup);
+
+                //Add the Filters to the array
+                allFilters = _.union(allFilters, filterGroup.get("filters").models);
+
+              }, this);
+
+              //Add the filters to the Search model
+              this.searchModel.get("filters").add(allFilters);
+
+              //Create the default catalog filters, which typically filter out obsoleted
+              // and non-metadata objects
+              this.searchModel.get("filters").createCatalogFilters();
+
+              //Create a FilterGroupsView
+              var filterGroupsView = new FilterGroupsView({
+                filterGroups: filterGroups,
+                filters: this.searchModel.get("filters"),
+                vertical: true
+              });
+
+              //Add the FilterGroupsView element to this view
+              this.$(this.filterGroupsContainer).html(filterGroupsView.el);
+
+              //Render the FilterGroupsView
+              filterGroupsView.render();
+
+              //Save a reference to the FilterGroupsView
+              this.filterGroupsView = filterGroupsView;
+
             },
 
             /*
@@ -248,9 +312,6 @@ define(["jquery",
                 }
                 this.searchResults.start = page * this.searchResults.rows;
 
-                //Show or hide the reset filters button
-                this.toggleClearButton();
-
                 // go to the page
                 this.showPage(page);
 
@@ -305,19 +366,23 @@ define(["jquery",
                 }
             },
 
-            /*
-             * Either hides or shows the "clear all filters" button
+            /**
+             * Overload this function with an empty function since the Clear button
+             * has been moved to the FilterGroupsView
              */
-            toggleClearButton: function() {
+            toggleClearButton: function(){},
 
-                var currentFilters = this.searchModel.get("filters").getCurrentFilters();
+            /**
+             * Overload this function with an empty function since the Clear button
+             * has been moved to the FilterGroupsView
+             */
+            hideClearButton: function(){},
 
-                if (currentFilters && currentFilters.length > 0) {
-                    this.showClearButton();
-                } else {
-                    this.hideClearButton();
-                }
-            },
+            /**
+             * Overload this function with an empty function since the Clear button
+             * has been moved to the FilterGroupsView
+             */
+            showClearButton: function(){},
 
             /**
              * Toggle between map and list mode

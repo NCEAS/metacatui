@@ -67,7 +67,6 @@
       background-color: #FDFDFD;
       font-family: "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif";
       font-weight: normal;
-      font-size: 1em;
       line-height: 1.5em;
     }
     body p {
@@ -548,11 +547,6 @@ footer .logos a:hover, a:focus{
   max-height: 1em;
   margin-left: 3px;
 }
-.filters-header .filter-input-contain.input-append .btn{
-  padding: 4px;
-  color: #AAA;
-  border-color: #AAA;
-}
 
 /* EDITOR
 ----------------------- */
@@ -604,8 +598,6 @@ footer .logos a:hover, a:focus{
 #map-container{
 	display: none;
 	height: 500px;
-	width: 33%; /* IE fallback */
-	width: calc((100% - 217px) / 2);
 	float: left;
 }
 
@@ -1792,6 +1784,12 @@ MDQ items
    		float: left;
    }
 
+/* Filter views
+-------------------------------------------------- */
+.filter-groups .filter .btn:hover {
+    background-color: #e6e6e6;
+    color: #333;
+}
 
 /* RESULTS CSS
 -------------------------------------------------- */
@@ -1813,7 +1811,9 @@ MDQ items
 		height: 700px;
 		margin-left: 0px;
 	}
-
+.mapMode #map-container{
+  width: calc((100% - 216px) / 2);
+}
 	#results{
 		margin-bottom: 10px;
 	}

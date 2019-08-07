@@ -54,7 +54,8 @@ define(["jquery",
             mapModel: this.model.get("mapModel"),
             isSubView: true,
             filters: false,
-            fixedHeight: true
+            fixedHeight: true,
+            filterGroupsView: filterGroupsView
           });
 
           this.$el.append(dataCatalogView.el);

@@ -13,13 +13,18 @@ define(['jquery', 'underscore', 'backbone',
     //An array of FilterGroups
     filterGroups: [],
 
-    // @type Filters - The Filters collection that corresponds to all the Filter
-    // models in these FIlterGroups
+    /** @type {Filters} - The Filters Collection that contains the same Filter
+    * models from each FilterGroup and any additional Filter Models that may not be in
+    * FilterGroups because they're not displayed or applied behind the scenes.
+    */
     filters: null,
 
     tagName: "div",
 
     className: "filter-groups tabbable",
+
+    /** @type {Boolean} - If true, displays the FilterGroups in a vertical list */
+    vertical: false,
 
     events: {
       "click .remove-filter" : "handleRemove",
@@ -34,6 +39,10 @@ define(['jquery', 'underscore', 'backbone',
 
       this.filterGroups = options.filterGroups || new Array();
       this.filters = options.filters || null;
+
+      if( options.vertical == true ){
+        this.vertical = true;
+      }
 
     },
 
@@ -64,9 +73,17 @@ define(['jquery', 'underscore', 'backbone',
           var groupTab  = $(document.createElement("li")).addClass("filter-group-link");
           var groupLink = $(document.createElement("a"))
                               .attr("href", "#" + filterGroup.get("label").replace( /([^a-zA-Z0-9])/g, "") )
-                              .attr("data-toggle", "tab")
-                              .append( $(document.createElement("i")).addClass("icon icon-" + filterGroup.get("icon")) )
-                              .append(filterGroup.get("label"));
+                              .attr("data-toggle", "tab");
+
+          //Add the FilterGroup icon
+          if( filterGroup.get("icon") ){
+            groupLink.append( $(document.createElement("i")).addClass("icon icon-" + filterGroup.get("icon")) );
+          }
+
+          //Add the FilterGroup label
+          if( filterGroup.get("label") ){
+            groupLink.append(filterGroup.get("label"));
+          }
 
           //Insert the link into the tab and add the tab to the tab list
           groupTab.append(groupLink);
@@ -138,6 +155,13 @@ define(['jquery', 'underscore', 'backbone',
       //Render the applied filters
       this.renderAppliedFiltersSection();
 
+      //Render an "All" filter
+      this.renderAllFilter();
+
+      if( this.vertical ){
+        this.$el.addClass("vertical");
+      }
+
     },
 
     /*
@@ -191,9 +215,6 @@ define(['jquery', 'underscore', 'backbone',
 
       }, this);
 
-      //Render an "All" filter
-      this.renderAllFilter();
-
     },
 
     renderAllFilter: function(){
@@ -201,8 +222,9 @@ define(['jquery', 'underscore', 'backbone',
       //Create an "All" filter that will search the general `text` Solr field
       var filter = new Filter({
         fields: ["text"],
+        label: "Search",
         description: "Filter the datasets by typing in any keyword, topic, creator, etc.",
-        placeholder: "Filter datasets"
+        placeholder: "Filter by anything"
       });
       this.filters.add( filter );
 
@@ -264,73 +286,8 @@ define(['jquery', 'underscore', 'backbone',
         //If a filter has been added, display it
         _.each(addedValues, function(value){
 
-          //Create the filter label
-          var filterLabel = value;
-
-          //If the filter type is Choice, get the choice label which can be different from the value
-          if( filterModel.type == "ChoiceFilter" ){
-            //Find the choice object with the given value
-            var matchingChoice = _.findWhere(filterModel.get("choices"), { "value" : value });
-
-            //Get the label for that choice
-            if(matchingChoice)
-              filterLabel = matchingChoice.label;
-
-            //If there is no label, default to the value
-            if( !filterLabel )
-              filterLabel = value;
-          }
-          //Create the filter label for boolean filters
-          else if( filterModel.type == "BooleanFilter" ){
-
-            //If the filter is set to true, show the filter label
-            if( filterModel.get("values")[0] ){
-              filterLabel = filterModel.get("label");
-            }
-            //If the filter is set to false, remove the applied filter element
-            else{
-
-              //Iterate over the applied filters
-              _.each(this.$(".applied-filter"), function(appliedFilterEl){
-
-                //If this is the applied filter element for this model,
-                if( $(appliedFilterEl).data("model") == filterModel ){
-                  //Remove the applied filter element from the page
-                  $(appliedFilterEl).remove();
-                }
-
-              }, this);
-
-              //Exit the function at this point since there is nothing else to
-              // do for false BooleanFilters
-              return;
-            }
-
-          }
-          else if( filterModel.type == "ToggleFilter" ){
-
-            if( filterModel.get("values")[0] == filterModel.get("trueValue") ){
-              filterLabel = filterModel.get("label") + ": " + filterModel.get("trueLabel");
-            }
-            else{
-              filterLabel = filterModel.get("label") + ": " + filterModel.get("falseLabel");
-            }
-
-          }
-
-          //Create the applied filter element
-          var removeIcon    = $(document.createElement("a"))
-                                .addClass("icon icon-remove remove-filter icon-on-right")
-                                .attr("title", "Remove this filter"),
-              appliedFilter = $(document.createElement("li"))
-                                .addClass("applied-filter label")
-                                .text(filterLabel)
-                                .append(removeIcon)
-                                .data("model", filterModel)
-                                .attr("data-value", value);
-
           //Add the applied filter to the view
-          this.$(".applied-filters").append(appliedFilter);
+          this.$(".applied-filters").append( this.createAppliedFilter(filterModel, value) );
 
         }, this);
 
@@ -366,11 +323,11 @@ define(['jquery', 'underscore', 'backbone',
 
       //If there is an applied filter, show the Clear All button
       if( this.$(".applied-filter").length ){
-        this.$(".filters-title").css("visibility", "visible");
+          this.$(".filters-title").css("display", "block");
       }
       //If there are no applied filters, hide the Clear All button
       else{
-        this.$(".filters-title").css("visibility", "hidden");
+          this.$(".filters-title").css("display", "none");
       }
 
     },
@@ -400,23 +357,14 @@ define(['jquery', 'underscore', 'backbone',
 
         //Create the filter label for ranges of numbers
         if( filterModel.type == "DateFilter" || filterModel.get("range") ){
-          var filterLabel = filterModel.get("label") + ": " + filterModel.get("min") +
-            " to " + filterModel.get("max");
+          var filterValue = filterModel.get("min") + " to " + filterModel.get("max");
         }
         //Create the filter label for a single number value
         else{
-          var filterLabel = filterModel.get("label") + ": " + filterModel.get("min");
+          var filterValue = filterModel.get("min");
         }
 
-        //Create the applied filter element
-        var removeIcon    = $(document.createElement("a"))
-                              .addClass("icon icon-remove remove-filter icon-on-right")
-                              .attr("title", "Remove this filter"),
-            appliedFilter = $(document.createElement("li"))
-                              .addClass("applied-filter label")
-                              .text(filterLabel)
-                              .append(removeIcon)
-                              .data("model", filterModel);
+        var appliedFilter = this.createAppliedFilter(filterModel, filterValue);
 
         //Keep track if this filter is already displayed and needs to be replaced
         var replaced = false;
@@ -440,15 +388,121 @@ define(['jquery', 'underscore', 'backbone',
 
       }
 
-      //If there is an applied filter, show the Clear All button
-      if( this.$(".applied-filter").length ){
-        this.$(".clear-all").show();
+      this.toggleAppliedFiltersHeader();
+
+    },
+
+    /**
+    * Creates a single applied filter element and returns it. Filters can
+    *  have multiple values, so one value is passed to this function at a time.
+    * @param {Filter} filterModel - The Filter model that is being added to the display
+    * @param {string|number|Boolean} value - The new value set on the Filter model that is displayed in this applied filter
+    * @returns {jQuery Element} - The complete applied filter element
+    */
+    createAppliedFilter: function(filterModel, value){
+
+      //Create the filter label
+      var filterLabel = filterModel.get("label"),
+          filterValue = value;
+
+      //If the filter type is Choice, get the choice label which can be different from the value
+      if( filterModel.type == "ChoiceFilter" ){
+        //Find the choice object with the given value
+        var matchingChoice = _.findWhere(filterModel.get("choices"), { "value" : value });
+
+        //Get the label for that choice
+        if(matchingChoice){
+          filterValue = matchingChoice.label;
+        }
       }
-      //If there are no applied filters, hide the Clear All button
-      else{
-        this.$(".clear-all").hide();
+      //Create the filter label for boolean filters
+      else if( filterModel.type == "BooleanFilter" ){
+
+        //If the filter is set to false, remove the applied filter element
+        if( filterModel.get("values")[0] === false ){
+
+          //Iterate over the applied filters
+          _.each(this.$(".applied-filter"), function(appliedFilterEl){
+
+            //If this is the applied filter element for this model,
+            if( $(appliedFilterEl).data("model") == filterModel ){
+              //Remove the applied filter element from the page
+              $(appliedFilterEl).remove();
+            }
+
+          }, this);
+
+          //Exit the function at this point since there is nothing else to
+          // do for false BooleanFilters
+          return;
+        }
+
+      }
+      else if( filterModel.type == "ToggleFilter" ){
+
+        if( filterModel.get("values")[0] == filterModel.get("trueValue") ){
+          if( filterModel.get("label") && filterModel.get("trueLabel") ){
+            filterValue = filterModel.get("trueLabel");
+          }
+          else if( !filterModel.get("label") && filterModel.get("trueLabel") ){
+            filterLabel = "";
+            filterValue = filterModel.get("trueLabel");
+          }
+          else if( filterModel.get("label") ){
+            filterLabel = "";
+            filterValue = filterModel.get("label");
+          }
+        }
+        else{
+          if( filterModel.get("label") && filterModel.get("falseLabel") ){
+            filterValue = filterModel.get("falseLabel");
+          }
+          else if( !filterModel.get("label") && filterModel.get("falseLabel") ){
+            filterLabel = "";
+            filterValue = filterModel.get("falseLabel");
+          }
+          else if( filterModel.get("label") ){
+            filterLabel = "";
+            filterValue = filterModel.get("label");
+          }
+        }
+
+      }
+      //If this Filter model is a full-text search, don't display a label
+      else if( filterModel.get("fields").length == 1 && filterModel.get("fields")[0] == "text"){
+        filterLabel = "";
       }
 
+      //Create the applied filter element
+      var removeIcon    = $(document.createElement("a"))
+                            .addClass("icon icon-remove remove-filter icon-on-right")
+                            .attr("title", "Remove this filter"),
+          appliedFilter = $(document.createElement("li"))
+                            .addClass("applied-filter label")
+                            .append(removeIcon)
+                            .data("model", filterModel)
+                            .attr("data-value", value);
+
+      //Create an element to contain both the label and value
+      var filterLabelEl = $(document.createElement("span")).addClass("label");
+      var filterValueEl = $(document.createElement("span")).addClass("value").text(filterValue);
+
+      var filterTextContainer = $(document.createElement("span"))
+                                 .append(filterLabelEl, filterValueEl);
+
+      //If there is both a label and value, separated them with a colon
+      if( filterLabel && filterValue ){
+        filterLabelEl.text( filterLabel + ": ");
+      }
+      //Otherwise just use the label text only
+      else if( filterLabel ){
+        filterLabelEl.text(filterLabel);
+      }
+
+      //Add the filter text to the filter element
+      appliedFilter.prepend(filterTextContainer);
+
+      return appliedFilter;
     },
 
 
@@ -473,12 +527,18 @@ define(['jquery', 'underscore', 'backbone',
       var removeIcon    = $(document.createElement("a"))
                             .addClass("icon icon-remove remove-filter icon-on-right")
                             .attr("title", "Remove this filter"),
+          filterText    = $(document.createElement("span")).text(filterModel.get("label")),
           appliedFilter = $(document.createElement("li"))
                             .addClass("applied-filter label custom")
-                            .text(filterModel.get("label"))
-                            .append(removeIcon)
+                            .append(filterText, removeIcon)
                             .data("model", filterModel)
                             .attr("data-value", filterModel.get("values"));
+
+      if( filterModel.type == "SpatialFilter" ){
+        filterText.prepend( $(document.createElement("i"))
+                              .addClass("icon icon-on-left icon-" + filterModel.get("icon")) );
+
+      }
 
       //Add the applied filter to the view
       this.$(".applied-filters").append(appliedFilter);
@@ -556,7 +616,7 @@ define(['jquery', 'underscore', 'backbone',
           //Get the current value
           var values = filterModel.get("values"),
               //Remove the value that was in this applied filter
-              newValues = _.without(values, $(appliedFilterEl).data("value").toString() );
+              newValues = _.without(values, $(appliedFilterEl).data("value") );
 
           //Updates the values on the model
           filterModel.set("values", newValues);

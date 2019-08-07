@@ -11,17 +11,6 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
          */
         var Filters = Backbone.Collection.extend({
 
-            /* Reference to this collection's model.
-             * This collection can contain any type of Filter model:
-             * - Filter
-             * - BooleanFilter
-             * - ChoiceFilter
-             * - DateFilter
-             * - NumericFilter
-             * - ToggleFilter
-             */
-            model: Filter,
-
             initialize: function(options) {
                 if (typeof options === "undefined") {
                     var options = {};
@@ -30,6 +19,40 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 if (options.catalogSearch) {
                     this.createCatalogFilters();
                 }
+            },
+
+            /**
+            *  Creates the type of Filter Model based on the given filter type. This
+            * function is typically not called directly. It is used by Backbone.js when adding
+            * a new model to the collection.
+            * @param {object} attrs - A literal object that contains the attributes to pass to the model
+            * @property {string} attrs.filterType - The type of Filter to create
+            * @param {object} options - A literal object that contains the attributes to pass to the model
+            * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter}
+            */
+            model: function(attrs, options){
+
+              switch ( attrs.filterType ) {
+
+                case "BooleanFilter":
+                    return new BooleanFilter(attrs, options);
+
+                case "ChoiceFilter":
+                    return new ChoiceFilter(attrs, options);
+
+                case "DateFilter":
+                    return new DateFilter(attrs, options);
+
+                case "NumericFilter":
+                    return new NumericFilter(attrs, options);
+
+                case "ToggleFilter":
+                    return new ToggleFilter(attrs, options);
+
+                default:
+                  return new Filter(attrs, options);
+              }
+
             },
 
             /*
@@ -52,7 +75,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                         queryFragments.push(filterQuery);
                     }
                 }, this);
-                
+
                 return queryFragments.join("%20AND%20");
             },
 

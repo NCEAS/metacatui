@@ -14,16 +14,23 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
         label: null,
         description: null,
         icon: null,
-        filters:  new Filters()
+        filters:  new Filters(),
+        objectDOM: null
       }
     },
 
     /**
     * This function is executed whenever a new model is created.
     */
-    initialize: function(){
-      if( this.get("objectDOM") ){
-        this.set( this.parse(this.get("objectDOM")) );
+    initialize: function(attributes){
+      if( attributes.objectDOM ){
+        this.set( this.parse(attributes.objectDOM) );
+      }
+
+      if(attributes && attributes.filters){
+        var filtersCollection = new Filters();
+        filtersCollection.add(attributes.filters);
+        this.set("filters", filtersCollection);
       }
     },
 

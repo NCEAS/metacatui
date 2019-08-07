@@ -3682,7 +3682,7 @@ body.mapMode{
 #sidebar > *{
   padding-left: 10px;
   padding-right: 10px;
-  width: calc(100% - 20px);
+  width: calc(100% - 30px);
 }
 #sidebar > .input-append{
 	margin-top: 10px;
@@ -3858,15 +3858,38 @@ a.disabled {
   max-width: 350px;
   min-width: 200px;
 }
-.filter-group .filter .btn{
+.filter-groups.vertical .filter-group .filter{
+  padding-right: 0px;
+  min-width: 0px;
+  max-width: 100%;
+  margin-bottom: 10px;
+}
+.filter-groups .filter .btn{
 	box-shadow: none;
-	border-bottom-color: #ccc;
+	border-color: #ccc;
+  color: #999;
+  padding: 4px 10px;
+}
+.filter-groups.vertical .filter .btn{
+  margin-left: -5px;
+  padding: 6px 10px;
+}
+.filter-groups .filter .btn .icon{
+  line-height: 16px;
+  margin: 0px;
 }
 .filter-group .filter input{
 	box-shadow: none;
 }
+.filter-groups .filter label{
+	cursor: default;
+}
 .filter-group-links{
   border-top: 1px solid #DDD;
+  clear: both;
+}
+.filter-groups.vertical .filter-group-links {
+  border: 0px;
 }
 .filter-group-link a,
 .nav-tabs .filter-group-link a,
@@ -3890,6 +3913,16 @@ a.disabled {
 .filter-group-link{
 	background-color: #eee;
 }
+.filter-groups.vertical .filter-group-link {
+  float: none;
+}
+.filter-groups.vertical .filter-group-link a,
+.filter-groups.vertical .nav-tabs .filter-group-link a,
+.filter-groups.vertical .nav-tabs .filter-group-link.active a {
+    border: 0px;
+    text-align: left;
+    padding-left: 0px;
+}
 .filter-group .filter .ui-slider{
 	position: relative;
 	height: 5px;
@@ -3907,18 +3940,82 @@ a.disabled {
 	color: #999;
 	font-size: .9em;
 	font-weight: normal;
-	visibility: hidden;
 	margin-top: 0px;
+}
+.filter-groups:not(.vertical) .filters-title{
+  display: none;
+}
+.filter-groups.vertical .filters-title{
+  display: none;
+  font-size: .85em;
+}
+.filter-groups.vertical .filters-title .clear-all{
+  margin-left: 10px;
+}
+.filter-groups.vertical .filters-title .clear-all .icon{
+  float: right;
+  margin-top: 2px;
+  font-size: 1.2em;
 }
 .filters-title .clear-all{
 	margin-left: 10px;
 }
+.filters-header label{
+  font-weight: bold;
+}
 .filters-header .applied-filters{
 	min-height: 25px;
+}
+.filters-header .applied-filters .applied-filter{
+  background-color: #166194;
+  color: #FFF;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 5px;
+  text-shadow: none;
+  font-size: 1em;
+  font-weight: normal;
+  padding: 5px;
+  margin-right: 10px;
+}
+.filter-groups.vertical .applied-filters .applied-filter{
+  display: block;
+  position: relative;
+}
+.filter-groups.vertical .filters-header .applied-filters .applied-filter > span{
+  width: calc(100% - 20px);
+  display: inline-block;
+  white-space: normal;
+}
+.filters-header .applied-filters .applied-filter .label{
+  font-weight: bold;
+  margin-right: 10px;
+  background-color: transparent;
+}
+.filter-groups.vertical .applied-filters .applied-filter .remove-filter{
+  font-size: 1.3em;
+  position: absolute;
+  right: 5px;
+}
+.filter-groups.vertical .filters-header .applied-filters{
+  min-height: 0px;
 }
 .filters-header > .filter{
 	float: left;
 	margin-right: 10px;
+  width: auto;
+}
+.filter-groups.vertical .filters-header > .filter{
+  float: none;
+  margin-right:0px;
+}
+.filter-groups:not(.vertical) .filters-header > .filter{
+  display: inline-block;
+}
+.filter-groups:not(.vertical) .filters-header > .filter input[type='text']{
+  width: auto;
 }
 .filter.date .min,
 .filter.date .max{
@@ -3943,9 +4040,14 @@ a.disabled {
   border: 0px;
   background: #CCC;
 }
+.filter.boolean input{
+  height: auto;
+  font-size: 3em;
+  margin-right: 10px;
+}
 .filter.boolean span{
 	display: inline;
-	margin-left: 5px;
+  white-space: normal;
 }
 .filter.numeric input{
 	max-width: 70px;
@@ -3954,7 +4056,7 @@ a.disabled {
 	margin-bottom: 5px;
 	display: block;
 }
-.filter-group .filter input[type='text']{
+.filter input[type='text']{
 	width: 80%;
 }
 .filter-group .filter select{
@@ -3962,13 +4064,6 @@ a.disabled {
 }
 .filter-group > .row-fluid:not(:first-child){
 	margin-top: 20px;
-}
-.applied-filter.label{
-	text-shadow: none;
-	font-size: 1em;
-	font-weight: normal;
-	padding: 5px;
-	margin-right: 10px;
 }
 .applied-filter .icon.remove-filter{
 	opacity: .7;
@@ -3980,6 +4075,12 @@ a.disabled {
 }
 .filters-header{
 	margin: 10px;
+}
+.filter-groups.vertical .filters-header{
+  margin: 0px;
+  border-bottom: 1px dashed #CCC;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
 }
 #project-filters{
 	border: 1px solid #CCC;
@@ -4211,6 +4312,21 @@ a.disabled {
   background-color: #DDD;
   cursor: pointer;
 }
+/******************************************
+** Edit Collection View ***
+******************************************/
+
+/* Make the sidebar a bit wider since filters will be used a lot while editing a collection */
+.edit-collection #sidebar{
+  width: 250px;
+}
+.edit-collection .mapMode #results-container{
+  width: 60%;
+  width: calc((100% - 260px) / 2);
+}
+.edit-collection .mapMode #map-container{
+  width: calc((100% - 260px) / 2);
+}
 
 /*******************************************
    Registry and Forms
@@ -4328,6 +4444,15 @@ input.subtle{
 input.subtle:focus
 {
 	width: 200px;
+}
+.input-append .uneditable-input,
+.input-append input,
+.input-append select,
+.input-prepend .add-on:first-child,
+.input-prepend .btn:first-child{
+  -webkit-border-radius: 2px 0 0 2px;
+  -moz-border-radius: 2px 0 0 2px;
+  border-radius: 2px 0 0 2px;
 }
 .jump-width-input{
 	transition: width 1000s;
@@ -4760,7 +4885,7 @@ textarea.xlarge{
 }
 .Editor input,
 .Editor select{
-	padding: .5em 1em;
+	/*padding: .5em 1em;*/
 	height: 2.4em;
 	box-sizing: border-box;
 	font-size: 1em;

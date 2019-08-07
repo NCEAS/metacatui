@@ -2,8 +2,9 @@
 define(['jquery', 'underscore', 'backbone',
         'models/filters/ToggleFilter',
         'views/filters/FilterView',
-        'text!templates/filters/toggleFilter.html'],
-  function($, _, Backbone, ToggleFilter, FilterView, Template) {
+        'text!templates/filters/toggleFilter.html',
+        'text!templates/filters/booleanFilter.html'],
+  function($, _, Backbone, ToggleFilter, FilterView, Template, BooleanTemplate) {
   'use strict';
 
   // Render a view of a single ToggleFilter model
@@ -15,6 +16,7 @@ define(['jquery', 'underscore', 'backbone',
     className: "filter toggle",
 
     template: _.template(Template),
+    booleanTemplate: _.template(BooleanTemplate),
 
     events: {
       "change input" : "updateModel"
@@ -35,7 +37,13 @@ define(['jquery', 'underscore', 'backbone',
       var modelJSON = this.model.toJSON();
       modelJSON.id = this.model.cid;
 
-      this.$el.html( this.template( modelJSON ) );
+      if( !this.model.get("falseLabel") ){
+        this.$el.html( this.booleanTemplate( modelJSON ) )
+                .addClass("boolean");
+      }
+      else{
+        this.$el.html( this.template( modelJSON ) );
+      }
 
       this.listenTo(this.model, "change:values", this.updateToggle);
 

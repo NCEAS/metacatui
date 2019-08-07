@@ -3,9 +3,10 @@ define(['underscore',
         'backbone',
         "models/Map",
         "models/CollectionModel",
+        "models/Search",
         "views/DataCatalogViewWithFilters",
         "text!templates/editCollection.html"],
-function(_, $, Backbone, Map, CollectionModel, DataCatalogViewWithFilters,
+function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilters,
          Template){
 
   /**
@@ -76,9 +77,14 @@ function(_, $, Backbone, Map, CollectionModel, DataCatalogViewWithFilters,
 
       this.$el.html(this.template());
 
+      //Create a Search model using the collection definition
+      var searchModel = new Search({
+        filters: this.model.get("filters")
+      });
+
       //Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
-        searchModel: this.model.get("searchModel"),
+        searchModel: searchModel,
         searchResults: this.model.get("searchResults"),
         mapModel: this.model.get("mapModel") || new Map(),
         isSubView: true,

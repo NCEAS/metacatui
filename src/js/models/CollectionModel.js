@@ -146,9 +146,14 @@ define(["jquery",
       modelJSON.name = this.parseTextNode(rootNode, "name");
       modelJSON.label = this.parseTextNode(rootNode, "label");
       modelJSON.description = this.parseTextNode(rootNode, "description");
+
+      //Create a Search model for this collection's filters
       modelJSON.searchModel = new Search();
       modelJSON.searchModel.set("filters", new Filters());
       modelJSON.searchModel.get("filters").createCatalogFilters();
+
+      //Create a Filters collection to contain the collection definition Filters
+      modelJSON.filters = new Filters();
 
       // This variable changes to true after iterating through all the
       // definition filters, if the field of one filter == 'isPartOf'.
@@ -173,6 +178,9 @@ define(["jquery",
         });
 
         //Add the filter to the Filters collection
+        modelJSON.filters.add(filterModel);
+
+        //Add the filter to the Search model
         modelJSON.searchModel.get("filters").add(filterModel);
 
       });
