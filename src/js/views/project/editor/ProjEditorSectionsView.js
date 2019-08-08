@@ -82,6 +82,11 @@ function(_, $, Backbone, Project,
     * @type {string}
     */
     sectionLinksContainer: ".section-links-container",
+    /**
+    * A jQuery selector for the element that the editor sections should be inserted into
+    * @type {string}
+    */
+    sectionsContainer: ".sections-container",
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -154,7 +159,7 @@ function(_, $, Backbone, Project,
         .html(addSectionView.el);
 
       //Add the section element to this view
-      this.$(".tab-content").append(addSectionDiv);
+      this.$(this.sectionsContainer).append(addSectionDiv);
 
       //Render the section view
       addSectionView.render();
@@ -165,7 +170,7 @@ function(_, $, Backbone, Project,
       // Replace the name "AddSection" with fontawsome "+" icon
       // Note: Select <li> element based on the href attribute of it's child
       // because adding an id to <li> or <a> breaks Bootstrap's tab function
-      this.$(".nav-tabs").children().each(function(i, li){
+      this.$(this.sectionLinksContainer).children().each(function(i, li){
         if($(li).children().attr("href") == "#AddSection"){
           $(li).children().html("<i class='icon icon-plus'></i>");
         };
@@ -201,7 +206,7 @@ function(_, $, Backbone, Project,
             .html(sectionView.el);
 
           //Insert the ProjEditorMdSectionView element into this view
-          this.$(".tab-content").append(markdownSectionDiv);
+          this.$(this.sectionsContainer).append(markdownSectionDiv);
 
           //Render the ProjEditorMdSectionView
           sectionView.render();
@@ -289,7 +294,7 @@ function(_, $, Backbone, Project,
       this.addSectionLink(settingsView);
 
       // Use bootstrap's 'pull-right' class to right-align Settings tab
-      this.$(".nav-tabs").children().each(function(i, li){
+      this.$(this.sectionLinksContainer).children().each(function(i, li){
         if($(li).children().attr("href") == "#Settings"){
           $(li).addClass("pull-right");
         };
@@ -398,7 +403,7 @@ function(_, $, Backbone, Project,
         }
         //Otherwise, switch to the first section listed
         else{
-          var sections = this.$(".nav-tabs").children();
+          var sections = this.$(this.sectionLinksContainer).children();
 
           if(sections.length){
             sectionName = sections.first().children("a[href]").attr("href");
@@ -416,10 +421,10 @@ function(_, $, Backbone, Project,
       }
 
       // Activate the section content
-      this.$(".tab-content").children("#" + sectionName).addClass("active");
+      this.$(this.sectionsContainer).children("#" + sectionName).addClass("active");
 
       // Activate the tab
-      this.$(".nav-tabs").children().each(function(i, li){
+      this.$(this.sectionLinksContainer).children().each(function(i, li){
         if($(li).children().attr("href") == "#" + sectionName){
           $(li).addClass("active")
         };
