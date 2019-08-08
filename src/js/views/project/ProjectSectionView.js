@@ -1,10 +1,11 @@
 define(["jquery",
     "underscore",
     "backbone",
+    'models/project/ProjectSectionModel',
     "views/MarkdownView",
     "views/TOCView",
     "text!templates/project/projectSection.html"],
-    function($, _, Backbone, MarkdownView, TOCView, Template){
+    function($, _, Backbone, ProjectSectionModel, MarkdownView, TOCView, Template){
 
     /* The ProjectSectionView is a generic view to render
      * project sections, with a default rendering of a
@@ -12,16 +13,62 @@ define(["jquery",
      */
      var ProjectSectionView = Backbone.View.extend({
 
+       /**
+       * The type of View this is
+       * @type {string}
+       */
         type: "ProjectSection",
 
-        //The properties of this view's element
+        /**
+        * The display name for this Section
+        * @type {string}
+        */
+        sectionName: "",
+
+        /**
+        * The HTML tag name for this view's element
+        * @type {string}
+        */
         tagName: "div",
+
+        /**
+        * The HTML classes to use for this view's element
+        * @type {string}
+        */
         className: "tab-pane project-section-view",
 
-        // @type {boolean} - Specifies if this section is active or not
+        /**
+        * Specifies if this section is active or not
+        * @type {boolean}
+        */
         active: false,
 
+        /**
+        * The ProjectSectionModel that is being edited
+        * @type {ProjectSection}
+        */
+        model: undefined,
+
         template: _.template(Template),
+
+        /**
+        * Creates a new ProjectSectionView
+        * @constructs ProjectSectionView
+        * @param {Object} options - A literal object with options to pass to the view
+        * @property {ProjectSection} options.model - The ProjectSection rendered in this view
+        * @property {string} options.sectionName - The name of the project section
+        */
+        initialize: function(options){
+
+          // Get all the options and apply them to this view
+          if( typeof options == "object" ) {
+              var optionKeys = Object.keys(options);
+              _.each(optionKeys, function(key, i) {
+                  this[key] = options[key];
+              }, this);
+          }
+
+        },
 
         /* Render the view */
         render: function() {
@@ -32,7 +79,7 @@ define(["jquery",
           }
 
           //Add an id to this element so links work
-          this.$el.attr("id", this.model.get("label").replace(/[^a-zA-Z0-9]/g, ""));
+          this.$el.attr("id", this.getName({ linkFriendly: true }));
 
           this.$el.html(this.template(this.model.toJSON()));
 
@@ -134,6 +181,38 @@ define(["jquery",
               MetacatUI.appView.scrollTo( view.$(window.location.hash) );
             }, 1000);
           }
+
+        },
+
+        /**
+        * Gets the name of this section and returns it
+        * @param {Object} [options] - Optional options for the name that is returned
+        * @property {Boolean} options.linkFriendly - If true, the name will be stripped of special characters
+        * @return {string} The name for this section
+        */
+        getName: function(options){
+
+          var name = "";
+
+          //If a section name is set on the view, use that
+          if( this.sectionName ){
+            name = this.sectionName;
+          }
+          //If the model is a ProjectSectionModel, use the label from the model
+          else if( ProjectSectionModel.prototype.isPrototypeOf(this.model) ){
+            name = this.model.get("label");
+          }
+          else{
+            name = "New section";
+          }
+
+          if( typeof options == "object" ){
+            if( options.linkFriendly ){
+              name = name.replace(/[^a-zA-Z0-9]/g, "-");
+            }
+          }
+
+          return name;
 
         }
 

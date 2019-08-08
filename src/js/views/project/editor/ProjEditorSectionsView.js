@@ -50,6 +50,12 @@ function(_, $, Backbone, Project,
     activeSection: "",
 
     /**
+    * The names of all sections in this project editor
+    * @type {Array}
+    */
+    sectionNames: [],
+
+    /**
     * The subviews contained within this view to be removed with onClose
     * @type {Array}
     */
@@ -245,6 +251,9 @@ function(_, $, Backbone, Project,
       this.subviews.push(dataView);
     },
 
+    /**
+    * Renders the Metrics section of the editor
+    */
     renderMetricsSection: function(){
       // Render a ProjEditorSectionView for the Metrics section and corresponding tab
       // if the hide metrics view option is not true
@@ -274,7 +283,7 @@ function(_, $, Backbone, Project,
     },
 
     /**
-    * Render the Settings section of the editor
+    * Renders the Settings section of the editor
     */
     renderSettings: function(){
 
@@ -307,43 +316,126 @@ function(_, $, Backbone, Project,
 
     /**
      * Update the path when tabs are clicked
-     * @param {Event} e - The click event on the navigation elements (tabs)
+     * @param {Event} [e] - The click event on the navigation elements (tabs)
     */
     updatePath: function(e){
 
-      var sectionView = $(e.target).data("view");
+      if(e){
+        var sectionView = $(e.target).data("view");
+        if( typeof sectionView !== "undefined"){
+          sectionView.postRender();
+        }
 
-      if( typeof sectionView !== "undefined"){
-        sectionView.postRender();
+        // Get the href of the clicked link
+        var linkTarget = $(e.target).attr("href");
+        linkTarget = linkTarget.substring(1);
+
+        // Set this view's active section name to the link href
+        this.activeSection = linkTarget;
       }
 
-      // Get the href of the clicked link
-      var linkTarget = $(e.target).attr("href");
-      linkTarget = linkTarget.substring(1);
-
-      // Set this view's active section name to the link href
-      this.activeSection = linkTarget;
-
-      var projName = this.projectIdentifier;
-      var pathName = window.location.pathname;
+      var projName = this.projectIdentifier,
+          pathName = window.location.pathname,
+          section = this.activeSection;
 
       //Get the new pathname using the active section
       if( !MetacatUI.root.length || MetacatUI.root == "/" ){
         // If it's a new project, the project name might not be in the URL yet
         if(pathName.indexOf(projName) < 0){
-          var newPathName = pathName + "/" + projName + "/" + this.activeSection;
+          var newPathName = pathName + "/" + projName + "/" + section;
         } else {
           var newPathName = pathName.substring(0, pathName.indexOf(projName)) +
-                              projName + "/" + this.activeSection;
+                              projName + "/" + section;
         }
       }
       else{
         var newPathName = pathName.substring( pathName.indexOf(MetacatUI.root) + MetacatUI.root.length );
         newPathName = newPathName.substring(0, newPathName.indexOf(projName)) +
-                            projName + "/" + this.activeSection;
+                            projName + "/" + section;
       }
       //Update the window location
       MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
+
+    },
+
+    /**
+    * Gets a list of section names from tab elements and updates the
+    * sectionNames attribute on this view.
+    */
+    updateSectionNames: function() {
+
+      // Get the section names from the tab elements
+      var sectionNames = [];
+      this.$(".nav-tabs")
+        .children("li")
+        .children("a[href]")
+        .each(function(i, anchorEl){
+          sectionNames[i] = $(anchorEl)
+                              .attr("href")
+                              .substring(1)
+        });
+
+      // Set the array of sectionNames on the view
+      this.sectionNames = sectionNames
+    },
+
+    /**
+    * Manually switch to a section subview by making the tab and tab panel active.
+    * Navigation between sections is usually handled automatically by the Bootstrap
+    * library, but a manual switch may be necessary sometimes
+    * @param {string} [sectionName] - The section to switch to. If not given, defaults to the activeSection set on the view.
+    */
+    switchSection: function(sectionName){
+
+      // Make sure the list of section names is up to date
+      this.updateSectionNames();
+
+      // If no section name is given, use the active section in the view.
+      // If there's also no activeSection, then default to an empty string,
+      // which will set the navigation to the first section listed
+      if( !sectionName ){
+        var sectionName = this.activeSection || ""
+      }
+
+      // Match the section name to the list of section names on the view
+      // Allow case insensitive navigation to sections
+      i = this.sectionNames
+            .map(v => v.toLowerCase())
+            .indexOf(
+              sectionName.toLowerCase()
+            );
+
+      // If there was a match
+      if(i>=0){
+        sectionName = this.sectionNames[i];
+      //Otherwise, switch to the first section listed
+      } else {
+        if(this.sectionNames.length){
+          sectionName = this.sectionNames[0]
+        }
+      }
+
+      // Update the activeSection set on the view for consistency with the path
+      // and with capitalization
+      this.activeSection = sectionName;
+
+      // Activate the section content
+      this.$(".tab-content").children("#" + sectionName).addClass("active");
+
+      // Activate the tab
+      this.$(".nav-tabs").children().each(function(i, li){
+        if($(li).children().attr("href") == "#" + sectionName){
+          $(li).addClass("active")
+        };
+      });
+
+      this.updatePath();
+
+      // Update path when each tab is clicked and shown
+      view = this;
+      this.$('a[data-toggle="tab"]').on('shown', function(e){
+        view.updatePath(e)
+      });
 
     },
 
@@ -359,8 +451,6 @@ function(_, $, Backbone, Project,
       }))
 
     },
-
-
 
     /**
     * Adds a section and tab to this view and the ProjectModel
@@ -383,58 +473,6 @@ function(_, $, Backbone, Project,
     * @param {Event} [e] - (optional) The click event on the Rename button
     */
     renameSection: function(){
-
-    },
-
-    /**
-    * Manually switch to a section subview by making the tab and tab panel active.
-    * Navigation between sections is usually handled automatically by the Bootstrap
-    * library, but a manual switch may be necessary sometimes
-    * @param {string} sectionName - The section to switch to
-    */
-    switchSection: function(sectionName){
-
-      //If no specific section name is given, default to a section
-      if( !sectionName ){
-
-        //If there is an active section set on this view, switch to that
-        if( this.activeSection ){
-          sectionName = this.activeSection;
-        }
-        //Otherwise, switch to the first section listed
-        else{
-          var sections = this.$(this.sectionLinksContainer).children();
-
-          if(sections.length){
-            sectionName = sections.first().children("a[href]").attr("href");
-            if( sectionName ){
-              sectionName = sectionName.substring(sectionName.indexOf("#")+1);
-            }
-          }
-        }
-
-        //If no section name was ever found, exit this function
-        if( !sectionName ){
-          return;
-        }
-
-      }
-
-      // Activate the section content
-      this.$(this.sectionsContainer).children("#" + sectionName).addClass("active");
-
-      // Activate the tab
-      this.$(this.sectionLinksContainer).children().each(function(i, li){
-        if($(li).children().attr("href") == "#" + sectionName){
-          $(li).addClass("active")
-        };
-      });
-
-      // Update path when each tab is clicked and shown
-      view = this;
-      this.$('a[data-toggle="tab"]').on('shown', function(e){
-        view.updatePath(e)
-      });
 
     },
 

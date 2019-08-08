@@ -325,6 +325,7 @@ function ($, _, Backbone) {
     /**
     * Renders the ProjectEditorView
     * @param {string} [projectIdentifier] - The id or name of the project
+		* @param {string} [projectSection] - The name of the section within the project to navigate to (e.g. "data")
     */
     renderProjectEditor: function(projectIdentifier, projectSection){
       if ( !MetacatUI.appView.projectEditorView ) {

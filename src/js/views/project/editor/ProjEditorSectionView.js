@@ -35,7 +35,7 @@ function(_, $, Backbone, ProjectSectionModel, Template){
     className: "proj-editor-section",
 
     /**
-    * The ProjectSectionModel that is being edited
+    * The ProjectSectionModel being displayed
     * @type {ProjectSection}
     */
     model: undefined,
