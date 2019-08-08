@@ -94,10 +94,9 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         this.model.fetch();
       }
       else{
-        // Handle the default case where a new project model is created
-        // When a series ID is reserved for a new project, render the results
-        this.stopListening();
-        this.listenTo(this.model, "change:seriesId", this.renderProjectEditor);
+        // Render the default model if the project is new
+        this.renderProjectEditor();
+
       }
 
       return this;
@@ -155,6 +154,14 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         // Create a new, default project model
         this.model = new Project();
 
+        // Set some empty filters on the model so that the
+        // `DataCatalogViewWithFilters` can start rendering
+        this.model.get("searchModel")
+                  .set("filters", new Filters({
+                                          catalogSearch: true
+                                        }));
+        this.model.set("filters", new Filters());
+
         // Generate and reserve a series ID for the new project
         // Add an isPartOf filter model to the search model
         var view = this;
@@ -169,19 +176,13 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
             var newSID = $(identifierXML).text();
             // Save the sid as the projectIdentifier
             view.projectIdentifier = newSID;
+            // Set the sid in the project model.
+            view.model.set("seriesId", newSID);
             // Make an isPartOf filter, a default filter for each project
             var isPartOfFilter = view.model.createIsPartOfFilter(newSID);
-            // Set standard catalog filters on the new project
-            view.model.get("searchModel").set("filters", new Filters({
-                                                            catalogSearch: true
-                                                          }));
-            view.model.set("filters", new Filters());
             // Add the isPartOf filter to the model
             view.model.get("searchModel").get("filters").add(isPartOfFilter);
             view.model.get("filters").add(isPartOfFilter);
-            // Set the sid in the project model.
-            // This event triggers the projectEditor to render
-            view.model.set("seriesId", newSID);
           }
         }
         _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
