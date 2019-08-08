@@ -2,12 +2,13 @@ define(['underscore',
         'jquery',
         'backbone',
         'models/project/ProjectModel',
+        "collections/Filters",
         'views/EditorView',
         "views/project/editor/ProjEditorSectionsView",
         "text!templates/loading.html",
         "text!templates/project/editor/projectEditor.html"
       ],
-function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTemplate, Template){
+function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, LoadingTemplate, Template){
 
   /**
   * @class ProjectEditorView
@@ -85,18 +86,18 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
       //Create the model
       this.createModel();
 
-      // When the model has been synced, render the results
-      this.stopListening();
-      this.listenTo(this.model, "sync", this.renderProjectEditor);
-
       if ( this.model.get("seriesId") || this.model.get("label") ){
+        // When an existing model has been synced render the results
+        this.stopListening();
+        this.listenTo(this.model, "sync", this.renderProjectEditor);
         // If the project model already exists - fetch it.
         this.model.fetch();
       }
       else{
-        // handling the default case where a new project model is created
-        this.hideLoading();
-        this.renderProjectEditor();
+        // Handle the default case where a new project model is created
+        // When a series ID is reserved for a new project, render the results
+        this.stopListening();
+        this.listenTo(this.model, "change:seriesId", this.renderProjectEditor);
       }
 
       return this;
@@ -168,12 +169,19 @@ function(_, $, Backbone, Project, EditorView, ProjEditorSectionsView, LoadingTem
             var newSID = $(identifierXML).text();
             // Save the sid as the projectIdentifier
             view.projectIdentifier = newSID;
-            // set the sid in the project model
-            view.model.set("seriesId", newSID);
-            // make an isPartOf filter, a default filter for each project
+            // Make an isPartOf filter, a default filter for each project
             var isPartOfFilter = view.model.createIsPartOfFilter(newSID);
-            // add the isPartOf filter to the model
+            // Set standard catalog filters on the new project
+            view.model.get("searchModel").set("filters", new Filters({
+                                                            catalogSearch: true
+                                                          }));
+            view.model.set("filters", new Filters());
+            // Add the isPartOf filter to the model
             view.model.get("searchModel").get("filters").add(isPartOfFilter);
+            view.model.get("filters").add(isPartOfFilter);
+            // Set the sid in the project model.
+            // This event triggers the projectEditor to render
+            view.model.set("seriesId", newSID);
           }
         }
         _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
