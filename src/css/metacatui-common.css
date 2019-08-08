@@ -2413,6 +2413,21 @@ a.btn.metrics-button-disabled {
     font-size: 14px;
     width: 100%;
 }
+
+.ncboAutocomplete-matchType-label {
+	background-color: #3a87ad;
+	padding: 3px 5px;
+	border-radius: 5px;
+	color: white;
+}
+
+.ncboAutocomplete-matchType-synonym {
+	background-color: #468847;
+	padding: 3px 5px;
+	border-radius: 5px;
+	color: white;
+}
+
 /** hide the tree until we have it where we want it **/
 #bioportal-tree {
 	display: none;
