@@ -162,6 +162,9 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
                                         }));
         this.model.set("filters", new Filters());
 
+        // Start new projects on the settings tab
+        this.activeSection = "Settings";
+
         // Generate and reserve a series ID for the new project
         // Add an isPartOf filter model to the search model
         var view = this;

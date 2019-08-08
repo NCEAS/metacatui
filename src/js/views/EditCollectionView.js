@@ -77,6 +77,24 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
 
       this.$el.html(this.template());
 
+      // Make sure that we have a series ID before we render the Data Catalog
+      // View With Filters. For new projects, we generate and reserve a series ID
+      // and use it to add an isPartOf filter to the project model. This takes time,
+      // and influences the search results shown in the data catalog.
+      if(this.model.get("seriesId")){
+        this.renderDataCatalog();
+      } else {
+        this.stopListening();
+        this.listenTo(this.model, "change:seriesId", this.renderDataCatalog);
+      }
+
+    },
+
+    /**
+     * Render the DataCatalogViewWithFilters
+     */
+    renderDataCatalog: function(){
+
       //Create a Search model using the collection definition
       var searchModel = new Search({
         filters: this.model.get("filters")
