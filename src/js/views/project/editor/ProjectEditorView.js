@@ -94,14 +94,22 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       //Create the model
       this.createModel();
 
-      if ( this.model.get("seriesId") || this.model.get("label") ){
+      // An exisiting project should have a projectIdentifier already set
+      // from the router, and a seriesId or label set during createModel()
+      if ( (this.model.get("seriesId") || this.model.get("label"))
+            && this.projectIdentifier
+      ){
         // When an existing model has been synced render the results
         this.stopListening();
         this.listenTo(this.model, "sync", this.renderProjectEditor);
         // If the project model already exists - fetch it.
         this.model.fetch();
       }
-      else{
+      else {
+
+        // Start new projects on the settings tab
+        this.activeSection = "Settings";
+
         // Render the default model if the project is new
         this.renderProjectEditor();
 
@@ -149,55 +157,31 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     * Create a ProjectModel object
     */
     createModel: function(){
+
       // Look up the project document seriesId by its registered name if given
-      if ( this.projectIdentifier) {
+      if ( this.projectIdentifier ) {
 
         // Create a new project model with the identifier
         this.model = new Project({
           label: this.projectIdentifier
         });
 
+      // Otherwise, create a new project
       } else {
 
         // Create a new, default project model
         this.model = new Project();
 
-        // Set some empty filters on the model so that the
-        // `DataCatalogViewWithFilters` can start rendering
-        this.model.get("searchModel")
-                  .set("filters", new Filters({
-                                          catalogSearch: true
-                                        }));
-        this.model.set("filters", new Filters());
+        // Generate and reserve a seriesId and add it to model.seriesId
+        this.model.reserveSeriesId();
 
-        // Start new projects on the settings tab
-        this.activeSection = "Settings";
-
-        // Generate and reserve a series ID for the new project
-        // Add an isPartOf filter model to the search model
-        var view = this;
-        var options = {
-          url: MetacatUI.appModel.get("d1CNBaseUrl") +
-               MetacatUI.appModel.get("d1CNService") +
-               "/generate",
-          type: "POST",
-          data: {scheme: "UUID"},
-          success: function(identifierXML){
-            // Get the new seriesId (sid)
-            var newSID = $(identifierXML).text();
-            // Save the sid as the projectIdentifier
-            view.projectIdentifier = newSID;
-            // Set the sid in the project model.
-            view.model.set("seriesId", newSID);
-            // Make an isPartOf filter, a default filter for each project
-            var isPartOfFilter = view.model.createIsPartOfFilter(newSID);
-            // Add the isPartOf filter to the model
-            view.model.get("searchModel").get("filters").add(isPartOfFilter);
-            view.model.get("filters").add(isPartOfFilter);
-          }
-        }
-        _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
-        $.ajax(options);
+        // Create an isPartOf filter using the seriesId. Just in case the first
+        // seriesId generated was already reserved, update the isPartOf filters
+        // on the subsequent attempts to create and resere an ID.
+        var model = this.model;
+        this.model.on("change:seriesId", function(x, newSeriesId){
+          model.addIsPartOfFilter(newSeriesId);
+        });
 
       }
     },

@@ -2,12 +2,13 @@
 define(["jquery",
         "underscore",
         "backbone",
+        "uuid",
         "collections/Filters",
         "collections/SolrResults",
         "models/DataONEObject",
         "models/filters/Filter",
         "models/Search"],
-    function($, _, Backbone, Filters, SolrResults, DataONEObject, Filter, Search) {
+    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, Search) {
 
 	var CollectionModel = DataONEObject.extend({
 
@@ -180,11 +181,85 @@ define(["jquery",
     },
 
     /**
-     * Creates a FilterModel that uses the seriesId in the isPartOf filter
-     * @param {string} seriesId - the seriesId of the collection or project
-     * @return {Filter} a filter with the field set to isPartOf and the value set to the given seriesId
+     * Generate a UUID, reserve it using the DataOne API, and set it on the model
      */
-    createIsPartOfFilter: function(seriesId){
+    reserveSeriesId: function(){
+
+      // Create a new series ID
+      var seriesId = "urn:uuid:" + uuid.v4();
+
+      // Set the seriesId on the project model right away, since reserving takes
+      // time. This will be updated in the rare case that the first seriesId was
+      // already taken.
+      this.set("seriesId", seriesId);
+
+      // Reserve a series ID for the new project
+      var model = this;
+      var options = {
+        url: MetacatUI.appModel.get("d1CNBaseUrl") +
+             MetacatUI.appModel.get("d1CNService") +
+             "/reserve",
+        type: "POST",
+        data: { pid: seriesId },
+        tryCount : 0,
+        // If a generated seriesId is already reserved, how many times to retry
+        retryLimit : 5,
+        success: function(xhr){
+          // If the first seriesId was taken, then update the model with the
+          // successfully reserved seriesId.
+          if(this.tryCount > 0) {
+            model.set("seriesId", $(xhr).find("identifier").text());
+          }
+        },
+        error : function(xhr) {
+          // If the seriesId was already reserved, try again
+          if (xhr.status == 409) {
+              this.tryCount++;
+              if (this.tryCount <= this.retryLimit) {
+                  // Generate another seriesId
+                  this.data = { pid:"urn:uuid:" + uuid.v4() };
+                  // Send the reserve request again
+                  $.ajax(this);
+                  return;
+              }
+              return;
+          // If the user isn't logged in, or doesn't have write access
+          } else if (xhr.status = 401 ){
+            model.set("isAuthorized", false);
+          } else {
+            parsedResponse = $(xhr.responseText).not("style, title").text();
+            model.set("errorMessage", parsedResponse);
+          }
+        }
+      }
+      _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
+      $.ajax(options);
+    },
+
+    /**
+     * Creates a FilterModel with isPartOf as the field and the seriesId as
+     * the value. Adds the filter to the searchModel and the filters model
+     * attributes.
+     * @param {string} [seriesId] - the seriesId of the collection or project
+     */
+    addIsPartOfFilter: function(seriesId){
+
+      // If no seriesId is given
+      if(!seriesId){
+        // Use the seriesId set on the model
+        if(this.get("seriesId")){
+          seriesId = this.get("seriesId");
+        // If there's no seriesId on the model, make and reserve one
+        } else {
+          this.reserveSeriesId()
+          seriesId = this.get("seriesId");
+        }
+      }
+
+      // Set some empty filters on the model
+      this.get("searchModel")
+          .set("filters", new Filters({ catalogSearch: true }));
+      this.set("filters", new Filters());
 
       // Create objectDOM for the filter
       var filterNode    = $($.parseXML("<filter></filter>")).children()[0],
@@ -205,7 +280,9 @@ define(["jquery",
         projDefFilter: true
       });
 
-      return filterModel
+      this.get("searchModel").get("filters").add(filterModel);
+      this.get("filters").add(filterModel);
+
     },
 
     /**
