@@ -84,6 +84,11 @@ function(_, $, Backbone, Project,
     */
     projSettingsContainer: ".proj-editor-settings-container",
     /**
+    * A jQuery selector for the elements that are links to the individual sections
+    * @type {string}
+    */
+    sectionLinks: ".section-link",
+    /**
     * A jQuery selector for the element that the section links should be inserted into
     * @type {string}
     */
@@ -366,9 +371,7 @@ function(_, $, Backbone, Project,
 
       // Get the section names from the tab elements
       var sectionNames = [];
-      this.$(".nav-tabs")
-        .children("li")
-        .children("a[href]")
+      this.$(this.sectionLinks)
         .each(function(i, anchorEl){
           sectionNames[i] = $(anchorEl)
                               .attr("href")
@@ -420,10 +423,10 @@ function(_, $, Backbone, Project,
       this.activeSection = sectionName;
 
       // Activate the section content
-      this.$(".tab-content").children("#" + sectionName).addClass("active");
+      this.$(this.sectionsContainer).children("#" + sectionName).addClass("active");
 
       // Activate the tab
-      this.$(".nav-tabs").children().each(function(i, li){
+      this.$(this.sectionLinksContainer).children().each(function(i, li){
         if($(li).children().attr("href") == "#" + sectionName){
           $(li).addClass("active")
         };
