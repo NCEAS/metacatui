@@ -100,6 +100,11 @@ function(_, $, Backbone, Project,
     sectionsContainer: ".sections-container",
 
     /**
+    * @borrows ProjectEditorView.newProjectTempName as newProjectTempName
+    */
+    newProjectTempName: "",
+
+    /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
@@ -109,8 +114,6 @@ function(_, $, Backbone, Project,
       ".rename-section" : "renameSection"
     },
 
-    projectIdentifier: "",
-
     /**
     * Creates a new ProjEditorSectionsView
     * @constructs ProjEditorSectionsView
@@ -118,8 +121,8 @@ function(_, $, Backbone, Project,
     */
     initialize: function(options){
       if(typeof options == "object"){
-        this.projectIdentifier = options.projectIdentifier || "";
         this.activeSection = options.activeSection || "";
+        this.newProjectTempName = options.newProjectTempName || "";
       }
     },
 
@@ -339,25 +342,21 @@ function(_, $, Backbone, Project,
         this.activeSection = linkTarget;
       }
 
-      var projName = this.projectIdentifier,
-          pathName = window.location.pathname,
+      var projName = this.model.get("label") || this.newProjectTempName,
+          pathName = window.location.pathname.substring(MetacatUI.root.length),
           section = this.activeSection;
 
-      //Get the new pathname using the active section
-      if( !MetacatUI.root.length || MetacatUI.root == "/" ){
-        // If it's a new project, the project name might not be in the URL yet
-        if(pathName.indexOf(projName) < 0){
-          var newPathName = pathName + "/" + projName + "/" + section;
-        } else {
-          var newPathName = pathName.substring(0, pathName.indexOf(projName)) +
-                              projName + "/" + section;
-        }
+      //If the project name is not in the window location, add it
+      if( pathName.indexOf(projName) == -1 ){
+        //The new path name should include the project name and the new section name
+        var newPathName = pathName + "/" + projName + "/" + section;
       }
       else{
-        var newPathName = pathName.substring( pathName.indexOf(MetacatUI.root) + MetacatUI.root.length );
-        newPathName = newPathName.substring(0, newPathName.indexOf(projName)) +
-                            projName + "/" + section;
+        //The new path name should include the new section name at the end
+        var newPathName = pathName.substring( 0, pathName.indexOf(projName) + projName.length ) +
+                          "/" + section;
       }
+
       //Update the window location
       MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
 
@@ -379,7 +378,7 @@ function(_, $, Backbone, Project,
         });
 
       // Set the array of sectionNames on the view
-      this.sectionNames = sectionNames
+      this.sectionNames = sectionNames;
     },
 
     /**
@@ -402,11 +401,11 @@ function(_, $, Backbone, Project,
 
       // Match the section name to the list of section names on the view
       // Allow case insensitive navigation to sections
-      i = this.sectionNames
-            .map(v => v.toLowerCase())
-            .indexOf(
-              sectionName.toLowerCase()
-            );
+      var i = this.sectionNames
+              .map(v => v.toLowerCase())
+              .indexOf(
+                sectionName.toLowerCase()
+              );
 
       // If there was a match
       if(i>=0){

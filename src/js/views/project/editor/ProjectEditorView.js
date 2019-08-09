@@ -52,6 +52,14 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     projEditSectionsContainer: ".proj-editor-sections-container",
 
     /**
+    * A temporary name to use for projects when they are first created but don't have a label yet.
+    * This name should only be used in views, and never set on the model so it doesn't risk getting
+    * serialied and saved.
+    * @type {string}
+    */
+    newProjectTempName: "new",
+
+    /**
     * The events this view will listen to and the associated function to call.
     * This view will inherit events from the parent class, EditorView.
     * @type {Object}
@@ -119,14 +127,14 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       // or set it to a default value in the case that it's a new project
       var projectIdentifier = this.projectIdentifier;
       if(!projectIdentifier){
-        projectIdentifier = "new-project"
+        projectIdentifier = this.newProjectTempName;
       }
 
       //Create a view for the editor sections
       var sectionsView = new ProjEditorSectionsView({
         model: this.model,
-        projectIdentifier: projectIdentifier,
-        activeSection: this.activeSection
+        activeSection: this.activeSection,
+        newProjectTempName: this.newProjectTempName
       });
 
       //Add the view element to this view
