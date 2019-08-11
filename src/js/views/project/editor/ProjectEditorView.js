@@ -172,16 +172,17 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         // Create a new, default project model
         this.model = new Project();
 
-        // Generate and reserve a seriesId and add it to model.seriesId
-        this.model.reserveSeriesId();
-
-        // Create an isPartOf filter using the seriesId. Just in case the first
-        // seriesId generated was already reserved, update the isPartOf filters
-        // on the subsequent attempts to create and resere an ID.
+        // Set a listener to create an isPartOf filter using the seriesId once
+        // the series Id is set. Just in case the first seriesId generated was
+        // already reserved, update the isPartOf filters on the subsequent
+        // attempts to create and resere an ID.
         var model = this.model;
         this.model.on("change:seriesId", function(x, newSeriesId){
           model.addIsPartOfFilter(newSeriesId);
         });
+
+        // Generate and reserve a seriesId and add it to model.seriesId
+        this.model.reserveSeriesId();
 
       }
     },
