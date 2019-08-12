@@ -99,11 +99,39 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       if ( (this.model.get("seriesId") || this.model.get("label"))
             && this.projectIdentifier
       ){
-        // When an existing model has been synced render the results
-        this.stopListening();
-        this.listenTo(this.model, "sync", this.renderProjectEditor);
-        // If the project model already exists - fetch it.
-        this.model.fetch();
+          var view = this;
+          
+          this.listenTo(this.model, "change:isAuthorized", function(){
+            
+            if (this.model.get("isAuthorized")) {
+              // When an existing model has been synced render the results
+              view.stopListening();
+              
+              view.listenTo(view.model, "sync", view.renderProjectEditor);
+              
+              // If the project model already exists - fetch it.
+              view.model.fetch();
+
+              // Listens to the focus event on the window to detect when a user
+              // switches back to this browser tab from somewhere else
+              // When a user checks back, we want to check for log-in status
+              MetacatUI.appView.listenForActivity();
+
+              // Determine the length of time until the user's current token expires
+              // Asks to sign in in case of time out
+              MetacatUI.appView.listenForTimeout();
+            }
+            else {
+              // generate error message
+              var msg = "This is a private project. You need authorization to edit this project.";
+
+              //Show the not authorized error message
+              MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container");
+            }
+          });
+
+          // Check if the user is Authorized to edit the project
+          this.authorizeUser();
       }
       else {
 
@@ -195,55 +223,35 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
      * If the user isn't logged in at all, don't check for authorization and
      * display a message and login button.
      */
-    authorizeUser: function() {
+     authorizeUser: function() {
 
-      //Remove the loading message
-      this.hideLoading();
+       //If the SID has not been found yet, get it from Solr
+       if( !this.model.get("seriesId") && this.model.get("label") ){
+         this.listenTo(this.model, "change:seriesId", this.authorizeUser);
+         this.model.getSeriesIdByName();
+         return;
+       }
 
-      //Only proceed if the user is logged in
-      if ( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
+       //Remove the loading message
+       this.hideLoading();
 
-          var view = this;
+       //Only proceed if the user is logged in
+       if ( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
 
-          // Listening to the checkAuthority funciton
-          this.listenTo(this.model, "change:isAuthorized", function(){
+           // checking for the write Permission
+           this.model.checkAuthority("write");
+       }
+       else if ( !MetacatUI.appUserModel.get("loggedIn") ){
 
-            if ( view.model.get("isAuthorized") ) {
-              // Display the project editor
-              view.renderProjectEditor();
+         // generate error message
+         var msg = 'This is a private project. If you believe you have permission ' +
+                   'to access this project, then <a href="' + MetacatUI.root +
+                   '/signin">sign in</a>.';
 
-              // Listens to the focus event on the window to detect when a user
-              // switches back to this browser tab from somewhere else
-              // When a user checks back, we want to check for log-in status
-              MetacatUI.appView.listenForActivity();
-
-              // Determine the length of time until the user's current token expires
-              // Asks to sign in in case of time out
-              MetacatUI.appView.listenForTimeout()
-            }
-            else {
-              // generate error message
-              var msg = "This is a private project. You're not authorized to access this project.";
-
-              //Show the not authorized error message
-              MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
-            }
-          });
-
-          // checking for the writePermission
-          this.model.checkAuthority("writePermission");
-      }
-      else if ( !MetacatUI.appUserModel.get("loggedIn") ){
-
-        // generate error message
-        var msg = 'This is a private project. If you believe you have permission ' +
-                  'to access this project, then <a href="' + MetacatUI.root +
-                  '/signin">sign in</a>.';
-
-        //Show the not logged in error
-        MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
-      }
-    },
+         //Show the not logged in error
+         MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
+       }
+     },
 
     /**
      * Hides the loading
