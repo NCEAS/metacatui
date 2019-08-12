@@ -55,31 +55,95 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
 
             },
 
-            /*
+            /**
              * Builds the query string to send to the query engine. Iterates over each filter
              * in the collection and adds to the query string.
              *
              * @return {string} The query string to send to Solr
              */
             getQuery: function() {
-                var queryFragments = [];
 
-                //Iterate over each Filter model in this collection
-                this.forEach(function(filterModel, i) {
+              //Create an array to store all the query pieces
+              var allGroupsQueryFragments = [],
+                  //The complete query string that eventually gets returned
+                  completeQuery = "",
+                  //Separate the filter models in this collection by their query group.
+                  groupedFilters = this.groupBy(function(m){
+                    return m.get("queryGroup");
+                  });
 
-                    //Get the Solr query string from this model
-                    var filterQuery = filterModel.getQuery();
+              //Filters that are used in the data catalog are treated specially
+              var catalogFilters = groupedFilters.catalog;
+              delete groupedFilters.catalog;
 
-                    //Add the filter query string to the overall array
-                    if ( filterQuery && filterQuery.length > 0 ) {
-                        queryFragments.push(filterQuery);
-                    }
-                }, this);
+              //Create a query string for each group of filters
+              _.mapObject(groupedFilters, function(filterModels, groupName) {
 
-                return queryFragments.join("%20AND%20");
+                //Get a query string for this group of Filters
+                var groupQuery = this.getGroupQuery(filterModels);
+
+                //If there is a query string, add it to the array
+                if( groupQuery ){
+                  allGroupsQueryFragments.push(groupQuery);
+                }
+
+              }, this);
+
+              //Join the query fragments with an OR. By default, Filter model groups are ORed together
+              if( allGroupsQueryFragments.length ){
+                completeQuery += "(" + allGroupsQueryFragments.join("%20OR%20") + ")";
+              }
+
+              //Add the Data Catalog filters, if there are any
+              if( catalogFilters.length ){
+
+                //If there are other filters besides the catalog filters, AND them
+                if( completeQuery.trim().length ){
+                  completeQuery += "%20AND%20";
+                }
+
+                //Get the query string for the catalog filters
+                completeQuery += this.getGroupQuery(catalogFilters);
+              }
+
+              //Return the completed query
+              return completeQuery;
+
             },
 
-            /*
+            /**
+            * Get a query string for a group of Filters. The Filters will be ANDed together.
+            * @param {Filter[]} filterModels - The Filters to turn into a query string
+            * @return {string} The query string
+            */
+            getGroupQuery: function(filterModels){
+              //Start an array to contian the query fragments
+              var groupQueryFragments = [];
+
+              //For each Filter in this group, get the query string
+              _.each(filterModels, function(filterModel){
+
+                //Get the Solr query string from this model
+                var filterQuery = filterModel.getQuery();
+
+                //Add the filter query string to the overall array
+                if ( filterQuery && filterQuery.length > 0 ) {
+                  groupQueryFragments.push(filterQuery);
+                }
+              }, this);
+
+              //Join this group's query fragments with an OR operator
+              if( groupQueryFragments.length ){
+                return "(" + groupQueryFragments.join("%20AND%20") + ")"
+              }
+              //Otherwise, return an empty string
+              else{
+                return "";
+              }
+
+            },
+
+            /**
              * Given a Solr field name, determines if that field is set as a filter option
              */
             filterIsAvailable: function(field) {
@@ -141,14 +205,17 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                     fields: ["obsoletedBy"],
                     values: ["*"],
                     exclude: true,
-                    isInvisible: true
+                    isInvisible: true,
+                    queryGroup: "catalog"
                 }));
 
                 //Only search for metadata objects
                 this.add(new Filter({
                     fields: ["formatType"],
                     values: ["METADATA"],
-                    isInvisible: true
+                    matchSubstring: false,
+                    isInvisible: true,
+                    queryGroup: "catalog"
                 }));
             }
             /*

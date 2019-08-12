@@ -181,31 +181,27 @@ define(["jquery",
 
     /**
      * Creates a FilterModel that uses the seriesId in the isPartOf filter
-     * @param {string} seriesId - the seriesId of the collection or project
      * @return {Filter} a filter with the field set to isPartOf and the value set to the given seriesId
      */
-    createIsPartOfFilter: function(seriesId){
-
-      // Create objectDOM for the filter
-      var filterNode    = $($.parseXML("<filter></filter>")).children()[0],
-          fieldElement  = filterNode.ownerDocument.createElement("field"),
-          valueElement  = filterNode.ownerDocument.createElement("value");
-
-      $(fieldElement).text("isPartOf");
-      $(valueElement).text(seriesId);
-      filterNode.append(fieldElement);
-      filterNode.append(valueElement);
+    createIsPartOfFilter: function(){
 
       // Create the new filterModel
       var filterModel = new Filter({
-        objectDOM: filterNode,
         isInvisible: true,
+        operator: "OR",
+        fields: ["isPartOf"],
+        values: [this.get("seriesId")],
         // projDefFilter allows us to distinguish this type of filter
         // from other filters during serialization
         projDefFilter: true
       });
 
-      return filterModel
+      //If the seriesId is changed, update the Filter
+      this.on("change:seriesId", function(){
+        filterModel.set("seriesId", this.get("seriesId"));
+      })
+
+      return filterModel;
     },
 
     /**

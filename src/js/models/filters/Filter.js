@@ -13,6 +13,7 @@ define(['jquery', 'underscore', 'backbone'],
         fields: [],
         values: [],
         operator: "AND",
+        queryGroup: null,
         exclude: false,
         matchSubstring: true,
         label: null,
@@ -31,6 +32,17 @@ define(['jquery', 'underscore', 'backbone'],
     initialize: function(){
       if( this.get("objectDOM") ){
         this.set( this.parse(this.get("objectDOM")) );
+      }
+
+      //Assign a random query group to Filters that are specifing very specific datasets,
+      // such as bby id, seriesId, or the isPartOf relationship. This is done so that
+      // the query string is constructed with these filters "OR"ed into the query.
+      // For example, a query might be to look for datasets by a certain scientist OR
+      // with the given id. If those filters were ANDed together, the search would essentially
+      // ignore the creator filter and only return the dataset with the matching id.
+      if( this.get("fields").includes("isPartOf") || this.get("fields").includes("id") ||
+          this.get("fields").includes("seriesId") ){
+        this.set("queryGroup", Math.floor(Math.random() * Math.floor(10000)).toString());
       }
     },
 

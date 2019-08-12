@@ -190,7 +190,7 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
             // Set the sid in the project model.
             view.model.set("seriesId", newSID);
             // Make an isPartOf filter, a default filter for each project
-            var isPartOfFilter = view.model.createIsPartOfFilter(newSID);
+            var isPartOfFilter = view.model.createIsPartOfFilter();
             // Add the isPartOf filter to the model
             view.model.get("searchModel").get("filters").add(isPartOfFilter);
             view.model.get("filters").add(isPartOfFilter);
