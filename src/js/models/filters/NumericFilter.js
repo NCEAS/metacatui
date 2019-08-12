@@ -2,6 +2,10 @@
 define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
+  /**
+  * @constructs NumericFilter
+  * @extends Filter
+  */
 	var NumericFilter = Filter.extend({
 
     type: "NumericFilter",

@@ -2,11 +2,43 @@
 define(['jquery', 'underscore', 'backbone'],
     function($, _, Backbone) {
 
-  var FilterModel = Backbone.Model.extend({
+  /**
+  * @class Filter
+  * @name Filter
+  * @extends Backbone.Model
+  * @constructs
+  */
+  var FilterModel = Backbone.Model.extend(
+    /** @lends Filter.prototype */
+    {
 
+    /**
+    * The name of this Model
+    * @name Filter#type
+    * @type {string}
+    * @readonly
+    */
     type: "Filter",
 
-    //Default attributes for this model
+    /**
+    * Default attributes for this model
+    * @name Filter#defaults
+    * @type {Object}
+    * @property {string[]} fields - The search index fields to search
+    * @property {string[]} values - The values to search for in the given search fields
+    * @property {string} operator - The operator to use between values set on this model. "AND" or "OR"
+    * @property {string} queryGroup - The name of the group this Filter is a part of, which is
+    * primarily used when creating a query string from multiple Filter models. Filters
+    * in the same group will be wrapped in paranthesis in the query.
+    * @property {boolean} exclude - If true, search index docs matching this filter will be excluded from the search results
+    * @property {boolean} matchSubstring - If true, the search values will be wrapped in wildcard characters to match substrings
+    * @property {string} label - A human-readable short label for this Filter
+    * @property {string} placeholder - A short example or description of this Filter
+    * @property {string} icon - A term that identifies a single icon in a supported icon library
+    * @property {string} description - A longer description of this Filter's function
+    * @property {boolean} isInvisible - If true, this filter will be added to the query but will
+    * act in the "background", like a default filter
+    */
     defaults: function(){
       return{
         objectDOM: null,
@@ -20,14 +52,13 @@ define(['jquery', 'underscore', 'backbone'],
         placeholder: null,
         icon: null,
         description: null,
-        //@type {boolean} - If true, this filter will be added to the query but will
-        // act in the "background", like a default filter
         isInvisible: false
       }
     },
 
     /**
-    * This function is executed whenever a new FilterModel is created.
+    * Creates a new Filter model
+    * @function
     */
     initialize: function(){
       if( this.get("objectDOM") ){
@@ -201,10 +232,10 @@ define(['jquery', 'underscore', 'backbone'],
     * Constructs a query substring for each of the values set on this model
     *
     * @example
-    *    Model `value` attribute: ["walker", "jones"]
-    *    Returns: "(walker%20OR%20jones)"
+    *   values: ["walker", "jones"]
+    *   Returns: "(walker%20OR%20jones)"
     *
-    * return {string} The query substring
+    * @return {string} The query substring
     */
     getValueQuerySubstring: function(){
       //Start a query string for this field and get the values
@@ -265,7 +296,7 @@ define(['jquery', 'underscore', 'backbone'],
       return valuesQueryString;
     },
 
-    /*
+    /**
     * Resets the values attribute on this filter
     */
     resetValue: function(){
@@ -297,7 +328,8 @@ define(['jquery', 'underscore', 'backbone'],
     /**
      * Updates XML DOM with the new values from the model
      *
-     *  @return {XMLElement} An updated filter XML element from a project document
+     *  @param {XMLElement} [objectDOM] The XML element to update with this Filter information
+     *  @return {XMLElement} A new XML element with the updated values
     */
     updateDOM: function(objectDOM){
 

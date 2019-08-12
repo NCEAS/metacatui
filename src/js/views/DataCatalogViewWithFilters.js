@@ -56,6 +56,17 @@ define(["jquery",
             filterGroupsContainer: ".filter-groups-container",
 
             /**
+            * The Search model to use for creating and storing Filters and contructing query strings.
+            * This property is a Search model instead of a Filters collection in
+            * order to be quickly compatible with the superclass/superview, DataCatalogView,
+            * which was created with the (eventually to be deprecated) SearchModel.
+            * A Filters collection is set on the Search model and does most of the work
+            * for creating queries.
+            * @type (Search)
+            */
+            searchModel: undefined,
+
+            /**
              * Override DataCatalogView.render() to render this view with filters
              * from the Filters collection
              */

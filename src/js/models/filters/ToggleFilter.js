@@ -2,6 +2,10 @@
 define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
+  /**
+  * @constructs ToggleFilter
+  * @extends Filter
+  */
 	var ToggleFilter = Filter.extend({
 
     type: "ToggleFilter",

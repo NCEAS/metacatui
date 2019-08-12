@@ -2,6 +2,10 @@
 define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
+  /**
+  * @constructs ChoiceFilter
+  * @extends Filter
+  */
 	var ChoiceFilter = Filter.extend({
 
     type: "ChoiceFilter",

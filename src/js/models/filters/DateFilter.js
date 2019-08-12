@@ -2,6 +2,10 @@
 define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
+  /**
+  * @constructs DateFilter
+  * @extends Filter
+  */
 	var DateFilter = Filter.extend({
 
     type: "DateFilter",

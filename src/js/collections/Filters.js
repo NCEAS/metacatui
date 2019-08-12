@@ -11,6 +11,10 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
          */
         var Filters = Backbone.Collection.extend({
 
+            /**
+            * Creates a new Filters collection
+            * @constructs Filters
+            */
             initialize: function(options) {
                 if (typeof options === "undefined") {
                     var options = {};

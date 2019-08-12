@@ -2,10 +2,20 @@
 define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
-	var BooleanFilter = Filter.extend({
+  /**
+  * @class BooleanFilter
+  * @name BooleanFilter
+  * @extends Filter
+  * @constructs
+  */
+	var BooleanFilter = Filter.extend(
+    /** @lends BooleanFilter.prototype */
+    {
 
+    /** @inheritdoc */
     type: "BooleanFilter",
 
+    /** @inheritdoc */
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         //Boolean filters can't match substrings
@@ -15,7 +25,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       });
     },
 
-    /*
+    /**
     * Parses the booleanFilter XML node into JSON
     *
     * @param {Element} xml - The XML Element that contains all the BooleanFilter elements
@@ -41,7 +51,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     /**
      * Updates the XML DOM with the new values from the model
      *
-     *  @return {XMLElement} An updated booleanFilter XML element from a project document
+     *  @return {Element} An updated booleanFilter XML element from a project document
     */
     updateDOM: function() {
 
