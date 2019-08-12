@@ -94,14 +94,50 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       //Create the model
       this.createModel();
 
-      if ( this.model.get("seriesId") || this.model.get("label") ){
-        // When an existing model has been synced render the results
-        this.stopListening();
-        this.listenTo(this.model, "sync", this.renderProjectEditor);
-        // If the project model already exists - fetch it.
-        this.model.fetch();
+      // An exisiting project should have a projectIdentifier already set
+      // from the router, and a seriesId or label set during createModel()
+      if ( (this.model.get("seriesId") || this.model.get("label"))
+            && this.projectIdentifier
+      ){
+          var view = this;
+
+          this.listenTo(this.model, "change:isAuthorized", function(){
+
+            if (this.model.get("isAuthorized")) {
+              // When an existing model has been synced render the results
+              view.stopListening();
+
+              view.listenTo(view.model, "sync", view.renderProjectEditor);
+
+              // If the project model already exists - fetch it.
+              view.model.fetch();
+
+              // Listens to the focus event on the window to detect when a user
+              // switches back to this browser tab from somewhere else
+              // When a user checks back, we want to check for log-in status
+              MetacatUI.appView.listenForActivity();
+
+              // Determine the length of time until the user's current token expires
+              // Asks to sign in in case of time out
+              MetacatUI.appView.listenForTimeout();
+            }
+            else {
+              // generate error message
+              var msg = "This is a private project. You need authorization to edit this project.";
+
+              //Show the not authorized error message
+              MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container");
+            }
+          });
+
+          // Check if the user is Authorized to edit the project
+          this.authorizeUser();
       }
-      else{
+      else {
+
+        // Start new projects on the settings tab
+        this.activeSection = "Settings";
+
         // Render the default model if the project is new
         this.renderProjectEditor();
 
@@ -149,55 +185,32 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     * Create a ProjectModel object
     */
     createModel: function(){
+
       // Look up the project document seriesId by its registered name if given
-      if ( this.projectIdentifier) {
+      if ( this.projectIdentifier ) {
 
         // Create a new project model with the identifier
         this.model = new Project({
           label: this.projectIdentifier
         });
 
+      // Otherwise, create a new project
       } else {
 
         // Create a new, default project model
         this.model = new Project();
 
-        // Set some empty filters on the model so that the
-        // `DataCatalogViewWithFilters` can start rendering
-        this.model.get("searchModel")
-                  .set("filters", new Filters({
-                                          catalogSearch: true
-                                        }));
-        this.model.set("filters", new Filters());
+        // Set a listener to create an isPartOf filter using the seriesId once
+        // the series Id is set. Just in case the first seriesId generated was
+        // already reserved, update the isPartOf filters on the subsequent
+        // attempts to create and resere an ID.
+        var model = this.model;
+        this.model.on("change:seriesId", function(x, newSeriesId){
+          model.addIsPartOfFilter(newSeriesId);
+        });
 
-        // Start new projects on the settings tab
-        this.activeSection = "Settings";
-
-        // Generate and reserve a series ID for the new project
-        // Add an isPartOf filter model to the search model
-        var view = this;
-        var options = {
-          url: MetacatUI.appModel.get("d1CNBaseUrl") +
-               MetacatUI.appModel.get("d1CNService") +
-               "/generate",
-          type: "POST",
-          data: {scheme: "UUID"},
-          success: function(identifierXML){
-            // Get the new seriesId (sid)
-            var newSID = $(identifierXML).text();
-            // Save the sid as the projectIdentifier
-            view.projectIdentifier = newSID;
-            // Set the sid in the project model.
-            view.model.set("seriesId", newSID);
-            // Make an isPartOf filter, a default filter for each project
-            var isPartOfFilter = view.model.createIsPartOfFilter();
-            // Add the isPartOf filter to the model
-            view.model.get("searchModel").get("filters").add(isPartOfFilter);
-            view.model.get("filters").add(isPartOfFilter);
-          }
-        }
-        _.extend(options, MetacatUI.appUserModel.createAjaxSettings());
-        $.ajax(options);
+        // Generate and reserve a seriesId and add it to model.seriesId
+        this.model.reserveSeriesId();
 
       }
     },
@@ -210,55 +223,35 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
      * If the user isn't logged in at all, don't check for authorization and
      * display a message and login button.
      */
-    authorizeUser: function() {
+     authorizeUser: function() {
 
-      //Remove the loading message
-      this.hideLoading();
+       //If the SID has not been found yet, get it from Solr
+       if( !this.model.get("seriesId") && this.model.get("label") ){
+         this.listenTo(this.model, "change:seriesId", this.authorizeUser);
+         this.model.getSeriesIdByName();
+         return;
+       }
 
-      //Only proceed if the user is logged in
-      if ( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
+       //Remove the loading message
+       this.hideLoading();
 
-          var view = this;
+       //Only proceed if the user is logged in
+       if ( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
 
-          // Listening to the checkAuthority funciton
-          this.listenTo(this.model, "change:isAuthorized", function(){
+           // checking for the write Permission
+           this.model.checkAuthority("write");
+       }
+       else if ( !MetacatUI.appUserModel.get("loggedIn") ){
 
-            if ( view.model.get("isAuthorized") ) {
-              // Display the project editor
-              view.renderProjectEditor();
+         // generate error message
+         var msg = 'This is a private project. If you believe you have permission ' +
+                   'to access this project, then <a href="' + MetacatUI.root +
+                   '/signin">sign in</a>.';
 
-              // Listens to the focus event on the window to detect when a user
-              // switches back to this browser tab from somewhere else
-              // When a user checks back, we want to check for log-in status
-              MetacatUI.appView.listenForActivity();
-
-              // Determine the length of time until the user's current token expires
-              // Asks to sign in in case of time out
-              MetacatUI.appView.listenForTimeout()
-            }
-            else {
-              // generate error message
-              var msg = "This is a private project. You're not authorized to access this project.";
-
-              //Show the not authorized error message
-              MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
-            }
-          });
-
-          // checking for the writePermission
-          this.model.checkAuthority("writePermission");
-      }
-      else if ( !MetacatUI.appUserModel.get("loggedIn") ){
-
-        // generate error message
-        var msg = 'This is a private project. If you believe you have permission ' +
-                  'to access this project, then <a href="' + MetacatUI.root +
-                  '/signin">sign in</a>.';
-
-        //Show the not logged in error
-        MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
-      }
-    },
+         //Show the not logged in error
+         MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
+       }
+     },
 
     /**
      * Hides the loading

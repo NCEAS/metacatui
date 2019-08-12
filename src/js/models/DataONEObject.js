@@ -616,6 +616,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
          * Check if the current user is authorized to perform an action on this object
          */
         checkAuthority: function(action){
+          
+          // return false - if neither PID nor SID is present to check the authority
+          if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
+            return false;
+          }
+
+          // If PID is not present - check authority with seriesId
+          var identifier = this.get("id");
+          if ( (identifier == null) ) {
+            identifier = this.get("seriesId");
+          }
+
           if(!action) var action = "changePermission";
 
           var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
@@ -623,9 +635,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             return false;
 
           var model = this;
-
           var requestSettings = {
-            url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=" + action,
+            url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
+            
             type: "GET",
             success: function(data, textStatus, xhr) {
               model.set("isAuthorized", true);

@@ -110,16 +110,19 @@ define(["jquery",
             */
             fetch: function(options) {
 
+              if ( ! options ) var options = {};
+              else var options = _.clone(options);
+
+              //Fetch the system metadata
+              if( !options.objectOnly ){
+                this.fetchSystemMetadata();
+              }
+              
               //If the seriesId has not been found yet, get it from Solr
               if( !this.get("seriesId") && this.get("label") ){
                 this.once("change:seriesId", this.fetch);
                 this.getSeriesIdByName();
                 return;
-              }
-
-              //Fetch the system metadata
-              if( !options.objectOnly ){
-                this.fetchSystemMetadata();
               }
 
               var requestSettings = {
