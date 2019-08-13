@@ -499,6 +499,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 formData.append("newPid", this.get("id"));
               }
               else{
+                //Create an ID if there isn't one
+                if( !this.get("id") ){
+                  this.set("id", "urn:uuid:" + uuid.v4());
+                }
+
                 //Add the identifier to the XHR data
                 formData.append("pid", this.get("id"));
               }
@@ -557,7 +562,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                       model.set("numSaveAttempts", 0);
                       model.set("uploadStatus", "c");
                       model.trigger("successSaving", model);
-                      model.fetch({merge: true}); // Get the newest sysmeta set by the MN
+
+                      // Get the newest sysmeta set by the MN
+                      model.fetch({
+                        merge: true,
+                        systemMetadataOnly: true
+                      });
+
                       // Reset the content changes status
                       model.set("hasContentChanges", false);
 
@@ -616,7 +627,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
          * Check if the current user is authorized to perform an action on this object
          */
         checkAuthority: function(action){
-          
+
           // return false - if neither PID nor SID is present to check the authority
           if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
             return false;
@@ -637,7 +648,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           var model = this;
           var requestSettings = {
             url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
-            
+
             type: "GET",
             success: function(data, textStatus, xhr) {
               model.set("isAuthorized", true);
@@ -683,6 +694,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             xml.find("identifier").text((this.get("newPid") || this.get("id")));
             xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
             xml.find("formatid").text(this.get("formatId") || this.getFormatId());
+
+            //If there is a seriesId, add it
+            if( this.get("seriesId") ){
+              //Get the seriesId XML node
+              var seriesIdNode = xml.find("seriesId");
+
+              //If it doesn't exist, create one
+              if( !seriesIdNode.length ){
+                seriesIdNode = $(document.createElement("seriesid"));
+                xml.find("identifier").before(seriesIdNode);
+              }
+
+              //Add the seriesId string to the XML node
+              seriesIdNode.text( this.get("seriesId") );
+            }
 
             //If there is no size, get it
             if( !this.get("size") && this.get("uploadFile")){
@@ -889,7 +915,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   '    <checksum />',
                   '    <submitter />',
                   '    <rightsholder />',
-                  '    <originmembernode />',
                   '    <filename />',
                   '</d1_v2.0:systemmetadata>'
               );
@@ -1098,11 +1123,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             },
 
-            /* A DataONE object is new if dateUploaded is not null and synced is true */
-
+          /**
+          * Returns true if this DataONE object is new. A DataONE object is new
+          * if there is no upload date and it's been synced (i.e. been fetched)
+          * @return {boolean}
+          */
           isNew: function(){
             //Check if there is an upload date that was retrieved from the server
-            return ( this.get("dateUploaded") === null  && this.get("synced") );
+            return ( this.get("dateUploaded") === this.defaults().dateUploaded &&
+                     this.get("synced") );
           },
 
           /*

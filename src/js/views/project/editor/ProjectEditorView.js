@@ -198,7 +198,10 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       } else {
 
         // Create a new, default project model
-        this.model = new Project();
+        this.model = new Project({
+          //Set synced to true since this is a new object
+          synced: true
+        });
 
         //Create an isPartOf filter for this new Project
         this.model.addIsPartOfFilter();

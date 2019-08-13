@@ -270,6 +270,8 @@ define(["jquery",
         fields: ["isPartOf"],
         values: [seriesId],
         isInvisible: true,
+        matchSubstring: false,
+        operator: "OR",
         // projDefFilter allows us to distinguish this type of filter
         // from other filters during serialization
         projDefFilter: true

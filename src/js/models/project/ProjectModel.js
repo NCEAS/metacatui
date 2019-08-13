@@ -6,6 +6,7 @@ define(["jquery",
         "underscore",
         "backbone",
         "gmaps",
+        "uuid",
         "collections/Filters",
         "collections/SolrResults",
         "models/project/ProjectSectionModel",
@@ -18,7 +19,7 @@ define(["jquery",
         "models/Map"
     ],
     /** @lends ProjectModel.prototype */
-    function($, _, Backbone, gmaps, Filters, SolrResults, ProjectSectionModel, ProjectImage,
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, ProjectSectionModel, ProjectImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
          * A ProjectModel is a specialized collection that represents a project,
@@ -45,6 +46,8 @@ define(["jquery",
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
                     objectXML: null,
+                    formatId: "http://ecoinformatics.org/project-beta1",
+                    formatType: "DATA",
                     logo: null,
                     sections: [],
                     associatedParties: [],
@@ -106,6 +109,7 @@ define(["jquery",
              * fetch options
              * @param [options] {object} - Options for this fetch
              * @property [options.objectOnly] {Boolean} - If true, only the object will be retrieved and not the system metadata
+             * @property [options.systemMetadataOnly] {Boolean} - If true, only the system metadata will be retrieved
              * @return {XMLDocument} The XMLDocument returned from the fetch() AJAX call
             */
             fetch: function(options) {
@@ -113,16 +117,20 @@ define(["jquery",
               if ( ! options ) var options = {};
               else var options = _.clone(options);
 
-              //Fetch the system metadata
-              if( !options.objectOnly ){
-                this.fetchSystemMetadata();
-              }
-              
               //If the seriesId has not been found yet, get it from Solr
               if( !this.get("seriesId") && this.get("label") ){
                 this.once("change:seriesId", this.fetch);
                 this.getSeriesIdByName();
                 return;
+              }
+
+              //Fetch the system metadata
+              if( !options.objectOnly || options.systemMetadataOnly ){
+                this.fetchSystemMetadata();
+
+                if( options.systemMetadataOnly ){
+                  return;
+                }
               }
 
               var requestSettings = {
@@ -959,7 +967,7 @@ define(["jquery",
                 this.on("checksumCalculated", this.save);
                 //Calculate the checksum for this file
                 this.calculateChecksum();
-                
+
                 //Exit this function until the checksum is done
                 return;
               }
