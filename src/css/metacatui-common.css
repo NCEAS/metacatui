@@ -2414,18 +2414,12 @@ a.btn.metrics-button-disabled {
     width: 100%;
 }
 
-.ncboAutocomplete-matchType-label {
-	background-color: #3a87ad;
-	padding: 3px 5px;
-	border-radius: 5px;
-	color: white;
+.ncboAutocomplete .jsonSuggest {
+	overflow-x: scroll;
 }
 
-.ncboAutocomplete-matchType-synonym {
-	background-color: #468847;
-	padding: 3px 5px;
-	border-radius: 5px;
-	color: white;
+.ncboAutocomplete > .ui-autocomplete .ui-menu-item {
+	overflow: visible;
 }
 
 /** hide the tree until we have it where we want it **/

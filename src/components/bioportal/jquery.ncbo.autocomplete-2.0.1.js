@@ -186,22 +186,6 @@
             text = text.replace(filterPatt, '<strong>$1</strong>');
           }
 
-          // Add in match type and any synonyms
-          var matchTypeTag = "";
-          switch(resultObjects[i].matchType) {
-            case "prefLabel":
-              matchTypeTag = '<span class="ncboAutocomplete-matchType-label"><abbr title="Matched by label">LBL</abbr></span>';
-              break;
-            case "synonym":
-              matchTypeTag = '<span class="ncboAutocomplete-matchType-synonym"><abbr title="Matched by syonomy">SYN</abbr></span>';
-              break;
-            default:
-              matchTypeTag = "";
-              break;
-          }
-
-          text = matchTypeTag + " " + text;
-
           if (resultObjects[i].synonym) {
             text += " ≅ " + resultObjects[i].synonym.join(" ≅ ");
           }
