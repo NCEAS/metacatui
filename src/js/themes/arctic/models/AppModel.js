@@ -169,7 +169,7 @@ define(['jquery', 'underscore', 'backbone'],
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
 			archivedContentIsIndexed: true,
-			bioportalAPIKey: "5c385237-ec28-4ef6-8ba1-f5bcfb752142",
+			bioportalAPIKey: "",
 			bioportalLookupCache: {}
 		},
 
