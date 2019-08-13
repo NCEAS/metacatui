@@ -18,7 +18,7 @@ define(["jquery",
         name: null,
         label: null,
         description: null,
-        filters: null,
+        filters: new Filters(),
         /** @type {Search} - A Search model with a Filters collection */
         // that contains the filters associated with this collection
         searchModel: new Search(),
@@ -253,35 +253,38 @@ define(["jquery",
         } else {
           this.reserveSeriesId()
           seriesId = this.get("seriesId");
+
+          // Set a listener to create an isPartOf filter using the seriesId once
+          // the series Id is set. Just in case the first seriesId generated was
+          // already reserved, update the isPartOf filters on the subsequent
+          // attempts to create and resere an ID.
+          this.on("change:seriesId", function(seriesId){
+            this.addIsPartOfFilter();
+          });
+
         }
       }
 
-      // Set some empty filters on the model
-      this.get("searchModel")
-          .set("filters", new Filters({ catalogSearch: true }));
-      this.set("filters", new Filters());
-
-      // Create objectDOM for the filter
-      var filterNode    = $($.parseXML("<filter></filter>")).children()[0],
-          fieldElement  = filterNode.ownerDocument.createElement("field"),
-          valueElement  = filterNode.ownerDocument.createElement("value");
-
-      $(fieldElement).text("isPartOf");
-      $(valueElement).text(seriesId);
-      filterNode.append(fieldElement);
-      filterNode.append(valueElement);
-
       // Create the new filterModel
       var filterModel = new Filter({
-        objectDOM: filterNode,
+        fields: ["isPartOf"],
+        values: [seriesId],
         isInvisible: true,
         // projDefFilter allows us to distinguish this type of filter
         // from other filters during serialization
         projDefFilter: true
       });
 
+      //Remove any existing isPartOf filters
+      this.get("searchModel").get("filters").removeFiltersByField("isPartOf");
+      this.get("filters").removeFiltersByField("isPartOf");
+
+      //Add the new isPartOf filter
       this.get("searchModel").get("filters").add(filterModel);
       this.get("filters").add(filterModel);
+
+
+      MetacatUI.proj = this;
 
     },
 

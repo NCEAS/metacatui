@@ -221,6 +221,24 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                     isInvisible: true,
                     queryGroup: "catalog"
                 }));
+            },
+
+            /**
+            * Removes Filter models from this collection if they match the given field
+            * @param {string} field - The field whose matching filters that should be removed from this collection
+            */
+            removeFiltersByField: function(field){
+
+              var toRemove = [];
+
+              this.each(function(filter){
+                if(filter.get("fields").includes(field)){
+                  toRemove.push(filter);
+                }
+              });
+
+              this.remove(toRemove);
+
             }
             /*
             hasGeohashFilter: function() {
