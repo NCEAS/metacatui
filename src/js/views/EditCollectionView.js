@@ -48,12 +48,19 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * @type {string}
     */
     dataCatalogViewContainer: ".data-catalog-view-container",
+    /**
+    * A jQuery selector for the element that the Save and Cancel buttons should be inserted into
+    * @type {string}
+    */
+    collectionControlsContainer: ".applied-filters-container",
 
     /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
     events: {
+      "click .save"   : "saveCollection",
+      "click .cancel" : "resetCollection"
     },
 
     /**
@@ -88,6 +95,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         this.listenTo(this.model, "change:seriesId", this.renderDataCatalog);
       }
 
+      //this.renderCollectionControls();
+
     },
 
     /**
@@ -95,10 +104,9 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      */
     renderDataCatalog: function(){
 
-      //Create a Search model using the collection definition
-      var searchModel = new Search({
-        filters: this.model.get("filters")
-      });
+      var searchModel = this.model.get("searchModel");
+
+      console.log(searchModel.get("filters"));
 
       //Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
@@ -112,6 +120,42 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       //Render the view and insert it into the page
       this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
       dataCatalogView.render();
+
+    },
+
+    /**
+    * Renders the edit collection controls - e.g. a Save and Cancel buttton
+    */
+    renderCollectionControls: function(){
+
+      //Create a Save button
+      var saveButton   = $(document.createElement("a"))
+                        .addClass("save btn btn-primary")
+                        .text("Save"),
+      //Create a Cancel button
+          cancelButton = $(document.createElement("a"))
+                        .addClass("cancel btn")
+                        .text("Cancel"),
+      //Create a container for the buttons
+          buttons      = $(document.createElement("div"))
+                        .addClass("collection-controls")
+                        .append(saveButton, cancelButton);
+
+      //Add the buttons to the view
+      this.$(this.collectionControlsContainer).append(buttons);
+
+    },
+
+    /**
+    * Save this Collection model with the currently applied filters
+    */
+    saveCollection: function(){
+    },
+
+    /**
+    * Resets the Collection model back to where it was
+    */
+    resetCollection: function(){
 
     }
 

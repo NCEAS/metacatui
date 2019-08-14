@@ -10,14 +10,36 @@ define(["jquery",
         "models/Search"],
     function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, Search) {
 
-	var CollectionModel = DataONEObject.extend({
+  /**
+  * @class CollectionModel
+  * @name CollectionModel
+  * @extends DataONEObject
+  * @constructs
+  */
+	var CollectionModel = DataONEObject.extend(
+    /** @lends CollectionModel.prototype */
+    {
 
-    //The default attributes for this model
+    /**
+    * The name of this Model
+    * @name CollectionModel#type
+    * @type {string}
+    * @readonly
+    */
+    type: "Collection",
+
+    /**
+    * Default attributes for CollectionModels
+    * @name CollectionModel#defaults
+    * @type {Object}
+    * @property {string[]} ignoreQueryGroups - The Filter query groups to not serialize to the collection definition part of the XML document
+    */
     defaults: function(){
       return {
         name: null,
         label: null,
         description: null,
+        ignoreQueryGroups: ["catalog"],
         filters: new Filters(),
         /** @type {Search} - A Search model with a Filters collection */
         // that contains the filters associated with this collection
@@ -151,7 +173,6 @@ define(["jquery",
       //Create a Search model for this collection's filters
       modelJSON.searchModel = new Search();
       modelJSON.searchModel.set("filters", new Filters());
-      modelJSON.searchModel.get("filters").createCatalogFilters();
 
       //Create a Filters collection to contain the collection definition Filters
       modelJSON.filters = new Filters();
@@ -162,10 +183,7 @@ define(["jquery",
         //Create a new Filter model
         var filterModel = new Filter({
           objectDOM: filterNode,
-          isInvisible: true,
-          // projDefFilter allows us to distinguish this type of filter
-          // from other filters during serialization
-          projDefFilter: true
+          isInvisible: true
         });
 
         //Add the filter to the Filters collection
@@ -271,10 +289,7 @@ define(["jquery",
         values: [seriesId],
         isInvisible: true,
         matchSubstring: false,
-        operator: "OR",
-        // projDefFilter allows us to distinguish this type of filter
-        // from other filters during serialization
-        projDefFilter: true
+        operator: "OR"
       });
 
       //Remove any existing isPartOf filters
@@ -342,28 +357,35 @@ define(["jquery",
             // create an XML collection element from scratch
             var objectDOM = $($.parseXML("<collection></collection>")).children()[0];
         }
-      };
+      }
 
       // Serialize filters
       // Get all the search filter models (not all of which are project definition filters)
-      var filterModels = this.get("searchModel").get("filters").models;
+      var filterModels = this.get("searchModel").get("filters");
 
       // Remove definition node if it exists in XML already
       $(objectDOM).find("definition").remove();
+
       // Create new definition element
-      var definitionSerialized = objectDOM.ownerDocument.createElement("definition");
+      var definitionSerialized = $(objectDOM.ownerDocument.createElement("definition"));
 
       // Iterate through the filter models
-      $(filterModels).each(function(i, filterModel){
-          // Find the filters that are project definition filters
-          if(filterModel.get("projDefFilter")){
+      filterModels.each(function(filterModel){
+          // If this filter has a value and it's not in a queryGroup that we should
+          // ignore, add it to the collection definition
+          if( filterModel.get("values").length &&
+              !this.get("ignoreQueryGroups").includes( filterModel.get("queryGroup") )){
+
             // updateDOM of project definition filters, then append to <definition>
             var filterSerialized = filterModel.updateDOM();
-            $(definitionSerialized).append(filterSerialized);
-          };
-      });
+            definitionSerialized.append(filterSerialized);
 
-      $(objectDOM).prepend(definitionSerialized);
+          }
+      }, this);
+
+      if( definitionSerialized.children().length ){
+        $(objectDOM).prepend(definitionSerialized);
+      }
 
       // Get and update the simple text strings (everything but definition)
       // in reverse order because we prepend them consecutively to objectDOM
