@@ -126,7 +126,7 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
               var msg = "This is a private project. You need authorization to edit this project.";
 
               //Show the not authorized error message
-              MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container");
+              MetacatUI.appView.showAlert(msg, "alert-error", this.projEditSectionsContainer);
             }
           });
 
