@@ -92,6 +92,9 @@ define(["jquery",
               //Call the super class initialize function
               CollectionModel.prototype.initialize.call(this, options);
 
+              // Cache this model for later use
+              this.cacheProject();
+
             },
 
             /**
@@ -973,6 +976,19 @@ define(["jquery",
               }
 
               this.constructor.__super__.save.call(this);
+            },
+
+            /**
+            * Saves a reference to this Project on the MetacatUI global object
+            */
+            cacheProject: function(){
+
+              if( this.get("id") ){
+                MetacatUI.projects = MetacatUI.projects || {};
+                MetacatUI.projects[this.get("id")] = this;
+              }
+
+              this.on("change:id", this.cacheProject);
             }
 
         });

@@ -139,10 +139,6 @@ define(["jquery",
                 this.headerView.render();
                 this.subviews.push(this.headerView);
 
-                // Cache this model for later use
-                MetacatUI.projects = MetacatUI.projects || {};
-                MetacatUI.projects[this.model.get("id")] = this.model.clone();
-
                 //Render the content sections
                 _.each(this.model.get("sections"), function(section){
                   this.addSection(section);
