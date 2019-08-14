@@ -182,8 +182,7 @@ define(["jquery",
 
         //Create a new Filter model
         var filterModel = new Filter({
-          objectDOM: filterNode,
-          isInvisible: true
+          objectDOM: filterNode
         });
 
         //Add the filter to the Filters collection
@@ -299,9 +298,6 @@ define(["jquery",
       //Add the new isPartOf filter
       this.get("searchModel").get("filters").add(filterModel);
       this.get("filters").add(filterModel);
-
-
-      MetacatUI.proj = this;
 
     },
 

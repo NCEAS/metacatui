@@ -187,33 +187,31 @@ define(['jquery', 'underscore', 'backbone',
       appliedFiltersContainer.append(headerText, appliedFiltersEl);
       this.$(".filters-header").append(appliedFiltersContainer);
 
-      _.each( this.filterGroups, function(filterGroup){
+      //Get all the nonNumeric filter models
+      var nonNumericFilters = this.filters.reject(function(filterModel){
+        return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
+      });
+      //Listen to changes on the "values" attribute for nonNumeric filters
+      _.each(nonNumericFilters, function(nonNumericFilter){
+        this.listenTo(nonNumericFilter, "change:values", this.updateAppliedFilters);
 
-        //Get all the FilterModels
-        var filters = filterGroup.get("filters");
-
-        //Get all the nonNumeric filter models
-        var nonNumericFilters = filters.reject(function(filterModel){
-          return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
-        });
-        //Listen to changes on the "values" attribute for nonNumeric filters
-        _.each(nonNumericFilters, function(nonNumericFilter){
-          this.listenTo(nonNumericFilter, "change:values", this.updateAppliedFilters);
-        }, this);
-
-        //Get the numeric filters and listen to the min and max values
-        var numericFilters = _.where(filters.models, { type: "NumericFilter" });
-        _.each(numericFilters, function(numericFilter){
-          this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
-        }, this);
-
-        //Get the date filters and listen to the min and max values
-        var dateFilters = _.where(filters.models, { type: "DateFilter" });
-        _.each(dateFilters, function(dateFilter){
-          this.listenTo(dateFilter, "change:min change:max", this.updateAppliedRangeFilters);
-        }, this);
-
+        if( nonNumericFilter.get("values").length ){
+          this.updateAppliedFilters(nonNumericFilter, { displayWithoutChanges: true });
+        }
       }, this);
+
+      //Get the numeric filters and listen to the min and max values
+      var numericFilters = _.where(this.filters.models, { type: "NumericFilter" });
+      _.each(numericFilters, function(numericFilter){
+        this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
+      }, this);
+
+      //Get the date filters and listen to the min and max values
+      var dateFilters = _.where(this.filters.models, { type: "DateFilter" });
+      _.each(dateFilters, function(dateFilter){
+        this.listenTo(dateFilter, "change:min change:max", this.updateAppliedRangeFilters);
+      }, this);
+
 
     },
 
@@ -265,19 +263,29 @@ define(['jquery', 'underscore', 'backbone',
       });
     },
 
-    /*
+    /**
     * Renders the values of the given Filter Model in the current filter model
     *
-    * @param {Filter} - The FilterModel to display
+    * @param {Filter} filterModel - The FilterModel to display
+    * @param {object} options - Additional options for this function
+    * @property {boolean} options.displayWithoutChanges - If true, this filter will display even if the value hasn't been changed
     */
-    updateAppliedFilters: function(filterModel){
+    updateAppliedFilters: function(filterModel, options){
 
-      //If the values attribue has changed...
-      if( filterModel.changed && filterModel.changed.values ){
+      //Create an options object if one wasn't sent
+      if( typeof options != "object" ){
+        var options = {};
+      }
+
+      //If the value of this filter has changed, or if the displayWithoutChanges option
+      // was passed, and if the filter is not invisible, then display it
+      if( !filterModel.get("isInvisible") &&
+          ((filterModel.changed && filterModel.changed.values) ||
+          options.displayWithoutChanges) ){
 
         //Get the new values and the previous values
-        var newValues      = filterModel.changed.values,
-            previousValues = filterModel.previousAttributes().values,
+        var newValues      = options.displayWithoutChanges? filterModel.get("values") : filterModel.changed.values,
+            previousValues = options.displayWithoutChanges? [] : filterModel.previousAttributes().values,
             //Find the values that were removed
             removedValues  = _.difference(previousValues, newValues),
             //Find the values that were added
@@ -471,6 +479,10 @@ define(['jquery', 'underscore', 'backbone',
       //If this Filter model is a full-text search, don't display a label
       else if( filterModel.get("fields").length == 1 && filterModel.get("fields")[0] == "text"){
         filterLabel = "";
+      }
+      //isPartOf filters should just display the label, not the value
+      else if( filterModel.get("fields").length == 1 && filterModel.get("fields")[0] == "isPartOf" ){
+        filterValue = "";
       }
 
       //Create the applied filter element
