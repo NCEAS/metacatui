@@ -95,9 +95,12 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       this.createModel();
 
       // An exisiting project should have a projectIdentifier already set
-      // from the router, and a seriesId or label set during createModel()
-      if ( (this.model.get("seriesId") || this.model.get("label"))
-            && this.projectIdentifier
+      // from the router, that does not equal the newProjectTempName ("new"),
+      // plus a seriesId or label set during createModel()
+      if (
+        (this.model.get("seriesId") || this.model.get("label"))
+        &&
+        (this.projectIdentifier && this.projectIdentifier != this.newProjectTempName)
       ){
           var view = this;
 
@@ -187,7 +190,7 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     createModel: function(){
 
       // Look up the project document seriesId by its registered name if given
-      if ( this.projectIdentifier ) {
+      if ( this.projectIdentifier && this.projectIdentifier != this.newProjectTempName) {
 
         // Create a new project model with the identifier
         this.model = new Project({

@@ -343,8 +343,11 @@ function(_, $, Backbone, Project,
       }
 
       var projName = this.model.get("label") || this.newProjectTempName,
-          pathName = window.location.pathname.substring(MetacatUI.root.length),
-          section = this.activeSection;
+          section = this.activeSection,
+          pathName = window.location.pathname
+                      .substring(MetacatUI.root.length)
+                      // remove trailing forward slash if one exists in path
+                      .replace(/\/$/, "");
 
       //If the project name is not in the window location, add it
       if( pathName.indexOf(projName) == -1 ){
