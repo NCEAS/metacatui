@@ -1,13 +1,20 @@
 define(['underscore',
         'jquery',
         'backbone',
-        "views/SignInView"],
-function(_, $, Backbone, SignInView){
+        "views/SignInView",
+        "text!templates/editorSubmitMessage.html"],
+function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
   /**
   * @class EditorView
   */
   var EditorView = Backbone.View.extend({
+
+
+    /**
+    * References to templates for this view. HTML files are converted to Underscore.js templates
+    */
+    editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
 
     /**
     * The element this view is contained in. A jQuery selector or the element itself.
@@ -28,6 +35,18 @@ function(_, $, Backbone, SignInView){
     },
 
     /**
+     * Set listeners on the view's model.
+     * This function centralizes all the listeners so that when/if the view's
+     * model is replaced, the listeners can be reset.
+     */
+    setListeners: function() {
+
+      this.listenTo(this.model, "errorSaving", this.saveError);
+      this.listenTo(this.model, "successSaving", this.saveSuccess);
+
+    },
+
+    /**
     * Show Sign In buttons
     */
     showSignIn: function(){
@@ -41,6 +60,7 @@ function(_, $, Backbone, SignInView){
     * Saves the model
     */
     save: function(){
+      this.showSaving();
       this.model.save();
     },
 
@@ -175,7 +195,49 @@ function(_, $, Backbone, SignInView){
     checkValidity: function(){
       if(this.model.isValid())
         this.model.trigger("valid");
+    },
+
+    /**
+     * When the object is saved successfully, tell the user
+     * @param {object} savedObject - the object that was successfully saved
+     */
+    saveSuccess: function(savedObject){
+
+      var identifier = this.model.get("label") || this.model.get("seriesId");
+
+      var message = this.editorSubmitMessageTemplate({
+            messageText: "Your changes have been submitted.",
+            viewURL: MetacatUI.root + "/portals/" + identifier,
+            buttonText: "View your portal"
+        });
+
+      MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
+
+      this.setListeners();
+      this.hideSaving();
+
+    },
+
+    /**
+     * When the object fails to save, tell the user
+     * @param {string} errorMsg - The error message resulting from a failed attempt to save
+     */
+    saveError: function(errorMsg){
+
+      var messageContainer = $(document.createElement("div")).append(document.createElement("p")),
+          messageParagraph = messageContainer.find("p"),
+          messageClasses = "alert-error";
+
+      messageParagraph.append(errorMsg);
+
+      MetacatUI.appView.showAlert(messageContainer, messageClasses, this.$el, null, {
+        emailBody: errorMsg,
+        remove: true
+      });
+
+      this.hideSaving();
     }
+
 
   });
 
