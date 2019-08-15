@@ -44,6 +44,8 @@ define(['jquery', 'underscore', 'backbone',
         this.vertical = true;
       }
 
+      this.parentView = options.parentView || null;
+
     },
 
     render: function () {
@@ -312,22 +314,29 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       //Toggle the applied filters header
-      this.toggleAppliedFiltersHeader();
+      this.toggleFilterHeaderAndHelpText();
 
     },
 
-    /*
-    * Hides or shows the applied filter list title/header
-    */
-    toggleAppliedFiltersHeader: function(){
+    /**
+     * Hides or shows the applied filter list title/header, as well as the help
+     * message that lets the user know they can add filters when there are none
+     */
+    toggleFilterHeaderAndHelpText: function(){
 
-      //If there is an applied filter, show the Clear All button
+      //If there is an applied filter
       if( this.$(".applied-filter").length ){
-          this.$(".filters-title").css("display", "block");
+        // hide the "add some filters" help text
+        $(this.parentView.helpTextContainer).css("display", "none");
+        // show the Clear All button
+        this.$(".filters-title").css("display", "block");
       }
-      //If there are no applied filters, hide the Clear All button
+      //If there are no applied filters
       else{
-          this.$(".filters-title").css("display", "none");
+        // show the "add some filters" help text
+        $(this.parentView.helpTextContainer).css("display", "block");
+        // hide the Clear All button
+        this.$(".filters-title").css("display", "none");
       }
 
     },
@@ -388,7 +397,7 @@ define(['jquery', 'underscore', 'backbone',
 
       }
 
-      this.toggleAppliedFiltersHeader();
+      this.toggleFilterHeaderAndHelpText();
 
     },
 
@@ -544,7 +553,7 @@ define(['jquery', 'underscore', 'backbone',
       this.$(".applied-filters").append(appliedFilter);
 
       //Display the filters title
-      this.toggleAppliedFiltersHeader();
+      this.toggleFilterHeaderAndHelpText();
 
     },
 
@@ -563,7 +572,7 @@ define(['jquery', 'underscore', 'backbone',
       }, this);
 
       //Hide the filters title
-      this.toggleAppliedFiltersHeader();
+      this.toggleFilterHeaderAndHelpText();
 
     },
 

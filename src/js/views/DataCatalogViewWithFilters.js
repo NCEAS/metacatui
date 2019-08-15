@@ -175,9 +175,6 @@ define(["jquery",
                 this.listenTo(this.searchResults, "add", this.addOne);
                 this.listenTo(this.searchResults, "reset", this.addAll);
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
-                // Need to check if there are search results to decide whether
-                // help text should be displayed
-                this.listenTo(this.searchResults, "reset", this.toggleHelpText);
 
                 // Listen to changes in the Search model Filters to trigger a search
                 this.stopListening(this.searchModel.get("filters"), "add remove update reset change");
@@ -244,7 +241,8 @@ define(["jquery",
               var filterGroupsView = new FilterGroupsView({
                 filterGroups: filterGroups,
                 filters: this.searchModel.get("filters"),
-                vertical: true
+                vertical: true,
+                parentView: this
               });
 
               //Add the FilterGroupsView element to this view
@@ -401,24 +399,6 @@ define(["jquery",
              */
             showClearButton: function(){},
 
-            /*
-             * Either hides or shows the help message that lets the user know
-             * they can add filters when the collection is empty.
-             */
-            toggleHelpText: function() {
-
-              var currentFilters = this.searchModel.get("filters").getCurrentFilters();
-
-              // If there are no filters OR there are no search results
-              if ((currentFilters && currentFilters.length > 0) || this.searchResults.length > 0) {
-                  // Hide help text
-                  $(this.helpTextContainer).css( "visibility", "hidden" );
-              // When there are no search filters AND no search results
-              } else {
-                  // Show help text
-                  $(this.helpTextContainer).css( "visibility", "visible" );
-              }
-            },
 
             /**
              * Toggle between map and list mode
