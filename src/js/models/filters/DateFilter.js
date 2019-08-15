@@ -15,7 +15,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         min: 0,
         max: (new Date()).getUTCFullYear(),
         minDefault: 0,
-        maxDefault: (new Date()).getUTCFullYear()
+        maxDefault: (new Date()).getUTCFullYear(),
+        matchSubstring: false
       });
     },
 
@@ -48,6 +49,20 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           modelJSON.max = modelJSON.maxDefault;
         }
       }
+      //If this filter doesn't have a min and max set, but has a value set as a date query string,
+      else if ( modelJSON.values.length && this.isDateQuery(modelJSON.values[0]) ){
+
+        //Get the date range query
+        var dateRangeQuery = modelJSON.values[0];
+        //Get the first date
+        var min = dateRangeQuery.substring(0, dateRangeQuery.indexOf(" TO "));
+        //Get the second date
+        var max = dateRangeQuery.substring(dateRangeQuery.indexOf(" TO ")+4);
+
+        //Convert the dates to Date objects
+        modelJSON.min = new Date(min).getUTCFullYear();
+        modelJSON.max = new Date(max).getUTCFullYear();
+      }
 
       return modelJSON;
     },
@@ -70,8 +85,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         _.each(this.get("fields"), function(field, i, allFields){
 
           //Add the date range for this field to the query string
-          queryString += field + ":[" + this.get("min") + "-01-01T00:00:00Z%20TO%20" +
-           this.get("max") + "-12-31T00:00:00Z]";
+          queryString += field + ":[" + this.getRangeQuery().replace(/ /g, "%20") + "]";
 
           //If there is another field, add an operator
           if( allFields[i+1] ){
@@ -92,33 +106,76 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     },
 
     /**
+    * Constructs a subquery string from the minimum and maximum dates.
+    * @return {string} - THe subquery string
+    */
+    getRangeQuery: function(){
+      return this.get("min") + "-01-01T00:00:00Z TO " + this.get("max") + "-12-31T00:00:00Z";
+    },
+
+    /**
      * Updates the XML DOM with the new values from the model
      *
-     *  @return {XMLElement} An updated dateFilter XML element from a project document
+     *  @inheritdoc
     */
-    updateDOM: function(){
+    updateDOM: function(options){
 
-      var objectDOM = Filter.prototype.updateDOM.call(this);
+      var objectDOM = Filter.prototype.updateDOM.call(this, options);
 
-      // Get new date data
-      var dateData = {
-        min: this.get("min"),
-        max: this.get("max")
-      };
+      if( typeof options == "undefined" ){
+        var options = {};
+      }
 
-      // Make subnodes <min> and <max> and append to DOM
-      _.map(dateData, function(value, nodeName){
+      if( options.forCollection ){
 
-        if(value){
-          var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-          $(nodeSerialized).text(value);
-          $(objectDOM).append(nodeSerialized);
+        //Get the query string and remove the field name
+        var value = this.getRangeQuery();
+
+        if( value.length ){
+          //Remove the existing values
+          $(objectDOM).children("value").remove();
+
+          //Create the `value` XML node
+          var valueNode = $(objectDOM.ownerDocument.createElement("value"))
+                          .text(value);
+
+          //Insert the value node after the field nodes
+          $(objectDOM).find("field").last().after(valueNode);
         }
 
-      });
+      }
+      else{
+        // Get new date data
+        var dateData = {
+          min: this.get("min"),
+          max: this.get("max")
+        };
 
-      return objectDOM
-    }
+        // Make subnodes <min> and <max> and append to DOM
+        _.map(dateData, function(value, nodeName){
+
+          if(value){
+            var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+            $(nodeSerialized).text(value);
+            $(objectDOM).append(nodeSerialized);
+          }
+
+        });
+      }
+
+
+      return objectDOM;
+    },
+
+    /**
+    * @inheritdoc
+    */
+    hasChangedValues: function(){
+
+      return (this.get("min") > this.get("minDefault") ||
+              this.get("max") < this.get("maxDefault"))
+
+    },
 
   });
 

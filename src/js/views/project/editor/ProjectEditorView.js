@@ -199,12 +199,9 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
 
         // Create a new, default project model
         this.model = new Project({
-          //Set synced to true since this is a new object
-          synced: true
+          //Set the isNew attribute so the model will execute certain functions when a Project is new
+          isNew: true
         });
-
-        //Create an isPartOf filter for this new Project
-        this.model.addIsPartOfFilter();
 
       }
     },

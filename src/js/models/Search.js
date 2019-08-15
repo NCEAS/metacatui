@@ -56,8 +56,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         field: "obsoletedBy",
                         value: "*"
                     }],
-                    /* The collection of filters used to build a query, an instance of Filters */
-                    filters: new Filters()
+                    /**
+                    * The collection of filters used to build a query, an instance of Filters
+                    * @type {Filters}
+                    */
+                    filters: null
                 }
             },
 

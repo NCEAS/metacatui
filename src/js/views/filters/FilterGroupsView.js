@@ -210,6 +210,11 @@ define(['jquery', 'underscore', 'backbone',
       var dateFilters = _.where(this.filters.models, { type: "DateFilter" });
       _.each(dateFilters, function(dateFilter){
         this.listenTo(dateFilter, "change:min change:max", this.updateAppliedRangeFilters);
+
+        if( dateFilter.get("min") != dateFilter.defaults().min ||
+            dateFilter.get("max") != dateFilter.defaults().max ){
+          this.updateAppliedRangeFilters(dateFilter, { displayWithoutChanges: true });
+        }
       }, this);
 
 
@@ -340,10 +345,26 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * When a NumericFilter or DateFilter model is changed, update the applied filters in the UI
+    * @param {DateFilter|NumericFilter} filterModel - The model whose values to display
+    * @param {object} [options] - Additional options for this function
+    * @property {boolean} [options.displayWithoutChanges] - If true, this filter will display even if the value hasn't been changed
     */
-    updateAppliedRangeFilters: function(filterModel){
+    updateAppliedRangeFilters: function(filterModel, options){
+
+      if( !filterModel ){
+        return;
+      }
+
+      if( typeof options === "undefined" ){
+        var options = {};
+      }
+
+      //If the Filter is invisible, don't render it
+      if( filterModel.get("isInvisible") ){
+        return;
+      }
 
       //If the minimum and maximum values are set to the default, remove the filter element
       if( filterModel.get("min") == filterModel.get("minDefault") &&
@@ -360,8 +381,9 @@ define(['jquery', 'underscore', 'backbone',
         }, this);
 
       }
-      //If the values attribue has changed...
-      else if( filterModel.changed && (filterModel.changed.min || filterModel.changed.max) ){
+      //If the values attribue has changed, or if the displayWithoutChanges attribute was passed
+      else if( (filterModel.changed && (filterModel.changed.min || filterModel.changed.max)) ||
+                options.displayWithoutChanges ){
 
         //Create the filter label for ranges of numbers
         if( filterModel.type == "DateFilter" || filterModel.get("range") ){
@@ -484,6 +506,10 @@ define(['jquery', 'underscore', 'backbone',
       else if( filterModel.get("fields").length == 1 && filterModel.get("fields")[0] == "isPartOf" ){
         filterValue = "";
       }
+      //If the filter value is just an asterisk (i.e. `match anything`), just display the label
+      else if( filterModel.get("values").length == 1 && filterModel.get("values")[0] == "*" ){
+        filterValue = "";
+      }
 
       //Create the applied filter element
       var removeIcon    = $(document.createElement("a"))
@@ -525,6 +551,11 @@ define(['jquery', 'underscore', 'backbone',
     * @param {Filter} filterModel - The Filter Model to display
     */
     addCustomAppliedFilter: function(filterModel){
+      
+      //If the Filter is invisible, don't render it
+      if( filterModel.get("isInvisible") ){
+        return;
+      }
 
       //If this filter already exists in the applied filter list, exit this function
       var alreadyExists = _.find( this.$(".applied-filter.custom"), function(appliedFilterEl){

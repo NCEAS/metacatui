@@ -15,7 +15,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             * Creates a new Filters collection
             * @constructs Filters
             */
-            initialize: function(options) {
+            initialize: function(models, options) {
                 if (typeof options === "undefined") {
                     var options = {};
                 }
@@ -99,7 +99,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               }
 
               //Add the Data Catalog filters, if there are any
-              if( catalogFilters.length ){
+              if( Array.isArray(catalogFilters) && catalogFilters.length ){
 
                 //If there are other filters besides the catalog filters, AND them
                 if( completeQuery.trim().length ){

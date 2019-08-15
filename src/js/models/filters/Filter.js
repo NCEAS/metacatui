@@ -270,7 +270,10 @@ define(['jquery', 'underscore', 'backbone'],
         value = this.escapeSpecialChar(value);
 
         //Add the value to the query string. Wrap in wildcards, if specified
-        if( value.indexOf(" ") > -1 ){
+        if( this.isDateQuery() ){
+          valuesQueryString = "[" + value + "]";
+        }
+        else if( value.indexOf(" ") > -1 ){
           valuesQueryString += '*"' + value + '"*';
         }
         else if( this.get("matchSubstring") ){
@@ -312,6 +315,16 @@ define(['jquery', 'underscore', 'backbone'],
     },
 
     /**
+    * Checks if this Filter has values different than the default values.
+    * @return {boolean} - Returns true if this Filter has values set on it, otherwise will return false
+    */
+    hasChangedValues: function(){
+
+      return (this.get("values").length > 0);
+
+    },
+
+    /**
     * Escapes Solr query reserved characters so that search terms can include
     *  those characters without throwing an error.
     *
@@ -336,10 +349,11 @@ define(['jquery', 'underscore', 'backbone'],
     /**
      * Updates XML DOM with the new values from the model
      *
-     *  @param {XMLElement} [objectDOM] The XML element to update with this Filter information
-     *  @return {XMLElement} A new XML element with the updated values
+     *  @param {object} [options] A literal object with options for this serialization
+     *  @property {boolean} [options.forCollection] - If true, will create an XML DOM for Collection definitions, not FilterGroups
+     *  @return {Element} A new XML element with the updated values
     */
-    updateDOM: function(objectDOM){
+    updateDOM: function(options){
 
       var objectDOM = this.get("objectDOM");
 
@@ -353,6 +367,10 @@ define(['jquery', 'underscore', 'backbone'],
               objectDOM = $(objectDOM).children()[0];
       }
 
+      if(typeof options == "undefined"){
+        var options = {};
+      }
+
       // Get new values
       var filterData = {
         // The following values are common to all FilterType elements
@@ -361,28 +379,31 @@ define(['jquery', 'underscore', 'backbone'],
         operator: this.get("operator"),
         exclude: this.get("exclude"),
         matchSubstring: this.get("matchSubstring"),
+        label: this.get("label")
+      };
+
+      //If this is a UIFilterType that won't be serialized into a Collection definition,
+      // then add extra XML nodes
+      if( !options.forCollection ){
         // The following values are set for UserInterfaceFilterType,
         // a subtype of FilterType
-        label: this.get("label"),
-        placeholder: this.get("placeholder"),
-        icon: this.get("icon"),
-        description: this.get("description")
-      };
+        filterData.placeholder = this.get("placeholder");
+        filterData.icon = this.get("icon");
+        filterData.description = this.get("description");
+      }
 
       // Make new sub nodes using the new model data
       _.map(filterData, function(values, nodeName){
 
         // Serialize the nodes with multiple occurences
-        if(nodeName == "field" || nodeName == "value"){
-          if(values){
+        if( Array.isArray(values) ){
             _.each(values, function(value){
               if(value){
                 var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
                 $(nodeSerialized).text(value);
                 $(objectDOM).append(nodeSerialized);
               }
-            })
-          }
+            });
         // Serialize the single occurence nodes
         } else {
           if(values){
@@ -395,6 +416,27 @@ define(['jquery', 'underscore', 'backbone'],
       });
 
       return objectDOM
+    },
+
+    /**
+    * Returns true if the given value or value set on this filter is a date range query
+    * @param {string} value - The string to test
+    * @return {boolean}
+    */
+    isDateQuery: function(value){
+
+      if( typeof value == "undefined" && this.get("values").length == 1 ){
+        var value = this.get("values")[0];
+      }
+
+      if( value ){
+        var dateMatch = value.match(/[\d|\-|:|T]*Z TO [\d|\-|:|T]*Z/);
+
+        return (Array.isArray(dateMatch) && dateMatch.length);
+      }
+      else{
+        return false;
+      }
     }
 
   });

@@ -106,15 +106,14 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
 
       var searchModel = this.model.get("searchModel");
 
-      console.log(searchModel.get("filters"));
-
       //Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
         searchModel: searchModel,
         searchResults: this.model.get("searchResults"),
         mapModel: this.model.get("mapModel") || new Map(),
         isSubView: true,
-        mode: "map"
+        mode: "map",
+        filters: false
       });
 
       //Render the view and insert it into the page

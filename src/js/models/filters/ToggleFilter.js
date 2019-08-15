@@ -52,31 +52,34 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     /**
      * Updates the XML DOM with the new values from the model
-     *
+     *  @inheritdoc
      *  @return {XMLElement} An updated toggleFilter XML element from a project document
     */
-    updateDOM: function(){
-      var objectDOM = Filter.prototype.updateDOM.call(this);
+    updateDOM: function(options){
+      var objectDOM = Filter.prototype.updateDOM.call(this, options);
 
-      var dateData = {
-        trueValue: this.get("trueValue"),
-        trueLabel: this.get("trueLabel"),
-        falseValue: this.get("falseValue"),
-        falseLabel: this.get("falseLabel")
-      };
+      if( typeof options == "object" && !options.forCollection ){
 
-      // Make and append new subnodes
-      _.map(dateData, function(value, nodeName){
+        var dateData = {
+          trueValue: this.get("trueValue"),
+          trueLabel: this.get("trueLabel"),
+          falseValue: this.get("falseValue"),
+          falseLabel: this.get("falseLabel")
+        };
 
-        if(value){
-          var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-          $(nodeSerialized).text(value);
-          $(objectDOM).append(nodeSerialized);
-        }
+        // Make and append new subnodes
+        _.map(dateData, function(value, nodeName){
 
-      });
+          if(value){
+            var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+            $(nodeSerialized).text(value);
+            $(objectDOM).append(nodeSerialized);
+          }
 
-      return objectDOM
+        });
+      }
+
+      return objectDOM;
     }
 
   });

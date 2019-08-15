@@ -7,8 +7,9 @@ define(["jquery",
         "collections/SolrResults",
         "models/DataONEObject",
         "models/filters/Filter",
+        "models/filters/DateFilter",
         "models/Search"],
-    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, Search) {
+    function($, _, Backbone, uuid, Filters, SolrResults, DataONEObject, Filter, DateFilter, Search) {
 
   /**
   * @class CollectionModel
@@ -40,10 +41,13 @@ define(["jquery",
         label: null,
         description: null,
         ignoreQueryGroups: ["catalog"],
-        filters: new Filters(),
+        /**
+        * A Filters collection that stores filters that have been serialized to the Collection.
+        * @type {Filters} */
+        definitionFilters: null,
         /** @type {Search} - A Search model with a Filters collection */
         // that contains the filters associated with this collection
-        searchModel: new Search(),
+        searchModel: null,
         /** @type {SolrResults} - A SolrResults collection that contains the */
         // filtered search results of datasets in this collection
         searchResults: new SolrResults(),
@@ -67,6 +71,17 @@ define(["jquery",
       //If the searchResults collection is replaced at any time, reset the listener
       this.on("change:searchResults", function(searchResults){
         this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+      });
+
+      //Create a search model
+      this.set("searchModel", this.createSearchModel());
+
+      //Create a Filters collection to store the definition filters
+      this.set("definitionFilters", new Filters());
+
+      //When this Collection has been saved, re-save the collection definition
+      this.on("successSaving", function(){
+        this.get("definitionFilters").reset(this.getAllDefinitionFilters());
       });
 
     },
@@ -171,11 +186,10 @@ define(["jquery",
       modelJSON.description = this.parseTextNode(rootNode, "description");
 
       //Create a Search model for this collection's filters
-      modelJSON.searchModel = new Search();
-      modelJSON.searchModel.set("filters", new Filters());
+      modelJSON.searchModel = this.createSearchModel();
 
       //Create a Filters collection to contain the collection definition Filters
-      modelJSON.filters = new Filters();
+      modelJSON.definitionFilters = new Filters();
 
       // Parse the collection definition
       _.each( $(rootNode).find("definition > filter"), function(filterNode){
@@ -185,8 +199,16 @@ define(["jquery",
           objectDOM: filterNode
         });
 
+        //If the value set on this filter is a date range, create a DateFilter
+        if( filterModel.isDateQuery() ){
+          //Create a new DateFilter model
+          filterModel = new DateFilter({
+            objectDOM: filterNode
+          });
+        }
+
         //Add the filter to the Filters collection
-        modelJSON.filters.add(filterModel);
+        modelJSON.definitionFilters.add(filterModel);
 
         //Add the filter to the Search model
         modelJSON.searchModel.get("filters").add(filterModel);
@@ -286,18 +308,17 @@ define(["jquery",
       var filterModel = new Filter({
         fields: ["isPartOf"],
         values: [seriesId],
-        isInvisible: true,
         matchSubstring: false,
         operator: "OR"
       });
 
       //Remove any existing isPartOf filters
       this.get("searchModel").get("filters").removeFiltersByField("isPartOf");
-      this.get("filters").removeFiltersByField("isPartOf");
+      this.get("definitionFilters").removeFiltersByField("isPartOf");
 
       //Add the new isPartOf filter
       this.get("searchModel").get("filters").add(filterModel);
-      this.get("filters").add(filterModel);
+      this.get("definitionFilters").add(filterModel);
 
     },
 
@@ -355,30 +376,27 @@ define(["jquery",
         }
       }
 
-      // Serialize filters
-      // Get all the search filter models (not all of which are project definition filters)
-      var filterModels = this.get("searchModel").get("filters");
-
       // Remove definition node if it exists in XML already
       $(objectDOM).find("definition").remove();
 
       // Create new definition element
       var definitionSerialized = $(objectDOM.ownerDocument.createElement("definition"));
 
+      //Get the filters that are currently applied to the search.
+      var filtersToSerialize = this.getAllDefinitionFilters();
+
       // Iterate through the filter models
-      filterModels.each(function(filterModel){
-          // If this filter has a value and it's not in a queryGroup that we should
-          // ignore, add it to the collection definition
-          if( filterModel.get("values").length &&
-              !this.get("ignoreQueryGroups").includes( filterModel.get("queryGroup") )){
+      _.each(filtersToSerialize, function(filterModel){
 
-            // updateDOM of project definition filters, then append to <definition>
-            var filterSerialized = filterModel.updateDOM();
-            definitionSerialized.append(filterSerialized);
+        // updateDOM of project definition filters, then append to <definition>
+        var filterSerialized = filterModel.updateDOM({
+          forCollection: true
+        });
+        definitionSerialized.append(filterSerialized);
 
-          }
       }, this);
 
+      //If at least one filter was serialized, add the <definition> node
       if( definitionSerialized.children().length ){
         $(objectDOM).prepend(definitionSerialized);
       }
@@ -410,6 +428,34 @@ define(["jquery",
 
       return objectDOM;
 
+    },
+
+    /**
+    * Creates a new instance of a Search model with a Filters collection.
+    * The Search model is created and returned and NOT set directly on the model in
+    * this function, because this function is called during parse(), when we're not ready
+    * to set attributes directly on the model yet.
+    * @return {Search}
+    */
+    createSearchModel: function(){
+      var search = new Search();
+      search.set("filters", new Filters(null, { catalogSearch: true }));
+      return search;
+    },
+
+    /**
+    * Returns an array of the Filter models that have a value set
+    */
+    getAllDefinitionFilters: function(){
+
+      return this.get("searchModel").get("filters").filter(function(filterModel){
+
+        // If this filter has a value set by the user, and it's not in a query group
+        // marked to ignore, then include it
+        return( filterModel.hasChangedValues() &&
+                !this.get("ignoreQueryGroups").includes( filterModel.get("queryGroup") ));
+
+      }, this);
     },
 
     /**
