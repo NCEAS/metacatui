@@ -36,6 +36,15 @@ define(["jquery",
           //Retrieve only 5 result rows
           searchResults.rows = 5;
 
+          //Hide the Filters that are part of the Collection definition.
+          var searchFilters = this.model.get("searchModel").get("filters");
+          searchFilters.each(function(searchFilter){
+            //Check if this Filter model is also part of the definition filters collection
+            if( this.model.get("definitionFilters").contains(searchFilter) ){
+              searchFilter.set("isInvisible", true);
+            }
+          }, this);
+
           //Render the filters
           var filterGroupsView = new FilterGroupsView({
             filterGroups: this.model.get("filterGroups"),

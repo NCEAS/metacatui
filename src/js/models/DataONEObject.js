@@ -572,6 +572,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                       // Reset the content changes status
                       model.set("hasContentChanges", false);
 
+                      //Reset the model isNew attribute
+                      model.set("isNew", false);
+
                       //Set the last-calculated checksum as the original checksum
                       model.set("originalChecksum", model.get("checksum"));
                       model.set("checksum", model.defaults().checksum);

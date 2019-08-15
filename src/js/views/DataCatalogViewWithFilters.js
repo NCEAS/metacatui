@@ -43,12 +43,6 @@ define(["jquery",
             */
             template: _.template(template),
 
-            /**
-            * A jQuery selector for the element that contains the filter help text
-            * @type {string}
-            */
-            helpTextContainer: "#filter-help-text",
-
             /** @type {string} - The sort order for the Solr query */
             sortOrder: "dateUploaded+desc",
 

@@ -189,33 +189,36 @@ define(['jquery', 'underscore', 'backbone',
       appliedFiltersContainer.append(headerText, appliedFiltersEl);
       this.$(".filters-header").append(appliedFiltersContainer);
 
-      _.each( this.filterGroups, function(filterGroup){
+      //Get all the nonNumeric filter models
+      var nonNumericFilters = this.filters.reject(function(filterModel){
+        return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
+      });
+      //Listen to changes on the "values" attribute for nonNumeric filters
+      _.each(nonNumericFilters, function(nonNumericFilter){
+        this.listenTo(nonNumericFilter, "change:values", this.updateAppliedFilters);
 
-        //Get all the FilterModels
-        var filters = filterGroup.get("filters");
-
-        //Get all the nonNumeric filter models
-        var nonNumericFilters = filters.reject(function(filterModel){
-          return (filterModel.type == "NumericFilter" || filterModel.type == "DateFilter");
-        });
-        //Listen to changes on the "values" attribute for nonNumeric filters
-        _.each(nonNumericFilters, function(nonNumericFilter){
-          this.listenTo(nonNumericFilter, "change:values", this.updateAppliedFilters);
-        }, this);
-
-        //Get the numeric filters and listen to the min and max values
-        var numericFilters = _.where(filters.models, { type: "NumericFilter" });
-        _.each(numericFilters, function(numericFilter){
-          this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
-        }, this);
-
-        //Get the date filters and listen to the min and max values
-        var dateFilters = _.where(filters.models, { type: "DateFilter" });
-        _.each(dateFilters, function(dateFilter){
-          this.listenTo(dateFilter, "change:min change:max", this.updateAppliedRangeFilters);
-        }, this);
-
+        if( nonNumericFilter.get("values").length ){
+          this.updateAppliedFilters(nonNumericFilter, { displayWithoutChanges: true });
+        }
       }, this);
+
+      //Get the numeric filters and listen to the min and max values
+      var numericFilters = _.where(this.filters.models, { type: "NumericFilter" });
+      _.each(numericFilters, function(numericFilter){
+        this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
+      }, this);
+
+      //Get the date filters and listen to the min and max values
+      var dateFilters = _.where(this.filters.models, { type: "DateFilter" });
+      _.each(dateFilters, function(dateFilter){
+        this.listenTo(dateFilter, "change:min change:max", this.updateAppliedRangeFilters);
+
+        if( dateFilter.get("min") != dateFilter.defaults().min ||
+            dateFilter.get("max") != dateFilter.defaults().max ){
+          this.updateAppliedRangeFilters(dateFilter, { displayWithoutChanges: true });
+        }
+      }, this);
+
 
     },
 
@@ -267,19 +270,29 @@ define(['jquery', 'underscore', 'backbone',
       });
     },
 
-    /*
+    /**
     * Renders the values of the given Filter Model in the current filter model
     *
-    * @param {Filter} - The FilterModel to display
+    * @param {Filter} filterModel - The FilterModel to display
+    * @param {object} options - Additional options for this function
+    * @property {boolean} options.displayWithoutChanges - If true, this filter will display even if the value hasn't been changed
     */
-    updateAppliedFilters: function(filterModel){
+    updateAppliedFilters: function(filterModel, options){
 
-      //If the values attribue has changed...
-      if( filterModel.changed && filterModel.changed.values ){
+      //Create an options object if one wasn't sent
+      if( typeof options != "object" ){
+        var options = {};
+      }
+
+      //If the value of this filter has changed, or if the displayWithoutChanges option
+      // was passed, and if the filter is not invisible, then display it
+      if( !filterModel.get("isInvisible") &&
+          ((filterModel.changed && filterModel.changed.values) ||
+          options.displayWithoutChanges) ){
 
         //Get the new values and the previous values
-        var newValues      = filterModel.changed.values,
-            previousValues = filterModel.previousAttributes().values,
+        var newValues      = options.displayWithoutChanges? filterModel.get("values") : filterModel.changed.values,
+            previousValues = options.displayWithoutChanges? [] : filterModel.previousAttributes().values,
             //Find the values that were removed
             removedValues  = _.difference(previousValues, newValues),
             //Find the values that were added
@@ -314,7 +327,7 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       //Toggle the applied filters header
-      this.toggleFilterHeaderAndHelpText();
+      this.toggleAppliedFiltersHeader();
 
     },
 
@@ -322,29 +335,45 @@ define(['jquery', 'underscore', 'backbone',
      * Hides or shows the applied filter list title/header, as well as the help
      * message that lets the user know they can add filters when there are none
      */
-    toggleFilterHeaderAndHelpText: function(){
+    toggleAppliedFiltersHeader: function(){
 
       //If there is an applied filter
       if( this.$(".applied-filter").length ){
         // hide the "add some filters" help text
-        $(this.parentView.helpTextContainer).css("display", "none");
+        //$(this.parentView.helpTextContainer).css("display", "none");
         // show the Clear All button
         this.$(".filters-title").css("display", "block");
       }
       //If there are no applied filters
       else{
         // show the "add some filters" help text
-        $(this.parentView.helpTextContainer).css("display", "block");
+      //  $(this.parentView.helpTextContainer).css("display", "block");
         // hide the Clear All button
         this.$(".filters-title").css("display", "none");
       }
 
     },
 
-    /*
+    /**
     * When a NumericFilter or DateFilter model is changed, update the applied filters in the UI
+    * @param {DateFilter|NumericFilter} filterModel - The model whose values to display
+    * @param {object} [options] - Additional options for this function
+    * @property {boolean} [options.displayWithoutChanges] - If true, this filter will display even if the value hasn't been changed
     */
-    updateAppliedRangeFilters: function(filterModel){
+    updateAppliedRangeFilters: function(filterModel, options){
+
+      if( !filterModel ){
+        return;
+      }
+
+      if( typeof options === "undefined" ){
+        var options = {};
+      }
+
+      //If the Filter is invisible, don't render it
+      if( filterModel.get("isInvisible") ){
+        return;
+      }
 
       //If the minimum and maximum values are set to the default, remove the filter element
       if( filterModel.get("min") == filterModel.get("minDefault") &&
@@ -361,8 +390,9 @@ define(['jquery', 'underscore', 'backbone',
         }, this);
 
       }
-      //If the values attribue has changed...
-      else if( filterModel.changed && (filterModel.changed.min || filterModel.changed.max) ){
+      //If the values attribue has changed, or if the displayWithoutChanges attribute was passed
+      else if( (filterModel.changed && (filterModel.changed.min || filterModel.changed.max)) ||
+                options.displayWithoutChanges ){
 
         //Create the filter label for ranges of numbers
         if( filterModel.type == "DateFilter" || filterModel.get("range") ){
@@ -397,7 +427,7 @@ define(['jquery', 'underscore', 'backbone',
 
       }
 
-      this.toggleFilterHeaderAndHelpText();
+      this.toggleAppliedFiltersHeader();
 
     },
 
@@ -481,6 +511,14 @@ define(['jquery', 'underscore', 'backbone',
       else if( filterModel.get("fields").length == 1 && filterModel.get("fields")[0] == "text"){
         filterLabel = "";
       }
+      //isPartOf filters should just display the label, not the value
+      else if( filterModel.get("fields").length == 1 && filterModel.get("fields")[0] == "isPartOf" ){
+        filterValue = "";
+      }
+      //If the filter value is just an asterisk (i.e. `match anything`), just display the label
+      else if( filterModel.get("values").length == 1 && filterModel.get("values")[0] == "*" ){
+        filterValue = "";
+      }
 
       //Create the applied filter element
       var removeIcon    = $(document.createElement("a"))
@@ -523,6 +561,11 @@ define(['jquery', 'underscore', 'backbone',
     */
     addCustomAppliedFilter: function(filterModel){
 
+      //If the Filter is invisible, don't render it
+      if( filterModel.get("isInvisible") ){
+        return;
+      }
+
       //If this filter already exists in the applied filter list, exit this function
       var alreadyExists = _.find( this.$(".applied-filter.custom"), function(appliedFilterEl){
         return $(appliedFilterEl).data("model") == filterModel;
@@ -553,7 +596,7 @@ define(['jquery', 'underscore', 'backbone',
       this.$(".applied-filters").append(appliedFilter);
 
       //Display the filters title
-      this.toggleFilterHeaderAndHelpText();
+      this.toggleAppliedFiltersHeader();
 
     },
 
@@ -572,7 +615,7 @@ define(['jquery', 'underscore', 'backbone',
       }, this);
 
       //Hide the filters title
-      this.toggleFilterHeaderAndHelpText();
+      this.toggleAppliedFiltersHeader();
 
     },
 

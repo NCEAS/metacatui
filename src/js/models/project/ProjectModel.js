@@ -87,10 +87,19 @@ define(["jquery",
              *
              * @param {} options -
             */
-            initialize: function(options) {
+            initialize: function(attrs) {
 
               //Call the super class initialize function
-              CollectionModel.prototype.initialize.call(this, options);
+              CollectionModel.prototype.initialize.call(this, attrs);
+
+              if( attrs.isNew ){
+                this.set("synced", true);
+                //Create an isPartOf filter for this new Project
+                this.addIsPartOfFilter();
+              }
+
+              // Cache this model for later use
+              this.cacheProject();
 
             },
 
@@ -973,6 +982,19 @@ define(["jquery",
               }
 
               this.constructor.__super__.save.call(this);
+            },
+
+            /**
+            * Saves a reference to this Project on the MetacatUI global object
+            */
+            cacheProject: function(){
+
+              if( this.get("id") ){
+                MetacatUI.projects = MetacatUI.projects || {};
+                MetacatUI.projects[this.get("id")] = this;
+              }
+
+              this.on("change:id", this.cacheProject);
             }
 
         });

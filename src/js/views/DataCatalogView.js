@@ -736,8 +736,10 @@ define(["jquery",
                                 var match = mainSearchResults.filter(function(mainSearchResult) {
                                     return _.contains(mainSearchResult.get("resourceMap"), rMapID)
                                 });
-                                if (match && (result.getSources().length > 0)) hasSources.push(match[0].get("id"));
-                                if (match && (result.getDerivations().length > 0)) hasDerivations.push(match[0].get("id"));
+                                if (match && match.length && (result.getSources().length > 0))
+                                  hasSources.push(match[0].get("id"));
+                                if (match && match.length && (result.getDerivations().length > 0))
+                                  hasDerivations.push(match[0].get("id"));
                             }
                         });
                     });

@@ -48,12 +48,24 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * @type {string}
     */
     dataCatalogViewContainer: ".data-catalog-view-container",
+    /**
+    * A jQuery selector for the element that the Save and Cancel buttons should be inserted into
+    * @type {string}
+    */
+    collectionControlsContainer: ".applied-filters-container",
+    /**
+    * A jQuery selector for the element that contains the filter help text
+    * @type {string}
+    */
+    helpTextContainer: "#filter-help-text",
 
     /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
     events: {
+      "click .save"   : "saveCollection",
+      "click .cancel" : "resetCollection"
     },
 
     /**
@@ -88,6 +100,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         this.listenTo(this.model, "change:seriesId", this.renderDataCatalog);
       }
 
+      //this.renderCollectionControls();
+
     },
 
     /**
@@ -95,10 +109,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      */
     renderDataCatalog: function(){
 
-      //Create a Search model using the collection definition
-      var searchModel = new Search({
-        filters: this.model.get("filters")
-      });
+      var searchModel = this.model.get("searchModel");
 
       //Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
@@ -106,12 +117,91 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         searchResults: this.model.get("searchResults"),
         mapModel: this.model.get("mapModel") || new Map(),
         isSubView: true,
-        mode: "map"
+        mode: "map",
+        filters: false
       });
 
       //Render the view and insert it into the page
       this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
       dataCatalogView.render();
+
+      this.listenTo(this.model.get("searchResults"), "reset", this.toggleHelpText);
+
+    },
+
+    /**
+    * Renders the edit collection controls - e.g. a Save and Cancel buttton
+    */
+    renderCollectionControls: function(){
+
+      //Create a Save button
+      var saveButton   = $(document.createElement("a"))
+                        .addClass("save btn btn-primary")
+                        .text("Save"),
+      //Create a Cancel button
+          cancelButton = $(document.createElement("a"))
+                        .addClass("cancel btn")
+                        .text("Cancel"),
+      //Create a container for the buttons
+          buttons      = $(document.createElement("div"))
+                        .addClass("collection-controls")
+                        .append(saveButton, cancelButton);
+
+      //Add the buttons to the view
+      this.$(this.collectionControlsContainer).append(buttons);
+
+    },
+
+    /**
+     * Either hides or shows the help message that lets the user know
+     * they can add filters when the collection is empty.
+     */
+    toggleHelpText: function() {
+
+      //Get the list of filters currently applied to the collection definition
+      var currentFilters = this.model.getAllDefinitionFilters(),
+          msg = "";
+
+      // If there are no filters set at all, the entire repository catalog will be listed as
+      // search results, so display a helpful message
+      if ( currentFilters.length == 0 && this.model.get("searchResults").length ) {
+        msg = "<h5>Your dataset collection hasn't been created yet.</h5>" +
+              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, search for data using the filters on the left.</p>";
+      }
+      //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
+      else if( currentFilters.length == 1 &&
+               currentFilters[0].get("fields")[0] == "isPartOf" &&
+               !this.model.get("searchResults").length){
+
+         msg = "<h5>Your dataset collection is empty.</h5>" +
+               "<p>To add datasets to your collection, search for data using the filters on the left.</p>";
+
+        //TODO: When the ability to add datasets to collection via the "isPartOf" relationship is added to MetacatUI
+        // then update this message with details on how to add datasets to the collection
+      }
+
+      //If a message string was created, display it
+      if( msg ){
+        //Show the message
+        MetacatUI.appView.showAlert(msg, "alert-info", this.$(this.helpTextContainer));
+      }
+      else{
+        //Remove the message
+        this.$(this.helpTextContainer).children("alert").remove();
+      }
+
+    },
+
+    /**
+    * Save this Collection model with the currently applied filters
+    */
+    saveCollection: function(){
+    },
+
+    /**
+    * Resets the Collection model back to where it was
+    */
+    resetCollection: function(){
 
     }
 
