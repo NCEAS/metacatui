@@ -54,7 +54,7 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     /**
     * A temporary name to use for projects when they are first created but don't have a label yet.
     * This name should only be used in views, and never set on the model so it doesn't risk getting
-    * serialied and saved.
+    * serialized and saved.
     * @type {string}
     */
     newProjectTempName: "new",
@@ -204,6 +204,9 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         });
 
       }
+
+      // set listeners on the new model
+      this.setListeners();
     },
 
     /**

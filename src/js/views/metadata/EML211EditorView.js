@@ -556,8 +556,10 @@ define(['underscore',
 
           // Construct the save message
           var message = this.editorSubmitMessageTemplate({
-                viewURL: MetacatUI.root + "/view/" + this.model.get("id")
-            });
+            messageText: "Your changes have been submitted.",
+            viewURL: MetacatUI.root + "/view/" + this.model.get("id"),
+            buttonText: "View your dataset"
+          });
 
           MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
 
