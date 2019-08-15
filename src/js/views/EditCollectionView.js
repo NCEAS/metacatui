@@ -53,6 +53,11 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * @type {string}
     */
     collectionControlsContainer: ".applied-filters-container",
+    /**
+    * A jQuery selector for the element that contains the filter help text
+    * @type {string}
+    */
+    helpTextContainer: "#filter-help-text",
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -120,6 +125,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
       dataCatalogView.render();
 
+      this.listenTo(this.model.get("searchResults"), "reset", this.toggleHelpText);
+
     },
 
     /**
@@ -142,6 +149,46 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
 
       //Add the buttons to the view
       this.$(this.collectionControlsContainer).append(buttons);
+
+    },
+
+    /**
+     * Either hides or shows the help message that lets the user know
+     * they can add filters when the collection is empty.
+     */
+    toggleHelpText: function() {
+
+      //Get the list of filters currently applied to the collection definition
+      var currentFilters = this.model.getAllDefinitionFilters(),
+          msg = "";
+
+      // If there are no filters set at all, the entire repository catalog will be listed as
+      // search results, so display a helpful message
+      if ( currentFilters.length == 0 && this.model.get("searchResults").length ) {
+        msg = "<h5>Your dataset collection hasn't been created yet.</h5>" +
+              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, search for data using the filters on the left.</p>";
+      }
+      //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
+      else if( currentFilters.length == 1 &&
+               currentFilters[0].get("fields")[0] == "isPartOf" &&
+               !this.model.get("searchResults").length){
+
+         msg = "<h5>Your dataset collection is empty.</h5>" +
+               "<p>To add datasets to your collection, search for data using the filters on the left.</p>";
+
+        //TODO: When the ability to add datasets to collection via the "isPartOf" relationship is added to MetacatUI
+        // then update this message with details on how to add datasets to the collection
+      }
+
+      //If a message string was created, display it
+      if( msg ){
+        //Show the message
+        MetacatUI.appView.showAlert(msg, "alert-info", this.$(this.helpTextContainer));
+      }
+      else{
+        //Remove the message
+        this.$(this.helpTextContainer).children("alert").remove();
+      }
 
     },
 
