@@ -10,5 +10,10 @@
 
 <div class="danger">
   <h4>Danger Zone</h4>
-  <div class="url-container">URL will go here</div>
+  <h5>Change URL</h5>
+  <div class="url-container control-group">
+      <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/portals/</span>
+      <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
+      <span class="notification help-inline"></span>
+  </div>
 </div>

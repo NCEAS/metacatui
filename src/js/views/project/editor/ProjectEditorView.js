@@ -65,7 +65,9 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     * @type {Object}
     */
     events: _.extend(EditorView.prototype.events, {
-      "focusout .title-container input"        : "updateBasicText",
+      "focusout .basic-text"          : "updateBasicText",
+      "focusout .url-container input" : "showLabelValidation",
+      "keyup .url-container input" : "removeLabelValidation"
     }),
 
     /**
@@ -197,6 +199,12 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
           label: this.projectIdentifier
         });
 
+        // Save the original label in case a user changes it. During URL
+        // validation, the original label will always be shown as available.
+        // TODO: if user navigates to project using a SID or PID, we will need
+        // to get the matching label and then save it to the model
+        this.model.set("originalLabel", this.projectIdentifier);
+
       // Otherwise, create a new project
       } else {
 
@@ -285,7 +293,11 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       if( Array.isArray(currentValue) ){
 
         //Find the position this text input is in
-        var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
+        var position = $(e.target)
+                          .parents("div.text-container")
+                          .first()
+                          .children("div")
+                          .index( $(e.target).parent() );
 
         //Set the value in that position in the array
         currentValue[position] = value;
@@ -300,13 +312,84 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         model.set(category, value);
         model.trigger("change:" + category);
       }
-      //Add another blank text input
-      if($(e.target).is(".new") && value != '' && category != "title"){
-        $(e.target).removeClass("new");
-        this.addBasicText(e);
-      }
+      //TODO: Add another blank text input (write addBasicText function)
+      // if($(e.target).is(".new") && value != '' && category != "title"){
+      //   $(e.target).removeClass("new");
+      //   this.addBasicText(e);
+      // }
 
     },
+
+    /**
+     * Removes help text and css formatting that indicates error or success after label/URL validation.
+     *
+     *  @param {Event} [e] - The keyup or focusout event
+     */
+    removeLabelValidation: function(e){
+
+      var container = $(e.target).parents(".url-container").first(),
+          messageEl = $(container).find('.notification');
+
+      // Remove input formating if there was any
+      messageEl.html("");
+      container.removeClass("error");
+      container.removeClass("success");
+
+    },
+
+    /**
+     * Initiates validatation of the newly inputed label (a URL component).
+     * Listens for a response from the model, then displays help text based on
+     * whether the new label was valid or not.
+     *
+     *  @param {Event} [e] - The focusout event
+     */
+    showLabelValidation: function(e){
+
+      var container = $(e.target).parents(".url-container").first(),
+          input = $(e.target),
+          messageEl = $(container).find('.notification'),
+          value = input.val();
+
+      this.listenToOnce(this.model, "urlUnchanged", function(){
+        this.removeLabelValidation(e);
+      }, this, e);
+
+      this.listenToOnce(this.model, "urlAvailable", function(){
+        messageEl.html("<i class='icon-check'></i> This URL is available");
+        container.addClass("success");
+      });
+
+      this.listenToOnce(this.model, "urlBlank", function(){
+        messageEl.html("A URL is required");
+        container.addClass("error");
+      });
+
+      this.listenToOnce(this.model, "urlTaken", function(){
+        messageEl.html("This URL is already taken, please try something else");
+        container.addClass("error");
+      });
+
+      this.listenToOnce(this.model, "urlRestricted", function(){
+        messageEl.html("This URL is not allowed, please try something else");
+        container.addClass("error");
+      });
+
+      this.listenToOnce(this.model, "urlIncludesIllegalCharacters", function(){
+        messageEl.html("URLs may only contain letters, numbers, underscores (_), and dashes (-).");
+        container.addClass("error");
+      });
+
+      // Show 'checking URL' message
+      messageEl.html(
+        "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
+        "Checking if URL is available"
+      );
+
+      // Validate label. The newProjectTempName is a restricted value.
+      this.model.validateLabel(value, [this.newProjectTempName]);
+
+    }
 
   });
 

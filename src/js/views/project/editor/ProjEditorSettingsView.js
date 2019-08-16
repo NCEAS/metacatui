@@ -69,7 +69,9 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosV
     render: function(){
 
       //Insert the template into the view
-      this.$el.html(this.template());
+      this.$el.html(this.template({
+        label: this.model.get("label")
+      }));
 
       //Render the AccessPolicyView
       //TODO: Get the AccessPolicy collection for this ProjectModel and send it to the view

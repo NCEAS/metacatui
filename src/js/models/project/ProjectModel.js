@@ -942,6 +942,72 @@ define(["jquery",
             },
 
             /**
+             * Queries solr to check whether a portal label is already in use.
+             * Also checks that a label does not equal a restricted value
+             * (e.g. new project temporary name), and that it's encoded properly
+             * for use as part of a url
+             *
+             * @param {string} label - The portal label to be validated
+             * @param {Array} blacklist - A list of restricted strings that are not allowed as project labels
+            */
+            validateLabel: function(label, blacklist){
+
+              // Exit if no label is given or set
+              if(!label && !this.get("label")){
+                this.trigger("urlBlank");
+                return
+              } else if(!label){
+                var label = this.get("label");
+              }
+
+              // Exit if the label hasn't changed from original label set
+              if(label == this.get("originalLabel")){
+                this.trigger("urlUnchanged");
+                return
+              }
+
+              // If the URL is a restricted string, trigger warning and exit
+              if(blacklist){
+                if(blacklist.includes(label)){
+                  this.trigger("urlRestricted");
+                  return
+                }
+              }
+
+              // If the URL includes illegal characers, trigger warning and exit
+              // Only allow letters, numbers, underscores and dashes
+              if(label.match(/[^A-Za-z0-9_-]/g)){
+                this.trigger("urlIncludesIllegalCharacters");
+                return
+              }
+
+              var model = this;
+
+              // Query solr to see if other projects already use this label
+              var requestSettings = {
+                  url: MetacatUI.appModel.get("queryServiceUrl") +
+                       "q=projectName:\"" + this.get("label") + "\"" +
+                       "&fl=projectName" +
+                       "&wt=json",
+                  error: function(response) {
+                    console.log(response);
+                  },
+                  success: function(response){
+                    if( response.response.numFound > 0 ){
+                      model.trigger("urlTaken");
+                    } else {
+                      model.trigger("urlAvailable");
+                    }
+                  }
+              }
+
+              requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+              $.ajax(requestSettings);
+
+            },
+
+            /**
              * Removes nodes from the XML that do not have an accompanying model
              * (i.e. nodes which were probably removed by the user during editing)
              *
