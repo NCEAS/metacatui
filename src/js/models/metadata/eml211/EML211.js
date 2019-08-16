@@ -1419,8 +1419,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       getEntity: function(dataONEObj){
 
         //If an EMLEntity model has been found for this object before, then return it
-        if( dataONEObj.get("metadataEntity") )
+        if( dataONEObj.get("metadataEntity") ){
+          dataONEObj.get("metadataEntity").set("dataONEObject", dataONEObj);
           return dataONEObj.get("metadataEntity");
+        }
 
         var entity = _.find(this.get("entities"), function(e){
 
@@ -1470,6 +1472,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           if( entity.get("dataONEObject") ){
             return;
           }
+          else{
+            entity.set("dataONEObject", dataONEObj);
+          }
 
             //Create an XML-safe ID and set it on the Entity model
             var entityID = this.getUniqueEntityId(dataONEObj);
@@ -1515,6 +1520,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               entityType : dataONEObject.get("formatId") ||
                            dataONEObject.get("mediaType") ||
                            "application/octet-stream",
+              dataONEObject: dataONEObject,
               parentModel: this,
               xmlID: dataONEObject.getXMLSafeID()
           });

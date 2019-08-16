@@ -1334,8 +1334,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             this.set("fileName", filename);
           },
 
-          getXMLSafeID: function(){
-            var id = this.get("id");
+          /**
+          * Converts the identifier string to a string safe to use in an XML id attribute
+          * @param {string} [id] - The ID string
+          * @return {string} - The XML-safe string
+          */
+          getXMLSafeID: function(id){
+
+            if(typeof id == "undefined"){
+              var id = this.get("id");
+            }
 
             //Replace XML id attribute invalid characters and patterns in the identifier
             id = id.replace(/</g, "-").replace(/:/g, "-").replace(/&[a-zA-Z0-9]+;/g);

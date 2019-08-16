@@ -154,12 +154,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = MetacatUI.appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,' +
-							'rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,isService,'+
-							'serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
-						'&rows=1000' +
-						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
-						'&wt=json';
+			var query = 'fl=resourceMap,fileName,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,' +
+							'rightsHolder,dateUploaded,archived,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic' +
+  						'&rows=1000' +
+  						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
+  						'&wt=json';
 
 			if( this.get("getArchivedMembers") ){
 				query += "&archived=archived:*";
