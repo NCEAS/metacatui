@@ -41,8 +41,7 @@ define(['jquery',
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
        MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
        AnnotatorView, CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
-       VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, UsageTemplate,
-       DownloadContentsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
+       VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
   'use strict';
 
