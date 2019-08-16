@@ -180,14 +180,14 @@
 
         for (i = 0; i < resultObjects.length; i += 1) {
           var item = $('<li />'),
-            text = resultObjects[i][settings.property];
+            text = "<strong>" + resultObjects[i][settings.property] + "</strong>";
 
-          if (settings.highlightMatches === true) {
-            text = text.replace(filterPatt, '<strong>$1</strong>');
+          if (resultObjects[i].definition) {
+            text += ": " + resultObjects[i].definition[0]
           }
 
-          if (resultObjects[i].synonym) {
-            text += " ≅ " + resultObjects[i].synonym.join(" ≅ ");
+          if (settings.highlightMatches === true) {
+            text = text.replace(filterPatt, '<span class="underline">$1</span>');
           }
 
           $(item).append('<a class="ui-corner-all" data-toggle="tooltip" data-placement="right" data-delay="0" title="' + resultObjects[i].definition + '">' + text + '</a>');
@@ -212,10 +212,7 @@
 
           $(results).append(item);
 
-          item.tooltip({
-            placement: "right",
-            title: "Testing..."
-          });
+          item.tooltip();
 
           bOddRow = !bOddRow;
 
