@@ -321,6 +321,28 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     },
 
     /**
+     * When the object is saved successfully, tell the user.
+     * @param {object} savedObject - the object that was successfully saved
+     */
+    saveSuccess: function(savedObject){
+
+      var identifier = savedObject.id || this.model.get("seriesId");
+
+      var message = this.editorSubmitMessageTemplate({
+            messageText: "Your changes have been submitted.",
+            viewURL: MetacatUI.root + "/portals/" + identifier,
+            buttonText: "View your portal"
+        });
+
+      MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
+
+      this.setListeners();
+      this.hideSaving();
+
+    },
+
+
+    /**
      * This function is called when the app navigates away from this view.
      * Any clean-up or housekeeping happens at this time.
      */

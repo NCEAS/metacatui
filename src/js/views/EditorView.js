@@ -203,12 +203,10 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      */
     saveSuccess: function(savedObject){
 
-      var identifier = this.model.get("label") || this.model.get("seriesId");
-
       var message = this.editorSubmitMessageTemplate({
             messageText: "Your changes have been submitted.",
-            viewURL: MetacatUI.root + "/portals/" + identifier,
-            buttonText: "View your portal"
+            viewURL: MetacatUI.appModel.get("baseUrl"),
+            buttonText: "Return home"
         });
 
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
