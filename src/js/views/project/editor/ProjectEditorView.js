@@ -390,6 +390,18 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       // Validate label. The newProjectTempName is a restricted value.
       this.model.validateLabel(value, [this.newProjectTempName]);
 
+    },
+
+    /**
+     * This function is called when the app navigates away from this view.
+     * Any clean-up or housekeeping happens at this time.
+     */
+    onClose: function(){
+
+      $("body")
+        removeClass("Editor")
+        .removeClass("ProjectView");
+
     }
 
   });
