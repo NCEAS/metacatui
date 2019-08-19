@@ -931,6 +931,34 @@ define(["jquery",
             validate: function() {
               var errors = {};
 
+              // ---- Validate label----
+
+              this.once("labelBlank", function(){
+                errors.label = "The URL label is blank. Please choose a label."
+              });
+
+              this.once("labelRestricted", function(){
+                errors.label = "The URL label entered is not allowed. " +
+                               "Please choose a different URL."
+              });
+
+              this.once("labelIncludesIllegalCharacters", function(){
+                errors.label = "The URL label contains illegal characters. " +
+                               "Only letters, numbers, dashes, and underscores are allowed."
+              });
+
+              this.once("labelTaken", function(){
+                errors.label = "The URL label selected is already in use. " +
+                               "Please choose a different URL."
+              });
+
+              // TODO: Which strings should we resctict users from selecting for
+              // a portal label (and URL component)?
+              this.validateLabel(label = this.get("label"), blacklist = ["new"]);
+
+              // TODO: For the portal to be valid, we should wait for the event
+              // "labelAvailable". This takes time since it's a solr query.
+
               // TODO: validate all the project elements here
 
               if( Object.keys(errors).length )
@@ -952,31 +980,37 @@ define(["jquery",
             */
             validateLabel: function(label, blacklist){
 
-              // Exit if no label is given or set
+              // If no label is given or set
               if(!label && !this.get("label")){
+                // trigger warning and exit
                 this.trigger("labelBlank");
                 return
+              // If there's at least a label set on the model
               } else if(!label){
+                // use the label that's set on the model
                 var label = this.get("label");
               }
 
-              // Exit if the label hasn't changed from original label set
+              // If the label hasn't changed from original label set
               if(label == this.get("originalLabel")){
+                // trigger warning and exit
                 this.trigger("labelUnchanged");
                 return
               }
 
-              // If the URL is a restricted string, trigger warning and exit
+              // If the label is a restricted string
               if(blacklist){
                 if(blacklist.includes(label)){
+                  // trigger warning and exit
                   this.trigger("labelRestricted");
                   return
                 }
               }
 
-              // If the URL includes illegal characers, trigger warning and exit
-              // Only allow letters, numbers, underscores and dashes
+              // If the label includes illegal characers
+              // (Only allow letters, numbers, underscores and dashes)
               if(label.match(/[^A-Za-z0-9_-]/g)){
+                // trigger warning and exit
                 this.trigger("labelIncludesIllegalCharacters");
                 return
               }
@@ -986,7 +1020,7 @@ define(["jquery",
               // Query solr to see if other projects already use this label
               var requestSettings = {
                   url: MetacatUI.appModel.get("queryServiceUrl") +
-                       "q=projectName:\"" + this.get("label") + "\"" +
+                       "q=projectName:\"" + label + "\"" +
                        "&fl=projectName" +
                        "&wt=json",
                   error: function(response) {

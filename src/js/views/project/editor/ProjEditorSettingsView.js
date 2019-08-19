@@ -126,26 +126,31 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosV
 
       this.listenToOnce(this.model, "labelAvailable", function(){
         messageEl.html("<i class='icon-check'></i> This URL is available");
+        container.removeClass("error");
         container.addClass("success");
       });
 
       this.listenToOnce(this.model, "labelBlank", function(){
         messageEl.html("A URL is required");
+        container.removeClass("success");
         container.addClass("error");
       });
 
       this.listenToOnce(this.model, "labelTaken", function(){
         messageEl.html("This URL is already taken, please try something else");
+        container.removeClass("success");
         container.addClass("error");
       });
 
       this.listenToOnce(this.model, "labelRestricted", function(){
         messageEl.html("This URL is not allowed, please try something else");
+        container.removeClass("success");
         container.addClass("error");
       });
 
       this.listenToOnce(this.model, "labelIncludesIllegalCharacters", function(){
         messageEl.html("URLs may only contain letters, numbers, underscores (_), and dashes (-).");
+        container.removeClass("success");
         container.addClass("error");
       });
 
