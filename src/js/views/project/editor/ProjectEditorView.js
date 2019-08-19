@@ -162,7 +162,8 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         name: name
       }));
 
-      $("body").addClass("Editor");
+      $("body").addClass("Editor")
+               .addClass("Portal");
 
       // Get the project identifier
       // or set it to a default value in the case that it's a new project
