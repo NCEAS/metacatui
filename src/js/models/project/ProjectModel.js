@@ -954,7 +954,7 @@ define(["jquery",
 
               // Exit if no label is given or set
               if(!label && !this.get("label")){
-                this.trigger("urlBlank");
+                this.trigger("labelBlank");
                 return
               } else if(!label){
                 var label = this.get("label");
@@ -962,14 +962,14 @@ define(["jquery",
 
               // Exit if the label hasn't changed from original label set
               if(label == this.get("originalLabel")){
-                this.trigger("urlUnchanged");
+                this.trigger("labelUnchanged");
                 return
               }
 
               // If the URL is a restricted string, trigger warning and exit
               if(blacklist){
                 if(blacklist.includes(label)){
-                  this.trigger("urlRestricted");
+                  this.trigger("labelRestricted");
                   return
                 }
               }
@@ -977,7 +977,7 @@ define(["jquery",
               // If the URL includes illegal characers, trigger warning and exit
               // Only allow letters, numbers, underscores and dashes
               if(label.match(/[^A-Za-z0-9_-]/g)){
-                this.trigger("urlIncludesIllegalCharacters");
+                this.trigger("labelIncludesIllegalCharacters");
                 return
               }
 
@@ -994,9 +994,9 @@ define(["jquery",
                   },
                   success: function(response){
                     if( response.response.numFound > 0 ){
-                      model.trigger("urlTaken");
+                      model.trigger("labelTaken");
                     } else {
-                      model.trigger("urlAvailable");
+                      model.trigger("labelAvailable");
                     }
                   }
               }

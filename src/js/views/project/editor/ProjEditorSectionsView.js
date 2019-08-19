@@ -296,8 +296,11 @@ function(_, $, Backbone, Project,
     renderSettings: function(){
 
       //Create a ProjEditorSettingsView
+      // Pass on the 'newProjectTempName', so that it can be used as a
+      // restricted label during label validation
       var settingsView = new ProjEditorSettingsView({
-        model: this.model
+        model: this.model,
+        newProjectTempName: this.newProjectTempName
       });
 
       //Add the ProjEditorSettingsView element to this view
