@@ -229,11 +229,20 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
      */
      authorizeUser: function() {
 
-       //If the SID has not been found yet, get it from Solr
-       if( !this.model.get("seriesId") && this.model.get("label") ){
-         this.listenTo(this.model, "change:seriesId", this.authorizeUser);
+       //If the seriesId hasn't been found yet, but we have the label
+       if( !this.model.get("seriesId") && !this.model.get("latestVersion") && this.model.get("label") ){
+         //When the seriesId or latest pid is found, come back to this function
+         this.listenToOnce(this.model, "change:seriesId",    this.authorizeUser);
+         this.listenToOnce(this.model, "latestVersionFound", this.authorizeUser);
+
+         //Get the seriesId or latest pid
          this.model.getSeriesIdByName();
          return;
+       }
+       else{
+         //Remove the listeners for the seriesId and latest pid
+         this.stopListening(this.model, "change:seriesId",    this.authorizeUser);
+         this.stopListening(this.model, "latestVersionFound", this.authorizeUser);
        }
 
        //Remove the loading message
