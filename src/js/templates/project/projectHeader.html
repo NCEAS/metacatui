@@ -1,5 +1,7 @@
 <div class="row">
-  <img class="project-logo" src=<%=logo%> alt="<%=name%>" title="<%=name%>" />
+  <% if( imageURL ){ %>
+    <img class="project-logo" src=<%=imageURL%> alt="<%=name%>" title="<%=name%>" />
+  <% } %>
   <h1 class="project-title">
       <%=name%>
   </h1>

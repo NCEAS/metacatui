@@ -56,7 +56,7 @@ define(["jquery",
              * The unique short name of the project
              * @type {string}
              */
-            projectName: "",
+            label: "",
 
             /**
              * The subviews contained within this view to be removed with onClose
@@ -92,7 +92,7 @@ define(["jquery",
             initialize: function(options) {
                 // Set the current ProjectView properties
                 this.projectId = options.projectId ? options.projectId : undefined;
-                this.projectName = options.projectName ? options.projectName : undefined;
+                this.label = options.label ? options.label : undefined;
                 this.activeSection = options.activeSection ? options.activeSection : undefined;
             },
 
@@ -108,7 +108,7 @@ define(["jquery",
                 // Create a new Project model
                 this.model = new Project({
                     seriesId: this.projectId,
-                    label: this.projectName
+                    label: this.label
                 });
 
                 // When the model has been synced, render the results
@@ -234,24 +234,24 @@ define(["jquery",
                 this.activeSection = linkTarget;
               }
 
-              var projName = this.projectName,
+              var label = this.label,
                   pathName = window.location.pathname,
                   section  = this.activeSection;
 
               //Get the new pathname using the active section
               if( !MetacatUI.root.length || MetacatUI.root == "/" ){
                 // If it's a new project, the project name might not be in the URL yet
-                if(pathName.indexOf(projName) < 0){
-                  var newPathName = pathName + "/" + projName + "/" + section;
+                if(pathName.indexOf(label) < 0){
+                  var newPathName = pathName + "/" + label + "/" + section;
                 } else {
-                  var newPathName = pathName.substring(0, pathName.indexOf(projName)) +
-                                      projName + "/" + section;
+                  var newPathName = pathName.substring(0, pathName.indexOf(label)) +
+                                      label + "/" + section;
                 }
               }
               else{
                 var newPathName = pathName.substring( pathName.indexOf(MetacatUI.root) + MetacatUI.root.length );
-                newPathName = newPathName.substring(0, newPathName.indexOf(projName)) +
-                                    projName + "/" + section;
+                newPathName = newPathName.substring(0, newPathName.indexOf(label)) +
+                                    label + "/" + section;
               }
               //Update the window location
               MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
@@ -470,7 +470,7 @@ define(["jquery",
              */
             showNotFound: function(){
 
-              var notFoundMessage = "The project \"" + (this.projectName || this.projectId) +
+              var notFoundMessage = "The project \"" + (this.label || this.projectId) +
                                     "\" doesn't exist.",
                   notification = this.alertTemplate({
                     classes: "alert-error",

@@ -298,25 +298,25 @@ function ($, _, Backbone) {
         /*
          * Render the project view based on the given name, id, or section
          */
-		renderProject: function(projectName, projectSection) {
+		renderProject: function(label, projectSection) {
       // Look up the project document seriesId by its registered name if given
       if ( projectSection ) {
-        this.routeHistory.push("portals/" + projectName + "/" + projectSection);
+        this.routeHistory.push("portals/" + label + "/" + projectSection);
       }
       else{
-        this.routeHistory.push("portals/" + projectName);
+        this.routeHistory.push("portals/" + label);
       }
 
       if ( !MetacatUI.appView.projectView ) {
         require(['views/project/ProjectView'], function(ProjectView){
           MetacatUI.appView.projectView = new ProjectView({
-              projectName: projectName,
+              label: label,
               activeSection: projectSection
           });
           MetacatUI.appView.showView(MetacatUI.appView.projectView);
         });
       } else {
-        MetacatUI.appView.projectView.projectName = projectName;
+        MetacatUI.appView.projectView.label = label;
         MetacatUI.appView.projectView.activeSection = projectSection;
         MetacatUI.appView.showView(MetacatUI.appView.projectView);
       }

@@ -19,13 +19,22 @@ define(["jquery",
 
         /* Render the view */
         render: function() {
-            this.$el.append(this.template({
-              label: this.model.get("label"),
-              description: this.model.get("description"),
-              logo: this.model.get("logo").get("imageURL"),
-              name: this.model.get("name")
-            }));
-            return this;
+          var templateInfo = {
+            label: this.model.get("label"),
+            description: this.model.get("description"),
+            name: this.model.get("name")
+          }
+
+          if( this.model.get("logo") ){
+            templateInfo.imageURL = this.model.get("logo").get("imageURL");
+          }
+          else{
+            templateInfo.imageURL = "";
+          }
+
+          this.$el.append(this.template(templateInfo));
+
+          return this;
         }
 
      });

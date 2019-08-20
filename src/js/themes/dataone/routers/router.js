@@ -349,7 +349,7 @@ function ($, _, Backbone) {
      * Render the project view based on the given name, id, or section
      */
      renderProject: function(projectId, projectSection) {
-        var projectName;
+        var label;
         var projectsMap = MetacatUI.appModel.get("projectsMap");
 
         // Look up the project document seriesId by its registered name if given
@@ -357,46 +357,46 @@ function ($, _, Backbone) {
             if ( projectsMap ) {
                 // Do a forward lookup by key
                 if ( typeof (projectsMap[projectId] ) !== "undefined" ) {
-                    projectName = projectId;
+                    label = projectId;
                     projectId = projectsMap[projectId];
                     // Then set the history
                     if ( projectSection ) {
-                        this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                        this.routeHistory.push("projects/" + label + "/" + projectSection);
                     } else {
-                        this.routeHistory.push("projects/" + projectName);
+                        this.routeHistory.push("projects/" + label);
                     }
                 } else {
                     // Try a reverse lookup of the project name by values
-                    projectName = _.findKey(projectsMap, function(value){
+                    label = _.findKey(projectsMap, function(value){
                       return( value ==  projectId );
                     });
 
-                    if ( typeof projectName !== "undefined" ) {
+                    if ( typeof label !== "undefined" ) {
                         if ( projectSection ) {
-                            this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                            this.routeHistory.push("projects/" + label + "/" + projectSection);
                         } else {
-                            this.routeHistory.push("projects/" + projectName);
+                            this.routeHistory.push("projects/" + label);
                         }
                     } else {
 
                       //Try looking up the project name with case-insensitive matching
-                      projectName = _.findKey(projectsMap, function(value, key){
+                      label = _.findKey(projectsMap, function(value, key){
                         return( key.toLowerCase() == projectId.toLowerCase() );
                       });
 
                       //If a matching project name was found, route to it
-                      if( projectName ){
+                      if( label ){
 
                         //Get the project ID from the map
-                        projectId = projectsMap[projectName];
+                        projectId = projectsMap[label];
 
                         // Then set the history
                         if ( projectSection ) {
-                          this.navigate("projects/" + projectName + "/" + projectSection, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                          this.navigate("projects/" + label + "/" + projectSection, { trigger: false, replace: true });
+                          this.routeHistory.push("projects/" + label + "/" + projectSection);
                         } else {
-                          this.navigate("projects/" + projectName, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName);
+                          this.navigate("projects/" + label, { trigger: false, replace: true });
+                          this.routeHistory.push("projects/" + label);
                         }
                       }
                       else{
@@ -415,13 +415,13 @@ function ($, _, Backbone) {
           require(['views/project/ProjectView'], function(ProjectView){
             MetacatUI.appView.projectView = new ProjectView({
                           projectId: projectId,
-                          projectName: projectName,
+                          label: label,
                           activeSection: projectSection
                       });
             MetacatUI.appView.showView(MetacatUI.appView.projectView);
           });
         } else {
-                  MetacatUI.appView.projectView.projectName = projectName;
+                  MetacatUI.appView.projectView.label = label;
                   MetacatUI.appView.projectView.projectId = projectId;
                   MetacatUI.appView.projectView.activeSection = projectSection;
           MetacatUI.appView.showView(MetacatUI.appView.projectView);
