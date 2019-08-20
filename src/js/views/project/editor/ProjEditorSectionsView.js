@@ -296,8 +296,11 @@ function(_, $, Backbone, Project,
     renderSettings: function(){
 
       //Create a ProjEditorSettingsView
+      // Pass on the 'newProjectTempName', so that it can be used as a
+      // restricted label during label validation
       var settingsView = new ProjEditorSettingsView({
-        model: this.model
+        model: this.model,
+        newProjectTempName: this.newProjectTempName
       });
 
       //Add the ProjEditorSettingsView element to this view
@@ -343,8 +346,11 @@ function(_, $, Backbone, Project,
       }
 
       var projName = this.model.get("label") || this.newProjectTempName,
-          pathName = window.location.pathname.substring(MetacatUI.root.length),
-          section = this.activeSection;
+          section = this.activeSection,
+          pathName = window.location.pathname
+                      .substring(MetacatUI.root.length)
+                      // remove trailing forward slash if one exists in path
+                      .replace(/\/$/, "");
 
       //If the project name is not in the window location, add it
       if( pathName.indexOf(projName) == -1 ){

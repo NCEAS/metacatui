@@ -65,7 +65,7 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     * @type {Object}
     */
     events: _.extend(EditorView.prototype.events, {
-      "focusout .title-container input"        : "updateBasicText",
+      "focusout .basic-text"          : "updateBasicText",
     }),
 
     /**
@@ -95,9 +95,12 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       this.createModel();
 
       // An exisiting project should have a projectIdentifier already set
-      // from the router, and a seriesId or label set during createModel()
-      if ( (this.model.get("seriesId") || this.model.get("label"))
-            && this.projectIdentifier
+      // from the router, that does not equal the newProjectTempName ("new"),
+      // plus a seriesId or label set during createModel()
+      if (
+        (this.model.get("seriesId") || this.model.get("label"))
+        &&
+        (this.projectIdentifier && this.projectIdentifier != this.newProjectTempName)
       ){
           var view = this;
 
@@ -157,7 +160,8 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         name: name
       }));
 
-      $("body").addClass("Editor");
+      $("body").addClass("Editor")
+               .addClass("Portal");
 
       // Get the project identifier
       // or set it to a default value in the case that it's a new project
@@ -187,12 +191,18 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
     createModel: function(){
 
       // Look up the project document seriesId by its registered name if given
-      if ( this.projectIdentifier ) {
+      if ( this.projectIdentifier && this.projectIdentifier != this.newProjectTempName) {
 
         // Create a new project model with the identifier
         this.model = new Project({
           label: this.projectIdentifier
         });
+
+        // Save the original label in case a user changes it. During URL
+        // validation, the original label will always be shown as available.
+        // TODO: if user navigates to project using a SID or PID, we will need
+        // to get the matching label and then save it to the model
+        this.model.set("originalLabel", this.projectIdentifier);
 
       // Otherwise, create a new project
       } else {
@@ -265,6 +275,7 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
      *  @param {Event} [e] - The focusout event
      */
     updateBasicText: function(e){
+
       if(!e) return false;
 
       //Get the category, new value, and model
@@ -282,7 +293,11 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
       if( Array.isArray(currentValue) ){
 
         //Find the position this text input is in
-        var position = $(e.target).parents("div.text-container").first().children("div").index($(e.target).parent());
+        var position = $(e.target)
+                          .parents("div.text-container")
+                          .first()
+                          .children("div")
+                          .index( $(e.target).parent() );
 
         //Set the value in that position in the array
         currentValue[position] = value;
@@ -297,13 +312,47 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         model.set(category, value);
         model.trigger("change:" + category);
       }
-      //Add another blank text input
-      if($(e.target).is(".new") && value != '' && category != "title"){
-        $(e.target).removeClass("new");
-        this.addBasicText(e);
-      }
+      //TODO: Add another blank text input (write addBasicText function)
+      // if($(e.target).is(".new") && value != '' && category != "title"){
+      //   $(e.target).removeClass("new");
+      //   this.addBasicText(e);
+      // }
 
     },
+
+    /**
+     * When the object is saved successfully, tell the user.
+     * @param {object} savedObject - the object that was successfully saved
+     */
+    saveSuccess: function(savedObject){
+
+      var identifier = savedObject.id || this.model.get("seriesId");
+
+      var message = this.editorSubmitMessageTemplate({
+            messageText: "Your changes have been submitted.",
+            viewURL: MetacatUI.root + "/portals/" + identifier,
+            buttonText: "View your portal"
+        });
+
+      MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
+
+      this.setListeners();
+      this.hideSaving();
+
+    },
+
+
+    /**
+     * This function is called when the app navigates away from this view.
+     * Any clean-up or housekeeping happens at this time.
+     */
+    onClose: function(){
+
+      $("body")
+        .removeClass("Editor")
+        .removeClass("Portal");
+
+    }
 
   });
 

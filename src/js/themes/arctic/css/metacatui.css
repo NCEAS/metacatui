@@ -534,15 +534,26 @@ footer .logos a:hover, a:focus{
 .ProjectView .border-image{
   display: none;
 }
+
+/* Project & Editor (minimal header common to both views)
+-------------------------------------------------- */
+
+.Portal.Editor #Navbar #logo,
 .ProjectView #Navbar #logo{
   display: none;
 }
+
+.Portal.Editor #Navbar #main-nav,
 .ProjectView #Navbar #main-nav{
   width: 100%;
 }
+
+.Portal.Editor #Navbar .#main-nav nav,
 .ProjectView #Navbar .#main-nav nav{
   margin-bottom: 0px;
 }
+
+.Portal.Editor #Navbar .minimal-nav .logo,
 .ProjectView #Navbar .minimal-nav .logo{
   max-height: 1em;
   margin-left: 3px;

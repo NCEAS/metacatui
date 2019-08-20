@@ -2479,6 +2479,82 @@ img[src*="googleapis.com/"].georegion-map{
 /******************************************
 * Projects
 ********************************************/
+
+/* Project & Editor (minimal header common to both views)
+ * Top level app navigation in the ProjectView and EditorView
+-------------------------------------------------- */
+.Portal.Editor #Navbar,
+.ProjectView #Navbar{
+  position: relative;
+  width: 100%;
+  left: 0px;
+  margin: 0px;
+}
+
+.Portal.Editor .navbar,
+.ProjectView .navbar{
+  margin: 0px;
+}
+
+.Portal.Editor .navbar-inner,
+.ProjectView .navbar-inner{
+  background-image: none;
+  box-shadow: none;
+  background-color: #FFF;
+}
+
+.Portal.Editor .navbar .nav > li > a.brand,
+.ProjectView .navbar .nav > li > a.brand{
+  font-size: 25px;
+  letter-spacing: -2px;
+}
+
+.Portal.Editor .navbar .nav > li > a,
+.Portal.Editor .nav .input > form > label,
+.ProjectView .navbar .nav > li > a,
+.ProjectView .nav .input > form > label{
+  font-size: 12px;
+}
+
+
+.Portal.Editor #Navbar .minimal-nav > a,
+.Portal.Editor #Navbar .minimal-nav > .icon,
+.Portal.Editor #Navbar .minimal-nav > a > .icon,
+.ProjectView #Navbar .minimal-nav > a,
+.ProjectView #Navbar .minimal-nav > .icon,
+.ProjectView #Navbar .minimal-nav > a > .icon{
+    color: inherit;
+}
+
+.Portal.Editor #Navbar .nav > li,
+.ProjectView #Navbar .nav > li {
+    display: none;
+}
+
+.Portal.Editor #Navbar .nav .minimal-nav,
+.ProjectView #Navbar .nav .minimal-nav {
+    display: block;
+}
+
+.Portal.Editor #Navbar .nav .minimal-nav a,
+.ProjectView #Navbar .nav .minimal-nav a {
+    font-size: 1em;
+    text-transform: none;
+    font-weight: 300;
+    text-shadow: none;
+}
+
+.Portal.Editor #Navbar .nav .minimal-nav.subtle a,
+.ProjectView #Navbar .nav .minimal-nav.subtle a {
+    color: #999;
+}
+
+.Portal.Editor #Navbar .nav,
+.ProjectView #Navbar .nav {
+    float: right;
+}
+/** ---end top level navigation ---**/
+
 .project-view{
   width: calc(100% + 80px);
   margin-left: -40px;
@@ -2487,56 +2563,6 @@ img[src*="googleapis.com/"].georegion-map{
 .ProjectView #Content{
   padding-top: 0px;
 }
-
-/** Top level app navigation in the ProjectView **/
-.ProjectView #Navbar{
-  position: relative;
-  width: 100%;
-  left: 0px;
-  margin: 0px;
-}
-.ProjectView .navbar{
-  margin: 0px;
-}
-.ProjectView .navbar-inner{
-  background-image: none;
-  box-shadow: none;
-  background-color: #FFF;
-}
-.ProjectView .navbar .nav > li > a.brand{
-  font-size: 25px;
-  letter-spacing: -2px;
-}
-.ProjectView .navbar .nav > li > a,
-.ProjectView .nav .input > form > label{
-  font-size: 12px;
-}
-.ProjectView #Navbar .minimal-nav > a,
-.ProjectView #Navbar .minimal-nav > .icon,
-.ProjectView #Navbar .minimal-nav > a > .icon{
-    color: inherit;
-}
-.ProjectView #Navbar .nav > li {
-    display: none;
-}
-.ProjectView #Navbar .nav .minimal-nav {
-    display: block;
-}
-.ProjectView #Navbar .nav .minimal-nav a {
-    font-size: 1em;
-    text-transform: none;
-    font-weight: 300;
-    text-shadow: none;
-}
-
-.ProjectView #Navbar .nav .minimal-nav.subtle a {
-    color: #999;
-}
-
-.ProjectView #Navbar .nav {
-    float: right;
-}
-/** ---end top level navigation ---**/
 
 #project-header-container{
   margin-bottom: 20px;
