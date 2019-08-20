@@ -1212,9 +1212,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             //If there is no system metadata, then retrieve it first
             if(!this.get("sysMetaXML")){
               this.once("sync", this.findLatestVersion);
+              this.once("systemMetadataSync", this.findLatestVersion);
               this.fetch({
                 url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
-                dataType: "text"
+                dataType: "text",
+                systemMetadataOnly: true
               });
               return;
             }
@@ -1232,6 +1234,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Trigger an event that will fire whether or not the latestVersion
               // attribute was actually changed
               this.trigger("latestVersionFound", this);
+
+              //Remove the listeners now that we found the latest version
+              this.stopListening("sync", this.findLatestVersion);
+              this.stopListening("systemMetadataSync", this.findLatestVersion);
 
               return;
             }
@@ -1251,8 +1257,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 if(obsoletedBy)
                   model.findLatestVersion(possiblyNewer, obsoletedBy);
                 //If there isn't a newer version, then this is it
-                else
+                else{
                   model.set("latestVersion", possiblyNewer);
+
+                  //Remove the listeners now that we found the latest version
+                  model.stopListening("sync", model.findLatestVersion);
+                  model.stopListening("systemMetadataSync", model.findLatestVersion);
+                }
 
               },
               error: function(xhr){

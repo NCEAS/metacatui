@@ -105,6 +105,10 @@ define(["jquery",
 
                 $("body").addClass("ProjectView");
 
+                this.$el.html(this.loadingTemplate({
+                  msg: "Loading..."
+                }));
+
                 // Create a new Project model
                 this.model = new Project({
                     seriesId: this.projectId,

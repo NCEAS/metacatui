@@ -129,6 +129,7 @@ define(["jquery",
           dataType: "text",
           success: function(response){
             model.set(DataONEObject.prototype.parse.call(model, response));
+            model.trigger("systemMetadataSync");
           },
           error: function(){
             model.trigger('error');

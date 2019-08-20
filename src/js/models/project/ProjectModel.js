@@ -69,9 +69,9 @@ define(["jquery",
                     // The MapModel
                     mapModel: gmaps ? new MapModel() : null,
                     // Project view colors, as specified in the project document options
-                    primaryColor: "",
-                    secondaryColor: "",
-                    accentColor: "",
+                    primaryColor: "#999999",
+                    secondaryColor: "#666666",
+                    accentColor: "#497ba7",
                     primaryColorRGB: null,
                     secondaryColorRGB: null,
                     accentColorRGB: null,
@@ -110,7 +110,7 @@ define(["jquery",
             */
             url: function() {
                 return MetacatUI.appModel.get("objectServiceUrl") +
-                    encodeURIComponent(this.get("seriesId"));
+                    encodeURIComponent(this.get("seriesId") || this.get("id"));
             },
 
             /**
@@ -127,10 +127,20 @@ define(["jquery",
               else var options = _.clone(options);
 
               //If the seriesId has not been found yet, get it from Solr
-              if( !this.get("seriesId") && this.get("label") ){
+              if( !this.get("id") && !this.get("seriesId") && this.get("label") ){
                 this.once("change:seriesId", this.fetch);
+                this.once("latestVersionFound", this.fetch);
                 this.getSeriesIdByName();
                 return;
+              }
+              //If we found the latest version in this pid version chain,
+              else if( this.get("id") && this.get("latestVersion") ){
+                //Set it as the id of this model
+                this.set("id", this.get("latestVersion"));
+
+                //Stop listening to the change of seriesId and the latest version found
+                this.stopListening("change:seriesId", this.fetch);
+                this.stopListening("latestVersionFound", this.fetch);
               }
 
               //Fetch the system metadata
@@ -174,8 +184,8 @@ define(["jquery",
 
               var requestSettings = {
                   url: MetacatUI.appModel.get("queryServiceUrl") +
-                       "q=projectName:\"" + this.get("label") + "\"" +
-                       "&fl=seriesId,projectName" +
+                       "q=label:\"" + this.get("label") + "\"" +
+                       "&fl=seriesId,id,label" +
                        "&sort=dateUploaded%20asc" +
                        "&rows=1" +
                        "&wt=json",
@@ -189,8 +199,20 @@ define(["jquery",
                   success: function(response){
                     if( response.response.numFound > 0 ){
 
-                      model.set("label", response.response.docs[0].projectName);
-                      model.set("seriesId", response.response.docs[0].seriesId);
+                      model.set("label", response.response.docs[0].label);
+
+                      //Save the seriesId, if one is found
+                      if( response.response.docs[0].seriesId ){
+                        model.set("seriesId", response.response.docs[0].seriesId);
+                      }
+                      //If this portal doesn't have a seriesId,
+                      else{
+                        //Save the id
+                        model.set("id", response.response.docs[0].id);
+
+                        //Find the latest version in this version chain
+                        model.findLatestVersion(response.response.docs[0].id);
+                      }
 
                     }
                     else{
@@ -220,7 +242,7 @@ define(["jquery",
 
                 // Iterate over each root XML node to find the project node
                 $(response).children().each(function(i, el) {
-                    if (el.tagName.indexOf("project") > -1) {
+                    if (el.tagName.indexOf("portal") > -1) {
                         projectNode = el;
                         return false;
                     }
