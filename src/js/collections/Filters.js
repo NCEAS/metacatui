@@ -31,10 +31,28 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             * a new model to the collection.
             * @param {object} attrs - A literal object that contains the attributes to pass to the model
             * @property {string} attrs.filterType - The type of Filter to create
-            * @param {object} options - A literal object that contains the attributes to pass to the model
+            * @param {object} options - A literal object of additional options to pass to the model
             * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter}
             */
             model: function(attrs, options){
+
+              //If no filterType was specified, but an objectDOM exists (from parsing a Collection
+              // or Portal document), get the filter type from the objectDOM node name
+              if( !attrs.filterType && attrs.objectDOM ){
+                switch( attrs.objectDOM.nodeName ){
+                  case "booleanFilter":
+                    return new BooleanFilter(attrs, options);
+
+                  case "dateFilter":
+                    return new DateFilter(attrs, options);
+
+                  case "numericFilter":
+                    return new NumericFilter(attrs, options);
+
+                  default:
+                    return new Filter(attrs, options);
+                }
+              }
 
               switch ( attrs.filterType ) {
 

@@ -186,35 +186,23 @@ define(["jquery",
       modelJSON.label = this.parseTextNode(rootNode, "label");
       modelJSON.description = this.parseTextNode(rootNode, "description");
 
-      //Create a Search model for this collection's filters
-      modelJSON.searchModel = this.createSearchModel();
-
       //Create a Filters collection to contain the collection definition Filters
       modelJSON.definitionFilters = new Filters();
 
       // Parse the collection definition
-      _.each( $(rootNode).find("definition > filter"), function(filterNode){
+      _.each( $(rootNode).children("definition").children(), function(filterNode){
 
-        //Create a new Filter model
-        var filterModel = new Filter({
+        //Add this filter to the Filters collection
+        modelJSON.definitionFilters.add({
           objectDOM: filterNode
         });
 
-        //If the value set on this filter is a date range, create a DateFilter
-        if( filterModel.isDateQuery() ){
-          //Create a new DateFilter model
-          filterModel = new DateFilter({
-            objectDOM: filterNode
-          });
-        }
-
-        //Add the filter to the Filters collection
-        modelJSON.definitionFilters.add(filterModel);
-
-        //Add the filter to the Search model
-        modelJSON.searchModel.get("filters").add(filterModel);
-
       });
+
+      //Create a Search model for this collection's filters
+      modelJSON.searchModel = this.createSearchModel();
+      //Add all the filters from the Collection definition to the search model
+      modelJSON.searchModel.get("filters").add(modelJSON.definitionFilters.models);
 
       return modelJSON;
 
