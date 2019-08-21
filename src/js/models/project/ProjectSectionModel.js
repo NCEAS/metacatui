@@ -2,9 +2,10 @@
 define(["jquery",
         "underscore",
         "backbone",
+        "models/project/ProjectImage",
         "models/metadata/eml220/EMLText"
     ],
-    function($, _, Backbone, EMLText) {
+    function($, _, Backbone, ProjectImage, EMLText) {
 
       /**
        * A Project Section model represents the ContentSectionType from the project schema
@@ -43,14 +44,11 @@ define(["jquery",
           modelJSON.introduction = $objectDOM.children("introduction").text();
 
           //Parse the image URL or identifier
-          modelJSON.image = $objectDOM.children("image").text();
-          if( modelJSON.image ){
-            if( modelJSON.image.substring(0, 4) !== "http" ){
-              modelJSON.imageURL = MetacatUI.appModel.get("objectServiceUrl") + modelJSON.image;
-            }
-            else{
-              modelJSON.imageURL = modelJSON.image;
-            }
+          var image = $objectDOM.children("image");
+          if( image.length ){
+            var projImageModel = new ProjectImage({ objectDOM: image[0] });
+            projImageModel.set(projImageModel.parse());
+            modelJSON.image = projImageModel;
           }
 
           //Create an EMLText model for the section content
@@ -85,7 +83,6 @@ define(["jquery",
           // Get and update the simple text strings (everything but content)
           var sectionTextData = {
             label: this.get("label"),
-            image: this.get("image"),
             title: this.get("title"),
             introduction: this.get("introduction")
           };
@@ -102,6 +99,14 @@ define(["jquery",
             }
 
           });
+
+          //Update the image element
+          if( this.get("image") && typeof this.get("image").updateDOM == "function" ){
+            var imageSerialized = this.get("image").updateDOM();
+            if(imageSerialized && $(imageSerialized).children().length){
+              $(objectDOM).children("label").insertAfter(imageSerialized);
+            }
+          }
 
           // Get markdown which is a child of content
           var content = this.get("content");

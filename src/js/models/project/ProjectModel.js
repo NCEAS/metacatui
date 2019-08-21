@@ -606,7 +606,7 @@ define(["jquery",
 
                 _.each(acknowledgmentsLogos, function(imageModel) {
 
-                  var ackLogosSerialized = imageModel.updateDOM("acknowledgmentsLogos");
+                  var ackLogosSerialized = imageModel.updateDOM();
 
                   // Insert new node at correct position
                   var insertAfter = model.getXMLPosition(projectNode, "acknowledgmentsLogo");
@@ -758,7 +758,7 @@ define(["jquery",
                       }
                     } else {
                       // serialize "funderLogo" which is ImageType
-                      var funderLogoSerialized = value.updateDOM("funderLogo");
+                      var funderLogoSerialized = value.updateDOM();
                       $(awardSerialized).append(funderLogoSerialized);
                     }
 
