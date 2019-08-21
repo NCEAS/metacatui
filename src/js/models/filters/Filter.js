@@ -326,10 +326,7 @@ define(['jquery', 'underscore', 'backbone'],
         value = this.escapeSpecialChar(value);
 
         //Add the value to the query string. Wrap in wildcards, if specified
-        if( this.isDateQuery() ){
-          valuesQueryString = "[" + value + "]";
-        }
-        else if( value.indexOf(" ") > -1 ){
+        if( value.indexOf(" ") > -1 ){
           valuesQueryString += '*"' + value + '"*';
         }
         else if( this.get("matchSubstring") ){

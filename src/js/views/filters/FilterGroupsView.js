@@ -205,7 +205,23 @@ define(['jquery', 'underscore', 'backbone',
       //Get the numeric filters and listen to the min and max values
       var numericFilters = _.where(this.filters.models, { type: "NumericFilter" });
       _.each(numericFilters, function(numericFilter){
-        this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
+
+        if( numericFilter.get("range") == true ){
+          this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
+
+          if( numericFilter.get("min") != numericFilter.defaults().min &&
+              numericFilter.get("max") != numericFilter.defaults().max ){
+            this.updateAppliedRangeFilters(numericFilter, { displayWithoutChanges: true });
+          }
+        }
+        else{
+          this.listenTo(numericFilter, "change:values", this.updateAppliedRangeFilters);
+
+          if( numericFilter.get("values")[0] != numericFilter.defaults().values[0] ){
+            this.updateAppliedRangeFilters(numericFilter, { displayWithoutChanges: true });
+          }
+        }
+
       }, this);
 
       //Get the date filters and listen to the min and max values
@@ -395,14 +411,9 @@ define(['jquery', 'underscore', 'backbone',
                 options.displayWithoutChanges ){
 
         //Create the filter label for ranges of numbers
-        if( filterModel.type == "DateFilter" || filterModel.get("range") ){
-          var filterValue = filterModel.get("min") + " to " + filterModel.get("max");
-        }
-        //Create the filter label for a single number value
-        else{
-          var filterValue = filterModel.get("min");
-        }
+        var filterValue = filterModel.getReadableValue();
 
+        //Create the applied filter
         var appliedFilter = this.createAppliedFilter(filterModel, filterValue);
 
         //Keep track if this filter is already displayed and needs to be replaced
@@ -475,6 +486,12 @@ define(['jquery', 'underscore', 'backbone',
           // do for false BooleanFilters
           return;
         }
+        else if( filterModel.get("values")[0] === true ){
+          if( !filterLabel ){
+            filterLabel = filterModel.get("fields")[0];
+            filterValue = "";
+          }
+        }
 
       }
       else if( filterModel.type == "ToggleFilter" ){
@@ -518,6 +535,9 @@ define(['jquery', 'underscore', 'backbone',
       //If the filter value is just an asterisk (i.e. `match anything`), just display the label
       else if( filterModel.get("values").length == 1 && filterModel.get("values")[0] == "*" ){
         filterValue = "";
+      }
+      else if( !filterLabel ){
+        filterLabel = filterModel.get("fields")[0];
       }
 
       //Create the applied filter element

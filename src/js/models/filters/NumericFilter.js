@@ -240,6 +240,39 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         return "";
       }
 
+    },
+
+    /**
+    * Creates a human-readable string that represents the value set on this model
+    * @return {string}
+    */
+    getReadableValue: function(){
+
+      var readableValue = "";
+
+      var min = this.get("min"),
+          max = this.get("max"),
+          value = this.get("values")[0];
+
+      if( !value && value !== 0 ){
+        //If there is a min and max
+        if( (min || min === 0) && (max || max === 0) ){
+          readableValue = min + " to " + max;
+        }
+        //If there is only a max
+        else if(max || max === 0){
+          readableValue = "No more than " + max;
+        }
+        else{
+          readableValue = "At least " + min;
+        }
+      }
+      else{
+        readableValue = value;
+      }
+
+      return readableValue;
+
     }
 
   });

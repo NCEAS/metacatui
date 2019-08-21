@@ -39,10 +39,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       modelJSON.values = this.parseTextNode(xml, "value");
 
       if(modelJSON.values === "true"){
-        modelJSON.values = true;
+        modelJSON.values = [true];
       }
       else if(modelJSON.values === "false"){
-        modelJSON.values = false;
+        modelJSON.values = [false];
       }
 
       return modelJSON;
