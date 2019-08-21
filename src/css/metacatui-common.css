@@ -1558,10 +1558,20 @@ body > .alert-container {
   max-height: 700px;
   overflow: scroll;
 }
-.attributeList a{
+.attributeListTable tr td:last-child a{
 	white-space: nowrap;
 	max-width: 100%;
 }
+.attributeListTable {
+	table-layout: fixed;
+	width: 100%;
+}
+
+/* Make the icon column 16px wide */
+.attributeListTable tr td:first-child {
+	width: 16px;
+}
+
 .controls-well > .party{
 	margin-bottom: 30px;
 	border-bottom: 1px solid #DDD;
@@ -2119,7 +2129,6 @@ a.btn.metrics-button-disabled {
 .entitydetails table,
 .entitydetails tbody,
 .entitydetails td {
-    display: block;
     word-wrap: break-word;
     box-sizing: border-box;
 }
@@ -2306,6 +2315,15 @@ a.btn.metrics-button-disabled {
 .popover-title {
     text-transform: capitalize;
 }
+
+/* Don't force capitalization on annotation popover titles */
+.annotation > .popover-title {
+    text-transform: none;
+}
+.annotation {
+	cursor: pointer;
+}
+
 .annotation-viewer-container .concept a{
 	white-space: pre-wrap;
 }
@@ -2314,6 +2332,67 @@ a.btn.metrics-button-disabled {
     color: #DDD;
 }
 
+/* Force hyperlinks in popovers to wrap */
+.annotation .popover .popover-content a {
+	white-space: normal;
+}
+
+/* Annotation pill stuff */
+.annotations-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.annotation {
+  display: flex;
+  margin: 0 6px 6px 0;
+}
+
+.annotation .annotation-property,
+.annotation .annotation-value,
+.annotation .annotation-findmore {
+  padding: 3px 6px;
+}
+
+.annotation .annotation-property {
+  background-color: #EEE;
+  border-width: 1px 0 1px 1px;
+  border-style: solid;
+  border-color: black;
+	border-radius: 5px 0px 0px 5px;
+}
+
+.annotation .annotation-value {
+  background-color: teal;
+  border-width: 1px;
+	border-style: solid;
+	border-color: black;
+	color: white;
+}
+
+.annotation .annotation-findmore {
+  background-color: #EEE;
+  border-width: 1px 1px 1px 0px;
+  border-style: solid;
+  border-color: black;
+  border-radius: 0px 5px 5px 0px;
+	color: black;
+	padding: 0 10px;
+}
+
+.annotation .annotation-findmore div {
+	transform: rotate(45deg);
+	margin: 2px;
+}
+
+ .annotation-popover-definition {
+	padding: 0.5rem 0;
+	margin: 0.5rem 0;
+}
+
+.annotation-popover-definition {
+	border-top: 1px solid #CCC;
+}
 /** Hide the search when in the dropdown menu **/
 .dropdown-menu .ncboAutocomplete {
 	display: none;
@@ -2331,9 +2410,18 @@ a.btn.metrics-button-disabled {
 
 .ncboAutocomplete .ui-menu .ui-menu-item a.ui-state-focus, .ncboAutocomplete .ui-menu .ui-menu-item a.ui-state-hover, .ncboAutocomplete .ui-menu .ui-menu-item a.ui-state-active, .ui-menu-item a {
     text-shadow: none;
-    font-size: 1.3em;
+    font-size: 14px;
     width: 100%;
 }
+
+.ncboAutocomplete .jsonSuggest {
+	overflow-x: scroll;
+}
+
+.ncboAutocomplete > .ui-autocomplete .ui-menu-item {
+	overflow: visible;
+}
+
 /** hide the tree until we have it where we want it **/
 #bioportal-tree {
 	display: none;
