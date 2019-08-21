@@ -20,7 +20,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       });
     },
 
-    /*
+    /**
     * Parses the dateFilter XML node into JSON
     *
     * @param {Element} xml - The XML Element that contains all the DateFilter elements
@@ -76,7 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     },
 
-    /*
+    /**
      * Builds a query string that represents this filter.
      *
      * @return {string} The query string to send to Solr
@@ -94,7 +94,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         _.each(this.get("fields"), function(field, i, allFields){
 
           //Add the date range for this field to the query string
-          queryString += field + ":[" + this.getRangeQuery().replace(/ /g, "%20") + "]";
+          queryString += field + ":" + this.getRangeQuery().replace(/ /g, "%20");
 
           //If there is another field, add an operator
           if( allFields[i+1] ){
@@ -119,7 +119,46 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     * @return {string} - THe subquery string
     */
     getRangeQuery: function(){
-      return this.get("min") + "-01-01T00:00:00Z TO " + this.get("max") + "-12-31T00:00:00Z";
+      //Get the minimum and maximum values
+      var max = this.get("max"),
+          min = this.get("min");
+
+      //If no min or max was set, but there is a value, construct an exact value match query
+      if( !min && min !== 0 && !max && max !== 0 &&
+               (this.get("values")[0] || this.get("values")[0] === 0) ){
+        return this.get("values")[0];
+      }
+      //If there is no min or max or value, set an empty query string
+      else if( !min && min !== 0 && !max && max !== 0 &&
+               ( !this.get("values")[0] && this.get("values")[0] !== 0) ){
+         return "";
+      }
+      //If there is at least a min or max
+      else{
+        //If there's a min but no max, set the max to a wildcard (unbounded)
+        if( (min || min === 0) && !max ){
+          max = "*";
+        }
+        //If there's a max but no min, set the min to a wildcard (unbounded)
+        else if ( !min && min !== 0 && max ){
+          min = "*";
+        }
+        //If the max is higher than the min, set the max to a wildcard (unbounded)
+        else if( (max || max === 0) && (min || min === 0) && (max < min) ){
+          max = "*";
+        }
+
+        if(min != "*"){
+          min = min + "-01-01T00:00:00Z";
+        }
+        if(max != "*"){
+          max = max + "-12-31T23:59:59Z";
+        }
+
+        //Add the range for this field to the query string
+        return "[" + min + "%20TO%20" + max + "]";
+      }
+
     },
 
     /**
@@ -155,10 +194,17 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       // Make subnodes <min> and <max> and append to DOM
       _.map(dateData, function(value, nodeName){
 
+        if( nodeName == "min" ){
+          var dateTime = "-01-01T00:00:00Z";
+        }
+        else{
+          var dateTime = "-12-31T23:59:59Z";
+        }
+
         //If this value is the same as the default value, but it wasn't previously serialized,
         if( (value == this.defaults()[nodeName]) &&
             ( !$(originalDOM).children(nodeName).length ||
-              ($(originalDOM).children(nodeName).text() != value + "-01-01T00:00:00Z") )){
+              ($(originalDOM).children(nodeName).text() != value + dateTime) )){
             return;
         }
 
@@ -166,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
 
         //Add the date string to the XML node
-        $(nodeSerialized).text( value + "-01-01T00:00:00Z" );
+        $(nodeSerialized).text( value + dateTime );
 
         $(objectDOM).append(nodeSerialized);
 
@@ -182,7 +228,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         var valueNode = $(objectDOM.ownerDocument.createElement("value"));
         //Get a Date object for this value
         var date = new Date();
-        date.setUTCFullYear(this.get("values")[0] + "-01-01T00:00:00Z");
+        date.setUTCFullYear(this.get("values")[0] + "-12-31T23:59:59Z");
         //Set the text of the XML node to the date string
         valueNode.text( date.toISOString() );
         $(objectDOM).append( valueNode );
@@ -201,10 +247,17 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         // Make subnodes <min> and <max> and append to DOM
         _.map(dateData, function(value, nodeName){
 
+          if( nodeName == "rangeMin" ){
+            var dateTime = "-01-01T00:00:00Z";
+          }
+          else{
+            var dateTime = "-12-31T23:59:59Z";
+          }
+
           //If this value is the same as the default value, but it wasn't previously serialized,
           if( (value == this.defaults()[nodeName]) &&
               ( !$(originalDOM).children(nodeName).length ||
-                ($(originalDOM).children(nodeName).text() != value + "-01-01T00:00:00Z") )){
+                ($(originalDOM).children(nodeName).text() != value + dateTime) )){
               return;
           }
 
@@ -212,7 +265,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
 
           //Add the date string to the XML node
-          $(nodeSerialized).text( value + "-01-01T00:00:00Z" );
+          $(nodeSerialized).text( value + dateTime );
 
           $(objectDOM).append(nodeSerialized);
 

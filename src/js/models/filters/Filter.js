@@ -272,7 +272,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Add the OR operator between field names
         if( fields.length > i+1 && queryString.length ){
-          queryString += "%20OR%20";
+          queryString += "%20" + this.get("operator") + "%20";
         }
 
       }, this);

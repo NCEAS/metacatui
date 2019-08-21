@@ -103,23 +103,56 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         //Iterate over each filter field and add to the query string
         _.each(this.get("fields"), function(field, i, allFields){
 
+          //Construct a query string for ranges
           if( this.get("range") ){
-            //Add the date range for this field to the query string
-            queryString += field + ":[" + this.get("min") + "%20TO%20" + this.get("max") + "]";
+
+            //Get the minimum and maximum values
+            var max = this.get("max"),
+                min = this.get("min");
+
+            //If no min or max was set, but there is a value, construct an exact value match query
+            if( !min && min !== 0 && !max && max !== 0 &&
+                     (this.get("values")[0] || this.get("values")[0] === 0) ){
+              queryString += field + ":" + this.get("values")[0];
+            }
+            //If there is no min or max or value, set an empty query string
+            else if( !min && min !== 0 && !max && max !== 0 &&
+                     ( !this.get("values")[0] && this.get("values")[0] !== 0) ){
+              queryString = "";
+            }
+            //If there is at least a min or max
+            else{
+              //If there's a min but no max, set the max to a wildcard (unbounded)
+              if( (min || min === 0) && !max ){
+                max = "*";
+              }
+              //If there's a max but no min, set the min to a wildcard (unbounded)
+              else if ( !min && min !== 0 && max ){
+                min = "*";
+              }
+              //If the max is higher than the min, set the max to a wildcard (unbounded)
+              else if( (max || max === 0) && (min || min === 0) && (max < min) ){
+                max = "*";
+              }
+
+              //Add the range for this field to the query string
+              queryString += field + ":[" + min + "%20TO%20" + max + "]";
+            }
           }
-          else{
+          //If there is a value set, construct an exact numeric match query
+          else if( this.get("values")[0] || this.get("values")[0] === 0 ){
             queryString += field + ":" + this.get("values")[0];
           }
 
           //If there is another field, add an operator
-          if( allFields[i+1] ){
+          if( allFields[i+1] && queryString.length ){
             queryString += "%20" + this.get("operator") + "%20";
           }
 
         }, this);
 
         //If there is more than one field, wrap the query in paranthesis
-        if( this.get("fields").length > 1 ){
+        if( this.get("fields").length > 1 && queryString.length ){
           queryString = "(" + queryString + ")";
         }
 
