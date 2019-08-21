@@ -130,7 +130,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
               var msg = "The portal owner has not granted you access to edit this portal. Please contact the owner to be given edit access.";
 
               //Show the not authorized error message
-              MetacatUI.appView.showAlert(msg, "alert-error", this.projEditSectionsContainer);
+              MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
             }
           });
 
