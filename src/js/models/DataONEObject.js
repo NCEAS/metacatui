@@ -1254,11 +1254,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 var obsoletedBy = $(data).find("obsoletedBy").text();
 
                 //If there is an even newer version, then get it and rerun this function
-                if(obsoletedBy)
+                if(obsoletedBy){
                   model.findLatestVersion(possiblyNewer, obsoletedBy);
+                }
                 //If there isn't a newer version, then this is it
                 else{
                   model.set("latestVersion", possiblyNewer);
+                  model.trigger("latestVersionFound", model);
 
                   //Remove the listeners now that we found the latest version
                   model.stopListening("sync", model.findLatestVersion);
@@ -1268,8 +1270,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               },
               error: function(xhr){
                 //If this newer version isn't accessible, link to the latest version that is
-                if(xhr.status == "401")
+                if(xhr.status == "401"){
                   model.set("latestVersion", latestVersion);
+                  model.trigger("latestVersionFound", model);
+                }
               }
             }
 

@@ -122,6 +122,9 @@ define(["jquery",
                 //If the project isn't found, display a 404 message
                 this.listenToOnce(this.model, "notFound", this.showNotFound);
 
+                //Listen to errors that might occur during fetch()
+                this.listenToOnce(this.model, "error", this.showError);
+
                 //Fetch the model
                 this.model.fetch({ objectOnly: true });
 
@@ -132,6 +135,10 @@ define(["jquery",
              * Render the Project view
              */
             renderProject: function() {
+
+              //Remove the listeners thatt were set during the fetch() process
+              this.stopListening(this.model, "notFound", this.showNotFound);
+              this.stopListening(this.model, "error", this.showError);
 
                 // Insert the overall project template
                 this.$el.html(this.template(this.model.toJSON()));
@@ -483,6 +490,27 @@ define(["jquery",
                   });
 
               this.$el.html(notification);
+
+            },
+
+            /**
+            * Show an error message in this view
+            * @param {SolrResult} model
+            * @param {XMLHttpRequest.response} response
+            */
+            showError: function(model, response){
+
+              //Show the error message
+              MetacatUI.appView.showAlert(
+                "<h4><i class='icon icon-frown'></i>Something went wrong while displaying this portal.</h4>" +
+                "<p>Error details: " +
+                $(response.responseText).text() + "</p>",
+                "alert-error",
+                this.$el
+              );
+
+              //Remove the loading message from this view
+              this.$el.find(".loading").remove();
 
             },
 

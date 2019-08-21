@@ -189,8 +189,8 @@ define(["jquery",
                        "&sort=dateUploaded%20asc" +
                        "&rows=1" +
                        "&wt=json",
-                  error: function(model, response) {
-                      model.trigger("error");
+                  error: function(response) {
+                      model.trigger("error", model, response);
 
                       if( response.status == 404 ){
                         model.trigger("notFound");

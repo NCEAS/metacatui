@@ -291,6 +291,7 @@ define(["jquery",
                 this.listenTo(this.searchResults, "add", this.addOne);
                 this.listenTo(this.searchResults, "reset", this.addAll);
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
+                this.listenTo(this.searchResults, "error", this.showError);
 
                 // List data sources
                 this.listDataSources();
@@ -3035,6 +3036,26 @@ define(["jquery",
                             });
                     }
                 }
+            },
+
+            /**
+            * When the SearchResults collection has an error getting the results,
+            * show an error message instead of search results
+            * @param {SolrResult} model
+            * @param {XMLHttpRequest.response} response
+            */
+            showError: function(model, response){
+
+              MetacatUI.appView.showAlert(
+                "<h4><i class='icon icon-frown'></i>Something went wrong while getting the list of datasets.</h4>" +
+                "<p>Error details: " +
+                $(response.responseText).text() + "</p>",
+                "alert-error",
+                this.$results
+              );
+
+              this.$results.find(".loading").remove();
+
             },
 
 

@@ -169,6 +169,7 @@ define(["jquery",
                 this.listenTo(this.searchResults, "add", this.addOne);
                 this.listenTo(this.searchResults, "reset", this.addAll);
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
+                this.listenTo(this.searchResults, "error", this.showError);
 
                 // Listen to changes in the Search model Filters to trigger a search
                 this.stopListening(this.searchModel.get("filters"), "add remove update reset change");

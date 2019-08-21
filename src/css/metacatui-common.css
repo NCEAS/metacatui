@@ -325,6 +325,7 @@ header .citation {
 }
 .alert h4{
 	margin-top: 10px;
+  margin-bottom: 20px;
 }
 .alert .icon-left{
 	float: left;
