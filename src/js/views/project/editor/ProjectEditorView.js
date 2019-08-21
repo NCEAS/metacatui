@@ -243,6 +243,9 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
          //When the seriesId or latest pid is found, come back to this function
          this.listenToOnce(this.model, "change:seriesId",    this.authorizeUser);
          this.listenToOnce(this.model, "latestVersionFound", this.authorizeUser);
+         
+         //If the project isn't found, display a 404 message
+         this.listenToOnce(this.model, "notFound", this.showNotFound);
 
          //Get the seriesId or latest pid
          this.model.getSeriesIdByName();
@@ -252,6 +255,9 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
          //Remove the listeners for the seriesId and latest pid
          this.stopListening(this.model, "change:seriesId",    this.authorizeUser);
          this.stopListening(this.model, "latestVersionFound", this.authorizeUser);
+         
+         // Remove the not found listener
+         this.stopListening(this.model, "notFound", this.showNotFound);
        }
 
        //Remove the loading message
@@ -383,6 +389,19 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
         $(container).append('<h1>Sign in to edit a portal</h1>', signInButtons);
       }
       
+    },
+
+    /**
+     * If the given project doesn't exist, display a Not Found message.
+     */
+    showNotFound: function(){
+
+      this.hideLoading();
+
+      var notFoundMessage = "The project \"" + (this.model.get("label") || this.projectIdentifier) +
+                            "\" doesn't exist.";
+          
+      MetacatUI.appView.showAlert(notFoundMessage, "alert-error", this.$el);
     }
 
   });
