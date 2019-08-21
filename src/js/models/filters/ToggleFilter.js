@@ -42,10 +42,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       if( !modelJSON.falseLabel ){
         delete modelJSON.falseLabel;
       }
-      if( !modelJSON.falseValue ){
+      if( !modelJSON.trueValue && modelJSON.trueValue !== false ){
+        delete modelJSON.trueValue;
+      }
+      if( !modelJSON.falseValue && modelJSON.falseValue !== false ){
         delete modelJSON.falseValue;
       }
-
 
       return modelJSON;
     },
@@ -56,30 +58,55 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
      *  @return {XMLElement} An updated toggleFilter XML element from a project document
     */
     updateDOM: function(options){
-      var objectDOM = Filter.prototype.updateDOM.call(this, options);
 
-      if( typeof options == "object" && !options.forCollection ){
+      try{
+        var objectDOM = Filter.prototype.updateDOM.call(this, options);
 
-        var dateData = {
-          trueValue: this.get("trueValue"),
-          trueLabel: this.get("trueLabel"),
-          falseValue: this.get("falseValue"),
-          falseLabel: this.get("falseLabel")
-        };
+        if( (typeof options == "undefined") || (typeof options == "object" && !options.forCollection) ){
 
-        // Make and append new subnodes
-        _.map(dateData, function(value, nodeName){
-
-          if(value){
-            var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-            $(nodeSerialized).text(value);
-            $(objectDOM).append(nodeSerialized);
+          var toggleData = {
+            trueValue: this.get("trueValue"),
+            trueLabel: this.get("trueLabel"),
+            falseValue: this.get("falseValue"),
+            falseLabel: this.get("falseLabel")
           }
 
-        });
-      }
+          // Make and append new subnodes
+          _.map(toggleData, function(value, nodeName){
 
-      return objectDOM;
+            if(value || value === false){
+              var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+              $(nodeSerialized).text(value);
+              $(objectDOM).append(nodeSerialized);
+            }
+
+          });
+
+          //Move the filterOptions node to the end of the filter node
+          var filterOptionsNode = $(objectDOM).find("filterOptions");
+          filterOptionsNode.detach();
+          $(objectDOM).append(filterOptionsNode);
+
+        }
+        //For collection definitions, serialize the filter differently
+        else{
+          //Remove the filterOptions
+          $(objectDOM).find("filterOptions").remove();
+
+          //Change the root element into a <filter> element
+          var newFilterEl = objectDOM.ownerDocument.createElement("filter");
+          $(newFilterEl).html( $(objectDOM).children() );
+
+          //Return this node
+          return newFilterEl;
+        }
+
+        return objectDOM;
+      }
+      //If there's an error, return the original DOM or an empty string
+      catch(e){
+        return this.get("objectDOM") || "";
+      }
     }
 
   });

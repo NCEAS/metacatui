@@ -56,47 +56,70 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     /**
      * Updates the XML DOM with the new values from the model
-     *
+     *  @inheritdoc
      *  @return {XMLElement} An updated choiceFilter XML element from a project document
     */
-    updateDOM:function(){
+    updateDOM:function(options){
 
-      var objectDOM = Filter.prototype.updateDOM.call(this);
+      try{
 
-      // Serialize <choice> elements
-      var choices = this.get("choices");
+        var objectDOM = Filter.prototype.updateDOM.call(this);
 
-      if(choices){
-        _.each(choices, function(choice){
-          // Make new <choice> node
-          choiceSerialized = objectDOM.ownerDocument.createElement("choice");
-          // Make choice subnodes <label> and <value>
-          _.map(choice, function(value, nodeName){
+        if(typeof options != "object"){
+          var options = {};
+        }
 
-            if(value){
-              var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-              $(nodeSerialized).text(value);
-              $(choiceSerialized).append(nodeSerialized);
-            }
+        if( !options.forCollection ){
+          // Serialize <choice> elements
+          var choices = this.get("choices");
 
-          });
-        // append subnodes
-        $(objectDOM).append(choiceSerialized);
+          if(choices){
+            _.each(choices, function(choice){
+              // Make new <choice> node
+              choiceSerialized = objectDOM.ownerDocument.createElement("choice");
+              // Make choice subnodes <label> and <value>
+              _.map(choice, function(value, nodeName){
 
-        });
+                if(value || value === false){
+                  var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+                  $(nodeSerialized).text(value);
+                  $(choiceSerialized).append(nodeSerialized);
+                }
 
+              });
+            // append subnodes
+            $(objectDOM).append(choiceSerialized);
+
+            });
+
+          }
+
+          // Serialize the <chooseMultiple> element
+          var chooseMultiple = this.get("chooseMultiple");
+          if(chooseMultiple === true || chooseMultiple === false){
+            chooseMultipleSerialized = objectDOM.ownerDocument.createElement("chooseMultiple");
+            $(chooseMultipleSerialized).text(chooseMultiple);
+            $(objectDOM).append(chooseMultipleSerialized);
+          };
+        }
+        else{
+          //Remove the filterOptions
+          $(objectDOM).find("filterOptions").remove();
+
+          //Change the root element into a <filter> element
+          var newFilterEl = objectDOM.ownerDocument.createElement("filter");
+          $(newFilterEl).html( $(objectDOM).children() );
+
+          //Return this node
+          return newFilterEl;
+        }
+
+        return objectDOM;
       }
-
-      // Serialize the <chooseMultiple> element
-      var chooseMultiple = this.get("chooseMultiple");
-      if(chooseMultiple){
-        chooseMultipleSerialized = objectDOM.ownerDocument.createElement("chooseMultiple");
-        $(chooseMultipleSerialized).text(chooseMultiple);
-        $(objectDOM).append(chooseMultipleSerialized);
-      };
-
-
-      return objectDOM
+      //If there's an error, return the original DOM or an empty string
+      catch(e){
+        return this.get("objectDOM") || "";
+      }
 
     }
 

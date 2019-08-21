@@ -376,8 +376,8 @@ define(['jquery', 'underscore', 'backbone',
       }
 
       //If the minimum and maximum values are set to the default, remove the filter element
-      if( filterModel.get("min") == filterModel.get("minDefault") &&
-          filterModel.get("max") == filterModel.get("maxDefault")){
+      if( filterModel.get("min") == filterModel.get("rangeMin") &&
+          filterModel.get("max") == filterModel.get("rangeMax")){
 
         //Find the applied filter element for this filter model
         _.each(this.$(".applied-filter"), function(filterEl){
@@ -655,8 +655,8 @@ define(['jquery', 'underscore', 'backbone',
 
           //Set the min and max values
           filterModel.set({
-            min: filterModel.get("minDefault"),
-            max: filterModel.get("maxDefault")
+            min: filterModel.get("rangeMin"),
+            max: filterModel.get("rangeMax")
           });
 
           //Trigger the reset event

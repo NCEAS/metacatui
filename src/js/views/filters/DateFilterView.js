@@ -33,8 +33,8 @@ define(['jquery', 'underscore', 'backbone',
     render: function () {
 
       var templateVars = this.model.toJSON();
-      templateVars.min = this.model.get("minDefault");
-      templateVars.max = this.model.get("maxDefault");
+      templateVars.min = this.model.get("rangeMin");
+      templateVars.max = this.model.get("rangeMax");
 
       this.$el.html( this.template( templateVars ) );
 
@@ -44,8 +44,8 @@ define(['jquery', 'underscore', 'backbone',
       this.$('.slider').slider({
           range: true,
           disabled: false,
-          min: this.model.get("minDefault"),  //sets the minimum on the UI slider on initialization
-          max: this.model.get("maxDefault"),   //sets the maximum on the UI slider on initialization
+          min: this.model.get("rangeMin"),  //sets the minimum on the UI slider on initialization
+          max: this.model.get("rangeMax"),   //sets the maximum on the UI slider on initialization
           values: [ this.model.get("min"), this.model.get("max") ], //where the left and right slider handles are
           stop: function( event, ui ) {
 
@@ -97,11 +97,11 @@ define(['jquery', 'underscore', 'backbone',
     resetSlider: function(){
 
       //Set the min and max values on the slider widget
-      this.$( ".slider" ).slider( "option", "values", [ this.model.get("minDefault"), this.model.get("maxDefault") ] );
+      this.$( ".slider" ).slider( "option", "values", [ this.model.get("rangeMin"), this.model.get("rangeMax") ] );
 
       //Reset the min and max values
-      this.$('input.min').val( this.model.get("minDefault") );
-      this.$('input.max').val( this.model.get("maxDefault") );
+      this.$('input.min').val( this.model.get("rangeMin") );
+      this.$('input.max').val( this.model.get("rangeMax") );
 
     }
 

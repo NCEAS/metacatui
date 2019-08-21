@@ -12,10 +12,11 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
+        nodeName: "numericFilter",
         min: null,
         max: null,
-        minDefault: null,
-        maxDefault: null,
+        rangeMin: null,
+        rangeMax: null,
         range: true,
         step: 0
       });
@@ -29,43 +30,58 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     */
     parse: function(xml){
 
-      var modelJSON = Filter.prototype.parse(xml);
+      try{
+        var modelJSON = Filter.prototype.parse(xml);
 
-      //Find the min XML node
-      var minNode = $(xml).find("min"),
-          stepNode = $(xml).find("step"),
-          rangeNode = $(xml).find("range");
+        //Find the min XML node
+        var minNode = $(xml).find("min"),
+            maxNode = $(xml).find("max"),
+            rangeMinNode = $(xml).find("rangeMin"),
+            rangeMaxNode = $(xml).find("rangeMax"),
+            valueNode = $(xml).find("value");
 
-      //If a min XML node is found
-      if(minNode.length){
-        //Parse the text content of the node into a float
-        modelJSON.minDefault = parseFloat(minNode[0].textContent);
-        modelJSON.min = modelJSON.minDefault;
+        if( minNode.length ){
+          modelJSON.min = parseFloat(minNode[0].textContent);
+        }
+        if( maxNode.length ){
+          modelJSON.max = parseFloat(maxNode[0].textContent);
+        }
+        if( rangeMinNode.length ){
+          modelJSON.rangeMin = parseFloat(rangeMinNode[0].textContent);
+        }
+        if( rangeMaxNode.length ){
+          modelJSON.rangeMax = parseFloat(rangeMaxNode[0].textContent);
+        }
+        if( valueNode.length ){
+          modelJSON.values = [parseFloat(valueNode[0].textContent)];
+        }
 
-        //Find the max XML node
-        var maxNode = $(xml).find("max");
+        //If a range min and max was given, or if a min and max value was given,
+        // then this NumericFilter should be presented as a numeric range (rather than
+       // an exact numeric value).
+        if( rangeMinNode.length || rangeMinNode.length || minNode || maxNode ){
+          //Set the range attribute on the JSON
+          modelJSON.range = true;
+        }
+        else{
+          //Set the range attribute on the JSON
+          modelJSON.range = false;
+        }
 
-        //If a max XML node is found
-        if(maxNode.length){
-          //Parse the text content of the node into a float
-          modelJSON.maxDefault = parseFloat(maxNode[0].textContent);
-          modelJSON.max = modelJSON.maxDefault;
+        //If a range step was given, save it
+        if( modelJSON.range ){
+          var stepNode = $(xml).find("step");
+
+          if( stepNode.length ){
+            //Parse the text content of the node into a float
+            modelJSON.step = parseFloat(stepNode[0].textContent);
+          }
         }
       }
-
-      //If a step XML node is found
-      if(stepNode.length){
-        //Parse the text content of the node into a float
-        modelJSON.step = parseFloat(stepNode[0].textContent);
-      }
-
-      //If a range XML node is found
-      if(rangeNode.length){
-        //Parse the text content as a Boolean
-        var booleanValue = rangeNode[0].textContent === "false"? false : true;
-
-        //Set the range attribute on the JSON
-        modelJSON.range = booleanValue;
+      catch(e){
+        //If an error occured while parsing the XML, return a blank JS object
+        //(i.e. this model will just have the default values).
+        return {};
       }
 
       return modelJSON;
@@ -82,7 +98,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       var queryString = "";
 
       //Only construct the query if the min or max is different than the default
-      if( this.get("min") != this.get("minDefault") || this.get("max") != this.get("maxDefault") ){
+      if( this.get("min") != this.get("rangeMin") || this.get("max") != this.get("rangeMax") ){
 
         //Iterate over each filter field and add to the query string
         _.each(this.get("fields"), function(field, i, allFields){
@@ -92,7 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
             queryString += field + ":[" + this.get("min") + "%20TO%20" + this.get("max") + "]";
           }
           else{
-            queryString += field + ":" + this.get("min");
+            queryString += field + ":" + this.get("values")[0];
           }
 
           //If there is another field, add an operator
@@ -115,33 +131,81 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     /**
      * Updates the XML DOM with the new values from the model
-     *
+     *  @inheritdoc
      *  @return {XMLElement} An updated numericFilter XML element from a project document
     */
-    updateDOM:function(){
+    updateDOM:function(options){
 
-      var objectDOM = Filter.prototype.updateDOM.call(this);
-
-      // Get new numeric data
-      var numericData = {
-        min: this.get("min"),
-        max: this.get("max"),
-        range: this.get("range"),
-        step: this.get("step")
-      };
-
-      // Make subnodes and append to DOM
-      _.map(numericData, function(value, nodeName){
-
-        if(value){
-          var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-          $(nodeSerialized).text(value);
-          $(objectDOM).append(nodeSerialized);
+      try{
+        if( typeof options == "undefined" ){
+          var options = {};
         }
 
-      });
+        var objectDOM = Filter.prototype.updateDOM.call(this);
 
-      return objectDOM
+        //Numeric Filters don't use matchSubstring nodes
+        $(objectDOM).children("matchSubstring").remove();
+
+        //Get a clone of the original DOM
+        var originalDOM;
+        if( this.get("objectDOM") ){
+          originalDOM = this.get("objectDOM").cloneNode(true);
+        }
+
+        // Get new numeric data
+        var numericData = {
+          min: this.get("min"),
+          max: this.get("max")
+        };
+
+        if( !options.forCollection ){
+          numericData = _.extend(numericData, {
+            rangeMin: this.get("rangeMin"),
+            rangeMax: this.get("rangeMax"),
+            step: this.get("step")
+          });
+        }
+
+        // Make subnodes and append to DOM
+        _.map(numericData, function(value, nodeName){
+
+          if( value || value === 0 ){
+
+            //If this value is the same as the default value, but it wasn't previously serialized,
+            if( (value == this.defaults()[nodeName]) &&
+                ( !$(originalDOM).children(nodeName).length ||
+                  ($(originalDOM).children(nodeName).text() != value + "-01-01T00:00:00Z") )){
+                return;
+            }
+
+            var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+            $(nodeSerialized).text(value);
+            $(objectDOM).append(nodeSerialized);
+          }
+
+        }, this);
+
+        //Remove filterOptions for collection definition filters
+        if( options.forCollection ){
+          $(objectDOM).children("filterOptions").remove();
+        }
+        else{
+          //Make sure the filterOptions are listed last
+          //Get the filterOptions element
+          var filterOptions = $(objectDOM).children("filterOptions");
+          //If the filterOptions exist
+          if( filterOptions.length ){
+            //Detach from their current position and append to the end
+            filterOptions.detach();
+            $(objectDOM).append(filterOptions);
+          }
+        }
+
+        return objectDOM;
+      }
+      catch(e){
+        return "";
+      }
 
     }
 

@@ -24,6 +24,8 @@ define(['jquery', 'underscore', 'backbone'],
     * Default attributes for this model
     * @name Filter#defaults
     * @type {Object}
+    * @property {Element} objectDOM - The XML DOM for this filter
+    * @property {string} nodeName - The XML node name for this filter's XML DOM
     * @property {string[]} fields - The search index fields to search
     * @property {string[]} values - The values to search for in the given search fields
     * @property {string} operator - The operator to use between values set on this model. "AND" or "OR"
@@ -42,6 +44,7 @@ define(['jquery', 'underscore', 'backbone'],
     defaults: function(){
       return{
         objectDOM: null,
+        nodeName: "filter",
         fields: [],
         values: [],
         operator: "AND",
@@ -104,30 +107,41 @@ define(['jquery', 'underscore', 'backbone'],
 
       var modelJSON = {};
 
-      //Parse the field(s)
-      modelJSON.fields = this.parseTextNode(xml, "field", true);
-      //Parse the value(s)
-      modelJSON.values = this.parseTextNode(xml, "value", true);
-      //Parse the label
-      modelJSON.label = this.parseTextNode(xml, "label");
-      //Parse the icon
-      modelJSON.icon = this.parseTextNode(xml, "icon");
-      //Parse the placeholder
-      modelJSON.placeholder = this.parseTextNode(xml, "placeholder");
-      //Parse the description
-      modelJSON.description = this.parseTextNode(xml, "description");
+      if( $(xml).children("field").length ){
+        //Parse the field(s)
+        modelJSON.fields = this.parseTextNode(xml, "field", true);
+      }
+
+      if( $(xml).children("value").length ){
+        //Parse the value(s)
+        modelJSON.values = this.parseTextNode(xml, "value", true);
+      }
+
+      if( $(xml).children("label").length ){
+        //Parse the label
+        modelJSON.label = this.parseTextNode(xml, "label");
+      }
 
       //Parse the operator, if it exists
-      if( $(xml).find("operator").length )
+      if( $(xml).find("operator").length ){
         modelJSON.operator = this.parseTextNode(xml, "operator");
+      }
 
       //Parse the exclude, if it exists
-      if( $(xml).find("exclude").length )
+      if( $(xml).find("exclude").length ){
         modelJSON.exclude = (this.parseTextNode(xml, "exclude") === "true")? true : false;
+      }
 
       //Parse the matchSubstring
-      if( $(xml).find("matchSubstring").length )
+      if( $(xml).find("matchSubstring").length ){
         modelJSON.matchSubstring = (this.parseTextNode(xml, "matchSubstring") === "true")? true : false;
+      }
+
+      var filterOptionsNode = $(xml).children("filterOptions");
+      if( filterOptionsNode.length ){
+        //Parse the filterOptions XML node
+        modelJSON = _.extend(this.parseFilterOptions(filterOptionsNode), modelJSON);
+      }
 
       return modelJSON;
 
@@ -174,6 +188,48 @@ define(['jquery', 'underscore', 'backbone'],
         return allContents;
 
       }
+    },
+
+    /**
+    * Parses the filterOptions XML node into a literal object
+    * @param {Element} filterOptionsNode - The filterOptions XML element to parse
+    * @return {Object} - The parsed filter options, in literal object form
+    */
+    parseFilterOptions: function(filterOptionsNode){
+
+      if( typeof filterOptionsNode == "undefined" ){
+        return {};
+      }
+
+      var modelJSON = {};
+
+      try{
+        //The list of options to parse
+        var options = ["placeholder", "icon", "description"];
+
+        //Parse the text nodes for each filter option
+        _.each(options, function(option){
+          if( $(filterOptionsNode).children(option).length ){
+            modelJSON[option] = this.parseTextNode(filterOptionsNode, option, false);
+          }
+        }, this);
+
+        //Parse the generic option name and value pairs and set on the model JSON
+        $(filterOptionsNode).children("option").each(function(i, optionNode){
+          var optName = $(optionNode).children("optionName").text();
+          var optValue = $(optionNode).children("optionValue").text();
+
+          modelJSON[optName] = optValue;
+        });
+
+        //Return the JSON to be set on this model
+        return modelJSON;
+
+      }
+      catch(e){
+        return {};
+      }
+
     },
 
     /**
@@ -355,67 +411,156 @@ define(['jquery', 'underscore', 'backbone'],
     */
     updateDOM: function(options){
 
-      var objectDOM = this.get("objectDOM");
+      try{
 
-      if (objectDOM) {
-        // Empty to DOM so we can replace with new subnodes
-        objectDOM = objectDOM.cloneNode(true);
-        $(objectDOM).empty();
-      } else {
-          // Create an XML filter element from scratch
-          var objectDOM = new DOMParser().parseFromString("<filter></filter>", "text/xml"),
-              objectDOM = $(objectDOM).children()[0];
-      }
+        if(typeof options == "undefined"){
+          var options = {};
+        }
 
-      if(typeof options == "undefined"){
-        var options = {};
-      }
+        var objectDOM = this.get("objectDOM"),
+            filterOptionsNode;
 
-      // Get new values
-      var filterData = {
-        // The following values are common to all FilterType elements
-        field: this.get("fields"),
-        value: this.get("values"),
-        operator: this.get("operator"),
-        exclude: this.get("exclude"),
-        matchSubstring: this.get("matchSubstring"),
-        label: this.get("label")
-      };
+        if (objectDOM) {
+          // Empty to DOM so we can replace with new subnodes
+          var $objectDOM = $(objectDOM.cloneNode(true));
 
-      //If this is a UIFilterType that won't be serialized into a Collection definition,
-      // then add extra XML nodes
-      if( !options.forCollection ){
-        // The following values are set for UserInterfaceFilterType,
-        // a subtype of FilterType
-        filterData.placeholder = this.get("placeholder");
-        filterData.icon = this.get("icon");
-        filterData.description = this.get("description");
-      }
+          //Detach the filterOptions so they are saved
+          filterOptionsNode = $objectDOM.children("filterOptions");
+          filterOptionsNode.detach();
 
-      // Make new sub nodes using the new model data
-      _.map(filterData, function(values, nodeName){
-
-        // Serialize the nodes with multiple occurences
-        if( Array.isArray(values) ){
-            _.each(values, function(value){
-              if(value){
-                var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
-                $(nodeSerialized).text(value);
-                $(objectDOM).append(nodeSerialized);
-              }
-            });
-        // Serialize the single occurence nodes
+          //Empty the DOM
+          $objectDOM.empty();
         } else {
-          if(values){
-            var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+            // Create an XML filter element from scratch
+            var objectDOM = new DOMParser().parseFromString("<" + this.get("nodeName") +
+                            "></" + this.get("nodeName") + ">", "text/xml");
+            var $objectDOM = $(objectDOM).find(this.get("nodeName"));
+        }
+
+        var xmlDocument = $objectDOM[0].ownerDocument;
+
+        // Get new values
+        var filterData = {
+          // The following values are common to all FilterType elements
+          label: this.get("label"),
+          field: this.get("fields"),
+          operator: this.get("operator"),
+          exclude: this.get("exclude"),
+          matchSubstring: this.get("matchSubstring"),
+          value: this.get("values")
+        };
+
+        // Make new sub nodes using the new model data
+        _.map(filterData, function(values, nodeName){
+
+          // Serialize the nodes with multiple occurences
+          if( Array.isArray(values) ){
+              _.each(values, function(value){
+                if(value || value === false){
+                  var nodeSerialized = xmlDocument.createElement(nodeName);
+                  $(nodeSerialized).text(value);
+                  $objectDOM.append(nodeSerialized);
+                }
+              });
+          // Serialize the single occurence nodes
+          }
+          else if(values || values === false) {
+            var nodeSerialized = xmlDocument.createElement(nodeName);
             $(nodeSerialized).text(values);
-            $(objectDOM).append(nodeSerialized);
+            $objectDOM.append(nodeSerialized);
+          }
+
+        });
+
+        //If this is a UIFilterType that won't be serialized into a Collection definition,
+        // then add extra XML nodes
+        if( !options.forCollection ){
+
+          //Update the filterOptions XML DOM
+          filterOptionsNode = this.updateFilterOptionsDOM(filterOptionsNode);
+
+          //Add the filterOptions to the filter DOM
+          if( typeof filterOptionsNode != "undefined" && $(filterOptionsNode).children().length ){
+            $objectDOM.append(filterOptionsNode);
           }
         }
 
-      });
+        return $objectDOM[0];
+      }
+      catch(e){
+        return this.get("objectDOM") || "";
+      }
+    },
 
-      return objectDOM
+    /**
+    * Serializes the filter options into an XML DOM and returns it
+    * @param {Element} [filterOptionsNode] - The XML filterOptions node to update
+    * @return {Element} - The updated DOM
+    */
+    updateFilterOptionsDOM: function(filterOptionsNode){
+
+      try{
+
+        //If a filterOptions XML node was not given, create one
+        if( typeof filterOptionsNode == "undefined" || !filterOptionsNode.length ){
+          var filterOptionsNode = new DOMParser().parseFromString("<filterOptions></filterOptions>", "text/xml");
+          var $filterOptionsNode = $(filterOptionsNode).find("filterOptions");
+        }
+        else{
+          //Convert the XML node into a jQuery object
+          var $filterOptionsNode = $(filterOptionsNode);
+        }
+
+        //Get the first option element
+        var firstOptionNode = $filterOptionsNode.children("option").first();
+
+        // The following values are for UIFilterOptionsType
+        var optionsData = {};
+        optionsData.placeholder = this.get("placeholder");
+        optionsData.icon = this.get("icon");
+        optionsData.description = this.get("description");
+
+        var xmlDocument;
+
+        if( filterOptionsNode.length ){
+          xmlDocument = filterOptionsNode[0].ownerDocument;
+        }
+        if(!xmlDocument){
+          xmlDocument = filterOptionsNode.ownerDocument;
+        }
+        if(!xmlDocument){
+          xmlDocument = filterOptionsNode;
+        }
+
+        //Update the text value of existing
+        _.map(optionsData, function(value, nodeName){
+          //Remove the existing node, if it exists
+          $filterOptionsNode.children(nodeName).remove();
+
+          //If there is a value set on the model for this attribute, then create an XML
+          // node for this attribute and set the text value
+          if( value ){
+            var newNode = $(xmlDocument.createElement(nodeName)).text(value);
+
+            if( firstOptionNode.length )
+              firstOptionNode.before(newNode);
+            else
+              $filterOptionsNode.append(newNode);
+          }
+        });
+
+        //If no options were serialized, then return an empty string
+        if( !$filterOptionsNode.children().length ){
+          return "";
+        }
+        else{
+          return filterOptionsNode;
+        }
+      }
+      catch(e){
+        return "";
+      }
+
     },
 
     /**
