@@ -83,9 +83,9 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           });
 
           //Move the filterOptions node to the end of the filter node
-          var filterOptionsNode = $(objectDOM).find("filterOptions");
+        /*  var filterOptionsNode = $(objectDOM).find("filterOptions");
           filterOptionsNode.detach();
-          $(objectDOM).append(filterOptionsNode);
+          $(objectDOM).append(filterOptionsNode);*/
 
         }
         //For collection definitions, serialize the filter differently

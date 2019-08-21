@@ -629,7 +629,7 @@ define(["jquery",
               var litCit = this.get("literatureCited");
 
               // Don't serialize falsey values
-              if(litCit){
+              if( litCit.length ){
 
                 // If there's only one element in litCited, it will be a string
                 // turn it into an array so that we can use _.each

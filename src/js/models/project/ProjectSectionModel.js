@@ -102,9 +102,13 @@ define(["jquery",
 
           //Update the image element
           if( this.get("image") && typeof this.get("image").updateDOM == "function" ){
+
             var imageSerialized = this.get("image").updateDOM();
+
             if(imageSerialized && $(imageSerialized).children().length){
-              $(objectDOM).children("label").insertAfter(imageSerialized);
+              var insertAfter = this.getXMLPosition(objectDOM, "image");
+
+              $(insertAfter).after(imageSerialized);
             }
           }
 
@@ -118,7 +122,46 @@ define(["jquery",
 
           return objectDOM
 
-        }
+        },
+
+        /**
+         * Finds the node in the given project XML document afterwhich the
+         * given node type should be inserted
+         *
+         * @param {Element} parentNode - The parent XML element
+         * @param {string} nodeName - The name of the node to be inserted
+         *                             into xml
+         * @return {(jQuery\|boolean)} A jQuery object indicating a position,
+         *                            or false when nodeName is not in the
+         *                            project schema
+        */
+        getXMLPosition: function(parentNode, nodeName){
+
+          var nodeOrder = [ "label", "title", "introduction", "image", "content", "option"];
+
+          var position = _.indexOf(nodeOrder, nodeName);
+
+          // First check that nodeName is in the list of nodes
+          if ( position == -1 ) {
+              return false;
+          };
+
+          // If there's already an occurence of nodeName...
+          if($(parentNode).children(nodeName).length > 0){
+            // ...insert it after the last occurence
+            return $(parentNode).children(nodeName).last();
+          } else {
+            // Go through each node in the node list and find the position
+            // after which this node will be inserted
+            for (var i = position - 1; i >= 0; i--) {
+              if ( $(parentNode).children(nodeOrder[i]).length ) {
+                return $(parentNode).children(nodeOrder[i]).last();
+              }
+            }
+          }
+
+          return false;
+        },
 
 
       });
