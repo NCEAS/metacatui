@@ -394,8 +394,8 @@ define(["jquery",
       // in reverse order because we prepend them consecutively to objectDOM
       var collectionTextData = {
         description: this.get("description"),
-        label: this.get("label"),
-        name: this.get("name")
+        name: this.get("name"),
+        label: this.get("label")
       }
 
       _.map(collectionTextData, function(value, nodeName){

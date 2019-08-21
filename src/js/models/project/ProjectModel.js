@@ -502,7 +502,7 @@ define(["jquery",
             */
             getXMLPosition: function(projectNode, nodeName){
 
-              var nodeOrder = [ "name", "label", "description", "definition",
+              var nodeOrder = [ "label", "name", "description", "definition",
                                 "logo", "section", "associatedParty",
                                 "acknowledgments", "acknowledgmentsLogo",
                                 "award", "literatureCited", "filterGroup",
@@ -560,7 +560,7 @@ define(["jquery",
 
               // Iterate over each root XML node to find the project node
               $(xmlDoc).children().each(function(i, el) {
-                  if (el.tagName.indexOf("project") > -1) {
+                  if (el.tagName.indexOf("portal") > -1) {
                       projectNode = el;
                   }
               });
@@ -931,13 +931,13 @@ define(["jquery",
             createXML: function() {
 
               // TODO: which attributes should a new XML project doc should have?
-              var xmlString = "<proj:project xmlns:proj=\"http://ecoinformatics.org/datasetproject-beta1\"></proj:project>",
+              var xmlString = "<por:portal xmlns:por=\"https://purl.dataone.org/portals-1.0.0\"></por:portal>",
                   xmlNew = $.parseXML(xmlString),
-                  projectNode = xmlNew.getElementsByTagName("proj:project")[0];
+                  projectNode = xmlNew.getElementsByTagName("por:portal")[0];
 
               // set attributes
               projectNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-              projectNode.setAttribute("xsi:schemaLocation", "http://ecoinformatics.org/datasetproject-beta1");
+              projectNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/portals-1.0.0");
 
               return(xmlNew);
             },
