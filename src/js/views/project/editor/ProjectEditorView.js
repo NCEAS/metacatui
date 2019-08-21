@@ -4,11 +4,12 @@ define(['underscore',
         'models/project/ProjectModel',
         "collections/Filters",
         'views/EditorView',
+        "views/SignInView",
         "views/project/editor/ProjEditorSectionsView",
         "text!templates/loading.html",
         "text!templates/project/editor/projectEditor.html"
       ],
-function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, LoadingTemplate, Template){
+function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSectionsView, LoadingTemplate, Template){
 
   /**
   * @class ProjectEditorView
@@ -126,7 +127,7 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
             }
             else {
               // generate error message
-              var msg = "This is a private project. You need authorization to edit this project.";
+              var msg = "The portal owner has not granted you access to edit this portal. Please contact the owner to be given edit access.";
 
               //Show the not authorized error message
               MetacatUI.appView.showAlert(msg, "alert-error", this.projEditSectionsContainer);
@@ -137,12 +138,20 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
           this.authorizeUser();
       }
       else {
+          
+        // if the user is not signed in, display the sign in view
+        if (!MetacatUI.appUserModel.get("loggedIn")) {
+          this.showSignIn();
+        }
+        else {
 
-        // Start new projects on the settings tab
-        this.activeSection = "Settings";
+          // Start new projects on the settings tab
+          this.activeSection = "Settings";
 
-        // Render the default model if the project is new
-        this.renderProjectEditor();
+          // Render the default model if the project is new
+          this.renderProjectEditor();
+        }
+
 
       }
 
@@ -256,13 +265,8 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
        }
        else if ( !MetacatUI.appUserModel.get("loggedIn") ){
 
-         // generate error message
-         var msg = 'This is a private project. If you believe you have permission ' +
-                   'to access this project, then <a href="' + MetacatUI.root +
-                   '/signin">sign in</a>.';
-
-         //Show the not logged in error
-         MetacatUI.appView.showAlert(msg, "alert-error", ".proj-editor-sections-container")
+        // show the sign in view
+        this.showSignIn();
        }
      },
 
@@ -361,6 +365,24 @@ function(_, $, Backbone, Project, Filters, EditorView, ProjEditorSectionsView, L
         .removeClass("Editor")
         .removeClass("Portal");
 
+    },
+
+    /**
+    * Show Sign In buttons
+    */
+    showSignIn: function(){
+      var container = $(document.createElement("div")).addClass("container center");
+      this.$el.html(container);
+      var signInButtons = new SignInView().render().el;
+
+      // Message to create a portal if the portal is new
+      if (this.model.get("isNew")) {
+        $(container).append('<h1>Sign in to create a portal</h1>', signInButtons);
+      }
+      else {
+        $(container).append('<h1>Sign in to edit a portal</h1>', signInButtons);
+      }
+      
     }
 
   });
