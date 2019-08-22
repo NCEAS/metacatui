@@ -68,6 +68,9 @@ define(["jquery",
                     mapShapeHue: 200,
                     // The MapModel
                     mapModel: gmaps ? new MapModel() : null,
+                    optionNames: ["primaryColor", "secondaryColor", "accentColor",
+                            "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
+                            "mapShapeHue", "hideMetrics"],
                     // Project view colors, as specified in the project document options
                     primaryColor: "#999999",
                     secondaryColor: "#666666",
@@ -818,48 +821,53 @@ define(["jquery",
                 });
               }
 
-              /* ====  Serialize options (including map options) ==== */
-              // This will only serialize the options named in `optNames` (below)
-              // Functionality needed in order to serialize new or custom options
+              try{
+                /* ====  Serialize options (including map options) ==== */
+                // This will only serialize the options named in `optNames` (below)
+                // Functionality needed in order to serialize new or custom options
 
-              // Remove node if it exists already
-              $(xmlDoc).find("option").remove();
+                // The standard list of options used in projects
+                var optNames = this.get("optionNames");
 
-              // The standard list of options used in projects
-              var optNames = ["primaryColor", "secondaryColor", "accentColor",
-                      "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
-                      "mapShapeHue", "hideMetrics"];
+                _.each(optNames, function(optName){
+                  var optValue = model.get(optName);
 
-              _.each(optNames, function(optName){
-                var optValue = model.get(optName);
+                  // Don't serialize null or undefined values
+                  if(optValue || optValue === 0 || optValue === false){
 
-                  // Don't serialize falsey values
-                  if(optValue){
-
-                    // Make new node
-                    // <optionName> and <optionValue> are subelements of <option>
-                    var optionSerialized   = xmlDoc.createElement("option"),
-                        optNameSerialized  = xmlDoc.createElement("optionName"),
-                        optValueSerialized = xmlDoc.createElement("optionValue");
-
-                    $(optNameSerialized).text(optName);
-                    $(optValueSerialized).text(optValue);
-
-                    $(optionSerialized).append(optNameSerialized);
-                    $(optionSerialized).append(optValueSerialized);
-
-                    // Insert new node at correct position
-                    var insertAfter = model.getXMLPosition(projectNode, "option");
-
-                    if(insertAfter){
-                      insertAfter.after(optionSerialized);
+                    //Replace the existing option, if it exists
+                    var matchingOption = $(projectNode).children("option")
+                                                       .find("optionName:contains('" + optName + "')");
+                    if( matchingOption.length && matchingOption.first().text() == optName ){
+                      matchingOption.siblings("optionValue").text(optValue);
                     }
                     else{
-                      projectNode.append(optionSerialized);
+                      // Make new node
+                      // <optionName> and <optionValue> are subelements of <option>
+                      var optionSerialized   = xmlDoc.createElement("option"),
+                          optNameSerialized  = xmlDoc.createElement("optionName"),
+                          optValueSerialized = xmlDoc.createElement("optionValue");
+
+                      $(optNameSerialized).text(optName);
+                      $(optValueSerialized).text(optValue);
+
+                      $(optionSerialized).append(optNameSerialized, optValueSerialized);
+
+                      // Insert new node at correct position
+                      var insertAfter = model.getXMLPosition(projectNode, "option");
+
+                      if(insertAfter){
+                        insertAfter.after(optionSerialized);
+                      }
+
                     }
 
                   }
-              });
+                });
+              }
+              catch(e){
+                console.error(e);
+              }
 
               /* ====  Serialize FilterGroups ==== */
 
