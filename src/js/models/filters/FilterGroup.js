@@ -59,22 +59,22 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
 
         switch (filterType) {
           case "textFilter":
-            modelJSON.filters.add( new Filter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new Filter({ objectDOM: filterNode, inFilterGroup: true }) );
             break;
           case "numericFilter":
-            modelJSON.filters.add( new NumericFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new NumericFilter({ objectDOM: filterNode, inFilterGroup: true }) );
             break;
           case "booleanFilter":
-            modelJSON.filters.add( new BooleanFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new BooleanFilter({ objectDOM: filterNode, inFilterGroup: true }) );
             break;
           case "choiceFilter":
-            modelJSON.filters.add( new ChoiceFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new ChoiceFilter({ objectDOM: filterNode, inFilterGroup: true }) );
             break;
           case "dateFilter":
-            modelJSON.filters.add( new DateFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new DateFilter({ objectDOM: filterNode, inFilterGroup: true }) );
             break;
           case "toggleFilter":
-            modelJSON.filters.add( new ToggleFilter({ objectDOM: filterNode }) );
+            modelJSON.filters.add( new ToggleFilter({ objectDOM: filterNode, inFilterGroup: true }) );
             break;
         }
 

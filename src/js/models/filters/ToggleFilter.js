@@ -27,7 +27,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     */
     parse: function(xml){
 
-      var modelJSON = Filter.prototype.parse(xml);
+      var modelJSON = Filter.prototype.parse.call(this, xml);
 
       //Parse the trueLabel and falseLabels
       modelJSON.trueLabel = this.parseTextNode(xml, "trueLabel");

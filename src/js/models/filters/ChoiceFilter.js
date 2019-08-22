@@ -26,7 +26,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     */
     parse: function(xml){
 
-      var modelJSON = Filter.prototype.parse(xml);
+      var modelJSON = Filter.prototype.parse.call(this, xml);
 
       //Parse the chooseMultiple boolean field
       modelJSON.chooseMultiple = (this.parseTextNode(xml, "chooseMultiple") === "true")? true : false;

@@ -40,6 +40,7 @@ define(['jquery', 'underscore', 'backbone'],
     * @property {string} description - A longer description of this Filter's function
     * @property {boolean} isInvisible - If true, this filter will be added to the query but will
     * act in the "background", like a default filter
+    * @property {boolean} inFilterGroup - If true, this filter belongs to a FilterGroup model
     */
     defaults: function(){
       return{
@@ -55,7 +56,8 @@ define(['jquery', 'underscore', 'backbone'],
         placeholder: null,
         icon: null,
         description: null,
-        isInvisible: false
+        isInvisible: false,
+        inFilterGroup: false
       }
     },
 
@@ -112,11 +114,6 @@ define(['jquery', 'underscore', 'backbone'],
         modelJSON.fields = this.parseTextNode(xml, "field", true);
       }
 
-      if( $(xml).children("value").length ){
-        //Parse the value(s)
-        modelJSON.values = this.parseTextNode(xml, "value", true);
-      }
-
       if( $(xml).children("label").length ){
         //Parse the label
         modelJSON.label = this.parseTextNode(xml, "label");
@@ -141,6 +138,14 @@ define(['jquery', 'underscore', 'backbone'],
       if( filterOptionsNode.length ){
         //Parse the filterOptions XML node
         modelJSON = _.extend(this.parseFilterOptions(filterOptionsNode), modelJSON);
+      }
+
+      //If this Filter is in a filter group, don't parse the values
+      if( !this.get("inFilterGroup") ){
+        if( $(xml).children("value").length ){
+          //Parse the value(s)
+          modelJSON.values = this.parseTextNode(xml, "value", true);
+        }
       }
 
       return modelJSON;

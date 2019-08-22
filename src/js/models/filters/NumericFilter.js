@@ -31,29 +31,40 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     parse: function(xml){
 
       try{
-        var modelJSON = Filter.prototype.parse(xml);
+        var modelJSON = Filter.prototype.parse.call(this, xml);
 
-        //Find the min XML node
-        var minNode = $(xml).find("min"),
-            maxNode = $(xml).find("max"),
-            rangeMinNode = $(xml).find("rangeMin"),
-            rangeMaxNode = $(xml).find("rangeMax"),
-            valueNode = $(xml).find("value");
+        //Get the rangeMin and rangeMax nodes
+        var rangeMinNode = $(xml).find("rangeMin"),
+            rangeMaxNode = $(xml).find("rangeMax");
 
-        if( minNode.length ){
-          modelJSON.min = parseFloat(minNode[0].textContent);
-        }
-        if( maxNode.length ){
-          modelJSON.max = parseFloat(maxNode[0].textContent);
-        }
+        //Parse the range min
         if( rangeMinNode.length ){
           modelJSON.rangeMin = parseFloat(rangeMinNode[0].textContent);
         }
+        //Parse the range max
         if( rangeMaxNode.length ){
           modelJSON.rangeMax = parseFloat(rangeMaxNode[0].textContent);
         }
-        if( valueNode.length ){
-          modelJSON.values = [parseFloat(valueNode[0].textContent)];
+
+        //If this Filter is in a filter group, don't parse the values
+        if( !this.get("inFilterGroup") ){
+          //Get the min, max, and value nodes
+          var minNode = $(xml).find("min"),
+              maxNode = $(xml).find("max"),
+              valueNode = $(xml).find("value");
+
+          //Parse the min value
+          if( minNode.length ){
+            modelJSON.min = parseFloat(minNode[0].textContent);
+          }
+          //Parse the max value
+          if( maxNode.length ){
+            modelJSON.max = parseFloat(maxNode[0].textContent);
+          }
+          //Parse the value
+          if( valueNode.length ){
+            modelJSON.values = [parseFloat(valueNode[0].textContent)];
+          }
         }
 
         //If a range min and max was given, or if a min and max value was given,
@@ -272,6 +283,17 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       }
 
       return readableValue;
+
+    },
+
+    /**
+    * @inheritdoc
+    */
+    hasChangedValues: function(){
+
+      return (this.get("values").length > 0 ||
+              this.get("min") != this.defaults().min ||
+              this.get("max") != this.defaults().max);
 
     }
 

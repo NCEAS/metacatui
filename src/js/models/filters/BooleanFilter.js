@@ -33,16 +33,21 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     */
     parse: function(xml){
 
-      var modelJSON = Filter.prototype.parse(xml);
+      var modelJSON = Filter.prototype.parse.call(this, xml);
 
-      //Parse the boolean value
-      modelJSON.values = this.parseTextNode(xml, "value");
+      //If this Filter is in a filter group, don't parse the value
+      if( !this.get("inFilterGroup") ){
 
-      if(modelJSON.values === "true"){
-        modelJSON.values = [true];
-      }
-      else if(modelJSON.values === "false"){
-        modelJSON.values = [false];
+        //Parse the boolean value
+        modelJSON.values = this.parseTextNode(xml, "value");
+
+        if(modelJSON.values === "true"){
+          modelJSON.values = [true];
+        }
+        else if(modelJSON.values === "false"){
+          modelJSON.values = [false];
+        }
+
       }
 
       return modelJSON;
