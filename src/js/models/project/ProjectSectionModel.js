@@ -72,7 +72,6 @@ define(["jquery",
 
           if (objectDOM) {
             objectDOM = objectDOM.cloneNode(true);
-            $(objectDOM).empty();
           } else {
             // create an XML section element from scratch
             var xmlText = "<section></section>",
@@ -89,27 +88,29 @@ define(["jquery",
 
           _.map(sectionTextData, function(value, nodeName){
 
-            // Don't serialize falsey values
             if(value){
               // Make new sub-node
               var sectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
               $(sectionSubnodeSerialized).text(value);
-              // Append new sub-node to objectDOM
-              $(objectDOM).append(sectionSubnodeSerialized);
+
+              this.addUpdatedXMLNode(objectDOM, sectionSubnodeSerialized);
+            }
+            //If the value was removed from the model, then remove the element from the XML
+            else{
+              $(objectDOM).children(nodeName).remove();
             }
 
-          });
+          }, this);
 
           //Update the image element
           if( this.get("image") && typeof this.get("image").updateDOM == "function" ){
 
             var imageSerialized = this.get("image").updateDOM();
 
-            if(imageSerialized && $(imageSerialized).children().length){
-              var insertAfter = this.getXMLPosition(objectDOM, "image");
-
-              $(insertAfter).after(imageSerialized);
-            }
+            this.addUpdatedXMLNode(objectDOM, imageSerialized);
+          }
+          else{
+            $(objectDOM).children("image").remove();
           }
 
           // Get markdown which is a child of content
@@ -117,10 +118,62 @@ define(["jquery",
 
           if(content){
             var contentSerialized = content.updateDOM("content");
-            $(objectDOM).append(contentSerialized);
+
+            this.addUpdatedXMLNode(objectDOM, contentSerialized);
+
+          }
+          else{
+            $(objectDOM).children("content").remove();
           }
 
-          return objectDOM
+          //If nothing was serialized, return an empty string
+          if( !$(objectDOM).children().length ){
+            return "";
+          }
+
+          return objectDOM;
+
+        },
+
+        /**
+        * Takes the updated XML node and inserts it into the given object DOM in
+        * the correct position.
+        * @param {Element} objectDOM - The full object DOM for this model
+        * @param {Element} newElement - The updated element to insert into the object DOM
+        */
+        addUpdatedXMLNode: function(objectDOM, newElement){
+
+          //If a parameter is missing, don't do anything
+          if( !objectDOM || !newElement ){
+            return;
+          }
+
+          try{
+            //Get the node name of the new element
+            var nodeName = $(newElement)[0].nodeName;
+
+            if( nodeName ){
+
+              //Only insert the new element if there is content in it
+              if( $(newElement).children().length || $(newElement).text().length ){
+                //Get the existing node
+                var existingNodes = $(objectDOM).children(nodeName);
+
+                //Get the position that the image should be
+                var insertAfter = this.getXMLPosition(objectDOM, nodeName);
+
+                if( insertAfter ){
+                  //Insert it into that position
+                  $(insertAfter).after(newElement);
+                }
+
+                existingNodes.remove();
+              }
+            }
+          }
+          catch(e){
+            return;
+          }
 
         },
 
