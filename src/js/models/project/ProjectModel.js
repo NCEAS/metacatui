@@ -951,6 +951,7 @@ define(["jquery",
              *                   messages. If no errors, returns nothing.
             */
             validate: function() {
+
               var errors = {};
 
               // ---- Validate label----
@@ -1095,6 +1096,7 @@ define(["jquery",
                 this.set("uploadFile", xmlBlob);
 
                 //When it is calculated, restart this function
+                this.off("checksumCalculated", this.save);
                 this.on("checksumCalculated", this.save);
                 //Calculate the checksum for this file
                 this.calculateChecksum();

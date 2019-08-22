@@ -41,6 +41,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      */
     setListeners: function() {
 
+      this.stopListening(this.model);
       this.listenTo(this.model, "errorSaving", this.saveError);
       this.listenTo(this.model, "successSaving", this.saveSuccess);
 
@@ -211,7 +212,6 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
 
-      this.setListeners();
       this.hideSaving();
 
     },
