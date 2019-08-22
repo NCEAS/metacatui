@@ -567,7 +567,7 @@ define(["jquery",
 
               // Serialize the collection elements
               // ("name", "label", "description", "definition")
-              projectNode = this.serializeCollectionXML(projectNode);
+              projectNode = this.updateCollectionDOM(projectNode);
 
               /* ==== Serialize project logo ==== */
 
@@ -920,12 +920,19 @@ define(["jquery",
                 }
               }
               // Convert xml to xmlString and return xmlString
-              xmlString = new XMLSerializer().serializeToString(projectNode);
-              return (xmlString)
+              xmlString = new XMLSerializer().serializeToString(xmlDoc);
+
+              //If there isn't an XML declaration, add one
+              if( xmlString.indexOf("<?xml") == -1 ){
+                xmlString = '<?xml version="1.0" encoding="UTF-8"?>' + xmlString;
+              }
+
+              return xmlString;
             },
 
             /**
              * Initialize the object XML for a brand spankin' new project
+             * @inheritdoc
              *
             */
             createXML: function() {

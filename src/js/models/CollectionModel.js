@@ -352,7 +352,7 @@ define(["jquery",
      * @param {XMLDocument} objectDOM the XML element to be updated
      * @return {XMLElement} An updated XML element
     */
-    serializeCollectionXML: function(objectDOM){
+    updateCollectionDOM: function(objectDOM){
 
       // Get or make objectDOM
       if(!objectDOM){
@@ -361,7 +361,7 @@ define(["jquery",
           $(objectDOM).empty();
         } else {
             // create an XML collection element from scratch
-            var objectDOM = $($.parseXML("<collection></collection>")).children()[0];
+            var objectDOM = $(this.createXML()).children()[0];
         }
       }
 
@@ -417,6 +417,24 @@ define(["jquery",
 
       return objectDOM;
 
+    },
+
+    /**
+     * Initialize the object XML for a brand spankin' new collection
+     * @return {Element}
+    */
+    createXML: function() {
+
+      // TODO: which attributes should a new XML project doc should have?
+      var xmlString = "<col:collection xmlns:col=\"https://purl.dataone.org/collections-1.0.0\"></col:collection>",
+          xmlNew = $.parseXML(xmlString),
+          colNode = xmlNew.getElementsByTagName("col:collections")[0];
+
+      // set attributes
+      colNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+      colNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/collections-1.0.0");
+
+      return(xmlNew);
     },
 
     /**
