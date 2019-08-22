@@ -44,6 +44,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       this.stopListening(this.model);
       this.listenTo(this.model, "errorSaving", this.saveError);
       this.listenTo(this.model, "successSaving", this.saveSuccess);
+      this.listenTo(this.model, "invalid", this.showValidation);
 
     },
 
@@ -196,6 +197,15 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     checkValidity: function(){
       if(this.model.isValid())
         this.model.trigger("valid");
+    },
+
+    /**
+     * Show validation errors, if there are any
+     */
+    showValidation: function(){
+      // TODO: display validation errors in the editor
+      // For now, just show a save error message
+      this.saveError();
     },
 
     /**
