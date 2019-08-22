@@ -58,7 +58,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
         var filterType = filterNode.tagName;
 
         switch (filterType) {
-          case "textFilter":
+          case "filter":
             modelJSON.filters.add( new Filter({ objectDOM: filterNode, inFilterGroup: true }) );
             break;
           case "numericFilter":
