@@ -41,8 +41,10 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      */
     setListeners: function() {
 
+      this.stopListening(this.model);
       this.listenTo(this.model, "errorSaving", this.saveError);
       this.listenTo(this.model, "successSaving", this.saveSuccess);
+      this.listenTo(this.model, "invalid", this.showValidation);
 
     },
 
@@ -198,6 +200,15 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     },
 
     /**
+     * Show validation errors, if there are any
+     */
+    showValidation: function(){
+      // TODO: display validation errors in the editor
+      // For now, just show a save error message
+      this.saveError();
+    },
+
+    /**
      * When the object is saved successfully, tell the user
      * @param {object} savedObject - the object that was successfully saved
      */
@@ -211,7 +222,6 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
 
-      this.setListeners();
       this.hideSaving();
 
     },

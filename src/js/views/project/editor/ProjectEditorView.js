@@ -138,7 +138,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
           this.authorizeUser();
       }
       else {
-          
+
         // if the user is not signed in, display the sign in view
         if (!MetacatUI.appUserModel.get("loggedIn")) {
           this.showSignIn();
@@ -243,7 +243,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
          //When the seriesId or latest pid is found, come back to this function
          this.listenToOnce(this.model, "change:seriesId",    this.authorizeUser);
          this.listenToOnce(this.model, "latestVersionFound", this.authorizeUser);
-         
+
          //If the project isn't found, display a 404 message
          this.listenToOnce(this.model, "notFound", this.showNotFound);
 
@@ -255,7 +255,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
          //Remove the listeners for the seriesId and latest pid
          this.stopListening(this.model, "change:seriesId",    this.authorizeUser);
          this.stopListening(this.model, "latestVersionFound", this.authorizeUser);
-         
+
          // Remove the not found listener
          this.stopListening(this.model, "notFound", this.showNotFound);
        }
@@ -355,7 +355,6 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
 
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
 
-      this.setListeners();
       this.hideSaving();
 
     },
@@ -388,7 +387,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
       else {
         $(container).append('<h1>Sign in to edit a portal</h1>', signInButtons);
       }
-      
+
     },
 
     /**
@@ -400,7 +399,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
 
       var notFoundMessage = "The project \"" + (this.model.get("label") || this.projectIdentifier) +
                             "\" doesn't exist.";
-          
+
       MetacatUI.appView.showAlert(notFoundMessage, "alert-error", this.$el);
     }
 
