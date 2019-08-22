@@ -154,6 +154,16 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosV
         container.addClass("error");
       });
 
+      this.listenToOnce(this.model, "errorValidatingLabel", function(){
+        var email = MetacatUI.appModel.get('emailContact');
+        messageEl.html("There was a problem checking the availablity of this URL. " +
+          "Please try again or <a href='mailto:" + email + "'> contact us at " +
+          email + "</a>."
+        );
+        container.removeClass("success");
+        container.addClass("error");
+      });
+
       // Show 'checking URL' message
       messageEl.html(
         "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+

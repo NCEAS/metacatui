@@ -1042,11 +1042,11 @@ define(["jquery",
               // Query solr to see if other projects already use this label
               var requestSettings = {
                   url: MetacatUI.appModel.get("queryServiceUrl") +
-                       "q=projectName:\"" + label + "\"" +
-                       "&fl=projectName" +
+                       "q=label:\"" + label + "\"" +
+                       "&fl=label" +
                        "&wt=json",
                   error: function(response) {
-                    console.log(response);
+                    model.trigger("errorValidatingLabel");
                   },
                   success: function(response){
                     if( response.response.numFound > 0 ){
