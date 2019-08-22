@@ -184,7 +184,8 @@ define(["jquery",
 
               var requestSettings = {
                   url: MetacatUI.appModel.get("queryServiceUrl") +
-                       "q=label:\"" + this.get("label") + "\"" +
+                       "q=label:\"" + this.get("label") + "\" OR " +
+                       "seriesId:\"" + this.get("label") + "\"" +
                        "&fl=seriesId,id,label" +
                        "&sort=dateUploaded%20asc" +
                        "&rows=1" +
@@ -206,12 +207,17 @@ define(["jquery",
                         model.set("seriesId", response.response.docs[0].seriesId);
                       }
                       //If this portal doesn't have a seriesId,
-                      else{
+                      //but id has been found
+                      else if ( response.response.docs[0].id ){
                         //Save the id
                         model.set("id", response.response.docs[0].id);
 
                         //Find the latest version in this version chain
                         model.findLatestVersion(response.response.docs[0].id);
+                      }
+                      // if we don't have Id or SeriesId
+                      else {
+                        model.trigger("notFound");
                       }
 
                     }
