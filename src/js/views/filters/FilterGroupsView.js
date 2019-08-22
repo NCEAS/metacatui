@@ -209,8 +209,11 @@ define(['jquery', 'underscore', 'backbone',
         if( numericFilter.get("range") == true ){
           this.listenTo(numericFilter, "change:min change:max", this.updateAppliedRangeFilters);
 
-          if( numericFilter.get("min") != numericFilter.defaults().min &&
-              numericFilter.get("max") != numericFilter.defaults().max ){
+          var filterDefaults = numericFilter.defaults();
+
+          if( numericFilter.get("min") != filterDefaults.min ||
+              numericFilter.get("max") != filterDefaults.max ||
+              numericFilter.get("values").length ){
             this.updateAppliedRangeFilters(numericFilter, { displayWithoutChanges: true });
           }
         }
@@ -676,7 +679,8 @@ define(['jquery', 'underscore', 'backbone',
           //Set the min and max values
           filterModel.set({
             min: filterModel.get("rangeMin"),
-            max: filterModel.get("rangeMax")
+            max: filterModel.get("rangeMax"),
+            values: filterModel.defaults().values
           });
 
           //Trigger the reset event

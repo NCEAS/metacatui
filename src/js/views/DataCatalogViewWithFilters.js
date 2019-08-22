@@ -228,10 +228,6 @@ define(["jquery",
               //Add the filters to the Search model
               this.searchModel.get("filters").add(allFilters);
 
-              //Create the default catalog filters, which typically filter out obsoleted
-              // and non-metadata objects
-              this.searchModel.get("filters").createCatalogFilters();
-
               //Create a FilterGroupsView
               var filterGroupsView = new FilterGroupsView({
                 filterGroups: filterGroups,
