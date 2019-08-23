@@ -1561,6 +1561,8 @@ body > .alert-container {
 .attributeListTable tr td:last-child a{
 	white-space: nowrap;
 	max-width: 100%;
+  font-weight: 600;
+  font-size: .9em;
 }
 .attributeListTable {
 	table-layout: fixed;
