@@ -50,15 +50,24 @@ define(['jquery',
             // Decode HTML tags in the context string, which is passed in as
             // an HTML attribute from the XSLT so it needs encoding of some sort
             // Note: Only supports < and > at this point
-            this.context = this.context.replace("&lt;", "<").replace("&gt;", ">");
+            if( this.context ){
+              this.context = this.context.replace("&lt;", "<").replace("&gt;", ">");
+            }
 
             this.valueResolved = false;
         },
 
         render: function () {
-            this.createPopover();
 
+          //If there is no value URI, then there is probably no annotation
+          // metadata to render, so exit the function.
+          if( typeof this.valueURI == "undefined" ){
             return this;
+          }
+
+          this.createPopover();
+
+          return this;
         },
 
         // Helps us fetch data from the API on first interaction
@@ -167,10 +176,12 @@ define(['jquery',
                 valueResolved: this.valueResolved
             });
 
-            $(this.$el).data("content", new_content);
+            this.$el.data("content", new_content);
 
-            this.popoverSource = $(this.$el).popover({
+            this.popoverSource = this.$el.popover({
                 container: this.$el,
+                delay: 500,
+                trigger: "hover"
             });
         },
 
@@ -179,9 +190,9 @@ define(['jquery',
          * Update the popover data and raw HTML. This is necessary because
          * we want to create the popover before we fetch the data to populate
          * it from BioPortal and Bootstrap Popovers are designed to be static.
-         * 
+         *
          * The main trick I had to figure out here was that I could access
-         * the underlying content member of the popover with 
+         * the underlying content member of the popover with
          * popover_data.options.content which wasn't documented in the API.
          */
         updatePopover: function() {
@@ -222,7 +233,7 @@ define(['jquery',
             $(popover_content).html(new_content);
         },
 
-        /** 
+        /**
          * Update the cache for a given term.
          * @param term: (string) The URI
          * @param match: (object) The BioPortal match object for the term
@@ -239,7 +250,7 @@ define(['jquery',
 
         /**
          * Send the user to a pre-canned search for a term.
-         * 
+         *
          * This gets called either from the popover or from clicking on the pill
          * itself.
          */

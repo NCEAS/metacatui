@@ -132,7 +132,7 @@ define(['jquery',
         this.createAnnotationViews();
         this.insertMarkdownViews();
       });
-      
+
       this.getModel();
 
       return this;
@@ -2704,15 +2704,21 @@ define(['jquery',
     },
 
     createAnnotationViews: function(){
-      var viewRef = this;
 
-      _.each($(".annotation"), function (annoEl) {
-        var newView = new AnnotationView({
-          el: annoEl
+      try{
+        var viewRef = this;
+
+        _.each($(".annotation"), function (annoEl) {
+          var newView = new AnnotationView({
+            el: annoEl
+          });
+          viewRef.subviews.push(newView);
+          newView.render();
         });
-        viewRef.subviews.push(newView);
-        newView.render();
-      });
+      }
+      catch(e){
+        console.error(e);
+      }
     },
 
     insertMarkdownViews: function() {
