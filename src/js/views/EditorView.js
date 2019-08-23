@@ -41,7 +41,12 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      */
     setListeners: function() {
 
-      this.stopListening(this.model);
+      //Stop listening first
+      this.stopListening(this.model, "errorSaving", this.saveError);
+      this.stopListening(this.model, "successSaving", this.saveSuccess);
+      this.stopListening(this.model, "invalid", this.showValidation);
+
+      //Set listeners
       this.listenTo(this.model, "errorSaving", this.saveError);
       this.listenTo(this.model, "successSaving", this.saveSuccess);
       this.listenTo(this.model, "invalid", this.showValidation);
