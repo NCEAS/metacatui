@@ -2065,8 +2065,9 @@ svg .no-activity,
 	}
 
 /*-------------- ANNOTATION CSS -----------------------------*/
-.attributeListTable .annotation-icon{
-  line-height: 1em;
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
 }
 
 /*-------------- DOCUMENTATION CSS -----------------------------*/

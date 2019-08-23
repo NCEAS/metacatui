@@ -1951,6 +1951,10 @@ MDQ items
 		background-color: #00AAFF;
 	}
   /*-------------- ANNOTATIONS CSS -----------------------------*/
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
 .annotation .annotation-value{
   background-color: #146660;
   border-color: #146660;

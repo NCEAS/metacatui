@@ -1516,6 +1516,10 @@ img.icon{
 	margin-bottom: 0px;
 
 }
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
 body > .alert-container {
     position: fixed;
     top: 115px;
@@ -2362,7 +2366,7 @@ a.btn.metrics-button-disabled {
 /** Annotation icon **/
 .annotation-icon{
   display: inline-block;
-  height: .8em;
+  height: 1em;
   line-height: 1em;
   font-size: .9em;
 }

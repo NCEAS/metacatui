@@ -966,6 +966,10 @@ label.control-label{
 	pointer-events: none;
 
 }
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
 .annotation .annotation-value{
 background-color: #1C6E84;
 border-color: #1C6E84;
