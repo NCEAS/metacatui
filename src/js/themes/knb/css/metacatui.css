@@ -2064,6 +2064,11 @@ svg .no-activity,
 		color: inherit;
 	}
 
+/*-------------- ANNOTATION CSS -----------------------------*/
+.attributeListTable .annotation.icon{
+  line-height: 1em;
+}
+
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 

@@ -2348,6 +2348,32 @@ a.btn.metrics-button-disabled {
   margin: 0 6px 6px 0;
 }
 
+/** Annotation icon **/
+.annotation.icon{
+  display: inline-block;
+  height: .8em;
+  line-height: 1em;
+  font-size: .9em;
+}
+.attributeListTable .annotation.icon{
+  width: .6em;
+  line-height: .9em;
+  margin-left: -5px;
+  font-size: 2.5em;
+}
+.attributeListTable .annotation.icon .icon{
+  font-size: .5em;
+}
+.attributeListTable .annotation.icon .icon-ok{
+  font-size: .25em;
+}
+.annotation.icon .icon{
+  color: #FFF;
+}
+.annotation.icon .icon.icon-stack-base{
+  color: #337ab7;
+}
+/** Annotation pills **/
 .annotation .annotation-property,
 .annotation .annotation-value,
 .annotation .annotation-findmore {
@@ -2358,25 +2384,24 @@ a.btn.metrics-button-disabled {
   background-color: #EEE;
   border-width: 1px 0 1px 1px;
   border-style: solid;
-  border-color: black;
-	border-radius: 5px 0px 0px 5px;
+  border-color: #CCC;
+	border-radius: 3px 0px 0px 3px;
 }
 
 .annotation .annotation-value {
-  background-color: teal;
-  border-width: 1px;
-	border-style: solid;
-	border-color: black;
-	color: white;
+  background-color: #337ab7;
+  border-width: 1px 0px 1px 0px;
+  border-style: solid;
+  border-color: #337ab7;
+  color: white;
 }
 
 .annotation .annotation-findmore {
   background-color: #EEE;
   border-width: 1px 1px 1px 0px;
   border-style: solid;
-  border-color: black;
-  border-radius: 0px 5px 5px 0px;
-	color: black;
+  border-color: #CCC;
+  border-radius: 0px 3px 3px 0px;
 	padding: 0 10px;
 }
 

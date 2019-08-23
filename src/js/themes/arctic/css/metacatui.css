@@ -1945,7 +1945,14 @@ MDQ items
 		color: #FFF;
 		background-color: #00AAFF;
 	}
-
+  /*-------------- ANNOTATIONS CSS -----------------------------*/
+.annotation .annotation-value{
+  background-color: #146660;
+  border-color: #146660;
+}
+.annotation.icon .icon.icon-stack-base{
+  color: #146660;
+}
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 

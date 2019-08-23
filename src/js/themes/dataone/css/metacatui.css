@@ -962,6 +962,13 @@ label.control-label{
 	pointer-events: none;
 
 }
+.annotation .annotation-value{
+background-color: #1C6E84;
+border-color: #1C6E84;
+}
+.annotation.icon .icon.icon-stack-base{
+color: #1C6E84;
+}
 
 /* Registry CSS
 -------------------------------------------------- */
