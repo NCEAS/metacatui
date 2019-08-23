@@ -46,8 +46,8 @@ define(["jquery",
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
                     objectXML: null,
-                    formatId: "http://ecoinformatics.org/project-beta1",
-                    formatType: "DATA",
+                    formatId: "https://purl.dataone.org/portals-1.0.0",
+                    formatType: "METADATA",
                     logo: null,
                     sections: [],
                     associatedParties: [],
@@ -955,10 +955,6 @@ define(["jquery",
               var xmlString = "<por:portal xmlns:por=\"https://purl.dataone.org/portals-1.0.0\"></por:portal>",
                   xmlNew = $.parseXML(xmlString),
                   projectNode = xmlNew.getElementsByTagName("por:portal")[0];
-
-              // set attributes
-              projectNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-              projectNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/portals-1.0.0");
 
               return(xmlNew);
             },

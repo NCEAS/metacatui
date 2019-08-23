@@ -344,7 +344,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
      */
     saveSuccess: function(savedObject){
 
-      var identifier = savedObject.id || this.model.get("seriesId");
+      var identifier = this.model.get("label") || this.model.get("seriesId") || this.model.get("id");
 
       var message = this.editorSubmitMessageTemplate({
             messageText: "Your changes have been submitted.",
