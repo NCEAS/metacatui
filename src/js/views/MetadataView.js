@@ -93,7 +93,7 @@ define(['jquery',
       "mouseover .highlight-node"  : "highlightNode",
       "mouseout  .highlight-node"  : "highlightNode",
       "click     .preview"        : "previewData",
-      "click     #save-metadata-prov" : "saveProv",
+      "click     #save-metadata-prov" : "saveProv"
     },
 
 
@@ -556,6 +556,16 @@ define(['jquery',
 
       //Remove ecogrid links and replace them with workable links
       this.replaceEcoGridLinks();
+
+      //Find the tab links for attribute names
+      this.$(".attributeListTable tr a").on('shown', function(e){
+        //When the attribute link is clicked on, highlight the tab as active
+        $(e.target).parents(".attributeListTable").find(".active").removeClass("active");
+        $(e.target).parents("tr").first().addClass("active");
+      });
+
+      //Mark the first row in each attribute list table as active since the first attribute is displayed at first
+      this.$(".attributeListTable tr:first-child()").addClass("active");
     },
 
     /*

@@ -1571,7 +1571,14 @@ body > .alert-container {
 
 /* Make the icon column 16px wide */
 .attributeListTable tr td:first-child {
-	width: 16px;
+	width: 19px;
+}
+/* The active attribute in the attribute name list */
+.attributeListTable tr.active{
+  background-color: #166194;
+}
+.attributeListTable tr.active a{
+  color: #FFF;
 }
 
 .controls-well > .party{
@@ -2353,28 +2360,28 @@ a.btn.metrics-button-disabled {
 }
 
 /** Annotation icon **/
-.annotation.icon{
+.annotation-icon{
   display: inline-block;
   height: .8em;
   line-height: 1em;
   font-size: .9em;
 }
-.attributeListTable .annotation.icon{
+.attributeListTable .annotation-icon{
   width: .6em;
   line-height: .9em;
   margin-left: -5px;
   font-size: 2.5em;
 }
-.attributeListTable .annotation.icon .icon{
+.attributeListTable .annotation-icon .icon{
   font-size: .5em;
 }
-.attributeListTable .annotation.icon .icon-ok{
+.attributeListTable .annotation-icon .icon-ok{
   font-size: .25em;
 }
-.annotation.icon .icon{
+.annotation-icon .icon{
   color: #FFF;
 }
-.annotation.icon .icon.icon-stack-base{
+.annotation-icon .icon.icon-stack-base{
   color: #337ab7;
 }
 /** Annotation pills **/

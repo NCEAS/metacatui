@@ -1396,6 +1396,11 @@ MDQ items
     	margin-bottom: 20px;
     }
 
+    /* The active attribute in the attribute name list */
+    .attributeListTable tr.active{
+      background-color: #323D90;
+    }
+
 /* MDQ CSS
 -------------------------------------------------- */
 
@@ -1950,8 +1955,11 @@ MDQ items
   background-color: #146660;
   border-color: #146660;
 }
-.annotation.icon .icon.icon-stack-base{
+.annotation-icon .icon.icon-stack-base{
   color: #146660;
+}
+.attributeListTable .active .annotation-icon .icon.icon-stack-base{
+  color: #068a80;
 }
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
