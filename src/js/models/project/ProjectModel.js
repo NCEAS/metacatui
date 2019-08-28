@@ -1126,6 +1126,37 @@ define(["jquery",
             },
 
             /**
+            * @inheritdoc
+            */
+            checkQuota: function(action, customerGroup){
+
+              //Temporarily reset the quota so a trigger event is changed when the XHR is complete
+              MetacatUI.appUserModel.set("portalQuota", -1, {silent: true});
+
+              //Start of temporary code
+              //TODO: Replace this function with real code once the quota service is working
+              MetacatUI.appUserModel.set("portalQuota", 999);
+              return;
+              //End of temporary code
+
+              var model = this;
+
+              var requestSettings = {
+                url: "",
+                type: "GET",
+                success: function(data, textStatus, xhr) {
+                  MetacatUI.appUserModel.set("portalQuota", data.remainingQuota);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                  MetacatUI.appUserModel.set("portalQuota", 0);
+                }
+              }
+
+              $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
+            },
+
+            /**
             * Saves a reference to this Project on the MetacatUI global object
             */
             cacheProject: function(){

@@ -136,19 +136,37 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
           // Check if the user is Authorized to edit the project
           this.authorizeUser();
       }
+      //If there is no portal identifier given, this is a new portal.
       else {
 
         // if the user is not signed in, display the sign in view
         if (!MetacatUI.appUserModel.get("loggedIn")) {
           this.showSignIn();
         }
+        //If the user is signed in and is attempting to create a new portal,
         else {
 
-          // Start new projects on the settings tab
-          this.activeSection = "Settings";
+          //Check the user's quota to create a new Portal
+          this.listenTo(MetacatUI.appUserModel, "change:portalQuota", function(){
 
-          // Render the default model if the project is new
-          this.renderProjectEditor();
+            if( MetacatUI.appUserModel.get("portalQuota") > 0 ){
+              // Start new projects on the settings tab
+              this.activeSection = "Settings";
+
+              // Render the default model if the project is new
+              this.renderProjectEditor();
+            }
+            else{
+              this.hideLoading();
+
+              var errorMessage = "You have already reached the maximum number of portals for your membership level.";
+
+              MetacatUI.appView.showAlert(errorMessage, "alert-error", this.$el);
+            }
+
+          });
+          this.model.checkQuota("create");
+
         }
 
 

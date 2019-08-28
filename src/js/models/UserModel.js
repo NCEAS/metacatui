@@ -34,7 +34,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				token: null,
 				expires: null,
 				timeoutId: null,
-				rawData: null
+				rawData: null,
+        portalQuota: 0
 			}
 		},
 
