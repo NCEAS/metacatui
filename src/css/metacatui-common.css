@@ -2691,8 +2691,8 @@ img[src*="googleapis.com/"].georegion-map{
   background-position-x: 50%;
   background-position-y: 50%;
   background-size: cover;
-  min-height: 500px;
   padding-top: 60px;
+  padding-bottom: 60px;
   color: #FFF;
 }
 .project-display-text{
@@ -2739,7 +2739,7 @@ img[src*="googleapis.com/"].georegion-map{
 	display: none;
 }
 .project-view .project-title{
-  line-height: 70px;
+  line-height: 1.5em;
   margin: 0px;
   font-size: 2em;
   display: inline-block;

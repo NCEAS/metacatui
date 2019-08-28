@@ -141,7 +141,9 @@ define(["jquery",
 
                 //Parse the simple text nodes
                 var projLogo = this.parseTextNode(projectNode, "logo");
-                modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
+                if( projLogo ){
+                  modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
+                }
 
                 //Parse acknowledgement logos into urls
                 var logos = $(projectNode).children("acknowledgmentsLogo");
