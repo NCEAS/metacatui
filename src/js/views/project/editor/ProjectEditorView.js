@@ -105,12 +105,12 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
       ){
           var view = this;
 
-          this.listenTo(this.model, "change:isAuthorized", function(){
+          this.listenToOnce(this.model, "change:isAuthorized", function(){
 
             if (this.model.get("isAuthorized")) {
               // When an existing model has been synced render the results
               view.stopListening(view.model, "sync", view.renderProjectEditor);
-              view.listenTo(view.model, "sync", view.renderProjectEditor);
+              view.listenToOnce(view.model, "sync", view.renderProjectEditor);
 
               // If the project model already exists - fetch it.
               view.model.fetch();
