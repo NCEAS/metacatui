@@ -163,7 +163,9 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// A lookup map of project names to project seriesIds
 			projectsMap: {
-			    "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb"
+			    "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb",
+          "Arctic-Observing-Networks" : "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854d12o9",
+          "CALM" : "urn:uuid:f4667267-cfe5-49c9-951c-946ace894144"
 			},
 
 			// If true, then archived content is available in the search index.

@@ -181,7 +181,7 @@ define(['jquery',
             this.popoverSource = this.$el.popover({
                 container: this.$el,
                 delay: 500,
-                trigger: "hover"
+                trigger: "click"
             });
         },
 
