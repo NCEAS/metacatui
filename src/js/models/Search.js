@@ -55,6 +55,14 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     exclude: [{
                         field: "obsoletedBy",
                         value: "*"
+                    },
+                    {
+                      field: "formatId",
+                      value: "*dataone.org/collections*"
+                    },
+                    {
+                      field: "formatId",
+                      value: "*dataone.org/portals*"
                     }],
                     /**
                     * The collection of filters used to build a query, an instance of Filters
