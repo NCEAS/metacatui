@@ -151,8 +151,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			isJSONLDEnabled: true,
 
-			// A lookup map of project names to project seriesIds
-			projectsMap: {},
+			// A lookup map of portal names to portal seriesIds
+			portalsMap: {},
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0

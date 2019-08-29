@@ -5,15 +5,15 @@ define(['underscore',
 function(_, $, Backbone, ImageEditView){
 
   /**
-  * @class ProjEditorLogosView
+  * @class PortEditorLogosView
   */
-  var ProjEditorLogosView = Backbone.View.extend({
+  var PortEditorLogosView = Backbone.View.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ProjEditorLogos",
+    type: "PortEditorLogos",
 
     /**
     * The HTML tag name to use for this view's element
@@ -28,8 +28,8 @@ function(_, $, Backbone, ImageEditView){
     className: "proj-editor-logos",
 
     /**
-    * The ProjectModel that is being edited
-    * @type {Project}
+    * The PortalModel that is being edited
+    * @type {Portal}
     */
     model: undefined,
 
@@ -41,10 +41,10 @@ function(_, $, Backbone, ImageEditView){
     },
 
     /**
-    * Creates a new ProjEditorLogosView
-    * @constructs ProjEditorLogosView
+    * Creates a new PortEditorLogosView
+    * @constructs PortEditorLogosView
     * @param {Object} options - A literal object with options to pass to the view
-    * @property {Project} options.model - The Project whose logos are rendered in this view
+    * @property {Portal} options.model - The Portal whose logos are rendered in this view
     */
     initialize: function(options){
 
@@ -59,12 +59,12 @@ function(_, $, Backbone, ImageEditView){
     */
     render: function(){
 
-      //TODO: Iterate over each logo in the ProjectModel and render an ImageView
+      //TODO: Iterate over each logo in the PortalModel and render an ImageView
       this.$el.html("Image Views will go here")
     }
 
   });
 
-  return ProjEditorLogosView;
+  return PortEditorLogosView;
 
 });

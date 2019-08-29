@@ -218,12 +218,12 @@ define(["jquery",
       // Create a new series ID
       var seriesId = "urn:uuid:" + uuid.v4();
 
-      // Set the seriesId on the project model right away, since reserving takes
+      // Set the seriesId on the portal model right away, since reserving takes
       // time. This will be updated in the rare case that the first seriesId was
       // already taken.
       this.set("seriesId", seriesId);
 
-      // Reserve a series ID for the new project
+      // Reserve a series ID for the new portal
       var model = this;
       var options = {
         url: MetacatUI.appModel.get("d1CNBaseUrl") +
@@ -270,7 +270,7 @@ define(["jquery",
      * Creates a FilterModel with isPartOf as the field and the seriesId as
      * the value. Adds the filter to the searchModel and the filters model
      * attributes.
-     * @param {string} [seriesId] - the seriesId of the collection or project
+     * @param {string} [seriesId] - the seriesId of the collection or portal
      */
     addIsPartOfFilter: function(seriesId){
 
@@ -379,7 +379,7 @@ define(["jquery",
       // Iterate through the filter models
       _.each(filtersToSerialize, function(filterModel){
 
-        // updateDOM of project definition filters, then append to <definition>
+        // updateDOM of portal definition filters, then append to <definition>
         var filterSerialized = filterModel.updateDOM({
           forCollection: true
         });
@@ -427,7 +427,7 @@ define(["jquery",
     */
     createXML: function() {
 
-      // TODO: which attributes should a new XML project doc should have?
+      // TODO: which attributes should a new XML portal doc should have?
       var xmlString = "<col:collection xmlns:col=\"https://purl.dataone.org/collections-1.0.0\"></col:collection>",
           xmlNew = $.parseXML(xmlString),
           colNode = xmlNew.getElementsByTagName("col:collections")[0];

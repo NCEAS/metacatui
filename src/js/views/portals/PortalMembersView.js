@@ -2,18 +2,18 @@ define(["jquery",
     "underscore",
     "backbone",
     "text!templates/metadata/EMLPartyDisplay.html",
-    "views/project/ProjectSectionView",
-    "views/project/ProjectLogosView",
-    "text!templates/project/projectAcknowledgements.html",
-    "text!templates/project/projectAwards.html"],
-    function($, _, Backbone, EMLPartyDisplayTemplate, ProjectSectionView,
-        ProjectLogosView, AcknowledgementsTemplate, AwardsTemplate){
+    "views/portals/PortalSectionView",
+    "views/portals/PortalLogosView",
+    "text!templates/portals/portalAcknowledgements.html",
+    "text!templates/portals/portalAwards.html"],
+    function($, _, Backbone, EMLPartyDisplayTemplate, PortalSectionView,
+        PortalLogosView, AcknowledgementsTemplate, AwardsTemplate){
 
-    /* The ProjectMembersView is a view to render the
-     * project members tab (within ProjectSectionView)
+    /* The PortalMembersView is a view to render the
+     * portal members tab (within PortalSectionView)
      */
-     var ProjectMembersView = ProjectSectionView.extend({
-        type: "ProjectMembers",
+     var PortalMembersView = PortalSectionView.extend({
+        type: "PortalMembers",
 
       //   /* The list of subview instances contained in this view*/
       //   subviews: [], // Could be a literal object {}
@@ -28,7 +28,7 @@ define(["jquery",
 
       //   },
 
-      //   /* Construct a new instance of ProjectMembersView */
+      //   /* Construct a new instance of PortalMembersView */
       //   initialize: function() {
 
       //   },
@@ -50,7 +50,7 @@ define(["jquery",
             _.each(row_groups, function(row_group){
                 // Create a new bootstrap row for each set of 2 parties
                 var newdiv = $('<div class="row-fluid"></div>');
-                // Put the empty row into the project members container
+                // Put the empty row into the portal members container
                 thisview.$el.append(newdiv);
                 // iterate for the 2 parties in this row
                 _.each(row_group, function(party) {
@@ -96,5 +96,5 @@ define(["jquery",
 
      });
 
-     return ProjectMembersView;
+     return PortalMembersView;
 });

@@ -2,19 +2,19 @@ define(["jquery",
     "underscore",
     "backbone",
     "collections/Filters",
-    "views/project/ProjectSectionView",
+    "views/portals/PortalSectionView",
     "views/DataCatalogViewWithFilters",
     "views/filters/FilterGroupsView"],
-    function($, _, Backbone, Filters, ProjectSectionView, DataCatalogView, FilterGroupsView){
+    function($, _, Backbone, Filters, PortalSectionView, DataCatalogView, FilterGroupsView){
 
-    /* The ProjectDataView is a view to render the
-     * project data tab (within ProjectView) to display all the datasets related to this project.
+    /* The PortalDataView is a view to render the
+     * portal data tab (within PortalView) to display all the datasets related to this portal.
      */
-      var ProjectDataView = ProjectSectionView.extend({
+      var PortalDataView = PortalSectionView.extend({
 
         tagName: "div",
 
-        // @type {ProjectModel} - The Project associated with this view
+        // @type {PortalModel} - The Portal associated with this view
         model: null,
 
         // @type Array - An array of subviews in this view
@@ -75,5 +75,5 @@ define(["jquery",
 
      });
 
-     return ProjectDataView;
+     return PortalDataView;
 });

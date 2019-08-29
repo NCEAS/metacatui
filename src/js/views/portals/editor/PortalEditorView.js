@@ -1,36 +1,36 @@
 define(['underscore',
         'jquery',
         'backbone',
-        'models/project/ProjectModel',
+        'models/portals/PortalModel',
         "collections/Filters",
         'views/EditorView',
         "views/SignInView",
-        "views/project/editor/ProjEditorSectionsView",
+        "views/portals/editor/PortEditorSectionsView",
         "text!templates/loading.html",
-        "text!templates/project/editor/projectEditor.html"
+        "text!templates/portals/editor/portalEditor.html"
       ],
-function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSectionsView, LoadingTemplate, Template){
+function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSectionsView, LoadingTemplate, Template){
 
   /**
-  * @class ProjectEditorView
+  * @class PortalEditorView
   */
-  var ProjectEditorView = EditorView.extend({
+  var PortalEditorView = EditorView.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ProjectEditor",
+    type: "PortalEditor",
 
     /**
-    * The short name OR pid for the project
+    * The short name OR pid for the portal
     * @type {string}
     */
-    projectIdentifier: "",
+    portalIdentifier: "",
 
     /**
-    * The ProjectModel that is being edited
-    * @type {Project}
+    * The PortalModel that is being edited
+    * @type {Portal}
     */
     model: undefined,
 
@@ -47,18 +47,18 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
     loadingTemplate: _.template(LoadingTemplate),
 
     /**
-    * A jQuery selector for the element that the ProjEditorSectionsView should be inserted into
+    * A jQuery selector for the element that the PortEditorSectionsView should be inserted into
     * @type {string}
     */
     projEditSectionsContainer: ".proj-editor-sections-container",
 
     /**
-    * A temporary name to use for projects when they are first created but don't have a label yet.
+    * A temporary name to use for portals when they are first created but don't have a label yet.
     * This name should only be used in views, and never set on the model so it doesn't risk getting
     * serialized and saved.
     * @type {string}
     */
-    newProjectTempName: "new",
+    newPortalTempName: "new",
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -70,38 +70,38 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
     }),
 
     /**
-    * Creates a new ProjectEditorView
-    * @constructs ProjectEditorView
+    * Creates a new PortalEditorView
+    * @constructs PortalEditorView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
       if(typeof options == "object"){
-        // initializing the ProjectEditorView properties
-        this.projectIdentifier = options.projectIdentifier ? options.projectIdentifier : undefined;
+        // initializing the PortalEditorView properties
+        this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
         this.activeSection = options.activeSection || "";
       }
     },
 
     /**
-    * Renders the ProjectEditorView
+    * Renders the PortalEditorView
     */
     render: function(){
 
       // Display a spinner to indicate loading until model is created.
       this.$el.html(this.loadingTemplate({
-        msg: "Retrieving project details..."
+        msg: "Retrieving portal details..."
       }));
 
       //Create the model
       this.createModel();
 
-      // An exisiting project should have a projectIdentifier already set
-      // from the router, that does not equal the newProjectTempName ("new"),
+      // An exisiting portal should have a portalIdentifier already set
+      // from the router, that does not equal the newPortalTempName ("new"),
       // plus a seriesId or label set during createModel()
       if (
         (this.model.get("seriesId") || this.model.get("label"))
         &&
-        (this.projectIdentifier && this.projectIdentifier != this.newProjectTempName)
+        (this.portalIdentifier && this.portalIdentifier != this.newPortalTempName)
       ){
           var view = this;
 
@@ -109,10 +109,10 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
 
             if (this.model.get("isAuthorized")) {
               // When an existing model has been synced render the results
-              view.stopListening(view.model, "sync", view.renderProjectEditor);
-              view.listenToOnce(view.model, "sync", view.renderProjectEditor);
+              view.stopListening(view.model, "sync", view.renderPortalEditor);
+              view.listenToOnce(view.model, "sync", view.renderPortalEditor);
 
-              // If the project model already exists - fetch it.
+              // If the portal model already exists - fetch it.
               view.model.fetch();
 
               // Listens to the focus event on the window to detect when a user
@@ -133,7 +133,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
             }
           });
 
-          // Check if the user is Authorized to edit the project
+          // Check if the user is Authorized to edit the portal
           this.authorizeUser();
       }
       //If there is no portal identifier given, this is a new portal.
@@ -150,11 +150,11 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
           this.listenTo(MetacatUI.appUserModel, "change:portalQuota", function(){
 
             if( MetacatUI.appUserModel.get("portalQuota") > 0 ){
-              // Start new projects on the settings tab
+              // Start new portals on the settings tab
               this.activeSection = "Settings";
 
-              // Render the default model if the project is new
-              this.renderProjectEditor();
+              // Render the default model if the portal is new
+              this.renderPortalEditor();
             }
             else{
               this.hideLoading();
@@ -176,9 +176,9 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
     },
 
     /**
-    * Renders the project editor view once the project view is created
+    * Renders the portal editor view once the portal view is created
     */
-    renderProjectEditor: function() {
+    renderPortalEditor: function() {
 
       // Add the template to the view and give the body the "Editor" class
       var name = this.model.get("name");
@@ -189,18 +189,18 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
       $("body").addClass("Editor")
                .addClass("Portal");
 
-      // Get the project identifier
-      // or set it to a default value in the case that it's a new project
-      var projectIdentifier = this.projectIdentifier;
-      if(!projectIdentifier){
-        projectIdentifier = this.newProjectTempName;
+      // Get the portal identifier
+      // or set it to a default value in the case that it's a new portal
+      var portalIdentifier = this.portalIdentifier;
+      if(!portalIdentifier){
+        portalIdentifier = this.newPortalTempName;
       }
 
       //Create a view for the editor sections
-      var sectionsView = new ProjEditorSectionsView({
+      var sectionsView = new PortEditorSectionsView({
         model: this.model,
         activeSection: this.activeSection,
-        newProjectTempName: this.newProjectTempName
+        newPortalTempName: this.newPortalTempName
       });
 
       //Add the view element to this view
@@ -212,30 +212,30 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
     },
 
     /**
-    * Create a ProjectModel object
+    * Create a PortalModel object
     */
     createModel: function(){
 
-      // Look up the project document seriesId by its registered name if given
-      if ( this.projectIdentifier && this.projectIdentifier != this.newProjectTempName) {
+      // Look up the portal document seriesId by its registered name if given
+      if ( this.portalIdentifier && this.portalIdentifier != this.newPortalTempName) {
 
-        // Create a new project model with the identifier
-        this.model = new Project({
-          label: this.projectIdentifier
+        // Create a new portal model with the identifier
+        this.model = new Portal({
+          label: this.portalIdentifier
         });
 
         // Save the original label in case a user changes it. During URL
         // validation, the original label will always be shown as available.
-        // TODO: if user navigates to project using a SID or PID, we will need
+        // TODO: if user navigates to portal using a SID or PID, we will need
         // to get the matching label and then save it to the model
-        this.model.set("originalLabel", this.projectIdentifier);
+        this.model.set("originalLabel", this.portalIdentifier);
 
-      // Otherwise, create a new project
+      // Otherwise, create a new portal
       } else {
 
-        // Create a new, default project model
-        this.model = new Project({
-          //Set the isNew attribute so the model will execute certain functions when a Project is new
+        // Create a new, default portal model
+        this.model = new Portal({
+          //Set the isNew attribute so the model will execute certain functions when a Portal is new
           isNew: true
         });
 
@@ -247,7 +247,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
 
     /**
      * The authorizeUser function checks if the current user is authorized
-     * to edit the given ProjectModel. If not, a message is displayed and
+     * to edit the given PortalModel. If not, a message is displayed and
      * the view doesn't render anything else.
      *
      * If the user isn't logged in at all, don't check for authorization and
@@ -261,7 +261,7 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
          this.listenToOnce(this.model, "change:seriesId",    this.authorizeUser);
          this.listenToOnce(this.model, "latestVersionFound", this.authorizeUser);
 
-         //If the project isn't found, display a 404 message
+         //If the portal isn't found, display a 404 message
          this.listenToOnce(this.model, "notFound", this.showNotFound);
 
          //Get the seriesId or latest pid
@@ -408,13 +408,13 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
     },
 
     /**
-     * If the given project doesn't exist, display a Not Found message.
+     * If the given portal doesn't exist, display a Not Found message.
      */
     showNotFound: function(){
 
       this.hideLoading();
 
-      var notFoundMessage = "The project \"" + (this.model.get("label") || this.projectIdentifier) +
+      var notFoundMessage = "The portal \"" + (this.model.get("label") || this.portalIdentifier) +
                             "\" doesn't exist.";
 
       MetacatUI.appView.showAlert(notFoundMessage, "alert-error", this.$el);
@@ -422,6 +422,6 @@ function(_, $, Backbone, Project, Filters, EditorView, SignInView, ProjEditorSec
 
   });
 
-  return ProjectEditorView;
+  return PortalEditorView;
 
 });

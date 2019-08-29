@@ -1,33 +1,33 @@
 define(["jquery",
     "underscore",
     "backbone",
-    "text!templates/project/projectLogo.html"],
-    function($, _, Backbone, ProjectLogoTemplate){
+    "text!templates/portals/portalLogo.html"],
+    function($, _, Backbone, PortalLogoTemplate){
 
-    /* The ProjectLogosView is the area where the the logos of the organizations
-     * associated with each project will be displayed.
+    /* The PortalLogosView is the area where the the logos of the organizations
+     * associated with each portal will be displayed.
      */
-    var ProjectLogosView = Backbone.View.extend({
+    var PortalLogosView = Backbone.View.extend({
 
-        /* The Project Logos Element */
+        /* The Portal Logos Element */
         tagName: "div",
 
-        className: "project-logos-view",
+        className: "portal-logos-view",
 
-        type: "ProjectLogos",
+        type: "PortalLogos",
 
         //@type Array - An array of logo URLs to display
         logos: [],
 
         /* Renders the compiled template into HTML */
-        template: _.template(ProjectLogoTemplate),
+        template: _.template(PortalLogoTemplate),
 
         /* The events that this view listens to */
         events: {
 
         },
 
-        /* Construct a new instance of ProjectLogosView */
+        /* Construct a new instance of PortalLogosView */
         initialize: function() {
 
         },
@@ -77,5 +77,5 @@ define(["jquery",
 
     });
 
-    return ProjectLogosView;
+    return PortalLogosView;
 });

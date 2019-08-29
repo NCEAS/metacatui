@@ -1,25 +1,25 @@
 define(['underscore',
         'jquery',
         'backbone',
-        'models/project/ProjectSectionModel',
-        "views/project/editor/ProjEditorSectionView",
-        "views/project/editor/ProjEditorLogosView",
+        'models/portals/PortalSectionModel',
+        "views/portals/editor/PortEditorSectionView",
+        "views/portals/editor/PortEditorLogosView",
         "views/AccessPolicyView",
-        "text!templates/project/editor/projEditorSettings.html"],
-function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosView,
+        "text!templates/portals/editor/portEditorSettings.html"],
+function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosView,
   AccessPolicyView,
   Template){
 
   /**
-  * @class ProjEditorSettingsView
+  * @class PortEditorSettingsView
   */
-  var ProjEditorSettingsView = ProjEditorSectionView.extend({
+  var PortEditorSettingsView = PortEditorSectionView.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ProjEditorSettings",
+    type: "PortEditorSettings",
 
     /**
     * The display name for this Section
@@ -31,11 +31,11 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosV
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: ProjEditorSectionView.prototype.className + " proj-editor-settings",
+    className: PortEditorSectionView.prototype.className + " proj-editor-settings",
 
     /**
-    * The ProjectModel that is being edited
-    * @type {Project}
+    * The PortalModel that is being edited
+    * @type {Portal}
     */
     model: undefined,
 
@@ -54,14 +54,14 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosV
     },
 
     /**
-    * Creates a new ProjEditorSettingsView
-    * @constructs ProjEditorSettingsView
+    * Creates a new PortEditorSettingsView
+    * @constructs PortEditorSettingsView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
 
       //Call the superclass initialize() function
-      ProjEditorSectionView.prototype.initialize(options);
+      PortEditorSectionView.prototype.initialize(options);
 
 
     },
@@ -77,13 +77,13 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosV
       }));
 
       //Render the AccessPolicyView
-      //TODO: Get the AccessPolicy collection for this ProjectModel and send it to the view
+      //TODO: Get the AccessPolicy collection for this PortalModel and send it to the view
       var accessPolicyView = new AccessPolicyView();
       accessPolicyView.render();
       this.$(".permissions-container").html(accessPolicyView.el);
 
-      //Render the ProjEditorLogosView
-      var logosView = new ProjEditorLogosView({ model: this.model });
+      //Render the PortEditorLogosView
+      var logosView = new PortEditorLogosView({ model: this.model });
       logosView.render();
       this.$(".logos-container").html(logosView.el);
 
@@ -170,13 +170,13 @@ function(_, $, Backbone, ProjectSection, ProjEditorSectionView, ProjEditorLogosV
         "Checking if URL is available"
       );
 
-      // Validate label. The newProjectTempName is a restricted value.
-      this.model.validateLabel(value, [this.newProjectTempName]);
+      // Validate label. The newPortalTempName is a restricted value.
+      this.model.validateLabel(value, [this.newPortalTempName]);
 
     }
 
   });
 
-  return ProjEditorSettingsView;
+  return PortEditorSettingsView;
 
 });

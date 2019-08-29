@@ -19,7 +19,7 @@ define(["jquery",
          * A DataCatalogView that uses the Search collection
          * and the Filter models for managing queries rather than the
          * Search model and the filter literal objects used in the
-         * parent DataCatalogView.  This accommodates custom project filters.
+         * parent DataCatalogView.  This accommodates custom portal filters.
          */
         var DataCatalogViewWithFilters = DataCatalogView.extend({
 

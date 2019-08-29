@@ -1,31 +1,31 @@
 define(['underscore',
         'jquery',
         'backbone',
-        "models/project/ProjectSectionModel",
-        "views/project/editor/ProjEditorSectionView",
-        "text!templates/project/editor/projEditorMdSection.html"],
-function(_, $, Backbone, ProjectSectionModel, ProjEditorSectionView, Template){
+        "models/portals/PortalSectionModel",
+        "views/portals/editor/PortEditorSectionView",
+        "text!templates/portals/editor/portEditorMdSection.html"],
+function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
 
   /**
-  * @class ProjEditorMdSectionView
+  * @class PortEditorMdSectionView
   */
-  var ProjEditorMdSectionView = ProjEditorSectionView.extend({
+  var PortEditorMdSectionView = PortEditorSectionView.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ProjEditorMdSection",
+    type: "PortEditorMdSection",
 
     /**
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: ProjEditorSectionView.prototype.className + " proj-editor-md",
+    className: PortEditorSectionView.prototype.className + " proj-editor-md",
 
     /**
-    * The ProjectSectionModel that is being edited
-    * @type {ProjectSection}
+    * The PortalSectionModel that is being edited
+    * @type {PortalSection}
     */
     model: undefined,
 
@@ -42,15 +42,15 @@ function(_, $, Backbone, ProjectSectionModel, ProjEditorSectionView, Template){
     },
 
     /**
-    * Creates a new ProjEditorMdSectionView
-    * @constructs ProjEditorMdSectionView
+    * Creates a new PortEditorMdSectionView
+    * @constructs PortEditorMdSectionView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
 
       //Call the superclass initialize() function
-      ProjEditorSectionView.prototype.initialize();
-      
+      PortEditorSectionView.prototype.initialize();
+
     },
 
     /**
@@ -65,6 +65,6 @@ function(_, $, Backbone, ProjectSectionModel, ProjEditorSectionView, Template){
 
   });
 
-  return ProjEditorMdSectionView;
+  return PortEditorMdSectionView;
 
 });

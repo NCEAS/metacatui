@@ -173,24 +173,24 @@
     }
 
 /*
-* Project View
+* Portal View
 */
 
-.project-view .project-title{
+.portal-view .portal-title{
   font-weight: 100;
 }
-.project-view .toc-ul a{
+.portal-view .toc-ul a{
   font-weight: lighter;
 }
 
-/* Project & Editor (minimal header common to both views)
+/* Portal & Editor (minimal header common to both views)
 -------------------------------------------------- */
 .Portal.Editor #HeaderContainer,
-.ProjectView #HeaderContainer{
+.PortalView #HeaderContainer{
   display: none !important;
 }
 .Portal.Editor #Navbar .brand,
-.ProjectView #Navbar .brand {
+.PortalView #Navbar .brand {
     color: #992222;
     float: none;
     margin: 0px;
@@ -201,7 +201,7 @@
 }
 
 .Portal.Editor #Navbar .nav .minimal-nav a:hover,
-.ProjectView #Navbar .nav .minimal-nav a:hover {
+.PortalView #Navbar .nav .minimal-nav a:hover {
     background-color: transparent;
     color: #660000;
 }

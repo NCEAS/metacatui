@@ -11,7 +11,7 @@ define(["jquery",
 
         The TOC can have 2 levels of content. The top level is referred to as 'topLevelItem'.
         Second level items are referred to as 'h2' (they come from 'h2' tags). H1s get passed
-        in when the TOC view is instantiated (see `ProjectSectionView.js` for an example). If
+        in when the TOC view is instantiated (see `PortalSectionView.js` for an example). If
         there are 'h2' tags within the 'topLevelItem' containers, these will be listed under
         the 'topLevelItem'.
     */
@@ -36,7 +36,7 @@ define(["jquery",
         /*
         * A list of custom items to insert into the TOC
         * {
-            "text": "Project Description",
+            "text": "Portal Description",
             "icon": "icon-file-text-alt",
             "link": $(".header"),
             "showSubItems": false

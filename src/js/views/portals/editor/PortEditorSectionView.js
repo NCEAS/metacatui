@@ -1,20 +1,20 @@
 define(['underscore',
         'jquery',
         'backbone',
-        'models/project/ProjectSectionModel',
-        "text!templates/project/editor/projEditorSection.html"],
-function(_, $, Backbone, ProjectSectionModel, Template){
+        'models/portals/PortalSectionModel',
+        "text!templates/portals/editor/portEditorSection.html"],
+function(_, $, Backbone, PortalSectionModel, Template){
 
   /**
-  * @class ProjEditorSectionView
+  * @class PortEditorSectionView
   */
-  var ProjEditorSectionView = Backbone.View.extend({
+  var PortEditorSectionView = Backbone.View.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ProjEditorSection",
+    type: "PortEditorSection",
 
     /**
     * The display name for this Section
@@ -35,8 +35,8 @@ function(_, $, Backbone, ProjectSectionModel, Template){
     className: "proj-editor-section",
 
     /**
-    * The ProjectSectionModel being displayed
-    * @type {ProjectSection}
+    * The PortalSectionModel being displayed
+    * @type {PortalSection}
     */
     model: undefined,
 
@@ -53,10 +53,10 @@ function(_, $, Backbone, ProjectSectionModel, Template){
     },
 
     /**
-    * Creates a new ProjEditorSectionView
-    * @constructs ProjEditorSectionView
+    * Creates a new PortEditorSectionView
+    * @constructs PortEditorSectionView
     * @param {Object} options - A literal object with options to pass to the view
-    * @property {ProjectSection} options.model - The ProjectSection rendered in this view
+    * @property {PortalSection} options.model - The PortalSection rendered in this view
     */
     initialize: function(options){
 
@@ -94,8 +94,8 @@ function(_, $, Backbone, ProjectSectionModel, Template){
       if( this.sectionName ){
         name = this.sectionName;
       }
-      //If the model is a ProjectSectionModel, use the label from the model
-      else if( ProjectSectionModel.prototype.isPrototypeOf(this.model) ){
+      //If the model is a PortalSectionModel, use the label from the model
+      else if( PortalSectionModel.prototype.isPrototypeOf(this.model) ){
         name = this.model.get("label");
       }
       else{
@@ -114,6 +114,6 @@ function(_, $, Backbone, ProjectSectionModel, Template){
 
   });
 
-  return ProjEditorSectionView;
+  return PortEditorSectionView;
 
 });

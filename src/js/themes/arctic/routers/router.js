@@ -21,9 +21,9 @@ function ($, _, Backbone) {
 			'submit(/*pid)(/)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'           : 'renderAPI',       // API page
-			'projects(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
-      'portals(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
-      'edit/portals(/:projectIdentifier)(/:projectSection)(/)'     : 'renderProjectEditor'
+			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
+      'portals(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
+      'edit/portals(/:portalIdentifier)(/:portalSection)(/)'     : 'renderPortalEditor'
 		},
 
 		helpPages: {
@@ -306,22 +306,22 @@ function ($, _, Backbone) {
 		},
 
     /**
-    * Renders the ProjectEditorView
-    * @param {string} [projectIdentifier] - The id or name of the project
+    * Renders the PortalEditorView
+    * @param {string} [portalIdentifier] - The id or name of the portal
     */
-    renderProjectEditor: function(projectIdentifier, projectSection){
-      if ( !MetacatUI.appView.projectEditorView ) {
-        require(['views/project/editor/ProjectEditorView'], function(ProjectEditorView){
-          MetacatUI.appView.projectEditorView = new ProjectEditorView({
-              projectIdentifier: projectIdentifier,
-              activeSection: projectSection,
+    renderPortalEditor: function(portalIdentifier, portalSection){
+      if ( !MetacatUI.appView.portalEditorView ) {
+        require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
+          MetacatUI.appView.portalEditorView = new PortalEditorView({
+              portalIdentifier: portalIdentifier,
+              activeSection: portalSection,
           });
-          MetacatUI.appView.showView(MetacatUI.appView.projectEditorView);
+          MetacatUI.appView.showView(MetacatUI.appView.portalEditorView);
         });
       } else {
-        MetacatUI.appView.projectEditorView.projectIdentifier = projectIdentifier;
-        MetacatUI.appView.projectEditorView.activeSection = projectSection;
-        MetacatUI.appView.showView(MetacatUI.appView.projectEditorView);
+        MetacatUI.appView.portalEditorView.portalIdentifier = portalIdentifier;
+        MetacatUI.appView.portalEditorView.activeSection = portalSection;
+        MetacatUI.appView.showView(MetacatUI.appView.portalEditorView);
       }
     },
 
@@ -418,29 +418,29 @@ function ($, _, Backbone) {
 		},
 
     /**
-     * Render the project view based on the given name, id, or section
+     * Render the portal view based on the given name, id, or section
      */
-     renderProject: function(label, projectSection) {
-       // Look up the project document seriesId by its registered name if given
-       if ( projectSection ) {
-         this.routeHistory.push("portals/" + label + "/" + projectSection);
+     renderPortal: function(label, portalSection) {
+       // Look up the portal document seriesId by its registered name if given
+       if ( portalSection ) {
+         this.routeHistory.push("portals/" + label + "/" + portalSection);
        }
        else{
          this.routeHistory.push("portals/" + label);
        }
 
-       if ( !MetacatUI.appView.projectView ) {
-         require(['views/project/ProjectView'], function(ProjectView){
-           MetacatUI.appView.projectView = new ProjectView({
+       if ( !MetacatUI.appView.portalView ) {
+         require(['views/portals/PortalView'], function(PortalView){
+           MetacatUI.appView.portalView = new PortalView({
                label: label,
-               activeSection: projectSection
+               activeSection: portalSection
            });
-           MetacatUI.appView.showView(MetacatUI.appView.projectView);
+           MetacatUI.appView.showView(MetacatUI.appView.portalView);
          });
        } else {
-         MetacatUI.appView.projectView.label = label;
-         MetacatUI.appView.projectView.activeSection = projectSection;
-         MetacatUI.appView.showView(MetacatUI.appView.projectView);
+         MetacatUI.appView.portalView.label = label;
+         MetacatUI.appView.portalView.activeSection = portalSection;
+         MetacatUI.appView.showView(MetacatUI.appView.portalView);
        }
      },
 

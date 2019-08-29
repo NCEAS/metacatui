@@ -1,29 +1,29 @@
 define(["jquery",
         "underscore",
         "backbone",
-        "models/project/ProjectModel",
+        "models/portals/PortalModel",
         "models/Search",
         "models/Stats",
         "text!templates/alert.html",
         "text!templates/loading.html",
-        "text!templates/project/project.html",
-        "views/project/ProjectHeaderView",
-        "views/project/ProjectDataView",
-        "views/project/ProjectSectionView",
-        "views/project/ProjectMembersView",
+        "text!templates/portals/portal.html",
+        "views/portals/PortalHeaderView",
+        "views/portals/PortalDataView",
+        "views/portals/PortalSectionView",
+        "views/portals/PortalMembersView",
         "views/StatsView",
-        "views/project/ProjectLogosView"
+        "views/portals/PortalLogosView"
     ],
-    function($, _, Backbone, Project, SearchModel, StatsModel, AlertTemplate, LoadingTemplate, ProjectTemplate, ProjectHeaderView,
-        ProjectDataView, ProjectSectionView, ProjectMembersView, StatsView, ProjectLogosView) {
+    function($, _, Backbone, Portal, SearchModel, StatsModel, AlertTemplate, LoadingTemplate, PortalTemplate, PortalHeaderView,
+        PortalDataView, PortalSectionView, PortalMembersView, StatsView, PortalLogosView) {
         "use_strict";
-        /* The ProjectView is a generic view to render
-         * projects, it will hold project sections
+        /* The PortalView is a generic view to render
+         * portals, it will hold portal sections
          */
-        var ProjectView = Backbone.View.extend({
+        var PortalView = Backbone.View.extend({
 
             /**
-             * The Project element
+             * The Portal element
              * @type {string}
              */
             el: "#Content",
@@ -32,7 +32,7 @@ define(["jquery",
              * The type of View this is
              * @type {string}
              */
-            type: "Project",
+            type: "Portal",
 
             /**
              * The currently active editor section. e.g. Data, Metrics, Settings, etc.
@@ -41,19 +41,19 @@ define(["jquery",
             activeSection: "",
 
             /**
-             * The names of all sections in this project editor
+             * The names of all sections in this portal editor
              * @type {Array}
              */
             sectionNames: [],
 
             /**
-             * The seriesId of the project document
+             * The seriesId of the portal document
              * @type {string}
              */
-            projectId: "",
+            portalId: "",
 
             /**
-             * The unique short name of the project
+             * The unique short name of the portal
              * @type {string}
              */
             label: "",
@@ -65,13 +65,13 @@ define(["jquery",
             subviews: new Array(), // Could be a literal object {} */
 
             /**
-             * A Project Model is associated with this view and gets created during render()
-             * @type {Project}
+             * A Portal Model is associated with this view and gets created during render()
+             * @type {Portal}
              */
             model: null,
 
             /* Renders the compiled template into HTML */
-            template: _.template(ProjectTemplate),
+            template: _.template(PortalTemplate),
             //A template to display a notification message
             alertTemplate: _.template(AlertTemplate),
             //A template for displaying a loading message
@@ -86,40 +86,40 @@ define(["jquery",
             },
 
             /**
-             * Creates a new ProjectView
-             * @constructs ProjectView
+             * Creates a new PortalView
+             * @constructs PortalView
              */
             initialize: function(options) {
-                // Set the current ProjectView properties
-                this.projectId = options.projectId ? options.projectId : undefined;
+                // Set the current PortalView properties
+                this.portalId = options.portalId ? options.portalId : undefined;
                 this.label = options.label ? options.label : undefined;
                 this.activeSection = options.activeSection ? options.activeSection : undefined;
             },
 
             /**
-             * Initial render of the ProjectView
+             * Initial render of the PortalView
              *
-             * @return {ProjectView} Returns itself for easy function stacking in the app
+             * @return {PortalView} Returns itself for easy function stacking in the app
              */
             render: function() {
 
-                $("body").addClass("ProjectView");
+                $("body").addClass("PortalView");
 
                 this.$el.html(this.loadingTemplate({
                   msg: "Loading..."
                 }));
 
-                // Create a new Project model
-                this.model = new Project({
-                    seriesId: this.projectId,
+                // Create a new Portal model
+                this.model = new Portal({
+                    seriesId: this.portalId,
                     label: this.label
                 });
 
                 // When the model has been synced, render the results
                 this.stopListening();
-                this.listenTo(this.model, "sync", this.renderProject);
+                this.listenTo(this.model, "sync", this.renderPortal);
 
-                //If the project isn't found, display a 404 message
+                //If the portal isn't found, display a 404 message
                 this.listenToOnce(this.model, "notFound", this.showNotFound);
 
                 //Listen to errors that might occur during fetch()
@@ -132,19 +132,19 @@ define(["jquery",
             },
 
             /**
-             * Render the Project view
+             * Render the Portal view
              */
-            renderProject: function() {
+            renderPortal: function() {
 
               //Remove the listeners thatt were set during the fetch() process
               this.stopListening(this.model, "notFound", this.showNotFound);
               this.stopListening(this.model, "error", this.showError);
 
-                // Insert the overall project template
+                // Insert the overall portal template
                 this.$el.html(this.template(this.model.toJSON()));
 
                 //Render the header view
-                this.headerView = new ProjectHeaderView({
+                this.headerView = new PortalHeaderView({
                     model: this.model
                 });
                 this.headerView.render();
@@ -157,14 +157,14 @@ define(["jquery",
 
                 // Render the Data section
                 if(!this.model.get("hideData")) {
-                    this.sectionDataView = new ProjectDataView({
+                    this.sectionDataView = new PortalDataView({
                         model: this.model,
                         id: "Data",
                         sectionName: "Data"
                     });
                     this.subviews.push(this.sectionDataView);
 
-                    this.$("#project-sections").append(this.sectionDataView.el);
+                    this.$("#portal-sections").append(this.sectionDataView.el);
 
                     //Render the section view and add it to the page
                     this.sectionDataView.render();
@@ -174,7 +174,7 @@ define(["jquery",
 
                 //Render the metrics section
                 //Create a navigation link
-                this.$("#project-section-tabs").append(
+                this.$("#portal-section-tabs").append(
                   $(document.createElement("li"))
                     .append( $(document.createElement("a"))
                                .text("Metrics")
@@ -182,20 +182,20 @@ define(["jquery",
                                .attr("href", "#Metrics" )
                                .attr("data-toggle", "tab")));
 
-                this.$("#project-sections").append( $(document.createElement("div"))
+                this.$("#portal-sections").append( $(document.createElement("div"))
                                                     .attr("id", "Metrics")
                                                     .addClass("tab-pane") );
 
                 // Render the members section
                 if (!this.model.get("hideMembers")) {
-                    this.sectionMembersView = new ProjectMembersView({
+                    this.sectionMembersView = new PortalMembersView({
                         model: this.model,
                         id: "Members",
                         sectionName: "Members"
                     });
                     this.subviews.push(this.sectionMembersView);
 
-                    this.$("#project-sections").append(this.sectionMembersView.el);
+                    this.$("#portal-sections").append(this.sectionMembersView.el);
 
                     //Render the section view and add it to the page
                     this.sectionMembersView.render();
@@ -207,16 +207,16 @@ define(["jquery",
                 this.switchSection();
 
                 //Space out the tabs evenly
-                var widthEach = 100/this.$("#project-section-tabs").children().length;
-                this.$("#project-section-tabs").children().css("width", widthEach + "%");
+                var widthEach = 100/this.$("#portal-section-tabs").children().length;
+                this.$("#portal-section-tabs").children().css("width", widthEach + "%");
 
-                //Render the logos at the bottom of the project page
+                //Render the logos at the bottom of the portal page
                 var ackLogos = this.model.get("acknowledgmentsLogos") || [];
-                this.logosView = new ProjectLogosView();
+                this.logosView = new PortalLogosView();
                 this.logosView.logos = ackLogos;
                 this.subviews.push(this.logosView);
                 this.logosView.render();
-                this.$(".project-view").append(this.logosView.el);
+                this.$(".portal-view").append(this.logosView.el);
 
                 //Scroll to an inner-page link if there is one specified
                 if( window.location.hash && this.$(window.location.hash).length ){
@@ -251,7 +251,7 @@ define(["jquery",
 
               //Get the new pathname using the active section
               if( !MetacatUI.root.length || MetacatUI.root == "/" ){
-                // If it's a new project, the project name might not be in the URL yet
+                // If it's a new portal, the portal name might not be in the URL yet
                 if(pathName.indexOf(label) < 0){
                   var newPathName = pathName + "/" + label + "/" + section;
                 } else {
@@ -277,7 +277,7 @@ define(["jquery",
 
               // Get the section names from the tab elements
               var sectionNames = [];
-              this.$("#project-section-tabs")
+              this.$("#portal-section-tabs")
                 .children("li")
                 .children("a[href]")
                 .each(function(i, anchorEl){
@@ -357,31 +357,31 @@ define(["jquery",
             },
 
             /**
-             * Creates a ProjectSectionView to display the content in the given project
+             * Creates a PortalSectionView to display the content in the given portal
              * section. Also creates a navigation link to the section.
              *
-             * @param {ProjectSectionModel} sectionModel - The section to render in this view
+             * @param {PortalSectionModel} sectionModel - The section to render in this view
              */
             addSection: function(sectionModel){
 
-              //Create a new ProjectSectionView
-              var sectionView = new ProjectSectionView({
+              //Create a new PortalSectionView
+              var sectionView = new PortalSectionView({
                 model: sectionModel
               });
 
               //Render the section
               sectionView.render();
 
-              //Add the section view to this project view
-              this.$("#project-sections").append(sectionView.el);
+              //Add the section view to this portal view
+              this.$("#portal-sections").append(sectionView.el);
 
               this.addSectionLink( sectionView );
 
             },
 
             /**
-             * Add a link to a section of this project page
-             * @param {ProjectSectionView} sectionView - The view to add a link to
+             * Add a link to a section of this portal page
+             * @param {PortalSectionView} sectionView - The view to add a link to
              */
             addSectionLink: function(sectionView){
 
@@ -389,7 +389,7 @@ define(["jquery",
               var hrefLabel = sectionView.getName({ linkFriendly: true });
 
               //Create a navigation link
-              this.$("#project-section-tabs").append(
+              this.$("#portal-section-tabs").append(
                 $(document.createElement("li"))
                   .append( $(document.createElement("a"))
                              .text(label)
@@ -477,11 +477,11 @@ define(["jquery",
             },
 
             /**
-             * If the given project doesn't exist, display a Not Found message.
+             * If the given portal doesn't exist, display a Not Found message.
              */
             showNotFound: function(){
 
-              var notFoundMessage = "The project \"" + (this.label || this.projectId) +
+              var notFoundMessage = "The portal \"" + (this.label || this.portalId) +
                                     "\" doesn't exist.",
                   notification = this.alertTemplate({
                     classes: "alert-error",
@@ -526,9 +526,9 @@ define(["jquery",
 
                 delete this.sectionMetricsView;
 
-                $("body").removeClass("ProjectView");
+                $("body").removeClass("PortalView");
             }
         });
 
-        return ProjectView;
+        return PortalView;
     });

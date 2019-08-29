@@ -1,20 +1,20 @@
 define(["jquery",
     "underscore",
     "backbone",
-    "text!templates/project/projectHeader.html"], function($, _, Backbone, ProjectHeaderTemplate){
+    "text!templates/portals/portalHeader.html"], function($, _, Backbone, PortalHeaderTemplate){
 
-    /* The ProjectHeaderView is the view at the top of project pages
-     * that shows the project's title, synopsis, and logo
+    /* The PortalHeaderView is the view at the top of portal pages
+     * that shows the portal's title, synopsis, and logo
      */
-     var ProjectHeaderView = Backbone.View.extend({
+     var PortalHeaderView = Backbone.View.extend({
 
-        /* The Project Header Element */
-        el: "#project-header-container",
+        /* The Portal Header Element */
+        el: "#portal-header-container",
 
-        type: "ProjectHeader",
+        type: "PortalHeader",
 
         /* Renders the compiled template into HTML */
-        template: _.template(ProjectHeaderTemplate),
+        template: _.template(PortalHeaderTemplate),
 
 
         /* Render the view */
@@ -39,5 +39,5 @@ define(["jquery",
 
      });
 
-     return ProjectHeaderView;
+     return PortalHeaderView;
 });

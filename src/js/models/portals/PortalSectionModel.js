@@ -2,15 +2,15 @@
 define(["jquery",
         "underscore",
         "backbone",
-        "models/project/ProjectImage",
+        "models/portals/PortalImage",
         "models/metadata/eml220/EMLText"
     ],
-    function($, _, Backbone, ProjectImage, EMLText) {
+    function($, _, Backbone, PortalImage, EMLText) {
 
       /**
-       * A Project Section model represents the ContentSectionType from the project schema
+       * A Portal Section model represents the ContentSectionType from the portal schema
        */
-      var ProjectSectionModel = Backbone.Model.extend({
+      var PortalSectionModel = Backbone.Model.extend({
         defaults: function(){
           return {
             label: "",
@@ -24,9 +24,9 @@ define(["jquery",
         },
 
         /**
-         * Parses a <section> element from a project document
+         * Parses a <section> element from a portal document
          *
-         *  @param {XMLElement} objectDOM - A ContentSectionType XML element from a project document
+         *  @param {XMLElement} objectDOM - A ContentSectionType XML element from a portal document
          *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
         */
         parse: function(objectDOM){
@@ -46,7 +46,7 @@ define(["jquery",
           //Parse the image URL or identifier
           var image = $objectDOM.children("image");
           if( image.length ){
-            var projImageModel = new ProjectImage({ objectDOM: image[0] });
+            var projImageModel = new PortalImage({ objectDOM: image[0] });
             projImageModel.set(projImageModel.parse());
             modelJSON.image = projImageModel;
           }
@@ -64,7 +64,7 @@ define(["jquery",
         /**
          *  Makes a copy of the original XML DOM and updates it with the new values from the model.
          *
-         *  @return {XMLElement} An updated ContentSectionType XML element from a project document
+         *  @return {XMLElement} An updated ContentSectionType XML element from a portal document
         */
         updateDOM: function(){
 
@@ -178,7 +178,7 @@ define(["jquery",
         },
 
         /**
-         * Finds the node in the given project XML document afterwhich the
+         * Finds the node in the given portal XML document afterwhich the
          * given node type should be inserted
          *
          * @param {Element} parentNode - The parent XML element
@@ -186,7 +186,7 @@ define(["jquery",
          *                             into xml
          * @return {(jQuery\|boolean)} A jQuery object indicating a position,
          *                            or false when nodeName is not in the
-         *                            project schema
+         *                            portal schema
         */
         getXMLPosition: function(parentNode, nodeName){
 
@@ -219,5 +219,5 @@ define(["jquery",
 
       });
 
-      return ProjectSectionModel;
+      return PortalSectionModel;
 });

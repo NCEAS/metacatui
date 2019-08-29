@@ -161,8 +161,8 @@ define(['jquery', 'underscore', 'backbone'],
       hideMetricsWhen: null,
 
 			isJSONLDEnabled: true,
-      // A lookup map of project names to project seriesIds
-      projectsMap: {
+      // A lookup map of portal names to portal seriesIds
+      portalsMap: {
       	"SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",
 				"markdownTest": "urn:uuid:21580913-c23a-4677-af71-45cf0415a57e",
 				"example": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854d1234"

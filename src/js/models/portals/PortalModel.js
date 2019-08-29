@@ -1,5 +1,5 @@
 /**
- * @exports ProjectModel
+ * @exports PortalModel
  */
 /* global define */
 define(["jquery",
@@ -9,8 +9,8 @@ define(["jquery",
         "uuid",
         "collections/Filters",
         "collections/SolrResults",
-        "models/project/ProjectSectionModel",
-        "models/project/ProjectImage",
+        "models/portals/PortalSectionModel",
+        "models/portals/PortalImage",
         "models/metadata/eml211/EMLParty",
         "models/metadata/eml220/EMLText",
         "models/CollectionModel",
@@ -18,30 +18,30 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map"
     ],
-    /** @lends ProjectModel.prototype */
-    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, ProjectSectionModel, ProjectImage,
+    /** @lends PortalModel.prototype */
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, PortalSectionModel, PortalImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
-         * A ProjectModel is a specialized collection that represents a project,
-         * including the associated data, people, project descriptions, results and
+         * A PortalModel is a specialized collection that represents a portal,
+         * including the associated data, people, portal descriptions, results and
          * visualizations.  It also includes settings for customized filtering of the
          * associated data, and properties used to customized the map display and the
-         * overall branding of the project.
+         * overall branding of the portal.
          *
-         * @class ProjectModel
-         * @module models/ProjectModel
-         * @name ProjectModel
+         * @class PortalModel
+         * @module models/PortalModel
+         * @name PortalModel
          * @constructor
          * @return
         */
-        var ProjectModel = CollectionModel.extend({
+        var PortalModel = CollectionModel.extend({
 
             /** @type {string} - The name of this type of model */
-            type: "Project",
+            type: "Portal",
 
             /**
              * Overrides the default Backbone.Model.defaults() function to
-             * specify default attributes for the project model
+             * specify default attributes for the portal model
             */
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
@@ -56,12 +56,12 @@ define(["jquery",
                     awards: [],
                     literatureCited: [],
                     filterGroups: [],
-                    // The project document options may specify section to hide
+                    // The portal document options may specify section to hide
                     hideMetrics: false,
                     hideData: false,
                     hidePeople: false,
                     hideMap: false,
-                    // Map options, as specified in the project document options
+                    // Map options, as specified in the portal document options
                     mapZoomLevel: 3,
                     mapCenterLatitude: null,
                     mapCenterLongitude: null,
@@ -71,7 +71,7 @@ define(["jquery",
                     optionNames: ["primaryColor", "secondaryColor", "accentColor",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
                             "mapShapeHue", "hideMetrics"],
-                    // Project view colors, as specified in the project document options
+                    // Portal view colors, as specified in the portal document options
                     primaryColor: "#999999",
                     secondaryColor: "#666666",
                     accentColor: "#497ba7",
@@ -97,19 +97,19 @@ define(["jquery",
 
               if( attrs.isNew ){
                 this.set("synced", true);
-                //Create an isPartOf filter for this new Project
+                //Create an isPartOf filter for this new Portal
                 this.addIsPartOfFilter();
               }
 
               // Cache this model for later use
-              this.cacheProject();
+              this.cachePortal();
 
             },
 
             /**
-             * Returns the project URL
+             * Returns the portal URL
              *
-             * @return {string} The project URL
+             * @return {string} The portal URL
             */
             url: function() {
                 return MetacatUI.appModel.get("objectServiceUrl") +
@@ -175,11 +175,11 @@ define(["jquery",
             },
 
             /**
-            * Get the project seriesId by searching for the project by its name in Solr
+            * Get the portal seriesId by searching for the portal by its name in Solr
             */
             getSeriesIdByName: function(){
 
-              //Exit if there is no project name set
+              //Exit if there is no portal name set
               if( !this.get("label") )
                 return;
 
@@ -238,7 +238,7 @@ define(["jquery",
 
             /**
              * Overrides the default Backbone.Model.parse() function to parse the custom
-             * project XML document
+             * portal XML document
              *
              * @param {XMLDocument} response - The XMLDocument returned from the fetch() AJAX call
              * @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
@@ -247,42 +247,42 @@ define(["jquery",
 
                 //Start the empty JSON object
                 var modelJSON = {},
-                    projectNode;
+                    portalNode;
 
-                // Iterate over each root XML node to find the project node
+                // Iterate over each root XML node to find the portal node
                 $(response).children().each(function(i, el) {
                     if (el.tagName.indexOf("portal") > -1) {
-                        projectNode = el;
+                        portalNode = el;
                         return false;
                     }
                 });
 
-                // If a project XML node wasn't found, return an empty JSON object
-                if (typeof projectNode == "undefined" || !projectNode) {
+                // If a portal XML node wasn't found, return an empty JSON object
+                if (typeof portalNode == "undefined" || !portalNode) {
                     return {};
                 }
 
                 // Parse the collection elements
-                modelJSON = this.parseCollectionXML(projectNode);
+                modelJSON = this.parseCollectionXML(portalNode);
 
                 // Save the xml for serialize
                 modelJSON.objectXML = response;
 
-                // Parse the project logo
-                var projLogo = $(projectNode).children("logo")[0];
+                // Parse the portal logo
+                var projLogo = $(portalNode).children("logo")[0];
                 if (projLogo) {
-                  var projImageModel = new ProjectImage({ objectDOM: projLogo });
+                  var projImageModel = new PortalImage({ objectDOM: projLogo });
                   projImageModel.set(projImageModel.parse());
                   modelJSON.logo = projImageModel
                 };
 
                 // Parse acknowledgement logos into urls
-                var logos = $(projectNode).children("acknowledgmentsLogo");
+                var logos = $(portalNode).children("acknowledgmentsLogo");
                 modelJSON.acknowledgmentsLogos = [];
                 _.each(logos, function(logo, i) {
                     if ( !logo ) return;
 
-                    var imageModel = new ProjectImage({ objectDOM: logo });
+                    var imageModel = new PortalImage({ objectDOM: logo });
                     imageModel.set(imageModel.parse());
 
                     if( imageModel.get("imageURL") ){
@@ -292,30 +292,30 @@ define(["jquery",
 
                 // Parse the literature cited
                 // This will only work for bibtex at the moment
-                var bibtex = $(projectNode).children("literatureCited").children("bibtex");
+                var bibtex = $(portalNode).children("literatureCited").children("bibtex");
                 if (bibtex.length > 0) {
-                    modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
+                    modelJSON.literatureCited = this.parseTextNode(portalNode, "literatureCited");
                 }
 
-                // Parse the project content sections
+                // Parse the portal content sections
                 modelJSON.sections = [];
-                $(projectNode).children("section").each(function(i, section){
-                  // Create a new ProjectSectionModel
-                  modelJSON.sections.push( new ProjectSectionModel({
+                $(portalNode).children("section").each(function(i, section){
+                  // Create a new PortalSectionModel
+                  modelJSON.sections.push( new PortalSectionModel({
                     objectDOM: section,
                     literatureCited: modelJSON.literatureCited
                   }) );
-                  //Parse the ProjectSectionModel
+                  //Parse the PortalSectionModel
                   modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
                 });
 
                 // Parse the EMLText elements
-                modelJSON.acknowledgments = this.parseEMLTextNode(projectNode, "acknowledgments");
+                modelJSON.acknowledgments = this.parseEMLTextNode(portalNode, "acknowledgments");
 
                 // Parse the awards
                 modelJSON.awards = [];
                 var parse_it = this.parseTextNode;
-                $(projectNode).children("award").each(function(i, award) {
+                $(portalNode).children("award").each(function(i, award) {
                     var award_parsed = {};
                     $(award).children().each(function(i, award_attr) {
                         if(award_attr.nodeName != "funderLogo"){
@@ -323,7 +323,7 @@ define(["jquery",
                           award_parsed[award_attr.nodeName] = parse_it(award, award_attr.nodeName);
                         } else {
                           // parse funderLogo which is type ImageType
-                          var imageModel = new ProjectImage({ objectDOM: award_attr });
+                          var imageModel = new PortalImage({ objectDOM: award_attr });
                           imageModel.set(imageModel.parse());
                           award_parsed[award_attr.nodeName] = imageModel;
                         }
@@ -333,7 +333,7 @@ define(["jquery",
 
                 // Parse the associatedParties
                 modelJSON.associatedParties = [];
-                $(projectNode).children("associatedParty").each(function(i, associatedParty) {
+                $(portalNode).children("associatedParty").each(function(i, associatedParty) {
 
                     modelJSON.associatedParties.push(new EMLParty({
                         objectDOM: associatedParty
@@ -342,7 +342,7 @@ define(["jquery",
                 });
 
                 // Parse the options
-                $(projectNode).find("option").each(function(i, option) {
+                $(portalNode).find("option").each(function(i, option) {
 
                     var optionName = $(option).find("optionName")[0].textContent,
                         optionValue = $(option).find("optionValue")[0].textContent;
@@ -403,7 +403,7 @@ define(["jquery",
                 // Parse the FilterGroups
                 modelJSON.filterGroups = [];
                 var allFilters = modelJSON.searchModel.get("filters");
-                $(projectNode).find("filterGroup").each(function(i, filterGroup) {
+                $(portalNode).find("filterGroup").each(function(i, filterGroup) {
 
                   // Create a FilterGroup model
                   var filterGroupModel = new FilterGroup({
@@ -411,7 +411,7 @@ define(["jquery",
                   });
                   modelJSON.filterGroups.push(filterGroupModel);
 
-                  // Add the Filters from this FilterGroup to the project's Search model
+                  // Add the Filters from this FilterGroup to the portal's Search model
                   allFilters.add(filterGroupModel.get("filters").models);
 
                 });
@@ -458,7 +458,7 @@ define(["jquery",
             },
 
             /**
-            * Sets the fileName attribute on this model using the project label
+            * Sets the fileName attribute on this model using the portal label
             * @override
             */
             setMissingFileName: function(){
@@ -466,7 +466,7 @@ define(["jquery",
               var fileName = this.get("label");
 
               if( !fileName ){
-                fileName = "project.xml";
+                fileName = "portal.xml";
               }
               else{
                 fileName = fileName.replace(/[^a-zA-Z0-9]/g, "_") + ".xml";
@@ -499,17 +499,17 @@ define(["jquery",
               },
 
             /**
-             * Finds the node in the given project XML document afterwhich the
+             * Finds the node in the given portal XML document afterwhich the
              * given node type should be inserted
              *
-             * @param {Element} projectNode - The project element of an XML document
+             * @param {Element} portalNode - The portal element of an XML document
              * @param {string} nodeName - The name of the node to be inserted
              *                             into xml
              * @return {(jQuery\|boolean)} A jQuery object indicating a position,
              *                            or false when nodeName is not in the
-             *                            project schema
+             *                            portal schema
             */
-            getXMLPosition: function(projectNode, nodeName){
+            getXMLPosition: function(portalNode, nodeName){
 
               var nodeOrder = [ "label", "name", "description", "definition",
                                 "logo", "section", "associatedParty",
@@ -525,15 +525,15 @@ define(["jquery",
               };
 
               // If there's already an occurence of nodeName...
-              if($(projectNode).children(nodeName).length > 0){
+              if($(portalNode).children(nodeName).length > 0){
                 // ...insert it after the last occurence
-                return $(projectNode).children(nodeName).last();
+                return $(portalNode).children(nodeName).last();
               } else {
                 // Go through each node in the node list and find the position
                 // after which this node will be inserted
                 for (var i = position - 1; i >= 0; i--) {
-                  if ( $(projectNode).children(nodeOrder[i]).length ) {
-                    return $(projectNode).children(nodeOrder[i]).last();
+                  if ( $(portalNode).children(nodeOrder[i]).length ) {
+                    return $(portalNode).children(nodeOrder[i]).last();
                   }
                 }
               }
@@ -542,10 +542,10 @@ define(["jquery",
             },
 
             /**
-             * Retrieves the model attributes and serializes into project XML,
-             * to produce the new or modified project document.
+             * Retrieves the model attributes and serializes into portal XML,
+             * to produce the new or modified portal document.
              *
-             * @return {string} - Returns the project XML as a string.
+             * @return {string} - Returns the portal XML as a string.
             */
             serialize: function(){
 
@@ -553,12 +553,12 @@ define(["jquery",
               var model = this;
 
               var xmlDoc,
-                  projectNode,
+                  portalNode,
                   xmlString;
 
               xmlDoc = this.get("objectXML");
 
-              // Check if there is a project doc already
+              // Check if there is a portal doc already
               if (xmlDoc == null){
                 // If not create one
                 xmlDoc = this.createXML();
@@ -567,18 +567,18 @@ define(["jquery",
                 xmlDoc = xmlDoc.cloneNode(true);
               };
 
-              // Iterate over each root XML node to find the project node
+              // Iterate over each root XML node to find the portal node
               $(xmlDoc).children().each(function(i, el) {
                   if (el.tagName.indexOf("portal") > -1) {
-                      projectNode = el;
+                      portalNode = el;
                   }
               });
 
               // Serialize the collection elements
               // ("name", "label", "description", "definition")
-              projectNode = this.updateCollectionDOM(projectNode);
+              portalNode = this.updateCollectionDOM(portalNode);
 
-              /* ==== Serialize project logo ==== */
+              /* ==== Serialize portal logo ==== */
 
               // Remove node if it exists already
               $(xmlDoc).find("logo").remove();
@@ -593,12 +593,12 @@ define(["jquery",
                 var logoSerialized = logo.updateDOM("logo");
 
                 // Insert new node at correct position
-                var insertAfter = this.getXMLPosition(projectNode, "logo");
+                var insertAfter = this.getXMLPosition(portalNode, "logo");
                 if(insertAfter){
                   insertAfter.after(logoSerialized);
                 }
                 else{
-                  projectNode.append(logoSerialized);
+                  portalNode.append(logoSerialized);
                 }
 
               };
@@ -618,12 +618,12 @@ define(["jquery",
                   var ackLogosSerialized = imageModel.updateDOM();
 
                   // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(projectNode, "acknowledgmentsLogo");
+                  var insertAfter = model.getXMLPosition(portalNode, "acknowledgmentsLogo");
                   if(insertAfter){
                     insertAfter.after(ackLogosSerialized);
                   }
                   else {
-                    projectNode.append(ackLogosSerialized);
+                    portalNode.append(ackLogosSerialized);
                   }
                 })
               };
@@ -662,16 +662,16 @@ define(["jquery",
                 });
 
                 // Insert new element at correct position
-                var insertAfter = this.getXMLPosition(projectNode, "literatureCited");
+                var insertAfter = this.getXMLPosition(portalNode, "literatureCited");
                 if(insertAfter){
                   insertAfter.after(litCitSerialized);
                 }
                 else{
-                  projectNode.append(litCitSerialized);
+                  portalNode.append(litCitSerialized);
                 }
               }
 
-              /* ==== Serialize project content sections ==== */
+              /* ==== Serialize portal content sections ==== */
 
               // Remove node if it exists already
               $(xmlDoc).find("section").remove();
@@ -686,12 +686,12 @@ define(["jquery",
                   var sectionSerialized = sectionModel.updateDOM();
 
                   // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(projectNode, "section");
+                  var insertAfter = model.getXMLPosition(portalNode, "section");
                   if(insertAfter){
                     insertAfter.after(sectionSerialized);
                   }
                   else {
-                    projectNode.append(sectionSerialized);
+                    portalNode.append(sectionSerialized);
                   }
                 })
               };
@@ -721,7 +721,7 @@ define(["jquery",
                   //Get the existing node or create a new one
                   if(nodes.length < i+1){
                     node = xmlDoc.createElement(fieldName);
-                    this.getXMLPosition(projectNode, fieldName).after(node);
+                    this.getXMLPosition(portalNode, fieldName).after(node);
 
                   }
                   else {
@@ -774,12 +774,12 @@ define(["jquery",
                   });
 
                   // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(projectNode, "award");
+                  var insertAfter = model.getXMLPosition(portalNode, "award");
                   if(insertAfter){
                     insertAfter.after(awardSerialized);
                   }
                   else{
-                    projectNode.append(awardSerialized);
+                    portalNode.append(awardSerialized);
                   }
 
                 });
@@ -812,7 +812,7 @@ define(["jquery",
 
                   // If there isn't a node found, find the EML position to insert after
                   if( !insertAfter.length ) {
-                    insertAfter = model.getXMLPosition(projectNode, "associatedParty");
+                    insertAfter = model.getXMLPosition(portalNode, "associatedParty");
                   }
 
                   // Make sure we don't insert empty EMLParty nodes into the EML
@@ -821,7 +821,7 @@ define(["jquery",
                     if ( insertAfter && insertAfter.length ){
                       insertAfter.after(partySerialized);
                     } else {
-                      projectNode.append(partySerialized);
+                      portalNode.append(partySerialized);
                     }
                   }
                 });
@@ -832,7 +832,7 @@ define(["jquery",
                 // This will only serialize the options named in `optNames` (below)
                 // Functionality needed in order to serialize new or custom options
 
-                // The standard list of options used in projects
+                // The standard list of options used in portals
                 var optNames = this.get("optionNames");
 
                 _.each(optNames, function(optName){
@@ -842,7 +842,7 @@ define(["jquery",
                   if(optValue || optValue === 0 || optValue === false){
 
                     //Replace the existing option, if it exists
-                    var matchingOption = $(projectNode).children("option")
+                    var matchingOption = $(portalNode).children("option")
                                                        .find("optionName:contains('" + optName + "')");
                     if( matchingOption.length && matchingOption.first().text() == optName ){
                       matchingOption.siblings("optionValue").text(optValue);
@@ -860,7 +860,7 @@ define(["jquery",
                       $(optionSerialized).append(optNameSerialized, optValueSerialized);
 
                       // Insert new node at correct position
-                      var insertAfter = model.getXMLPosition(projectNode, "option");
+                      var insertAfter = model.getXMLPosition(portalNode, "option");
 
                       if(insertAfter){
                         insertAfter.after(optionSerialized);
@@ -889,13 +889,13 @@ define(["jquery",
                 filterGroupSerialized = filterGroup.updateDOM();
 
                 // Insert new node at correct position
-                var insertAfter = model.getXMLPosition(projectNode, "filterGroup");
+                var insertAfter = model.getXMLPosition(portalNode, "filterGroup");
 
                 if(insertAfter){
                   insertAfter.after(filterGroupSerialized);
                 }
                 else{
-                  projectNode.append(filterGroupSerialized);
+                  portalNode.append(filterGroupSerialized);
                 }
               });
 
@@ -945,23 +945,23 @@ define(["jquery",
             },
 
             /**
-             * Initialize the object XML for a brand spankin' new project
+             * Initialize the object XML for a brand spankin' new portal
              * @inheritdoc
              *
             */
             createXML: function() {
 
-              // TODO: which attributes should a new XML project doc should have?
+              // TODO: which attributes should a new XML portal doc should have?
               var xmlString = "<por:portal xmlns:por=\"https://purl.dataone.org/portals-1.0.0\"></por:portal>",
                   xmlNew = $.parseXML(xmlString),
-                  projectNode = xmlNew.getElementsByTagName("por:portal")[0];
+                  portalNode = xmlNew.getElementsByTagName("por:portal")[0];
 
               return(xmlNew);
             },
 
             /**
              * Overrides the default Backbone.Model.validate.function() to
-             * check if this project model has all the required values necessary
+             * check if this portal model has all the required values necessary
              * to save to the server
              *
              * @return {Object} If there are errors, an object comprising error
@@ -999,7 +999,7 @@ define(["jquery",
               // TODO: For the portal to be valid, we should wait for the event
               // "labelAvailable". This takes time since it's a solr query.
 
-              // TODO: validate all the project elements here
+              // TODO: validate all the portal elements here
 
               if( Object.keys(errors).length )
                 return errors;
@@ -1012,11 +1012,11 @@ define(["jquery",
             /**
              * Queries solr to check whether a portal label is already in use.
              * Also checks that a label does not equal a restricted value
-             * (e.g. new project temporary name), and that it's encoded properly
+             * (e.g. new portal temporary name), and that it's encoded properly
              * for use as part of a url
              *
              * @param {string} label - The portal label to be validated
-             * @param {Array} blacklist - A list of restricted strings that are not allowed as project labels
+             * @param {Array} blacklist - A list of restricted strings that are not allowed as portal labels
             */
             validateLabel: function(label, blacklist){
 
@@ -1057,7 +1057,7 @@ define(["jquery",
 
               var model = this;
 
-              // Query solr to see if other projects already use this label
+              // Query solr to see if other portals already use this label
               var requestSettings = {
                   url: MetacatUI.appModel.get("queryServiceUrl") +
                        "q=label:\"" + label + "\"" +
@@ -1099,7 +1099,7 @@ define(["jquery",
             },
 
             /**
-             * Saves the project XML document to the server using the DataONE API
+             * Saves the portal XML document to the server using the DataONE API
             */
             save: function(){
 
@@ -1157,19 +1157,19 @@ define(["jquery",
             },
 
             /**
-            * Saves a reference to this Project on the MetacatUI global object
+            * Saves a reference to this Portal on the MetacatUI global object
             */
-            cacheProject: function(){
+            cachePortal: function(){
 
               if( this.get("id") ){
-                MetacatUI.projects = MetacatUI.projects || {};
-                MetacatUI.projects[this.get("id")] = this;
+                MetacatUI.portals = MetacatUI.portals || {};
+                MetacatUI.portals[this.get("id")] = this;
               }
 
-              this.on("change:id", this.cacheProject);
+              this.on("change:id", this.cachePortal);
             }
 
         });
 
-        return ProjectModel;
+        return PortalModel;
     });

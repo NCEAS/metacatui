@@ -121,7 +121,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
     /**
      * Updates the XML DOM with the new values from the model
      *
-     *  @return {XMLElement} An updated filterGroup XML element from a project document
+     *  @return {XMLElement} An updated filterGroup XML element from a portal document
     */
     updateDOM: function(){
 

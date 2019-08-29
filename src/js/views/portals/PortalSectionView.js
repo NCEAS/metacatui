@@ -1,23 +1,23 @@
 define(["jquery",
     "underscore",
     "backbone",
-    'models/project/ProjectSectionModel',
+    'models/portals/PortalSectionModel',
     "views/MarkdownView",
     "views/TOCView",
-    "text!templates/project/projectSection.html"],
-    function($, _, Backbone, ProjectSectionModel, MarkdownView, TOCView, Template){
+    "text!templates/portals/portalSection.html"],
+    function($, _, Backbone, PortalSectionModel, MarkdownView, TOCView, Template){
 
-    /* The ProjectSectionView is a generic view to render
-     * project sections, with a default rendering of a
+    /* The PortalSectionView is a generic view to render
+     * portal sections, with a default rendering of a
      * MarkdownView
      */
-     var ProjectSectionView = Backbone.View.extend({
+     var PortalSectionView = Backbone.View.extend({
 
        /**
        * The type of View this is
        * @type {string}
        */
-        type: "ProjectSection",
+        type: "PortalSection",
 
         /**
         * The display name for this Section
@@ -35,7 +35,7 @@ define(["jquery",
         * The HTML classes to use for this view's element
         * @type {string}
         */
-        className: "tab-pane project-section-view",
+        className: "tab-pane portal-section-view",
 
         /**
         * Specifies if this section is active or not
@@ -44,19 +44,19 @@ define(["jquery",
         active: false,
 
         /**
-        * The ProjectSectionModel that is being edited
-        * @type {ProjectSection}
+        * The PortalSectionModel that is being edited
+        * @type {PortalSection}
         */
         model: undefined,
 
         template: _.template(Template),
 
         /**
-        * Creates a new ProjectSectionView
-        * @constructs ProjectSectionView
+        * Creates a new PortalSectionView
+        * @constructs PortalSectionView
         * @param {Object} options - A literal object with options to pass to the view
-        * @property {ProjectSection} options.model - The ProjectSection rendered in this view
-        * @property {string} options.sectionName - The name of the project section
+        * @property {PortalSection} options.model - The PortalSection rendered in this view
+        * @property {string} options.sectionName - The name of the portal section
         */
         initialize: function(options){
 
@@ -100,7 +100,7 @@ define(["jquery",
             sectionMarkdownView.render();
 
             //Add the markdown view element to this view
-            this.$(".project-section-content").html(sectionMarkdownView.el);
+            this.$(".portal-section-content").html(sectionMarkdownView.el);
 
             this.markdownView = sectionMarkdownView;
 
@@ -123,7 +123,7 @@ define(["jquery",
 
           //If at least one link was created in the TOCView, add it to this view
           if( tocView.$el.find("a").length ){
-            this.$(".project-section-content").prepend(tocView.el);
+            this.$(".portal-section-content").prepend(tocView.el);
 
             //Make a two-column layout
             tocView.$el.addClass("span3");
@@ -163,7 +163,7 @@ define(["jquery",
         },
 
         /*
-        * When the project section markdown is rendered in a MarkdownView, format the
+        * When the portal section markdown is rendered in a MarkdownView, format the
         * resulting HTML as needed for this view
         */
         postMarkdownRender: function(){
@@ -198,8 +198,8 @@ define(["jquery",
           if( this.sectionName ){
             name = this.sectionName;
           }
-          //If the model is a ProjectSectionModel, use the label from the model
-          else if( ProjectSectionModel.prototype.isPrototypeOf(this.model) ){
+          //If the model is a PortalSectionModel, use the label from the model
+          else if( PortalSectionModel.prototype.isPrototypeOf(this.model) ){
             name = this.model.get("label");
           }
           else{
@@ -218,5 +218,5 @@ define(["jquery",
 
      });
 
-     return ProjectSectionView;
+     return PortalSectionView;
 });

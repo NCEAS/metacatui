@@ -50,7 +50,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText'],
      * Makes a copy of the original XML DOM and updates it with the new values from the model
      *
      * @param {string} textType - a string indicating the name for the outer xml element (i.e. content). Used in case there is no exisiting xmlDOM.
-     * @return {XMLElement} An updated ImageType XML element from a project document
+     * @return {XMLElement} 
      */
     updateDOM: function(textType){
 

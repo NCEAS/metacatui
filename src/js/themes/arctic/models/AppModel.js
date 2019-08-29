@@ -161,8 +161,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			isJSONLDEnabled: true,
 
-			// A lookup map of project names to project seriesIds
-			projectsMap: {
+			// A lookup map of portal names to portal seriesIds
+			portalsMap: {
 			    "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb"
 			},
 

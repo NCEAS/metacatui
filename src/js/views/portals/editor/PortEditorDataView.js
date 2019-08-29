@@ -1,21 +1,21 @@
 define(['underscore',
         'jquery',
         'backbone',
-        "views/project/editor/ProjEditorSectionView",
+        "views/portals/editor/PortEditorSectionView",
         "views/EditCollectionView",
-        "text!templates/project/editor/projEditorData.html"],
-function(_, $, Backbone, ProjEditorSectionView, EditCollectionView, Template){
+        "text!templates/portals/editor/portEditorData.html"],
+function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
 
   /**
-  * @class ProjEditorDataView
+  * @class PortEditorDataView
   */
-  var ProjEditorDataView = ProjEditorSectionView.extend({
+  var PortEditorDataView = PortEditorSectionView.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ProjEditorData",
+    type: "PortEditorData",
 
     /**
     * The display name for this Section
@@ -27,11 +27,11 @@ function(_, $, Backbone, ProjEditorSectionView, EditCollectionView, Template){
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: ProjEditorSectionView.prototype.className + " proj-editor-data",
+    className: PortEditorSectionView.prototype.className + " proj-editor-data",
 
     /**
-    * The ProjectModel that is being edited
-    * @type {Project}
+    * The PortalModel that is being edited
+    * @type {Portal}
     */
     model: undefined,
 
@@ -54,14 +54,14 @@ function(_, $, Backbone, ProjEditorSectionView, EditCollectionView, Template){
     },
 
     /**
-    * Creates a new ProjEditorDataView
-    * @constructs ProjEditorDataView
+    * Creates a new PortEditorDataView
+    * @constructs PortEditorDataView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
 
       //Call the superclass initialize() function
-      ProjEditorSectionView.prototype.initialize();
+      PortEditorSectionView.prototype.initialize();
 
     },
 
@@ -84,6 +84,6 @@ function(_, $, Backbone, ProjEditorSectionView, EditCollectionView, Template){
 
   });
 
-  return ProjEditorDataView;
+  return PortEditorDataView;
 
 });

@@ -1,29 +1,29 @@
 define(['underscore',
         'jquery',
         'backbone',
-        'models/project/ProjectModel',
-        "views/project/editor/ProjEditorSectionView",
-        "views/project/editor/ProjEditorSettingsView",
-        "views/project/editor/ProjEditorDataView",
-        "views/project/editor/ProjEditorMdSectionView",
-        "text!templates/project/editor/projEditorSections.html",
-        "text!templates/project/editor/projEditorMetrics.html",
-        "text!templates/project/editor/projEditorSectionLink.html"],
-function(_, $, Backbone, Project,
-          ProjEditorSectionView, ProjEditorSettingsView, ProjEditorDataView,
-          ProjEditorMdSectionView,
+        'models/portals/PortalModel',
+        "views/portals/editor/PortEditorSectionView",
+        "views/portals/editor/PortEditorSettingsView",
+        "views/portals/editor/PortEditorDataView",
+        "views/portals/editor/PortEditorMdSectionView",
+        "text!templates/portals/editor/portEditorSections.html",
+        "text!templates/portals/editor/portEditorMetrics.html",
+        "text!templates/portals/editor/portEditorSectionLink.html"],
+function(_, $, Backbone, Portal,
+          PortEditorSectionView, PortEditorSettingsView, PortEditorDataView,
+          PortEditorMdSectionView,
           Template, MetricsSectionTemplate, SectionLinkTemplate){
 
   /**
-  * @class ProjEditorSectionsView
+  * @class PortEditorSectionsView
   */
-  var ProjEditorSectionsView = Backbone.View.extend({
+  var PortEditorSectionsView = Backbone.View.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ProjEditorSections",
+    type: "PortEditorSections",
 
     /**
     * The HTML tag name for this view's element
@@ -38,8 +38,8 @@ function(_, $, Backbone, Project,
     className: "proj-editor-sections",
 
     /**
-    * The ProjectModel that is being edited
-    * @type {Project}
+    * The PortalModel that is being edited
+    * @type {Portal}
     */
     model: undefined,
 
@@ -50,7 +50,7 @@ function(_, $, Backbone, Project,
     activeSection: "",
 
     /**
-    * The names of all sections in this project editor
+    * The names of all sections in this portal editor
     * @type {Array}
     */
     sectionNames: [],
@@ -69,7 +69,7 @@ function(_, $, Backbone, Project,
     metricsSectionTemplate: _.template(MetricsSectionTemplate),
 
     /**
-    * A jQuery selector for the element that the ProjEditorDataView should be inserted into
+    * A jQuery selector for the element that the PortEditorDataView should be inserted into
     * @type {string}
     */
     projEditDataViewContainer: ".proj-editor-data-container",
@@ -79,7 +79,7 @@ function(_, $, Backbone, Project,
     */
     projEditMetricsContainer:  ".proj-editor-metrics-container",
     /**
-    * A jQuery selector for the element that the ProjEditorSettingsView should be inserted into
+    * A jQuery selector for the element that the PortEditorSettingsView should be inserted into
     * @type {string}
     */
     projSettingsContainer: ".proj-editor-settings-container",
@@ -100,9 +100,9 @@ function(_, $, Backbone, Project,
     sectionsContainer: ".sections-container",
 
     /**
-    * @borrows ProjectEditorView.newProjectTempName as newProjectTempName
+    * @borrows PortalEditorView.newPortalTempName as newPortalTempName
     */
-    newProjectTempName: "",
+    newPortalTempName: "",
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -115,26 +115,26 @@ function(_, $, Backbone, Project,
     },
 
     /**
-    * Creates a new ProjEditorSectionsView
-    * @constructs ProjEditorSectionsView
+    * Creates a new PortEditorSectionsView
+    * @constructs PortEditorSectionsView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
       if(typeof options == "object"){
         this.activeSection = options.activeSection || "";
-        this.newProjectTempName = options.newProjectTempName || "";
+        this.newPortalTempName = options.newPortalTempName || "";
       }
     },
 
     /**
-    * Renders the ProjEditorSectionsView
+    * Renders the PortEditorSectionsView
     */
     render: function(){
 
       //Insert the template into the view
       this.$el.html(this.template());
 
-      //Render a Section View for each content section in the Project
+      //Render a Section View for each content section in the Portal
       this.renderContentSections();
 
       //Render the Data section
@@ -160,7 +160,7 @@ function(_, $, Backbone, Project,
     renderAddSection: function(){
 
       // Add a "Add section" button/tab
-      var addSectionView = new ProjEditorSectionView({
+      var addSectionView = new PortEditorSectionView({
         model: this.model,
         sectionName: "AddSection"
       });
@@ -196,19 +196,19 @@ function(_, $, Backbone, Project,
     },
 
     /**
-    * Render a section in the editor for each content section in the Project
+    * Render a section in the editor for each content section in the Portal
     */
     renderContentSections: function(){
 
-      //Get the sections from the Project
+      //Get the sections from the Portal
       var sections = this.model.get("sections");
 
-      // Iterate over each "markdown" section in the ProjectModel `sections`
+      // Iterate over each "markdown" section in the PortalModel `sections`
       _.each(sections, function(section){
         if(section){
 
           // Create and render and markdown section view
-          var sectionView = new ProjEditorMdSectionView({
+          var sectionView = new PortEditorMdSectionView({
             model: section
           });
 
@@ -219,10 +219,10 @@ function(_, $, Backbone, Project,
             .attr("id", sectionView.getName({ linkFriendly: true }))
             .html(sectionView.el);
 
-          //Insert the ProjEditorMdSectionView element into this view
+          //Insert the PortEditorMdSectionView element into this view
           this.$(this.sectionsContainer).append(markdownSectionDiv);
 
-          //Render the ProjEditorMdSectionView
+          //Render the PortEditorMdSectionView
           sectionView.render();
 
           // Add the tab to the tab navigation
@@ -239,8 +239,8 @@ function(_, $, Backbone, Project,
     * Renders a Data section in this view
     */
     renderDataSection: function(){
-      // Render a ProjEditorDataView and corresponding tab
-      var dataView = new ProjEditorDataView({
+      // Render a PortEditorDataView and corresponding tab
+      var dataView = new PortEditorDataView({
         model: this.model
       });
 
@@ -249,7 +249,7 @@ function(_, $, Backbone, Project,
           .html(dataView.el)
           .attr("id", dataView.getName({ linkFriendly: true }));
 
-      //Render the ProjEditorDataView
+      //Render the PortEditorDataView
       dataView.render();
 
       // Add the tab to the tab navigation
@@ -263,12 +263,12 @@ function(_, $, Backbone, Project,
     * Renders the Metrics section of the editor
     */
     renderMetricsSection: function(){
-      // Render a ProjEditorSectionView for the Metrics section and corresponding tab
+      // Render a PortEditorSectionView for the Metrics section and corresponding tab
       // if the hide metrics view option is not true
       if(this.model.get("hideMetrics") !== true){
 
-        //Create a ProjEditorSectionView for the Metrics section
-        var metricsView = new ProjEditorSectionView({
+        //Create a PortEditorSectionView for the Metrics section
+        var metricsView = new PortEditorSectionView({
           model: this.model,
           sectionName: "Metrics",
           template: this.metricsSectionTemplate
@@ -295,20 +295,20 @@ function(_, $, Backbone, Project,
     */
     renderSettings: function(){
 
-      //Create a ProjEditorSettingsView
-      // Pass on the 'newProjectTempName', so that it can be used as a
+      //Create a PortEditorSettingsView
+      // Pass on the 'newPortalTempName', so that it can be used as a
       // restricted label during label validation
-      var settingsView = new ProjEditorSettingsView({
+      var settingsView = new PortEditorSettingsView({
         model: this.model,
-        newProjectTempName: this.newProjectTempName
+        newPortalTempName: this.newPortalTempName
       });
 
-      //Add the ProjEditorSettingsView element to this view
+      //Add the PortEditorSettingsView element to this view
       this.$(this.projSettingsContainer)
           .html(settingsView.el)
           .attr("id", settingsView.getName({ linkFriendly: true }));
 
-      //Render the ProjEditorSettingsView
+      //Render the PortEditorSettingsView
       settingsView.render();
 
       this.addSectionLink(settingsView);
@@ -345,16 +345,16 @@ function(_, $, Backbone, Project,
         this.activeSection = linkTarget;
       }
 
-      var projName = this.model.get("label") || this.newProjectTempName,
+      var projName = this.model.get("label") || this.newPortalTempName,
           section = this.activeSection,
           pathName = window.location.pathname
                       .substring(MetacatUI.root.length)
                       // remove trailing forward slash if one exists in path
                       .replace(/\/$/, "");
 
-      //If the project name is not in the window location, add it
+      //If the portal name is not in the window location, add it
       if( pathName.indexOf(projName) == -1 ){
-        //The new path name should include the project name and the new section name
+        //The new path name should include the portal name and the new section name
         var newPathName = pathName + "/" + projName + "/" + section;
       }
       else{
@@ -449,7 +449,7 @@ function(_, $, Backbone, Project,
 
     /**
     * Add a link to the given editor section
-    * @param {ProjEditorSectionView} sectionView - The view to add a link to
+    * @param {PortEditorSectionView} sectionView - The view to add a link to
     */
     addSectionLink: function(sectionView){
 
@@ -461,7 +461,7 @@ function(_, $, Backbone, Project,
     },
 
     /**
-    * Adds a section and tab to this view and the ProjectModel
+    * Adds a section and tab to this view and the PortalModel
     * @param {Event} [e] - (optional) The click event on the Add button
     */
     addSection: function(e){
@@ -469,7 +469,7 @@ function(_, $, Backbone, Project,
     },
 
     /**
-    * Removes a section and its tab from this view and the ProjectModel
+    * Removes a section and its tab from this view and the PortalModel
     * @param {Event} [e] - (optional) The click event on the Remove button
     */
     removeSection: function(e){
@@ -477,7 +477,7 @@ function(_, $, Backbone, Project,
     },
 
     /**
-    * Renames a section in the tab in this view and in the ProjectSectionModel
+    * Renames a section in the tab in this view and in the PortalSectionModel
     * @param {Event} [e] - (optional) The click event on the Rename button
     */
     renameSection: function(){
@@ -497,6 +497,6 @@ function(_, $, Backbone, Project,
 
   });
 
-  return ProjEditorSectionsView;
+  return PortEditorSectionsView;
 
 });

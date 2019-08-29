@@ -6,9 +6,9 @@ define(["jquery",
     function($, _, Backbone) {
 
       /**
-       * A Project Image model represents a single image used in a Project
+       * A Portal Image model represents a single image used in a Portal
        */
-      var ProjectImageModel = Backbone.Model.extend({
+      var PortalImageModel = Backbone.Model.extend({
         defaults: function(){
           return {
             identifier: "",
@@ -21,9 +21,9 @@ define(["jquery",
         },
 
         /**
-         * Parses an ImageType XML element from a project document
+         * Parses an ImageType XML element from a portal document
          *
-         *  @param {XMLElement} objectDOM - An ImageType XML element from a project document
+         *  @param {XMLElement} objectDOM - An ImageType XML element from a portal document
          *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
         */
         parse: function(objectDOM){
@@ -63,7 +63,7 @@ define(["jquery",
         /**
     		 * Makes a copy of the original XML DOM and updates it with the new values from the model
          *
-         *  @return {XMLElement} An updated ImageType XML element from a project document
+         *  @return {XMLElement} An updated ImageType XML element from a portal document
     		 */
         updateDOM: function() {
 
@@ -105,5 +105,5 @@ define(["jquery",
 
       });
 
-      return ProjectImageModel;
+      return PortalImageModel;
 });

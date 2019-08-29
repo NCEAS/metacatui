@@ -55,7 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     /**
      * Updates the XML DOM with the new values from the model
      *  @inheritdoc
-     *  @return {XMLElement} An updated toggleFilter XML element from a project document
+     *  @return {XMLElement} An updated toggleFilter XML element from a portal document
     */
     updateDOM: function(options){
 

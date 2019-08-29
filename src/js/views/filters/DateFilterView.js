@@ -86,7 +86,7 @@ define(['jquery', 'underscore', 'backbone',
 
       //Send this event to Google Analytics
       if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-        ga("send", "event", "project search", "filter, Data Year", minVal + " to " + maxVal);
+        ga("send", "event", "portal search", "filter, Data Year", minVal + " to " + maxVal);
       }
 
     },

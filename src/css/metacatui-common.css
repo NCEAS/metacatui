@@ -2478,14 +2478,14 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 /******************************************
-* Projects
+* Portals
 ********************************************/
 
-/* Project & Editor (minimal header common to both views)
- * Top level app navigation in the ProjectView and EditorView
+/* Portal & Editor (minimal header common to both views)
+ * Top level app navigation in the PortalView and EditorView
 -------------------------------------------------- */
 .Portal.Editor #Navbar,
-.ProjectView #Navbar{
+.PortalView #Navbar{
   position: relative;
   width: 100%;
   left: 0px;
@@ -2493,27 +2493,27 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 .Portal.Editor .navbar,
-.ProjectView .navbar{
+.PortalView .navbar{
   margin: 0px;
 }
 
 .Portal.Editor .navbar-inner,
-.ProjectView .navbar-inner{
+.PortalView .navbar-inner{
   background-image: none;
   box-shadow: none;
   background-color: #FFF;
 }
 
 .Portal.Editor .navbar .nav > li > a.brand,
-.ProjectView .navbar .nav > li > a.brand{
+.PortalView .navbar .nav > li > a.brand{
   font-size: 25px;
   letter-spacing: -2px;
 }
 
 .Portal.Editor .navbar .nav > li > a,
 .Portal.Editor .nav .input > form > label,
-.ProjectView .navbar .nav > li > a,
-.ProjectView .nav .input > form > label{
+.PortalView .navbar .nav > li > a,
+.PortalView .nav .input > form > label{
   font-size: 12px;
 }
 
@@ -2521,71 +2521,74 @@ img[src*="googleapis.com/"].georegion-map{
 .Portal.Editor #Navbar .minimal-nav > a,
 .Portal.Editor #Navbar .minimal-nav > .icon,
 .Portal.Editor #Navbar .minimal-nav > a > .icon,
-.ProjectView #Navbar .minimal-nav > a,
-.ProjectView #Navbar .minimal-nav > .icon,
-.ProjectView #Navbar .minimal-nav > a > .icon{
+.PortalView #Navbar .minimal-nav > a,
+.PortalView #Navbar .minimal-nav > .icon,
+.PortalView #Navbar .minimal-nav > a > .icon{
     color: inherit;
 }
 
 .Portal.Editor #Navbar .nav > li,
-.ProjectView #Navbar .nav > li {
+.PortalView #Navbar .nav > li {
     display: none;
 }
 
 .Portal.Editor #Navbar .nav .minimal-nav,
-.ProjectView #Navbar .nav .minimal-nav {
+.PortalView #Navbar .nav .minimal-nav {
     display: block;
 }
 
 .Portal.Editor #Navbar .nav .minimal-nav a,
-.ProjectView #Navbar .nav .minimal-nav a {
+.PortalView #Navbar .nav .minimal-nav a {
     font-size: 1em;
     text-transform: none;
     font-weight: 300;
     text-shadow: none;
 }
-
+.Portal.Editor #Navbar .nav .minimal-nav a:not(.btn),
+.PortalView #Navbar .nav .minimal-nav a:not(.btn){
+  padding-bottom: 0px;
+}
 .Portal.Editor #Navbar .nav .minimal-nav.subtle a,
-.ProjectView #Navbar .nav .minimal-nav.subtle a {
+.PortalView #Navbar .nav .minimal-nav.subtle a {
     color: #999;
 }
 
 .Portal.Editor #Navbar .nav,
-.ProjectView #Navbar .nav {
+.PortalView #Navbar .nav {
     float: right;
+    margin-top: 0px;
 }
 /** ---end top level navigation ---**/
 
-.project-view{
+.portal-view{
   width: calc(100% + 80px);
   margin-left: -40px;
-  margin-top: -20px;
 }
-.ProjectView #Content{
+.PortalView #Content{
   padding-top: 0px;
 }
 
-#project-header-container{
+#portal-header-container{
   margin-bottom: 20px;
   padding-left: 40px;
   box-sizing: border-box;
 }
-#project-section-tabs{
+#portal-section-tabs{
   margin-bottom: 0px;
 }
-#project-section-tabs li a {
+#portal-section-tabs li a {
   background-color: transparent;
   border-radius: 0px;
   border: 0px;
 }
-#project-section-tabs a{
+#portal-section-tabs a{
   text-align: center;
 }
-.project-section-content{
+.portal-section-content{
   padding: 20px;
   margin-top: 40px;
 }
-.project-display-image{
+.portal-display-image{
   background-repeat: no-repeat;
   background-position-x: 50%;
   background-position-y: 50%;
@@ -2594,12 +2597,12 @@ img[src*="googleapis.com/"].georegion-map{
   padding-top: 60px;
   color: #FFF;
 }
-.project-display-text{
+.portal-display-text{
   box-sizing: border-box;
-  background-color: var(--project-primary-color-transparent);
+  background-color: var(--portal-primary-color-transparent);
   padding: 20px;
 }
-.project-display-text h2{
+.portal-display-text *{
   color: #FFF;
 }
 .logo-container{
@@ -2614,42 +2617,42 @@ img[src*="googleapis.com/"].georegion-map{
   padding: 10px;
   display: table-cell;
 }
-.project-view .project-logo{
+.portal-view .portal-logo{
 	max-width: 100%;
 	max-height: 70px;
   display: inline-block;
   margin-right: 20px;
 }
-.project-view #results-container{
+.portal-view #results-container{
 	width: 100%;
 	margin-left:0px;
 }
-.project-view .mapMode #results-container,
-.project-view .mapMode #map-container{
+.portal-view .mapMode #results-container,
+.portal-view .mapMode #map-container{
 	width: 50%;
 }
-.project-view .data-catalog,
-.project-view .data-catalog #results-container,
-.project-view .data-catalog #map-container,
-.project-view .data-catalog #map-canvas{
+.portal-view .data-catalog,
+.portal-view .data-catalog #results-container,
+.portal-view .data-catalog #map-container,
+.portal-view .data-catalog #map-canvas{
   min-height: 700px;
 }
-.project-view .data-catalog #clear-all{
+.portal-view .data-catalog #clear-all{
 	display: none;
 }
-.project-view .project-title{
+.portal-view .portal-title{
   line-height: 70px;
   margin: 0px;
   font-size: 2em;
   display: inline-block;
 }
-.project-logos-view{
+.portal-logos-view{
 	border-top: 1px solid #DDD;
   padding-top: 40px;
   padding-left: 20px;
   padding-right: 20px;
 }
-.project-logos-view .img-logo{
+.portal-logos-view .img-logo{
 	max-width: 120px;
   margin: auto;
   display: flex;
@@ -2660,48 +2663,48 @@ img[src*="googleapis.com/"].georegion-map{
 	background: inherit;
 	margin: 20px;
 }
-.project-section-content .toc-view.affix{
+.portal-section-content .toc-view.affix{
   top: 20px;
 }
-.project-section-content .toc-view.affix-bottom{
+.portal-section-content .toc-view.affix-bottom{
   top: 20px;
   position: fixed;
 }
-.project-section-content .toc-view.span3.affix + .span9,
-.project-section-content .toc-view.span3.affix-bottom + .span9{
+.portal-section-content .toc-view.span3.affix + .span9,
+.portal-section-content .toc-view.span3.affix-bottom + .span9{
   margin-left: 26.5%;
 }
-.project-view .toc-ul{
+.portal-view .toc-ul{
 	position: sticky;
 	position: -webkit-sticky;
-  background-color: var(--project-primary-color);
+  background-color: var(--portal-primary-color);
   margin-left: -20px;
   padding: 0px;
 }
-.project-view .toc-ul > li > a{
+.portal-view .toc-ul > li > a{
   padding-left: 20px;
   padding-right: 20px;
   margin: 0px;
 }
-.project-view .toc-ul a{
+.portal-view .toc-ul a{
   line-height: 2em;
 }
-.project-view .toc-ul > li > ul{
+.portal-view .toc-ul > li > ul{
   margin-left: 0px;
   list-style: none;
 }
-.project-view .toc-ul > li > ul > li > a{
+.portal-view .toc-ul > li > ul > li > a{
   padding-left: 40px;
 }
-.project-view .toc-ul li,
-.project-view .toc-ul a{
+.portal-view .toc-ul li,
+.portal-view .toc-ul a{
   background-color: transparent;
   color: #FFF;
   border:0px;
   border-radius: 0px;
   text-shadow: none;
 }
-.project-view .toc-ul a:hover{
+.portal-view .toc-ul a:hover{
   color: #FFF;
   background-color: transparent;
 }
@@ -2715,112 +2718,112 @@ i.toc-sub-item{
 	margin-left: 18px;
 	visibility: hidden;
 }
-.project-view .logo-row{
+.portal-view .logo-row{
 	margin-bottom: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.project-view .profile .profile-title,
-.project-view .profile .charts-container > p{
+.portal-view .profile .profile-title,
+.portal-view .profile .charts-container > p{
   padding-left: 20px;
 }
-.project-view .profile .profile-title{
+.portal-view .profile .profile-title{
   font-size: 1.5em;
 }
-.project-view #members .row-fluid{
+.portal-view #Members .row-fluid{
   padding: 20px;
   box-sizing: border-box;
 }
-.project-view #members .row-fluid:nth-child(odd) {
+.portal-view #Members .row-fluid:nth-child(odd) {
     background-color: #EEE;
 }
 
-/*** Colors used in the Project View ***/
-.project-view .toc .icon{
-	color: var(--project-primary-color);
+/*** Colors used in the Portal View ***/
+.portal-view .toc .icon{
+	color: var(--portal-primary-color);
 }
-.project-view a:hover{
-	color: var(--project-secondary-color);
+.portal-view a:hover{
+	color: var(--portal-secondary-color);
 }
-.project-view #project-section-tabs li{
-  background-color: var(--project-primary-color);
+.portal-view #portal-section-tabs li{
+  background-color: var(--portal-primary-color);
 }
-.project-view #project-section-tabs a:hover{
-  background-color: var(--project-secondary-color);
+.portal-view #portal-section-tabs a:hover{
+  background-color: var(--portal-secondary-color);
   color: #FFF;
 }
-.project-view #project-section-tabs li.active{
-  background-color: var(--project-secondary-color);
+.portal-view #portal-section-tabs li.active{
+  background-color: var(--portal-secondary-color);
 }
-.project-view #project-section-tabs a{
+.portal-view #portal-section-tabs a{
 	color: #FFF;
 }
-.project-view #project-section-tabs .active a{
+.portal-view #portal-section-tabs .active a{
 	color: #FFF;
 }
-.project-view .toc-ul li > a:hover{
-  background-color: var(--project-secondary-color);
+.portal-view .toc-ul li > a:hover{
+  background-color: var(--portal-secondary-color);
 }
-.project-view .result-row .citation .title{
-	color: var(--project-primary-color);
+.portal-view .result-row .citation .title{
+	color: var(--portal-primary-color);
 }
-.project-view .applied-filter{
-	background-color: var(--project-primary-color);
+.portal-view .applied-filter{
+	background-color: var(--portal-primary-color);
 }
-.project-view .filter-group-link a{
-	color: var(--project-primary-color);
+.portal-view .filter-group-link a{
+	color: var(--portal-primary-color);
 }
-.project-view .filter-group-link a:hover{
-	color: var(--project-secondary-color);
+.portal-view .filter-group-link a:hover{
+	color: var(--portal-secondary-color);
 }
-.project-view .filter-group-link.active a,
-.project-view .filter-group-link.active a:hover{
+.portal-view .filter-group-link.active a,
+.portal-view .filter-group-link.active a:hover{
 	color: inherit;
 }
-.project-view .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch,
-.project-view .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch{
-	background-color: var(--project-primary-color);
+.portal-view .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch,
+.portal-view .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch{
+	background-color: var(--portal-primary-color);
 }
-.project-view .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch{
-	background-color: var(--project-secondary-color);
+.portal-view .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch{
+	background-color: var(--portal-secondary-color);
 }
-.project-view .ui-slider-range{
-	background-color: var(--project-primary-color);
+.portal-view .ui-slider-range{
+	background-color: var(--portal-primary-color);
 }
-.project-view .result-row .citation a:hover,
-.project-view .result-row .citation a:hover .title,
-.project-view .result-row .citation a:hover .id{
-	color: var(--project-secondary-color);
+.portal-view .result-row .citation a:hover,
+.portal-view .result-row .citation a:hover .title,
+.portal-view .result-row .citation a:hover .id{
+	color: var(--portal-secondary-color);
 }
-.project-view .result-row .icon{
+.portal-view .result-row .icon{
 	color: #666;
 }
-.project-view .profile .quick-stats circle{
-	stroke:  var(--project-primary-color);
+.portal-view .profile .quick-stats circle{
+	stroke:  var(--portal-primary-color);
 }
-.project-view svg .packages,
-.project-view .chart-title .packages{
-	color: var(--project-primary-color);
-	fill: var(--project-primary-color);
+.portal-view svg .packages,
+.portal-view .chart-title .packages{
+	color: var(--portal-primary-color);
+	fill: var(--portal-primary-color);
 }
-.project-view svg circle.packages{
+.portal-view svg circle.packages{
 	fill: none;
 }
-.project-view svg .metadata,
-.project-view .fallback.metadata{
-	color: var(--project-secondary-color);
-	fill: var(--project-secondary-color);
-	stroke: var(--project-secondary-color);
+.portal-view svg .metadata,
+.portal-view .fallback.metadata{
+	color: var(--portal-secondary-color);
+	fill: var(--portal-secondary-color);
+	stroke: var(--portal-secondary-color);
 }
-.project-view .line-chart .line{
+.portal-view .line-chart .line{
 	fill: none;
 }
-.project-view .line-chart text.line-chart-label{
+.portal-view .line-chart text.line-chart-label{
 	fill: #FFF;
 }
-.project-view #project-members a{
-	color: var(--project-primary-color);
+.portal-view #portal-members a{
+	color: var(--portal-primary-color);
 }
 
 /* markdown citations */
@@ -3870,7 +3873,7 @@ a.disabled {
 }
 
 /********* Filter Views ***********/
-.project-view .filter-group{
+.portal-view .filter-group{
   padding: 0px 20px;
 }
 .filter-group .filters-container{
@@ -4109,24 +4112,24 @@ a.disabled {
   margin-bottom: 10px;
   padding-bottom: 10px;
 }
-#project-filters{
+#portal-filters{
 	border: 1px solid #CCC;
 	box-sizing: border-box;
 }
-#project-filters > .tab-content{
+#portal-filters > .tab-content{
 	padding: 10px 20px;
 }
-#project-filters > .nav-tabs{
+#portal-filters > .nav-tabs{
 	margin-bottom: 0px;
 	border: 1px solid #CCC;
 	border-left: 0px;
 	border-right: 0px;
   background-color: #eee;
 }
-#project-filters > .nav-tabs > li:first-child > a{
+#portal-filters > .nav-tabs > li:first-child > a{
 	border-left: 0px;
 }
-#project-filters > .nav-tabs > li:last-child > a{
+#portal-filters > .nav-tabs > li:last-child > a{
 	border-right: 0px;
 }
 

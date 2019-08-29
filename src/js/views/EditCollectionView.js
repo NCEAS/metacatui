@@ -90,8 +90,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       this.$el.html(this.template());
 
       // Make sure that we have a series ID before we render the Data Catalog
-      // View With Filters. For new projects, we generate and reserve a series ID
-      // and use it to add an isPartOf filter to the project model. This takes time,
+      // View With Filters. For new portals, we generate and reserve a series ID
+      // and use it to add an isPartOf filter to the portal model. This takes time,
       // and influences the search results shown in the data catalog.
       if( this.model.get("seriesId") || this.model.get("latestVersion") ){
         //Render the DataCatalog

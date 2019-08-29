@@ -56,7 +56,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     /**
      * Updates the XML DOM with the new values from the model
      *  @inheritdoc
-     *  @return {Element} An updated booleanFilter XML element from a project document
+     *  @return {Element} An updated booleanFilter XML element from a portal document
     */
     updateDOM: function(options) {
 
