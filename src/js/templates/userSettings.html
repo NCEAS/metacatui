@@ -1,25 +1,36 @@
 <section id="user-settings" class="row-fluid section" data-section="settings">
-<% if(!MetacatUI.appModel.get("userProfiles")){ %>
+<% if(!MetacatUI.appModel.get("enableUserProfiles")){ %>
 	<h1>My Account</h1>
 <% } %>
 
 <% var welcomeName = firstName || fullName || ""; %>
 <h3>Welcome, <%=welcomeName%></h3>
-	
-	<% if(MetacatUI.appModel.get("userProfiles")){ %>
+
+	<% if(MetacatUI.appModel.get("enableUserProfiles")){ %>
 	<div class="panel panel-default span3">
 	  <div class="panel-heading">
 	  	Settings
 	  </div>
 	 	<ul class="list-group">
 	    	<li class="list-group-item active subsection-link" data-section="account"><a href="#" class="subsection-link" data-section="account">My account</a></li>
+        <% if( MetacatUI.appModel.get("showMyPortals") !== false ){ %>
+          <li class="list-group-item subsection-link" data-section="portals">
+            <a href="#" class="subsection-link" data-section="portals">
+              My portals
+              <span class="new-icon">
+                <i class="icon icon-star icon-on-right"></i>
+                NEW
+              </span>
+            </a>
+          </li>
+        <% } %>
 	    	<li class="list-group-item subsection-link" data-section="groups"><a href="#" class="subsection-link" data-section="groups">Groups</a></li>
 	    	<li class="list-group-item subsection-link" data-section="token"><a href="#" class="subsection-link" data-section="token">Authentication Token</a></li>
 	  	</ul>
 	</div>
-	
+
 	<div class="span8 subsection" data-section="account">
-					
+
 			<div id="registered-user-container" class="panel panel-default" data-subsection="edit-account">
 			  <div class="panel-heading">
 			  	<h4 class="panel-title">Edit information</h4>
@@ -46,11 +57,11 @@
 				  	<div class="form-group">
 				  		<div class="span2"></div>
 				  		<button class="btn" id="mod-save-btn">Save</button>
-				  	</div>				  	
+				  	</div>
 				</form>
 			  </div>
 			</div>
-			
+
 			<div class="panel panel-default">
 			  <div class="panel-heading">
 			  	<h4 class="panel-title">My Other Accounts</h4>
@@ -61,7 +72,7 @@
 				</p>
 			  	<div id="identity-alert-container"></div>
 			  	<div id="identity-list-container"></div>
-			   
+
 			   <div class="panel panel-default" data-subsection="add-account">
 				  <div class="panel-heading">
 				  	<h4 class="panel-title">Add Another Account</h4>
@@ -77,30 +88,41 @@
 					</form>
 				  </div>
 				</div>
-				
+
 				<div class="panel panel-default" data-subsection="pending-accounts">
 				  <div class="panel-heading">
 				  	<h4 class="panel-title" id="pending-list-heading">Pending Requests</h4>
 				  </div>
-				  <div class="panel-body"> 
+				  <div class="panel-body">
 					  <div id="pending-alert-container"></div>
 				 	  <div id="pending-list-container"></div>
 				  </div>
 			   </div>
-		   
+
 			  </div>
 			</div>
 	</div>
-	
+
+  <% if( MetacatUI.appModel.get("showMyPortals") !== false ){ %>
+    <div class="span8 subsection" data-section="portals">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+  		  	<h4 class="panel-title">My Portals</h4>
+  		  </div>
+        <div class="my-portals-container panel-body"></div>
+      </div>
+    </div>
+  <% } %>
+
 	<div class="span8 subsection" data-section="groups">
 		<div class="panel panel-default">
 		  <div class="panel-heading">
 		  	<h4 class="panel-title">My Groups</h4>
 		  </div>
 		  <div class="panel-body">
-		  		<p>Manage access and permissions to your data with groups. 
-		  		You can grant multiple users permission to edit, publish, or 
-		  		archive your data by assigning permissions via the group (instead of assigning permissions individually). 
+		  		<p>Manage access and permissions to your data with groups.
+		  		You can grant multiple users permission to edit, publish, or
+		  		archive your data by assigning permissions via the group (instead of assigning permissions individually).
 		  		For example, create a group and grant all members permission to access a private data set before publication.
 		  		Or create a group of your collaborators so that members can edit each other's data sets.</p>
 		  		<div id="group-list-container"></div>
@@ -117,19 +139,19 @@
 				  				<span class="subtle help-text">Choose wisely; you cannot change this name later.</span>
 				  				<div id="group-name-notification-container" class="form-feedback"></div>
 			  				</div>
-				  			
+
 			  				<ul class="list-group member-list">
 			  				</ul>
-			  				
+
 			  				<input type="submit" value="Create Group" class="btn btn-primary" id="add-group-submit"/>
 			  			</form>
 		  			</div>
-			  	</div> 
+			  	</div>
 		  </div>
 		</div>
 	</div>
 	<div class="span8 subsection active" data-section="token">
-	<% } 
+	<% }
 	else {
 	%>
 	<div class="span12 subsection active" data-section="token">
@@ -143,9 +165,9 @@
 		  	<p>
 			  	Your authentication token is a unique string of characters that identifies a person submitting, updating, or accessing data.
 			  	Copy/paste your authentication token into an application that supports DataONE to manage your account.
-			</p> 
+			</p>
 		  	<p>
-				<span class="danger strong">Please be careful to safeguard this token.</span> Anyone with access to it can access content in DataONE as you. Be careful to not add this token to any published 
+				<span class="danger strong">Please be careful to safeguard this token.</span> Anyone with access to it can access content in DataONE as you. Be careful to not add this token to any published
 				scripts or documents. This token will expire after a certain time period after which you will need to get a new one here.
 			</p>
 		  	<div>
@@ -153,15 +175,15 @@
 		  		<a class="token-generator btn" id="token-generator-button">Renew authentication token</a>
 		  	</div>
 		  </div>
-		</div>	
-		
+		</div>
+
 		<div class="panel panel-default">
 		  <div class="panel-heading">
 		  	<h4 class="panel-title">Applications that support DataONE authentication tokens</h4>
 		  </div>
 	   	  <div class="panel-body">
 	   	  		<p>To upload data in the DataONE network: choose a Member Node to host your data and an app that supports DataONE.</p>
-   	  			
+
    	  			<a href="https://www.dataone.org/current-member-nodes" target="_blank">See the list of DataONE Member Nodes <i class="icon icon-double-angle-right"></i></a>
    	  			<!--  <div class="media">
    	  				<div class="media-left">
@@ -169,9 +191,9 @@
 	   	  			</div>
    	  				<div class="media-body">
 	   	  				<h5>Morpho <em class="badge">Coming soon </em></h5>
-	   	  				<p>Morpho is an open source metadata editor for Ecological Metadata Language (EML). 
-	   	  				Morpho can currently be used to submit data and metadata to a Member Node which runs Metacat, 
-	   	  				using the Metacat interfaces in Morpho. 
+	   	  				<p>Morpho is an open source metadata editor for Ecological Metadata Language (EML).
+	   	  				Morpho can currently be used to submit data and metadata to a Member Node which runs Metacat,
+	   	  				using the Metacat interfaces in Morpho.
 	   	  				<a href="https://knb.ecoinformatics.org/about/morpho">Learn more about Morpho and download <i class="icon icon-double-angle-right"></i></a>
 	   	  				</p>
    	  				</div>
@@ -198,6 +220,6 @@
 		   	  		</div>
 			   	 </div>
 		  </div>
-		</div>  
+		</div>
 	</div>
 </section>

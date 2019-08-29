@@ -62,6 +62,17 @@
 								<li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li>
 								<li><a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=groups">My groups</a></li>
 								<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
+                <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+                  <li>
+                    <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
+                      My portals
+                      <span class="new-icon">
+                        <i class="icon icon-star icon-on-right"></i>
+                        NEW
+                      </span>
+                    </a>
+                  </li>
+                <% } %>
 								<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
 							</ul>
 						</li>

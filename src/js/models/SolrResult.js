@@ -94,7 +94,10 @@ define(['jquery', 'underscore', 'backbone'],
 			this.selected = !this.get('selected');
 		},
 
-		//Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
+		/**
+    * Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
+    * @return {string}
+    */
 		getType: function(){
 			//The list of formatIds that are images
 			var imageIds = ["image/gif",
@@ -107,6 +110,8 @@ define(['jquery', 'underscore', 'backbone'],
 			//The list of formatIds that are images
 			var pdfIds = ["application/pdf"];
 			var annotationIds = ["http://docs.annotatorjs.org/en/v1.2.x/annotation-format.html"];
+      var collectionIds = ["https://purl.dataone.org/collections-1.0.0"];
+      var portalIds = ["https://purl.dataone.org/portals-1.0.0"];
 
 			//Determine the type via provONE
 			var instanceOfClass = this.get("prov_instanceOfClass");
@@ -123,6 +128,8 @@ define(['jquery', 'underscore', 'backbone'],
 			}
 
 			//Determine the type via file format
+      if(_.contains(collectionIds, this.get("formatId"))) return "collection";
+      if(_.contains(portalIds, this.get("formatId"))) return "portal";
 			if(this.get("formatType") == "METADATA") return "metadata";
 			if(_.contains(imageIds, this.get("formatId"))) return "image";
 			if(_.contains(pdfIds, this.get("formatId")))   return "PDF";
@@ -716,6 +723,16 @@ define(['jquery', 'underscore', 'backbone'],
       else {
         return false;
       }
+    },
+
+    /**
+    * Creates a URL for viewing more information about this metadata
+    * @return {string}
+    */
+    createViewURL: function(){
+      return (this.getType() == "portal" || this.getType() == "collection")?
+              MetacatUI.root + "/portals/" + (this.get("label") || this.get("seriesId") || this.get("id")) :
+              MetacatUI.root + "/view/" + (this.get("seriesId") || this.get("id"));
     },
 
 		/****************************/

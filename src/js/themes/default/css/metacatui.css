@@ -615,8 +615,6 @@ select{
     }
 
     .navbar .nav > li  i{
-      color: #FFFFFF; /*IE fallback */
-      color: rgba(255, 255, 255, 0.8);
       text-shadow: none;
     }
 

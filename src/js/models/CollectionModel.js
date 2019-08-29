@@ -42,6 +42,7 @@ define(["jquery",
         description: null,
         formatId: "https://purl.dataone.org/collections-1.0.0",
         formatType: "METADATA",
+        type: "collection",
         ignoreQueryGroups: ["catalog"],
         /**
         * A Filters collection that stores filters that have been serialized to the Collection.

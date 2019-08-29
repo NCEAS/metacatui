@@ -48,7 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			var facetFields = "";
 
       this.facet = _.uniq(this.facet);
-      
+
 			for (var i=0; i<this.facet.length; i++){
 				facetFields += "&facet.field=" + this.facet[i];
 			}

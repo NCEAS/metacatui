@@ -532,6 +532,13 @@ img.icon{
 	width: 16px;
 	display: inline-block;
 }
+.result-row.collection .info-icons{
+  display: none;
+}
+.result-row.collection .logo{
+  width: auto;
+  max-width: 100px;
+}
 /******************************************
 ** Provenance flow-charts ***
 ******************************************/
@@ -2825,6 +2832,15 @@ i.toc-sub-item{
 .portal-view #portal-members a{
 	color: var(--portal-primary-color);
 }
+.portal-list-container .logo{
+  width: 110px;
+}
+.portal-list-container .logo img {
+  max-width: 100px;
+}
+.portal-list-container .loading {
+    height: 50px;
+}
 
 /* markdown citations */
 .markdown .inlineCitation {
@@ -3100,6 +3116,12 @@ tfoot .control i{
 .route-to-metadata{
 	cursor: pointer;
 }
+.citation.collection .title{
+  display: block;
+}
+.citation.collection .id{
+  display: none;
+}
 
 /******************************************
 ** User Profile ***
@@ -3259,6 +3281,9 @@ address.email-container:before{
     width: auto;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+.new-icon{
+  color: #d2a908;
 }
 
 /******************************************

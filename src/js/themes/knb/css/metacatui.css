@@ -1523,9 +1523,8 @@ svg .no-activity,
     }
 
     /* Resource map contents table */
-    .table tr > th{
-    	background-color: #DEDEDE;
-    	font-weight: bold;
+    .download-contents th{
+      font-weight: bold;
     }
     .table .table-header{
     	background-color: #7F9FAF;

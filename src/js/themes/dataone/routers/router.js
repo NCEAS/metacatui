@@ -246,7 +246,7 @@ function ($, _, Backbone) {
 
 			var viewChoice;
 
-			if(!username || !MetacatUI.appModel.get("userProfiles")){
+			if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
 				this.routeHistory.push("summary");
 
 				if(!MetacatUI.appView.statsView){

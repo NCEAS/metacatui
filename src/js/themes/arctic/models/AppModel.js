@@ -27,7 +27,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			anchorId: null,
 
-			userProfiles: true,
+			enableUserProfiles: true,
+      enableUserProfileSettings: true,
 			profileUsername: null,
 
 			maxDownloadSize: 3000000000,
@@ -165,6 +166,11 @@ define(['jquery', 'underscore', 'backbone'],
 			portalsMap: {
 			    "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb"
 			},
+      /**
+      * Set to false to hide the display of "My Portals", which shows the user's current portals
+      * @type {boolean}
+      */
+      showMyPortals: true,
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0

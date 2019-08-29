@@ -27,7 +27,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 			anchorId: null,
 
-			userProfiles: true,
+			enableUserProfiles: true,
+      enableUserProfileSettings: true,
 			profileUsername: null,
 
 			maxDownloadSize: 3000000000,
@@ -129,7 +130,13 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
-			archivedContentIsIndexed: true
+			archivedContentIsIndexed: true,
+
+      /**
+      * Set to false to hide the display of "My Portals", which shows the user's current portals
+      * @type {boolean}
+      */
+      showMyPortals: true
 		},
 
 		defaultView: "data",
