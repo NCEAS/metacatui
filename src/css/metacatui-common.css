@@ -466,6 +466,10 @@ img.icon{
 .result-row .info-icons .icons.download .tooltip{
 	width: 120px;
 }
+.info-icons .download.disabled-download {
+  color: inherit;
+  cursor: default;
+}
 .result-row .info-icons .icon.views{
   margin-left: 5px;
   color: inherit;
