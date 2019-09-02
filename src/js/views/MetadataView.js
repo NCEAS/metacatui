@@ -2464,7 +2464,10 @@ define(['jquery',
         "@id": "https://dataone.org/datasets/" +
           encodeURIComponent(model.get("id")),
         "datePublished" : this.getDatePublishedText(),
-        "publisher": this.getPublisherText(),
+        "publisher": {
+          "@type": "Organization",
+          "name": this.getPublisherText()
+        },
         "identifier": model.get("id"),
         "url": "https://dataone.org/datasets/" +
           encodeURIComponent(model.get("id")),
@@ -2480,7 +2483,12 @@ define(['jquery',
 
       // Creator
       if (model.get("origin")) {
-        elJSON["creator"] = model.get("origin")
+        elJSON["creator"] = model.get("origin").map(function (creator) {
+          return {
+            "@type": "Person",
+            "name": creator
+          };
+        });
       }
 
       // Dataset/spatialCoverage
