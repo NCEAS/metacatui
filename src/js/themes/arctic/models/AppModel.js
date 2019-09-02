@@ -171,6 +171,16 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {boolean}
       */
       showMyPortals: true,
+      /**
+      * Set to false to prevent ANYONE from creating a new portal.
+      * @type {boolean}
+      */
+      enableCreatePortals: true,
+      /**
+      * Limits only the following people or groups to create new portals.
+      * @type {string[]}
+      */
+      limitPortalsToSubjects: [],
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0

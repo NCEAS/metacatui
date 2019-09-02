@@ -254,9 +254,14 @@ define(['jquery', 'underscore', 'backbone'],
       if( !values.length ){
         return "";
       }
-      else if( _.every(values, function(value){
-        return (value === null || typeof value == "undefined" || value === NaN || value === "");
-      }) ){
+
+      //Filter out any invalid values (can't use _.compact() because we want to keep 'false' values)
+      values = _.reject(values, function(value){
+                return (value === null || typeof value == "undefined" ||
+                        value === NaN || value === "" || (Array.isArray(value) && !value.length));
+              });
+
+      if(!values.length){
         return "";
       }
 
@@ -273,7 +278,7 @@ define(['jquery', 'underscore', 'backbone'],
       _.each( fields, function(field, i){
 
         //Add the query string for this field to the overall model query string
-        queryString += field + ":" + this.getValueQuerySubstring();
+        queryString += field + ":" + this.getValueQuerySubstring(values);
 
         //Add the OR operator between field names
         if( fields.length > i+1 && queryString.length ){
@@ -304,12 +309,14 @@ define(['jquery', 'underscore', 'backbone'],
     *   values: ["walker", "jones"]
     *   Returns: "(walker%20OR%20jones)"
     *
+    * @param {string[]} [values] - The values to use in this query substring.
+    * If not provided, the values set on the model are used.
     * @return {string} The query substring
     */
-    getValueQuerySubstring: function(){
+    getValueQuerySubstring: function(values){
       //Start a query string for this field and get the values
       var valuesQueryString = "",
-          values = this.get("values");
+          values = values || this.get("values");
 
       //If the values are not an array, convert it to an array
       if( !Array.isArray(values) ){
@@ -332,9 +339,10 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Add the value to the query string. Wrap in wildcards, if specified
         if( value.indexOf(" ") > -1 ){
-          valuesQueryString += '*"' + value + '"*';
+          value = "\"" + value + "\"";
         }
-        else if( this.get("matchSubstring") ){
+
+        if( this.get("matchSubstring") ){
 
           //Look for existing wildcard characters at the end of the value string
           if( value.match( /^\*|\*$/ ) ){

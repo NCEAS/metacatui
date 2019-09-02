@@ -672,17 +672,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
         },
-
-        /**
-        * Checks if the current user has the quota to perform the given action on this DataONEObject
-        * @param {string} action - The action to be performed on this DataONEObject
-        * @param {string} customerGroup - The subject or identifier of the customer/membership group
-        * to use this quota against
-        */
-        checkQuota: function(action, customerGroup){
-
-        },
-
+        
         serializeSysMeta: function(options){
             //Get the system metadata XML that currently exists in the system
             var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string

@@ -26,6 +26,11 @@ define(["jquery",
         * @type {string}
         */
         listContainer: ".portal-list-container",
+        /**
+        * A jQuery selector for the element that the Create Portal should be inserted into
+        * @type {string}
+        */
+        createBtnContainer: ".create-btn-container",
 
         /**
         * References to templates for this view. HTML files are converted to Underscore.js templates
@@ -54,8 +59,8 @@ define(["jquery",
 
               //Filter datasets by their ownership
               filters.add({
-                fields: ["rightsHolder", "writePermission", "changePermission", "submitter"],
-                values: [MetacatUI.appUserModel.get("username")],
+                fields: ["rightsHolder", "writePermission", "changePermission"],
+                values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
                 operator: "OR",
                 matchSubstring: false,
                 exclude: false
@@ -108,9 +113,14 @@ define(["jquery",
 
             //Listen to the search results collection and render the results when the search is complete
             this.listenToOnce( searchResults, "reset", this.renderList );
+            //Listen to the search results collection for errors
+            this.listenToOnce( searchResults, "error", this.showError );
 
             //Get the first page of results
             searchResults.toPage(0);
+
+            //Add a "Create" button to create a new portal
+            this.renderCreateButton();
           }
           catch(e){
             console.error(e);
@@ -150,14 +160,7 @@ define(["jquery",
           catch(e){
             console.error(e);
 
-            //Remove the loading elements
-            this.$(this.listContainer).find(".loading").remove();
-
-            //Show an error message
-            MetacatUI.appView.showAlert(
-              "Something went wrong while getting this list of portals.",
-              "alert-error",
-              this.$(this.listContainer));
+            this.showError();
 
           }
 
@@ -208,6 +211,70 @@ define(["jquery",
             console.error(e);
             return "";
           }
+        },
+
+        /**
+        * Renders a "Create" button for the user to create a new portal
+        */
+        renderCreateButton: function(){
+          try{
+
+            //If the authorization hasn't been checked yet
+            if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") !== true &&
+                MetacatUI.appUserModel.get("isAuthorizedCreatePortal") !== false ){
+              //Check is this user is authorized to create a new portal
+              this.listenToOnce( MetacatUI.appUserModel, "change:isAuthorizedCreatePortal", this.renderCreateButton);
+              MetacatUI.appUserModel.isAuthorizedCreatePortal();
+            }
+            else{
+              //If the user isn't authorized and the portal quota is not zero, then don't show the button
+              if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false &&
+                  MetacatUI.appUserModel.get("portalQuota") !== 0 ){
+                return;
+              }
+              else{
+                //Create a New portal buttton
+                var createButton = $(document.createElement("a"))
+                                   .addClass("btn btn-primary")
+                                   .attr("href", MetacatUI.root + "/edit/portals")
+                                   .append( $(document.createElement("i")).addClass("icon icon-plus icon-on-left"),
+                                     "New portal");
+
+                //If the user doesn't have any quota left, disable the button
+                if( MetacatUI.appUserModel.get("portalQuota") === 0 ){
+                  createButton.attr("disabled", "disabled")
+                             .tooltip({
+                               title: "You have reached your portal quota.",
+                               delay: 500,
+                               placement: "top",
+                               trigger: "hover"
+                             });
+                }
+
+                //Add the create button to the view
+                this.$(this.createBtnContainer).html(createButton);
+                //Reset the isAuthorizedCreatePortal attribute
+                MetacatUI.appUserModel.set("isAuthorizedCreatePortal", null);
+              }
+            }
+          }
+          catch(e){
+            console.error(e);
+          }
+        },
+
+        /**
+        * Displays an error message when rendering this view has failed.
+        */
+        showError: function(){
+          //Remove the loading elements
+          this.$(this.listContainer).find(".loading").remove();
+
+          //Show an error message
+          MetacatUI.appView.showAlert(
+            "Something went wrong while getting this list of portals.",
+            "alert-error",
+            this.$(this.listContainer));
         }
 
       });

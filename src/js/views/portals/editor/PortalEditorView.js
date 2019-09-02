@@ -147,9 +147,9 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
         else {
 
           //Check the user's quota to create a new Portal
-          this.listenTo(MetacatUI.appUserModel, "change:portalQuota", function(){
+          this.listenToOnce(MetacatUI.appUserModel, "change:isAuthorizedCreatePortal", function(){
 
-            if( MetacatUI.appUserModel.get("portalQuota") > 0 ){
+            if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") ){
               // Start new portals on the settings tab
               this.activeSection = "Settings";
 
@@ -157,15 +157,30 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
               this.renderPortalEditor();
             }
             else{
+              //If the user doesn't have quota left, display this message
+              if( MetacatUI.appUserModel.get("portalQuota") == 0 ){
+                var errorMessage = "You have already reached the maximum number of portals for your membership level.";
+              }
+              //Otherwise, display a more generic error message
+              else{
+                var errorMessage = "You have not been authorized to create new portals. " +
+                                   "Please contact us with any questions.";
+              }
+
+              //Hide the loading icon
               this.hideLoading();
 
-              var errorMessage = "You have already reached the maximum number of portals for your membership level.";
-
+              //Show the error message
               MetacatUI.appView.showAlert(errorMessage, "alert-error", this.$el);
             }
 
+            //Reset the isAuthorizedCreatePortal attribute
+            MetacatUI.appUserModel.set("isAuthorizedCreatePortal", null);
+
           });
-          this.model.checkQuota("create");
+
+          //Check if this user is authorized to create a new portal
+          MetacatUI.appUserModel.isAuthorizedCreatePortal();
 
         }
 

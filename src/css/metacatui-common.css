@@ -2841,6 +2841,10 @@ i.toc-sub-item{
 .portal-list-container .loading {
     height: 50px;
 }
+.create-btn-container .btn{
+  float: right;
+  margin-bottom: 20px;
+}
 
 /* markdown citations */
 .markdown .inlineCitation {

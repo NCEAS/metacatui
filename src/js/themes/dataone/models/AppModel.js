@@ -136,7 +136,17 @@ define(['jquery', 'underscore', 'backbone'],
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}
       */
-      showMyPortals: true
+      showMyPortals: true,
+      /**
+      * Set to false to prevent ANYONE from creating a new portal.
+      * @type {boolean}
+      */
+      enableCreatePortals: true,
+      /**
+      * Limits only the following people or groups to create new portals.
+      * @type {string[]}
+      */
+      limitPortalsToSubjects: [],
 		},
 
 		defaultView: "data",
