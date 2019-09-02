@@ -282,7 +282,10 @@ header .citation {
 .downloading.icon-spin.hidden{
 	display: none;
 }
-
+.download.btn.error {
+  border-color: #960303;
+  color: #960303;
+}
 /******************************************
 ** Notifications and Alerts ***
 ******************************************/
