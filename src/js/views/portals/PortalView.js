@@ -7,6 +7,7 @@ define(["jquery",
         "text!templates/alert.html",
         "text!templates/loading.html",
         "text!templates/portals/portal.html",
+        "text!templates/portals/editPortals.html",
         "views/portals/PortalHeaderView",
         "views/portals/PortalDataView",
         "views/portals/PortalSectionView",
@@ -14,7 +15,7 @@ define(["jquery",
         "views/StatsView",
         "views/portals/PortalLogosView"
     ],
-    function($, _, Backbone, Portal, SearchModel, StatsModel, AlertTemplate, LoadingTemplate, PortalTemplate, PortalHeaderView,
+    function($, _, Backbone, Portal, SearchModel, StatsModel, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
         PortalDataView, PortalSectionView, PortalMembersView, StatsView, PortalLogosView) {
         "use_strict";
         /* The PortalView is a generic view to render
@@ -76,6 +77,8 @@ define(["jquery",
             alertTemplate: _.template(AlertTemplate),
             //A template for displaying a loading message
             loadingTemplate: _.template(LoadingTemplate),
+            // Template for the 'edit portal' button
+            editPortalsTemplate: _.template(EditPortalsTemplate),
 
             /**
              * The events this view will listen to and the associated function to call.
@@ -223,6 +226,37 @@ define(["jquery",
                   MetacatUI.appView.scrollTo(this.$(window.location.hash));
                 }
 
+                // Add edit button if user is authorized
+                this.insertOwnerControls();
+
+            },
+
+            /*
+             * Checks the authority for the logged in user for this portal and
+             * inserts control elements onto the page for the user to interact
+             * with the portal. So far, this is just an 'edit portal' button.
+             */
+            insertOwnerControls: function(){
+
+              // Insert the button into the navbar
+              var container = $(".navbar-inner");
+
+              var model = this.model;
+
+              this.listenToOnce(this.model, "change:isAuthorized", function(){
+                if(!model.get("isAuthorized")){
+                  return false
+                } else {
+                  container.prepend(
+                    this.editPortalsTemplate({
+                      editButtonText: "Edit Portal",
+                      pathToEdit: MetacatUI.root + "/edit/portals/" + model.get("label")
+                    })
+                  );
+                }
+              });
+
+              this.model.checkAuthority();
             },
 
             /**
@@ -527,6 +561,8 @@ define(["jquery",
                 delete this.sectionMetricsView;
 
                 $("body").removeClass("PortalView");
+
+                $("#editPortal").remove();
             }
         });
 
