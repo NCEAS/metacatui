@@ -2485,12 +2485,18 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 /******************************************
-* Portals
+* Portal Editor
 ********************************************/
 
-/* Portal & Editor (minimal header common to both views)
- * Top level app navigation in the PortalView and EditorView
--------------------------------------------------- */
+.port-editor-sections .icon.icon-plus {
+	margin: 0 1px 0 1px;
+}
+
+/******************************************
+* Portals & Portal Editor
+********************************************/
+
+/* Top level app navigation in the PortalView and EditorView */
 .Portal.Editor #Navbar,
 .PortalView #Navbar{
   position: relative;
@@ -2565,7 +2571,10 @@ img[src*="googleapis.com/"].georegion-map{
     float: right;
     margin-top: 0px;
 }
-/** ---end top level navigation ---**/
+
+/******************************************
+* Portals
+********************************************/
 
 .portal-view{
   width: calc(100% + 80px);

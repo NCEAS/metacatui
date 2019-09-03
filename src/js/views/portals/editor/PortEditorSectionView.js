@@ -2,8 +2,9 @@ define(['underscore',
         'jquery',
         'backbone',
         'models/portals/PortalSectionModel',
-        "text!templates/portals/editor/portEditorSection.html"],
-function(_, $, Backbone, PortalSectionModel, Template){
+        "text!templates/portals/editor/portEditorSection.html",
+        "text!templates/portals/editor/portEditorPageOption.html"],
+function(_, $, Backbone, PortalSectionModel, Template, PageOptionTemplate ){
 
   /**
   * @class PortEditorSectionView
@@ -44,6 +45,29 @@ function(_, $, Backbone, PortalSectionModel, Template){
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
+    // The template for each of the page options
+    pageOptionTemplate: _.template(PageOptionTemplate),
+
+    /**
+    * A jQuery selector for the element that the page option buttons should be inserted into
+    * @type {string}
+    */
+    pageOptionsContainer: "#page-options-container",
+
+    /**
+    * Title and description for each of the page types a user can select from
+    * @type {JSON}
+    */
+    pageOptions: {
+      freeform: {
+        title: "Freeform",
+        description: "Add content and images styled using markdown"
+      },
+      metrics: {
+        title: "Metrics",
+        description: "Show visual summaries of your data collection"
+      }
+    },
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -75,8 +99,22 @@ function(_, $, Backbone, PortalSectionModel, Template){
     */
     render: function(){
 
-      //Insert the template into the view
+      // Insert the template into the view
       this.$el.html(this.template());
+      
+      // Add a button for each page type the user can select from.
+      _.each(this.pageOptions, function(pageData, pageType){
+        this.$(this.pageOptionsContainer).append(
+          this.pageOptionTemplate({
+            id: "page-option-" + pageType,
+            title: pageData.title,
+            description: pageData.description
+          })
+        )
+      }, this);
+
+      // TODO: check if metrics is already in model, if so, disable
+      // Change disabled button text to: "You can only add one --- type"
 
     },
 
