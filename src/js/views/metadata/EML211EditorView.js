@@ -93,7 +93,8 @@ define(['underscore',
 
           //Inert the basic template on the page
           this.$el.html(this.template({
-            loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."})
+            loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."}),
+            submitButtonText: "Submit Dataset"
           }));
 
           //If we don't have a model at this point, create one

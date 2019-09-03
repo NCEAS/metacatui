@@ -198,7 +198,8 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       // Add the template to the view and give the body the "Editor" class
       var name = this.model.get("name");
       this.$el.html(this.template({
-        name: name
+        name: name,
+        submitButtonText: "Save"
       }));
 
       $("body").addClass("Editor")
