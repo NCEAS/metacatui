@@ -345,25 +345,20 @@ function(_, $, Backbone, Portal,
         this.activeSection = linkTarget;
       }
 
-      var projName = this.model.get("label") || this.newPortalTempName,
-          section = this.activeSection,
-          pathName = window.location.pathname
-                      .substring(MetacatUI.root.length)
-                      // remove trailing forward slash if one exists in path
-                      .replace(/\/$/, "");
+      var label         = this.model.get("label") || this.newPortalTempName,
+          originalLabel = this.model.get("originalLabel") || this.newPortalTempName,
+          section       = this.activeSection,
+          pathName      = window.location.pathname
+                          .substring(MetacatUI.root.length)
+                          // remove trailing forward slash if one exists in path
+                          .replace(/\/$/, "");
 
-      //If the portal name is not in the window location, add it
-      if( pathName.indexOf(projName) == -1 ){
-        //The new path name should include the portal name and the new section name
-        var newPathName = pathName + "/" + projName + "/" + section;
-      }
-      else{
-        //The new path name should include the new section name at the end
-        var newPathName = pathName.substring( 0, pathName.indexOf(projName) + projName.length ) +
-                          "/" + section;
-      }
+      // Add or replace the label and section part of the path with updated values.
+      // pathRE matches "/label/section", where the "/section" part is optional
+      var pathRE = new RegExp("\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$", "i");
+      newPathName = pathName.replace(pathRE, "") + "/" + label + "/" + section;
 
-      //Update the window location
+      // Update the window location
       MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
 
     },

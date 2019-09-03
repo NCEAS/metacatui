@@ -212,17 +212,17 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       }
 
       //Create a view for the editor sections
-      var sectionsView = new PortEditorSectionsView({
+      this.sectionsView = new PortEditorSectionsView({
         model: this.model,
         activeSection: this.activeSection,
         newPortalTempName: this.newPortalTempName
       });
 
       //Add the view element to this view
-      this.$(this.projEditSectionsContainer).html(sectionsView.el);
+      this.$(this.projEditSectionsContainer).html(this.sectionsView.el);
 
       //Render the sections view
-      sectionsView.render();
+      this.sectionsView.render();
 
     },
 
@@ -388,6 +388,12 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
 
       this.hideSaving();
+
+      // Update the path in case the user selected a new portal label
+      this.sectionsView.updatePath();
+
+      // Reset the original label (note: this MUST occur AFTER updatePath())
+      this.model.set("originalLabel", this.model.get("label"));
 
     },
 
