@@ -270,11 +270,11 @@ define(["jquery",
                 modelJSON.objectXML = response;
 
                 // Parse the portal logo
-                var projLogo = $(portalNode).children("logo")[0];
-                if (projLogo) {
-                  var projImageModel = new PortalImage({ objectDOM: projLogo });
-                  projImageModel.set(projImageModel.parse());
-                  modelJSON.logo = projImageModel
+                var portLogo = $(portalNode).children("logo")[0];
+                if (portLogo) {
+                  var portImageModel = new PortalImage({ objectDOM: portLogo });
+                  portImageModel.set(portImageModel.parse());
+                  modelJSON.logo = portImageModel
                 };
 
                 // Parse acknowledgement logos into urls

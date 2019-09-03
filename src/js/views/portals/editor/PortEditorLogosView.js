@@ -25,7 +25,7 @@ function(_, $, Backbone, ImageEditView){
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: "proj-editor-logos",
+    className: "port-editor-logos",
 
     /**
     * The PortalModel that is being edited

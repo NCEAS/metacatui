@@ -32,7 +32,7 @@ function(_, $, Backbone, PortalSectionModel, Template){
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: "proj-editor-section",
+    className: "port-editor-section",
 
     /**
     * The PortalSectionModel being displayed

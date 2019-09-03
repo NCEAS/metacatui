@@ -46,9 +46,9 @@ define(["jquery",
           //Parse the image URL or identifier
           var image = $objectDOM.children("image");
           if( image.length ){
-            var projImageModel = new PortalImage({ objectDOM: image[0] });
-            projImageModel.set(projImageModel.parse());
-            modelJSON.image = projImageModel;
+            var portImageModel = new PortalImage({ objectDOM: image[0] });
+            portImageModel.set(portImageModel.parse());
+            modelJSON.image = portImageModel;
           }
 
           //Create an EMLText model for the section content

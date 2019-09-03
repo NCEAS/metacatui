@@ -27,7 +27,7 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: PortEditorSectionView.prototype.className + " proj-editor-data",
+    className: PortEditorSectionView.prototype.className + " port-editor-data",
 
     /**
     * The PortalModel that is being edited

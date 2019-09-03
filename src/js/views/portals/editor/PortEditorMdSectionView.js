@@ -21,7 +21,7 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: PortEditorSectionView.prototype.className + " proj-editor-md",
+    className: PortEditorSectionView.prototype.className + " port-editor-md",
 
     /**
     * The PortalSectionModel that is being edited

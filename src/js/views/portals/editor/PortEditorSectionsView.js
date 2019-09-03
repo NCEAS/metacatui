@@ -35,7 +35,7 @@ function(_, $, Backbone, Portal,
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: "proj-editor-sections",
+    className: "port-editor-sections",
 
     /**
     * The PortalModel that is being edited
@@ -72,17 +72,17 @@ function(_, $, Backbone, Portal,
     * A jQuery selector for the element that the PortEditorDataView should be inserted into
     * @type {string}
     */
-    projEditDataViewContainer: ".proj-editor-data-container",
+    portEditDataViewContainer: ".port-editor-data-container",
     /**
     * A jQuery selector for the element that the Metrics section should be inserted into
     * @type {string}
     */
-    projEditMetricsContainer:  ".proj-editor-metrics-container",
+    portEditMetricsContainer:  ".port-editor-metrics-container",
     /**
     * A jQuery selector for the element that the PortEditorSettingsView should be inserted into
     * @type {string}
     */
-    projSettingsContainer: ".proj-editor-settings-container",
+    portSettingsContainer: ".port-editor-settings-container",
     /**
     * A jQuery selector for the elements that are links to the individual sections
     * @type {string}
@@ -168,7 +168,7 @@ function(_, $, Backbone, Portal,
       // Add markdown section container, insert section HTML
       var addSectionDiv = $(document.createElement("div"))
         .addClass("tab-pane")
-        .addClass("proj-editor-add-section-container")
+        .addClass("port-editor-add-section-container")
         .attr("id", addSectionView.getName({ linkFriendly: true }))
         .html(addSectionView.el);
 
@@ -215,7 +215,7 @@ function(_, $, Backbone, Portal,
           // Add markdown section container, insert section HTML
           var markdownSectionDiv = $(document.createElement("div"))
             .addClass("tab-pane")
-            .addClass("proj-editor-markdown-container")
+            .addClass("port-editor-markdown-container")
             .attr("id", sectionView.getName({ linkFriendly: true }))
             .html(sectionView.el);
 
@@ -245,7 +245,7 @@ function(_, $, Backbone, Portal,
       });
 
       //Insert the subview element into this view
-      this.$(this.projEditDataViewContainer)
+      this.$(this.portEditDataViewContainer)
           .html(dataView.el)
           .attr("id", dataView.getName({ linkFriendly: true }));
 
@@ -275,7 +275,7 @@ function(_, $, Backbone, Portal,
         });
 
         //Add the view's element to the page
-        this.$(this.projEditMetricsContainer)
+        this.$(this.portEditMetricsContainer)
             .html(metricsView.el)
             .attr("id", metricsView.getName({ linkFriendly: true }));
 
@@ -304,7 +304,7 @@ function(_, $, Backbone, Portal,
       });
 
       //Add the PortEditorSettingsView element to this view
-      this.$(this.projSettingsContainer)
+      this.$(this.portSettingsContainer)
           .html(settingsView.el)
           .attr("id", settingsView.getName({ linkFriendly: true }));
 

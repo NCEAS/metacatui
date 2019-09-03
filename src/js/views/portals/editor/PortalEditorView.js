@@ -50,7 +50,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     * A jQuery selector for the element that the PortEditorSectionsView should be inserted into
     * @type {string}
     */
-    projEditSectionsContainer: ".proj-editor-sections-container",
+    portEditSectionsContainer: ".port-editor-sections-container",
 
     /**
     * A temporary name to use for portals when they are first created but don't have a label yet.
@@ -220,7 +220,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       });
 
       //Add the view element to this view
-      this.$(this.projEditSectionsContainer).html(this.sectionsView.el);
+      this.$(this.portEditSectionsContainer).html(this.sectionsView.el);
 
       //Render the sections view
       this.sectionsView.render();
