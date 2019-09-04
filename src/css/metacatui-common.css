@@ -2395,6 +2395,15 @@ a.btn.metrics-button-disabled {
 .annotation-icon .icon.icon-stack-base{
   color: #337ab7;
 }
+.icons.annotations .icon-stack {
+	vertical-align: -15%;
+}
+.icons.annotations .icon.icon-stack-base {
+	font-size: 1.25em;
+}
+.icons.annotations .icon.icon-ok {
+	font-size: 0.65em;
+}
 /** Annotation pills **/
 .annotation .annotation-property,
 .annotation .annotation-value,

@@ -159,7 +159,8 @@ define(['jquery', 'underscore', 'backbone'],
 			archivedContentIsIndexed: true,
 
       bioportalAPIKey: null,
-			bioportalLookupCache: {}
+			bioportalLookupCache: {},
+			showAnnotationIndicator: false
 		},
 
 		defaultView: "data",

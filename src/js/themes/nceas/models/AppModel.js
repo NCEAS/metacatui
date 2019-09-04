@@ -87,7 +87,8 @@ define(['jquery', 'underscore', 'backbone'],
 			tokenUrl: null,
 			//annotatorUrl: null,
 			accountsUrl: null,
-			isJSONLDEnabled: true
+			isJSONLDEnabled: true,
+			showAnnotationIndicator: false
 		},
 
 		defaultView: "submit",

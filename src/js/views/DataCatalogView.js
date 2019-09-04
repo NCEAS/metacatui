@@ -642,6 +642,7 @@ define(["jquery",
                     fields += "datasource,";
                     fields += "isPublic,";
                     fields += "documents,";
+                    fields += "sem_annotation,";
                 // Add spatial fields if the map is present
                 if ( gmaps ) {
                     fields += "northBoundCoord,";

@@ -33,6 +33,11 @@
 	%>
   </div>
 
+	<% if (showAnnotationIndicator && hasAnnotations) { %>
+		<div class="icons annotations ">
+			<span class="icon-stack annotation-icon"><i class="icon icon-certificate icon-stack-base"></i><i class="icon icon-ok" title="This dataset includes annotations."></i></span>
+		</div>
+	<% } %>
    <div class="catalog-metrics">
 		<span class='catalog-stat resultItem-CitationCount'>
 	    	<i class='icon catalog-metric-icon'></i>

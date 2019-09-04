@@ -171,8 +171,9 @@ define(['jquery', 'underscore', 'backbone'],
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
 			archivedContentIsIndexed: true,
-			bioportalAPIKey: "",
-			bioportalLookupCache: {}
+			bioportalAPIKey: null,
+			bioportalLookupCache: {},
+			showAnnotationIndicator: false
 		},
 
 		defaultView: "data",

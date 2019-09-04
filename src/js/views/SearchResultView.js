@@ -48,6 +48,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			/* Add other attributes to the JSON to send to the template */
 			//Determine if there is a prov trace
 			json.hasProv  = this.model.hasProvTrace();
+
+			// Add flag to add in annotation icon in results item view if appropriate
+			json.hasAnnotations = json.sem_annotation &&
+				json.sem_annotation.length &&
+				json.sem_annotation.length > 0;
+
+			json.showAnnotationIndicator = MetacatUI.appModel.get("showAnnotationIndicator");
+
 			//Find the member node object
 			json.memberNode = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: this.model.get("datasource")});
 			//Determine if this metadata doc documents any data files
