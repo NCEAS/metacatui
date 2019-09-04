@@ -89,8 +89,8 @@ define(['jquery', 'underscore', 'backbone'],
 			packageServiceUrl: null,
 			publishServiceUrl: null,
 			authServiceUrl: null,
-
 			queryServiceUrl: null,
+      reserveServiceUrl: null,
 
       //If set to false, some parts of the app will send POST HTTP requests to the
       // Solr search index via the `/query/solr` DataONE API.
@@ -316,6 +316,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 				this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
 				this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
+        this.set("reserveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/reserve");
 
 				// Object format list
         if ( typeof this.get("formatsUrl") != "undefined" ) {

@@ -227,9 +227,7 @@ define(["jquery",
       // Reserve a series ID for the new portal
       var model = this;
       var options = {
-        url: MetacatUI.appModel.get("d1CNBaseUrl") +
-             MetacatUI.appModel.get("d1CNService") +
-             "/reserve",
+        url: MetacatUI.appModel.get("reserveServiceUrl"),
         type: "POST",
         data: { pid: seriesId },
         tryCount : 0,

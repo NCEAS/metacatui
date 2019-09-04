@@ -51,8 +51,8 @@ define(['jquery', 'underscore', 'backbone'],
 			packageServiceUrl: null,
 			//publishServiceUrl: null,
 			authServiceUrl: null,
-
 			queryServiceUrl: null,
+      reserveServiceUrl: null,
 
       //If set to false, some parts of the app will send POST HTTP requests to the
       // Solr search index via the `/query/solr` DataONE API.
@@ -165,6 +165,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//this.set('objectServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/object/');
 			this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
 			this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
+      this.set("reserveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/reserve");
 
             // Metadata quality report services
             this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
