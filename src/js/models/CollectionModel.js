@@ -272,7 +272,6 @@ define(["jquery",
      * @param {string} [seriesId] - the seriesId of the collection or portal
      */
     addIsPartOfFilter: function(seriesId){
-
       // If no seriesId is given
       if(!seriesId){
         // Use the seriesId set on the model
@@ -280,7 +279,8 @@ define(["jquery",
           seriesId = this.get("seriesId");
         // If there's no seriesId on the model, make and reserve one
         } else {
-          this.reserveSeriesId()
+          //Create and reserve a new seriesId
+          this.reserveSeriesId();
           seriesId = this.get("seriesId");
 
           // Set a listener to create an isPartOf filter using the seriesId once
@@ -294,13 +294,8 @@ define(["jquery",
         }
       }
 
-      // Create the new filterModel
-      var filterModel = new Filter({
-        fields: ["isPartOf"],
-        values: [seriesId],
-        matchSubstring: false,
-        operator: "OR"
-      });
+      //Create an isPartOf filter
+      var filterModel = this.createIsPartOfFilter(seriesId);
 
       //Remove any existing isPartOf filters
       this.get("searchModel").get("filters").removeFiltersByField("isPartOf");
@@ -309,6 +304,31 @@ define(["jquery",
       //Add the new isPartOf filter
       this.get("searchModel").get("filters").add(filterModel);
       this.get("definitionFilters").add(filterModel);
+    },
+
+    /**
+     * Creates a FilterModel with isPartOf as the field and this collection's
+     * seriesId as the value.
+     * @param {string} [seriesId] - the seriesId of the collection or portal
+     * @return {Filter}
+     */
+    createIsPartOfFilter: function(seriesId){
+
+      // If no seriesId is given, use the one from the model
+      if(!seriesId){
+        var seriesId = this.get("seriesId");
+      }
+
+      // Create the new filterModel
+      var filterModel = new Filter({
+        fields: ["isPartOf"],
+        values: [seriesId],
+        label: "Datasets added manually",
+        matchSubstring: false,
+        operator: "OR"
+      });
+
+      return filterModel;
 
     },
 

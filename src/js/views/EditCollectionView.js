@@ -64,8 +64,6 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * @type {Object}
     */
     events: {
-      "click .save"   : "saveCollection",
-      "click .cancel" : "resetCollection"
     },
 
     /**
@@ -126,6 +124,34 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       //Render the view and insert it into the page
       this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
       dataCatalogView.render();
+
+      //Add a filter input for the isPartOf filter
+      if( dataCatalogView.filterGroupsView &&
+          dataCatalogView.filterGroupsView.filterGroups &&
+          dataCatalogView.filterGroupsView.filterGroups.length ){
+
+        //Get the isPartOf filter in the search model
+        var isPartOfFilter = searchModel.get("filters").find(function(f){
+          return (f.get("fields").length == 1 && f.get("fields").includes("isPartOf"));
+        });
+
+        //If an isPartOf filter already exists, add it to the filter groups
+        if( isPartOfFilter ){
+          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
+        }
+        //Otherwise, create a new isPartOf filter
+        else{
+          //Create an isPartOf filter
+          isPartOfFilter = this.model.createIsPartOfFilter();
+          //Set the value as a trueValue, so it can bbe used as a Toggle
+          isPartOfFilter.set("trueValue", isPartOfFilter.get("values")[0]);
+          //Reset the values
+          isPartOfFilter.set("values", []);
+          //Add the isPartOf filter to the filter collections
+          dataCatalogView.filterGroupsView.filters.unshift(isPartOfFilter);
+          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
+        }
+      }
 
       this.listenTo(this.model.get("searchResults"), "reset", this.toggleHelpText);
 
@@ -191,19 +217,6 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         //Remove the message
         this.$(this.helpTextContainer).children("alert").remove();
       }
-
-    },
-
-    /**
-    * Save this Collection model with the currently applied filters
-    */
-    saveCollection: function(){
-    },
-
-    /**
-    * Resets the Collection model back to where it was
-    */
-    resetCollection: function(){
 
     }
 

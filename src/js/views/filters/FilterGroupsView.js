@@ -50,6 +50,10 @@ define(['jquery', 'underscore', 'backbone',
 
     render: function () {
 
+      //Since this view may be re-rendered at some point, empty the element and remove listeners
+      this.$el.empty();
+      this.stopListening();
+
       //Create an unordered list for all the filter tabs
       var groupTabs = $(document.createElement("ul")).addClass("nav nav-tabs filter-group-links");
 
@@ -120,6 +124,9 @@ define(['jquery', 'underscore', 'backbone',
         if( divideIntoGroups ){
           groupLink.data("view", filterGroupView);
         }
+
+        //If a new filter is ever added to this filter group, re-render this view
+        this.listenTo( filterGroup.get("filters"), "add remove", this.render );
 
       }, this);
 
