@@ -118,8 +118,6 @@ function(_, $, Backbone, Portal,
       "click .add-section"    : "addSection",
       "click .delete-section" : "deleteSection",
       "click .rename-section" : "renameSection"
-    //  "mouseover .section-menu-link" : "showSectionMenu",
-    //  "mouseout .section-link-container .menu" : "hideSectionMenu"
     },
 
     /**
@@ -496,34 +494,6 @@ function(_, $, Backbone, Portal,
     */
     renameSection: function(){
 
-    },
-
-    /**
-    * Shows the section menu
-    * @param {Event} e - The mouseovr event on the section link
-    */
-    showSectionMenu: function(e){
-
-      var sectionLink = $(e.target).parents(".section-link-container");
-      sectionLink.find(".menu").delay(500).show();
-
-    },
-
-    /**
-    * Hides the section menu
-    * @param {Event} e - The mouseout event on the section link
-    */
-    hideSectionMenu: function(e){
-
-      var x = event.clientX, y = event.clientY,
-          elementMouseIsOver = $(document.elementFromPoint(x, y));
-
-      var sectionLink = $(e.target).parents(".section-link-container");
-      var menu = sectionLink.find(".menu");
-
-      if( !menu.find(elementMouseIsOver).length && menu[0] != elementMouseIsOver[0] ){
-        menu.hide();
-      }
     },
 
     /**
