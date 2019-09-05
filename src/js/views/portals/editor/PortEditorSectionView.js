@@ -3,8 +3,10 @@ define(['underscore',
         'backbone',
         'models/portals/PortalSectionModel',
         "text!templates/portals/editor/portEditorSection.html",
-        "text!templates/portals/editor/portEditorPageOption.html"],
-function(_, $, Backbone, PortalSectionModel, Template, PageOptionTemplate ){
+        "text!templates/portals/editor/portEditorSectionOption.html",
+        "text!templates/portals/editor/portEditorSectionOptionImgs/freeform.svg",
+        "text!templates/portals/editor/portEditorSectionOptionImgs/metrics.svg"],
+function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, FreeformSVG, MetricsSVG){
 
   /**
   * @class PortEditorSectionView
@@ -45,27 +47,38 @@ function(_, $, Backbone, PortalSectionModel, Template, PageOptionTemplate ){
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
-    // The template for each of the page options
-    pageOptionTemplate: _.template(PageOptionTemplate),
+    sectionOptionTemplate: _.template(SectionOptionTemplate),
 
     /**
-    * A jQuery selector for the element that the page option buttons should be inserted into
+    * A jQuery selector for the element that the section option buttons should be inserted into
     * @type {string}
     */
-    pageOptionsContainer: "#page-options-container",
+    sectionsOptionsContainer: "#section-options-container",
 
     /**
-    * Title and description for each of the page types a user can select from
-    * @type {JSON}
+     * @typedef {Object} sectionOption - Information about a section type that can be added to a portal
+     * @property {string} title - The name of the section type to be displayed to the user
+     * @property {string} description - A brief description of the section type, to be displayed to the user
+     * @property {string|number} limiter - The limiter is used to determine whether the user is allowed to add more of this section type. If limiter is a number, then it's used as the maximum number of the given sections allowed (currently this only applies to 'freeform'/markdown sections). If limiter is a string, it should be the name of the 'hide' option in the project model (e.g. hideMetrics for the metrics view). In this case, it's assumed that only one of the given page type is allowed.
+     * @property {string} svg - SVG that illustrates the section type. SVG elements should use classes to define fill colors that are not greyscale, so that they may be greyed-out to indicate that a section type is unavailable. SVG elements that use theme colors should use the classes 'theme-primary-fill', 'theme-secondary-fill', and 'theme-accent-fill'.
     */
-    pageOptions: {
+
+    /**
+    * Information about each of the section types available to a user. Note that the key (e.g. "freeform") is used to ID the UI selection element.
+    * @type {sectionOption[]}
+    */
+    sectionsOptions: {
       freeform: {
         title: "Freeform",
-        description: "Add content and images styled using markdown"
+        description: "Add content and images styled using markdown",
+        limiter: 30,
+        svg: FreeformSVG,
       },
       metrics: {
         title: "Metrics",
-        description: "Show visual summaries of your data collection"
+        description: "Show visual summaries of your data collection",
+        limiter: "hideMetrics",
+        svg: MetricsSVG
       }
     },
 
@@ -101,20 +114,117 @@ function(_, $, Backbone, PortalSectionModel, Template, PageOptionTemplate ){
 
       // Insert the template into the view
       this.$el.html(this.template());
-      
-      // Add a button for each page type the user can select from.
-      _.each(this.pageOptions, function(pageData, pageType){
-        this.$(this.pageOptionsContainer).append(
-          this.pageOptionTemplate({
-            id: "page-option-" + pageType,
-            title: pageData.title,
-            description: pageData.description
+
+      // Add a section option element for each section type the user can select from.
+      _.each(this.sectionsOptions, function(sectionData, sectionType){
+        this.$(this.sectionsOptionsContainer).append(
+          this.sectionOptionTemplate({
+            id: "section-option-" + sectionType,
+            title: sectionData.title,
+            description: sectionData.description,
+            img: sectionData.svg
           })
         )
+        // Check whether the section option is available to user
+        this.toggleDisableSectionOption(sectionType)
       }, this);
 
-      // TODO: check if metrics is already in model, if so, disable
-      // Change disabled button text to: "You can only add one --- type"
+    },
+
+    /**
+    * Checks whether a section type is available to a user to add, then calls functions that change content and styling to indicate the availability to the user.
+    * @param {string} sectionType - The section name. This is the same string used as the key in sectionsOptions (e.g. "freeform").
+    */
+    toggleDisableSectionOption: function(sectionType){
+
+      try{
+
+        var limiter  = this.sectionsOptions[sectionType].limiter;
+
+        // If limiter's a string, look up whether this section type is hidden
+        if(typeof limiter === 'string' || limiter instanceof String){
+          // If it's currently hidden
+          if(this.model.get(limiter)){
+            // then allow user to 'unhide' it.
+            this.enableSectionOption(sectionType);
+          // If it's already displayed
+          } else {
+            // then user can't add more of this type of section.
+            this.disableSectionOption(sectionType);
+          }
+        // If limiter's a number, compare it to the count of sections in the model
+        } else if (typeof limiter === 'number' || limiter instanceof Number){
+          if(this.model.get("sections").length < limiter){
+            this.enableSectionOption(sectionType);
+          } else {
+            this.disableSectionOption(sectionType);
+          }
+        // If limiter is neither a string nor a number
+        } else {
+          console.log("Error: In toggleDisableSectionOption(sectionType), the sectionType must be a string or a number.");
+          return
+        }
+
+      } catch(e) {
+        console.error(e);
+      }
+
+
+    },
+
+    /**
+    * Adds styling and content to a section option element to indicate that the user already added the maximum allowable number of this section type (i.e. it's disabled).
+    * @param {string} sectionType - The section name. This is the same string used as the key in sectionsOptions (e.g. "freeform").
+    */
+    disableSectionOption: function(sectionType){
+
+      try{
+
+        if(!sectionType || !(typeof sectionType === 'string' || sectionType instanceof String)){
+          console.log("Error: In disableSectionOption(sectionType), a string that indicates the sectionType is required");
+          return
+        }
+
+        var sectionOption = this.$("#section-option-" + sectionType),
+            description   = sectionOption.find(".description"),
+            limiter       = this.sectionsOptions[sectionType].limiter,
+            title         = this.sectionsOptions[sectionType].title.toLowerCase(),
+            limit         = (typeof limiter === 'number' || limiter instanceof Number) ?
+                              limiter : 1,
+            singOrPlur    = (limit > 1) ? "s" : "";
+
+        sectionOption.addClass("disabled");
+        description.html("You may only add " + limit + " " + title + " page" + singOrPlur );
+
+      } catch(e){
+        console.log(e);
+      }
+
+    },
+
+    /**
+    * Adds styling and content to a section option element to indicate that the user is able to add more of this section type (i.e. it's not disabled).
+    * @param {string} sectionType - The section name. This is the same string used as the key in sectionsOptions (e.g. "freeform").
+    */
+    enableSectionOption: function(sectionType){
+
+      try{
+
+        if(!sectionType || !(typeof sectionType === 'string' || sectionType instanceof String)){
+          console.log("Error: In enableSectionOption(sectionType), a string that indicates the sectionType is required");
+          return
+        }
+
+        var sectionOption   = this.$("#section-option-" + sectionType),
+            descriptionEl   = sectionOption.find(".description"),
+            descriptionText = this.sectionsOptions[sectionType].description;
+
+        sectionOption.removeClass("disabled");
+        descriptionEl.html(descriptionText);
+
+      } catch(e) {
+        console.log(e);
+      }
 
     },
 

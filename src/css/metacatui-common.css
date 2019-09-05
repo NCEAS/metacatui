@@ -2488,9 +2488,108 @@ img[src*="googleapis.com/"].georegion-map{
 * Portal Editor
 ********************************************/
 
+/* Editor navigation (tabs) */
+
+/* 'Add new section' icon  */
 .port-editor-sections .icon.icon-plus {
 	margin: 0 1px 0 1px;
 }
+
+#section-type-header{
+	margin: 35px 0 25px 0;
+}
+
+/* Add section options */
+
+#section-options-container{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: stretch;
+}
+
+.section-option {
+  padding: 12px 13px;
+  background-color: white;
+  border: 1px solid #DEDEDE;
+  border-radius: 4px;
+	cursor: pointer;
+	width: 175px;
+	margin: 15px;
+	transition: box-shadow 250ms, transform 250ms;
+}
+
+.section-option:hover{
+	box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 2px 5px rgba(0,0,0,0.06);
+	transform: translate(0.2px,-0.2px);
+	transition: box-shadow 200ms, transform 200ms;
+}
+
+.section-option.disabled{
+	background-color: #FAFAFA;
+	cursor: not-allowed;
+	color: #DCDCDC;
+}
+
+.section-option.disabled:hover{
+	box-shadow: none;
+	transform: none;
+	transition: none;
+}
+
+.section-option.disabled .subtle{
+	color: #DCDCDC;
+}
+
+.section-option p.description {
+	font-weight: 300;
+	line-height: 1.25;
+	margin-block-end: 0;
+}
+
+.section-option h5 {
+	margin: 11px 0 6px 0;
+}
+
+.section-option svg{
+	display: block;
+	margin: auto;
+}
+
+.section-option svg .theme-primary-fill{
+	fill: #05446A
+}
+.section-option svg .theme-secondary-fill{
+	fill: #118AD5
+}
+.section-option svg .theme-accent-fill{
+	fill: #05ab8f
+},
+
+.section-option svg .skintone-fill{
+	fill: #72351c
+}
+.section-option svg .skintone2-fill{
+	fill: #9f7766
+}
+
+/* Disabled add section image fill color */
+.section-option.disabled svg .theme-primary-fill{
+	fill: #3d3d3d
+}
+.section-option.disabled svg .theme-secondary-fill{
+	fill: #ebebeb
+}
+.section-option.disabled svg .theme-accent-fill{
+	fill: #d6d6d6
+}
+.section-option.disabled svg .skintone-fill{
+	fill: #575757
+}
+.section-option.disabled svg .skintone2-fill{
+	fill: #828282
+}
+
 
 /******************************************
 * Portals & Portal Editor

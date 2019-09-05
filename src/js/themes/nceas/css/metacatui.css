@@ -57,6 +57,21 @@ input[type="password"]{
 	height: 30px;
 }
 
+/* Portal editor
+-------------------------------------------------- */
+
+/* Theme specific colours for the add section 'button' images */
+
+.section-option svg .theme-primary-fill{
+	fill: #166194
+}
+.section-option svg .theme-secondary-fill{
+	fill: #67b8e5
+}
+.section-option svg .theme-accent-fill{
+	fill: #f8e276
+},
+
 /* OTHER NAVIGATION
 -------------------------------------------------- */
 .breadcrumb > .search{ /*Hide the "Search" breadcrumb link and its divider */

@@ -206,6 +206,21 @@
     color: #660000;
 }
 
+/* Portal editor
+-------------------------------------------------- */
+
+/* Theme specific colours for the add section 'button' images */
+
+.section-option svg .theme-primary-fill{
+	fill: #006699
+}
+.section-option svg .theme-secondary-fill{
+	fill: #1981cc
+}
+.section-option svg .theme-accent-fill{
+	fill: #b90004
+},
+
 /* Editor
 -------------------------------------------------- */
 .Editor #Content {

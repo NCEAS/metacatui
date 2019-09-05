@@ -559,6 +559,21 @@ footer .logos a:hover, a:focus{
   margin-left: 3px;
 }
 
+/* Portal editor
+-------------------------------------------------- */
+
+/* Theme specific colours for the add section 'button' images */
+
+.section-option svg .theme-primary-fill{
+	fill: #1e254f
+}
+.section-option svg .theme-secondary-fill{
+	fill: #b5e1e7
+}
+.section-option svg .theme-accent-fill{
+	fill: #3ad29f
+},
+
 /* EDITOR
 ----------------------- */
 #data-package-table .dropdown-menu li {
