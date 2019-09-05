@@ -139,6 +139,10 @@ define(["jquery",
              */
             renderPortal: function() {
 
+              // Getting the correct portal label and seriesID
+              this.label = this.model.get("label");
+              this.portalId = this.model.get("seriesId");
+
               //Remove the listeners thatt were set during the fetch() process
               this.stopListening(this.model, "notFound", this.showNotFound);
               this.stopListening(this.model, "error", this.showError);
@@ -280,13 +284,21 @@ define(["jquery",
               }
 
               var label = this.label,
+                  seriesId = this.portalId,
                   pathName = window.location.pathname,
                   section  = this.activeSection;
 
               //Get the new pathname using the active section
               if( !MetacatUI.root.length || MetacatUI.root == "/" ){
                 // If it's a new portal, the portal name might not be in the URL yet
+                // Or if navigation is via seriesId - remove the seriesId and display the portal name
                 if(pathName.indexOf(label) < 0){
+                  if (pathName.indexOf(seriesId) > 0)
+                  {
+                    // Remove the seriesId and the forward slash
+                    pathName = pathName.substring(0, pathName.indexOf(seriesId))
+                              .replace(/\/$/, "");;
+                  }
                   var newPathName = pathName + "/" + label + "/" + section;
                 } else {
                   var newPathName = pathName.substring(0, pathName.indexOf(label)) +
