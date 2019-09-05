@@ -23,6 +23,12 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     el: "#Content",
 
     /**
+    * The text to use in the editor submit button
+    * @type {string}
+    */
+    submitButtonText: "Save",
+
+    /**
     * The events this view will listen to and the associated function to call
     * @type {Object}
     */
@@ -137,7 +143,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
           .removeClass("disabled-saving");
 
         //When the package is saved, revert the Save button back to normal
-        this.$("#save-editor").html("Submit dataset").removeClass("btn-disabled");
+        this.$("#save-editor").html(this.submitButtonText).removeClass("btn-disabled");
 
     },
 

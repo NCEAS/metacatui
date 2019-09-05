@@ -47,6 +47,12 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     loadingTemplate: _.template(LoadingTemplate),
 
     /**
+    * The text to use in the editor submit button
+    * @type {string}
+    */
+    submitButtonText: "Save",
+
+    /**
     * A jQuery selector for the element that the PortEditorSectionsView should be inserted into
     * @type {string}
     */
@@ -196,10 +202,9 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     renderPortalEditor: function() {
 
       // Add the template to the view and give the body the "Editor" class
-      var name = this.model.get("name");
       this.$el.html(this.template({
-        name: name,
-        submitButtonText: "Save"
+        name: this.model.get("name"),
+        submitButtonText: this.submitButtonText
       }));
 
       $("body").addClass("Editor")

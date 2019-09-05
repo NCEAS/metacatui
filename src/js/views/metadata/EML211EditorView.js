@@ -29,6 +29,12 @@ define(['underscore',
         editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
 
         /**
+        * The text to use in the editor submit button
+        * @type {string}
+        */
+        submitButtonText: "Submit Dataset",
+
+        /**
         * The events this view will listen to and the associated function to call.
         * This view will inherit events from the parent class, EditorView.
         * @type {Object}
@@ -94,7 +100,7 @@ define(['underscore',
           //Inert the basic template on the page
           this.$el.html(this.template({
             loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."}),
-            submitButtonText: "Submit Dataset"
+            submitButtonText: this.submitButtonText
           }));
 
           //If we don't have a model at this point, create one
