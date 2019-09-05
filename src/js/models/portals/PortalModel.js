@@ -60,7 +60,7 @@ define(["jquery",
                     // The portal document options may specify section to hide
                     hideMetrics: false,
                     hideData: false,
-                    hidePeople: false,
+                    hideMembers: false,
                     hideMap: false,
                     // Map options, as specified in the portal document options
                     mapZoomLevel: 3,
@@ -71,7 +71,7 @@ define(["jquery",
                     mapModel: gmaps ? new MapModel() : null,
                     optionNames: ["primaryColor", "secondaryColor", "accentColor",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
-                            "mapShapeHue", "hideMetrics"],
+                            "mapShapeHue", "hideData", "hideMetrics", "hideMembers"],
                     // Portal view colors, as specified in the portal document options
                     primaryColor: "#999999",
                     secondaryColor: "#666666",
@@ -1124,6 +1124,81 @@ define(["jquery",
               }
 
               this.constructor.__super__.save.call(this);
+            },
+
+            /**
+            * Removes or hides the given section from this Portal
+            * @param {PortalSectionModel|string} section - Either the PortalSectionModel
+            * to remove, or the name of the section to remove. Some sections in the portals
+            * are not tied to PortalSectionModels, because they are created from other parts of the Portal
+            * document. For example, the Data, Metrics, and Members sections.
+            */
+            removeSection: function(section){
+
+              try{
+
+                //If this section is a string, remove it by adding custom options
+                if(typeof section == "string"){
+                  switch( section.toLowerCase() ){
+                    case "data":
+                      this.set("hideData", true);
+                      break;
+                    case "metrics":
+                      this.set("hideMetrics", true);
+                      break;
+                    case "members":
+                      this.set("hideMembers", true);
+                      break;
+                  }
+                }
+                //If this section is a section model, delete it from this Portal
+                else if( PortalSectionModel.prototype.isPrototypeOf(section) ){
+                  //TODO: Delete these Markdown sections
+                }
+                else{
+                  return;
+                }
+              }
+              catch(e){
+                console.error(e);
+              }
+
+            },
+
+            /**
+            * Adds the given section to this Portal
+            * @param {PortalSectionModel|string} section - Either the PortalSectionModel
+            * to add, or the name of the section to add. Some sections in the portals
+            * are not tied to PortalSectionModels, because they are created from other parts of the Portal
+            * document. For example, the Data, Metrics, and Members sections.
+            */
+            addSection: function(section){
+              try{
+                //If this section is a string, add it by adding custom options
+                if(typeof section == "string"){
+                  switch( section.toLowerCase() ){
+                    case "data":
+                      this.set("hideData", false);
+                      break;
+                    case "metrics":
+                      this.set("hideMetrics", null);
+                      break;
+                    case "members":
+                      this.set("hideMembers", null);
+                      break;
+                  }
+                }
+                //If this section is a section model, add it to this Portal
+                else if( PortalSectionModel.prototype.isPrototypeOf(section) ){
+                  //TODO: Add a Markdown section
+                }
+                else{
+                  return;
+                }
+              }
+              catch(e){
+                console.error(e);
+              }
             },
 
             /**

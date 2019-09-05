@@ -2,6 +2,7 @@ define(['underscore',
         'jquery',
         'backbone',
         'models/portals/PortalModel',
+        'models/portals/PortalSectionModel',
         "views/portals/editor/PortEditorSectionView",
         "views/portals/editor/PortEditorSettingsView",
         "views/portals/editor/PortEditorDataView",
@@ -9,7 +10,7 @@ define(['underscore',
         "text!templates/portals/editor/portEditorSections.html",
         "text!templates/portals/editor/portEditorMetrics.html",
         "text!templates/portals/editor/portEditorSectionLink.html"],
-function(_, $, Backbone, Portal,
+function(_, $, Backbone, Portal, PortalSection,
           PortEditorSectionView, PortEditorSettingsView, PortEditorDataView,
           PortEditorMdSectionView,
           Template, MetricsSectionTemplate, SectionLinkTemplate){
@@ -116,8 +117,9 @@ function(_, $, Backbone, Portal,
     */
     events: {
       "click .add-section"    : "addSection",
-      "click .delete-section" : "deleteSection",
-      "click .rename-section" : "renameSection"
+      "click .remove-section" : "removeSection",
+      "click .rename-section" : "renameSection",
+      "click .show-section"   : "showSection"
     },
 
     /**
@@ -245,24 +247,53 @@ function(_, $, Backbone, Portal,
     * Renders a Data section in this view
     */
     renderDataSection: function(){
-      // Render a PortEditorDataView and corresponding tab
-      var dataView = new PortEditorDataView({
-        model: this.model
-      });
 
-      //Insert the subview element into this view
-      this.$(this.portEditDataViewContainer)
-          .html(dataView.el)
-          .attr("id", dataView.getName({ linkFriendly: true }));
+      try{
+        // Render a PortEditorDataView and corresponding tab
+        var dataView = new PortEditorDataView({
+          model: this.model
+        });
 
-      //Render the PortEditorDataView
-      dataView.render();
+        //Insert the subview element into this view
+        this.$(this.portEditDataViewContainer)
+            .html(dataView.el)
+            .attr("id", dataView.getName({ linkFriendly: true }));
 
-      // Add the tab to the tab navigation
-      this.addSectionLink(dataView, ["Delete"]);
+        //Render the PortEditorDataView
+        dataView.render();
 
-      // Add the data section to the list of subviews
-      this.subviews.push(dataView);
+        //Create the menu options for the Data section link
+        var menuOptions = [];
+        if( this.model.get("hideData") === true ){
+          menuOptions.push("Show");
+        }
+        else{
+          menuOptions.push("Hide");
+        }
+
+        // Add the tab to the tab navigation
+        this.addSectionLink(dataView, menuOptions);
+
+        //When the Data section has been hidden or shown, update the section link
+        this.listenTo(this.model, "change:hideData", function(){
+          //Create the menu options for the Data section link
+          var menuOptions = [];
+          if( this.model.get("hideData") === true ){
+            menuOptions.push("Show");
+          }
+          else{
+            menuOptions.push("Hide");
+          }
+
+          this.updateSectionLink(dataView, menuOptions);
+        });
+
+        // Add the data section to the list of subviews
+        this.subviews.push(dataView);
+      }
+      catch(e){
+        console.error(e);
+      }
     },
 
     /**
@@ -464,12 +495,50 @@ function(_, $, Backbone, Portal,
     */
     addSectionLink: function(sectionView, menuOptions){
 
-      this.$(this.sectionLinksContainer).append(this.sectionLinkTemplate({
+      //Add the section link to the page
+      this.$(this.sectionLinksContainer).append(this.createSectionLink(sectionView, menuOptions));
+
+    },
+
+    /**
+    * Add a link to the given editor section
+    * @param {PortEditorSectionView} sectionView - The view to add a link to
+    * @param {string[]} menuOptions - An array of menu options for this section. e.g. Rename, Delete
+    * @return {Element}
+    */
+    createSectionLink: function(sectionView, menuOptions){
+      //Create a section link
+      var sectionLink = $(this.sectionLinkTemplate({
         href: "#" + sectionView.getName({ linkFriendly: true }),
         sectionName: sectionView.getName(),
         menuOptions: menuOptions || []
-      }))
+      }));
 
+      //Attach the section model to the link
+      sectionLink.data({
+        model: sectionView.model,
+        view:  sectionView
+      });
+
+      return sectionLink[0];
+    },
+
+    /**
+    * Add a link to the given editor section
+    * @param {PortEditorSectionView} sectionView - The view to add a link to
+    * @param {string[]} menuOptions - An array of menu options for this section. e.g. Rename, Delete
+    */
+    updateSectionLink: function(sectionView, menuOptions){
+
+      //Create a new link to the section
+      var sectionLink = this.createSectionLink(sectionView, menuOptions);
+
+      //Replace the existing link
+      this.$(this.sectionLinksContainer).children().each(function(i, link){
+        if( $(link).data("view") == sectionView ){
+          $(link).replaceWith(sectionLink);
+        }
+      });
     },
 
     /**
@@ -484,7 +553,63 @@ function(_, $, Backbone, Portal,
     * Removes a section and its tab from this view and the PortalModel
     * @param {Event} [e] - (optional) The click event on the Remove button
     */
-    deleteSection: function(e){
+    removeSection: function(e){
+
+      try{
+
+        //Get the PortalSection model for this remove button
+        var sectionLink = $(e.target).parents(".section-link-container"),
+            section = sectionLink.data("model");
+
+        //If this section is not a PortalSection model, get the section name
+        if( !PortalSection.prototype.isPrototypeOf(section) ){
+          section = sectionLink.data("section-name");
+        }
+
+        //If no section was found, exit now
+        if( !section ){
+          return;
+        }
+
+        //Remove this section from the Portal
+        this.model.removeSection(section);
+      }
+      catch(e){
+        console.error(e);
+        MetacatUI.appView.showAlert("The section could not be deleted. (" + e.message + ")", "alert-error");
+      }
+
+    },
+
+    /**
+    * Shows a previously-hidden section
+    * @param {Event} [e] - (optional) The click event on the Show button
+    */
+    showSection: function(e){
+
+      try{
+
+        //Get the PortalSection model for this show button
+        var sectionLink = $(e.target).parents(".section-link-container"),
+            section = sectionLink.data("model");
+
+        //If this section is not a PortalSection model, get the section name
+        if( !PortalSection.prototype.isPrototypeOf(section) ){
+          section = sectionLink.data("section-name");
+        }
+
+        //If no section was found, exit now
+        if( !section ){
+          return;
+        }
+
+        //Mark this section as shown
+        this.model.addSection(section);
+      }
+      catch(e){
+        console.error(e);
+        MetacatUI.appView.showAlert("The section could not be shown. (" + e.message + ")", "alert-error");
+      }
 
     },
 

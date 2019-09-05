@@ -1,5 +1,5 @@
-<li class="section-link-container">
-  <a href="<%=href%>" data-toggle="tab" class="section-link" data-section-name="<%=sectionName%>">
+<li class="section-link-container" data-section-name="<%=sectionName%>">
+  <a href="<%=href%>" data-toggle="tab" class="section-link">
     <%=sectionName%>
   </a>
   <% if( menuOptions && menuOptions.length ){ %>
@@ -16,8 +16,22 @@
         <% } %>
         <% if(menuOptions.includes("Delete")){ %>
         <li>
-          <a href="#" class="delete-section">
+          <a href="#" class="remove-section">
             <i class="icon icon-on-left icon-remove"></i> Delete
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Hide")){ %>
+        <li>
+          <a href="#" class="remove-section">
+            <i class="icon icon-on-left icon-eye-close"></i> Hide
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Show")){ %>
+        <li>
+          <a href="#" class="show-section">
+            <i class="icon icon-on-left icon-eye-open"></i> Show
           </a>
         </li>
         <% } %>
