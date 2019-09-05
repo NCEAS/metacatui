@@ -392,7 +392,7 @@ function(_, $, Backbone, Portal, PortalSection,
       var label         = this.model.get("label") || this.newPortalTempName,
           originalLabel = this.model.get("originalLabel") || this.newPortalTempName,
           section       = this.activeSection,
-          pathName      = window.location.pathname
+          pathName      = decodeURIComponent(window.location.pathname)
                           .substring(MetacatUI.root.length)
                           // remove trailing forward slash if one exists in path
                           .replace(/\/$/, "");

@@ -297,7 +297,7 @@ define(["jquery",
 
               var label = this.label,
                   seriesId = this.portalId,
-                  pathName = window.location.pathname,
+                  pathName = decodeURIComponent(window.location.pathname),
                   section  = this.activeSection;
 
               //Get the new pathname using the active section
