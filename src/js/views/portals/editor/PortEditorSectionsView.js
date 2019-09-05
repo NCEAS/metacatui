@@ -115,9 +115,11 @@ function(_, $, Backbone, Portal,
     * @type {Object}
     */
     events: {
-      ".add-section"    : "addSection",
-      ".remove-section" : "removeSection",
-      ".rename-section" : "renameSection"
+      "click .add-section"    : "addSection",
+      "click .delete-section" : "deleteSection",
+      "click .rename-section" : "renameSection"
+    //  "mouseover .section-menu-link" : "showSectionMenu",
+    //  "mouseout .section-link-container .menu" : "hideSectionMenu"
     },
 
     /**
@@ -232,7 +234,7 @@ function(_, $, Backbone, Portal,
           sectionView.render();
 
           // Add the tab to the tab navigation
-          this.addSectionLink(sectionView);
+          this.addSectionLink(sectionView, ["Rename", "Delete"]);
           // Add the sections to the list of subviews
           this.subviews.push(sectionView);
 
@@ -259,7 +261,7 @@ function(_, $, Backbone, Portal,
       dataView.render();
 
       // Add the tab to the tab navigation
-      this.addSectionLink(dataView);
+      this.addSectionLink(dataView, ["Delete"]);
 
       // Add the data section to the list of subviews
       this.subviews.push(dataView);
@@ -289,7 +291,7 @@ function(_, $, Backbone, Portal,
         metricsView.render();
 
         // Add the tab to the tab navigation
-        this.addSectionLink(metricsView);
+        this.addSectionLink(metricsView, ["Delete"]);
 
         // Add the data section to the list of subviews
         this.subviews.push(metricsView);
@@ -371,7 +373,7 @@ function(_, $, Backbone, Portal,
       var pathRE = new RegExp("\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$", "i");
       newPathName = pathName.replace(pathRE, "") + "/" + label;
       newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
-      
+
 
       // Update the window location
       MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
@@ -460,12 +462,14 @@ function(_, $, Backbone, Portal,
     /**
     * Add a link to the given editor section
     * @param {PortEditorSectionView} sectionView - The view to add a link to
+    * @param {string[]} menuOptions - An array of menu options for this section. e.g. Rename, Delete
     */
-    addSectionLink: function(sectionView){
+    addSectionLink: function(sectionView, menuOptions){
 
       this.$(this.sectionLinksContainer).append(this.sectionLinkTemplate({
         href: "#" + sectionView.getName({ linkFriendly: true }),
-        sectionName: sectionView.getName()
+        sectionName: sectionView.getName(),
+        menuOptions: menuOptions || []
       }))
 
     },
@@ -482,7 +486,7 @@ function(_, $, Backbone, Portal,
     * Removes a section and its tab from this view and the PortalModel
     * @param {Event} [e] - (optional) The click event on the Remove button
     */
-    removeSection: function(e){
+    deleteSection: function(e){
 
     },
 
@@ -492,6 +496,34 @@ function(_, $, Backbone, Portal,
     */
     renameSection: function(){
 
+    },
+
+    /**
+    * Shows the section menu
+    * @param {Event} e - The mouseovr event on the section link
+    */
+    showSectionMenu: function(e){
+
+      var sectionLink = $(e.target).parents(".section-link-container");
+      sectionLink.find(".menu").delay(500).show();
+
+    },
+
+    /**
+    * Hides the section menu
+    * @param {Event} e - The mouseout event on the section link
+    */
+    hideSectionMenu: function(e){
+
+      var x = event.clientX, y = event.clientY,
+          elementMouseIsOver = $(document.elementFromPoint(x, y));
+
+      var sectionLink = $(e.target).parents(".section-link-container");
+      var menu = sectionLink.find(".menu");
+
+      if( !menu.find(elementMouseIsOver).length && menu[0] != elementMouseIsOver[0] ){
+        menu.hide();
+      }
     },
 
     /**

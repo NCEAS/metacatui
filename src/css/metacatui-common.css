@@ -2484,12 +2484,38 @@ img[src*="googleapis.com/"].georegion-map{
   font-weight: bold;
 }
 
+
 /******************************************
-* Portal Editor
+* Portals & Portal Editor
 ********************************************/
 
 /* Editor navigation (tabs) */
-
+.port-editor-sections .section-link-container{
+  border-right: 1px solid #CCC;
+}
+.port-editor-sections .section-menu-link:hover ~ .menu,
+.port-editor-sections .section-link-container .menu:hover{
+  display: block;
+}
+.port-editor-sections .section-link{
+  display: inline-block;
+}
+.port-editor-sections .section-menu-link{
+  display: inline-block;
+  padding: 8px 0px;
+}
+.port-editor-sections .section-link-container .section-link,
+.port-editor-sections .section-link-container.active .section-link,
+.port-editor-sections .section-link-container.active .section-link:hover,
+.port-editor-sections .section-link-container.active .section-menu-link,
+.port-editor-sections .section-link-container.active .section-menu-link:hover{
+  border: 0px;
+}
+.port-editor-sections .section-link-container .section-link:hover,
+.port-editor-sections .section-link-container .section-menu-link:hover{
+  background-color: transparent;
+  border: 0px;
+}
 /* 'Add new section' icon  */
 .port-editor-sections .icon.icon-plus {
 	margin: 0 1px 0 1px;
@@ -2589,11 +2615,6 @@ img[src*="googleapis.com/"].georegion-map{
 .section-option.disabled svg .skintone2-fill{
 	fill: #828282
 }
-
-
-/******************************************
-* Portals & Portal Editor
-********************************************/
 
 /* Top level app navigation in the PortalView and EditorView */
 .Portal.Editor #Navbar,
@@ -2698,6 +2719,9 @@ img[src*="googleapis.com/"].georegion-map{
 }
 #portal-section-tabs a{
   text-align: center;
+}
+.section-link-container{
+  position: relative;
 }
 .portal-section-content{
   padding: 20px;

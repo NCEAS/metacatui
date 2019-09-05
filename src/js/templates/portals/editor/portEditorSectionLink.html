@@ -1,1 +1,26 @@
-<li><a href="<%=href%>" data-toggle="tab" class="section-link"><%=sectionName%></a></li>
+<li class="section-link-container">
+  <a href="<%=href%>" data-toggle="tab" class="section-link" data-section-name="<%=sectionName%>">
+    <%=sectionName%>
+  </a>
+  <% if( menuOptions && menuOptions.length ){ %>
+    <a href="#" class="section-menu-link">
+      <i class="icon icon-on-right pointer icon-caret-down"></i>
+    </a>
+    <ul class="dropdown-menu menu" role="menu">
+        <% if(menuOptions.includes("Rename")){ %>
+        <li>
+          <a href="#" class="rename-section">
+            <i class="icon icon-on-left icon-pencil"></i> Rename
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Delete")){ %>
+        <li>
+          <a href="#" class="delete-section">
+            <i class="icon icon-on-left icon-remove"></i> Delete
+          </a>
+        </li>
+        <% } %>
+      </ul>
+  <% } %>
+</li>
