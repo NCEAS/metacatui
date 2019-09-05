@@ -60,6 +60,12 @@ define(["jquery",
             label: "",
 
             /**
+            * Flag to add section name to URL. Enabled by default.
+            * @type {boolean}
+            */
+            displaySectionInUrl: true,
+
+            /**
              * The subviews contained within this view to be removed with onClose
              * @type {Array}
              */
@@ -269,6 +275,9 @@ define(["jquery",
              */
             updatePath: function(e){
 
+              // reset the flag during each updatePath call
+              this.displaySectionInUrl = true;
+
               if(e){
                 var sectionView = $(e.target).data("view");
                 if( typeof sectionView !== "undefined"){
@@ -282,6 +291,9 @@ define(["jquery",
                 // Set this view's active section name to the link href
                 this.activeSection = linkTarget;
               }
+
+              if (!e && this.activeSection == this.sectionNames[0])
+                this.displaySectionInUrl = false;
 
               var label = this.label,
                   seriesId = this.portalId,
@@ -299,16 +311,22 @@ define(["jquery",
                     pathName = pathName.substring(0, pathName.indexOf(seriesId))
                               .replace(/\/$/, "");;
                   }
-                  var newPathName = pathName + "/" + label + "/" + section;
+                  var newPathName = pathName + "/" + label;
+                  newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
+
                 } else {
                   var newPathName = pathName.substring(0, pathName.indexOf(label)) +
-                                      label + "/" + section;
+                                      label;
+                  newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
+
                 }
               }
               else{
                 var newPathName = pathName.substring( pathName.indexOf(MetacatUI.root) + MetacatUI.root.length );
                 newPathName = newPathName.substring(0, newPathName.indexOf(label)) +
-                                    label + "/" + section;
+                                    label ;
+                newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
+                
               }
               //Update the window location
               MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );

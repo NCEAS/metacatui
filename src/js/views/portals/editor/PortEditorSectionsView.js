@@ -100,6 +100,12 @@ function(_, $, Backbone, Portal,
     sectionsContainer: ".sections-container",
 
     /**
+    * Flag to add section name to URL. Enabled by default.
+    * @type {boolean}
+    */
+    displaySectionInUrl: true,
+
+    /**
     * @borrows PortalEditorView.newPortalTempName as newPortalTempName
     */
     newPortalTempName: "",
@@ -331,6 +337,10 @@ function(_, $, Backbone, Portal,
     */
     updatePath: function(e){
 
+
+      // reset the flag during each updatePath call
+      this.displaySectionInUrl = true;
+
       if(e){
         var sectionView = $(e.target).data("view");
         if( typeof sectionView !== "undefined"){
@@ -345,6 +355,9 @@ function(_, $, Backbone, Portal,
         this.activeSection = linkTarget;
       }
 
+      if (!e && this.activeSection == this.sectionNames[0])
+        this.displaySectionInUrl = false;
+
       var label         = this.model.get("label") || this.newPortalTempName,
           originalLabel = this.model.get("originalLabel") || this.newPortalTempName,
           section       = this.activeSection,
@@ -356,7 +369,9 @@ function(_, $, Backbone, Portal,
       // Add or replace the label and section part of the path with updated values.
       // pathRE matches "/label/section", where the "/section" part is optional
       var pathRE = new RegExp("\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$", "i");
-      newPathName = pathName.replace(pathRE, "") + "/" + label + "/" + section;
+      newPathName = pathName.replace(pathRE, "") + "/" + label;
+      newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
+      
 
       // Update the window location
       MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
