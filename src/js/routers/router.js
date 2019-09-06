@@ -307,40 +307,37 @@ function ($, _, Backbone) {
         this.routeHistory.push("portals/" + label);
       }
 
-      if ( !MetacatUI.appView.portalView ) {
-        require(['views/portals/PortalView'], function(PortalView){
-          MetacatUI.appView.portalView = new PortalView({
-              label: label,
-              activeSection: portalSection
-          });
-          MetacatUI.appView.showView(MetacatUI.appView.portalView);
+      require(['views/portals/PortalView'], function(PortalView){
+        MetacatUI.appView.portalView = new PortalView({
+            label: label,
+            activeSection: portalSection
         });
-      } else {
-        MetacatUI.appView.portalView.label = label;
-        MetacatUI.appView.portalView.activeSection = portalSection;
         MetacatUI.appView.showView(MetacatUI.appView.portalView);
-      }
+      });
+
 		},
 
     /**
     * Renders the PortalEditorView
-    * @param {string} [portalIdentifier] - The id or name of the portal
+    * @param {string} [portalIdentifier] - The id or labebl of the portal
 		* @param {string} [portalSection] - The name of the section within the portal to navigate to (e.g. "data")
     */
     renderPortalEditor: function(portalIdentifier, portalSection){
-      if ( !MetacatUI.appView.portalEditorView ) {
-        require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
-          MetacatUI.appView.portalEditorView = new PortalEditorView({
-							activeSection: portalSection,
-							portalIdentifier: portalIdentifier
-          });
-          MetacatUI.appView.showView(MetacatUI.appView.portalEditorView);
-        });
-      } else {
-        MetacatUI.appView.portalEditorView.portalIdentifier = portalIdentifier;
-				MetacatUI.appView.portalEditorView.activeSection = portalSection;
-        MetacatUI.appView.showView(MetacatUI.appView.portalEditorView);
+      // Look up the portal document seriesId by its registered name if given
+      if ( portalSection ) {
+        this.routeHistory.push("edit/portals/" + portalIdentifier + "/" + portalSection);
       }
+      else{
+        this.routeHistory.push("edit/portals/" + portalIdentifier);
+      }
+
+      require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
+        MetacatUI.appView.portalEditorView = new PortalEditorView({
+          activeSection: portalSection,
+          portalIdentifier: portalIdentifier
+        });
+        MetacatUI.appView.showView(MetacatUI.appView.portalEditorView);
+      });
     },
 
 		renderMetadata: function (pid) {

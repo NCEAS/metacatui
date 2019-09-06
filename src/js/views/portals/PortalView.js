@@ -126,7 +126,7 @@ define(["jquery",
 
                 // When the model has been synced, render the results
                 this.stopListening();
-                this.listenTo(this.model, "sync", this.renderPortal);
+                this.listenToOnce(this.model, "sync", this.renderPortal);
 
                 //If the portal isn't found, display a 404 message
                 this.listenToOnce(this.model, "notFound", this.showNotFound);
@@ -596,7 +596,13 @@ define(["jquery",
 
                 this.subviews = new Array();
 
+                //Remove all listeners
+                this.stopListening();
+
+                //Delete the metrics view from this view
                 delete this.sectionMetricsView;
+                //Delete the model from this view
+                delete this.model;
 
                 $("body").removeClass("PortalView");
 
