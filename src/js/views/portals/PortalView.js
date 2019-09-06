@@ -345,9 +345,7 @@ define(["jquery",
 
               // Get the section names from the tab elements
               var sectionNames = [];
-              this.$("#portal-section-tabs")
-                .children("li")
-                .children("a[href]")
+              this.$(".portal-section-link")
                 .each(function(i, anchorEl){
                   sectionNames[i] = $(anchorEl)
                                       .attr("href")
@@ -368,6 +366,11 @@ define(["jquery",
 
               // Make sure the list of section names is up to date
               this.updateSectionNames();
+
+              //If there are no sections in this portal, exit now
+              if( !this.sectionNames.length ){
+                return;
+              }
 
               // If no section name is given, use the active section in the view.
               // If there's also no activeSection, then default to an empty string,
@@ -463,6 +466,7 @@ define(["jquery",
                              .text(label)
                              .attr("href", "#" + hrefLabel )
                              .attr("data-toggle", "tab")
+                             .addClass("portal-section-link")
                              .data("view", sectionView)));
 
             },
