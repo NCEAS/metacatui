@@ -169,7 +169,7 @@ define(["jquery",
                 }, this);
 
                 // Render the Data section
-                if(!this.model.get("hideData")) {
+                if( this.model.get("hideData") !== true ) {
                     this.sectionDataView = new PortalDataView({
                         model: this.model,
                         id: "Data",
@@ -185,22 +185,26 @@ define(["jquery",
                     this.addSectionLink( this.sectionDataView );
                 }
 
-                //Render the metrics section
-                //Create a navigation link
-                this.$("#portal-section-tabs").append(
-                  $(document.createElement("li"))
-                    .append( $(document.createElement("a"))
-                               .text("Metrics")
-                               .attr("id", "metrics-link")
-                               .attr("href", "#Metrics" )
-                               .attr("data-toggle", "tab")));
+                //Render the metrics section link
+                if ( this.model.get("hideMetrics") !== true ) {
+                  //Create a navigation link
+                  this.$("#portal-section-tabs").append(
+                    $(document.createElement("li"))
+                      .append( $(document.createElement("a"))
+                                 .text("Metrics")
+                                 .attr("id", "metrics-link")
+                                 .attr("href", "#Metrics" )
+                                 .attr("data-toggle", "tab")));
 
-                this.$("#portal-sections").append( $(document.createElement("div"))
-                                                    .attr("id", "Metrics")
-                                                    .addClass("tab-pane") );
+                  this.$("#portal-sections").append( $(document.createElement("div"))
+                                                      .attr("id", "Metrics")
+                                                      .addClass("tab-pane") );
+                }
 
                 // Render the members section
-                if (!this.model.get("hideMembers")) {
+                if ( this.model.get("hideMembers") !== true &&
+                     (this.model.get("associatedParties").length || this.model.get("acknowledgments"))){
+
                     this.sectionMembersView = new PortalMembersView({
                         model: this.model,
                         id: "Members",
@@ -326,7 +330,7 @@ define(["jquery",
                 newPathName = newPathName.substring(0, newPathName.indexOf(label)) +
                                     label ;
                 newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
-                
+
               }
               //Update the window location
               MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
@@ -468,7 +472,7 @@ define(["jquery",
              */
             renderMetricsView: function() {
 
-              if( this.model.get("hideMetrics") ) {
+              if( this.model.get("hideMetrics") == true ) {
                 return;
               }
 

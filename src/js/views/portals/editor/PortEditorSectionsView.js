@@ -213,31 +213,37 @@ function(_, $, Backbone, Portal, PortalSection,
 
       // Iterate over each "markdown" section in the PortalModel `sections`
       _.each(sections, function(section){
-        if(section){
 
-          // Create and render and markdown section view
-          var sectionView = new PortEditorMdSectionView({
-            model: section
-          });
+        try{
+          if(section){
 
-          // Add markdown section container, insert section HTML
-          var markdownSectionDiv = $(document.createElement("div"))
-            .addClass("tab-pane")
-            .addClass("port-editor-markdown-container")
-            .attr("id", sectionView.getName({ linkFriendly: true }))
-            .html(sectionView.el);
+            // Create and render and markdown section view
+            var sectionView = new PortEditorMdSectionView({
+              model: section
+            });
 
-          //Insert the PortEditorMdSectionView element into this view
-          this.$(this.sectionsContainer).append(markdownSectionDiv);
+            // Add markdown section container, insert section HTML
+            var markdownSectionDiv = $(document.createElement("div"))
+              .addClass("tab-pane")
+              .addClass("port-editor-markdown-container")
+              .attr("id", sectionView.getName({ linkFriendly: true }))
+              .html(sectionView.el);
 
-          //Render the PortEditorMdSectionView
-          sectionView.render();
+            //Insert the PortEditorMdSectionView element into this view
+            this.$(this.sectionsContainer).append(markdownSectionDiv);
 
-          // Add the tab to the tab navigation
-          this.addSectionLink(sectionView, ["Rename", "Delete"]);
-          // Add the sections to the list of subviews
-          this.subviews.push(sectionView);
+            //Render the PortEditorMdSectionView
+            sectionView.render();
 
+            // Add the tab to the tab navigation
+            this.addSectionLink(sectionView, ["Rename", "Delete"]);
+            // Add the sections to the list of subviews
+            this.subviews.push(sectionView);
+
+          }
+        }
+        catch(e){
+          console.error(e);
         }
       }, this);
 
@@ -324,6 +330,19 @@ function(_, $, Backbone, Portal, PortalSection,
 
         // Add the data section to the list of subviews
         this.subviews.push(metricsView);
+
+        //When the metrics section has been toggled, remove or add it
+        this.listenTo(this.model, "change:hideMetrics", function(){
+          try{
+            //If hideMetrics has been set to true, remove it
+            if( this.model.get("hideMetrics") === true ){
+              this.removeSectionLink(metricsView);
+            }
+          }
+          catch(e){
+            console.error(e);
+          }
+        });
       }
     },
 
@@ -539,6 +558,33 @@ function(_, $, Backbone, Portal, PortalSection,
           $(link).replaceWith(sectionLink);
         }
       });
+    },
+
+    /**
+    * Remove the link to the given section view
+    * @param {View} sectionView - The view to remove the link to
+    */
+    removeSectionLink: function(sectionView){
+      try{
+        //Find the section link associated with this section view
+        this.$(this.sectionLinksContainer).children().each(function(i, link){
+          if( $(link).data("view") == sectionView ){
+
+            //Remove the menu link
+            $(link).find(".section-menu-link").remove();
+            //Hide the section name link with an animation
+            $(link).animate({width: "0px", overflow: "hidden"}, {
+              duration: 500,
+              complete: function(){
+                this.remove();
+              }
+            });
+          }
+        });
+      }
+      catch(e){
+        console.error(e);
+      }
     },
 
     /**
