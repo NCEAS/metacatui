@@ -198,6 +198,14 @@ function(_, $, Backbone, Portal, PortalSection,
         };
       });
 
+      // When a sectionOption is clicked in the addSectionView subview,
+      // the "addSection" event is triggered.
+      var view = this;
+      addSectionView.off("addSection");
+      addSectionView.on("addSection", function(sectionType){
+        view.addSection(sectionType);
+      });
+
       //Add the view to the subviews array
       this.subviews.push(addSectionView);
 
@@ -469,12 +477,22 @@ function(_, $, Backbone, Portal, PortalSection,
       this.activeSection = sectionName;
 
       // Activate the section content
-      this.$(this.sectionsContainer).children("#" + sectionName).addClass("active");
+      this.$(this.sectionsContainer).children().each(function(i, tabPane){
+        if($(tabPane).attr("id") == sectionName){
+          $(tabPane).addClass("active");
+        } else {
+          // make sure no other sections are active
+          $(tabPane).removeClass("active");
+        }
+      });
 
       // Activate the tab
       this.$(this.sectionLinksContainer).children().each(function(i, li){
         if($(li).children().attr("href") == "#" + sectionName){
           $(li).addClass("active")
+        } else {
+          // make sure no other sections are active
+          $(li).removeClass("active")
         };
       });
 
@@ -482,6 +500,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
       // Update path when each tab is clicked and shown
       view = this;
+      this.$('a[data-toggle="tab"]').off('shown');
       this.$('a[data-toggle="tab"]').on('shown', function(e){
         view.updatePath(e)
       });
@@ -543,10 +562,48 @@ function(_, $, Backbone, Portal, PortalSection,
 
     /**
     * Adds a section and tab to this view and the PortalModel
-    * @param {Event} [e] - (optional) The click event on the Add button
+    * @param {string} sectionType - The type of section to add
     */
-    addSection: function(e){
+    addSection: function(sectionType){
 
+      try{
+
+        this.model.addSection(sectionType);
+
+        if(typeof sectionType == "string"){
+
+          switch( sectionType.toLowerCase() ){
+            case "data":
+              this.renderDataSection();
+              this.activeSection = "Data";
+              break;
+            case "metrics":
+              this.renderMetricsSection();
+              this.activeSection = "Metrics";
+              break;
+            case "freeform":
+              console.log("this will render a new freeform section");
+              // TODO
+              // this.renderContentSections();
+              // this.activeSection = "New Section";
+            case "members":
+              // TODO
+              // this.renderMembersSection();
+              // this.activeSection = "Members";
+              break;
+          }
+
+          // Navigate user to the new section
+          this.switchSection();
+
+        }
+        else{
+          return;
+        }
+      }
+      catch(e){
+        console.error(e);
+      }
     },
 
     /**

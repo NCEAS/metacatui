@@ -196,6 +196,9 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
         sectionOption.addClass("disabled");
         description.html("You may only add " + limit + " " + title + " page" + singOrPlur );
 
+        // Make sure disabled option isn't clickable
+        sectionOption.off("click");
+
       } catch(e){
         console.log(e);
       }
@@ -222,12 +225,22 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
         sectionOption.removeClass("disabled");
         descriptionEl.html(descriptionText);
 
+        // When user clicks section option, add new section
+        var view = this;
+        sectionOption.off("click");
+        sectionOption.on("click", function(e){
+          // Tell the parent portEditorSectionsView to add tabs and content
+          // for the new section.
+          view.trigger("addSection", sectionType);
+          // Check if this sectionType option should be disabled now.
+          view.toggleDisableSectionOption(sectionType);
+        });
+
       } catch(e) {
         console.log(e);
       }
 
     },
-
     /**
     * Gets the name of this section and returns it
     * @param {Object} [options] - Optional options for the name that is returned
