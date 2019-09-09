@@ -858,7 +858,8 @@ define(["jquery",
                   }
 
                   // Don't serialize null or undefined values. Also don't serialize values that match the default model value
-                  if( (optValue || optValue === 0 || optValue === false) ){
+                  if( (optValue || optValue === 0 || optValue === false) &&
+                      (optValue != model.defaults()[optName]) ){
 
                     //Replace the existing option, if it exists
                     if( matchingOption ){
