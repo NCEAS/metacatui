@@ -247,6 +247,16 @@ Bold 700
 		color: #597F99;
 	}
 
+  /* Portal Views
+  -------------------------------------------------- */
+.PortalView #Navbar .nav .minimal-nav .btn-primary{
+  color: #FFF;
+}
+.PortalView #Navbar .nav .minimal-nav .btn-primary:hover{
+  background-color: #0377DD;
+  color: #FFF;
+}
+
 /* Portal editor
 -------------------------------------------------- */
 

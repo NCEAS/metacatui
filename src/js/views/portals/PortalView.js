@@ -253,15 +253,15 @@ define(["jquery",
             insertOwnerControls: function(){
 
               // Insert the button into the navbar
-              var container = $(".navbar-inner");
+              var container = $(".edit-portal-link-container");
 
               var model = this.model;
 
               this.listenToOnce(this.model, "change:isAuthorized", function(){
                 if(!model.get("isAuthorized")){
-                  return false
+                  return false;
                 } else {
-                  container.prepend(
+                  container.html(
                     this.editPortalsTemplate({
                       editButtonText: "Edit Portal",
                       pathToEdit: MetacatUI.root + "/edit/portals/" + model.get("label")
@@ -270,7 +270,7 @@ define(["jquery",
                 }
               });
 
-              this.model.checkAuthority();
+              this.model.checkAuthority("write");
             },
 
             /**

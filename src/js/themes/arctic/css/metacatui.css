@@ -278,7 +278,8 @@
 .header .nav li a.btn.btn-primary:hover{
 	background-color: #146660;
 }
-.header .nav li .btn.btn-primary{
+.header .nav li .btn.btn-primary,
+.PortalView #Navbar .minimal-nav .btn-primary{
 	color: #FFF;
 }
 .header .login.btn{

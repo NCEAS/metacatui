@@ -205,6 +205,13 @@
     background-color: transparent;
     color: #660000;
 }
+.PortalView #Navbar .nav .minimal-nav .btn-primary{
+  color: #FFF;
+}
+.PortalView #Navbar .nav .minimal-nav .btn-primary:hover{
+  background-color: #0093DD;
+  color: #FFF;
+}
 
 /* Portal editor
 -------------------------------------------------- */

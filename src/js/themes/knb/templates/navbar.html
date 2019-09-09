@@ -25,29 +25,30 @@
         </li>
         <% if (loggedIn) { %>
         	<li class="dropdown minimal-nav">
-				<a href="#" class="dropdown-toggle user" data-toggle="dropdown">
-					<i class="icon-user icon icon-on-left"></i><%=(firstName || formattedName)%><b class="caret"></b>
-				</a>
-				<ul class="dropdown-menu">
-					<li class="dropdown-header"><%=formattedName%></li>
-					<li><a href="<%= MetacatUI.root %>/submit" class="show-new-editor">Upload data</a></li>
-					<% if(MetacatUI.appModel.get("enableUserProfiles")){ %><li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li> <% } %>
-					<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
-          <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
-            <li>
-              <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
-                My portals
-                <span class="new-icon">
-                  <i class="icon icon-star icon-on-right"></i>
-                  NEW
-                </span>
-              </a>
-            </li>
-          <% } %>
-          <li class="divider"></li>
-					<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
-				</ul>
-			</li>
+    				<a href="#" class="dropdown-toggle user" data-toggle="dropdown">
+    					<i class="icon-user icon icon-on-left"></i><%=(firstName || formattedName)%><b class="caret"></b>
+    				</a>
+    				<ul class="dropdown-menu">
+    					<li class="dropdown-header"><%=formattedName%></li>
+    					<li><a href="<%= MetacatUI.root %>/submit" class="show-new-editor">Upload data</a></li>
+    					<% if(MetacatUI.appModel.get("enableUserProfiles")){ %><li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li> <% } %>
+    					<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
+              <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+                <li>
+                  <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
+                    My portals
+                    <span class="new-icon">
+                      <i class="icon icon-star icon-on-right"></i>
+                      NEW
+                    </span>
+                  </a>
+                </li>
+              <% } %>
+              <li class="divider"></li>
+    					<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
+    				</ul>
+			     </li>
+           <li class="edit-portal-link-container minimal-nav"></li>
         <% } else { %>
         		<li id="SignIn" class="minimal-nav"><a href="<%= MetacatUI.root %>/signin">Sign In</a></li>
        <%  } %>
