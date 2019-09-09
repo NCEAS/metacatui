@@ -116,7 +116,6 @@ function(_, $, Backbone, Portal, PortalSection,
     * @type {Object}
     */
     events: {
-      "click .add-section"    : "addSection",
       "click .remove-section" : "removeSection",
       "click .rename-section" : "renameSection",
       "click .show-section"   : "showSection"
@@ -190,13 +189,10 @@ function(_, $, Backbone, Portal, PortalSection,
       this.addSectionLink(addSectionView);
 
       // Replace the name "AddSection" with fontawsome "+" icon
-      // Note: Select <li> element based on the href attribute of it's child
-      // because adding an id to <li> or <a> breaks Bootstrap's tab function
-      this.$(this.sectionLinksContainer).children().each(function(i, li){
-        if($(li).children().attr("href") == "#AddSection"){
-          $(li).children().html("<i class='icon icon-plus'></i>");
-        };
-      });
+      this.$(this.sectionLinksContainer)
+          .find("li[data-section-name='AddSection']")
+          .children()
+          .html("<i class='icon icon-plus'></i>");
 
       // When a sectionOption is clicked in the addSectionView subview,
       // the "addSection" event is triggered.
@@ -320,32 +316,38 @@ function(_, $, Backbone, Portal, PortalSection,
       if(this.model.get("hideMetrics") !== true){
 
         //Create a PortEditorSectionView for the Metrics section
-        var metricsView = new PortEditorSectionView({
-          model: this.model,
-          sectionName: "Metrics",
-          template: this.metricsSectionTemplate
-        });
+        // if it doesn't exist yet
+        if(!this.metricsView){
 
-        //Add the view's element to the page
-        this.$(this.portEditMetricsContainer)
-            .html(metricsView.el)
-            .attr("id", metricsView.getName({ linkFriendly: true }));
+          this.metricsView = new PortEditorSectionView({
+            model: this.model,
+            sectionName: "Metrics",
+            template: this.metricsSectionTemplate
+          });
 
-        //Render the view
-        metricsView.render();
+          //Add the view's element to the page
+          this.$(this.portEditMetricsContainer)
+              .html(this.metricsView.el)
+              .attr("id", this.metricsView.getName({ linkFriendly: true }));
+
+          //Render the view
+          this.metricsView.render();
+
+          // Add the data section to the list of subviews
+          this.subviews.push(this.metricsView);
+        }
+
 
         // Add the tab to the tab navigation
-        this.addSectionLink(metricsView, ["Delete"]);
-
-        // Add the data section to the list of subviews
-        this.subviews.push(metricsView);
+        this.addSectionLink(this.metricsView, ["Delete"]);
 
         //When the metrics section has been toggled, remove or add it
+        this.stopListening(this.model, "change:hideMetrics");
         this.listenTo(this.model, "change:hideMetrics", function(){
           try{
             //If hideMetrics has been set to true, remove it
             if( this.model.get("hideMetrics") === true ){
-              this.removeSectionLink(metricsView);
+              this.removeSectionLink(this.metricsView);
             }
           }
           catch(e){
@@ -508,7 +510,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
       // Activate the tab
       this.$(this.sectionLinksContainer).children().each(function(i, li){
-        if($(li).children().attr("href") == "#" + sectionName){
+        if($(li).attr("data-section-name") == sectionName){
           $(li).addClass("active")
         } else {
           // make sure no other sections are active
@@ -534,8 +536,48 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     addSectionLink: function(sectionView, menuOptions){
 
-      //Add the section link to the page
-      this.$(this.sectionLinksContainer).append(this.createSectionLink(sectionView, menuOptions));
+      try{
+        var newLink = this.createSectionLink(sectionView, menuOptions);
+
+        // Make the tab hidden to start
+        $(newLink)
+          .find(".section-link")
+          .css('max-width','0px')
+          .css('opacity','0.2')
+          .css('white-space', 'nowrap');
+
+        $(newLink)
+          .find(".section-menu-link")
+          .css('opacity','0.5')
+          .css('transition', 'opacity 0.1s');
+
+        // Insert new link just before the "+" link, if it exists.
+        // If the new link is "Settings", or there's no "+" link, insert it last.
+        var addSectionLI = this.$(this.sectionLinksContainer)
+                               .find("li[data-section-name='AddSection']")[0];
+        if(addSectionLI && sectionView.getName()!= "Settings"){
+          $(addSectionLI).before(newLink);
+        } else {
+          this.$(this.sectionLinksContainer).append(newLink);
+        }
+
+        // Animate the link to full width / opacity
+        $(newLink).find(".section-link").animate({
+            'max-width': "500px",
+            overflow: "hidden",
+            opacity: 1
+          }, {
+          duration: 300,
+          complete: function(){
+            $(newLink)
+              .find(".section-menu-link")
+              .css('opacity','1')
+          }
+        });
+      }
+      catch(e) {
+        console.log("Could not add a new section link. Error message: "+ e);
+      }
 
     },
 
@@ -546,6 +588,7 @@ function(_, $, Backbone, Portal, PortalSection,
     * @return {Element}
     */
     createSectionLink: function(sectionView, menuOptions){
+
       //Create a section link
       var sectionLink = $(this.sectionLinkTemplate({
         href: "#" + sectionView.getName({ linkFriendly: true }),
@@ -585,6 +628,12 @@ function(_, $, Backbone, Portal, PortalSection,
     * @param {View} sectionView - The view to remove the link to
     */
     removeSectionLink: function(sectionView){
+
+      // Switch to the default section the user is deleting the active section
+      if (sectionView.sectionName == this.activeSection){
+        this.switchSection("AddSection");
+      };
+
       try{
         //Find the section link associated with this section view
         this.$(this.sectionLinksContainer).children().each(function(i, link){
@@ -594,7 +643,7 @@ function(_, $, Backbone, Portal, PortalSection,
             $(link).find(".section-menu-link").remove();
             //Hide the section name link with an animation
             $(link).animate({width: "0px", overflow: "hidden"}, {
-              duration: 500,
+              duration: 300,
               complete: function(){
                 this.remove();
               }
@@ -621,27 +670,24 @@ function(_, $, Backbone, Portal, PortalSection,
 
           switch( sectionType.toLowerCase() ){
             case "data":
-              this.renderDataSection();
-              this.activeSection = "Data";
+              //
               break;
             case "metrics":
               this.renderMetricsSection();
-              this.activeSection = "Metrics";
+              this.switchSection("Metrics");
               break;
             case "freeform":
-              console.log("this will render a new freeform section");
+
+              ("this will render a new freeform section");
               // TODO
               // this.renderContentSections();
-              // this.activeSection = "New Section";
+              // this.switchSection("New Page");
             case "members":
               // TODO
               // this.renderMembersSection();
-              // this.activeSection = "Members";
+              // this.switchSection("Members");
               break;
           }
-
-          // Navigate user to the new section
-          this.switchSection();
 
         }
         else{

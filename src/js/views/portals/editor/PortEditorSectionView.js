@@ -133,7 +133,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
           // Check whether the section option is available to user
           this.toggleDisableSectionOption(sectionType);
 
-          // For metrics, data, and members tabs, add a listener to update the
+          // For metrics, data, and members sections, add a listener to update the
           // section availability when the associated model option is changed.
           if(typeof sectionData.limiter === 'string' || sectionData.limiter instanceof String){
             this.stopListening(this.model, "change:"+sectionData.limiter);
@@ -142,7 +142,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
                 this.toggleDisableSectionOption(sectionType);
               }
               catch(e){
-                console.log("can't toggle disabling of section types, error message: " + e);
+                console.log("Cannot toggle disabling of section types, error message: " + e);
               }
             });
           }
@@ -284,7 +284,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
         name = this.model.get("label");
       }
       else{
-        name = "New section";
+        name = "New page";
       }
 
       if( typeof options == "object" ){
