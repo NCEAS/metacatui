@@ -289,6 +289,7 @@ function(_, $, Backbone, Portal, PortalSection,
         this.addSectionLink(dataView, menuOptions);
 
         //When the Data section has been hidden or shown, update the section link
+        this.stopListening(this.model, "change:hideData");
         this.listenTo(this.model, "change:hideData", function(){
           //Create the menu options for the Data section link
           var menuOptions = [];
