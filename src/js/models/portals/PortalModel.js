@@ -58,10 +58,10 @@ define(["jquery",
                     literatureCited: [],
                     filterGroups: [],
                     // The portal document options may specify section to hide
-                    hideMetrics: false,
-                    hideData: false,
-                    hideMembers: false,
-                    hideMap: false,
+                    hideMetrics: null,
+                    hideData: null,
+                    hideMembers: null,
+                    hideMap: null,
                     // Map options, as specified in the portal document options
                     mapZoomLevel: 3,
                     mapCenterLatitude: null,
@@ -359,7 +359,9 @@ define(["jquery",
                     // otherwise it's not saved in the model which attributes
                     // are <option></option>s
 
-                    modelJSON[optionName] = optionValue;
+                    if( !_.has(modelJSON, optionName) ){
+                      modelJSON[optionName] = optionValue;
+                    }
 
                 });
 
@@ -837,15 +839,30 @@ define(["jquery",
                 var optNames = this.get("optionNames");
 
                 _.each(optNames, function(optName){
-                  var optValue = model.get(optName);
 
-                  // Don't serialize null or undefined values
-                  if(optValue || optValue === 0 || optValue === false){
+                  //Get the value on the model
+                  var optValue = model.get(optName),
+                      existingValue;
+
+                  //Get the existing optionName element
+                  var matchingOption = $(portalNode).children("option")
+                                                    .find("optionName:contains('" + optName + "')");
+
+                  //
+                  if( !matchingOption.length || matchingOption.first().text() != optName ){
+                    matchingOption = false;
+                  }
+                  else{
+                    //Get the value for this option from the Portal doc
+                    existingValue = matchingOption.siblings("optionValue").text();
+                  }
+
+                  // Don't serialize null or undefined values. Also don't serialize values that match the default model value
+                  if( (optValue || optValue === 0 || optValue === false) &&
+                      ){
 
                     //Replace the existing option, if it exists
-                    var matchingOption = $(portalNode).children("option")
-                                                       .find("optionName:contains('" + optName + "')");
-                    if( matchingOption.length && matchingOption.first().text() == optName ){
+                    if( matchingOption ){
                       matchingOption.siblings("optionValue").text(optValue);
                     }
                     else{
@@ -869,6 +886,12 @@ define(["jquery",
 
                     }
 
+                  }
+                  else{
+                    //Remove the elements from the portal XML when the value is invalid
+                    if( matchingOption ){
+                      matchingOption.parent("option").remove();
+                    }
                   }
                 });
               }
@@ -1178,7 +1201,7 @@ define(["jquery",
                 if(typeof section == "string"){
                   switch( section.toLowerCase() ){
                     case "data":
-                      this.set("hideData", false);
+                      this.set("hideData", null);
                       break;
                     case "metrics":
                       this.set("hideMetrics", null);
