@@ -118,7 +118,8 @@ function(_, $, Backbone, Portal, PortalSection,
     events: {
       "click .remove-section" : "removeSection",
       "click .rename-section" : "renameSection",
-      "click .show-section"   : "showSection"
+      "click .show-section"   : "showSection",
+      "focusout .active>.section-link"  : "updateName"
     },
 
     /**
@@ -767,8 +768,53 @@ function(_, $, Backbone, Portal, PortalSection,
     * Renames a section in the tab in this view and in the PortalSectionModel
     * @param {Event} [e] - (optional) The click event on the Rename button
     */
-    renameSection: function(){
+    renameSection: function(e){
+      try {
+        //Get the PortalSection model for this rename button
+        var sectionLink = $(e.target).parents(".section-link-container"),
+            targetLink = sectionLink.children(".section-link"),
+            section = sectionLink.data("model");
+        
+        // make the text editable
+        targetLink.attr("contenteditable", true);
 
+        // add focus to the text
+        targetLink.focus();
+      
+      } catch (error) {
+        console.error(error);
+      }
+      
+    },
+
+    /**
+     * Update the section label 
+     *
+     * @function updateName
+     * @param e The event triggering this method
+     */
+    updateName: function(e) {
+      try {
+        //Get the PortalSection model for this rename button
+        var sectionLink = $(e.target).parents(".section-link-container"),
+            targetLink = sectionLink.children(".section-link"),
+            section = sectionLink.data("model");
+        
+        // Remove the content editable attribute
+        targetLink.attr("contenteditable", false);
+
+        //If this section is an object of PortalSection model, update the label.
+        if( PortalSection.prototype.isPrototypeOf(section) ){
+          // update the label
+          section.set("label", targetLink.text().trim());
+        }
+        else {
+          // TODO: handle the case for non-markdown secions
+        }
+
+      } catch (error) {
+        console.error(error);
+      }
     },
 
     /**
