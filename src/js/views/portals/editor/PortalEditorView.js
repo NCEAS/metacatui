@@ -414,6 +414,10 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
         .removeClass("Editor")
         .removeClass("Portal");
 
+      //Remove listeners
+      this.stopListening();
+      this.undelegateEvents();
+
     },
 
     /**
