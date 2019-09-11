@@ -214,15 +214,39 @@ function(_, $, Backbone, Portal, PortalSection,
     },
 
     /**
-    * Render a section in the editor for each content section in the Portal
+    * Render all sections in the editor for each content section in the Portal
     */
     renderContentSections: function(){
 
       //Get the sections from the Portal
       var sections = this.model.get("sections");
 
-      // Iterate over each "markdown" section in the PortalModel `sections`
+      // Render each markdown (aka "freeform") section already in the PortalModel
       _.each(sections, function(section){
+
+        try{
+          if(section){
+            this.renderContentSection(section);
+          }
+        }
+        catch(e){
+          console.error(e);
+        }
+      }, this);
+
+      // Render additional section views & links when user adds more freeform pages
+      this.stopListening(this.model, "addSection");
+      this.listenTo(this.model, "addSection", function(section){
+        this.renderContentSection(section);
+        this.switchSection(section.get("label").replace(/[^a-zA-Z0-9]/g, "-"));
+      });
+
+    },
+
+    /**
+    * Render a single markdown section in the editor (sectionView + link)
+    */
+    renderContentSection: function(section){
 
         try{
           if(section){
@@ -258,7 +282,6 @@ function(_, $, Backbone, Portal, PortalSection,
         catch(e){
           console.error(e);
         }
-      }, this);
 
     },
 
@@ -320,49 +343,57 @@ function(_, $, Backbone, Portal, PortalSection,
     * Renders the Metrics section of the editor
     */
     renderMetricsSection: function(){
-      // Render a PortEditorSectionView for the Metrics section and corresponding tab
-      // if the hide metrics view option is not true
-      if(this.model.get("hideMetrics") !== true){
 
-        //Create a PortEditorSectionView for the Metrics section
-        // if it doesn't exist yet
-        if(!this.metricsView){
+      // Render a PortEditorSectionView for the Metrics section if metrics is set
+      // to show, and the view hasn't already been rendered.
+      if(! this.model.get("hideMetrics") === true && !this.metricsView){
 
-          this.metricsView = new PortEditorSectionView({
-            model: this.model,
-            sectionName: "Metrics",
-            template: this.metricsSectionTemplate
-          });
-
-          //Add the view's element to the page
-          this.$(this.portEditMetricsContainer)
-              .html(this.metricsView.el)
-              .attr("id", this.metricsView.getName({ linkFriendly: true }));
-
-          //Render the view
-          this.metricsView.render();
-
-          // Add the data section to the list of subviews
-          this.subviews.push(this.metricsView);
-        }
-
-
-        // Add the tab to the tab navigation
-        this.addSectionLink(this.metricsView, ["Delete"]);
-
-        //When the metrics section has been toggled, remove or add it
-        this.stopListening(this.model, "change:hideMetrics");
-        this.listenTo(this.model, "change:hideMetrics", function(){
-          try{
-            //If hideMetrics has been set to true, remove it
-            if( this.model.get("hideMetrics") === true ){
-              this.removeSectionLink(this.metricsView);
-            }
-          }
-          catch(e){
-            console.error(e);
-          }
+        this.metricsView = new PortEditorSectionView({
+          model: this.model,
+          sectionName: "Metrics",
+          template: this.metricsSectionTemplate
         });
+
+        //Add the view's element to the page
+        this.$(this.portEditMetricsContainer)
+            .html(this.metricsView.el)
+            .attr("id", this.metricsView.getName({ linkFriendly: true }));
+
+        //Render the view
+        this.metricsView.render();
+
+        // Add the data section to the list of subviews
+        this.subviews.push(this.metricsView);
+
+      }
+
+      //When the metrics section has been toggled, remove or add the link
+      this.listenToOnce(this.model, "change:hideMetrics", this.renderMetricsSection);
+      this.toggleMetricsLink();
+
+    },
+
+    /**
+    * Adds or removes the metrics link depending on the 'hideMetrics' option in
+    * the model.
+    */
+    toggleMetricsLink: function(){
+
+      try{
+        // Need a metrics view to exist already if metrics is set to show
+        if(!this.metricsView && !this.model.get("hideMetrics") === true){
+          this.renderMetricsSection();
+        }
+        //If hideMetrics has been set to true, remove the link
+        if( this.model.get("hideMetrics") === true ){
+          this.removeSectionLink(this.metricsView);
+        // Otherwise add it
+        } else {
+          this.addSectionLink(this.metricsView, ["Delete"]);
+        }
+      }
+      catch(e){
+        console.error(e);
       }
     },
 
@@ -406,7 +437,6 @@ function(_, $, Backbone, Portal, PortalSection,
      * @param {Event} [e] - The click event on the navigation elements (tabs)
     */
     updatePath: function(e){
-
 
       // reset the flag during each updatePath call
       this.displaySectionInUrl = true;
@@ -519,7 +549,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
       // Activate the tab
       this.$(this.sectionLinksContainer).children().each(function(i, li){
-        if($(li).attr("data-section-name") == sectionName){
+        if($(li).find(".section-link").attr("href") == "#" + sectionName){
           $(li).addClass("active")
         } else {
           // make sure no other sections are active
@@ -560,12 +590,29 @@ function(_, $, Backbone, Portal, PortalSection,
           .css('opacity','0.5')
           .css('transition', 'opacity 0.1s');
 
-        // Insert new link just before the "+" link, if it exists.
-        // If the new link is "Settings", or there's no "+" link, insert it last.
+        // Find the "+" link to help determine the order in which we should add links
         var addSectionEl = this.$(this.sectionLinksContainer)
                                .find(this.sectionLinkContainer + "[data-section-name='AddSection']")[0];
-        if(addSectionEl && sectionView.getName()!= "Settings"){
+
+        // If the new link is for a markdown section
+        if($(newLink).data("view").type == "PortEditorMdSection"){
+          // Find the last markdown section in the list of links
+          var currentLinks = this.$(this.sectionLinksContainer).find("li.section-link-container");
+          var i = _.map(currentLinks, function(li){
+            return $(li).data("view") ? $(li).data("view").type : "";
+          }).lastIndexOf("PortEditorMdSection");
+          var lastMdSection = currentLinks[i];
+          // Append the new link after the last markdown section, or add it first.
+          if (lastMdSection){
+            $(lastMdSection).after(newLink);
+          } else {
+            this.$(this.sectionLinksContainer).prepend(newLink);
+          }
+        // If not a markdown section and not the Settings section, and if there
+        // is already a "+" link, add new link before the "+" link
+        } else if (addSectionEl && sectionView.getName()!= "Settings"){
           $(addSectionEl).before(newLink);
+        // If the new link is "Settings", or there's no "+" link yet, insert new link last.
         } else {
           this.$(this.sectionLinksContainer).append(newLink);
         }
@@ -639,7 +686,7 @@ function(_, $, Backbone, Portal, PortalSection,
     removeSectionLink: function(sectionView){
 
       // Switch to the default section the user is deleting the active section
-      if (sectionView.sectionName == this.activeSection){
+      if (sectionView.getName({ linkFriendly: true }) == this.activeSection){
         this.switchSection("AddSection");
       };
 
@@ -679,21 +726,17 @@ function(_, $, Backbone, Portal, PortalSection,
 
           switch( sectionType.toLowerCase() ){
             case "data":
-              //
+              // TODO ?
               break;
             case "metrics":
-              this.renderMetricsSection();
               this.switchSection("Metrics");
               break;
             case "freeform":
-
-              ("this will render a new freeform section");
-              // TODO
-              // this.renderContentSections();
-              // this.switchSection("New Page");
+            // Do nothing, everything is handled by renderContentSection
+            // and renderContentSections. Can't switch section here because
+            // for content sections, the section.label is variable.
             case "members":
               // TODO
-              // this.renderMembersSection();
               // this.switchSection("Members");
               break;
           }

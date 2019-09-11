@@ -1176,14 +1176,13 @@ define(["jquery",
                 }
                 //If this section is a section model, delete it from this Portal
                 else if( PortalSectionModel.prototype.isPrototypeOf(section) ){
-                  
-                  // remove the section from the model's sections array object
-                  var sectionModels = this.get("sections");
+
+                  // Remove the section from the model's sections array object.
+                  // Use clone() to create new array reference and ensure change
+                  // event is tirggered.
+                  var sectionModels = _.clone(this.get("sections"));
                   sectionModels.splice( $.inArray(section, sectionModels), 1);
                   this.set({sections: sectionModels});
-                  
-                  // triggering the change event
-                  this.trigger("change:sections");
                 }
                 else{
                   return;
@@ -1216,11 +1215,47 @@ define(["jquery",
                     case "members":
                       this.set("hideMembers", null);
                       break;
+                    case "freeform":
+                      // Add a new, blank markdown section
+                      var sectionModels = _.clone(this.get("sections")),
+                          newSection = new PortalSectionModel();
+                      // Set a default label on the new section
+                      var defaultLabel = "New Page",
+                          sectionLabels = sectionModels.map(m => m.get("label")),
+                          newSectionLabel = defaultLabel,
+                          i = 1;
+                      // If the tempLabel is already in use, append a number.
+                      // If tempLabel + number is already in use,
+                      // append the lowest number still available.
+                      if(sectionLabels){
+                        // Case-insensitive matching of sectionLabel in sectionLabels
+                        while(sectionLabels.map(s => s.toLowerCase()).includes(newSectionLabel.toLowerCase())){
+                          newSectionLabel = defaultLabel + " " + i;
+                          ++i
+                        };
+                      }
+                      // Set default temp values on the new markdown section.
+                      newSection.set({
+                        label: newSectionLabel,
+                        content: new EMLText({
+                                      markdown: "Add some content here.",
+                                      type: "content"
+                                  })
+                      });
+                      sectionModels.push( newSection );
+                      this.set("sections", sectionModels);
+                      // Trigger event manually so we can just pass newSection
+                      this.trigger("addSection", newSection);
+                      break;
                   }
                 }
-                //If this section is a section model, add it to this Portal
+                // If this section is a section model, add it to this Portal
                 else if( PortalSectionModel.prototype.isPrototypeOf(section) ){
-                  //TODO: Add a Markdown section
+                  var sectionModels = _.clone(this.get("sections"));
+                  sectionModels.push( section );
+                  this.set({sections: sectionModels});
+                  // trigger event manually so we can just pass newSection
+                  this.trigger("addSection", section);
                 }
                 else{
                   return;

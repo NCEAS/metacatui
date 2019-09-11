@@ -101,7 +101,6 @@ define(["jquery",
             }
 
           }, this);
-
           //Update the image element
           if( this.get("image") && typeof this.get("image").updateDOM == "function" ){
 
@@ -165,6 +164,8 @@ define(["jquery",
                 if( insertAfter ){
                   //Insert it into that position
                   $(insertAfter).after(newElement);
+                } else {
+                  objectDOM.append(newElement);
                 }
 
                 existingNodes.remove();
@@ -172,6 +173,7 @@ define(["jquery",
             }
           }
           catch(e){
+            console.log(e);
             return;
           }
 
