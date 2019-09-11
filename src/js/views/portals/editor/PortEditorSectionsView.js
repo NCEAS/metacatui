@@ -95,6 +95,11 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     sectionLinksContainer: ".section-links-container",
     /**
+    * A jQuery selector for the element that a single section link will be inserted into
+    * @type {string}
+    */
+    sectionLinkContainer: ".section-link-container",
+    /**
     * A jQuery selector for the element that the editor sections should be inserted into
     * @type {string}
     */
@@ -191,7 +196,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
       // Replace the name "AddSection" with fontawsome "+" icon
       this.$(this.sectionLinksContainer)
-          .find("li[data-section-name='AddSection']")
+          .find( this.sectionLinkContainer + "[data-section-name='AddSection']")
           .children()
           .html("<i class='icon icon-plus'></i>");
 
@@ -225,7 +230,7 @@ function(_, $, Backbone, Portal, PortalSection,
             // Create and render and markdown section view
             var sectionView = new PortEditorMdSectionView({
               model: section,
-              // applying the PortalSectionModel label attribute 
+              // applying the PortalSectionModel label attribute
               // to PortEditorMdSectionView
               sectionName: section.get("label"),
             });
@@ -545,7 +550,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
         // Make the tab hidden to start
         $(newLink)
-          .find(".section-link")
+          .find(this.sectionLinks)
           .css('max-width','0px')
           .css('opacity','0.2')
           .css('white-space', 'nowrap');
@@ -557,16 +562,16 @@ function(_, $, Backbone, Portal, PortalSection,
 
         // Insert new link just before the "+" link, if it exists.
         // If the new link is "Settings", or there's no "+" link, insert it last.
-        var addSectionLI = this.$(this.sectionLinksContainer)
-                               .find("li[data-section-name='AddSection']")[0];
-        if(addSectionLI && sectionView.getName()!= "Settings"){
-          $(addSectionLI).before(newLink);
+        var addSectionEl = this.$(this.sectionLinksContainer)
+                               .find(this.sectionLinkContainer + "[data-section-name='AddSection']")[0];
+        if(addSectionEl && sectionView.getName()!= "Settings"){
+          $(addSectionEl).before(newLink);
         } else {
           this.$(this.sectionLinksContainer).append(newLink);
         }
 
         // Animate the link to full width / opacity
-        $(newLink).find(".section-link").animate({
+        $(newLink).find(this.sectionLinks).animate({
             'max-width': "500px",
             overflow: "hidden",
             opacity: 1
@@ -580,7 +585,7 @@ function(_, $, Backbone, Portal, PortalSection,
         });
       }
       catch(e) {
-        console.log("Could not add a new section link. Error message: "+ e);
+        console.error("Could not add a new section link. Error message: "+ e);
       }
 
     },
@@ -712,7 +717,7 @@ function(_, $, Backbone, Portal, PortalSection,
       try{
 
         //Get the PortalSection model for this remove button
-        var sectionLink = $(e.target).parents(".section-link-container"),
+        var sectionLink = $(e.target).parents(this.sectionLinkContainer),
             section = sectionLink.data("model");
 
         //If this section is not a PortalSection model, get the section name
@@ -722,7 +727,7 @@ function(_, $, Backbone, Portal, PortalSection,
         // Processing for markdown sections
         else {
           this.stopListening(this.model, "change:sections");
-          
+
           // listening to PortalModel to remove the PortalSectionModel object
           this.listenToOnce(this.model, "change:sections", function() {
             try {
@@ -734,10 +739,10 @@ function(_, $, Backbone, Portal, PortalSection,
                   return obj.model === section;
                 }
               );
-              
+
               // remove the sectionView
               this.removeSectionLink(sectionView);
-              
+
             } catch (error) {
               console.error(error);
             }
@@ -768,7 +773,7 @@ function(_, $, Backbone, Portal, PortalSection,
       try{
 
         //Get the PortalSection model for this show button
-        var sectionLink = $(e.target).parents(".section-link-container"),
+        var sectionLink = $(e.target).parents(this.sectionLinkContainer),
             section = sectionLink.data("model");
 
         //If this section is not a PortalSection model, get the section name
@@ -798,24 +803,24 @@ function(_, $, Backbone, Portal, PortalSection,
     renameSection: function(e){
       try {
         //Get the PortalSection model for this rename button
-        var sectionLink = $(e.target).parents(".section-link-container"),
-            targetLink = sectionLink.children(".section-link"),
+        var sectionLink = $(e.target).parents(this.sectionLinkContainer),
+            targetLink = sectionLink.children(this.sectionLinks),
             section = sectionLink.data("model");
-        
+
         // make the text editable
         targetLink.attr("contenteditable", true);
 
         // add focus to the text
         targetLink.focus();
-      
+
       } catch (error) {
         console.error(error);
       }
-      
+
     },
 
     /**
-     * Update the section label 
+     * Update the section label
      *
      * @function updateName
      * @param e The event triggering this method
@@ -823,10 +828,10 @@ function(_, $, Backbone, Portal, PortalSection,
     updateName: function(e) {
       try {
         //Get the PortalSection model for this rename button
-        var sectionLink = $(e.target).parents(".section-link-container"),
-            targetLink = sectionLink.children(".section-link"),
+        var sectionLink = $(e.target).parents(this.sectionLinkContainer),
+            targetLink = sectionLink.children(this.sectionLinks),
             section = sectionLink.data("model");
-        
+
         // Remove the content editable attribute
         targetLink.attr("contenteditable", false);
 
