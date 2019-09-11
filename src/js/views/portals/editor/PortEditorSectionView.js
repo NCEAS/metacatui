@@ -112,24 +112,48 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
     */
     render: function(){
 
-      // Insert the template into the view
-      this.$el.html(this.template());
+      try{
 
-      // Add a section option element for each section type the user can select from.
-      _.each(this.sectionsOptions, function(sectionData, sectionType){
-        this.$(this.sectionsOptionsContainer).append(
-          this.sectionOptionTemplate({
-            id: "section-option-" + sectionType,
-            title: sectionData.title,
-            description: sectionData.description,
-            img: sectionData.svg
-          })
-        )
-        // Check whether the section option is available to user
-        this.toggleDisableSectionOption(sectionType)
-      }, this);
+        // Insert the template into the view
+        this.$el.html(this.template());
+
+        // Add a section option element for each section type the user can select from.
+        _.each(this.sectionsOptions, function(sectionData, sectionType){
+
+          this.$(this.sectionsOptionsContainer).append(
+            this.sectionOptionTemplate({
+              id: "section-option-" + sectionType,
+              title: sectionData.title,
+              description: sectionData.description,
+              img: sectionData.svg
+            })
+
+          )
+
+          // Check whether the section option is available to user
+          this.toggleDisableSectionOption(sectionType);
+
+          // For metrics, data, and members sections, add a listener to update the
+          // section availability when the associated model option is changed.
+          if(typeof sectionData.limiter === 'string' || sectionData.limiter instanceof String){
+            this.stopListening(this.model, "change:"+sectionData.limiter);
+            this.listenTo(this.model, "change:"+sectionData.limiter, function(){
+              try{
+                this.toggleDisableSectionOption(sectionType);
+              }
+              catch(e){
+                console.log("Cannot toggle disabling of section types, error message: " + e);
+              }
+            });
+          }
+        }, this);
+      }
+      catch(e){
+        console.log("Section view cannot be rendered, error message: " + e);
+      }
 
     },
+
 
     /**
     * Checks whether a section type is available to a user to add, then calls functions that change content and styling to indicate the availability to the user.
@@ -260,7 +284,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
         name = this.model.get("label");
       }
       else{
-        name = "New section";
+        name = "New page";
       }
 
       if( typeof options == "object" ){
