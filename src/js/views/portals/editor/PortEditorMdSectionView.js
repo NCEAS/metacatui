@@ -49,7 +49,8 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
     initialize: function(options){
 
       //Call the superclass initialize() function
-      PortEditorSectionView.prototype.initialize();
+      //Passing the parameters to the super class constructor
+      PortEditorSectionView.prototype.initialize(options);
 
     },
 

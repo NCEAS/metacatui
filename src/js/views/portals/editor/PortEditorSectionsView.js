@@ -224,7 +224,10 @@ function(_, $, Backbone, Portal, PortalSection,
 
             // Create and render and markdown section view
             var sectionView = new PortEditorMdSectionView({
-              model: section
+              model: section,
+              // applying the PortalSectionModel label attribute 
+              // to PortEditorMdSectionView
+              sectionName: section.get("label"),
             });
 
             // Add markdown section container, insert section HTML
@@ -715,6 +718,30 @@ function(_, $, Backbone, Portal, PortalSection,
         //If this section is not a PortalSection model, get the section name
         if( !PortalSection.prototype.isPrototypeOf(section) ){
           section = sectionLink.data("section-name");
+        }
+        // Processing for markdown sections
+        else {
+          this.stopListening(this.model, "change:sections");
+          
+          // listening to PortalModel to remove the PortalSectionModel object
+          this.listenToOnce(this.model, "change:sections", function() {
+            try {
+              // check for the matching model (section),
+              // and retrieve the corresponding sectionView
+              // from the subviews object
+              var sectionView = this.subviews.find(
+                obj => {
+                  return obj.model === section;
+                }
+              );
+              
+              // remove the sectionView
+              this.removeSectionLink(sectionView);
+              
+            } catch (error) {
+              console.error(error);
+            }
+          });
         }
 
         //If no section was found, exit now

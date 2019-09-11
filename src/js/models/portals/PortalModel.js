@@ -1176,7 +1176,14 @@ define(["jquery",
                 }
                 //If this section is a section model, delete it from this Portal
                 else if( PortalSectionModel.prototype.isPrototypeOf(section) ){
-                  //TODO: Delete these Markdown sections
+                  
+                  // remove the section from the model's sections array object
+                  var sectionModels = this.get("sections");
+                  sectionModels.splice( $.inArray(section, sectionModels), 1);
+                  this.set({sections: sectionModels});
+                  
+                  // triggering the change event
+                  this.trigger("change:sections");
                 }
                 else{
                   return;
