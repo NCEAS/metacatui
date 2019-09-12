@@ -2531,6 +2531,13 @@ img[src*="googleapis.com/"].georegion-map{
 	margin: 35px 0 25px 0;
 }
 
+/* Portal Editor settings */
+
+/* The width of each input element next to the remove button */
+.port-editor-settings-container textarea{
+	width: calc(100% - 20px - 1em);
+}
+
 /* Add section options */
 
 #section-options-container{
@@ -5058,6 +5065,10 @@ ul.side-nav-items {
 }
 textarea.xlarge{
 	min-height: 200px;
+}
+
+textarea.medium{
+	min-height: 50px;
 }
 
 /* Highlight drop zones with a dashed border */

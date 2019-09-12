@@ -73,7 +73,10 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
 
       //Insert the template into the view
       this.$el.html(this.template({
-        label: this.model.get("label")
+        label: this.model.get("label"),
+        description: this.model.get("description"),
+        descriptionHelpText: "Describe your portal in one brief paragraph. This description will appear in search summaries.",
+        descriptionPlaceholder: "Answer who, where, what, when, and why about your portal."
       }));
 
       //Render the AccessPolicyView
