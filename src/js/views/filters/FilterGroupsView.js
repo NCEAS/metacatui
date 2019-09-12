@@ -671,6 +671,16 @@ define(['jquery', 'underscore', 'backbone',
     */
     handleRemove: function(e){
 
+      // Ensure tooltips are removed
+      try{
+        if(e.delegateTarget){
+          $(e.delegateTarget).find(".tooltip").remove();
+        }
+      }
+      catch(e) {
+        console.log("Could not remove tooltip from filter label, error message: " + e);
+      };
+
       //Get the applied filter element and the filter model associated with it
       var appliedFilterEl = $(e.target).parents(".applied-filter"),
           filterModel =  appliedFilterEl.data("model");
