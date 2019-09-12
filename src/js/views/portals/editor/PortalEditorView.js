@@ -7,9 +7,11 @@ define(['underscore',
         "views/SignInView",
         "views/portals/editor/PortEditorSectionsView",
         "text!templates/loading.html",
-        "text!templates/portals/editor/portalEditor.html"
+        "text!templates/portals/editor/portalEditor.html",
+        // Override any theme-specific submit message templates, use the default
+        "text!" + MetacatUI.root + "/js/templates/editorSubmitMessage.html"
       ],
-function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSectionsView, LoadingTemplate, Template){
+function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSectionsView, LoadingTemplate, Template, EditorSubmitMessageTemplate){
 
   /**
   * @class PortalEditorView
@@ -43,6 +45,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
+    editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
     template: _.template(Template),
     loadingTemplate: _.template(LoadingTemplate),
 
@@ -189,7 +192,6 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
           MetacatUI.appUserModel.isAuthorizedCreatePortal();
 
         }
-
 
       }
 
