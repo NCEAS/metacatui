@@ -8,10 +8,9 @@ define(['underscore',
         "views/portals/editor/PortEditorSectionsView",
         "text!templates/loading.html",
         "text!templates/portals/editor/portalEditor.html",
-        // Override any theme-specific submit message templates, use the default
-        "text!" + MetacatUI.root + "/js/templates/editorSubmitMessage.html"
+        "text!templates/portals/editor/portalEditorSubmitMessage.html"
       ],
-function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSectionsView, LoadingTemplate, Template, EditorSubmitMessageTemplate){
+function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSectionsView, LoadingTemplate, Template, portalEditorSubmitMessageTemplate){
 
   /**
   * @class PortalEditorView
@@ -45,9 +44,11 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
-    editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
     template: _.template(Template),
     loadingTemplate: _.template(LoadingTemplate),
+    // Over-ride the default editor submit message template (which is currently
+    // used by the metadata editor) with the portal editor version
+    editorSubmitMessageTemplate: _.template(portalEditorSubmitMessageTemplate),
 
     /**
     * The text to use in the editor submit button
@@ -192,6 +193,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
           MetacatUI.appUserModel.isAuthorizedCreatePortal();
 
         }
+
 
       }
 
