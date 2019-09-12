@@ -579,6 +579,20 @@ define(['jquery', 'underscore', 'backbone',
       //Add the filter text to the filter element
       appliedFilter.prepend(filterTextContainer);
 
+      // Add a tooltip to the filter
+      if(filterModel.get("description")){
+
+        appliedFilter.tooltip({
+          placement: "right",
+          title: filterModel.get("description"),
+          trigger: "hover",
+          delay: {
+            show: 700
+          }
+        });
+
+      }
+
       return appliedFilter;
     },
 
