@@ -2500,7 +2500,7 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-sections .section-link{
   display: inline-block;
 }
-.port-editor-sections .section-link:focus{
+.port-editor-sections .section-link-container.active > [contenteditable=true]{
 	box-shadow: 0 0 5px #00689d;
 	padding: 3px 0px 3px 3px;
 	margin: 5px 1px 3px 0px;
