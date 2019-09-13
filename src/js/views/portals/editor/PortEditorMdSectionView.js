@@ -59,8 +59,44 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
     */
     render: function(){
 
-      //Insert the template into the view
-      this.$el.html(this.template());
+      try{
+
+        // Get the markdown
+        var markdown = this.model.get("content") ?
+                       this.model.get("content").get("markdown") : "";
+
+        // Insert the template into the view
+        this.$el.html(this.template({
+          title: this.model.get("title"),
+          titlePlaceholder: "Add a page title",
+          introduction: this.model.get("introduction"),
+          introPlaceholder: "Add a sub-title",
+          markdown: markdown,
+          markdownPlaceholder: "Content \n=== \n\nAdd content here. Styling with markdown is supported."
+        }));
+
+        // Auto-resize the height of the intoduction and title fields on user-input
+        // from: DreamTeK, https://stackoverflow.com/a/25621277
+        $("textarea.auto-resize").each(function () {
+          this.setAttribute(
+            "style", "height:" + (this.scrollHeight) + "px;overflow-y:hidden;"
+          );
+        }).on('input', function () {
+          this.style.height = '0px'; // note: textfield MUST have a min-height set
+          this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Attach the appropriate models to the textarea elements,
+        // so that PortalEditorView.updateBasicText(e) can access them
+        this.$(".markdown"    ).data({ model: this.model.get("content") });
+        this.$(".title"       ).data({ model: this.model });
+        this.$(".introduction").data({ model: this.model });
+
+      }
+      catch(e){
+        console.log("The markdown view could not be rendered, error message: " + e);
+      }
+
 
     }
 

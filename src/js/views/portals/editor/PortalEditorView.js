@@ -208,7 +208,13 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       // Add the template to the view and give the body the "Editor" class
       this.$el.html(this.template({
         name: this.model.get("name"),
-        submitButtonText: this.submitButtonText
+        submitButtonText: this.submitButtonText,
+        primaryColor: this.model.get("primaryColor"),
+        secondaryColor: this.model.get("secondaryColor"),
+        accentColor: this.model.get("accentColor"),
+        primaryColorTransparent: this.model.get("primaryColorTransparent"),
+        secondaryColorTransparent: this.model.get("secondaryColorTransparent"),
+        accentColorTransparent: this.model.get("accentColorTransparent")
       }));
 
       $("body").addClass("Editor")

@@ -79,9 +79,9 @@ define(["jquery",
                     primaryColorRGB: null,
                     secondaryColorRGB: null,
                     accentColorRGB: null,
-                    primaryColorTransparent: null,
-                    secondaryColorTransparent: null,
-                    accentColorTransparent: null
+                    primaryColorTransparent: "rgba(153, 153, 153, .7)",
+                    secondaryColorTransparent: "rgba(102, 102, 102, .7)",
+                    accentColorTransparent: "rgba(73, 123, 167, .7)"
                 });
             },
 

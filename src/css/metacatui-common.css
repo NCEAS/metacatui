@@ -2538,6 +2538,58 @@ img[src*="googleapis.com/"].georegion-map{
 	width: calc(100% - 20px - 1em);
 }
 
+/* Portal Editor markdown section
+ * SEE ALSO: .portal-display-image{} and .portal-display-text{} from portal styles
+ */
+.port-editor-markdown-container div.portal-display-image {
+	background: #ececec;
+	border: #999 2px dashed;
+	border-radius: 3px;
+	min-height: 300px;
+	/* min-height property should be 500px when an image is uploaded */
+}
+
+.port-editor-markdown-container .title,
+.port-editor-markdown-container .introduction {
+	width: 100%;
+	padding: 0px;
+	background: transparent;
+	color: white;
+	border: none;
+	border-radius: 0;
+	border-bottom: 1.5px solid white;
+	box-shadow: none;
+}
+
+.port-editor-markdown-container .title {
+	font-weight: 300;
+	font-size: 31.5px;
+	line-height: 44px;
+	margin: 15px 0;
+	min-height: 44px;
+}
+.port-editor-markdown-container .introduction{
+	font-weight: 400;
+	font-size: 14px;
+	line-height: 1.55em;
+	margin: 0 0 10px;
+	min-height: 1.55em;
+}
+
+.port-editor-markdown-container .title::placeholder,
+.port-editor-markdown-container .introduction::placeholder {
+	color: white;
+  opacity: 0.4;
+}
+
+.port-editor-markdown-container .markdown{
+	margin: 20px;
+	width: calc(100% - 40px);
+	line-height: 1.6em;
+	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+	padding: 0.5rem;
+}
+
 /* Add section options */
 
 #section-options-container{
