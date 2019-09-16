@@ -33,7 +33,12 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText'],
 
         //Get the text content of the markdown element
         _.each(markdownElements, function(markdownElement){
-          modelJSON.markdown += " " + markdownElement.textContent;
+          // Concatenate markdown elements with a space.
+          if(modelJSON.markdown === ""){
+            modelJSON.markdown = markdownElement.textContent;
+          } else {
+            modelJSON.markdown += " " + markdownElement.textContent;
+          }
         });
 
         //Return the JSON
