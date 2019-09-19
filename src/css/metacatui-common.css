@@ -2590,6 +2590,78 @@ img[src*="googleapis.com/"].georegion-map{
 	padding: 0.5rem;
 }
 
+.port-editor-markdown-container .markdown-help{
+	display: flex;
+	justify-content: space-around;
+	align-items: stretch;
+	align-content: stretch;
+	flex-wrap: wrap;
+}
+
+.port-editor-markdown-container .markdown-help table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.port-editor-markdown-container .markdown-help-text {
+	margin: 20px;
+	margin: 20px 20px 5px 20px;
+}
+
+.port-editor-markdown-container .markdown-help-column {
+	box-shadow: 0 0px 4px 0 rgba(0, 0, 0, 0.15);
+  padding: 15px;
+  background-color: #fbfbfb;
+	border-radius: 3px;
+	margin: 10px
+}
+
+.port-editor-markdown-container .markdown-help-column td {
+  padding: 2px 1px;
+	border-top: 1px solid #ececec;
+}
+
+.port-editor-markdown-container .markdown-help-column th {
+	padding-bottom: 9px;
+	font-weight: 600;
+  font-size: 13px;
+}
+
+.port-editor-markdown-container .markdown-help-column .more-help {
+	font-weight: 600;
+  font-size: 13px;
+	margin: 5px 0 0 0;
+	color: #555555;
+
+}
+
+.port-editor-markdown-container .markdown-help-column code,
+.port-editor-markdown-container .markdown-help-column pre {
+	color: #999999;
+	background-color: transparent;
+  border: none;
+	padding: 0px;
+	font-size: 12px;
+	margin: 0px;
+}
+
+.port-editor-markdown-container .markdown-help-column h1{
+	font-weight: 300;
+	font-size: 21px;
+	margin: 0;
+}
+
+.port-editor-markdown-container .markdown-help-column h2{
+	font-weight: 700;
+	font-size: 16px;
+	margin: 0;
+}
+
+.port-editor-markdown-container .markdown-help-column blockquote{
+	margin: 0;
+}
+
+
 /* Add section options */
 
 #section-options-container{
