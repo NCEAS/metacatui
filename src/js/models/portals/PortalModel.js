@@ -16,11 +16,12 @@ define(["jquery",
         "models/CollectionModel",
         "models/Search",
         "models/filters/FilterGroup",
-        "models/Map"
+        "models/Map",
+        "text!templates/portals/editor/MarkdownExample.md",
     ],
     /** @lends PortalModel.prototype */
     function($, _, Backbone, gmaps, uuid, Filters, SolrResults, PortalSectionModel, PortalImage,
-        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel, MarkdownExample) {
         /**
          * A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
@@ -84,6 +85,11 @@ define(["jquery",
                     accentColorTransparent: "rgba(73, 123, 167, .7)"
                 });
             },
+
+            /**
+             * The default text to use in the markdown example in a new section
+            */
+            markdownExample: MarkdownExample,
 
             /**
              * Overrides the default Backbone.Model.initialize() function to
@@ -1238,7 +1244,7 @@ define(["jquery",
                       newSection.set({
                         label: newSectionLabel,
                         content: new EMLText({
-                                      markdown: "Add some content here.",
+                                      markdown: this.markdownExample,
                                       type: "content"
                                   })
                       });
