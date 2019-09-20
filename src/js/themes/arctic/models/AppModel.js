@@ -193,7 +193,7 @@ define(['jquery', 'underscore', 'backbone'],
       */
       defaultFilterGroups: [
         {
-          label: "Filter by: ",
+          label: "Search for: ",
           filters: [
             {
               fields: ["attribute"],

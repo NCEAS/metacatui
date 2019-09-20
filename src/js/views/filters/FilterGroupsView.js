@@ -254,8 +254,8 @@ define(['jquery', 'underscore', 'backbone',
       var filter = new Filter({
         fields: ["text"],
         label: "Search",
-        description: "Filter the datasets by typing in any keyword, topic, creator, etc.",
-        placeholder: "Filter by anything"
+        description: "Search the datasets by typing in any keyword, topic, creator, etc.",
+        placeholder: "Search these datasets"
       });
       this.filters.add( filter );
 
