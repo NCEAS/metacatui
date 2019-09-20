@@ -704,6 +704,21 @@ define(["jquery",
 
                     var sectionSerialized = sectionModel.updateDOM();
 
+                    // Check that the <markdown> content isn't the example markdown
+                    // and that it isn't blank
+                    var newMD = $(sectionSerialized).find("markdown")[0];
+                    if(newMD && (newMD.textContent == this.markdownExample || newMD.textContent == "") ){
+                      // Remove it if it is.
+                      $(sectionSerialized).find("markdown").remove();
+                    };
+
+                    // Remove the <content> element if it's empty.
+                    // This will trigger a validation error, prompting user to
+                    // enter content.
+                    if($(sectionSerialized).find("content").is(':empty')){
+                      $(sectionSerialized).find("content").remove();
+                    }
+
                     // Insert new node at correct position
                     var insertAfter = model.getXMLPosition(portalNode, "section");
                     if(insertAfter){
@@ -976,6 +991,7 @@ define(["jquery",
 
                 }
               }
+
               // Convert xml to xmlString and return xmlString
               xmlString = new XMLSerializer().serializeToString(xmlDoc);
 
