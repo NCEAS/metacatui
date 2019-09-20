@@ -1,16 +1,22 @@
 <h4>Portal details</h4>
-<div class="color-palette-container"></div>
-<div class="description-container">Portal description will go here</div>
+<h4>Details</h4>
+<!--<div class="color-palette-container"></div>-->
+<div class="description-container">
+  <h5>Description</h5>
+  <p class="subtle"><%=descriptionHelpText%></p>
+  <textarea type="text" data-category="description" class="basic-text medium text" placeholder="<%=descriptionPlaceholder%>"><%=description%></textarea>
+</div>
 
+<!--
 <h4>Permissions</h4>
 <div class="permissions-container"></div>
+-->
 
 <h4>Partner Logos</h4>
 <div class="logos-container">Logos will go here</div>
 
-<div class="danger">
-  <h4>Danger Zone</h4>
-  <h5>Change URL</h5>
+<h4>Portal URL</h4>
+<div class="change-label-container">
   <span class="muted display-label-url"><%=MetacatUI.appModel.get('baseUrl')%>/portals/<%=label%></span>
   <div class="label-container control-group hide">
       <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/portals/</span>
@@ -24,3 +30,4 @@
     <button type="button" class="btn btn-primary cancel-change-url hide">Cancel</button>
   </div>
 </div>
+
