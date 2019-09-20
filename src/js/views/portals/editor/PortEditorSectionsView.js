@@ -418,14 +418,15 @@ function(_, $, Backbone, Portal, PortalSection,
       //Render the PortEditorSettingsView
       settingsView.render();
 
+      //Create and add a section link
       this.addSectionLink(settingsView);
 
+      //Get the section link we just added
+      var sectionLink = this.$(this.sectionLinks + "[href=#Settings]");
+      //Add a cog icon to the Settings tab
+      sectionLink.prepend( $(document.createElement("i")).addClass("icon icon-on-left icon-cog") );
       // Use bootstrap's 'pull-right' class to right-align Settings tab
-      this.$(this.sectionLinksContainer).children().each(function(i, li){
-        if($(li).children().attr("href") == "#Settings"){
-          $(li).addClass("pull-right");
-        };
-      });
+      sectionLink.parents(this.sectionLinkContainer).addClass("pull-right");
 
       // Add the data section to the list of subviews
       this.subviews.push(settingsView);

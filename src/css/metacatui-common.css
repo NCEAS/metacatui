@@ -2524,6 +2524,9 @@ img[src*="googleapis.com/"].georegion-map{
   background-color: transparent;
   border: 0px;
 }
+.port-editor-sections .section-link-container .dropdown-menu{
+  width: 100%;
+}
 /* 'Add new section' icon  */
 .port-editor-sections .icon.icon-plus {
 	margin: 0 1px 0 1px;
