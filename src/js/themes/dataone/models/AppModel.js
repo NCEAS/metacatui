@@ -138,6 +138,18 @@ define(['jquery', 'underscore', 'backbone'],
       */
       showMyPortals: true,
       /**
+      * The user-facing term for portals in lower-case and in singular form.
+      * e.g. "portal"
+      * @type {string}
+      */
+      portalTermSingular: "portal",
+      /**
+      * The user-facing term for portals in lower-case and in plural form.
+      * e.g. "portals". This allows for portal terms with irregular plurals.
+      * @type {string}
+      */
+      portalTermPlural: "portals",
+      /**
       * Set to false to prevent ANYONE from creating a new portal.
       * @type {boolean}
       */

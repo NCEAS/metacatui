@@ -17,9 +17,9 @@
 
 <h4>Portal URL</h4>
 <div class="change-label-container">
-  <span class="muted display-label-url"><%=MetacatUI.appModel.get('baseUrl')%>/portals/<%=label%></span>
+  <span class="muted display-label-url"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/<%=label%></span>
   <div class="label-container control-group hide">
-      <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/portals/</span>
+      <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
       <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
       <span class="notification help-inline"></span>
   </div>
@@ -30,4 +30,3 @@
     <button type="button" class="btn btn-primary cancel-change-url hide">Cancel</button>
   </div>
 </div>
-
