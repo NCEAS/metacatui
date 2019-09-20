@@ -88,8 +88,15 @@ define(["jquery",
 
             /**
              * The default text to use in the markdown example in a new section
+             * @type {string}
             */
             markdownExample: MarkdownExample,
+
+            /**
+             * The default text to use for a new section label added by the user
+             * @type {string}
+            */
+            newSectionLabel: "New Page",
 
             /**
              * Overrides the default Backbone.Model.initialize() function to
@@ -692,17 +699,23 @@ define(["jquery",
 
                 _.each(sections, function(sectionModel) {
 
-                  var sectionSerialized = sectionModel.updateDOM();
+                  // Don't serialize sections with default values
+                  if(!this.sectionIsDefault(sectionModel)){
 
-                  // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(portalNode, "section");
-                  if(insertAfter){
-                    insertAfter.after(sectionSerialized);
+                    var sectionSerialized = sectionModel.updateDOM();
+
+                    // Insert new node at correct position
+                    var insertAfter = model.getXMLPosition(portalNode, "section");
+                    if(insertAfter){
+                      insertAfter.after(sectionSerialized);
+                    }
+                    else {
+                      portalNode.append(sectionSerialized);
+                    }
+
                   }
-                  else {
-                    portalNode.append(sectionSerialized);
-                  }
-                })
+
+                }, this)
               };
 
               /* ====  Serialize the EMLText elements ("acknowledgments") ==== */
@@ -975,6 +988,64 @@ define(["jquery",
             },
 
             /**
+             * Checks whether the given sectionModel has been updated by the
+             * user, or whether all attributes match their default values.
+             * For a section's markdown, the default value is either an empty
+             * string, null, or the default pre-filled content (the value set to
+             * PortalModel.markdownExample). For a section's label, the default
+             * value is either an empty string or a string that begins with the
+             * value set to PortalModel.newSectionLabel. For all other attributes,
+             * the defaults are set in PortalSectionModel.defaults.
+             * @param {PortalSectionModel} sectionModel - The model to check against a default model
+             * @return {boolean} returns true if the sectionModel matches a default model, and false when at least one attribute differs
+            */
+            sectionIsDefault: function(sectionModel){
+
+              try{
+
+                var defaults = sectionModel.defaults(),
+                    currentMarkdown = sectionModel.get("content").get("markdown"),
+                    labelRegex = new RegExp("^" + this.newSectionLabel, "i");
+
+                // For each attribute, check whether it matches the default
+                if(
+                  // Check whether markdown matches the content that's
+                  // auto-filled or whether it's empty
+                  ( currentMarkdown === this.markdownExample ||
+                    currentMarkdown == "" ||
+                    currentMarkdown == null
+                  ) &&
+                  ( sectionModel.get("image") === defaults.image ) &&
+                  ( sectionModel.get("introduction") === defaults.introduction ) &&
+                  // Check whether label starts with the default new page name,
+                  // or whether it's empty
+                  (
+                    labelRegex.test( sectionModel.get("label") ) ||
+                    sectionModel.get("label") == "" ||
+                    sectionModel.get("label") == null
+                  ) &&
+                  ( sectionModel.get("literatureCited") === defaults.literatureCited ) &&
+                  ( sectionModel.get("title") === defaults.title )
+                ){
+                  // All elements of the section match the default
+                  return true
+                } else {
+                  // At least one attribute of the section has been updated
+                  return false
+                }
+
+              }
+              catch(e){
+                // If there's a problem with this function for some reason,
+                // return false so that the section is serialized to avoid
+                // losing information
+                console.log("Failed to check whether section model is default. Serializing it anyway. Error message:" + e);
+                return false
+              }
+
+            },
+
+            /**
              * Initialize the object XML for a brand spankin' new portal
              * @inheritdoc
              *
@@ -1226,9 +1297,8 @@ define(["jquery",
                       var sectionModels = _.clone(this.get("sections")),
                           newSection = new PortalSectionModel();
                       // Set a default label on the new section
-                      var defaultLabel = "New Page",
-                          sectionLabels = sectionModels.map(m => m.get("label")),
-                          newSectionLabel = defaultLabel,
+                      var sectionLabels = sectionModels.map(m => m.get("label")),
+                          newSectionLabel = this.newSectionLabel,
                           i = 2;
                       // If the tempLabel is already in use, append a number.
                       // If tempLabel + number is already in use,
@@ -1236,7 +1306,7 @@ define(["jquery",
                       if(sectionLabels){
                         // Case-insensitive matching of sectionLabel in sectionLabels
                         while(sectionLabels.map(s => s.toLowerCase()).includes(newSectionLabel.toLowerCase())){
-                          newSectionLabel = defaultLabel + " " + i;
+                          newSectionLabel = this.newSectionLabel + " " + i;
                           ++i
                         };
                       }
@@ -1245,7 +1315,8 @@ define(["jquery",
                         label: newSectionLabel,
                         content: new EMLText({
                                       markdown: this.markdownExample,
-                                      type: "content"
+                                      type: "content",
+                                      parentModel: newSection
                                   })
                       });
                       sectionModels.push( newSection );

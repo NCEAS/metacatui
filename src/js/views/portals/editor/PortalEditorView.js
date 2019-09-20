@@ -379,6 +379,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
         model.set(category, value);
         model.trigger("change:" + category);
       }
+
       //TODO: Add another blank text input (write addBasicText function)
       // if($(e.target).is(".new") && value != '' && category != "title"){
       //   $(e.target).removeClass("new");

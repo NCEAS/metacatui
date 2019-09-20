@@ -224,6 +224,7 @@ function(_, $, Backbone, Portal, PortalSection,
       // Render each markdown (aka "freeform") section already in the PortalModel
       _.each(sections, function(section){
 
+
         try{
           if(section){
             this.renderContentSection(section);

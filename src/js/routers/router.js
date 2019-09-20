@@ -41,7 +41,7 @@ function ($, _, Backbone) {
 			defaultPage : "searchTips"
 		},
 
-		initialize: function(options){
+		initialize: function(){
 
 			// Add routes to portal dynamically using the appModel portal term
 			var portalTermPlural = MetacatUI.appModel.get("portalTermPlural");
