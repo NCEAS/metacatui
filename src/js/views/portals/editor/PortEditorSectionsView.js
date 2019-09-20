@@ -124,7 +124,7 @@ function(_, $, Backbone, Portal, PortalSection,
       "click .remove-section" : "removeSection",
       "click .rename-section" : "renameSection",
       "click .show-section"   : "showSection",
-      "focusout .active>.section-link"  : "updateName"
+      "focusout .section-link[contenteditable=true]"  : "updateName"
     },
 
     /**
@@ -856,6 +856,19 @@ function(_, $, Backbone, Portal, PortalSection,
         // add focus to the text
         targetLink.focus();
 
+        //Select the text of the link
+        if (window.getSelection && window.document.createRange) {
+            var selection = window.getSelection();
+            var range = window.document.createRange();
+            range.selectNodeContents( targetLink[0] );
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else if (window.document.body.createTextRange) {
+            range = window.document.body.createTextRange();
+            range.moveToElementText( targetLink[0] );
+            range.select();
+        }
+
       } catch (error) {
         console.error(error);
       }
@@ -872,14 +885,14 @@ function(_, $, Backbone, Portal, PortalSection,
       try {
         //Get the PortalSection model for this rename button
         var sectionLink = $(e.target).parents(this.sectionLinkContainer),
-            targetLink = sectionLink.children(this.sectionLinks),
+            targetLink = sectionLink.find(this.sectionLinks),
             section = sectionLink.data("model");
 
         // Remove the content editable attribute
         targetLink.attr("contenteditable", false);
 
         //If this section is an object of PortalSection model, update the label.
-        if( PortalSection.prototype.isPrototypeOf(section) ){
+        if( section && PortalSection.prototype.isPrototypeOf(section) ){
           // update the label
           section.set("label", targetLink.text().trim());
         }

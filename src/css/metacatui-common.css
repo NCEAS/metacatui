@@ -2500,11 +2500,13 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-sections .section-link{
   display: inline-block;
 }
-.port-editor-sections .section-link-container.active > [contenteditable=true]{
+.port-editor-sections .section-link-container .section-link[contenteditable=true]{
 	box-shadow: 0 0 5px #00689d;
-	padding: 3px 0px 3px 3px;
+	padding: 5px 10px;
 	margin: 5px 1px 3px 0px;
 	border: 1px solid  #00689d;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 .port-editor-sections .section-menu-link{
   display: inline-block;
