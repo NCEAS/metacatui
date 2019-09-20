@@ -50,6 +50,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     */
     events: {
       "focusout .label-container input" : "showLabelValidation",
+      "click .change-portal-url"        : "changePortalUrl",
       "keyup .label-container input"    : "removeLabelValidation"
     },
 
@@ -176,6 +177,34 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
       // Validate label. The newPortalTempName is a restricted value.
       this.model.validateLabel(value, [this.newPortalTempName]);
 
+    },
+
+    /**
+     * Makes the portal url editable whenever the `change url` button is clicked
+     * 
+     * 
+     *  @param {Event} e - The click event
+     */
+    changePortalUrl: function(e) {
+      var changeButton = e.target;
+      var displayedLabel = $(".display-label-url");
+      var labelContainer = $(".label-container");
+
+      if ($(changeButton).text() === "Cancel") {
+        $(displayedLabel).show();
+        $(labelContainer).hide();
+        $(changeButton).html("Change URL");
+        $(changeButton).removeClass("btn-primary");
+        $(changeButton).addClass("btn-danger");
+      }
+      else {
+        $(displayedLabel).hide();
+        $(labelContainer).show();
+        $(changeButton).html("Cancel");
+        $(changeButton).removeClass("btn-danger");
+        $(changeButton).addClass("btn-primary");
+      }
+      
     }
 
   });

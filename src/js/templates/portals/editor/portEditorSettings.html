@@ -1,22 +1,26 @@
-<h4>Details</h4>
-<!--<div class="color-palette-container"></div>-->
-<div class="description-container">
-  <h5>Description</h5>
-  <p class="subtle"><%=descriptionHelpText%></p>
-  <textarea type="text" data-category="description" class="basic-text medium text" placeholder="<%=descriptionPlaceholder%>"><%=description%></textarea>
-</div>
+<h4>Portal details</h4>
+<div class="color-palette-container"></div>
+<div class="description-container">Portal description will go here</div>
 
-<!--
 <h4>Permissions</h4>
 <div class="permissions-container"></div>
--->
 
 <h4>Partner Logos</h4>
 <div class="logos-container">Logos will go here</div>
 
-<h4>Choose a URL</h4>
-<div class="label-container control-group">
-    <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/portals/</span>
-    <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
-    <span class="notification help-inline"></span>
+<div class="danger">
+  <h4>Danger Zone</h4>
+  <h5>Change URL</h5>
+  <span class="muted display-label-url"><%=MetacatUI.appModel.get('baseUrl')%>/portals/<%=label%></span>
+  <div class="label-container control-group hide">
+      <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/portals/</span>
+      <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
+      <span class="notification help-inline"></span>
+  </div>
+  <div>
+    <button type="button" class="btn btn-danger change-portal-url">Change URL</button>
+  </div>
+  <div>
+    <button type="button" class="btn btn-primary cancel-change-url hide">Cancel</button>
+  </div>
 </div>
