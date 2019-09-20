@@ -250,13 +250,12 @@ function(_, $, Backbone, Portal, PortalSection,
 
         try{
           if(section){
-
             // Create and render and markdown section view
             var sectionView = new PortEditorMdSectionView({
               model: section,
               // applying the PortalSectionModel label attribute
               // to PortEditorMdSectionView
-              sectionName: section.get("label"),
+              sectionName: section.get("label")
             });
 
             // Add markdown section container, insert section HTML

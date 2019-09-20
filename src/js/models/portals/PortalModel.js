@@ -1229,7 +1229,7 @@ define(["jquery",
                       var defaultLabel = "New Page",
                           sectionLabels = sectionModels.map(m => m.get("label")),
                           newSectionLabel = defaultLabel,
-                          i = 1;
+                          i = 2;
                       // If the tempLabel is already in use, append a number.
                       // If tempLabel + number is already in use,
                       // append the lowest number still available.
