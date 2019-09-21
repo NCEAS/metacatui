@@ -96,7 +96,7 @@ define(["jquery",
              * The default text to use for a new section label added by the user
              * @type {string}
             */
-            newSectionLabel: "New Page",
+            newSectionLabel: "Untitled",
 
             /**
              * Overrides the default Backbone.Model.initialize() function to
