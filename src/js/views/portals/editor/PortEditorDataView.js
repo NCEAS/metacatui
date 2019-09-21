@@ -50,7 +50,9 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
-    events: {
+    events:{
+      // Open dataset links in new tab so user can keep editing their portal
+      "click a.route-to-metadata": "openInNewTab"
     },
 
     /**
@@ -80,6 +82,23 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
       this.$(this.editCollectionViewContainer).html(editCollectionView.el);
       editCollectionView.render();
 
+    },
+
+    /**
+    * Opens a link in a new tab even when the target=_blank attribute isn't set.
+    * Link is assumed to be relative; the base url is prepended to make it absolute.
+    * @param {Event} e - The click event on an HTML achor element
+    */
+    openInNewTab: function(e){
+      try{
+        e.preventDefault();
+        e.stopPropagation();
+        var url = MetacatUI.appModel.get('baseUrl') + $(e.currentTarget).attr('href');
+        window.open(url, '_blank');
+      }
+      catch(error){
+        "Failed to open data link in new window, error message: " + error
+      }
     }
 
   });
