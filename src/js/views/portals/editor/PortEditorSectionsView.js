@@ -124,7 +124,10 @@ function(_, $, Backbone, Portal, PortalSection,
       "click .remove-section" : "removeSection",
       "click .rename-section" : "renameSection",
       "click .show-section"   : "showSection",
-      "focusout .section-link[contenteditable=true]"  : "updateName"
+      "focusout .section-link[contenteditable=true]"  : "updateName",
+      // both keyup and keydown events are needed for imitLabelLength function
+      "keyup .section-link[contenteditable=true]"  : "limitLabelInput",
+      "keydown .section-link[contenteditable=true]"  : "limitLabelInput"
     },
 
     /**
@@ -876,12 +879,101 @@ function(_, $, Backbone, Portal, PortalSection,
     },
 
     /**
+     * Stops user from entering more than 50 characters, and shows a message
+     * if user tries to exceed the limit. Also stops a user from entering
+     * RETURN or TAB characters, and instead re-directs to updateName().
+     * In the case of the TAB key, the focus moves to the title field.
+     * @param {Event} e - The keyup or keydown event when the user types in the section-link field
+    */
+    limitLabelInput: function(e){
+
+      try{
+
+        // Character limit for the labels
+        var limit = 50;
+        var currentLabel = $(e.target).text();
+
+        // If the RETURN key is pressed
+        if(e.which == 13){
+          // Don't allow character to be entered
+          e.preventDefault();
+          e.stopPropagation();
+          // Update name and exit function
+          this.updateName(e);
+          return
+        }
+
+        // If the TAB key is pressed
+        if(e.which == 9){
+          // Don't allow character to be entered
+          e.preventDefault();
+          e.stopPropagation();
+          // Update name, change focus to title, and exit function
+          this.updateName(e);
+          $("textarea.title").focus();
+          return
+        }
+
+        // Keys that a user can use as normal, even if character limit is met
+        var allowedKeys = [
+          8,  // DELETE
+          35, // END
+          36, // HOME
+          37, // LEFT
+          38, // UP
+          39, // RIGHT
+          40, // DOWN
+          46,  // DEL
+          17   // CTRL
+        ];
+
+        // Stop addition of more characters and show message
+        if(
+          // If at or greater than limit and
+          currentLabel.length >= limit &&
+          // key isn't a special key and
+          !allowedKeys.includes(e.which) &&
+          // cmd key isn't held down and
+          !e.metaKey &&
+          // user doesn't have some of the text selected
+          !window.getSelection().toString().length
+        ){
+          // Don't allow character to be entered
+          e.preventDefault();
+          e.stopPropagation();
+          // Add a tooltip if one doesn't exist yet
+          if(!$(e.delegateTarget).find(".tooltip").length){
+            $(e.target).tooltip({
+              placement: "top",
+              trigger: "manual",
+              title: "Limit of " + limit + " characters or fewer"
+            });
+          }
+          // Show the tooltip
+          $(e.target).tooltip('show');
+        // If under the character limit, proceed as normal.
+        } else {
+          // Make sure there's no tooltip showing.
+          $(e.delegateTarget).find(".tooltip").remove();
+        }
+      }
+      catch(error){
+        "Error limiting user input in label field, error message: " + error
+      }
+
+    },
+
+    /**
      * Update the section label
      *
      * @function updateName
      * @param e The event triggering this method
      */
     updateName: function(e) {
+
+      // Remove tooltip incase one was set by limitLabelInput function
+      $(e.delegateTarget).find(".tooltip").remove();
+
       try {
         //Get the PortalSection model for this rename button
         var sectionLink = $(e.target).parents(this.sectionLinkContainer),
