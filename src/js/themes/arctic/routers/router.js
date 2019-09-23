@@ -21,9 +21,7 @@ function ($, _, Backbone) {
 			'submit(/*pid)(/)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'           : 'renderAPI',       // API page
-			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
-      'portals(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
-      'edit/portals(/:portalIdentifier)(/:portalSection)(/)'     : 'renderPortalEditor'
+			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal' // portal page
 		},
 
 		helpPages: {

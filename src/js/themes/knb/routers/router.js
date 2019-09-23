@@ -30,7 +30,8 @@ function ($, _, Backbone) {
 			'share(/*pid)(/)'                   : 'renderEditor', // registry page
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)(/)'                : 'renderAPI' // API page
+			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
+			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal' // portal page
 		},
 
 		helpPages: {
