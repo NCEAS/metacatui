@@ -242,7 +242,7 @@ function(_, $, Backbone, Portal, PortalSection,
       // Render additional section views & links when user adds more freeform pages
       this.stopListening(this.model, "addSection");
       this.listenTo(this.model, "addSection", function(section){
-        this.renderContentSection(section);
+        this.renderContentSection(section, true);
         this.switchSection(section.get("label").replace(/[^a-zA-Z0-9]/g, "-"));
       });
 
@@ -251,9 +251,14 @@ function(_, $, Backbone, Portal, PortalSection,
     /**
     * Render a single markdown section in the editor (sectionView + link)
     */
-    renderContentSection: function(section){
+    renderContentSection: function(section, newSection){
 
         try{
+
+          if (newSection == null) {
+            newSection = false;
+          }
+
           if(section){
             // Create and render and markdown section view
             var sectionView = new PortEditorMdSectionView({
@@ -277,10 +282,11 @@ function(_, $, Backbone, Portal, PortalSection,
             sectionView.render();
 
             // Add the tab to the tab navigation
-            this.addSectionLink(sectionView, ["Rename", "Delete"]);
+            this.addSectionLink(sectionView, ["Rename", "Delete"], newSection);
+
             // Add the sections to the list of subviews
             this.subviews.push(sectionView);
-
+          
           }
         }
         catch(e){
@@ -576,8 +582,13 @@ function(_, $, Backbone, Portal, PortalSection,
     * Add a link to the given editor section
     * @param {PortEditorSectionView} sectionView - The view to add a link to
     * @param {string[]} menuOptions - An array of menu options for this section. e.g. Rename, Delete
+    * @param {boolean} focusLink - A boolean flag to enable focus on new section link
     */
-    addSectionLink: function(sectionView, menuOptions){
+    addSectionLink: function(sectionView, menuOptions, focusLink){
+
+      if (focusLink === null) { 
+        focusLink = false; 
+      }
 
       try{
         var newLink = this.createSectionLink(sectionView, menuOptions);
@@ -611,6 +622,27 @@ function(_, $, Backbone, Portal, PortalSection,
             $(lastMdSection).after(newLink);
           } else {
             this.$(this.sectionLinksContainer).prepend(newLink);
+          }
+
+          // If this is a newly added markdown section, highlight the section name
+          // and make it content editable
+          if(focusLink) {
+            var newSectionLink = $(newLink).children(".section-link");
+            newSectionLink.attr("contenteditable", true);
+            newSectionLink.focus();
+
+            //Select the text of the link
+            if (window.getSelection && window.document.createRange) {
+              var selection = window.getSelection();
+              var range = window.document.createRange();
+              range.selectNodeContents( newSectionLink[0] );
+              selection.removeAllRanges();
+              selection.addRange(range);
+            } else if (window.document.body.createTextRange) {
+              range = window.document.body.createTextRange();
+              range.moveToElementText( newSectionLink[0] );
+              range.select();
+            }
           }
         // If not a markdown section and not the Settings section, and if there
         // is already a "+" link, add new link before the "+" link
