@@ -123,6 +123,7 @@ function(_, $, Backbone, Portal, PortalSection,
     events: {
       "click .remove-section" : "removeSection",
       "click .rename-section" : "renameSection",
+      "dblclick .section-link" : "renameSection",
       "click .show-section"   : "showSection",
       "focusout .section-link[contenteditable=true]"  : "updateName",
       // both keyup and keydown events are needed for imitLabelLength function
