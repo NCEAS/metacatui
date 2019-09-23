@@ -69,6 +69,8 @@ require.config({
 	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
 	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
+	// drop zone creates drag and drop areas
+	dropZone: MetacatUI.root + '/components/dropzone-amd-module',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],

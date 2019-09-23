@@ -2,8 +2,9 @@ define(['underscore',
         'jquery',
         'backbone',
         "models/DataONEObject",
+        "dropZone",
         "text!templates/imageUploader.html"],
-function(_, $, Backbone, DataONEObject, Template){
+function(_, $, Backbone, DataONEObject, dropZone, Template){
 
   /**
   * @class ImageUploaderView
@@ -57,7 +58,6 @@ function(_, $, Backbone, DataONEObject, Template){
       if( typeof options == "object" ){
         this.model = options.model || undefined;
       }
-
     },
 
     /**
@@ -67,6 +67,22 @@ function(_, $, Backbone, DataONEObject, Template){
 
       //Insert the template for this view
       this.$el.html(this.template());
+
+      // Add drag + drop functionality to the iamge uploader div
+      // WIP, see: https://www.dropzonejs.com/#configuration-options
+      $(".dropzone").dropzone({
+        url: MetacatUI.appModel.get("objectServiceUrl"), // + encodeURIComponent(this.model.get("id")),
+        // paramName: "file", // The name that will be used to transfer the file
+        acceptedFiles: "image/*",
+        addRemoveLinks: true,
+        parallelUploads: 1,
+        thumbnailHeight: 200,
+        thumbnailWidth: 200,
+        headers: {
+          //
+        },
+        dictDefaultMessage: "Drop an image or click here to upload image"
+      });
 
     }
 

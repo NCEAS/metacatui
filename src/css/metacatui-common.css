@@ -2543,6 +2543,16 @@ img[src*="googleapis.com/"].georegion-map{
 /* Portal Editor markdown section
  * SEE ALSO: .portal-display-image{} and .portal-display-text{} from portal styles
  */
+
+/* Image upload drag and drop zone */
+.dropzone {
+ 	background: #ececec;
+ 	border: #999 2px dashed;
+ 	border-radius: 3px;
+	cursor: pointer;
+ 	/* min-height property should be 500px when an image is uploaded */
+ }
+
 .port-editor-markdown-container div.portal-display-image {
 	background: #ececec;
 	border: #999 2px dashed;
