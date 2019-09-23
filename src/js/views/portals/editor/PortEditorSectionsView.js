@@ -286,7 +286,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
             // Add the sections to the list of subviews
             this.subviews.push(sectionView);
-          
+        
           }
         }
         catch(e){
@@ -885,6 +885,14 @@ function(_, $, Backbone, Portal, PortalSection,
         var sectionLink = $(e.target).parents(this.sectionLinkContainer),
             targetLink = sectionLink.children(this.sectionLinks),
             section = sectionLink.data("model");
+
+        // double-click events
+        if (e.type === "dblclick") {
+          // Continue editing tab-name on double click only for markdown sections
+          if($(sectionLink).data("view").type != "PortEditorMdSection"){
+            return;
+          }
+        }
 
         // make the text editable
         targetLink.attr("contenteditable", true);
