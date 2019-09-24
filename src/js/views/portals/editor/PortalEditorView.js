@@ -6,14 +6,11 @@ define(['underscore',
         'views/EditorView',
         "views/SignInView",
         "views/portals/editor/PortEditorSectionsView",
-        "views/ImageUploaderView",
         "text!templates/loading.html",
         "text!templates/portals/editor/portalEditor.html",
         "text!templates/portals/editor/portalEditorSubmitMessage.html"
       ],
-function(_, $, Backbone, Portal, Filters, EditorView, SignInView,
-  PortEditorSectionsView, ImageUploader, LoadingTemplate, Template,
-  portalEditorSubmitMessageTemplate){
+function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSectionsView, LoadingTemplate, Template, portalEditorSubmitMessageTemplate){
 
   /**
   * @class PortalEditorView
@@ -64,13 +61,6 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView,
     * @type {string}
     */
     portEditSectionsContainer: ".port-editor-sections-container",
-
-    /**
-    * A jQuery selector for the element that the portal logo image uploader
-    * should be inserted into
-    * @type {string}
-    */
-    portEditLogoContainer: ".logo-container",
 
     /**
     * A temporary name to use for portals when they are first created but don't have a label yet.
@@ -249,12 +239,6 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView,
 
       //Render the sections view
       this.sectionsView.render();
-
-      // Add the image view (incl. uploader) for the portal logo
-      this.logoUploader = new ImageUploader();
-      this.$(this.portEditLogoContainer).html(this.logoUploader.el);
-
-      this.logoUploader.render();
 
     },
 

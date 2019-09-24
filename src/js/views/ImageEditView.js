@@ -1,10 +1,10 @@
 define(['underscore',
         'jquery',
         'backbone',
-        "models/PortalImage",
+        "models/ImageModel",
         "views/ImageUploaderView",
         "text!templates/imageEdit.html"],
-function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
+function(_, $, Backbone, ImageModel, ImageUploaderView, Template){
 
   /**
   * @class ImageEditView
@@ -30,7 +30,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     className: "edit-logos",
 
     /**
-    * The PortalImage model that is being edited
+    * The ImageModel that is being edited
     * @type {Image}
     */
     model: undefined,
