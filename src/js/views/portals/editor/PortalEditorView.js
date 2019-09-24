@@ -413,6 +413,62 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
 
     },
 
+    /**
+    * When the Portal model has been flagged as invalid, show the validation error messages
+    */
+    showValidation: function(){
+
+      //First clear all the error messaging
+      this.$(".notification.error").empty();
+      this.$(".alert-container").remove();
+
+      var errors = this.model.validationError;
+
+      _.each(errors, function(errorMsg, category){
+        var categoryEls = this.$("[data-category='" + category + "']");
+
+        //Get the elements that have views attached to them
+        var elsWithViews = _.filter(categoryEls, function(el){
+            return ( $(el).data("view") &&
+                $(el).data("view").showValidation &&
+                !$(el).data("view").isNew );
+          });
+
+        //If at least one element of this category has a view,
+        if(elsWithViews.length){
+          //Use the view's showValidation function, if it exists.
+          _.each(elsWithViews, function(el){
+            var view = $(el).data("view");
+
+            if( view && view.showValidation ){
+              view.showValidation();
+            }
+          });
+        }
+        else{
+          //Show the error message
+          categoryEls.filter(".notification").addClass("error").text(errorMsg);
+
+          //Add the error class to inputs
+          categoryEls.filter("textarea, input").addClass("error");
+        }
+
+      }, this);
+
+      if(errors){
+        MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.",
+            "alert-error",
+            this.$el,
+            null,
+            {
+              remove: true
+            });
+
+        //Hide the saving styling
+        this.hideSaving();
+      }
+
+    },
 
     /**
      * This function is called when the app navigates away from this view.

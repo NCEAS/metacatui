@@ -214,9 +214,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      * Show validation errors, if there are any
      */
     showValidation: function(){
-      // TODO: display validation errors in the editor
-      // For now, just show a save error message
-      this.saveError();
+      this.saveError("Unable to save. Either required information is missing or isn't filled out correctly.");
     },
 
     /**

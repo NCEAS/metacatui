@@ -73,6 +73,8 @@ define(["jquery",
                     optionNames: ["primaryColor", "secondaryColor", "accentColor",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
                             "mapShapeHue", "hideData", "hideMetrics", "hideMembers"],
+                    originalLabel: null,
+                    labelBlacklist: ["new"],
                     // Portal view colors, as specified in the portal document options
                     primaryColor: "#999999",
                     secondaryColor: "#666666",
@@ -992,49 +994,33 @@ define(["jquery",
             /**
              * Overrides the default Backbone.Model.validate.function() to
              * check if this portal model has all the required values necessary
-             * to save to the server
+             * to save to the server.
              *
+             * @param {Object} attrs - A literal object of model attributes to validate.
+             * @param {Object} options - A literal object of options for this validation process
              * @return {Object} If there are errors, an object comprising error
              *                   messages. If no errors, returns nothing.
             */
-            validate: function() {
+            validate: function(attrs, options) {
 
-              var errors = {};
+              try{
 
-              // ---- Validate label----
+                var errors = {};
 
-              this.once("labelBlank", function(){
-                errors.label = "The URL label is blank. Please choose a label."
-              });
+                // ---- Validate label----
+                var labelError = this.validateLabel(label = this.get("label"));
+                if( labelError ){
+                  errors.label = labelError;
+                }
 
-              this.once("labelRestricted", function(){
-                errors.label = "The URL label entered is not allowed. " +
-                               "Please choose a different URL."
-              });
-
-              this.once("labelIncludesIllegalCharacters", function(){
-                errors.label = "The URL label contains illegal characters. " +
-                               "Only letters, numbers, dashes, and underscores are allowed."
-              });
-
-              this.once("labelTaken", function(){
-                errors.label = "The URL label selected is already in use. " +
-                               "Please choose a different URL."
-              });
-
-              // TODO: Which strings should we resctict users from selecting for
-              // a portal label (and URL component)?
-              this.validateLabel(label = this.get("label"), blacklist = ["new"]);
-
-              // TODO: For the portal to be valid, we should wait for the event
-              // "labelAvailable". This takes time since it's a solr query.
-
-              // TODO: validate all the portal elements here
-
-              if( Object.keys(errors).length )
-                return errors;
-              else{
-                return;
+                if( Object.keys(errors).length )
+                  return errors;
+                else{
+                  return;
+                }
+              }
+              catch(e){
+                console.error(e);
               }
 
             },
@@ -1046,43 +1032,57 @@ define(["jquery",
              * for use as part of a url
              *
              * @param {string} label - The portal label to be validated
-             * @param {Array} blacklist - A list of restricted strings that are not allowed as portal labels
+             * @return {string} - If the label is invalid, an error message string is returned
             */
-            validateLabel: function(label, blacklist){
+            validateLabel: function(label){
 
-              // If no label is given or set
-              if(!label && !this.get("label")){
-                // trigger warning and exit
-                this.trigger("labelBlank");
-                return
-              // If there's at least a label set on the model
-              } else if(!label){
-                // use the label that's set on the model
-                var label = this.get("label");
-              }
+              try{
 
-              // If the label hasn't changed from original label set
-              if(label == this.get("originalLabel")){
-                // trigger warning and exit
-                this.trigger("labelUnchanged");
-                return
-              }
-
-              // If the label is a restricted string
-              if(blacklist){
-                if(blacklist.includes(label)){
-                  // trigger warning and exit
-                  this.trigger("labelRestricted");
-                  return
+                //Validate the label set on the model if one isn't given
+                if( typeof this.get("label") != "string" ){
+                  var label = this.get("label");
                 }
+
+                //If the label is empty
+                if( !label || !label.trim().length ){
+                  return "Please choose a name for this portal to use in the URL.";
+                }
+
+                // If the label is a restricted string
+                var blacklist = this.get("labelBlacklist");
+                if( blacklist && Array.isArray(blacklist) ){
+                  if(blacklist.includes(label)){
+                    return "This URL is already taken, please try something else";
+                  }
+                }
+
+                // If the label includes illegal characers
+                // (Only allow letters, numbers, underscores and dashes)
+                if(label.match(/[^A-Za-z0-9_-]/g)){
+                  return "URLs may only contain letters, numbers, underscores (_), and dashes (-).";
+                }
+
+              }
+              catch(e){
+                //Trigger an error event
+                this.trigger("errorValidatingLabel");
+                console.error(e);
               }
 
-              // If the label includes illegal characers
-              // (Only allow letters, numbers, underscores and dashes)
-              if(label.match(/[^A-Za-z0-9_-]/g)){
-                // trigger warning and exit
-                this.trigger("labelIncludesIllegalCharacters");
-                return
+            },
+
+            /**
+            * Queries the Solr discovery index for other Portal objects with this same label.
+            * If at least one other Portal has the same label, then it is not available.
+            * @param {string} label - The label to query for
+            */
+            checkLabelAvailability: function(label){
+
+              if( typeof label != "string" ){
+                var label = this.get("label");
+                if( !label || typeof label != "string" ){
+                  return;
+                }
               }
 
               var model = this;
@@ -1091,13 +1091,20 @@ define(["jquery",
               var requestSettings = {
                   url: MetacatUI.appModel.get("queryServiceUrl") +
                        "q=label:\"" + label + "\"" +
-                       "&fl=label" +
+                       " AND formatId:\"" + this.get("formatId") + "\"" +
+                       "&rows=0" +
                        "&wt=json",
                   error: function(response) {
                     model.trigger("errorValidatingLabel");
                   },
                   success: function(response){
                     if( response.response.numFound > 0 ){
+                      //Add this label to the blacklist so we don't have to query for it later
+                      var blacklist = model.get("labelBlacklist");
+                      if( Array.isArray(blacklist) ){
+                        blacklist.push(label);
+                      }
+
                       model.trigger("labelTaken");
                     } else {
                       model.trigger("labelAvailable");
@@ -1105,10 +1112,9 @@ define(["jquery",
                   }
               }
 
+              //Attach the User auth info and send the request
               requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
-
               $.ajax(requestSettings);
-
             },
 
             /**
@@ -1132,6 +1138,16 @@ define(["jquery",
              * Saves the portal XML document to the server using the DataONE API
             */
             save: function(){
+
+              //Validate before we try anything else
+              if(!this.isValid()){
+                this.trigger("invalid");
+                this.trigger("cancelSave");
+                return false;
+              }
+              else{
+                this.trigger("valid");
+              }
 
               //Check if the checksum has been calculated yet.
               if( !this.get("checksum") ){

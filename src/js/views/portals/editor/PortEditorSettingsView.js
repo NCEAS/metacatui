@@ -106,6 +106,8 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
       messageEl.html("");
       container.removeClass("error");
       container.removeClass("success");
+      container.find(".error").removeClass("error");
+      container.find(".success").removeClass("success");
 
     },
 
@@ -123,40 +125,13 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
           messageEl = $(container).find('.notification'),
           value = input.val();
 
-      this.listenToOnce(this.model, "labelUnchanged", function(){
+      //If the label is unchanged, remove the validation messaging and exit
+      if( value == this.model.get("originalLabel") ){
         this.removeLabelValidation(e);
-      }, this, e);
+        return;
+      }
 
-      this.listenToOnce(this.model, "labelAvailable", function(){
-        messageEl.html("<i class='icon-check'></i> This URL is available");
-        container.removeClass("error");
-        container.addClass("success");
-      });
-
-      this.listenToOnce(this.model, "labelBlank", function(){
-        messageEl.html("A URL is required");
-        container.removeClass("success");
-        container.addClass("error");
-      });
-
-      this.listenToOnce(this.model, "labelTaken", function(){
-        messageEl.html("This URL is already taken, please try something else");
-        container.removeClass("success");
-        container.addClass("error");
-      });
-
-      this.listenToOnce(this.model, "labelRestricted", function(){
-        messageEl.html("This URL is not allowed, please try something else");
-        container.removeClass("success");
-        container.addClass("error");
-      });
-
-      this.listenToOnce(this.model, "labelIncludesIllegalCharacters", function(){
-        messageEl.html("URLs may only contain letters, numbers, underscores (_), and dashes (-).");
-        container.removeClass("success");
-        container.addClass("error");
-      });
-
+      //If there is an error checking the validity, display a message
       this.listenToOnce(this.model, "errorValidatingLabel", function(){
         var email = MetacatUI.appModel.get('emailContact');
         messageEl.html("There was a problem checking the availablity of this URL. " +
@@ -167,14 +142,37 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         container.addClass("error");
       });
 
+      //Validate the label string
+      var error = this.model.validateLabel(value, [this.newPortalTempName]);
+
+      //If there is an error, display it and exit
+      if( error ){
+        messageEl.html(error);
+        container.removeClass("success");
+        container.addClass("error");
+        return;
+      }
+
+      this.listenToOnce(this.model, "labelAvailable", function(){
+        messageEl.html("<i class='icon-check'></i> This URL is available");
+        container.removeClass("error");
+        container.addClass("success");
+      });
+
+      this.listenToOnce(this.model, "labelTaken", function(){
+        messageEl.html("This URL is already taken, please try something else");
+        container.removeClass("success");
+        container.addClass("error");
+      });
+
+      // Validate label. The newPortalTempName is a restricted value.
+      this.model.checkLabelAvailability(value);
+
       // Show 'checking URL' message
       messageEl.html(
         "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
         "Checking if URL is available"
       );
-
-      // Validate label. The newPortalTempName is a restricted value.
-      this.model.validateLabel(value, [this.newPortalTempName]);
 
     }
 
