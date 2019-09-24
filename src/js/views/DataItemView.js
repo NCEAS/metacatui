@@ -477,6 +477,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });
+
+                        console.log(dataONEObject);
+
                         // Add it to the parent collection
                         this.collection.add(dataONEObject);
 
