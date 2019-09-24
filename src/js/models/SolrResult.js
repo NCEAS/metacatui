@@ -730,8 +730,8 @@ define(['jquery', 'underscore', 'backbone'],
     * @return {string}
     */
     createViewURL: function(){
-      return (this.getType() == "portal" || this.getType() == "collection")?
-              MetacatUI.root + "/portals/" + (this.get("label") || this.get("seriesId") || this.get("id")) :
+      return (this.getType() == "portal" || this.getType() == "collection") ?
+              MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + (this.get("label") || this.get("seriesId") || this.get("id")) :
               MetacatUI.root + "/view/" + (this.get("seriesId") || this.get("id"));
     },
 

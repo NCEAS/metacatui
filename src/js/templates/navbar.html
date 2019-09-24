@@ -39,7 +39,7 @@
           if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
             <li>
               <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
-                My portals
+                My <%= MetacatUI.appModel.get("portalTermPlural") %>
                 <span class="new-icon">
                   <i class="icon icon-star icon-on-right"></i>
                   NEW

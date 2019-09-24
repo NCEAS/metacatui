@@ -263,8 +263,8 @@ define(["jquery",
                 } else {
                   container.html(
                     this.editPortalsTemplate({
-                      editButtonText: "Edit Portal",
-                      pathToEdit: MetacatUI.root + "/edit/portals/" + model.get("label")
+                      editButtonText: "Edit " + MetacatUI.appModel.get('portalTermSingular'),
+                      pathToEdit: MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + model.get("label")
                     })
                   );
                 }

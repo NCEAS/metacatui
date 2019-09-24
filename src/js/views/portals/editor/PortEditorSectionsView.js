@@ -121,10 +121,14 @@ function(_, $, Backbone, Portal, PortalSection,
     * @type {Object}
     */
     events: {
-      "click .remove-section" : "removeSection",
+      "click .remove-section" : "confirmRemoveSection",
       "click .rename-section" : "renameSection",
+      "dblclick .section-link" : "renameSection",
       "click .show-section"   : "showSection",
-      "focusout .section-link[contenteditable=true]"  : "updateName"
+      "focusout .section-link[contenteditable=true]"  : "updateName",
+      // both keyup and keydown events are needed for imitLabelLength function
+      "keyup .section-link[contenteditable=true]"  : "limitLabelInput",
+      "keydown .section-link[contenteditable=true]"  : "limitLabelInput"
     },
 
     /**
@@ -224,6 +228,7 @@ function(_, $, Backbone, Portal, PortalSection,
       // Render each markdown (aka "freeform") section already in the PortalModel
       _.each(sections, function(section){
 
+
         try{
           if(section){
             this.renderContentSection(section);
@@ -237,7 +242,7 @@ function(_, $, Backbone, Portal, PortalSection,
       // Render additional section views & links when user adds more freeform pages
       this.stopListening(this.model, "addSection");
       this.listenTo(this.model, "addSection", function(section){
-        this.renderContentSection(section);
+        this.renderContentSection(section, true);
         this.switchSection(section.get("label").replace(/[^a-zA-Z0-9]/g, "-"));
       });
 
@@ -246,17 +251,21 @@ function(_, $, Backbone, Portal, PortalSection,
     /**
     * Render a single markdown section in the editor (sectionView + link)
     */
-    renderContentSection: function(section){
+    renderContentSection: function(section, newSection){
 
         try{
-          if(section){
 
+          if (newSection == null) {
+            newSection = false;
+          }
+
+          if(section){
             // Create and render and markdown section view
             var sectionView = new PortEditorMdSectionView({
               model: section,
               // applying the PortalSectionModel label attribute
               // to PortEditorMdSectionView
-              sectionName: section.get("label"),
+              sectionName: section.get("label")
             });
 
             // Add markdown section container, insert section HTML
@@ -273,10 +282,11 @@ function(_, $, Backbone, Portal, PortalSection,
             sectionView.render();
 
             // Add the tab to the tab navigation
-            this.addSectionLink(sectionView, ["Rename", "Delete"]);
+            this.addSectionLink(sectionView, ["Rename", "Delete"], newSection);
+
             // Add the sections to the list of subviews
             this.subviews.push(sectionView);
-
+        
           }
         }
         catch(e){
@@ -573,8 +583,13 @@ function(_, $, Backbone, Portal, PortalSection,
     * Add a link to the given editor section
     * @param {PortEditorSectionView} sectionView - The view to add a link to
     * @param {string[]} menuOptions - An array of menu options for this section. e.g. Rename, Delete
+    * @param {boolean} focusLink - A boolean flag to enable focus on new section link
     */
-    addSectionLink: function(sectionView, menuOptions){
+    addSectionLink: function(sectionView, menuOptions, focusLink){
+
+      if (focusLink === null) { 
+        focusLink = false; 
+      }
 
       try{
         var newLink = this.createSectionLink(sectionView, menuOptions);
@@ -608,6 +623,27 @@ function(_, $, Backbone, Portal, PortalSection,
             $(lastMdSection).after(newLink);
           } else {
             this.$(this.sectionLinksContainer).prepend(newLink);
+          }
+
+          // If this is a newly added markdown section, highlight the section name
+          // and make it content editable
+          if(focusLink) {
+            var newSectionLink = $(newLink).children(".section-link");
+            newSectionLink.attr("contenteditable", true);
+            newSectionLink.focus();
+
+            //Select the text of the link
+            if (window.getSelection && window.document.createRange) {
+              var selection = window.getSelection();
+              var range = window.document.createRange();
+              range.selectNodeContents( newSectionLink[0] );
+              selection.removeAllRanges();
+              selection.addRange(range);
+            } else if (window.document.body.createTextRange) {
+              range = window.document.body.createTextRange();
+              range.moveToElementText( newSectionLink[0] );
+              range.select();
+            }
           }
         // If not a markdown section and not the Settings section, and if there
         // is already a "+" link, add new link before the "+" link
@@ -756,13 +792,14 @@ function(_, $, Backbone, Portal, PortalSection,
     * Removes a section and its tab from this view and the PortalModel
     * @param {Event} [e] - (optional) The click event on the Remove button
     */
-    removeSection: function(e){
+    removeSection: function(e, sectionLink, section){
 
       try{
-
-        //Get the PortalSection model for this remove button
-        var sectionLink = $(e.target).parents(this.sectionLinkContainer),
-            section = sectionLink.data("model");
+        if( !sectionLink.length ) {
+          //Get the PortalSection model for this remove button
+          var sectionLink = $(e.target).parents(this.sectionLinkContainer);
+              section = sectionLink.data("model");
+        }
 
         //If this section is not a PortalSection model, get the section name
         if( !PortalSection.prototype.isPrototypeOf(section) ){
@@ -770,6 +807,7 @@ function(_, $, Backbone, Portal, PortalSection,
         }
         // Processing for markdown sections
         else {
+
           this.stopListening(this.model, "change:sections");
 
           // listening to PortalModel to remove the PortalSectionModel object
@@ -805,6 +843,49 @@ function(_, $, Backbone, Portal, PortalSection,
         console.error(e);
         MetacatUI.appView.showAlert("The section could not be deleted. (" + e.message + ")", "alert-error");
       }
+
+    },
+
+    confirmRemoveSection: function(e) {
+
+      var view = this;
+      
+      var sectionLink = $(e.target).parents(this.sectionLinkContainer),
+            section = sectionLink.data("model");
+
+      var contentPlus = $("<div></div>");
+      $(contentPlus).append("<button class='btn btn-sm btn-primary confirmed-section-removal'> Yes </button>");
+
+      // Delete button popover confirmation
+      $(e.target).popover({
+        html            : true,
+        placement       : 'right',
+        title           : 'Are you sure you want to permanently delete this section?',
+        content         : contentPlus,
+        container       : 'body',
+      })
+      .on("mouseenter", function () {
+        var _this = this;
+        $(this).popover("show");
+        $(".popover").on("mouseleave", function () {
+            $(_this).popover('hide');
+        });
+      })
+      .on("mouseleave", function () {
+        var _this = this;
+        setTimeout(function () {
+            if (!$(".popover:hover").length) {
+                $(_this).popover("hide");
+            }
+        }, 300);
+      });
+      
+
+      $(document).on("click", ".confirmed-section-removal", function (e) {
+        // Remove the popover and fire the remove section function
+        $('.popover').remove();
+        view.removeSection(e, sectionLink, section);
+      });
 
     },
 
@@ -851,6 +932,14 @@ function(_, $, Backbone, Portal, PortalSection,
             targetLink = sectionLink.children(this.sectionLinks),
             section = sectionLink.data("model");
 
+        // double-click events
+        if (e.type === "dblclick") {
+          // Continue editing tab-name on double click only for markdown sections
+          if($(sectionLink).data("view").type != "PortEditorMdSection"){
+            return;
+          }
+        }
+
         // make the text editable
         targetLink.attr("contenteditable", true);
 
@@ -877,12 +966,101 @@ function(_, $, Backbone, Portal, PortalSection,
     },
 
     /**
+     * Stops user from entering more than 50 characters, and shows a message
+     * if user tries to exceed the limit. Also stops a user from entering
+     * RETURN or TAB characters, and instead re-directs to updateName().
+     * In the case of the TAB key, the focus moves to the title field.
+     * @param {Event} e - The keyup or keydown event when the user types in the section-link field
+    */
+    limitLabelInput: function(e){
+
+      try{
+
+        // Character limit for the labels
+        var limit = 50;
+        var currentLabel = $(e.target).text();
+
+        // If the RETURN key is pressed
+        if(e.which == 13){
+          // Don't allow character to be entered
+          e.preventDefault();
+          e.stopPropagation();
+          // Update name and exit function
+          this.updateName(e);
+          return
+        }
+
+        // If the TAB key is pressed
+        if(e.which == 9){
+          // Don't allow character to be entered
+          e.preventDefault();
+          e.stopPropagation();
+          // Update name, change focus to title, and exit function
+          this.updateName(e);
+          $("textarea.title").focus();
+          return
+        }
+
+        // Keys that a user can use as normal, even if character limit is met
+        var allowedKeys = [
+          8,  // DELETE
+          35, // END
+          36, // HOME
+          37, // LEFT
+          38, // UP
+          39, // RIGHT
+          40, // DOWN
+          46,  // DEL
+          17   // CTRL
+        ];
+
+        // Stop addition of more characters and show message
+        if(
+          // If at or greater than limit and
+          currentLabel.length >= limit &&
+          // key isn't a special key and
+          !allowedKeys.includes(e.which) &&
+          // cmd key isn't held down and
+          !e.metaKey &&
+          // user doesn't have some of the text selected
+          !window.getSelection().toString().length
+        ){
+          // Don't allow character to be entered
+          e.preventDefault();
+          e.stopPropagation();
+          // Add a tooltip if one doesn't exist yet
+          if(!$(e.delegateTarget).find(".tooltip").length){
+            $(e.target).tooltip({
+              placement: "top",
+              trigger: "manual",
+              title: "Limit of " + limit + " characters or fewer"
+            });
+          }
+          // Show the tooltip
+          $(e.target).tooltip('show');
+        // If under the character limit, proceed as normal.
+        } else {
+          // Make sure there's no tooltip showing.
+          $(e.delegateTarget).find(".tooltip").remove();
+        }
+      }
+      catch(error){
+        "Error limiting user input in label field, error message: " + error
+      }
+
+    },
+
+    /**
      * Update the section label
      *
      * @function updateName
      * @param e The event triggering this method
      */
     updateName: function(e) {
+
+      // Remove tooltip incase one was set by limitLabelInput function
+      $(e.delegateTarget).find(".tooltip").remove();
+
       try {
         //Get the PortalSection model for this rename button
         var sectionLink = $(e.target).parents(this.sectionLinkContainer),
@@ -898,7 +1076,7 @@ function(_, $, Backbone, Portal, PortalSection,
           section.set("label", targetLink.text().trim());
         }
         else {
-          // TODO: handle the case for non-markdown secions
+          // TODO: handle the case for non-markdown sections
         }
 
       } catch (error) {

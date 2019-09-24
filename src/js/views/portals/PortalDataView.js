@@ -34,7 +34,7 @@ define(["jquery",
           //Get the documents values as a facet so we can get all the data object IDs
           searchResults.facet = ["documents", "id"];
           //Retrieve only 5 result rows
-          searchResults.rows = 5;
+          searchResults.rows = 25;
 
           //Hide the Filters that are part of the Collection definition.
           var searchFilters = this.model.get("searchModel").get("filters");

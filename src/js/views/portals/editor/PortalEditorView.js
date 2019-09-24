@@ -379,6 +379,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
         model.set(category, value);
         model.trigger("change:" + category);
       }
+
       //TODO: Add another blank text input (write addBasicText function)
       // if($(e.target).is(".new") && value != '' && category != "title"){
       //   $(e.target).removeClass("new");
@@ -397,8 +398,8 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
 
       var message = this.editorSubmitMessageTemplate({
             messageText: "Your changes have been submitted.",
-            viewURL: MetacatUI.root + "/portals/" + identifier,
-            buttonText: "View your portal"
+            viewURL: MetacatUI.root + "/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + identifier,
+            buttonText: "View your " + MetacatUI.appModel.get("portalTermSingular")
         });
 
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});

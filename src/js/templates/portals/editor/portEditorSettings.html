@@ -1,3 +1,4 @@
+<h4>Portal details</h4>
 <h4>Details</h4>
 <!--<div class="color-palette-container"></div>-->
 <div class="description-container">
@@ -14,9 +15,18 @@
 <h4>Partner Logos</h4>
 <div class="logos-container">Logos will go here</div>
 
-<h4>Choose a URL</h4>
-<div class="label-container control-group">
-    <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/portals/</span>
-    <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
-    <span class="notification help-inline"></span>
+<h4>Portal URL</h4>
+<div class="change-label-container">
+  <span class="muted display-label-url"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/<%=label%></span>
+  <div class="label-container control-group hide">
+      <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
+      <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
+      <span class="notification help-inline"></span>
+  </div>
+  <div>
+    <button type="button" class="btn btn-danger change-portal-url">Change URL</button>
+  </div>
+  <div>
+    <button type="button" class="btn btn-primary cancel-change-url hide">Cancel</button>
+  </div>
 </div>

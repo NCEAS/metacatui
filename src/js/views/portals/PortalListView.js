@@ -188,7 +188,7 @@ define(["jquery",
 
             //Create an Edit buttton
             var buttons = $(document.createElement("a")).attr("href",
-                           MetacatUI.root + "/edit/portals/" + (searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id")) )
+                           MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + (searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id")) )
                            .text("Edit")
                            .addClass("btn");
 
@@ -236,9 +236,9 @@ define(["jquery",
                 //Create a New portal buttton
                 var createButton = $(document.createElement("a"))
                                    .addClass("btn btn-primary")
-                                   .attr("href", MetacatUI.root + "/edit/portals")
+                                   .attr("href", MetacatUI.root + "/edit/" + MetacatUI.appModel.get("portalTermPlural"))
                                    .append( $(document.createElement("i")).addClass("icon icon-plus icon-on-left"),
-                                     "New portal");
+                                     "New " + MetacatUI.appModel.get('portalTermSingular'));
 
                 //If the user doesn't have any quota left, disable the button
                 if( MetacatUI.appUserModel.get("portalQuota") === 0 ){

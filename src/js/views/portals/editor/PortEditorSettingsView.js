@@ -50,6 +50,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     */
     events: {
       "focusout .label-container input" : "showLabelValidation",
+      "click .change-portal-url"        : "changePortalUrl",
       "keyup .label-container input"    : "removeLabelValidation"
     },
 
@@ -72,11 +73,13 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     render: function(){
 
       //Insert the template into the view
+      var portalTermSingular = MetacatUI.appModel.get("portalTermSingular");
       this.$el.html(this.template({
         label: this.model.get("label"),
         description: this.model.get("description"),
-        descriptionHelpText: "Describe your portal in one brief paragraph. This description will appear in search summaries.",
-        descriptionPlaceholder: "Answer who, where, what, when, and why about your portal."
+        descriptionHelpText: "Describe your " + portalTermSingular + " in one brief paragraph. This description will appear in search summaries.",
+        descriptionPlaceholder: "Answer who, where, what, when, and why about your " + portalTermSingular +".",
+        portalTermPlural: MetacatUI.appModel.get("portalTermPlural")
       }));
 
       //Render the AccessPolicyView
@@ -173,6 +176,33 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
         "Checking if URL is available"
       );
+    },
+
+    /**
+     * Makes the portal url editable whenever the `change url` button is clicked
+     *
+     *
+     *  @param {Event} e - The click event
+     */
+    changePortalUrl: function(e) {
+      var changeButton = e.target;
+      var displayedLabel = $(".display-label-url");
+      var labelContainer = $(".label-container");
+
+      if ($(changeButton).text() === "Cancel") {
+        $(displayedLabel).show();
+        $(labelContainer).hide();
+        $(changeButton).html("Change URL");
+        $(changeButton).removeClass("btn-primary");
+        $(changeButton).addClass("btn-danger");
+      }
+      else {
+        $(displayedLabel).hide();
+        $(labelContainer).show();
+        $(changeButton).html("Cancel");
+        $(changeButton).removeClass("btn-danger");
+        $(changeButton).addClass("btn-primary");
+      }
 
     }
 

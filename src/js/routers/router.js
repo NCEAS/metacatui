@@ -7,6 +7,7 @@ function ($, _, Backbone) {
 	// MetacatUI Router
 	// ----------------
 	var UIRouter = Backbone.Router.extend({
+
 		routes: {
 			''                               : 'renderIndex',    // the default route
 			'about(/:anchorId)(/)'              : 'renderAbout',    // about page
@@ -29,10 +30,9 @@ function ($, _, Backbone) {
 			'share(/*pid)(/)'                   : 'renderEditor', // registry page
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)(/)'                : 'renderAPI', // API page
-      'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
-      'portals(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
-      'edit/portals(/:portalIdentifier)(/:portalSection)(/)'     : 'renderPortalEditor'
+			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
+			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal' // portal page
+
 		},
 
 		helpPages: {
@@ -41,6 +41,16 @@ function ($, _, Backbone) {
 		},
 
 		initialize: function(){
+
+			// Add routes to portal dynamically using the appModel portal term
+			var portalTermPlural = MetacatUI.appModel.get("portalTermPlural");
+  		this.route( portalTermPlural + "(/:portalId)(/:portalSection)(/)",
+									["portalId", "portalSection"], this.renderPortal
+								);
+			this.route( "edit/" + portalTermPlural + "(/:portalIdentifier)(/:portalSection)(/)",
+									["portalIdentifier", "portalSection"], this.renderPortalEditor
+								);
+
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 
 			// This route handler replaces the route handler we had in the
@@ -301,10 +311,10 @@ function ($, _, Backbone) {
 		renderPortal: function(label, portalSection) {
       // Look up the portal document seriesId by its registered name if given
       if ( portalSection ) {
-        this.routeHistory.push("portals/" + label + "/" + portalSection);
+        this.routeHistory.push( MetacatUI.appModel.get("portalTermPlural") + "/" + label + "/" + portalSection);
       }
       else{
-        this.routeHistory.push("portals/" + label);
+        this.routeHistory.push( MetacatUI.appModel.get("portalTermPlural")+ "/" + label);
       }
 
       require(['views/portals/PortalView'], function(PortalView){
@@ -325,10 +335,10 @@ function ($, _, Backbone) {
     renderPortalEditor: function(portalIdentifier, portalSection){
       // Look up the portal document seriesId by its registered name if given
       if ( portalSection ) {
-        this.routeHistory.push("edit/portals/" + portalIdentifier + "/" + portalSection);
+        this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);
       }
       else{
-        this.routeHistory.push("edit/portals/" + portalIdentifier);
+        this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
       }
 
       require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){

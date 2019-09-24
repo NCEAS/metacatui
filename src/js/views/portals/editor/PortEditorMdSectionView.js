@@ -72,7 +72,10 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
           introduction: this.model.get("introduction"),
           introPlaceholder: "Add a sub-title",
           markdown: markdown,
-          markdownPlaceholder: "Content \n=== \n\nAdd content here. Styling with markdown is supported."
+          markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
+          // unique ID to use for the bootstrap accordion component, which
+          // breaks when targeting two + components with the same ID
+          cid: this.model.cid
         }));
 
         // Auto-resize the height of the intoduction and title fields on user-input

@@ -88,7 +88,8 @@ define(["jquery",
 
           _.map(sectionTextData, function(value, nodeName){
 
-            if(value){
+            // Don't serialize default values
+            if(value && value != this.defaults()[nodeName]){
               // Make new sub-node
               var sectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
               $(sectionSubnodeSerialized).text(value);
