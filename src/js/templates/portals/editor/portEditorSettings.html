@@ -1,4 +1,9 @@
-<h4>Portal details</h4>
+<%
+ var portalTermCapitalized = portalTermSingular.charAt(0).toUpperCase() +
+     portalTermSingular.substring(1);
+%>
+
+<h4><%=portalTermCapitalized%> details</h4>
 <h4>Details</h4>
 <!--<div class="color-palette-container"></div>-->
 <div class="description-container">
@@ -15,7 +20,7 @@
 <h4>Partner Logos</h4>
 <div class="logos-container">Logos will go here</div>
 
-<h4>Portal URL</h4>
+<h4><%=portalTermCapitalized%> URL</h4>
 <div class="change-label-container">
   <span class="muted display-label">
     <%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/

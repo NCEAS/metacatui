@@ -81,7 +81,8 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         description: this.model.get("description"),
         descriptionHelpText: "Describe your " + portalTermSingular + " in one brief paragraph. This description will appear in search summaries.",
         descriptionPlaceholder: "Answer who, where, what, when, and why about your " + portalTermSingular +".",
-        portalTermPlural: MetacatUI.appModel.get("portalTermPlural")
+        portalTermPlural: MetacatUI.appModel.get("portalTermPlural"),
+        portalTermSingular: MetacatUI.appModel.get("portalTermSingular")
       }));
 
       //Render the AccessPolicyView
