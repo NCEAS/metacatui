@@ -17,16 +17,22 @@
 
 <h4>Portal URL</h4>
 <div class="change-label-container">
-  <span class="muted display-label-url"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/<%=label%></span>
-  <div class="label-container control-group hide">
-      <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
-      <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
-      <span class="notification help-inline"></span>
+  <span class="muted display-label">
+    <%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/
+    <span class="display-label-value"><%=label%></span>
+  </span>
+  <div class="label-container hide">
+      <div class="control-group">
+        <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
+        <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
+        <span class="notification help-inline"></span>
+      </div>
+      <div>
+        <button type="button" class="btn cancel-change-label">Cancel</button>
+        <button type="button" class="btn btn-primary ok-change-label">OK</button>
+      </div>
   </div>
   <div>
-    <button type="button" class="btn btn-danger change-portal-url">Change URL</button>
-  </div>
-  <div>
-    <button type="button" class="btn btn-primary cancel-change-url hide">Cancel</button>
+    <button type="button" class="btn btn-danger change-label">Change URL</button>
   </div>
 </div>

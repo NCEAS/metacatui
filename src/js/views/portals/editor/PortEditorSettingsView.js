@@ -50,7 +50,9 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     */
     events: {
       "focusout .label-container input" : "showLabelValidation",
-      "click .change-portal-url"        : "changePortalUrl",
+      "click .change-label"             : "changeLabel",
+      "click .cancel-change-label"      : "cancelChangeLabel",
+      "click .ok-change-label"          : "okChangeLabel",
       "keyup .label-container input"    : "removeLabelValidation"
     },
 
@@ -102,7 +104,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
      */
     removeLabelValidation: function(e){
 
-      var container = $(e.target).parents(".label-container").first(),
+      var container = this.$(".label-container"),
           messageEl = $(container).find('.notification');
 
       // Remove input formating if there was any
@@ -123,8 +125,8 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
      */
     showLabelValidation: function(e){
 
-      var container = $(e.target).parents(".label-container").first(),
-          input = $(e.target),
+      var container = this.$(".label-container"),
+          input = $(container).find('input'),
           messageEl = $(container).find('.notification'),
           value = input.val();
 
@@ -138,11 +140,11 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
       this.listenToOnce(this.model, "errorValidatingLabel", function(){
         var email = MetacatUI.appModel.get('emailContact');
         messageEl.html("There was a problem checking the availablity of this URL. " +
-          "Please try again or <a href='mailto:" + email + "'> contact us at " +
-          email + "</a>."
-        );
-        container.removeClass("success");
-        container.addClass("error");
+                       "Please try again or <a href='mailto:" + email + "'> contact us at " +
+                       email + "</a>.")
+                 .removeClass("success")
+                 .addClass("error");
+        input.addClass("error");
       });
 
       //Validate the label string
@@ -150,22 +152,35 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
 
       //If there is an error, display it and exit
       if( error ){
-        messageEl.html(error);
-        container.removeClass("success");
-        container.addClass("error");
+        messageEl.html(error)
+                 .removeClass("success")
+                 .addClass("error");
+        input.addClass("error");
         return;
       }
 
       this.listenToOnce(this.model, "labelAvailable", function(){
-        messageEl.html("<i class='icon-check'></i> This URL is available");
-        container.removeClass("error");
-        container.addClass("success");
+        messageEl.html("<i class='icon-check'></i> This URL is available")
+                 .removeClass("error")
+                 .addClass("success");
       });
 
       this.listenToOnce(this.model, "labelTaken", function(){
-        messageEl.html("This URL is already taken, please try something else");
-        container.removeClass("success");
-        container.addClass("error");
+        messageEl.html("This URL is already taken, please try something else")
+                 .removeClass("success")
+                 .addClass("error");
+
+        input.addClass("error");
+
+        //Manually add the validation error message since this check is done outside of the validate() function
+        if( typeof this.model.validationError == "object" && this.model.validationError !== null ){
+          this.model.validationError.label = "This URL is already taken, please try something else";
+        }
+        else{
+          this.model.validationError = {
+            label: "This URL is already taken, please try something else"
+          }
+        }
       });
 
       // Validate label. The newPortalTempName is a restricted value.
@@ -179,31 +194,55 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     },
 
     /**
-     * Makes the portal url editable whenever the `change url` button is clicked
-     *
-     *
-     *  @param {Event} e - The click event
+     * Makes the portal label editable whenever the `change url` button is clicked
      */
-    changePortalUrl: function(e) {
-      var changeButton = e.target;
-      var displayedLabel = $(".display-label-url");
-      var labelContainer = $(".label-container");
+    changeLabel: function(){
+      //Get the label at this point in time
+      this.model.set("latestLabel", this.model.get("label"));
 
-      if ($(changeButton).text() === "Cancel") {
-        $(displayedLabel).show();
-        $(labelContainer).hide();
-        $(changeButton).html("Change URL");
-        $(changeButton).removeClass("btn-primary");
-        $(changeButton).addClass("btn-danger");
+      //Hide the label display and Change button
+      this.$(".display-label, .change-label").hide();
+      //Show the input and controls
+      this.$(".label-container").show();
+    },
+
+    /**
+     * Cancels changing the portal label
+     */
+    cancelChangeLabel: function(){
+      //Reset the label
+      this.model.set("label", this.model.get("latestLabel"));
+      this.$(".label-container input").val(this.model.get("label"));
+
+      //Validate the label
+      this.showLabelValidation();
+
+      //Show the label display and Change button
+      this.$(".display-label, .change-label").show();
+      //Hide the input and controls
+      this.$(".label-container").hide();
+    },
+
+    /**
+     * Shows the portal label as saved
+     */
+    okChangeLabel: function(){
+      //Show the label display and Change button
+      this.$(".display-label, .change-label").show();
+      //Hide the input and controls
+      this.$(".label-container").hide();
+
+      //If there is a validation error with the label, revert it back
+      if( this.model.validationError && this.model.validationError.label ){
+        this.model.set("label", this.model.get("latestLabel"));
+        this.$(".label-container input").val(this.model.get("label"));
       }
-      else {
-        $(displayedLabel).hide();
-        $(labelContainer).show();
-        $(changeButton).html("Cancel");
-        $(changeButton).removeClass("btn-danger");
-        $(changeButton).addClass("btn-primary");
+      else{
+        this.$(".display-label-value").text(this.model.get("label"));
       }
 
+      //Validate the label
+      this.showLabelValidation();
     }
 
   });
