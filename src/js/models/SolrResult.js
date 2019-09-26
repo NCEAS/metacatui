@@ -174,7 +174,9 @@ define(['jquery', 'underscore', 'backbone'],
 				"eml://ecoinformatics.org/eml-2.1.0" : "EML v2.1.0",
 				"eml://ecoinformatics.org/eml-2.1.1" : "EML v2.1.1",
 				"eml://ecoinformatics.org/eml-2.0.1" : "EML v2.0.1",
-				"eml://ecoinformatics.org/eml-2.0.0" : "EML v2.0.0"
+				"eml://ecoinformatics.org/eml-2.0.0" : "EML v2.0.0",
+				"https://eml.ecoinformatics.org/eml-2.2.0" : "EML v2.2.0",
+
 			}
 
 			return formatMap[this.get("formatId")] || this.get("formatId");
