@@ -1,1 +1,15 @@
-<div class="dropzone"></div>
+<div>
+
+  <!-- outer dropzone template -->
+  <div class='dropzone' style='height:<%=height%>px; width:<%=width%>px'>
+    <div class='dz-default dz-message subtle'><%=uploadInstructions%></div>
+  </div>
+
+  <!-- preview template -->
+  <div class="dz-preview dz-image-preview" style="height:<%=height%>px">
+    <!-- <div class="dz-error-message"><span data-dz-errormessage></span></div> -->
+    <img data-dz-thumbnail />
+    <span class="vertical-align-image-helper"></span>
+  </div>
+
+</div>
