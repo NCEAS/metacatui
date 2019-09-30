@@ -1,12 +1,14 @@
 /* global define */
-define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText'],
-    function($, _, Backbone, EMLText211) {
+define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText',
+        "text!templates/portals/editor/MarkdownExample.md"],
+    function($, _, Backbone, EMLText211, MarkdownExample) {
 
   var EMLText = EMLText211.extend({
 
     defaults: function(){
       return _.extend(EMLText211.prototype.defaults(), {
-        markdown: null
+        markdown: null,
+        markdownExample: MarkdownExample
       });
     },
 
@@ -55,7 +57,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText'],
      * Makes a copy of the original XML DOM and updates it with the new values from the model
      *
      * @param {string} textType - a string indicating the name for the outer xml element (i.e. content). Used in case there is no exisiting xmlDOM.
-     * @return {XMLElement} 
+     * @return {XMLElement}
      */
     updateDOM: function(textType){
 

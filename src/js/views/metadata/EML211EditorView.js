@@ -431,30 +431,30 @@ define(['underscore',
               this.subviews.push(emlView);
               this.emlView = emlView;
               emlView.render();
-                // this.renderDataPackageItem(model, collection, options);
-               // this.off("change", this.renderMember, model); // avoid double renderings
 
+              //Show the required fields for this editor
+              this.renderRequiredIcons(MetacatUI.appModel.get("emlEditorRequiredFields"));
 
-                // Create a citation view and render it
-                var citationView = new CitationView({
-                            model: model,
-                            title: "Untitled dataset"
-                          });
+              // Create a citation view and render it
+              var citationView = new CitationView({
+                          model: model,
+                          title: "Untitled dataset"
+                        });
 
-                if( model.isNew() ){
-                  citationView.createLink = false;
-                  citationView.createTitleLink = false;
-                }
-                else{
-                  citationView.createLink = false;
-                  citationView.createTitleLink = true;
-                }
+              if( model.isNew() ){
+                citationView.createLink = false;
+                citationView.createTitleLink = false;
+              }
+              else{
+                citationView.createLink = false;
+                citationView.createTitleLink = true;
+              }
 
-                this.subviews.push(citationView);
-                $("#citation-container").html(citationView.render().$el);
+              this.subviews.push(citationView);
+              $("#citation-container").html(citationView.render().$el);
 
-                //Remove the rendering class from the body element
-                $("body").removeClass("rendering");
+              //Remove the rendering class from the body element
+              $("body").removeClass("rendering");
             }
 
             // Focus the folder name field once loaded but only if this is a new

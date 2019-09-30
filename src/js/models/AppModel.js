@@ -182,6 +182,27 @@ define(['jquery', 'underscore', 'backbone'],
       */
       limitPortalsToSubjects: [],
 
+      /**
+      * The list of fields that should be required in the portal editor.
+      * Set individual properties to `true` to require them in the portal editor.
+      * @type {Object}
+      */
+      portalEditorRequiredFields: {
+        label: true,
+        name: true,
+        description: false,
+        sectionTitle: true,
+        sectionIntroduction: false,
+        //The following fields are not yet supported as required fields in the portal editor
+        //TODO: Add support for requiring the below fields
+        sectionImage: false,
+        logo: false,
+        acknowledgments: false,
+        acknowledgmentsLogos: false,
+        awards: false,
+        associatedParties: false
+      },
+
       // If true, then archived content is available in the search index.
       // Set to false if this MetacatUI is using a Metacat version before 2.10.0
       archivedContentIsIndexed: true,

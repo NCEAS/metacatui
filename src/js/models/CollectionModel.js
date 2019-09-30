@@ -39,6 +39,8 @@ define(["jquery",
       return {
         name: null,
         label: null,
+        originalLabel: null,
+        labelBlacklist: ["new"],
         description: null,
         formatId: "https://purl.dataone.org/collections-1.0.0",
         formatType: "METADATA",
@@ -501,6 +503,101 @@ define(["jquery",
       //Make a copy of the facetCounts object
       var allSearchResults = this.get("allSearchResults");
       allSearchResults.facetCounts = Object.assign({}, searchResults.facetCounts);
+
+    },
+
+    /**
+     * Overrides the default Backbone.Model.validate.function() to
+     * check if this portal model has all the required values necessary
+     * to save to the server.
+     *
+     * @param {Object} [attrs] - A literal object of model attributes to validate.
+     * @param {Object} [options] - A literal object of options for this validation process
+     * @return {Object} If there are errors, an object comprising error
+     *                   messages. If no errors, returns nothing.
+    */
+    validate: function(attrs, options) {
+
+      try{
+
+        var errors = {};
+
+        // ---- Validate label----
+        var labelError = this.validateLabel(label = this.get("label"));
+        if( labelError ){
+          errors.label = labelError;
+        }
+
+        // ---- Validate the definition filters ----
+        if( this.getAllDefinitionFilters().length == 0 ){
+          errors.definition = "Add at least one search term to find datasets for this collection.";
+        }
+        else{
+          _.each( this.getAllDefinitionFilters(), function(filter){
+
+            if( !filter.isValid() ){
+              errors.definition = "At least one filter is invalid.";
+            }
+
+          }, this);
+        }
+
+        if( Object.keys(errors).length )
+          return errors;
+        else{
+          return;
+        }
+
+      }
+      catch(e){
+        console.error(e);
+      }
+
+    },
+
+    /**
+     * Queries solr to check whether a label is already in use.
+     * Also checks that a label does not equal a restricted value
+     * (e.g. new temporary name), and that it's encoded properly
+     * for use as part of a url
+     *
+     * @param {string} label - The label to be validated
+     * @return {string} - If the label is invalid, an error message string is returned
+    */
+    validateLabel: function(label){
+
+      try{
+
+        //Validate the label set on the model if one isn't given
+        if( typeof this.get("label") != "string" ){
+          var label = this.get("label");
+        }
+
+        //If the label is empty
+        if( !label || !label.trim().length ){
+          return "Please choose a name for this portal to use in the URL.";
+        }
+
+        // If the label is a restricted string
+        var blacklist = this.get("labelBlacklist");
+        if( blacklist && Array.isArray(blacklist) ){
+          if(blacklist.includes(label)){
+            return "This URL is already taken, please try something else";
+          }
+        }
+
+        // If the label includes illegal characers
+        // (Only allow letters, numbers, underscores and dashes)
+        if(label.match(/[^A-Za-z0-9_-]/g)){
+          return "URLs may only contain letters, numbers, underscores (_), and dashes (-).";
+        }
+
+      }
+      catch(e){
+        //Trigger an error event
+        this.trigger("errorValidatingLabel");
+        console.error(e);
+      }
 
     }
 

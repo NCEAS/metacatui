@@ -245,6 +245,9 @@ define(['jquery', 'underscore', 'backbone',
         }
       }, this);
 
+      this.listenTo(this.filters, "remove", function(removedFilter){
+        this.removeAppliedFilterElByModel(removedFilter);
+      })
 
     },
 
@@ -761,6 +764,27 @@ define(['jquery', 'underscore', 'backbone',
         }
 
       }, this);
+    },
+
+    /**
+    * Remove the applied filter element for the given model
+    * This only removed the element from the page, it doesn't update the model at all or
+    * trigger any events.
+    * @param {Filter} - The Filter model whose elements will be deleted
+    */
+    removeAppliedFilterElByModel: function(filterModel){
+
+      //Iterate over each applied filter element and find the matching filters
+      this.$(".applied-filter").each(function(i, el){
+        if( $(el).data("model") == filterModel ){
+          //Remove the element from the page
+          $(el).remove();
+        }
+      });
+
+      //Toggle the applied filters header
+      this.toggleAppliedFiltersHeader();
+
     }
 
   });

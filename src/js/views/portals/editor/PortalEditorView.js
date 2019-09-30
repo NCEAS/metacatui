@@ -234,11 +234,17 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
         newPortalTempName: this.newPortalTempName
       });
 
+      //Attach a reference to this view
+      this.sectionsView.editorView = this;
+
       //Add the view element to this view
       this.$(this.portEditSectionsContainer).html(this.sectionsView.el);
 
       //Render the sections view
       this.sectionsView.render();
+
+      //Show the required fields for this editor
+      this.renderRequiredIcons(MetacatUI.appModel.get("portalEditorRequiredFields"));
 
     },
 
@@ -406,6 +412,8 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
 
       this.hideSaving();
 
+      this.removeValidation();
+
       // Update the path in case the user selected a new portal label
       this.sectionsView.updatePath();
 
@@ -420,8 +428,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     showValidation: function(){
 
       //First clear all the error messaging
-      this.$(".notification.error").empty();
-      this.$(".alert-container").remove();
+      this.removeValidation();
 
       var errors = this.model.validationError;
 
@@ -447,11 +454,8 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
           });
         }
         else{
-          //Show the error message
-          categoryEls.filter(".notification").addClass("error").text(errorMsg);
-
-          //Add the error class to inputs
-          categoryEls.filter("textarea, input").addClass("error");
+          //Show the validation message
+          this.showValidationMessage(categoryEls, errorMsg);
         }
 
       }, this);
@@ -469,6 +473,48 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
         this.hideSaving();
       }
 
+    },
+
+    /**
+    * Shows a validation error message and adds error styling to the given elements
+    * @param {jQuery Selection} elements - The elements to add error styling and messaging to
+    * @param {string} errorMsg - The error message to display
+    */
+    showValidationMessage: function(elements, errorMsg){
+      //Show the error message
+      elements.filter(".notification").addClass("error").text(errorMsg);
+
+      //Add the error class to inputs
+      var inputs = elements.filter("textarea, input").addClass("error");
+
+      //Get the parent elements that have ids set
+      var elementsWithIDs = elements.parents("[id]"),
+          view = this;
+      //See if there is a matching section link
+      for(var i=0; i<elementsWithIDs.length; i++){
+
+        //Get the id of the element
+        var id = $(elementsWithIDs[i]).attr("id");
+        //Find the section link that links to this id
+        var matchingLink = view.$(".section-link-container[data-section-name='" + id + "']");
+
+        //Add the error class and display the error icon
+        if( matchingLink.length ){
+          matchingLink.addClass("error");
+          matchingLink.find(".icon.error").show();
+          //Exit the loop
+          i=elementsWithIDs.length+1;
+        }
+      }
+    },
+
+    /**
+    * Removes all the validation error styling and messaging from this view
+    */
+    removeValidation: function(){
+      this.$(".notification.error").removeClass("error").empty();
+      this.$(".section-link-container.error, input.error, textarea.error").removeClass("error");
+      this.$(".validation-error-icon").hide();
     },
 
     /**

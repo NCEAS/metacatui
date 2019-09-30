@@ -253,8 +253,37 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       });
 
       this.hideSaving();
-    }
+    },
 
+    /**
+    * Shows the required icons for the sections and fields that must be completed in this editor.
+    * @param {object} requiredFields - A literal object that specified which fields should be required.
+    *  The keys on the object map to model attributes, and the value is true if required, false if optional.
+    */
+    renderRequiredIcons: function(requiredFields){
+
+      //If no required fields are given, exit now
+      if( typeof requiredFields == "undefined" ){
+        return;
+      }
+
+      _.each( Object.keys(requiredFields), function(field){
+
+        if(requiredFields[field]){
+          var reqEl = this.$(".required-icon[data-category='" + field + "']");
+
+          //Show the required icon for this category/field
+          reqEl.show();
+
+          //Show the required icon for the section
+          var sectionName = reqEl.parents(".section[data-section]").attr("data-section");
+          this.$(".required-icon[data-section='" + sectionName + "']").show();
+        }
+
+      }, this);
+
+
+    }
 
   });
 

@@ -3,12 +3,16 @@
      portalTermSingular.substring(1);
 %>
 
-<h4><%=portalTermCapitalized%> details</h4>
-<h4>Details</h4>
+<h3><%=portalTermCapitalized%> Settings</h3>
+
 <!--<div class="color-palette-container"></div>-->
 <div class="description-container">
-  <h5>Description</h5>
+  <h4>
+    Description
+    <i class="required-icon hidden" data-category="description"></i>
+  </h4>
   <p class="subtle"><%=descriptionHelpText%></p>
+  <p class="notification" data-category="description"></p>
   <textarea type="text" data-category="description" class="basic-text medium text" placeholder="<%=descriptionPlaceholder%>"><%=description%></textarea>
 </div>
 
@@ -17,10 +21,16 @@
 <div class="permissions-container"></div>
 -->
 
-<h4>Partner Logos</h4>
+<h4>
+  Partner Logos
+  <i class="required-icon hidden" data-category="acknowledgmentsLogos"></i>
+</h4>
 <div class="logos-container">Logos will go here</div>
 
-<h4><%=portalTermCapitalized%> URL</h4>
+<h4>
+  <%=portalTermCapitalized%> URL
+  <i class="required-icon hidden" data-category="label"></i>
+</h4>
 <div class="change-label-container">
   <span class="muted display-label">
     <%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/
@@ -38,6 +48,6 @@
       </div>
   </div>
   <div>
-    <button type="button" class="btn btn-danger change-label">Change URL</button>
+    <button type="button" class="btn change-label">Change URL</button>
   </div>
 </div>

@@ -157,8 +157,6 @@ define(['underscore', 'jquery', 'backbone',
   	    	this.renderProject();
   	    	this.renderSharing();
 
-	    	  this.renderRequiredIcons();
-
   	    	//Scroll to the active section
   	    	if(this.activeSection != "overview"){
   	    		MetacatUI.appView.scrollTo(this.$(".section." + this.activeSection));
@@ -1583,27 +1581,6 @@ define(['underscore', 'jquery', 'backbone',
 
 	    previewTextRemove: function(e){
 	    	$(e.target).parents(".basic-text-row").toggleClass("remove-preview");
-	    },
-
-	    renderRequiredIcons: function(){
-	    	var requiredFields = MetacatUI.appModel.get("emlEditorRequiredFields");
-
-	    	_.each( Object.keys(requiredFields), function(field){
-
-	    		if(requiredFields[field]){
-	    			var reqEl = this.$(".required-icon[data-category='" + field + "']");
-
-	    			//Show the required icon for this category/field
-	    			reqEl.show();
-
-	    			//Show the required icon for the section
-	    			var sectionName = reqEl.parents(".section[data-section]").attr("data-section");
-	    			this.$(".required-icon[data-section='" + sectionName + "']").show();
-	    		}
-
-	    	}, this);
-
-
 	    },
 
 		// publication date validation.

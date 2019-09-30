@@ -592,6 +592,100 @@ define(['jquery', 'underscore', 'backbone'],
       else{
         return false;
       }
+    },
+
+    /**
+    * Checks if the values set on this model are valid.
+    * Some of the attributes are changed during this process if they are found to be invalid,
+    * since there aren't any easy ways for users to fix these issues themselves in the UI.
+    * @return {object} - Returns a literal object with the invalid attributes and their corresponding error message
+    */
+    validate: function(){
+
+      try{
+
+        var errors = {};
+
+        //---Validate fields----
+        var fields = this.get("fields");
+        //All fields should be strings
+        var nonStrings = _.filter(fields, function(field){
+          return (typeof field != "string" || !field.trim().length);
+        });
+
+        if( nonStrings.length ){
+          //Remove the nonstrings from the model, rather than returning an error
+          this.set("fields", _.without(fields, nonStrings));
+        }
+        //If there are no fields, set an error message
+        if( !this.get("fields").length ){
+          errors.fields = "Filters should have at least one search field.";
+        }
+
+        //---Validate values----
+        var values = this.get("values");
+        //All values should be strings, booleans, numbers, or dates
+        var invalidValues = _.filter(values, function(value){
+          //Empty strings are invalid
+          if( typeof value == "string" && !value.trim().length ){
+            return true;
+          }
+          //Non-empty strings, booleans, numbers, or dates are valid
+          else if( typeof value == "string" || typeof value == "boolean" ||
+                   typeof value == "number" || Date.prototype.isPrototypeOf(value) ){
+            return false;
+          }
+        });
+
+        if( invalidValues.length ){
+          //Remove the invalid values from the model, rather than returning an error
+          this.set("values", _.without(values, invalidValues));
+        }
+
+        //If there are no values, set an error message
+        if( !this.get("values").length ){
+          errors.values = "Filters should include at least one search term.";
+        }
+
+        //---Validate operator----
+        //The operator must be either AND or OR
+        if( this.get("operator") !== "AND" && this.get("operator") !== "OR" ){
+          //Reset the value to the default rather than return an error
+          this.set("operator", this.defaults().operator);
+        }
+
+        //---Validate exclude and matchSubstring----
+        //Exclude should always be a boolean
+        if( typeof this.get("exclude") != "boolean" ){
+          //Reset the value to the default rather than return an error
+          this.set("exclude", this.defaults().exclude);
+        }
+        //matchSubstring should always be a boolean
+        if( typeof this.get("matchSubstring") != "boolean" ){
+          //Reset the value to the default rather than return an error
+          this.set("matchSubstring", this.defaults().matchSubstring);
+        }
+
+        //---Validate label, placeholder, icon, and description----
+        var textAttributes = ["label", "placeholder", "icon", "description"];
+        //These fields should be strings
+        _.each(textAttributes, function(attr){
+          if( typeof this.get(attr) != "string" ){
+            //Reset the value to the default rather than return an error
+            this.set(attr, this.defaults()[attr]);
+          }
+        }, this);
+
+        if( Object.keys(errors).length )
+          return errors;
+        else{
+          return;
+        }
+      }
+      catch(e){
+        console.error(e);
+      }
+
     }
 
   });

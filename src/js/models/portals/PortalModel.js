@@ -16,12 +16,11 @@ define(["jquery",
         "models/CollectionModel",
         "models/Search",
         "models/filters/FilterGroup",
-        "models/Map",
-        "text!templates/portals/editor/MarkdownExample.md",
+        "models/Map"
     ],
     /** @lends PortalModel.prototype */
     function($, _, Backbone, gmaps, uuid, Filters, SolrResults, PortalSectionModel, PortalImage,
-        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel, MarkdownExample) {
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
          * A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
@@ -73,8 +72,6 @@ define(["jquery",
                     optionNames: ["primaryColor", "secondaryColor", "accentColor",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
                             "mapShapeHue", "hideData", "hideMetrics", "hideMembers"],
-                    originalLabel: null,
-                    labelBlacklist: ["new"],
                     // Portal view colors, as specified in the portal document options
                     primaryColor: "#999999",
                     secondaryColor: "#666666",
@@ -87,12 +84,6 @@ define(["jquery",
                     accentColorTransparent: "rgba(73, 123, 167, .7)"
                 });
             },
-
-            /**
-             * The default text to use in the markdown example in a new section
-             * @type {string}
-            */
-            markdownExample: MarkdownExample,
 
             /**
              * The default text to use for a new section label added by the user
@@ -706,13 +697,19 @@ define(["jquery",
 
                     var sectionSerialized = sectionModel.updateDOM();
 
-                    // Check that the <markdown> content isn't the example markdown
+/*                    // Check that the <markdown> content isn't the example markdown
                     // and that it isn't blank
                     var newMD = $(sectionSerialized).find("markdown")[0];
                     if(newMD && (newMD.textContent == this.markdownExample || newMD.textContent == "") ){
                       // Remove it if it is.
                       $(sectionSerialized).find("markdown").remove();
                     };
+*/
+                    // Remove sections entirely if the content is blank
+                    var newMD = $(sectionSerialized).find("markdown")[0];
+                    if( !newMD || newMD.textContent == "" ){
+                      $(sectionSerialized).find("markdown").remove();
+                    }
 
                     // Remove the <content> element if it's empty.
                     // This will trigger a validation error, prompting user to
@@ -1083,8 +1080,8 @@ define(["jquery",
              * check if this portal model has all the required values necessary
              * to save to the server.
              *
-             * @param {Object} attrs - A literal object of model attributes to validate.
-             * @param {Object} options - A literal object of options for this validation process
+             * @param {Object} [attrs] - A literal object of model attributes to validate.
+             * @param {Object} [options] - A literal object of options for this validation process
              * @return {Object} If there are errors, an object comprising error
              *                   messages. If no errors, returns nothing.
             */
@@ -1092,67 +1089,76 @@ define(["jquery",
 
               try{
 
-                var errors = {};
+                var errors = {},
+                    requiredFields = MetacatUI.appModel.get("portalEditorRequiredFields") || {};
 
-                // ---- Validate label----
-                var labelError = this.validateLabel(label = this.get("label"));
-                if( labelError ){
-                  errors.label = labelError;
+                //Execute the superclass validate() function
+                var collectionErrors = this.constructor.__super__.validate.call(this);
+                if( typeof collectionErrors == "object" && Object.keys(collectionErrors).length ){
+                  //Use the errors messages from the CollectionModel for this PortalModel
+                  errors = collectionErrors;
                 }
 
+                // ---- Validate the description and name ----
+                //Map the model attributes to the user-facing attribute name
+                var textFields = {
+                  description: "description",
+                  name: "title"
+                }
+                //Iterate over each text field
+                _.each( Object.keys(textFields), function(field){
+                  //If this field is required, and it is a string
+                  if( requiredFields[field] && typeof this.get(field) == "string" ){
+                    //If this is an empty string, set an error message
+                    if( !this.get(field).trim().length ){
+                      errors[field] = "A " + textFields[field] + " is required.";
+                    }
+                  }
+                  //If this field is required, and it's not a string at all, set an error message
+                  else if( requiredFields[field] ){
+                    errors[field] = "A " + textFields[field] + " is required.";
+                  }
+                }, this);
+
+                //---Validate the sections---
+                //Iterate over each section model
+                _.each( this.get("sections"), function(section){
+
+                  //Validate the section model
+                  var sectionErrors = section.validate();
+
+                  //If there is at least one error, then add an error to the PortalModel error list
+                  if( sectionErrors && Object.keys(sectionErrors).length ){
+                    errors.sections = "At least one section has an error";
+                  }
+
+                }, this);
+
+
+                //TODO: Validate these other elements, listed below, as they are added to the portal editor
+                //----Validate the logo----
+
+                //---Validate the associatedParties---
+
+                //---Validate the acknowledgments---
+
+                //---Validate the acknowledgmentsLogo---
+
+                //---Validate the award---
+
+                //---Validate the literatureCited---
+
+                //---Validate the filterGroups---
+
+                //Return the errors object
                 if( Object.keys(errors).length )
                   return errors;
                 else{
                   return;
                 }
-              }
-              catch(e){
-                console.error(e);
-              }
-
-            },
-
-            /**
-             * Queries solr to check whether a portal label is already in use.
-             * Also checks that a label does not equal a restricted value
-             * (e.g. new portal temporary name), and that it's encoded properly
-             * for use as part of a url
-             *
-             * @param {string} label - The portal label to be validated
-             * @return {string} - If the label is invalid, an error message string is returned
-            */
-            validateLabel: function(label){
-
-              try{
-
-                //Validate the label set on the model if one isn't given
-                if( typeof this.get("label") != "string" ){
-                  var label = this.get("label");
-                }
-
-                //If the label is empty
-                if( !label || !label.trim().length ){
-                  return "Please choose a name for this portal to use in the URL.";
-                }
-
-                // If the label is a restricted string
-                var blacklist = this.get("labelBlacklist");
-                if( blacklist && Array.isArray(blacklist) ){
-                  if(blacklist.includes(label)){
-                    return "This URL is already taken, please try something else";
-                  }
-                }
-
-                // If the label includes illegal characers
-                // (Only allow letters, numbers, underscores and dashes)
-                if(label.match(/[^A-Za-z0-9_-]/g)){
-                  return "URLs may only contain letters, numbers, underscores (_), and dashes (-).";
-                }
 
               }
               catch(e){
-                //Trigger an error event
-                this.trigger("errorValidatingLabel");
                 console.error(e);
               }
 
@@ -1228,9 +1234,31 @@ define(["jquery",
 
               //Validate before we try anything else
               if(!this.isValid()){
-                this.trigger("invalid");
-                this.trigger("cancelSave");
-                return false;
+
+                //Check if there is a validation error on the definition filters
+                var invalidAttr = Object.keys(this.validationError || {});
+                if( invalidAttr.includes("definition") ){
+                  _.each( this.getAllDefinitionFilters(), function(filter){
+
+                    //Remove invalid filters from the Filters collection
+                    if( !filter.isValid() ){
+                      this.get("searchModel").get("filters").remove(filter);
+                    }
+
+                  }, this);
+                }
+
+                //Re-validate this model after possibly removing some invalid filters
+                if( !this.isValid() ){
+                  //Trigger the invalid and cancelSave events
+                  this.trigger("invalid");
+                  this.trigger("cancelSave");
+                  //Don't save the model since it's invalid
+                  return false;
+                }
+                else{
+                  this.trigger("valid");
+                }
               }
               else{
                 this.trigger("valid");
@@ -1346,7 +1374,6 @@ define(["jquery",
                       newSection.set({
                         label: newSectionLabel,
                         content: new EMLText({
-                                      markdown: this.markdownExample,
                                       type: "content",
                                       parentModel: newSection
                                   })

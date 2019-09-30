@@ -24,6 +24,13 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
     className: PortEditorSectionView.prototype.className + " port-editor-md",
 
     /**
+    * The HTML attributes to set on this view's element
+    */
+    attributes: {
+      "data-category": "sections"
+    },
+
+    /**
     * The PortalSectionModel that is being edited
     * @type {PortalSection}
     */
@@ -33,6 +40,12 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
+
+    /**
+    * A reference to the PortalEditorView
+    * @type {PortalEditorView}
+    */
+    editorView: undefined,
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -62,21 +75,32 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
       try{
 
         // Get the markdown
-        var markdown = this.model.get("content") ?
-                       this.model.get("content").get("markdown") : "";
+        var markdown;
+
+        //Get the markdown from the SectionModel
+        if( this.model.get("content") ){
+          markdown = this.model.get("content").get("markdown");
+          if( !markdown ){
+            markdown = this.model.get("content").get("markdownExample");
+          }
+        }
+
+        if( !markdown ){
+          markdown = "";
+        }
 
         // Insert the template into the view
         this.$el.html(this.template({
           title: this.model.get("title"),
           titlePlaceholder: "Add a page title",
           introduction: this.model.get("introduction"),
-          introPlaceholder: "Add a sub-title",
+          introPlaceholder: "Add a sub-title or an introductory blurb about the content on this page.",
           markdown: markdown,
           markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
           // unique ID to use for the bootstrap accordion component, which
           // breaks when targeting two + components with the same ID
           cid: this.model.cid
-        }));
+        })).data("view", this);
 
         // Auto-resize the height of the intoduction and title fields on user-input
         // from: DreamTeK, https://stackoverflow.com/a/25621277
@@ -101,6 +125,25 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
       }
 
 
+    },
+
+    showValidation: function(){
+      try{
+        var errors = this.model.validate();
+
+        _.each(errors, function(errorMsg, category){
+          var categoryEls = this.$("[data-category='" + category + "']");
+
+          //Use the showValidationMessage function from the parent view
+          if( this.editorView && this.editorView.showValidationMessage ){
+            this.editorView.showValidationMessage(categoryEls, errorMsg);
+          }
+
+        }, this);
+      }
+      catch(e){
+        console.error(e);
+      }
     }
 
   });

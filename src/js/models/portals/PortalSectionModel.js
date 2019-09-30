@@ -219,6 +219,75 @@ define(["jquery",
           return false;
         },
 
+        /**
+         * Overrides the default Backbone.Model.validate.function() to
+         * check if this PortalSection model has all the required values necessary
+         * to save to the server.
+         *
+         * @return {Object} If there are errors, an object comprising error
+         *                   messages. If no errors, returns nothing.
+        */
+        validate: function(){
+
+          try{
+
+            var errors = {};
+
+            //--Validate the label--
+            //Labels are always required
+            if( !this.get("label") ){
+              errors.label = "Please provide a page name.";
+            }
+
+            //---Validate the title---
+            //If section titles are required and there isn't one, set an error message
+            if( MetacatUI.appModel.get("portalEditorRequiredFields").sectionTitle &&
+                typeof this.get("title") == "string" &&
+                !this.get("title").length ){
+              errors.title = "Please provide a title for this page.";
+            }
+
+            //---Validate the introduction---
+            //If section introductions are required and there isn't one, set an error message
+            if( MetacatUI.appModel.get("portalEditorRequiredFields").sectionIntroduction &&
+                typeof this.get("introduction") == "string" &&
+                !this.get("introduction").length ){
+              errors.introduction = "Please provide some a sub-title or some introductory text for this page.";
+            }
+
+            //---Validate the section content---
+            //Content is always required
+            if( !this.get("content") ){
+              errors.content = "Please provide content for this page.";
+            }
+            //Check if there is either markdown or an array of strings in the text attribute
+            else if( !this.get("content").get("markdown") && !this.get("content").get("text").length ){
+              errors.content = "Please provide content for this page.";
+            }
+            //Check if the markdown hasn't been changed from the example markdown
+            else if( this.get("content").get("markdown") == this.get("content").get("markdownExample") ){
+              errors.content = "Please provide content for this page.";
+            }
+
+            //TODO:
+            //---Validate the section image---
+
+
+            //Return the errors object
+            if( Object.keys(errors).length )
+              return errors;
+            else{
+              return;
+            }
+
+          }
+          catch(e){
+            console.error(e);
+            return;
+          }
+
+        }
+
 
       });
 

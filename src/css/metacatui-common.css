@@ -433,6 +433,9 @@ img.icon{
   margin-top: -1px;
   font-size: 1.1em;
 }
+.icon.hidden{
+  display: none;
+}
 /******************************************
 ** Results and Result Rows ***
 ******************************************/
@@ -2527,6 +2530,9 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-sections .section-link-container .dropdown-menu{
   width: 100%;
 }
+.section-link-container.error .section-link{
+  color: #960303;
+}
 /* 'Add new section' icon  */
 .port-editor-sections .icon.icon-plus {
 	margin: 0 1px 0 1px;
@@ -2586,9 +2592,9 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-markdown-container .introduction{
 	font-weight: 400;
 	font-size: 14px;
-	line-height: 1.55em;
+	line-height: 1.5em;
 	margin: 0 0 10px;
-	min-height: 1.55em;
+	min-height: 4.5em;
 }
 
 .port-editor-markdown-container .title::placeholder,

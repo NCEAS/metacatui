@@ -63,6 +63,12 @@ function(_, $, Backbone, Portal, PortalSection,
     subviews: new Array(),
 
     /**
+    * A reference to the PortalEditorView
+    * @type {PortalEditorView}
+    */
+    editorView: undefined,
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -268,6 +274,9 @@ function(_, $, Backbone, Portal, PortalSection,
               sectionName: section.get("label")
             });
 
+            //Attach the editor view to this view
+            sectionView.editorView = this.editorView;
+
             // Add markdown section container, insert section HTML
             var markdownSectionDiv = $(document.createElement("div"))
               .addClass("tab-pane")
@@ -286,7 +295,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
             // Add the sections to the list of subviews
             this.subviews.push(sectionView);
-        
+
           }
         }
         catch(e){
@@ -433,8 +442,6 @@ function(_, $, Backbone, Portal, PortalSection,
 
       //Get the section link we just added
       var sectionLink = this.$(this.sectionLinks + "[href=#Settings]");
-      //Add a cog icon to the Settings tab
-      sectionLink.prepend( $(document.createElement("i")).addClass("icon icon-on-left icon-cog") );
       // Use bootstrap's 'pull-right' class to right-align Settings tab
       sectionLink.parents(this.sectionLinkContainer).addClass("pull-right");
 
@@ -587,8 +594,8 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     addSectionLink: function(sectionView, menuOptions, focusLink){
 
-      if (focusLink === null) { 
-        focusLink = false; 
+      if (focusLink === null) {
+        focusLink = false;
       }
 
       try{
@@ -684,7 +691,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
       //Create a section link
       var sectionLink = $(this.sectionLinkTemplate({
-        href: "#" + sectionView.getName({ linkFriendly: true }),
+        sectionNameLinkFriendly: sectionView.getName({ linkFriendly: true }),
         sectionName: sectionView.getName(),
         menuOptions: menuOptions || []
       }));
@@ -849,7 +856,7 @@ function(_, $, Backbone, Portal, PortalSection,
     confirmRemoveSection: function(e) {
 
       var view = this;
-      
+
       var sectionLink = $(e.target).parents(this.sectionLinkContainer),
             section = sectionLink.data("model");
 
@@ -879,7 +886,7 @@ function(_, $, Backbone, Portal, PortalSection,
             }
         }, 300);
       });
-      
+
 
       $(document).on("click", ".confirmed-section-removal", function (e) {
         // Remove the popover and fire the remove section function
