@@ -809,21 +809,26 @@ function(_, $, Backbone, Portal, PortalSection,
         else {
 
           this.stopListening(this.model, "change:sections");
+          var view = this;
 
           // listening to PortalModel to remove the PortalSectionModel object
           this.listenToOnce(this.model, "change:sections", function() {
             try {
+
               // check for the matching model (section),
               // and retrieve the corresponding sectionView
               // from the subviews object
-              var sectionView = this.subviews.find(
+              var sectionView = view.subviews.find(
                 obj => {
                   return obj.model === section;
                 }
               );
 
               // remove the sectionView
-              this.removeSectionLink(sectionView);
+              view.removeSectionLink(sectionView);
+
+              // remove the section view from the subviews array
+              view.subviews.splice($.inArray(sectionView, view.subviews), 1);
 
             } catch (error) {
               console.error(error);
@@ -835,6 +840,8 @@ function(_, $, Backbone, Portal, PortalSection,
         if( !section ){
           return;
         }
+
+        console.log(section);
 
         //Remove this section from the Portal
         this.model.removeSection(section);
