@@ -2488,8 +2488,85 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 
+
 /******************************************
-* Portals & Portal Editor
+* Image Uploader
+********************************************/
+/* Image upload drag and drop zone */
+
+.image-uploader {
+	/* height: 100px; */
+	/* width: 100px; */
+}
+
+.dropzone {
+ 	background: #f6f6f6;
+ 	border-radius: 3px;
+	cursor: pointer;
+	height:100%;
+	width:100%;
+  text-align: center;
+	position: relative;
+}
+
+.dropzone .dz-message{
+	white-space: pre-wrap;
+  word-wrap: break-word;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	align-items: center;
+	display: flex;
+	padding: 8px;
+  line-height: 120%;
+}
+
+.dz-image-preview {
+	white-space: nowrap;
+	text-align: center;
+}
+
+.vertical-align-image-helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.dz-image-preview img{
+	vertical-align: middle;
+}
+
+/* show dashed outline when no image is uploaded, or when image is uploaded and user hovers */
+.dropzone.dz-started {
+	outline: none;
+	background: transparent;
+}
+
+.dropzone,
+.dropzone.dz-started:hover,
+.dropzone.dz-started.dz-drag-hover {
+	outline: #999 1px dashed;
+  outline-offset: 0px;
+}
+
+.dropzone:hover{
+	outline-color: #c2c2c2;
+}
+
+/* Hide help text if image is already uploaded, show when user hovers */
+.dropzone.dz-started .dz-message{
+	opacity: 0;
+}
+.dropzone:hover .dz-message,
+.dropzone.dz-started:hover .dz-message,
+.dropzone.dz-drag-hover .dz-message {
+	background-color: #fafafa;
+	opacity: 0.9;
+	color:#a8a8a8;
+}
+
+/******************************************
+* Portal Editor
 ********************************************/
 
 /* Editor navigation (tabs) */
@@ -2542,6 +2619,43 @@ img[src*="googleapis.com/"].georegion-map{
 	margin: 35px 0 25px 0;
 }
 
+/* Portal Editor header (contains logo and title) */
+
+.portal-editor #editor-header {
+	display: flex;
+	padding-bottom: 40px;
+	flex-wrap: wrap;
+}
+
+.logo-editor-container {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.portal-editor .title-container {
+	display: flex;
+	width: calc(100% - 150px);
+	min-width: 300px;
+	max-width: 1000px;
+}
+
+input.portal-title{
+			width: 100%;
+	    padding: 0px;
+	    background: transparent;
+	    border: none;
+	    border-radius: 0;
+	    border-bottom: 1.5px solid transparent;
+	    box-shadow: none;
+			align-self: center;
+}
+
+input.portal-title:focus,
+input.portal-title:hover {
+			box-shadow: none;
+			border-bottom: 1.5px solid #999999;
+}
+
 /* Portal Editor settings */
 
 /* The width of each input element next to the remove button */
@@ -2552,15 +2666,6 @@ img[src*="googleapis.com/"].georegion-map{
 /* Portal Editor markdown section
  * SEE ALSO: .portal-display-image{} and .portal-display-text{} from portal styles
  */
-
-/* Image upload drag and drop zone */
-.dropzone {
- 	background: #ececec;
- 	border: #999 2px dashed;
- 	border-radius: 3px;
-	cursor: pointer;
- 	/* min-height property should be 500px when an image is uploaded */
- }
 
 .port-editor-markdown-container div.portal-display-image {
 	background: #ececec;
@@ -2774,6 +2879,10 @@ img[src*="googleapis.com/"].georegion-map{
 	fill: #828282
 }
 
+/******************************************
+* Portals & Portal Editor (styles shared between both)
+********************************************/
+
 /* Top level app navigation in the PortalView and EditorView */
 .Portal.Editor #Navbar,
 .PortalView #Navbar{
@@ -2848,6 +2957,16 @@ img[src*="googleapis.com/"].georegion-map{
 .PortalView #Navbar .nav {
     float: right;
     margin-top: 0px;
+}
+
+/* Portal title */
+.Portal.Editor .portal-title,
+.portal-view .portal-title {
+  line-height: 70px;
+  margin: 0px;
+  font-size: 2em;
+  display: inline-block;
+	font-weight: 300;
 }
 
 /******************************************
@@ -2936,12 +3055,6 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .portal-view .data-catalog #clear-all{
 	display: none;
-}
-.portal-view .portal-title{
-  line-height: 70px;
-  margin: 0px;
-  font-size: 2em;
-  display: inline-block;
 }
 .portal-logos-view{
 	border-top: 1px solid #DDD;
