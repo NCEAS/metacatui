@@ -841,8 +841,6 @@ function(_, $, Backbone, Portal, PortalSection,
           return;
         }
 
-        console.log(section);
-
         //Remove this section from the Portal
         this.model.removeSection(section);
       }
