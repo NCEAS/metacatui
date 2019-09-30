@@ -721,9 +721,15 @@ define(['jquery', 'underscore', 'backbone',
         //For all other filter types
         else{
           //Get the current value
-          var values = filterModel.get("values"),
-              //Remove the value that was in this applied filter
-              newValues = _.without(values, $(appliedFilterEl).data("value") );
+          var modelValues = filterModel.get("values"),
+              thisValue   = $(appliedFilterEl).data("value");
+
+          if( typeof thisValue !== "string" ){
+            thisValue = thisValue.toString();
+          }
+
+          //Remove the value that was in this applied filter
+          var newValues = _.without(modelValues, thisValue);
 
           //Updates the values on the model
           filterModel.set("values", newValues);
