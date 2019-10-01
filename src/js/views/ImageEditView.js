@@ -26,7 +26,7 @@ function(_, $, Backbone, ImageUploaderView, Template){
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: "edit-logos",
+    className: "edit-image",
 
     /**
     * A jQuery selector for the element that the ImageUploaderView should be
@@ -145,17 +145,45 @@ function(_, $, Backbone, ImageUploaderView, Template){
         this.$(this.imageUploaderContainer).append(uploader.el);
         uploader.render();
 
-        // Update the portal image model when the user adds a new image
+        // Remove validation error messages, if there are any, when image added
+        this.stopListening(uploader, "imageAdded");
+        this.listenTo(uploader, "imageAdded", this.removeValidation);
+
+        // Update the portal image model when the image is successfully uploaded
         this.stopListening(uploader, "imageUploaded");
-          this.listenTo(uploader, "imageUploaded", function(imageURL, newID){
+        this.listenTo(uploader, "imageUploaded", function(imageURL, newID){
           view.model.set("identifier", newID);
           view.model.set("imageURL", imageURL);
+          // Remove validation errors if there were any displayed.
+          view.removeValidation();
         });
+        
       } catch (e) {
         console.log("image edit view not rendered, error message: " + e);
       }
 
+    },
+
+    showValidation: function(){
+
+      // ToDo: highlight individual errors:
+      // var errors = this.model.validate();
+
+      this.$(this.imageUploaderContainer).addClass("error");
+
+      var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
+      if(dropzoneMessage.find(".error").length === 0){
+        dropzoneMessage.prepend("<h5 class='error'>A logo is required</h5>");
+      }
+
+    },
+
+    removeValidation: function(){
+      this.$(this.imageUploaderContainer).removeClass("error");
+      var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
+      dropzoneMessage.find(".error").remove();
     }
+
 
   });
 

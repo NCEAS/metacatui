@@ -230,6 +230,9 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
           return
         }
 
+        // Event for parent view
+        this.trigger("imageAdded");
+
         if(!this.model){
           this.model = new DataONEObject();
         }

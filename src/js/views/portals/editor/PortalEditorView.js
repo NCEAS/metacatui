@@ -381,8 +381,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           nameLabel: false,
           urlLabel: false
         });
-        this.$(this.portEditLogoContainer).html(this.logoUploader.el);
+        this.$(this.portEditLogoContainer).append(this.logoUploader.el);
         this.logoUploader.render();
+        this.$(this.portEditLogoContainer).data("view", this.logoUploader);
 
       } catch (e) {
         console.log("logo editor view could not be rendered. Error message: " + e);
