@@ -103,15 +103,19 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
         })).data("view", this);
 
         // Auto-resize the height of the intoduction and title fields on user-input
+        // and on window resize events.
         // from: DreamTeK, https://stackoverflow.com/a/25621277
+        $( window ).resize(function() {
+          $("textarea.auto-resize").trigger("windowResize");
+        });
         $("textarea.auto-resize").each(function () {
           this.setAttribute(
             "style", "height:" + (this.scrollHeight) + "px;overflow-y:hidden;"
           );
-        }).on('input', function () {
+        }).on('input windowResize', function () {
           this.style.height = '0px'; // note: textfield MUST have a min-height set
           this.style.height = (this.scrollHeight) + 'px';
-        });
+        })
 
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
