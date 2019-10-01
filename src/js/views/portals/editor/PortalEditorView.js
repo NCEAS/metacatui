@@ -2,15 +2,19 @@ define(['underscore',
         'jquery',
         'backbone',
         'models/portals/PortalModel',
+        "models/portals/PortalImage",
         "collections/Filters",
         'views/EditorView',
         "views/SignInView",
         "views/portals/editor/PortEditorSectionsView",
+        "views/ImageEditView",
         "text!templates/loading.html",
         "text!templates/portals/editor/portalEditor.html",
         "text!templates/portals/editor/portalEditorSubmitMessage.html"
       ],
-function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSectionsView, LoadingTemplate, Template, portalEditorSubmitMessageTemplate){
+function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
+  PortEditorSectionsView, ImageEdit, LoadingTemplate, Template,
+  portalEditorSubmitMessageTemplate){
 
   /**
   * @class PortalEditorView
@@ -61,6 +65,13 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     * @type {string}
     */
     portEditSectionsContainer: ".port-editor-sections-container",
+
+    /**
+    * A jQuery selector for the element that the portal logo image uploader
+    * should be inserted into
+    * @type {string}
+    */
+    portEditLogoContainer: ".logo-editor-container",
 
     /**
     * A temporary name to use for portals when they are first created but don't have a label yet.
@@ -246,6 +257,9 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       //Show the required fields for this editor
       this.renderRequiredIcons(MetacatUI.appModel.get("portalEditorRequiredFields"));
 
+      // Insert the logo editor
+      this.renderLogoEditor();
+
     },
 
     /**
@@ -338,6 +352,41 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       // Find the loading object and remove it.
       if (this.$el.find(".loading")) {
         this.$el.find(".loading").remove();
+      }
+    },
+
+    /**
+     * renderLogoEditor - Creates a new PortalImage model for the portal logo if
+     *  one doesn't exist already, then inserts an ImageEdit view into the
+     *  portEditLogoContainer.
+     */
+    renderLogoEditor: function() {
+
+      try {
+        // If the portal has no logo, add the default model for one
+        if(!this.model.get("logo")){
+          this.model.set("logo", new PortalImage({
+              label: "logo",
+              nodeName: "logo"
+            })
+          );
+        };
+
+        // Add the image view (incl. uploader) for the portal logo
+        this.logoUploader = new ImageEdit({
+          model: this.model.get("logo"),
+          imageUploadInstructions: "Drag & drop a logo here or click to upload",
+          imageWidth: 100,
+          imageHeight: 100,
+          nameLabel: false,
+          urlLabel: false
+        });
+        this.$(this.portEditLogoContainer).html(this.logoUploader.el);
+        this.logoUploader.render();
+
+      } catch (e) {
+        console.log("logo editor view could not be rendered. Error message: " + e);
+        this.$(this.portEditLogoContainer).html(this.logoUploader.el)
       }
     },
 
@@ -518,22 +567,6 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     },
 
     /**
-     * This function is called when the app navigates away from this view.
-     * Any clean-up or housekeeping happens at this time.
-     */
-    onClose: function(){
-
-      $("body")
-        .removeClass("Editor")
-        .removeClass("Portal");
-
-      //Remove listeners
-      this.stopListening();
-      this.undelegateEvents();
-
-    },
-
-    /**
     * Show Sign In buttons
     */
     showSignIn: function(){
@@ -562,7 +595,23 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
                             "\" doesn't exist.";
 
       MetacatUI.appView.showAlert(notFoundMessage, "alert-error", this.$el);
-    }
+    },
+
+    /**
+     * This function is called when the app navigates away from this view.
+     * Any clean-up or housekeeping happens at this time.
+     */
+    onClose: function(){
+
+      $("body")
+        .removeClass("Editor")
+        .removeClass("Portal");
+
+      //Remove listeners
+      this.stopListening();
+      this.undelegateEvents();
+
+    },
 
   });
 

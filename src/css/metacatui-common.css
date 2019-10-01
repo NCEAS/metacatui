@@ -2534,6 +2534,7 @@ img[src*="googleapis.com/"].georegion-map{
 
 .dz-image-preview img{
 	vertical-align: middle;
+	max-height: 100%;
 }
 
 /* show dashed outline when no image is uploaded, or when image is uploaded and user hovers */
