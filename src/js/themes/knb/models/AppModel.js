@@ -208,10 +208,10 @@ define(['jquery', 'underscore', 'backbone'],
         description: false,
         sectionTitle: true,
         sectionIntroduction: false,
+        logo: false,
         //The following fields are not yet supported as required fields in the portal editor
         //TODO: Add support for requiring the below fields
         sectionImage: false,
-        logo: false,
         acknowledgments: false,
         acknowledgmentsLogos: false,
         awards: false,
