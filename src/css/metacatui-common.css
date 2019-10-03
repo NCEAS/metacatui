@@ -2513,6 +2513,7 @@ img[src*="googleapis.com/"].georegion-map{
 	width:100%;
   text-align: center;
 	position: relative;
+	box-sizing: border-box;
 }
 
 .dropzone .dz-message{
@@ -2523,8 +2524,11 @@ img[src*="googleapis.com/"].georegion-map{
 	bottom: 0;
 	align-items: center;
 	display: flex;
+	box-sizing: border-box;
 	padding: 8px;
-  line-height: 120%;
+	line-height: 120%;
+	width: 100%;
+	justify-content: center;
 }
 
 .dz-image-preview {
@@ -2538,9 +2542,19 @@ img[src*="googleapis.com/"].georegion-map{
     vertical-align: middle;
 }
 
+/* when images are displayed as image elements */
 .dz-image-preview img{
-	vertical-align: middle;
 	max-height: 100%;
+}
+
+/* when images are displayed as background of divs */
+.dz-image-preview div{
+	background-repeat: no-repeat;
+	background-position-x: 50%;
+	background-position-y: 50%;
+	background-size: cover;
+	min-height: 500px;
+	color: #FFF;
 }
 
 /* show dashed outline when no image is uploaded, or when image is uploaded and user hovers */
@@ -2674,12 +2688,37 @@ input.portal-title:hover {
  * SEE ALSO: .portal-display-image{} and .portal-display-text{} from portal styles
  */
 
+.port-editor-section.port-editor-md {
+	float: left;
+	position: relative;
+	width: 100%
+}
+
+.port-editor-section.port-editor-md .dropzone{
+	width: calc(100% - 2px);
+	margin:1px;
+}
+
+.port-editor-section.port-editor-md .dropzone .dz-message{
+	flex-direction: column;
+	justify-content: flex-end;
+	padding-bottom: 50px;
+}
+
+/* for the cs-message: calc(100% - 1px) */
+
+.Portal.Editor .portal-display-text {
+	position: absolute;
+	width: 100%;
+	top: 0;
+	box-sizing: border-box;
+	left: 0;
+	margin: 100px 3px 0px 2px;
+}
+
 .port-editor-markdown-container div.portal-display-image {
-	background: #ececec;
-	border: #999 2px dashed;
-	border-radius: 3px;
+	padding: 0;
 	min-height: 300px;
-	/* min-height property should be 500px when an image is uploaded */
 }
 
 .port-editor-markdown-container .title,

@@ -1,15 +1,20 @@
 <div>
 
   <!-- outer dropzone template -->
-  <div class='dropzone' style='height:<%=height%>px; width:<%=width%>px'>
+  <div class='dropzone' style='height:<%=height%>px; <% if(width){ %>width:<%=width%>px<% } %>'>
     <div class='dz-default dz-message subtle'><%=uploadInstructions%></div>
   </div>
 
   <!-- preview template -->
   <div class="dz-preview dz-image-preview" style="height:<%=height%>px">
     <!-- <div class="dz-error-message"><span data-dz-errormessage></span></div> -->
-    <img data-dz-thumbnail />
-    <span class="vertical-align-image-helper"></span>
+    <% if(imageTagName == "img"){ %>
+      <img>
+      <span class="vertical-align-image-helper"></span>
+    <% } %>
+    <% if(imageTagName == "div"){ %>
+      <div></div>
+    <% } %>
   </div>
 
 </div>

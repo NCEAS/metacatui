@@ -50,16 +50,26 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     uploadInstructions: "Drag & drop an image or click here to upload",
 
     /**
-    * The maximum height of the image. Inputed images will be resized to fit.
+    * The maximum display height of the image preview.
     * @type {number}
     */
     height: 100,
 
     /**
-    * The maximum display width of the image preview.
+    * The maximum display width of the image preview. This is only used for the
+    * css width propery, and doesn't influence the size of the saved image. If
+    * set to false, no css width property is set.
     * @type {number}
     */
     width: 100,
+
+    /**
+     * The HTML tag name to insert the uploaded image into. Options are "img",
+     * in which case the image is inserted as an HTML <img>, or "div", in which
+     * case the image is inserted as the background of a div.
+     * @type {string}
+     */
+    imageTagName: "div",
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
@@ -82,6 +92,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     * @property {number}  options.width - Gets set as ImageUploaderView.width
     * @property {string}  options.uploadInstructions - Gets set as ImageUploaderView.uploadInstructions
     * @property {string}  options.url - Gets set as ImageUploaderView.url
+    * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
     */
     initialize: function(options){
 
@@ -93,6 +104,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
           this.width              = options.width;
           this.uploadInstructions = options.uploadInstructions;
           this.url                = options.url;
+          this.imageTagName       = options.imageTagName;
 
           if (!this.url && this.model) {
             this.url = this.model.url();
@@ -121,19 +133,21 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     render: function(){
 
       try{
-
         // Reference to the view
         var view = this,
         // The overall template which holds two sub-templates
         fullTemplate = view.template({
           height: this.height,
           width: this.width,
-          uploadInstructions: this.uploadInstructions
+          uploadInstructions: this.uploadInstructions,
+          imageTagName: this.imageTagName
         }),
         // The outer template
         dropzoneTemplate = $(fullTemplate).find(".dropzone")[0].outerHTML,
         // The inner template inserted when an image is added
-        previewTemplate = $(fullTemplate).find(".dz-preview")[0].outerHTML;
+        previewTemplate = $(fullTemplate)
+                              .find(".dz-preview")[0]
+                              .outerHTML;
 
         // Insert the main template for this view
         this.$el.html(dropzoneTemplate);
@@ -147,10 +161,16 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
           maxFiles: 1,
           parallelUploads: 1,
           uploadMultiple: false,
-          resizeHeight: this.height, // resize images before upload
-          thumbnailHeight: this.height,
+          resizeHeight: null,
+          thumbnailHeight: null,
+          thumbnailWidth: null,
           autoProcessQueue: false, // Don't use dropzone's functionality to upload
           previewTemplate: previewTemplate,
+          // Override dropzone's function for showing images in the upload zone
+          // so that we have the option to disaply them as a background Images.
+          thumbnail: function(file, dataUrl){
+            view.showImage(file, dataUrl)
+          },
           init: function() {
             // Use our own functionality for uploading
             this.on("addedfile", function(file){
@@ -164,7 +184,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
         // Fetch the image if a URL was provided and show thumbnail
         if(this.url){
-          this.showThumbnail();
+          this.showSavedImage();
         }
       }
       catch(error){
@@ -174,9 +194,35 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     },
 
     /**
-    * Display a thumbnail from the server when an image ID is provided to this view
+     * showImage - General function for displaying an image file in the upload zone, whether
+     * just added or already uploaded. This is the function that we use to override
+     * dropzone's thumbnail() function. It displays the image as the background of
+     * a div if this view's imageTagName attribute is set to "div", or as an image
+     * element if imageTagName is set to "img".
+     * @param  {object} file    Information about the image file
+     * @param  {string} dataUrl A URL for the image to be displayed
+     */
+    showImage: function(file, dataUrl){
+
+      try{
+        var previewEl = this.$(".dz-preview.dz-image-preview " + this.imageTagName)[0];
+
+        if(this.imageTagName == "img"){
+          previewEl.src = dataUrl;
+        } else if (this.imageTagName == "div"){
+          $(previewEl).css("background-image", "url(" + dataUrl + ")");
+        }
+      } catch(error) {
+        console.log(error);
+      }
+
+    },
+
+    /**
+    * Display an image in the upload zone that's already saved. This gets called
+    * when an image url is provided to this view.
     */
-    showThumbnail: function(){
+    showSavedImage: function(){
 
       try{
 

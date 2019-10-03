@@ -379,7 +379,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           imageWidth: 100,
           imageHeight: 100,
           nameLabel: false,
-          urlLabel: false
+          urlLabel: false,
+          imageTagName: "img"
         });
         this.$(this.portEditLogoContainer).append(this.logoUploader.el);
         this.logoUploader.render();

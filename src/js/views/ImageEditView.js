@@ -42,14 +42,15 @@ function(_, $, Backbone, ImageUploaderView, Template){
     model: undefined,
 
     /**
-    * The maximum height of the image. Inputed images will be resized to this height.
+    * The maximum display height of the image preview.
     * @type {number}
     */
     imageHeight: 100,
 
     /**
-    * The maximum display width of the image preview.
-    * @type {number}
+    * The maximum display width of the image preview. If set to false,
+    * no css width property is set.
+    * @type {number|boolean}
     */
     imageWidth: 100,
 
@@ -74,6 +75,14 @@ function(_, $, Backbone, ImageUploaderView, Template){
     urlLabel: "URL",
 
     /**
+     * The HTML tag name to insert the uploaded image into. Options are "img",
+     * in which case the image is inserted as an HTML <img>, or "div", in which
+     * case the image is inserted as the background of a "div".
+     * @type {string}
+     */
+    imageTagName: "div",
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -95,6 +104,7 @@ function(_, $, Backbone, ImageUploaderView, Template){
     * @property {number}  options.imageHeight - Gets set as ImageUploaderView.imageHeight
     * @property {string} options.nameLabel - Gets set as ImageEditView.nameLabel
     * @property {string} options.urlLabel - Gets set as ImageEditView.urlLabel
+    * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
     */
     initialize: function(options){
 
@@ -102,11 +112,12 @@ function(_, $, Backbone, ImageUploaderView, Template){
 
         if( typeof options == "object" ){
           this.model                    = options.model;
-          this.imageUploadInstructions  = options.imageUploadInstructions,
-          this.imageWidth               = options.imageWidth,
-          this.imageHeight              = options.imageHeight,
-          this.nameLabel                = options.nameLabel,
-          this.urlLabel                 = options.urlLabel
+          this.imageUploadInstructions  = options.imageUploadInstructions;
+          this.imageWidth               = options.imageWidth;
+          this.imageHeight              = options.imageHeight;
+          this.nameLabel                = options.nameLabel;
+          this.urlLabel                 = options.urlLabel;
+          this.imageTagName                  = options.imageTagName;
         }
 
         if(!this.model){
@@ -139,7 +150,8 @@ function(_, $, Backbone, ImageUploaderView, Template){
           height: this.imageHeight,
           width: this.imageWidth,
           url: this.model.get("imageURL"),
-          uploadInstructions: this.imageUploadInstructions
+          uploadInstructions: this.imageUploadInstructions,
+          imageTagName : this.imageTagName
         });
 
         this.$(this.imageUploaderContainer).append(uploader.el);
@@ -157,7 +169,7 @@ function(_, $, Backbone, ImageUploaderView, Template){
           // Remove validation errors if there were any displayed.
           view.removeValidation();
         });
-        
+
       } catch (e) {
         console.log("image edit view not rendered, error message: " + e);
       }
