@@ -320,7 +320,7 @@ function ($, _, Backbone) {
       require(['views/portals/PortalView'], function(PortalView){
         MetacatUI.appView.portalView = new PortalView({
             label: label,
-            activeSection: portalSection
+            activeSectionLabel: portalSection
         });
         MetacatUI.appView.showView(MetacatUI.appView.portalView);
       });
@@ -343,7 +343,7 @@ function ($, _, Backbone) {
 
       require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
         MetacatUI.appView.portalEditorView = new PortalEditorView({
-          activeSection: portalSection,
+          activeSectionLabel: portalSection,
           portalIdentifier: portalIdentifier
         });
         MetacatUI.appView.showView(MetacatUI.appView.portalEditorView);

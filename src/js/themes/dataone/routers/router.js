@@ -416,14 +416,14 @@ function ($, _, Backbone) {
             MetacatUI.appView.portalView = new PortalView({
                           portalId: portalId,
                           label: label,
-                          activeSection: portalSection
+                          activeSectionLabel: portalSection
                       });
             MetacatUI.appView.showView(MetacatUI.appView.portalView);
           });
         } else {
                   MetacatUI.appView.portalView.label = label;
                   MetacatUI.appView.portalView.portalId = portalId;
-                  MetacatUI.appView.portalView.activeSection = portalSection;
+                  MetacatUI.appView.portalView.activeSectionLabel = portalSection;
           MetacatUI.appView.showView(MetacatUI.appView.portalView);
         }
       },

@@ -21,7 +21,7 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     * The display name for this Section
     * @type {string}
     */
-    sectionName: "Data",
+    uniqueSectionLabel: "Data",
 
     /**
     * The HTML classes to use for this view's element
@@ -30,10 +30,22 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
     className: PortEditorSectionView.prototype.className + " port-editor-data",
 
     /**
+    * The id attribute of the view element
+    * @param {string}
+    */
+    id: "Data",
+
+    /**
     * The PortalModel that is being edited
     * @type {Portal}
     */
     model: undefined,
+
+    /**
+    * The type of section view this is
+    * @type {string}
+    */
+    sectionType: "data",
 
     /**
     * A jQuery selector for the element that the EditCollectionView should be inserted into
@@ -81,6 +93,9 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
       });
       this.$(this.editCollectionViewContainer).html(editCollectionView.el);
       editCollectionView.render();
+
+      //Save a reference to this view
+      this.$el.data("view", this);
 
     },
 

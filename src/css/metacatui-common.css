@@ -2614,6 +2614,10 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-sections .icon.icon-plus {
 	margin: 0 1px 0 1px;
 }
+/* `Settings` link */
+.nav .page-Settings{
+  float: right;
+}
 
 #section-type-header{
 	margin: 35px 0 25px 0;
@@ -2667,7 +2671,7 @@ input.portal-title:hover {
  * SEE ALSO: .portal-display-image{} and .portal-display-text{} from portal styles
  */
 
-.port-editor-markdown-container div.portal-display-image {
+.port-editor-md div.portal-display-image {
 	background: #ececec;
 	border: #999 2px dashed;
 	border-radius: 3px;
@@ -2675,8 +2679,8 @@ input.portal-title:hover {
 	/* min-height property should be 500px when an image is uploaded */
 }
 
-.port-editor-markdown-container .title,
-.port-editor-markdown-container .introduction {
+.port-editor-md .title,
+.port-editor-md .introduction {
 	width: 100%;
 	padding: 0px;
 	background: transparent;
@@ -2687,14 +2691,14 @@ input.portal-title:hover {
 	box-shadow: none;
 }
 
-.port-editor-markdown-container .title {
+.port-editor-md .title {
 	font-weight: 300;
 	font-size: 31.5px;
 	line-height: 44px;
 	margin: 15px 0;
 	min-height: 44px;
 }
-.port-editor-markdown-container .introduction{
+.port-editor-md .introduction{
 	font-weight: 400;
 	font-size: 14px;
 	line-height: 1.5em;
@@ -2702,13 +2706,13 @@ input.portal-title:hover {
 	min-height: 4.5em;
 }
 
-.port-editor-markdown-container .title::placeholder,
-.port-editor-markdown-container .introduction::placeholder {
+.port-editor-md .title::placeholder,
+.port-editor-md .introduction::placeholder {
 	color: white;
   opacity: 0.4;
 }
 
-.port-editor-markdown-container .markdown{
+.port-editor-md .markdown{
 	margin: 20px;
 	width: calc(100% - 40px);
 	line-height: 1.6em;
@@ -2716,7 +2720,7 @@ input.portal-title:hover {
 	padding: 0.5rem;
 }
 
-.port-editor-markdown-container .markdown-help{
+.port-editor-md .markdown-help{
 	display: flex;
 	justify-content: space-around;
 	align-items: stretch;
@@ -2724,17 +2728,17 @@ input.portal-title:hover {
 	flex-wrap: wrap;
 }
 
-.port-editor-markdown-container .markdown-help table {
+.port-editor-md .markdown-help table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.port-editor-markdown-container .markdown-help-text {
+.port-editor-md .markdown-help-text {
 	margin: 20px;
 	margin: 20px 20px 5px 20px;
 }
 
-.port-editor-markdown-container .markdown-help-column {
+.port-editor-md .markdown-help-column {
 	box-shadow: 0 0px 4px 0 rgba(0, 0, 0, 0.15);
   padding: 15px;
   background-color: #fbfbfb;
@@ -2742,18 +2746,18 @@ input.portal-title:hover {
 	margin: 10px
 }
 
-.port-editor-markdown-container .markdown-help-column td {
+.port-editor-md .markdown-help-column td {
   padding: 2px 1px;
 	border-top: 1px solid #ececec;
 }
 
-.port-editor-markdown-container .markdown-help-column th {
+.port-editor-md .markdown-help-column th {
 	padding-bottom: 9px;
 	font-weight: 600;
   font-size: 13px;
 }
 
-.port-editor-markdown-container .markdown-help-column .more-help {
+.port-editor-md .markdown-help-column .more-help {
 	font-weight: 600;
   font-size: 13px;
 	margin: 5px 0 0 0;
@@ -2761,8 +2765,8 @@ input.portal-title:hover {
 
 }
 
-.port-editor-markdown-container .markdown-help-column code,
-.port-editor-markdown-container .markdown-help-column pre {
+.port-editor-md .markdown-help-column code,
+.port-editor-md .markdown-help-column pre {
 	color: #999999;
 	background-color: transparent;
   border: none;
@@ -2771,19 +2775,19 @@ input.portal-title:hover {
 	margin: 0px;
 }
 
-.port-editor-markdown-container .markdown-help-column h1{
+.port-editor-md .markdown-help-column h1{
 	font-weight: 300;
 	font-size: 21px;
 	margin: 0;
 }
 
-.port-editor-markdown-container .markdown-help-column h2{
+.port-editor-md .markdown-help-column h2{
 	font-weight: 700;
 	font-size: 16px;
 	margin: 0;
 }
 
-.port-editor-markdown-container .markdown-help-column blockquote{
+.port-editor-md .markdown-help-column blockquote{
 	margin: 0;
 }
 

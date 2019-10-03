@@ -25,13 +25,25 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     * The display name for this Section
     * @type {string}
     */
-    sectionName: "Settings",
+    uniqueSectionLabel: "Settings",
+
+    /**
+    * The type of section view this is
+    * @type {string}
+    */
+    sectionType: "settings",
 
     /**
     * The HTML classes to use for this view's element
     * @type {string}
     */
     className: PortEditorSectionView.prototype.className + " port-editor-settings",
+
+    /**
+    * The id attribute of the view element
+    * @param {string}
+    */
+    id: "Settings",
 
     /**
     * The PortalModel that is being edited
@@ -95,6 +107,9 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
       var logosView = new PortEditorLogosView({ model: this.model });
       logosView.render();
       this.$(".logos-container").html(logosView.el);
+
+      //Save a reference to this view
+      this.$el.data("view", this);
 
     },
 

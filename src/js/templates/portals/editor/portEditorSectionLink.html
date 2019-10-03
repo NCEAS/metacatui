@@ -1,10 +1,11 @@
-<li class="section-link-container" data-section-name="<%=sectionNameLinkFriendly%>">
-  <a href="#<%=sectionNameLinkFriendly%>" data-toggle="tab" class="section-link">
+<li class="section-link-container page-<%=uniqueLabel%>" data-section-id="<%=uniqueLabel%>"
+  data-section-name="<%=sectionLabel%>" data-section-type="<%=sectionType%>">
+  <a href="<%=sectionURL%>" class="section-link">
     <span class="error icon-exclamation-sign icon icon-on-left validation-error-icon hidden"></span>
-    <% if( sectionName == "Settings" ){ %>
+    <% if( sectionLabel == "Settings" ){ %>
       <span class="icon-cog icon icon-on-left"></span>
     <% } %>
-    <%=sectionName%>
+    <%=sectionLabel%>
   </a>
   <% if( menuOptions && menuOptions.length ){ %>
     <a href="#" class="section-menu-link">

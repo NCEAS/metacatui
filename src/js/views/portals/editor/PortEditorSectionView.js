@@ -20,10 +20,11 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
     type: "PortEditorSection",
 
     /**
-    * The display name for this Section
+    * The unique label for this Section. It most likely matches the label on the model, but
+    * may include a number after if more than one section has the same name.
     * @type {string}
     */
-    sectionName: "",
+    uniqueSectionLabel: "",
 
     /**
     * The HTML tag name for this view's element
@@ -35,7 +36,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: "port-editor-section",
+    className: "port-editor-section tab-pane",
 
     /**
     * The PortalSectionModel being displayed
@@ -87,6 +88,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
     * @type {Object}
     */
     events: {
+      "click .section-option" : "addNewSection"
     },
 
     /**
@@ -125,7 +127,8 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
               id: "section-option-" + sectionType,
               title: sectionData.title,
               description: sectionData.description,
-              img: sectionData.svg
+              img: sectionData.svg,
+              sectionType: sectionType
             })
 
           )
@@ -147,6 +150,9 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
             });
           }
         }, this);
+
+        //Save a reference to this view
+        this.$el.data("view", this);
       }
       catch(e){
         console.log("Section view cannot be rendered, error message: " + e);
@@ -249,51 +255,35 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
         sectionOption.removeClass("disabled");
         descriptionEl.html(descriptionText);
 
-        // When user clicks section option, add new section
-        var view = this;
-        sectionOption.off("click");
-        sectionOption.on("click", function(e){
-          // Tell the parent portEditorSectionsView to add tabs and content
-          // for the new section.
-          view.trigger("addSection", sectionType);
-          // Check if this sectionType option should be disabled now.
-          view.toggleDisableSectionOption(sectionType);
-        });
-
       } catch(e) {
         console.log(e);
       }
 
     },
+
     /**
-    * Gets the name of this section and returns it
-    * @param {Object} [options] - Optional options for the name that is returned
-    * @property {Boolean} options.linkFriendly - If true, the name will be stripped of special characters
-    * @return {string} The name for this section
+    * Gets the section type to add, and triggers an event so the rest of the app will add a new section
+    * @param {Event} e - The element that was clicked that represents the section option
     */
-    getName: function(options){
+    addNewSection: function(e){
 
-      var name = "";
-
-      //If a section name is set on the view, use that
-      if( this.sectionName ){
-        name = this.sectionName;
-      }
-      //If the model is a PortalSectionModel, use the label from the model
-      else if( PortalSectionModel.prototype.isPrototypeOf(this.model) ){
-        name = this.model.get("label");
-      }
-      else{
-        name = "New page";
+      if( !e || $(e.target).is(".disabled") || $(e.target).parents(".section-option").first().is(".disabled") ){
+        return;
       }
 
-      if( typeof options == "object" ){
-        if( options.linkFriendly ){
-          name = name.replace(/[^a-zA-Z0-9]/g, "-");
+      //Get the section type
+      var sectionType = $(e.target).data("section-type");
+
+      if( !sectionType ){
+        sectionType = $(e.target).parents("[data-section-type]").first().data("section-type");
+        if( !sectionType ){
+          return;
         }
       }
 
-      return name;
+      this.trigger("addNewSection", sectionType);
+
+      this.toggleDisableSectionOption(sectionType);
 
     }
 

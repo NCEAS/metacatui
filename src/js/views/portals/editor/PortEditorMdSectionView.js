@@ -48,6 +48,12 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
     editorView: undefined,
 
     /**
+    * The type of section view this is
+    * @type {string}
+    */
+    sectionType: "freeform",
+
+    /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */

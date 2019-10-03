@@ -45,16 +45,22 @@ function(_, $, Backbone, Portal, PortalSection,
     model: undefined,
 
     /**
-    * The currently active editor section. e.g. Data, Metrics, Settings, etc.
-    * @type {string}
+    * A reference to the currently active editor section. e.g. Data, Metrics, Settings, etc.
+    * @type {PortEditorSectionView}
     */
-    activeSection: "",
+    activeSection: undefined,
 
     /**
-    * The names of all sections in this portal editor
-    * @type {Array}
+    * The name of the active section when the view is first loaded. This is retrieved from the router/URL
+    * @type {string}
     */
-    sectionNames: [],
+    activeSectionLabel: undefined,
+
+    /**
+    * The unique labels for each section in this Portal
+    * @type {string[]}
+    */
+    sectionLabels: [],
 
     /**
     * The subviews contained within this view to be removed with onClose
@@ -76,21 +82,6 @@ function(_, $, Backbone, Portal, PortalSection,
     metricsSectionTemplate: _.template(MetricsSectionTemplate),
 
     /**
-    * A jQuery selector for the element that the PortEditorDataView should be inserted into
-    * @type {string}
-    */
-    portEditDataViewContainer: ".port-editor-data-container",
-    /**
-    * A jQuery selector for the element that the Metrics section should be inserted into
-    * @type {string}
-    */
-    portEditMetricsContainer:  ".port-editor-metrics-container",
-    /**
-    * A jQuery selector for the element that the PortEditorSettingsView should be inserted into
-    * @type {string}
-    */
-    portSettingsContainer: ".port-editor-settings-container",
-    /**
     * A jQuery selector for the elements that are links to the individual sections
     * @type {string}
     */
@@ -110,6 +101,11 @@ function(_, $, Backbone, Portal, PortalSection,
     * @type {string}
     */
     sectionsContainer: ".sections-container",
+    /**
+    * A jQuery selector for the section elements
+    * @type {string}
+    */
+    sectionEls: ".port-editor-section",
 
     /**
     * Flag to add section name to URL. Enabled by default.
@@ -129,11 +125,12 @@ function(_, $, Backbone, Portal, PortalSection,
     events: {
       "click .remove-section" : "confirmRemoveSection",
       "click .rename-section" : "renameSection",
-      "dblclick .section-link" : "renameSection",
+      "dblclick .section-link": "renameSection",
       "click .show-section"   : "showSection",
-      "focusout .section-link[contenteditable=true]"  : "updateName",
-      // both keyup and keydown events are needed for imitLabelLength function
-      "keyup .section-link[contenteditable=true]"  : "limitLabelInput",
+      "click .section-link"   : "handleSwitchSection",
+      "focusout .section-link[contenteditable=true]" : "updateName",
+      // both keyup and keydown events are needed for limitLabelLength function
+      "keyup .section-link[contenteditable=true]"    : "limitLabelInput",
       "keydown .section-link[contenteditable=true]"  : "limitLabelInput"
     },
 
@@ -143,9 +140,12 @@ function(_, $, Backbone, Portal, PortalSection,
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
-      if(typeof options == "object"){
-        this.activeSection = options.activeSection || "";
-        this.newPortalTempName = options.newPortalTempName || "";
+      // Get all the options and apply them to this view
+      if (options) {
+          var optionKeys = Object.keys(options);
+          _.each(optionKeys, function(key, i) {
+              this[key] = options[key];
+          }, this);
       }
     },
 
@@ -156,9 +156,6 @@ function(_, $, Backbone, Portal, PortalSection,
 
       //Insert the template into the view
       this.$el.html(this.template());
-
-      //Render a Section View for each content section in the Portal
-      this.renderContentSections();
 
       //Render the Data section
       this.renderDataSection();
@@ -172,8 +169,24 @@ function(_, $, Backbone, Portal, PortalSection,
       //Render the Settings
       this.renderSettings();
 
-      //Switch to the active section
-      this.switchSection();
+      //Render a Section View for each content section in the Portal
+      this.renderContentSections();
+
+      //Switch to the active section, if there is one
+      if( this.activeSectionLabel ){
+        this.activeSection = this.getSectionByLabel(this.activeSectionLabel);
+
+        //Switch to the active section
+        this.switchSection(this.activeSection);
+
+        //Reset the active section label, since it is only used during the initial rendering
+        this.activeSectionLabel = undefined;
+
+      }
+      else{
+        //Switch to the default section
+        this.switchSection();
+      }
 
     },
 
@@ -182,21 +195,28 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     renderAddSection: function(){
 
+      //Create a unique label for this section and save it
+      if( !this.sectionLabels ){
+        this.sectionLabels = [];
+        this.sectionLabels.push("AddPage");
+      }
+      else if( this.sectionLabels && Array.isArray(this.sectionLabels) ){
+        this.sectionLabels.push("AddPage");
+      }
+
       // Add a "Add section" button/tab
       var addSectionView = new PortEditorSectionView({
         model: this.model,
-        sectionName: "AddSection"
+        uniqueSectionLabel: "AddPage",
+        sectionType: "addpage"
       });
 
-      // Add markdown section container, insert section HTML
-      var addSectionDiv = $(document.createElement("div"))
-        .addClass("tab-pane")
+      addSectionView.$el.addClass("tab-pane")
         .addClass("port-editor-add-section-container")
-        .attr("id", addSectionView.getName({ linkFriendly: true }))
-        .html(addSectionView.el);
+        .attr("id", "AddPage");
 
       //Add the section element to this view
-      this.$(this.sectionsContainer).append(addSectionDiv);
+      this.$(this.sectionsContainer).append(addSectionView.$el);
 
       //Render the section view
       addSectionView.render();
@@ -205,18 +225,12 @@ function(_, $, Backbone, Portal, PortalSection,
       this.addSectionLink(addSectionView);
 
       // Replace the name "AddSection" with fontawsome "+" icon
-      this.$(this.sectionLinksContainer)
-          .find( this.sectionLinkContainer + "[data-section-name='AddSection']")
-          .children()
-          .html("<i class='icon icon-plus'></i>");
+      this.$el.find( this.sectionLinkContainer + "[data-section-name='AddPage'] a")
+              .html("<i class='icon icon-plus'></i>");
 
       // When a sectionOption is clicked in the addSectionView subview,
-      // the "addSection" event is triggered.
-      var view = this;
-      addSectionView.off("addSection");
-      addSectionView.on("addSection", function(sectionType){
-        view.addSection(sectionType);
-      });
+      // the "addNewSection" event is triggered.
+      this.listenTo(addSectionView, "addNewSection", this.addSection);
 
       //Add the view to the subviews array
       this.subviews.push(addSectionView);
@@ -237,6 +251,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
         try{
           if(section){
+            //Render the content section
             this.renderContentSection(section);
           }
         }
@@ -245,62 +260,92 @@ function(_, $, Backbone, Portal, PortalSection,
         }
       }, this);
 
-      // Render additional section views & links when user adds more freeform pages
-      this.stopListening(this.model, "addSection");
-      this.listenTo(this.model, "addSection", function(section){
-        this.renderContentSection(section, true);
-        this.switchSection(section.get("label").replace(/[^a-zA-Z0-9]/g, "-"));
-      });
-
     },
 
     /**
     * Render a single markdown section in the editor (sectionView + link)
+    * @param {PortalSectionModel} section - The section to render
+    * @param {boolean} isNew - If true, this section will be rendered as a section that was just added by the user
     */
-    renderContentSection: function(section, newSection){
+    renderContentSection: function(section, isNew){
 
-        try{
+      try{
 
-          if (newSection == null) {
-            newSection = false;
+        if( typeof isNew == "undefined" || isNew == null) {
+          var isNew = false;
+        }
+
+        if(section){
+
+          // Create and render and markdown section view
+          var sectionView = new PortEditorMdSectionView({
+            model: section
+          });
+
+          //Create a unique label for this section and save it
+          var uniqueLabel = this.getUniqueSectionLabel(section);
+          //Set the unique section label for this view
+          sectionView.uniqueSectionLabel = uniqueLabel;
+
+          if( this.sectionLabels && Array.isArray(this.sectionLabels) ){
+            this.sectionLabels.push(uniqueLabel);
+          }
+          else{
+            //Create an array to contain the section labels and save this label
+            this.sectionLabels = [];
+            this.sectionLabels.push(uniqueLabel);
           }
 
-          if(section){
-            // Create and render and markdown section view
-            var sectionView = new PortEditorMdSectionView({
-              model: section,
-              // applying the PortalSectionModel label attribute
-              // to PortEditorMdSectionView
-              sectionName: section.get("label")
-            });
+          //When the section is renamed, update the array of section labels
+          this.listenTo( section, "change:label", function(section){
+            //Get the position of the unique label in the list
+            var indexOfLabel = this.sectionLabels.indexOf(sectionView.uniqueSectionLabel),
+                newUniqueLabel = "";
 
-            //Attach the editor view to this view
-            sectionView.editorView = this.editorView;
+            if( indexOfLabel > -1 ){
+              //Replace the old unique label with a temporary label, so when a new unique label is created,
+              // we don't consider a label that's not in use
+              this.sectionLabels[indexOfLabel] = "temporarylabeltobereplaced";
 
-            // Add markdown section container, insert section HTML
-            var markdownSectionDiv = $(document.createElement("div"))
-              .addClass("tab-pane")
-              .addClass("port-editor-markdown-container")
-              .attr("id", sectionView.getName({ linkFriendly: true }))
-              .html(sectionView.el);
+              //Get a new unique label using the new label on the section model
+              newUniqueLabel = this.getUniqueSectionLabel(section);
 
-            //Insert the PortEditorMdSectionView element into this view
-            this.$(this.sectionsContainer).append(markdownSectionDiv);
+              //Replace the temporary label with the new label
+              this.sectionLabels[indexOfLabel] = newUniqueLabel;
+            }
+            else{
+              //Get a new unique label using the new label on the section model
+              newUniqueLabel = this.getUniqueSectionLabel(section);
+              //Add the label to the list
+              this.sectionLabels.push(newUniqueLabel);
+            }
 
-            //Render the PortEditorMdSectionView
-            sectionView.render();
+            //Update the label set on the view
+            sectionView.uniqueSectionLabel = newUniqueLabel;
+          });
 
-            // Add the tab to the tab navigation
-            this.addSectionLink(sectionView, ["Rename", "Delete"], newSection);
+          //Attach the editor view to this view
+          sectionView.editorView = this.editorView;
 
-            // Add the sections to the list of subviews
-            this.subviews.push(sectionView);
+          sectionView.$el.attr("id", uniqueLabel);
 
-          }
+          //Insert the PortEditorMdSectionView element into this view
+          this.$(this.sectionsContainer).append(sectionView.$el);
+
+          //Render the PortEditorMdSectionView
+          sectionView.render();
+
+          // Add the tab to the tab navigation
+          this.addSectionLink(sectionView, ["Rename", "Delete"], isNew);
+
+          // Add the sections to the list of subviews
+          this.subviews.push(sectionView);
+
         }
-        catch(e){
-          console.error(e);
-        }
+      }
+      catch(e){
+        console.error(e);
+      }
 
     },
 
@@ -310,15 +355,27 @@ function(_, $, Backbone, Portal, PortalSection,
     renderDataSection: function(){
 
       try{
+
+        //Create a unique label for this section and save it
+        if( !this.sectionLabels ){
+          this.sectionLabels = [];
+          this.sectionLabels.push("Data");
+        }
+        else if( Array.isArray(this.sectionLabels) && !this.sectionLabels.includes("Data") ){
+          this.sectionLabels.push("Data");
+        }
+
         // Render a PortEditorDataView and corresponding tab
         var dataView = new PortEditorDataView({
-          model: this.model
+          model: this.model,
+          uniqueSectionLabel: "Data"
         });
 
-        //Insert the subview element into this view
-        this.$(this.portEditDataViewContainer)
-            .html(dataView.el)
-            .attr("id", dataView.getName({ linkFriendly: true }));
+        //Save a reference to this view
+        this.dataView = dataView;
+
+        //Add the view to the page
+        this.$(this.sectionsContainer).append(dataView.el);
 
         //Render the PortEditorDataView
         dataView.render();
@@ -365,18 +422,27 @@ function(_, $, Backbone, Portal, PortalSection,
 
       // Render a PortEditorSectionView for the Metrics section if metrics is set
       // to show, and the view hasn't already been rendered.
-      if(! this.model.get("hideMetrics") === true && !this.metricsView){
+      if(this.model.get("hideMetrics") !== true && !this.metricsView){
 
+        //Create a unique label for this section and save it
+        if( !this.sectionLabels ){
+          this.sectionLabels = [];
+          this.sectionLabels.push("Metrics");
+        }
+        else if( Array.isArray(this.sectionLabels) && !this.sectionLabels.includes("Metrics") ){
+          this.sectionLabels.push("Metrics");
+        }
+
+        //Create a section view
         this.metricsView = new PortEditorSectionView({
           model: this.model,
-          sectionName: "Metrics",
-          template: this.metricsSectionTemplate
+          uniqueSectionLabel: "Metrics",
+          template: this.metricsSectionTemplate,
+          sectionType: "metrics"
         });
 
-        //Add the view's element to the page
-        this.$(this.portEditMetricsContainer)
-            .html(this.metricsView.el)
-            .attr("id", this.metricsView.getName({ linkFriendly: true }));
+        this.metricsView.$el.attr("id", "Metrics");
+        this.$(this.sectionsContainer).append(this.metricsView.el)
 
         //Render the view
         this.metricsView.render();
@@ -385,9 +451,18 @@ function(_, $, Backbone, Portal, PortalSection,
         this.subviews.push(this.metricsView);
 
       }
+      //If the metrics aren't hidden AND the metrics view was created already, then show it
+      else if( this.model.get("hideMetrics") !== true && this.metricsView ){
+
+        this.$(this.sectionsContainer).append(this.metricsView.$el);
+        this.metricsView.$el.data({
+          view: this.metricsView,
+          model: this.model
+        })
+
+      }
 
       //When the metrics section has been toggled, remove or add the link
-      this.listenToOnce(this.model, "change:hideMetrics", this.renderMetricsSection);
       this.toggleMetricsLink();
 
     },
@@ -400,9 +475,9 @@ function(_, $, Backbone, Portal, PortalSection,
 
       try{
         // Need a metrics view to exist already if metrics is set to show
-        if(!this.metricsView && !this.model.get("hideMetrics") === true){
+      /*  if(!this.metricsView && !this.model.get("hideMetrics") === true){
           this.renderMetricsSection();
-        }
+        }*/
         //If hideMetrics has been set to true, remove the link
         if( this.model.get("hideMetrics") === true ){
           this.removeSectionLink(this.metricsView);
@@ -421,18 +496,26 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     renderSettings: function(){
 
+      //Create a unique label for this section and save it
+      if( !this.sectionLabels ){
+        this.sectionLabels = [];
+        this.sectionLabels.push("Settings");
+      }
+      else if( this.sectionLabels && Array.isArray(this.sectionLabels) ){
+        this.sectionLabels.push("Settings");
+      }
+
       //Create a PortEditorSettingsView
       // Pass on the 'newPortalTempName', so that it can be used as a
       // restricted label during label validation
       var settingsView = new PortEditorSettingsView({
         model: this.model,
-        newPortalTempName: this.newPortalTempName
+        newPortalTempName: this.newPortalTempName,
+        uniqueSectionLabel: "Settings"
       });
 
-      //Add the PortEditorSettingsView element to this view
-      this.$(this.portSettingsContainer)
-          .html(settingsView.el)
-          .attr("id", settingsView.getName({ linkFriendly: true }));
+      //Add the Settings view to the page
+      this.$(this.sectionsContainer).append(settingsView.$el);
 
       //Render the PortEditorSettingsView
       settingsView.render();
@@ -440,45 +523,19 @@ function(_, $, Backbone, Portal, PortalSection,
       //Create and add a section link
       this.addSectionLink(settingsView);
 
-      //Get the section link we just added
-      var sectionLink = this.$(this.sectionLinks + "[href=#Settings]");
-      // Use bootstrap's 'pull-right' class to right-align Settings tab
-      sectionLink.parents(this.sectionLinkContainer).addClass("pull-right");
-
       // Add the data section to the list of subviews
       this.subviews.push(settingsView);
 
     },
 
     /**
-     * Update the path when tabs are clicked
-     * @param {Event} [e] - The click event on the navigation elements (tabs)
+     * Update the window location path with the active section name
+     * @param {boolean} [showSectionLabel] - If true, the section label will be added to the path
     */
-    updatePath: function(e){
-
-      // reset the flag during each updatePath call
-      this.displaySectionInUrl = true;
-
-      if(e){
-        var sectionView = $(e.target).data("view");
-        if( typeof sectionView !== "undefined"){
-          sectionView.postRender();
-        }
-
-        // Get the href of the clicked link
-        var linkTarget = $(e.target).attr("href");
-        linkTarget = linkTarget.substring(1);
-
-        // Set this view's active section name to the link href
-        this.activeSection = linkTarget;
-      }
-
-      if (!e && this.activeSection == this.sectionNames[0])
-        this.displaySectionInUrl = false;
+    updatePath: function(showSectionLabel){
 
       var label         = this.model.get("label") || this.newPortalTempName,
           originalLabel = this.model.get("originalLabel") || this.newPortalTempName,
-          section       = this.activeSection,
           pathName      = decodeURIComponent(window.location.pathname)
                           .substring(MetacatUI.root.length)
                           // remove trailing forward slash if one exists in path
@@ -488,8 +545,10 @@ function(_, $, Backbone, Portal, PortalSection,
       // pathRE matches "/label/section", where the "/section" part is optional
       var pathRE = new RegExp("\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$", "i");
       newPathName = pathName.replace(pathRE, "") + "/" + label;
-      newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
 
+      if( showSectionLabel && this.activeSection ){
+        newPathName += "/" + this.activeSection.uniqueSectionLabel;
+      }
 
       // Update the window location
       MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
@@ -497,92 +556,143 @@ function(_, $, Backbone, Portal, PortalSection,
     },
 
     /**
-    * Gets a list of section names from tab elements and updates the
-    * sectionNames attribute on this view.
+    * Returns the section view that has a label matching the one given.
+    * @param {string} label - The label for the section
+    * @return {PortEditorSectionView|false} - Returns false if a matching section view isn't found
     */
-    updateSectionNames: function() {
+    getSectionByLabel: function(label){
 
-      // Get the section names from the tab elements
-      var sectionNames = [];
-      this.$(this.sectionLinks)
-        .each(function(i, anchorEl){
-          sectionNames[i] = $(anchorEl)
-                              .attr("href")
-                              .substring(1)
-        });
+      //If no label is given, exit
+      if(!label){
+        return;
+      }
 
-      // Set the array of sectionNames on the view
-      this.sectionNames = sectionNames;
+      //Find the section view whose unique label matches the given label. Case-insensitive matching.
+      return _.find( this.subviews, function(view){
+        if( typeof view.uniqueSectionLabel == "string" ){
+          return view.uniqueSectionLabel.toLowerCase() == label.toLowerCase();
+        }
+        else{
+          return false;
+        }
+      });
+    },
+
+    /**
+    * Returns the section view that has a label matching the one given.
+    * @param {PortalSectionModel} section - The section model
+    * @return {PortEditorSectionView|false} - Returns false if a matching section view isn't found
+    */
+    getSectionByModel: function(section){
+
+      //If no section is given, exit
+      if(!section){
+        return;
+      }
+
+      //Find the section view whose unique label matches the given label. Case-insensitive matching.
+      return _.findWhere( this.subviews, { model: section });
+    },
+
+    /**
+    * Creates and returns a unique label for the given section. This label is just used in the view,
+    * because portal sections can have duplicate labels. But unique labels need to be used for navigation in the view.
+    * @param {PortEditorSection} sectionModel - The section for which to create a unique label
+    * @return {string} The unique label string
+    */
+    getUniqueSectionLabel: function(sectionModel){
+      //Get the label for this section
+      var sectionLabel = sectionModel.get("label").replace(/[^a-zA-Z0-9]/g, ""),
+          unalteredLabel = sectionLabel,
+          sectionLabels = this.sectionLabels || [],
+          i = 2;
+
+      //Concatenate a number to the label if this one already exists
+      while( sectionLabels.includes(sectionLabel) ){
+        sectionLabel = unalteredLabel + i;
+        i++;
+      }
+
+      return sectionLabel;
     },
 
     /**
     * Manually switch to a section subview by making the tab and tab panel active.
     * Navigation between sections is usually handled automatically by the Bootstrap
     * library, but a manual switch may be necessary sometimes
-    * @param {string} [sectionName] - The section to switch to. If not given, defaults to the activeSection set on the view.
+    * @param {PortEditorSectionView} [sectionView] - The section view to switch to. If not given, defaults to the activeSection set on the view.
     */
-    switchSection: function(sectionName){
+    switchSection: function(sectionView){
 
-      // Make sure the list of section names is up to date
-      this.updateSectionNames();
+      //Create a flag for whether the section label should be shown in the URL
+      var showSectionLabelInURL = true;
 
-      // If no section name is given, use the active section in the view.
-      // If there's also no activeSection, then default to an empty string,
-      // which will set the navigation to the first section listed
-      if( !sectionName ){
-        var sectionName = this.activeSection || ""
-      }
-
-      // Match the section name to the list of section names on the view
-      // Allow case insensitive navigation to sections
-      var i = this.sectionNames
-              .map(v => v.toLowerCase())
-              .indexOf(
-                sectionName.toLowerCase()
-              );
-
-      // If there was a match
-      if(i>=0){
-        sectionName = this.sectionNames[i];
-      //Otherwise, switch to the first section listed
-      } else {
-        if(this.sectionNames.length){
-          sectionName = this.sectionNames[0]
+      // If no section view is given, use the active section in the view.
+      if( !sectionView ){
+        //Use the sectionView set already
+        if( this.activeSection ){
+          var sectionView = this.activeSection;
+        }
+        //Or find the section view by name, which may have been passed through the URL
+        else if( this.activeSectionLabel ){
+          var sectionView = this.getSectionByLabel(this.activeSectionLabel);
         }
       }
 
-      // Update the activeSection set on the view for consistency with the path
-      // and with capitalization
-      this.activeSection = sectionName;
+      //If no section view was indicated, just default to the first visible one
+      if( !sectionView ){
+        var sectionView = this.$(this.sectionLinkContainer + ":not(.removing)").first().data("view");
+
+        //If we are defaulting to the first section, don't show the section label in the URL
+        showSectionLabelInURL = false;
+
+        //If there are no section views on the page at all, exit now
+        if( !sectionView ){
+          return;
+        }
+      }
+
+      // Update the activeSection set on the view
+      this.activeSection = sectionView;
 
       // Activate the section content
-      this.$(this.sectionsContainer).children().each(function(i, tabPane){
-        if($(tabPane).attr("id") == sectionName){
-          $(tabPane).addClass("active");
+      this.$(this.sectionEls).each(function(i, contentEl){
+        if($(contentEl).data("view") == sectionView){
+          $(contentEl).addClass("active");
         } else {
           // make sure no other sections are active
-          $(tabPane).removeClass("active");
+          $(contentEl).removeClass("active");
         }
       });
 
-      // Activate the tab
-      this.$(this.sectionLinksContainer).children().each(function(i, li){
-        if($(li).find(".section-link").attr("href") == "#" + sectionName){
-          $(li).addClass("active")
+      // Activate the link to the content
+      this.$(this.sectionLinkContainer).each(function(i, linkEl){
+        if( $(linkEl).data("view") == sectionView ){
+          $(linkEl).addClass("active")
         } else {
           // make sure no other sections are active
-          $(li).removeClass("active")
+          $(linkEl).removeClass("active")
         };
       });
 
-      this.updatePath();
+      //Update the location path with the new section name
+      this.updatePath(showSectionLabelInURL);
 
-      // Update path when each tab is clicked and shown
-      view = this;
-      this.$('a[data-toggle="tab"]').off('shown');
-      this.$('a[data-toggle="tab"]').on('shown', function(e){
-        view.updatePath(e)
-      });
+    },
+
+    /**
+    * When a section link has been clicked, switch to that section
+    * @param {Event} e - The click event on the section link
+    */
+    handleSwitchSection: function(e){
+
+      e.preventDefault();
+
+      var sectionView = $(e.target).parents(this.sectionLinkContainer).first().data("view");
+
+      if( sectionView ){
+        this.switchSection(sectionView);
+      }
 
     },
 
@@ -590,12 +700,12 @@ function(_, $, Backbone, Portal, PortalSection,
     * Add a link to the given editor section
     * @param {PortEditorSectionView} sectionView - The view to add a link to
     * @param {string[]} menuOptions - An array of menu options for this section. e.g. Rename, Delete
-    * @param {boolean} focusLink - A boolean flag to enable focus on new section link
+    * @param {boolean} isFocused - A boolean flag to enable focus on new section link
     */
-    addSectionLink: function(sectionView, menuOptions, focusLink){
+    addSectionLink: function(sectionView, menuOptions, isFocused){
 
-      if (focusLink === null) {
-        focusLink = false;
+      if( typeof isFocused != "boolean") {
+        var isFocused = false;
       }
 
       try{
@@ -615,7 +725,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
         // Find the "+" link to help determine the order in which we should add links
         var addSectionEl = this.$(this.sectionLinksContainer)
-                               .find(this.sectionLinkContainer + "[data-section-name='AddSection']")[0];
+                               .find(this.sectionLinkContainer + "[data-section-name='AddPage']")[0];
 
         // If the new link is for a markdown section
         if($(newLink).data("view").type == "PortEditorMdSection"){
@@ -634,7 +744,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
           // If this is a newly added markdown section, highlight the section name
           // and make it content editable
-          if(focusLink) {
+          if(isFocused) {
             var newSectionLink = $(newLink).children(".section-link");
             newSectionLink.attr("contenteditable", true);
             newSectionLink.focus();
@@ -654,7 +764,7 @@ function(_, $, Backbone, Portal, PortalSection,
           }
         // If not a markdown section and not the Settings section, and if there
         // is already a "+" link, add new link before the "+" link
-        } else if (addSectionEl && sectionView.getName()!= "Settings"){
+      } else if (addSectionEl && sectionView.uniqueSectionLabel != "Settings"){
           $(addSectionEl).before(newLink);
         // If the new link is "Settings", or there's no "+" link yet, insert new link last.
         } else {
@@ -691,9 +801,12 @@ function(_, $, Backbone, Portal, PortalSection,
 
       //Create a section link
       var sectionLink = $(this.sectionLinkTemplate({
-        sectionNameLinkFriendly: sectionView.getName({ linkFriendly: true }),
-        sectionName: sectionView.getName(),
-        menuOptions: menuOptions || []
+        menuOptions: menuOptions || [],
+        uniqueLabel: sectionView.uniqueSectionLabel,
+        sectionLabel: PortalSection.prototype.isPrototypeOf(sectionView.model)?
+                      sectionView.model.get("label") : sectionView.uniqueSectionLabel,
+        sectionURL: this.model.get("label") + "/" + sectionView.uniqueSectionLabel,
+        sectionType: sectionView.sectionType
       }));
 
       //Attach the section model to the link
@@ -730,8 +843,8 @@ function(_, $, Backbone, Portal, PortalSection,
     removeSectionLink: function(sectionView){
 
       // Switch to the default section the user is deleting the active section
-      if (sectionView.getName({ linkFriendly: true }) == this.activeSection){
-        this.switchSection("AddSection");
+      if (sectionView == this.activeSection){
+        this.switchSection();
       };
 
       try{
@@ -740,7 +853,7 @@ function(_, $, Backbone, Portal, PortalSection,
           if( $(link).data("view") == sectionView ){
 
             //Remove the menu link
-            $(link).find(".section-menu-link").remove();
+            $(link).addClass("removing").find(".section-menu-link").remove();
             //Hide the section name link with an animation
             $(link).animate({width: "0px", overflow: "hidden"}, {
               duration: 300,
@@ -764,24 +877,30 @@ function(_, $, Backbone, Portal, PortalSection,
 
       try{
 
+        //Create a new section to the Portal model
         this.model.addSection(sectionType);
 
         if(typeof sectionType == "string"){
 
           switch( sectionType.toLowerCase() ){
             case "data":
-              // TODO ?
+              this.switchSection(this.dataView);
               break;
             case "metrics":
-              this.switchSection("Metrics");
+              this.renderMetricsSection();
+              this.switchSection(this.metricsView);
               break;
             case "freeform":
-            // Do nothing, everything is handled by renderContentSection
-            // and renderContentSections. Can't switch section here because
-            // for content sections, the section.label is variable.
+              //Get the section model that was just added
+              var newestSection = this.model.get("sections")[this.model.get("sections").length-1];
+              //Render the content section view for it
+              this.renderContentSection(newestSection, true);
+              //Switch to that new view
+              this.switchSection( this.getSectionByModel(newestSection) );
+              break;
             case "members":
               // TODO
-              // this.switchSection("Members");
+              // this.switchSection(this.getSectionByLabel("Members"));
               break;
           }
 
@@ -796,60 +915,63 @@ function(_, $, Backbone, Portal, PortalSection,
     },
 
     /**
-    * Removes a section and its tab from this view and the PortalModel
+    * Removes a section and its tab from this view and the PortalModel.
+    * At least one of the parameters is required, but not both
     * @param {Event} [e] - (optional) The click event on the Remove button
+    * @param {Element|jQuery} [sectionLink] - The link element of the section to be removed.
     */
-    removeSection: function(e, sectionLink, section){
+    removeSection: function(e, sectionLink){
 
       try{
-        if( !sectionLink.length ) {
+        if( !sectionLink || !sectionLink.length ) {
           //Get the PortalSection model for this remove button
-          var sectionLink = $(e.target).parents(this.sectionLinkContainer);
-              section = sectionLink.data("model");
+          var sectionLink = $(e.target).parents(this.sectionLinkContainer).first();
         }
 
-        //If this section is not a PortalSection model, get the section name
-        if( !PortalSection.prototype.isPrototypeOf(section) ){
-          section = sectionLink.data("section-name");
+        //Get the section model and view
+        var sectionModel = sectionLink.data("model"),
+            sectionView  = sectionLink.data("view"),
+            sectionType  = sectionLink.data("section-type");
+
+        if( PortalSection.prototype.isPrototypeOf(sectionModel) ){
+          //Remove this section from the Portal
+          this.model.removeSection(sectionModel);
         }
-        // Processing for markdown sections
-        else {
+        else{
+          //Remove this section type from the model
+          this.model.removeSection(sectionType);
+        }
 
-          this.stopListening(this.model, "change:sections");
-          var view = this;
+        try {
 
-          // listening to PortalModel to remove the PortalSectionModel object
-          this.listenToOnce(this.model, "change:sections", function() {
-            try {
+          //If no section view was found, exit now
+          if( !sectionView  ){
+            return;
+          }
 
-              // check for the matching model (section),
-              // and retrieve the corresponding sectionView
-              // from the subviews object
-              var sectionView = view.subviews.find(
-                obj => {
-                  return obj.model === section;
-                }
-              );
+          //If this is not the Data section, remove the view, since Data sections can only be hidden
+          if( sectionType.toLowerCase() != "data" ){
+            // remove the sectionView
+            this.removeSectionLink(sectionView);
 
-              // remove the sectionView
-              view.removeSectionLink(sectionView);
+            // remove the section view from the subviews array
+            this.subviews.splice($.inArray(sectionView, this.subviews), 1);
 
-              // remove the section view from the subviews array
-              view.subviews.splice($.inArray(sectionView, view.subviews), 1);
+            //Remove the view from the page
+            sectionView.$el.remove();
 
-            } catch (error) {
-              console.error(error);
+            //Reset the active section, if the one that was removed is currently active
+            if( this.activeSection == sectionView ){
+              this.activeSection = undefined;
+
+              //Switch to the default section
+              this.switchSection();
             }
-          });
-        }
+          }
 
-        //If no section was found, exit now
-        if( !section ){
-          return;
+        } catch (error) {
+          console.error(error);
         }
-
-        //Remove this section from the Portal
-        this.model.removeSection(section);
       }
       catch(e){
         console.error(e);
@@ -896,7 +1018,7 @@ function(_, $, Backbone, Portal, PortalSection,
       $(document).on("click", ".confirmed-section-removal", function (e) {
         // Remove the popover and fire the remove section function
         $('.popover').remove();
-        view.removeSection(e, sectionLink, section);
+        view.removeSection(e, sectionLink);
       });
 
     },
@@ -1069,7 +1191,6 @@ function(_, $, Backbone, Portal, PortalSection,
      * @param e The event triggering this method
      */
     updateName: function(e) {
-
       // Remove tooltip incase one was set by limitLabelInput function
       $(e.delegateTarget).find(".tooltip").remove();
 
@@ -1084,7 +1205,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
         //If this section is an object of PortalSection model, update the label.
         if( section && PortalSection.prototype.isPrototypeOf(section) ){
-          // update the label
+          // update the label on the model
           section.set("label", targetLink.text().trim());
         }
         else {

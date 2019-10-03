@@ -39,7 +39,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
     * The currently active editor section. e.g. Data, Metrics, Settings, etc.
     * @type {string}
     */
-    activeSection: "",
+    activeSectionLabel: "",
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
@@ -88,7 +88,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       if(typeof options == "object"){
         // initializing the PortalEditorView properties
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
-        this.activeSection = options.activeSection || "";
+        this.activeSectionLabel = options.activeSectionLabel || "";
       }
     },
 
@@ -161,7 +161,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
 
             if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") ){
               // Start new portals on the settings tab
-              this.activeSection = "Settings";
+              this.activeSectionLabel = "Settings";
 
               // Render the default model if the portal is new
               this.renderPortalEditor();
@@ -230,7 +230,7 @@ function(_, $, Backbone, Portal, Filters, EditorView, SignInView, PortEditorSect
       //Create a view for the editor sections
       this.sectionsView = new PortEditorSectionsView({
         model: this.model,
-        activeSection: this.activeSection,
+        activeSectionLabel: this.activeSectionLabel,
         newPortalTempName: this.newPortalTempName
       });
 

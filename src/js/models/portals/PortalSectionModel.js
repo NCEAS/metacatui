@@ -13,7 +13,7 @@ define(["jquery",
       var PortalSectionModel = Backbone.Model.extend({
         defaults: function(){
           return {
-            label: "",
+            label: "Untitled",
             image: "",
             title: "",
             introduction: "",
@@ -88,8 +88,8 @@ define(["jquery",
 
           _.map(sectionTextData, function(value, nodeName){
 
-            // Don't serialize default values
-            if(value && value != this.defaults()[nodeName]){
+            // Don't serialize default values, except for default label strings, since labels are required
+            if(value && (value != this.defaults()[nodeName] || (nodeName == "label" && typeof value == "string")) ){
               // Make new sub-node
               var sectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
               $(sectionSubnodeSerialized).text(value);
@@ -102,6 +102,7 @@ define(["jquery",
             }
 
           }, this);
+
           //Update the image element
           if( this.get("image") && typeof this.get("image").updateDOM == "function" ){
 

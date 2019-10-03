@@ -1356,23 +1356,9 @@ define(["jquery",
                       // Add a new, blank markdown section
                       var sectionModels = _.clone(this.get("sections")),
                           newSection = new PortalSectionModel();
-                      // Set a default label on the new section
-                      var sectionLabels = sectionModels.map(m => m.get("label")),
-                          newSectionLabel = this.newSectionLabel,
-                          i = 2;
-                      // If the tempLabel is already in use, append a number.
-                      // If tempLabel + number is already in use,
-                      // append the lowest number still available.
-                      if(sectionLabels){
-                        // Case-insensitive matching of sectionLabel in sectionLabels
-                        while(sectionLabels.map(s => s.toLowerCase()).includes(newSectionLabel.toLowerCase())){
-                          newSectionLabel = this.newSectionLabel + " " + i;
-                          ++i
-                        };
-                      }
+
                       // Set default temp values on the new markdown section.
                       newSection.set({
-                        label: newSectionLabel,
                         content: new EMLText({
                                       type: "content",
                                       parentModel: newSection
