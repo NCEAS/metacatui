@@ -101,6 +101,40 @@ define(["jquery",
           });
 
           return objectDOM;
+        },
+
+        /**
+         * Overrides the default Backbone.Model.validate.function() to
+         * check if this PortalImage model has all the required values necessary
+         * to save to the server.
+         *
+         * @return {Object} If there are errors, an object comprising error
+         *                   messages. If no errors, returns nothing.
+        */
+        validate: function(){
+          try {
+
+            var errors = {};
+
+            if( // If there's an associateURL or a non-generic label but no identifier
+              ( this.get("associatedURL") || (this.get("label") && !this.get("label") == "logo") )  &&
+              (!this.get("identifier") || !typeof this.get("identifier") == "string")
+            ){
+              errors.identifier = "Images require an identifier"
+            }
+
+            //Return the errors object
+            if( Object.keys(errors).length )
+              return errors;
+            else{
+              return;
+            }
+
+          }
+          catch(e){
+            console.error("Error validating a portal image. Error message:" + e);
+            return;
+          }
         }
 
       });

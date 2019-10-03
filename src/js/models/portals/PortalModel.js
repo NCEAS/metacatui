@@ -595,8 +595,8 @@ define(["jquery",
               // Get new values
               var logo = this.get("logo");
 
-              // Don't serialize falsey values
-              if(logo){
+              // Don't serialize falsey values or empty logos
+              if(logo && logo.get("identifier")){
 
                 // Make new node
                 var logoSerialized = logo.updateDOM("logo");
@@ -1134,9 +1134,19 @@ define(["jquery",
 
                 }, this);
 
+                //----Validate the logo----
+                if(requiredFields.logo && (!this.get("logo") ||
+                    !this.get("logo").get("identifier")))
+                {
+                  errors.logo = "A logo image is required";
+                } else if(this.get("logo")){
+                  logoErrors = this.get("logo").validate();
+                  if(logoErrors && Object.keys(logoErrors).length ){
+                    errors.logo = "A logo image is required";
+                  }
+                }
 
                 //TODO: Validate these other elements, listed below, as they are added to the portal editor
-                //----Validate the logo----
 
                 //---Validate the associatedParties---
 

@@ -2,9 +2,11 @@ define(['underscore',
         'jquery',
         'backbone',
         "models/portals/PortalSectionModel",
+        "models/portals/PortalImage",
         "views/portals/editor/PortEditorSectionView",
+        "views/ImageEditView",
         "text!templates/portals/editor/portEditorMdSection.html"],
-function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
+function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView, ImageEdit, Template){
 
   /**
   * @class PortEditorMdSectionView
@@ -40,6 +42,12 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
+
+    /**
+    * A jQuery selector for the element that the ImageUploader view should be inserted into
+    * @type {string}
+    */
+    imageUploaderContainer: ".portal-display-image",
 
     /**
     * A reference to the PortalEditorView
@@ -109,21 +117,45 @@ function(_, $, Backbone, PortalSectionModel, PortEditorSectionView, Template){
         })).data("view", this);
 
         // Auto-resize the height of the intoduction and title fields on user-input
+        // and on window resize events.
         // from: DreamTeK, https://stackoverflow.com/a/25621277
+        $( window ).resize(function() {
+          $("textarea.auto-resize").trigger("windowResize");
+        });
         $("textarea.auto-resize").each(function () {
           this.setAttribute(
             "style", "height:" + (this.scrollHeight) + "px;overflow-y:hidden;"
           );
-        }).on('input', function () {
+        }).on('input windowResize', function () {
           this.style.height = '0px'; // note: textfield MUST have a min-height set
           this.style.height = (this.scrollHeight) + 'px';
-        });
+        })
 
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
         this.$(".markdown"    ).data({ model: this.model.get("content") });
         this.$(".title"       ).data({ model: this.model });
         this.$(".introduction").data({ model: this.model });
+
+        // Add an ImageEdit view for the sectionImage
+        // If the section has no image yet, add the default PortalImage model
+        if( !this.model.get("image") ){
+          this.model.set("image", new PortalImage({ nodeName: "image" }) );
+        };
+
+        // Add the edit image view (incl. uploader) for the section image
+        this.sectionImageUploader = new ImageEdit({
+          model: this.model.get("image"),
+          imageUploadInstructions: "Drag & drop a high quality image here or click to upload",
+          imageWidth: false, // set to 100% in metacatui-common.css
+          imageHeight: 500,
+          nameLabel: false,
+          urlLabel: false,
+          imageTagName: "div"
+        });
+        this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
+        this.sectionImageUploader.render();
+        this.$(this.imageUploaderContainer).data("view", this.sectionImageUploader);
 
       }
       catch(e){

@@ -81,7 +81,11 @@ define(["jquery",
           //Add an id to this element so links work
           this.$el.attr("id", this.getName({ linkFriendly: true }));
 
-          this.$el.html(this.template(this.model.toJSON()));
+          this.$el.html(this.template({
+            imageURL: this.model.get("image").get("imageURL"),
+            title: this.model.get("title"),
+            introduction: this.model.get("introduction")
+          }));
 
           this.$el.data("view", this);
 

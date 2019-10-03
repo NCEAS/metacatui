@@ -1,9 +1,13 @@
 <div class="image-uploader-container"></div>
-<div>
-  <h5><%=nameLabel%></h5>
-  <input type="text" placeholder="Name" />
-</div>
-<div>
-  <h5><%=urlLabel%></h5>
-  <input type="text" placeholder="URL" />
-</div>
+<% if(nameLabel){ %>
+  <div>
+    <h5><%=nameLabel%></h5>
+    <input type="text" placeholder="Name" />
+  </div>
+<% } %>
+<% if(urlLabel){ %>
+  <div>
+    <h5><%=urlLabel%></h5>
+    <input type="text" placeholder="URL" />
+  </div>
+<% } %>
