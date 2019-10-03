@@ -82,7 +82,7 @@ define(["jquery",
           this.$el.attr("id", this.getName({ linkFriendly: true }));
 
           this.$el.html(this.template({
-            imageURL: this.model.get("image").get("imageURL"),
+            imageURL: this.model.get("image")? this.model.get("image").get("imageURL") : "",
             title: this.model.get("title"),
             introduction: this.model.get("introduction")
           }));
