@@ -1,9 +1,10 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "models/portals/PortalImage",
         "views/ImageUploaderView",
         "text!templates/imageEdit.html"],
-function(_, $, Backbone, ImageUploaderView, Template){
+function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
   /**
   * @class ImageEditView
@@ -142,7 +143,9 @@ function(_, $, Backbone, ImageUploaderView, Template){
         //Insert the template for this view
         this.$el.html(this.template({
           nameLabel: this.nameLabel,
-          urlLabel:  this.urlLabel
+          urlLabel:  this.urlLabel,
+          nameText: this.model.get("label"),
+          urlText: this.model.get("associatedURL")
         }));
 
         // Create an ImageUploaderView and insert into this view

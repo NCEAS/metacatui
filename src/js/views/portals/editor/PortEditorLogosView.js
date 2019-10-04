@@ -1,8 +1,9 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "models/portals/PortalImage",
         "views/ImageEditView"],
-function(_, $, Backbone, ImageEditView){
+function(_, $, Backbone, PortalImage, ImageEdit){
 
   /**
   * @class PortEditorLogosView
@@ -59,8 +60,48 @@ function(_, $, Backbone, ImageEditView){
     */
     render: function(){
 
-      //TODO: Iterate over each logo in the PortalModel and render an ImageView
-      this.$el.html("Image Views will go here")
+      if(!this.model.get("acknowledgmentsLogos") || !this.model.get("acknowledgmentsLogos").length){
+        this.model.set("acknowledgmentsLogos", Array(1).fill(new PortalImage({ nodeName: "acknowledgmentsLogo" })));
+      }
+
+      // Iterate over each logo in the PortalModel and render an ImageView
+      _.each(this.model.get("acknowledgmentsLogos"), function(portalImage){
+
+        var imageEdit = new ImageEdit({
+          model: portalImage,
+          imageUploadInstructions: "Drag & drop a logo here or click to upload",
+          imageWidth: 100,
+          imageHeight: 100,
+          nameLabel: "Name",
+          urlLabel: "URL",
+          imageTagName: "img"
+        });
+
+        $(this.el).append(imageEdit.el);
+        imageEdit.render();
+        $(this.el).find(".basic-text").data({ model: portalImage });
+      }, this);
+
+      // TODO: add a new blank image edit each time an acknowledgmentsLogo is added
+
+    },
+
+    /**
+     * removeAckLogo - removes an acknowledgmentsLogo
+     *
+     * @param  {type} ackLogo description
+     */
+    removeAckLogo: function(ackLogo){
+      // TODO
+    },
+
+    /**
+     * addNewAckLogo - adds another input for an acknowledgmentsLogo
+     *
+     * @param  {type} ackLogo description
+     */
+    addNewAckLogo: function(ackLogo){
+      // TODO
     }
 
   });

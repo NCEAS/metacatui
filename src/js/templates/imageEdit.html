@@ -2,12 +2,12 @@
 <% if(nameLabel){ %>
   <div>
     <h5><%=nameLabel%></h5>
-    <input type="text" placeholder="Name" />
+    <input type="text" placeholder="Name" class="basic-text" value="<%=nameText%>" data-category="label"/>
   </div>
 <% } %>
 <% if(urlLabel){ %>
   <div>
     <h5><%=urlLabel%></h5>
-    <input type="text" placeholder="URL" />
+    <input type="text" placeholder="URL" class="basic-text" value="<%=urlText%>" data-category="associatedURL"/>
   </div>
 <% } %>

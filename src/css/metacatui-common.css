@@ -2688,6 +2688,10 @@ input.portal-title:hover {
 	width: calc(100% - 20px - 1em);
 }
 
+.port-editor-logos {
+	display: flex;
+}
+
 /* Portal Editor markdown section
  * SEE ALSO: .portal-display-image{} and .portal-display-text{} from portal styles
  */
