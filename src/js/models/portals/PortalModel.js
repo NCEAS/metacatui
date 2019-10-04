@@ -1413,9 +1413,14 @@ define(["jquery",
              * @param  {portalImage} portalImage the portalImage model to remove
              */
             removeAcknowledgementLogo: function(portalImage){
-              var ackLogos = _.clone(this.get("acknowledgmentsLogos"));
-              ackLogos.splice( $.inArray(portalImage, ackLogos), 1);
-              this.set({acknowledgmentsLogos: ackLogos});
+              try{
+                var ackLogos = _.clone(this.get("acknowledgmentsLogos"));
+                ackLogos.splice( $.inArray(portalImage, ackLogos), 1);
+                this.set({acknowledgmentsLogos: ackLogos});
+              } catch(e){
+                console.log("Failed to remove an acknowledgementLogo, error message: " + e);
+              }
+              
             },
 
             /**

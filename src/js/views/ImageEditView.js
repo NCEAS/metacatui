@@ -87,7 +87,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
      * Whether or not a remove button should be shown.
      * @type {boolean}
      */
-    imageTagName: false,
+    removeButton: false,
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
