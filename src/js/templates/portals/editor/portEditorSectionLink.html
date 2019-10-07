@@ -8,7 +8,7 @@
     <%=sectionLabel%>
   </a>
   <% if( menuOptions && menuOptions.length ){ %>
-    <a href="#" class="section-menu-link">
+    <a href="#" class="section-menu-link pointer">
       <i class="icon icon-on-right pointer icon-caret-down"></i>
     </a>
     <ul class="dropdown-menu menu" role="menu">
@@ -19,9 +19,16 @@
           </a>
         </li>
         <% } %>
-        <% if(menuOptions.includes("Delete")){ %>
+        <% if(menuOptions.includes("Delete") && sectionType == "freeform"){ %>
         <li>
           <a href="#" class="remove-section">
+            <i class="icon icon-on-left icon-remove"></i> Delete
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Delete") && sectionType != "freeform"){ %>
+        <li>
+          <a href="#" class="remove-section confirmed-section-removal">
             <i class="icon icon-on-left icon-remove"></i> Delete
           </a>
         </li>

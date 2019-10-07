@@ -123,12 +123,14 @@ function(_, $, Backbone, Portal, PortalSection,
     * @type {Object}
     */
     events: {
-      "click .remove-section" : "confirmRemoveSection",
       "click .rename-section" : "renameSection",
       "dblclick .section-link": "renameSection",
       "click .show-section"   : "showSection",
       "click .section-link"   : "handleSwitchSection",
       "focusout .section-link[contenteditable=true]" : "updateName",
+      "click .cancelled-section-removal" : "closePopovers",
+      "click .confirmed-section-removal" : "removeSection",
+      "click .remove-section" : "removeSection",
       // both keyup and keydown events are needed for limitLabelLength function
       "keyup .section-link[contenteditable=true]"    : "limitLabelInput",
       "keydown .section-link[contenteditable=true]"  : "limitLabelInput"
@@ -815,6 +817,32 @@ function(_, $, Backbone, Portal, PortalSection,
         view:  sectionView
       });
 
+      if( sectionView.sectionType == "freeform" && menuOptions.includes("Delete") ){
+        var content = $(document.createElement("div"))
+                        .append(  $(document.createElement("div"))
+                                    .append( $(document.createElement("p"))
+                                               .text("Deleting this page will premanently remove it from this " +
+                                                     MetacatUI.appModel.get("portalTermSingular") + ".") ),
+                                  $(document.createElement("div"))
+                                    .addClass("inline-buttons")
+                                    .append( $(document.createElement("button"))
+                                               .addClass("btn cancelled-section-removal")
+                                               .text("No, keep page"),
+                                             $(document.createElement("button"))
+                                               .addClass("btn btn-danger confirmed-section-removal")
+                                               .text("Yes, delete page")));
+
+        // Create a popover with the confirmation buttons
+        sectionLink.find(".remove-section").addClass("popover-this").popover({
+          html            : true,
+          placement       : 'right',
+          title           : 'Delete this page?',
+          content         : content,
+          container       : sectionLink,
+          trigger         : "click"
+        });
+      }
+
       return sectionLink[0];
     },
 
@@ -854,6 +882,11 @@ function(_, $, Backbone, Portal, PortalSection,
 
             //Remove the menu link
             $(link).addClass("removing").find(".section-menu-link").remove();
+
+            //Destroy any popovers
+            $(link).popover("destroy");
+            $(link).find(".popover-this").popover("destroy");
+
             //Hide the section name link with an animation
             $(link).animate({width: "0px", overflow: "hidden"}, {
               duration: 300,
@@ -924,8 +957,16 @@ function(_, $, Backbone, Portal, PortalSection,
 
       try{
         if( !sectionLink || !sectionLink.length ) {
+
+          var clickedEl = $(e.target);
+
           //Get the PortalSection model for this remove button
-          var sectionLink = $(e.target).parents(this.sectionLinkContainer).first();
+          var sectionLink = clickedEl.parents(this.sectionLinkContainer).first();
+
+          //Exit if no section link was found
+          if( !sectionLink || !sectionLink.length ){
+            return;
+          }
         }
 
         //Get the section model and view
@@ -977,49 +1018,6 @@ function(_, $, Backbone, Portal, PortalSection,
         console.error(e);
         MetacatUI.appView.showAlert("The section could not be deleted. (" + e.message + ")", "alert-error");
       }
-
-    },
-
-    confirmRemoveSection: function(e) {
-
-      var view = this;
-
-      var sectionLink = $(e.target).parents(this.sectionLinkContainer),
-            section = sectionLink.data("model");
-
-      var contentPlus = $("<div></div>");
-      $(contentPlus).append("<button class='btn btn-sm btn-primary confirmed-section-removal'> Yes </button>");
-
-      // Delete button popover confirmation
-      $(e.target).popover({
-        html            : true,
-        placement       : 'right',
-        title           : 'Are you sure you want to permanently delete this section?',
-        content         : contentPlus,
-        container       : 'body',
-      })
-      .on("mouseenter", function () {
-        var _this = this;
-        $(this).popover("show");
-        $(".popover").on("mouseleave", function () {
-            $(_this).popover('hide');
-        });
-      })
-      .on("mouseleave", function () {
-        var _this = this;
-        setTimeout(function () {
-            if (!$(".popover:hover").length) {
-                $(_this).popover("hide");
-            }
-        }, 300);
-      });
-
-
-      $(document).on("click", ".confirmed-section-removal", function (e) {
-        // Remove the popover and fire the remove section function
-        $('.popover').remove();
-        view.removeSection(e, sectionLink);
-      });
 
     },
 
@@ -1215,6 +1213,13 @@ function(_, $, Backbone, Portal, PortalSection,
       } catch (error) {
         console.error(error);
       }
+    },
+
+    /**
+    * Closes all the popovers in this view
+    */
+    closePopovers: function(){
+      this.$(".popover-this").popover("hide");
     },
 
     /**
