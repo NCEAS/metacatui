@@ -151,7 +151,8 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           imageHeight: 500,
           nameLabel: false,
           urlLabel: false,
-          imageTagName: "div"
+          imageTagName: "div",
+          removeButton: false
         });
         this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
         this.sectionImageUploader.render();

@@ -1,9 +1,10 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "models/portals/PortalImage",
         "views/ImageUploaderView",
         "text!templates/imageEdit.html"],
-function(_, $, Backbone, ImageUploaderView, Template){
+function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
   /**
   * @class ImageEditView
@@ -83,6 +84,12 @@ function(_, $, Backbone, ImageUploaderView, Template){
     imageTagName: "div",
 
     /**
+     * Whether or not a remove button should be shown.
+     * @type {boolean}
+     */
+    removeButton: false,
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -105,6 +112,7 @@ function(_, $, Backbone, ImageUploaderView, Template){
     * @property {string} options.nameLabel - Gets set as ImageEditView.nameLabel
     * @property {string} options.urlLabel - Gets set as ImageEditView.urlLabel
     * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
+    * @property {string}  options.removeButton - Gets set as ImageUploaderView.removeButton
     */
     initialize: function(options){
 
@@ -117,7 +125,8 @@ function(_, $, Backbone, ImageUploaderView, Template){
           this.imageHeight              = options.imageHeight;
           this.nameLabel                = options.nameLabel;
           this.urlLabel                 = options.urlLabel;
-          this.imageTagName                  = options.imageTagName;
+          this.imageTagName             = options.imageTagName;
+          this.removeButton             = options.removeButton;
         }
 
         if(!this.model){
@@ -141,17 +150,20 @@ function(_, $, Backbone, ImageUploaderView, Template){
 
         //Insert the template for this view
         this.$el.html(this.template({
-          nameLabel: this.nameLabel,
-          urlLabel:  this.urlLabel
+          nameLabel:    this.nameLabel,
+          urlLabel:     this.urlLabel,
+          nameText:     this.model.get("label"),
+          urlText:      this.model.get("associatedURL"),
+          removeButton: this.removeButton
         }));
 
         // Create an ImageUploaderView and insert into this view
         var uploader = new ImageUploaderView({
-          height: this.imageHeight,
-          width: this.imageWidth,
-          url: this.model.get("imageURL"),
+          height:             this.imageHeight,
+          width:              this.imageWidth,
+          url:                this.model.get("imageURL"),
           uploadInstructions: this.imageUploadInstructions,
-          imageTagName : this.imageTagName
+          imageTagName:       this.imageTagName
         });
 
         this.$(this.imageUploaderContainer).append(uploader.el);
@@ -159,7 +171,11 @@ function(_, $, Backbone, ImageUploaderView, Template){
 
         // Remove validation error messages, if there are any, when image added
         this.stopListening(uploader, "imageAdded");
-        this.listenTo(uploader, "imageAdded", this.removeValidation);
+        this.listenTo(uploader, "imageAdded", function(){
+          this.removeValidation();
+          // For the parent view
+          this.trigger("imageAdded", view.el);
+        });
 
         // Update the portal image model when the image is successfully uploaded
         this.stopListening(uploader, "imageUploaded");
@@ -171,7 +187,7 @@ function(_, $, Backbone, ImageUploaderView, Template){
         });
 
       } catch (e) {
-        console.log("image edit view not rendered, error message: " + e);
+        console.log("ImageEdit view not rendered, error message: " + e);
       }
 
     },

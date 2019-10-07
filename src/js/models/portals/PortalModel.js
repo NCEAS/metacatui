@@ -624,15 +624,23 @@ define(["jquery",
 
                 _.each(acknowledgmentsLogos, function(imageModel) {
 
-                  var ackLogosSerialized = imageModel.updateDOM();
+                  // Don't serialize empty imageModels
+                  if(
+                    imageModel.get("identifier") ||
+                    imageModel.get("label") ||
+                    imageModel.get("associatedURL")
+                  ){
 
-                  // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(portalNode, "acknowledgmentsLogo");
-                  if(insertAfter){
-                    insertAfter.after(ackLogosSerialized);
-                  }
-                  else {
-                    portalNode.append(ackLogosSerialized);
+                    var ackLogosSerialized = imageModel.updateDOM();
+
+                    // Insert new node at correct position
+                    var insertAfter = model.getXMLPosition(portalNode, "acknowledgmentsLogo");
+                    if(insertAfter){
+                      insertAfter.after(ackLogosSerialized);
+                    }
+                    else {
+                      portalNode.append(ackLogosSerialized);
+                    }
                   }
                 })
               };
@@ -1396,6 +1404,23 @@ define(["jquery",
               catch(e){
                 console.error(e);
               }
+            },
+
+            /**
+             * removeAcknowledgementLogo - remove a portalImage model from the
+             * acknowledgementLogos array.
+             *
+             * @param  {portalImage} portalImage the portalImage model to remove
+             */
+            removeAcknowledgementLogo: function(portalImage){
+              try{
+                var ackLogos = _.clone(this.get("acknowledgmentsLogos"));
+                ackLogos.splice( $.inArray(portalImage, ackLogos), 1);
+                this.set({acknowledgmentsLogos: ackLogos});
+              } catch(e){
+                console.log("Failed to remove an acknowledgementLogo, error message: " + e);
+              }
+              
             },
 
             /**
