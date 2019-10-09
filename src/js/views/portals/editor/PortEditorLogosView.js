@@ -39,7 +39,6 @@ function(_, $, Backbone, PortalImage, ImageEdit){
     * @type {Object}
     */
     events: {
-      "click .edit-image .remove"         : "removeAckLogo",
       "keyup .edit-image.new .basic-text" : "handleNewInput"
     },
 
@@ -102,12 +101,16 @@ function(_, $, Backbone, PortalImage, ImageEdit){
     renderAckLogoInput: function(portalImage){
 
       try {
+
+        var view = this;
+
         // Check if this is a new, empty acknowledgmentsLogo
         var isNew = !portalImage.get("identifier") &&
                     !portalImage.get("associatedURL") &&
                     !portalImage.get("label");
 
         var imageEdit = new ImageEdit({
+          parentModel: this.model,
           model: portalImage,
           imageUploadInstructions: "Drag & drop a partner logo here or click to upload",
           imageWidth: 100,
@@ -121,12 +124,9 @@ function(_, $, Backbone, PortalImage, ImageEdit){
         imageEdit.render();
 
         // When user adds a file, this imageEdit is no longer new
-        this.listenToOnce(imageEdit, "imageAdded", this.handleNewInput);
-
-        // For updaing the field on user input
-        $(imageEdit.el).find(".basic-text").data({ model: portalImage });
-        // For removing the imageModel when user clicks 'remove'
-        $(imageEdit.el).data({ model: portalImage });
+        imageEdit.listenToOnce(imageEdit.uploader, "addedfile", function(){
+          view.handleNewInput(this)
+        });
 
         if(isNew){
           $(imageEdit.el).addClass("new");
@@ -141,55 +141,36 @@ function(_, $, Backbone, PortalImage, ImageEdit){
     },
 
     /**
-     * removeAckLogo - removes the PortalImage model and ImageEdit view associated with an acknowledgmentsLogo
+     * handleNewInput - Called when a user enters any input into a new ImageEdit
+     * view. It removes the "new" class, shows the "remove" button, and adds a new
+     * ImageEdit view with a blank PortalImage model.
      *
-     * @param  {event} e - the click event on the ImageEdit view's remove button
+     * @param  {object} eventOrView either the keyup event when user enters text
+     * into an imageEdit input, OR the imageEdit view which contains the
+     * imageUploader where a user just uploaded an image.
      */
-    removeAckLogo: function(e){
+    handleNewInput: function(eventOrView){
 
       try {
-        if(!e.target || !$(e.target).parent().data("model")){
+        // Get the relevant imageEdit view element
+        var imageEditEl   = eventOrView.target ?
+                            // when the arguement is an event
+                            $(eventOrView.target).closest(".edit-image.new") :
+                            // when the argument is a view
+                            eventOrView.$el;
+
+        // This function should only modify new image-edit views
+        if(!imageEditEl || !imageEditEl.hasClass("new")){
           return
         }
 
-        // Remove the model
-        var portalImage = $(e.target).parent().data("model");
-        this.model.removeAcknowledgementLogo(portalImage);
-
-        // Remove the div
-        $(e.target).parent().animate({width: "0px", overflow: "hidden"}, {
-          duration: 250,
-          complete: function(){
-            this.remove();
-          }
-        });
-      } catch (e) {
-        console.log("Failed to remove an acknowledgments logo. Error message:" + e) ;
-      }
-
-
-    },
-
-    /**
-     * handleNewInput - Called when a user enters any input into a new ImageEdit
-     * view. It removed the "new" class, shows the "remove" button, and adds a new
-     * ImageEdit with a blank PortalImage model.
-     *
-     * @param  {object} eOrEl either the keyup event when user enters text into a
-     * imageEdit input, OR the actual imageEdit element passed from imageEdit
-     * view when the user adds an image.
-     */
-    handleNewInput: function(eOrEl){
-
-      try {
-        var imageEditEl   = eOrEl.target ?
-                            $(eOrEl.target).closest(".edit-image.new") :
-                            $(eOrEl),
-            currentLogos  = this.model.get("acknowledgmentsLogos"),
+        var currentLogos  = this.model.get("acknowledgmentsLogos"),
             newLogo       = new PortalImage({ nodeName: "acknowledgmentsLogo" });
 
-        // Remove the new class
-        imageEditEl.closest(".edit-image.new").removeClass("new");
+        // Remove the 'new' class
+        imageEditEl.removeClass("new");
+
+        // Allow users to delete this logo
         imageEditEl.find(".remove.icon").show();
 
         // Add a new blank portalImage
@@ -198,6 +179,7 @@ function(_, $, Backbone, PortalImage, ImageEdit){
 
         // Show the new EditImage view
         this.renderAckLogoInput(newLogo);
+
       } catch (e) {
         console.log("Failed to handle user input in an acknowledgments logo imageEdit view. Error message: " + e);
       }

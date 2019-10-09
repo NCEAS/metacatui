@@ -1014,8 +1014,7 @@ define(["jquery",
              * Checks whether the given sectionModel has been updated by the
              * user, or whether all attributes match their default values.
              * For a section's markdown, the default value is either an empty
-             * string, null, or the default pre-filled content (the value set to
-             * PortalModel.markdownExample). For a section's label, the default
+             * string or null. For a section's label, the default
              * value is either an empty string or a string that begins with the
              * value set to PortalModel.newSectionLabel. For all other attributes,
              * the defaults are set in PortalSectionModel.defaults.
@@ -1034,7 +1033,7 @@ define(["jquery",
                 if(
                   // Check whether markdown matches the content that's
                   // auto-filled or whether it's empty
-                  ( currentMarkdown === this.markdownExample ||
+                  ( //currentMarkdown === this.markdownExample ||
                     currentMarkdown == "" ||
                     currentMarkdown == null
                   ) &&
@@ -1407,20 +1406,38 @@ define(["jquery",
             },
 
             /**
-             * removeAcknowledgementLogo - remove a portalImage model from the
-             * acknowledgementLogos array.
+             * removePortalImage - remove a PortalImage model from either the
+             * logo, sections, or acknowledgmentsLogos node of the portal model.
              *
-             * @param  {portalImage} portalImage the portalImage model to remove
+             * @param  {Image} portalImage the portalImage model to remove
              */
-            removeAcknowledgementLogo: function(portalImage){
+            removePortalImage: function(portalImage){
               try{
-                var ackLogos = _.clone(this.get("acknowledgmentsLogos"));
-                ackLogos.splice( $.inArray(portalImage, ackLogos), 1);
-                this.set({acknowledgmentsLogos: ackLogos});
+                // find the portalImage to remove
+                switch (portalImage.get("nodeName")) {
+                  case "logo":
+                    if(portalImage === this.get("logo")){
+                      this.set("logo", this.defaults().logo);
+                    }
+                    break;
+                  case "image":
+                    _.each(this.get("sections"), function(section, i) {
+                      if(portalImage === section.get("image")){
+                        section.set("image", section.defaults().image)
+                      }
+                    });
+                    break;
+                  case "acknowledgmentsLogo":
+                    var ackLogos = _.clone(this.get("acknowledgmentsLogos"));
+                    ackLogos.splice( $.inArray(portalImage, ackLogos), 1);
+                    this.set({acknowledgmentsLogos: ackLogos});
+                    break;
+                }
+
               } catch(e){
-                console.log("Failed to remove an acknowledgementLogo, error message: " + e);
+                console.log("Failed to remove a portalImage model, error message: " + e);
               }
-              
+
             },
 
             /**

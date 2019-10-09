@@ -2494,7 +2494,8 @@ img[src*="googleapis.com/"].georegion-map{
 ********************************************/
 
 /* Image upload validaiton error formatting */
-.image-uploader-container.error .dz-message {
+.image-uploader-container.error .dz-message,
+.dropzone:hover .dz-message.subtle.warning {
 	color: #960303;
 }
 
@@ -2555,6 +2556,24 @@ img[src*="googleapis.com/"].georegion-map{
 	background-size: cover;
 	min-height: 500px;
 	color: #FFF;
+}
+
+/* the remove image button */
+.dz-preview i {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	box-sizing: border-box;
+	opacity: 0;
+	font-size: 17px;
+	padding:1px;
+	margin: 2px;
+	color: #ababab;
+	cursor: pointer;
+}
+
+.dropzone:hover i {
+  opacity:0.8;
 }
 
 /* show dashed outline when no image is uploaded, or when image is uploaded and user hovers */
