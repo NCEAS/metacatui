@@ -866,6 +866,10 @@ label.control-label{
 	border: 1px solid #1C6E84;
   	border-radius: 5px;
 }
+/* The active attribute in the attribute name list */
+.attributeListTable tr.active{
+  background-color: #1C6E84;
+}
 
    /** Prov charts **/
   .prov-chart,
@@ -975,6 +979,20 @@ label.control-label{
 	opacity: 0.0;
 	pointer-events: none;
 
+}
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
+.annotation .annotation-value{
+background-color: #1C6E84;
+border-color: #1C6E84;
+}
+.annotation-icon .icon.icon-stack-base{
+color: #1C6E84;
+}
+.attributeListTable .active .annotation-icon .icon.icon-stack-base{
+  color: #0ca3cc;
 }
 
 /* Registry CSS

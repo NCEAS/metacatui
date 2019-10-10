@@ -2094,6 +2094,12 @@ svg .no-activity,
 		color: inherit;
 	}
 
+/*-------------- ANNOTATION CSS -----------------------------*/
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
+
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 

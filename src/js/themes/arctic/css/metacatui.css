@@ -1407,6 +1407,11 @@ MDQ items
     	margin-bottom: 20px;
     }
 
+    /* The active attribute in the attribute name list */
+    .attributeListTable tr.active{
+      background-color: #323D90;
+    }
+
 /* MDQ CSS
 -------------------------------------------------- */
 
@@ -1964,7 +1969,21 @@ MDQ items
 		color: #FFF;
 		background-color: #00AAFF;
 	}
-
+  /*-------------- ANNOTATIONS CSS -----------------------------*/
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
+.annotation .annotation-value{
+  background-color: #146660;
+  border-color: #146660;
+}
+.annotation-icon .icon.icon-stack-base{
+  color: #146660;
+}
+.attributeListTable .active .annotation-icon .icon.icon-stack-base{
+  color: #068a80;
+}
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 

@@ -280,9 +280,13 @@ define(['jquery', 'underscore', 'backbone'],
             }
           ]
         }
-      ]
+      ],
 
-    },
+      /* Semantic annotation configuration */
+      bioportalAPIKey: null,
+			bioportalLookupCache: {},
+			showAnnotationIndicator: false
+		},
 
     defaultView: "data",
 

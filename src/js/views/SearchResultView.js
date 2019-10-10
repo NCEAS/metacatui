@@ -53,7 +53,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			//Determine if there is a prov trace
 			json.hasProv  = this.model.hasProvTrace();
 
-      //Find the member node object
+			// Add flag to add in annotation icon in results item view if appropriate
+			json.hasAnnotations = json.sem_annotation &&
+				json.sem_annotation.length &&
+				json.sem_annotation.length > 0;
+
+			json.showAnnotationIndicator = MetacatUI.appModel.get("showAnnotationIndicator");
+
+			//Find the member node object
 			json.memberNode = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: this.model.get("datasource")});
 
       //Figure out if this objbect is a collection or portal

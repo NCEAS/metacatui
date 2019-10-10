@@ -20,6 +20,8 @@ define(['jquery',
     'views/PackageTableView',
     'views/AnnotatorView',
     'views/CitationView',
+    'views/AnnotationView',
+    'views/MarkdownView',
     'text!templates/metadata/metadata.html',
     'text!templates/dataSource.html',
     'text!templates/publishDOI.html',
@@ -34,13 +36,12 @@ define(['jquery',
     'text!templates/annotation.html',
     'text!templates/metaTagsHighwirePress.html',
     'uuid',
-    'views/MetricView'
+    'views/MetricView',
     ],
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
        MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-       AnnotatorView, CitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
-       VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate,
-       AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
+       AnnotatorView, CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+       VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
   'use strict';
 
@@ -92,7 +93,7 @@ define(['jquery',
       "mouseover .highlight-node"  : "highlightNode",
       "mouseout  .highlight-node"  : "highlightNode",
       "click     .preview"        : "previewData",
-      "click     #save-metadata-prov" : "saveProv",
+      "click     #save-metadata-prov" : "saveProv"
     },
 
 
@@ -126,6 +127,11 @@ define(['jquery',
         this.pid = MetacatUI.appModel.get("pid");
 
       this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
+
+      this.once("metadataLoaded", function(){
+        this.createAnnotationViews();
+        this.insertMarkdownViews();
+      });
 
       this.getModel();
 
@@ -550,6 +556,16 @@ define(['jquery',
 
       //Remove ecogrid links and replace them with workable links
       this.replaceEcoGridLinks();
+
+      //Find the tab links for attribute names
+      this.$(".attributeListTable tr a").on('shown', function(e){
+        //When the attribute link is clicked on, highlight the tab as active
+        $(e.target).parents(".attributeListTable").find(".active").removeClass("active");
+        $(e.target).parents("tr").first().addClass("active");
+      });
+
+      //Mark the first row in each attribute list table as active since the first attribute is displayed at first
+      this.$(".attributeListTable tr:first-child()").addClass("active");
     },
 
     /*
@@ -2448,7 +2464,10 @@ define(['jquery',
         "@id": "https://dataone.org/datasets/" +
           encodeURIComponent(model.get("id")),
         "datePublished" : this.getDatePublishedText(),
-        "publisher": this.getPublisherText(),
+        "publisher": {
+          "@type": "Organization",
+          "name": this.getPublisherText()
+        },
         "identifier": model.get("id"),
         "url": "https://dataone.org/datasets/" +
           encodeURIComponent(model.get("id")),
@@ -2464,7 +2483,12 @@ define(['jquery',
 
       // Creator
       if (model.get("origin")) {
-        elJSON["creator"] = model.get("origin")
+        elJSON["creator"] = model.get("origin").map(function (creator) {
+          return {
+            "@type": "Person",
+            "name": creator
+          };
+        });
       }
 
       // Dataset/spatialCoverage
@@ -2695,6 +2719,42 @@ define(['jquery',
 
       // Insert
       document.head.insertAdjacentHTML("beforeend", hwpt);
+    },
+
+    createAnnotationViews: function(){
+
+      try{
+        var viewRef = this;
+
+        _.each($(".annotation"), function (annoEl) {
+          var newView = new AnnotationView({
+            el: annoEl
+          });
+          viewRef.subviews.push(newView);
+          newView.render();
+        });
+      }
+      catch(e){
+        console.error(e);
+      }
+    },
+
+    insertMarkdownViews: function() {
+      var viewRef = this;
+
+      _.each($(".markdown"), function (markdownEl) {
+        var newView = new MarkdownView({
+          markdown: $(markdownEl).text().trim(),
+          el: $(markdownEl).parent()
+        });
+
+        viewRef.subviews.push(newView);
+
+        // Clear out old content before rendering
+        $(markdownEl).remove();
+
+        newView.render();
+      });
     }
   });
 

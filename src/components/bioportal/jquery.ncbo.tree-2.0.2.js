@@ -51,7 +51,7 @@
       timeout:           999999,
       treeClass:         "ncboTree",
       autocompleteClass: "ncboAutocomplete",
-      width:             350,
+      width:             450,
       ncboAPIURL:        "http://data.bioontology.org",
       ncboUIURL:         "http://bioportal.bioontology.org",
       apikey:            null,
@@ -419,7 +419,7 @@
 
       // Add the autocomplete code
       $.ajax({
-        url: ncboTree.options().ncboUIURL.replace("http:", ('https:' == document.location.protocol ? 'https:' : 'http:')) + "/widgets/jquery.ncbo.autocomplete.js",
+        url: MetacatUI.root + "/components/bioportal/jquery.ncbo.autocomplete-2.0.1.js",
         type: "GET",
         crossDomain: true,
         dataType: "script",

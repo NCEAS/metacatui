@@ -1,39 +1,47 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, profileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
+  'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'],
+	function($, _, Backbone, d3, StatsModel,
+    LineChart, BarChart, DonutChart, CircleBadge, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
-			
+
 	var StatsView = Backbone.View.extend({
 
 		el: '#Content',
 
+    model: null,
+
     hideUpdatesChart: false,
 
 		template: _.template(profileTemplate),
-		
+
 		alertTemplate: _.template(AlertTemplate),
-		
+
 		loadingTemplate: _.template(LoadingTemplate),
-						
+
 		initialize: function(options){
 			if(!options) options = {};
-			
+
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
-			this.description = (typeof options.description === "undefined") ? 
+			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 
       this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
 
-      this.model = options.model || MetacatUI.statsModel;
+      this.model = options.model || null;
 		},
-				
+
 		render: function () {
-			
-			//Clear the page 
+
+      if( !this.model ){
+        this.model = new StatsModel();
+      }
+
+			//Clear the page
 			this.$el.html("");
-			
+
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
 				//this.listenTo(this.model, 'change:dataUploadDates',       this.drawUploadChart);
@@ -133,9 +141,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 								else if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) name= "MS Word OpenXML"
 								//Application/octet-stream - shorten it
 								else if((name !== undefined) && (name == "application/octet-stream")) name = "Application file";
-								
+
 								if(name === undefined) name = "";
-								
+
 								return name;
 							}
 						});
@@ -812,7 +820,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.stopListening(this.model);
 
 			//Reset the stats model
-			this.model.clear().set(this.model.defaults);
+			this.model = null;
 		}
 
 	});

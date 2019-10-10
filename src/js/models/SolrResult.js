@@ -275,11 +275,19 @@ define(['jquery', 'underscore', 'backbone'],
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
 
+      //Open and send the request with the user's auth token
+      xhr.open('GET', url);
+
 			if(MetacatUI.appUserModel.get("loggedIn"))
 				xhr.withCredentials = true;
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
+
+        if( this.status == 404 ){
+          this.onerror.call(this);
+          return;
+        }
 
 			   //Get the file name to save this file as
 			   var filename = xhr.getResponseHeader('Content-Disposition');
@@ -312,21 +320,24 @@ define(['jquery', 'underscore', 'backbone'],
 			   }
 
 			    model.trigger("downloadComplete");
+
+          //Send this event to Google Analytics
+          if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+            ga("send", "event", "download", "Download DataONEObject", model.get("id"));
+          }
 			};
 
 			xhr.onerror = function(e){
-				var a = document.createElement('a');
-			    a.href = url;
+        model.trigger("downloadError");
 
-			    var filename = model.get("fileName") || model.get("title") || model.get("id") || "";
-				if(filename)
-					a.download = filename;
-
-			    a.style.display = 'none';
-			    document.body.appendChild(a);
-			    a.click();
-
-				model.trigger("downloadComplete");
+        //Send this exception to Google Analytics
+        if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+          ga("send", "exception", {
+            "exDescription": "Download DataONEObject error: " + (e || "") +
+              " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+            "exFatal": true
+          });
+        }
 			};
 
 			xhr.onprogress = function(e){
@@ -336,8 +347,6 @@ define(['jquery', 'underscore', 'backbone'],
 			    }
 			};
 
-			//Open and send the request with the user's auth token
-			xhr.open('GET', url);
 			xhr.responseType = "blob";
 
 			if(MetacatUI.appUserModel.get("loggedIn"))

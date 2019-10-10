@@ -162,6 +162,16 @@ define(['jquery', 'underscore', 'backbone'],
       hideMetricsWhen: null,
 
       isJSONLDEnabled: true,
+
+      // If true, then archived content is available in the search index.
+      // Set to false if this MetacatUI is using a Metacat version before 2.10.0
+      archivedContentIsIndexed: true,
+
+      /* Semantic annotation configuration */
+      bioportalAPIKey: null,
+      bioportalLookupCache: {},
+      showAnnotationIndicator: false,
+
       // A lookup map of portal names to portal seriesIds
       portalsMap: {
         "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",
@@ -217,10 +227,6 @@ define(['jquery', 'underscore', 'backbone'],
         awards: false,
         associatedParties: false
       },
-
-      // If true, then archived content is available in the search index.
-      // Set to false if this MetacatUI is using a Metacat version before 2.10.0
-      archivedContentIsIndexed: true,
 
       /**
       * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)

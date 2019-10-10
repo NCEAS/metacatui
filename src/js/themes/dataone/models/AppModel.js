@@ -123,7 +123,6 @@ define(['jquery', 'underscore', 'backbone'],
       *   EML 2.1.1 OR public OR were uploaded before 12/17/1995.
       */
       hideMetricsWhen: {
-        datasource: "urn:node:ESS_DIVE"
       },
 
       isJSONLDEnabled: true,
@@ -131,6 +130,11 @@ define(['jquery', 'underscore', 'backbone'],
       // If true, then archived content is available in the search index.
       // Set to false if this MetacatUI is using a Metacat version before 2.10.0
       archivedContentIsIndexed: true,
+
+      /* Semantic annotation configuration */
+      bioportalAPIKey: null,
+      bioportalLookupCache: {},
+      showAnnotationIndicator: false,
 
       /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals

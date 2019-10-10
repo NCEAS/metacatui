@@ -97,7 +97,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Set this configuration to true if using Metacat 2.10.2 or earlier
       disableQueryPOSTs: false,
 
-      defaultSearchFilters: ["all", "attribute", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+      defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
       metaServiceUrl: null,
       metacatBaseUrl: null,
@@ -161,6 +161,11 @@ define(['jquery', 'underscore', 'backbone'],
       hideMetricsWhen: null,
 
       isJSONLDEnabled: true,
+
+      /* Semantic annotation configuration */
+			bioportalAPIKey: null,
+			bioportalLookupCache: {},
+			showAnnotationIndicator: false,
 
       // A lookup map of portal names to portal seriesIds
       portalsMap: {
