@@ -37,10 +37,22 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     imageUploaderContainer: ".image-uploader-container",
 
     /**
+     * The ImageUploaderView created and used by this ImageEdit view.
+     * @type {ImageUploader}
+     */
+    uploader: undefined,
+
+    /**
     * The PortalImage model that is being edited
     * @type {Image}
     */
     model: undefined,
+
+    /**
+    * The Portal model that contains the PortalImage
+    * @type {Portal}
+    */
+    parentModel: undefined,
 
     /**
     * The maximum display height of the image preview.
@@ -100,19 +112,21 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     */
     events: {
       "mouseover .remove.icon" : "showRemovePreview",
-      "mouseout  .remove.icon" : "hideRemovePreview"
+      "mouseout  .remove.icon" : "hideRemovePreview",
+      "click .remove-image-edit-view"     : "removeSelf"
     },
 
     /**
     * Creates a new ImageEditView
     * @constructs ImageEditView
     * @param {Object} options - A literal object with options to pass to the view
+    * @property {Portal}  options.parentModel - Gets set as ImageEditView.parentModel
     * @property {PortalImage}  options.model - Gets set as ImageEditView.model
     * @property {string}  options.imageUploadInstructions - Gets set as ImageUploaderView.imageUploadInstructions
     * @property {number}  options.imageWidth - Gets set as ImageUploaderView.imageWidth
     * @property {number}  options.imageHeight - Gets set as ImageUploaderView.imageHeight
-    * @property {string} options.nameLabel - Gets set as ImageEditView.nameLabel
-    * @property {string} options.urlLabel - Gets set as ImageEditView.urlLabel
+    * @property {string}  options.nameLabel - Gets set as ImageEditView.nameLabel
+    * @property {string}  options.urlLabel - Gets set as ImageEditView.urlLabel
     * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
     * @property {string}  options.removeButton - Gets set as ImageUploaderView.removeButton
     */
@@ -121,6 +135,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
       try {
 
         if( typeof options == "object" ){
+          this.parentModel              = options.parentModel;
           this.model                    = options.model;
           this.imageUploadInstructions  = options.imageUploadInstructions;
           this.imageWidth               = options.imageWidth;
@@ -159,34 +174,41 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
           removeButton: this.removeButton
         }));
 
-        // Create an ImageUploaderView and insert into this view
-        var uploader = new ImageUploaderView({
+        // Create an ImageUploaderView and insert into this view. Allow it to be
+        // accessed from parent views.
+        this.uploader = new ImageUploaderView({
           height:             this.imageHeight,
           width:              this.imageWidth,
           url:                this.model.get("imageURL"),
           uploadInstructions: this.imageUploadInstructions,
           imageTagName:       this.imageTagName
         });
-
-        this.$(this.imageUploaderContainer).append(uploader.el);
-        uploader.render();
+        this.$(this.imageUploaderContainer).append(this.uploader.el);
+        this.uploader.render();
 
         // Remove validation error messages, if there are any, when image added
-        this.stopListening(uploader, "imageAdded");
-        this.listenTo(uploader, "imageAdded", function(){
-          this.removeValidation();
-          // For the parent view
-          this.trigger("imageAdded", view.el);
-        });
-
-        // Update the portal image model when the image is successfully uploaded
-        this.stopListening(uploader, "imageUploaded");
-        this.listenTo(uploader, "imageUploaded", function(imageURL, newID){
-          view.model.set("identifier", newID);
-          view.model.set("imageURL", imageURL);
-          // Remove validation errors if there were any displayed.
+        this.stopListening(this.uploader, "addedfile");
+        this.listenTo(this.uploader, "addedfile", function(){
           view.removeValidation();
         });
+
+        // Reset image attributes when user removes image
+        this.stopListening(this.uploader, "removedfile");
+        this.listenTo(this.uploader, "removedfile", function(){
+          var defaults = view.model.defaults();
+          view.model.set("identifier", defaults.identifier);
+          view.model.set("imageURL", defaults.imageURL);
+        });
+
+        // Update the PortalImage model when the image is successfully uploaded
+        this.stopListening(this.uploader.model, "successSaving");
+        this.listenTo(this.uploader.model, "successSaving", function(dataONEObject){
+          view.model.set("identifier", dataONEObject.get("id"));
+          view.model.set("imageURL", dataONEObject.url());
+        });
+
+        // Allows model to update when user types in text field
+        this.$el.find(".basic-text").data({ model: this.model });
 
         //Initialize any tooltips
         this.$(".tooltip-this").tooltip();
@@ -200,6 +222,34 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
     },
 
+    /**
+     * removeSelf - Removes this ImageEdit view and the associated PortalImage
+     * model from the parent Portal model.
+     */
+    removeSelf: function(){
+
+      try {
+
+        // Remove the model
+        this.parentModel.removePortalImage(this.model);
+        // Remove the view
+        this.$el.animate({width: "0px", overflow: "hidden"}, {
+          duration: 250,
+          complete: function(){
+            this.remove();
+          }
+        });
+
+      } catch (e) {
+        console.log("Failed to remove an ImageEdit view. Errorm message: " + e);
+      }
+
+    },
+
+
+    /**
+     * showValidation - Show validation errors
+     */
     showValidation: function(){
 
       // ToDo: highlight individual errors:
@@ -214,6 +264,10 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
     },
 
+
+    /**
+     * removeValidation - Removedisplayed validation errors, if any
+     */
     removeValidation: function(){
       this.$(this.imageUploaderContainer).removeClass("error");
       var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
@@ -224,14 +278,24 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * Add the "remove" class which will show a preview for removing this image, via CSS
     */
     showRemovePreview: function(){
-      this.$el.addClass("remove");
+      try{
+        this.$el.addClass("remove");
+      }
+      catch (error) {
+        console.error("Failed to preview the removal of an image edit view. Error message: " + error);
+      }
     },
 
     /**
     * Removes the "remove" class which will hide the preview for removing this image, via CSS
     */
     hideRemovePreview: function(e){
-     this.$el.removeClass("remove");
+      try{
+        this.$el.removeClass("remove");
+      }
+      catch (error) {
+        console.error("Failed to preview the removal of an image edit view. Error message: " + error);
+      }
    },
 
    /**

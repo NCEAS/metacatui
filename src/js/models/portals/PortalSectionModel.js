@@ -72,6 +72,7 @@ define(["jquery",
 
           if (objectDOM) {
             objectDOM = objectDOM.cloneNode(true);
+            $(objectDOM).empty();
           } else {
             // create an XML section element from scratch
             var xmlText = "<section></section>",

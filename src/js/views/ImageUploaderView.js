@@ -81,6 +81,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     * @type {Object}
     */
     events: {
+      "mouseover .remove" : "previewImageRemove",
+      "mouseout  .remove"  : "previewImageRemove"
     },
 
     /**
@@ -108,6 +110,10 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
           if (!this.url && this.model) {
             this.url = this.model.url();
+          }
+
+          if(!this.model){
+            this.model = new DataONEObject();
           }
 
         }
@@ -175,6 +181,14 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
             // Use our own functionality for uploading
             this.on("addedfile", function(file){
               view.uploadFile(file);
+              // Required for parent views to use listenTo() on dropzone events
+              view.trigger("addedfile");
+            });
+            // Hide the remove buttons and text when an image is removed
+            this.on("removedfile", function(file){
+              view.previewImageRemove();
+              // Required for parent views to use listenTo() on dropzone events
+              view.trigger("removedfile");
             });
           }
         });
@@ -205,7 +219,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     showImage: function(file, dataUrl){
 
       try{
-        var previewEl = this.$(".dz-preview.dz-image-preview " + this.imageTagName)[0];
+        var previewEl = this.$(".dz-preview .image-container")[0];
 
         if(this.imageTagName == "img"){
           previewEl.src = dataUrl;
@@ -276,19 +290,6 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
           return
         }
 
-        // Event for parent view
-        this.trigger("imageAdded");
-
-        if(!this.model){
-          this.model = new DataONEObject();
-        }
-
-        // Pass the new image URL and ID to the parent view
-        this.stopListening(this.model, "successSaving");
-        this.listenTo(this.model, "successSaving", function(){
-          view.trigger("imageUploaded", view.model.url(), view.model.get("id"));
-        });
-
         this.model.set({
           synced: true,
           type: "image",
@@ -313,6 +314,33 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
         console.log("image file not saved! error message: " + error);
       }
 
+    },
+
+
+    /**
+     * previewImageRemove - When the user hovers over the remove button,
+     * indicates to the user that the button will remove the image by 1) changing
+     * the upload instruction text to a message about removing the image,
+     * and 2) adding a warning class to the message div.
+     */
+    previewImageRemove: function(){
+
+      try {
+
+        var removeText = "Click to remove image",
+            $messageDiv = $(this.imageDropzone.element).find(".dz-message");
+
+        $messageDiv.toggleClass("warning");
+
+        if($messageDiv.html() != removeText){
+          $messageDiv.html(removeText);
+        } else {
+          $messageDiv.html(this.uploadInstructions);
+        }
+
+      } catch (error) {
+        console.log(error);
+      }
     }
 
   });
