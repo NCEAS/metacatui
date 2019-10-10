@@ -2,15 +2,15 @@
 <% if(nameLabel){ %>
   <div>
     <h5><%=nameLabel%></h5>
-    <input type="text" placeholder="Name" class="basic-text" value="<%=nameText%>" data-category="label"/>
+    <input type="text" placeholder="National Center for Ecological Analysis and Synthesis" class="basic-text" value="<%=nameText%>" data-category="label"/>
   </div>
 <% } %>
 <% if(urlLabel){ %>
   <div>
     <h5><%=urlLabel%></h5>
-    <input type="text" placeholder="URL" class="basic-text" value="<%=urlText%>" data-category="associatedURL"/>
+    <input type="text" placeholder="https://" class="basic-text" value="<%=urlText%>" data-category="associatedURL"/>
   </div>
 <% } %>
 <% if(removeButton){ %>
-<i class="icon-remove remove icon" title="Remove"></i>
+  <i class="icon-remove remove icon danger center tooltip-this" data-title="Remove this image" data-trigger="hover" data-placement="top" data-toggle="tooltip" data-container="body" data-delay="300"></i>
 <% } %>

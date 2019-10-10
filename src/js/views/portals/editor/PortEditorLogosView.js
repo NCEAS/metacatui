@@ -110,10 +110,10 @@ function(_, $, Backbone, PortalImage, ImageEdit){
         var imageEdit = new ImageEdit({
           model: portalImage,
           imageUploadInstructions: "Drag & drop a partner logo here or click to upload",
-          imageWidth: 100,
-          imageHeight: 100,
-          nameLabel: "Name",
-          urlLabel: "URL",
+          imageWidth: 150,
+          imageHeight: 150,
+          nameLabel: "Organization name",
+          urlLabel: "Organization URL",
           imageTagName: "img",
           removeButton: true
         });
@@ -160,9 +160,16 @@ function(_, $, Backbone, PortalImage, ImageEdit){
         $(e.target).parent().animate({width: "0px", overflow: "hidden"}, {
           duration: 250,
           complete: function(){
+
+            var view = $(this).data("view");
+            if( view.onClose )
+              view.onClose();
+
             this.remove();
+
           }
         });
+
       } catch (e) {
         console.log("Failed to remove an acknowledgments logo. Error message:" + e) ;
       }

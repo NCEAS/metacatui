@@ -148,7 +148,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           model: this.model.get("image"),
           imageUploadInstructions: "Drag & drop a high quality image here or click to upload",
           imageWidth: false, // set to 100% in metacatui-common.css
-          imageHeight: 500,
+          imageHeight: 300,
           nameLabel: false,
           urlLabel: false,
           imageTagName: "div",

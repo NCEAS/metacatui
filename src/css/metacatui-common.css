@@ -32,7 +32,7 @@ a:hover{
 }
 .danger,
 .error{
-	color: #960303;
+	color: #dc0000;
 }
 .tooltip-error .tooltip-inner{
 	background-color: #960303;
@@ -2517,16 +2517,12 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 .dropzone .dz-message{
-	white-space: pre-wrap;
-  word-wrap: break-word;
 	position: absolute;
 	top: 0;
 	bottom: 0;
 	align-items: center;
-	display: flex;
 	box-sizing: border-box;
 	padding: 8px;
-	line-height: 120%;
 	width: 100%;
 	justify-content: center;
 }
@@ -2553,16 +2549,21 @@ img[src*="googleapis.com/"].georegion-map{
 	background-position-x: 50%;
 	background-position-y: 50%;
 	background-size: cover;
-	min-height: 500px;
+	min-height: 300px;
 	color: #FFF;
 }
 
 /* show dashed outline when no image is uploaded, or when image is uploaded and user hovers */
+.dropzone{
+  background-image: url(../img/transp_bg.png);
+}
 .dropzone.dz-started {
 	outline: none;
 	background: transparent;
 }
-
+.dropzone.dz-started .dz-message{
+  opacity: 0;
+}
 .dropzone,
 .dropzone.dz-started:hover,
 .dropzone.dz-started.dz-drag-hover {
@@ -2575,22 +2576,46 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 /* Hide help text if image is already uploaded, show when user hovers */
-.dropzone.dz-started .dz-message{
-	opacity: 0;
-}
 .dropzone:hover .dz-message,
 .dropzone.dz-started:hover .dz-message,
 .dropzone.dz-drag-hover .dz-message {
-	background-color: #fafafa;
-	opacity: 0.9;
-	color:#a8a8a8;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #FFF;
+  opacity: 1;
+}
+.portal-display-image .dropzone:hover .dz-message,
+.portal-display-image .dropzone.dz-started:hover .dz-message,
+.portal-display-image .dropzone.dz-drag-hover .dz-message{
+  font-size: 2em;
+  padding-top: 200px;
+}
+.portal-display-image .dropzone .dz-message{
+  padding-top: 240px;
+}
+.logos-container .dropzone .icon-upload {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+.dz-message{
+  transition: background-color .2s ease 150ms, font-size .2s ease 150ms, color .2s ease 150ms;
+}
+.dropzone .icon-upload{
+  display: block;
+  font-size: 1.5em;
 }
 
 /******************************************
 * Portal Editor
 ********************************************/
 
+.Portal.Editor #Content{
+  padding-top: 0px;
+}
 /* Editor navigation (tabs) */
+.section-links-container{
+  margin-bottom: 0px;
+}
 .port-editor-sections .section-link-container{
   border-right: 1px solid #CCC;
 }
@@ -2659,11 +2684,21 @@ img[src*="googleapis.com/"].georegion-map{
 	margin: 35px 0 25px 0;
 }
 
+/* Portal editor sections */
+.port-editor-section.port-editor-md{
+  padding: 0px;
+}
+
+/* Portal Editor notifications */
+.portal-editor .alert:empty {
+    display: none;
+}
+
 /* Portal Editor header (contains logo and title) */
 
 .portal-editor #editor-header {
 	display: flex;
-	padding-bottom: 40px;
+	padding-bottom: 20px;
 	flex-wrap: wrap;
 }
 
@@ -2671,29 +2706,36 @@ img[src*="googleapis.com/"].georegion-map{
     margin-left: 20px;
     margin-right: 20px;
 }
-
+.logo-editor-container .dropzone .dz-message{
+  font-size: .9em;
+}
+.logo-editor-container .dropzone.dz-started .dz-message{
+  opacity: 0;
+}
+.logo-editor-container .dropzone.dz-started:hover .dz-message{
+  opacity: 1;
+}
 .portal-editor .title-container {
-	display: flex;
 	width: calc(100% - 150px);
 	min-width: 300px;
 	max-width: 1000px;
 }
 
-input.portal-title{
-			width: 100%;
-	    padding: 0px;
-	    background: transparent;
-	    border: none;
-	    border-radius: 0;
-	    border-bottom: 1.5px solid transparent;
-	    box-shadow: none;
-			align-self: center;
+.portal-editor input.portal-title{
+	width: 100%;
+  padding: 0px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1.5px solid #999;
+  box-shadow: none;
+	align-self: center;
 }
-
-input.portal-title:focus,
-input.portal-title:hover {
-			box-shadow: none;
-			border-bottom: 1.5px solid #999999;
+.portal-editor input.portal-title:focus{
+  padding-left: 10px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
+  -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(82,168,236,.6);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
 }
 
 /* Portal Editor settings */
@@ -2705,6 +2747,49 @@ input.portal-title:hover {
 
 .port-editor-logos {
 	display: flex;
+}
+.edit-image .remove-preview{
+  display: none;
+}
+.edit-image.remove{
+  opacity: .5;
+}
+.port-editor-logos .edit-image{
+  border: 1px solid #dedede;
+  margin-right: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  position: relative;
+}
+.port-editor-logos .edit-image .dropzone{
+  height: 150px;
+  width: 150px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+.port-editor-settings .edit-image .remove{
+  font-size: 1.5em;
+  display: block;
+}
+.port-editor-settings > .row-fluid{
+  padding: 20px;
+  box-sizing: border-box;
+}
+.port-editor-settings > .row-fluid:nth-child(odd){
+  background-color: #EEE;
+}
+.port-editor-settings .description-container textarea{
+  width: 100%;
+}
+.port-editor-section  > h3{
+  margin-top: 20px;
+  margin-left: 20px;
+}
+.port-editor-section .edit-collection > h3,
+.port-editor-section .edit-collection > p{
+  margin-top: 20px;
+  margin-left: 10px;
 }
 
 /* Portal Editor markdown section
@@ -2725,9 +2810,14 @@ input.portal-title:hover {
 .port-editor-section.port-editor-md .dropzone .dz-message{
 	flex-direction: column;
 	justify-content: flex-end;
-	padding-bottom: 50px;
+	padding-bottom: 0px;
 }
-
+.portal-editor .portal-display-image{
+  padding-top: 0px;
+}
+.port-editor-md .portal-display-image .dropzone .icon-upload{
+  z-index: 1;
+}
 /* for the cs-message: calc(100% - 1px) */
 
 .Portal.Editor .portal-display-text {
@@ -2736,7 +2826,7 @@ input.portal-title:hover {
 	top: 0;
 	box-sizing: border-box;
 	left: 0;
-	margin: 100px 3px 0px 2px;
+	margin: 60px 3px 0px 2px;
 }
 
 .port-editor-markdown-container div.portal-display-image {
@@ -2755,7 +2845,6 @@ input.portal-title:hover {
 	border-bottom: 1.5px solid white;
 	box-shadow: none;
 }
-
 .port-editor-md .title {
 	font-weight: 300;
 	font-size: 31.5px;
@@ -3078,7 +3167,7 @@ input.portal-title:hover {
   background-position-x: 50%;
   background-position-y: 50%;
   background-size: cover;
-  min-height: 500px;
+  min-height: 300px;
   padding-top: 60px;
   color: #FFF;
 }

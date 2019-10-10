@@ -46,14 +46,14 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * The maximum display height of the image preview.
     * @type {number}
     */
-    imageHeight: 100,
+    imageHeight: 150,
 
     /**
     * The maximum display width of the image preview. If set to false,
     * no css width property is set.
     * @type {number|boolean}
     */
-    imageWidth: 100,
+    imageWidth: 150,
 
     /**
     * Text to instruct the user how to upload an image
@@ -99,6 +99,8 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * @type {Object}
     */
     events: {
+      "mouseover .remove.icon" : "showRemovePreview",
+      "mouseout  .remove.icon" : "hideRemovePreview"
     },
 
     /**
@@ -186,6 +188,12 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
           view.removeValidation();
         });
 
+        //Initialize any tooltips
+        this.$(".tooltip-this").tooltip();
+
+        //Save a reference to this view
+        this.$el.data("view", this);
+
       } catch (e) {
         console.log("ImageEdit view not rendered, error message: " + e);
       }
@@ -210,7 +218,29 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
       this.$(this.imageUploaderContainer).removeClass("error");
       var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
       dropzoneMessage.find(".error").remove();
-    }
+    },
+
+    /**
+    * Add the "remove" class which will show a preview for removing this image, via CSS
+    */
+    showRemovePreview: function(){
+      this.$el.addClass("remove");
+    },
+
+    /**
+    * Removes the "remove" class which will hide the preview for removing this image, via CSS
+    */
+    hideRemovePreview: function(e){
+     this.$el.removeClass("remove");
+   },
+
+   /**
+   * This function is called whenever this view is about to be removed from the page.
+   */
+   onClose: function(){
+     //Destroy any tooltips in this view that are still open
+     this.$(".tooltip-this").tooltip("destroy");
+   }
 
 
   });

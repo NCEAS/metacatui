@@ -5,48 +5,64 @@
 
 <h3><%=portalTermCapitalized%> Settings</h3>
 
+<div class="row-fluid">
+  <h4>
+    <%=portalTermCapitalized%> URL
+    <i class="required-icon hidden" data-category="label"></i>
+  </h4>
+  <div class="change-label-container">
+    <p class="muted">
+      This is a unique short name that is used in the URL so others can easily get to
+      this <%=portalTermSingular%>.
+      <% if(label){ %>
+        The URL is currently set to:
+      <% } %>
+    </p>
+    <p class="muted display-label">
+      <%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/<span class="display-label-value"><%=label%></span>
+    </p>
+    <div class="label-container hide">
+        <div class="control-group">
+          <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
+          <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
+          <span class="notification help-inline"></span>
+        </div>
+        <div>
+          <button type="button" class="btn cancel-change-label">Cancel</button>
+          <button type="button" class="btn btn-primary ok-change-label">OK</button>
+        </div>
+    </div>
+    <div>
+      <button type="button" class="btn change-label">Change URL</button>
+    </div>
+  </div>
+</div>
+
 <!--<div class="color-palette-container"></div>-->
-<div class="description-container">
+<div class="description-container row-fluid">
   <h4>
     Description
     <i class="required-icon hidden" data-category="description"></i>
   </h4>
-  <p class="subtle"><%=descriptionHelpText%></p>
+  <p class="subtle">Describe your <%=portalTermSingular%> in one brief paragraph. This description will appear in search summaries.</p>
   <p class="notification" data-category="description"></p>
-  <textarea type="text" data-category="description" class="basic-text medium text" placeholder="<%=descriptionPlaceholder%>"><%=description%></textarea>
+  <textarea type="text" data-category="description" class="basic-text medium text"
+    placeholder="Answer who, where, what, when, and why about your <%=portalTermSingular%>." rows="3"><%=description%></textarea>
 </div>
 
 <!--
-<h4>Permissions</h4>
-<div class="permissions-container"></div>
+<div class="row-fluid">
+  <h4>Permissions</h4>
+  <div class="permissions-container"></div>
+</div>
 -->
 
-<h4>
-  Partner Logos
-  <i class="required-icon hidden" data-category="acknowledgmentsLogos"></i>
-</h4>
-<div class="logos-container"></div>
-
-<h4>
-  <%=portalTermCapitalized%> URL
-  <i class="required-icon hidden" data-category="label"></i>
-</h4>
-<div class="change-label-container">
-  <span class="muted display-label">
-    <%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/<span class="display-label-value"><%=label%></span>
-  </span>
-  <div class="label-container hide">
-      <div class="control-group">
-        <span class="muted"><%=MetacatUI.appModel.get('baseUrl')%>/<%=portalTermPlural%>/</span>
-        <input type="text" value="<%=label%>" data-category="label" class="basic-text"></input>
-        <span class="notification help-inline"></span>
-      </div>
-      <div>
-        <button type="button" class="btn cancel-change-label">Cancel</button>
-        <button type="button" class="btn btn-primary ok-change-label">OK</button>
-      </div>
-  </div>
-  <div>
-    <button type="button" class="btn change-label">Change URL</button>
-  </div>
+<div class="row-fluid">
+  <h4>
+    Partner Logos
+    <i class="required-icon hidden" data-category="acknowledgmentsLogos"></i>
+  </h4>
+  <p class="subtle">Add logos and links to organizations associated with this <%=portalTermSingular%>. These will appear in the bottom footer of each <%=portalTermSingular%> page.</p>
+  <p class="notification"></p>
+  <div class="logos-container"></div>
 </div>
