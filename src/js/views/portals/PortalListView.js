@@ -135,14 +135,17 @@ define(["jquery",
 
           try{
 
-            //If no search results were found, display a message
-            if( !this.searchResults || !this.searchResults.length ){
-              this.$el.html("No portals were found.");
-              return;
-            }
-
             //Get the list container element
             var listContainer = this.$(this.listContainer);
+
+            //If no search results were found, display a message
+            if( !this.searchResults || !this.searchResults.length ){
+              var row = this.createListItem();
+              row.html("<td colspan='4'>You haven't created or have access to any " +
+                        MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
+              listContainer.html(row);
+              return;
+            }
 
             //Remove any 'loading' elements before adding items to the list
             listContainer.find(".loading").remove();
@@ -177,32 +180,35 @@ define(["jquery",
             //Create a table row
             var listItem = $(document.createElement("tr"));
 
-            //Create a logo image
-            var logo = "";
-            if( searchResult.get("logo") ){
-              if( !searchResult.get("logo").startsWith("http") ){
-                searchResult.set("logo", MetacatUI.appModel.get("objectServiceUrl") + searchResult.get("logo"));
+            if( searchResult && typeof searchResult.get == "function" ){
+
+              //Create a logo image
+              var logo = "";
+              if( searchResult.get("logo") ){
+                if( !searchResult.get("logo").startsWith("http") ){
+                  searchResult.set("logo", MetacatUI.appModel.get("objectServiceUrl") + searchResult.get("logo"));
+                }
+                logo = $(document.createElement("img")).attr("src", searchResult.get("logo"));
               }
-              logo = $(document.createElement("img")).attr("src", searchResult.get("logo"));
+
+              //Create an Edit buttton
+              var buttons = $(document.createElement("a")).attr("href",
+                             MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + (searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id")) )
+                             .text("Edit")
+                             .addClass("btn");
+
+              //Create a link to the portal view with the title as the text
+              var titleLink = $(document.createElement("a"))
+                              .attr("href", searchResult.createViewURL())
+                              .text(searchResult.get("title"));
+
+              //Add all the elements to the row
+              listItem.append(
+                $(document.createElement("td")).addClass("logo").append(logo),
+                $(document.createElement("td")).addClass("portal-label").text( searchResult.get("label") ),
+                $(document.createElement("td")).addClass("title").append(titleLink),
+                $(document.createElement("td")).addClass("controls").append(buttons));
             }
-
-            //Create an Edit buttton
-            var buttons = $(document.createElement("a")).attr("href",
-                           MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + (searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id")) )
-                           .text("Edit")
-                           .addClass("btn");
-
-            //Create a link to the portal view with the title as the text
-            var titleLink = $(document.createElement("a"))
-                            .attr("href", searchResult.createViewURL())
-                            .text(searchResult.get("title"));
-
-            //Add all the elements to the row
-            listItem.append(
-              $(document.createElement("td")).addClass("logo").append(logo),
-              $(document.createElement("td")).addClass("portal-label").text( searchResult.get("label") ),
-              $(document.createElement("td")).addClass("title").append(titleLink),
-              $(document.createElement("td")).addClass("controls").append(buttons));
 
             //Return the list item
             return listItem;
