@@ -141,7 +141,7 @@ define(["jquery",
             //If no search results were found, display a message
             if( !this.searchResults || !this.searchResults.length ){
               var row = this.createListItem();
-              row.html("<td colspan='4'>You haven't created or have access to any " +
+              row.html("<td colspan='4' class='center'>You haven't created or have access to any " +
                         MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
               listContainer.html(row);
               return;

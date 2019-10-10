@@ -91,6 +91,9 @@ a:hover{
 .row-striped > .row-fluid:nth-child(even){
 	background-color: #EFEFEF;
 }
+td.center{
+  text-align: center;
+}
 /******************************************
 ** General Structure ***
 ******************************************/
