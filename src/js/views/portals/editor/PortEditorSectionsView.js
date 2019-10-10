@@ -130,7 +130,6 @@ function(_, $, Backbone, Portal, PortalSection,
       "focusout .section-link[contenteditable=true]" : "updateName",
       "click .cancelled-section-removal" : "closePopovers",
       "click .confirmed-section-removal" : "removeSection",
-      "click .remove-section" : "removeSection",
       // both keyup and keydown events are needed for limitLabelLength function
       "keyup .section-link[contenteditable=true]"    : "limitLabelInput",
       "keydown .section-link[contenteditable=true]"  : "limitLabelInput"
