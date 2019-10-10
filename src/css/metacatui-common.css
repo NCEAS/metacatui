@@ -2749,11 +2749,14 @@ img[src*="googleapis.com/"].georegion-map{
 .portal-display-image .dropzone:hover .dz-message,
 .portal-display-image .dropzone.dz-started:hover .dz-message,
 .portal-display-image .dropzone.dz-drag-hover .dz-message{
-  font-size: 2em;
-  padding-top: 200px;
+  font-size: 1.5em;
+  padding-top: 230px;
 }
 .portal-display-image .dropzone .dz-message{
   padding-top: 240px;
+}
+.portal-display-image .image-uploader.remove-preview .image-container{
+  opacity: .3;
 }
 .logos-container .dropzone .icon-upload {
   font-size: 2.5em;
@@ -2863,6 +2866,7 @@ img[src*="googleapis.com/"].georegion-map{
 	display: flex;
 	padding-bottom: 20px;
 	flex-wrap: wrap;
+  width: 100%;
 }
 
 .logo-editor-container {
@@ -2911,11 +2915,39 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-logos {
 	display: flex;
 }
-.edit-image .remove-preview{
+.edit-image .toggle-remove-preview{
   display: none;
 }
-.edit-image.remove{
+.edit-image.remove-preview{
   opacity: .5;
+}
+.edit-image .dropzone .remove-message{
+  display: none;
+}
+.image-uploader.remove-preview{
+  opacity: 1;
+}
+.image-uploader.remove-preview .dz-image-preview img{
+  opacity: .3;
+}
+.image-uploader.remove-preview .dropzone .dz-message{
+  background-color: transparent;
+}
+.image-uploader.remove-preview .dropzone .dz-message > *{
+  display: none;
+}
+.image-uploader.remove-preview .dropzone .remove-message{
+  display: block;
+  font-weight: bold;
+  font-size: 1.25em;
+  margin-top: 20px;
+  color: #333;
+}
+.image-uploader .dz-image-preview .remove{
+  top: 0px;
+  color: #fb5656;
+  font-size: 1.25em;
+  height: 2em;
 }
 .port-editor-logos .edit-image{
   border: 1px solid #dedede;
@@ -2934,6 +2966,9 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-settings .edit-image .remove{
   font-size: 1.5em;
   display: block;
+}
+.port-editor-settings .logos-container .edit-image .dropzone .remove {
+    display: none;
 }
 .port-editor-settings > .row-fluid{
   padding: 20px;
@@ -2977,9 +3012,16 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .portal-editor .portal-display-image{
   padding-top: 0px;
+  padding-bottom: 0px;
 }
 .port-editor-md .portal-display-image .dropzone .icon-upload{
   z-index: 1;
+}
+.portal-display-image .image-uploader .dz-image-preview .remove {
+    font-size: 2em;
+    margin-right: 10px;
+    margin-top: 10px;
+    color: red;
 }
 /* for the cs-message: calc(100% - 1px) */
 

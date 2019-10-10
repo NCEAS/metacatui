@@ -81,7 +81,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     * @type {Object}
     */
     events: {
-      "mouseover .remove" : "previewImageRemove",
+      "mouseover .remove"  : "previewImageRemove",
       "mouseout  .remove"  : "previewImageRemove"
     },
 
@@ -327,16 +327,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
       try {
 
-        var removeText = "Click to remove image",
-            $messageDiv = $(this.imageDropzone.element).find(".dz-message");
-
-        $messageDiv.toggleClass("warning");
-
-        if($messageDiv.html() != removeText){
-          $messageDiv.html(removeText);
-        } else {
-          $messageDiv.html(this.uploadInstructions);
-        }
+        this.$el.toggleClass("remove-preview");
 
       } catch (error) {
         console.log(error);

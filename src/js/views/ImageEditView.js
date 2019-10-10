@@ -111,8 +111,8 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * @type {Object}
     */
     events: {
-      "mouseover .remove.icon" : "showRemovePreview",
-      "mouseout  .remove.icon" : "hideRemovePreview",
+      "mouseover .toggle-remove-preview" : "showRemovePreview",
+      "mouseout  .toggle-remove-preview" : "hideRemovePreview",
       "click .remove-image-edit-view"     : "removeSelf"
     },
 
@@ -275,11 +275,11 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     },
 
     /**
-    * Add the "remove" class which will show a preview for removing this image, via CSS
+    * Add the "remove-preview" class which will show a preview for removing this image, via CSS
     */
     showRemovePreview: function(){
       try{
-        this.$el.addClass("remove");
+        this.$el.addClass("remove-preview");
       }
       catch (error) {
         console.error("Failed to preview the removal of an image edit view. Error message: " + error);
@@ -287,11 +287,11 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     },
 
     /**
-    * Removes the "remove" class which will hide the preview for removing this image, via CSS
+    * Removes the "remove-preview" class which will hide the preview for removing this image, via CSS
     */
     hideRemovePreview: function(e){
       try{
-        this.$el.removeClass("remove");
+        this.$el.removeClass("remove-preview");
       }
       catch (error) {
         console.error("Failed to preview the removal of an image edit view. Error message: " + error);
