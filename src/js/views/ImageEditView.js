@@ -230,13 +230,16 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
       try {
 
+        var view = this;
+
         // Remove the model
         this.parentModel.removePortalImage(this.model);
         // Remove the view
         this.$el.animate({width: "0px", overflow: "hidden"}, {
           duration: 250,
           complete: function(){
-            this.remove();
+            view.onClose();
+            view.remove();
           }
         });
 
@@ -248,22 +251,29 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
 
     /**
-     * showValidation - Show validation errors
+     * showValidation - show validation errors for this ImageEdit view
      */
     showValidation: function(){
 
-      // ToDo: highlight individual errors:
-      // var errors = this.model.validate();
+      try {
 
-      this.$(this.imageUploaderContainer).addClass("error");
+        var errors = this.model.validate();
 
-      var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
-      if(dropzoneMessage.find(".error").length === 0){
-        dropzoneMessage.prepend("<h5 class='error'>A logo is required</h5>");
+        if(errors && errors.length){
+          this.$(this.imageUploaderContainer).addClass("error");
+
+          var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
+          if(dropzoneMessage.find(".error").length === 0){
+            dropzoneMessage.prepend("<h5 class='error'>Please add an image</h5>");
+          }
+        }
+
+      } catch (e) {
+        console.log("Failed to validate portalImage, error: " + e);
       }
 
-    },
 
+    },
 
     /**
      * removeValidation - Removedisplayed validation errors, if any

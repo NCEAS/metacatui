@@ -104,7 +104,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
       //Render the PortEditorLogosView
       var logosView = new PortEditorLogosView({ model: this.model });
       logosView.render();
-      this.$(".logos-container").html(logosView.el);
+      this.$(".logos-container").html(logosView.el).data("view", logosView);
 
       //Save a reference to this view
       this.$el.data("view", this);

@@ -373,7 +373,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         };
 
         // Add the image view (incl. uploader) for the portal logo
-        this.logoUploader = new ImageEdit({
+        this.logoEdit = new ImageEdit({
           model: this.model.get("logo"),
           imageUploadInstructions: "Drag & drop a logo here or click to upload",
           imageWidth: 100,
@@ -383,13 +383,11 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           imageTagName: "img",
           removeButton: false
         });
-        this.$(this.portEditLogoContainer).append(this.logoUploader.el);
-        this.logoUploader.render();
-        this.$(this.portEditLogoContainer).data("view", this.logoUploader);
+        this.$(this.portEditLogoContainer).append(this.logoEdit.el);
+        this.logoEdit.render();
 
       } catch (e) {
-        console.log("logo editor view could not be rendered. Error message: " + e);
-        this.$(this.portEditLogoContainer).html(this.logoUploader.el)
+        console.log("Logo editor view could not be rendered. Error message: " + e);
       }
     },
 

@@ -233,7 +233,8 @@ define(["jquery",
 
           try{
 
-            var errors = {};
+            var errors = {},
+                requiredFields = MetacatUI.appModel.get("portalEditorRequiredFields");
 
             //--Validate the label--
             //Labels are always required
@@ -243,7 +244,7 @@ define(["jquery",
 
             //---Validate the title---
             //If section titles are required and there isn't one, set an error message
-            if( MetacatUI.appModel.get("portalEditorRequiredFields").sectionTitle &&
+            if( requiredFields.sectionTitle &&
                 typeof this.get("title") == "string" &&
                 !this.get("title").length ){
               errors.title = "Please provide a title for this page.";
@@ -251,7 +252,7 @@ define(["jquery",
 
             //---Validate the introduction---
             //If section introductions are required and there isn't one, set an error message
-            if( MetacatUI.appModel.get("portalEditorRequiredFields").sectionIntroduction &&
+            if( requiredFields.sectionIntroduction &&
                 typeof this.get("introduction") == "string" &&
                 !this.get("introduction").length ){
               errors.introduction = "Please provide some a sub-title or some introductory text for this page.";
@@ -271,9 +272,11 @@ define(["jquery",
               errors.content = "Please provide content for this page.";
             }
 
-            //TODO:
             //---Validate the section image---
 
+            if(requiredFields.sectionImage && (!this.get("image") || this.get("image").isEmpty())){
+              errors.sectionImage = "A section image is required."
+            }
 
             //Return the errors object
             if( Object.keys(errors).length )

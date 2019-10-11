@@ -1153,13 +1153,42 @@ define(["jquery",
                   }
                 }
 
+                //---Validate the acknowledgmentsLogo---
+
+                var nonEmptyAckLogos = this.get("acknowledgmentsLogos").filter(function(portalImage){
+                  return(!portalImage.isEmpty())
+                });
+
+                if(
+                  requiredFields.acknowledgmentsLogos &&
+                  !nonEmptyAckLogos.length
+                ){
+                  errors.acknowledgmentsLogos = "At least one partner logo image is required.";
+                }
+                else if (
+                  nonEmptyAckLogos &&
+                  nonEmptyAckLogos.length
+                ){
+
+                  _.each( nonEmptyAckLogos, function(ackLogo){
+
+                    // Validate the portal image model
+                    var ackLogoErrors = ackLogo.validate();
+
+                    // If there is at least one error, then add an error to the PortalModel error list
+                    if( ackLogoErrors && Object.keys(ackLogoErrors).length ){
+                      errors.acknowledgmentsLogosImages = "At least one acknowledgment logo has an error";
+                    }
+
+                  }, this);
+
+                }
+
                 //TODO: Validate these other elements, listed below, as they are added to the portal editor
 
                 //---Validate the associatedParties---
 
                 //---Validate the acknowledgments---
-
-                //---Validate the acknowledgmentsLogo---
 
                 //---Validate the award---
 
