@@ -73,15 +73,15 @@ define(["jquery",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
                             "mapShapeHue", "hideData", "hideMetrics", "hideMembers"],
                     // Portal view colors, as specified in the portal document options
-                    primaryColor: "#999999",
-                    secondaryColor: "#666666",
-                    accentColor: "#497ba7",
+                    primaryColor: "#1c456f",
+                    secondaryColor: "#2a69a7",
+                    accentColor: "#5fa0a7",
                     primaryColorRGB: null,
                     secondaryColorRGB: null,
                     accentColorRGB: null,
-                    primaryColorTransparent: "rgba(153, 153, 153, .7)",
-                    secondaryColorTransparent: "rgba(102, 102, 102, .7)",
-                    accentColorTransparent: "rgba(73, 123, 167, .7)"
+                    primaryColorTransparent: "rgba(28, 69, 111, .7)",
+                    secondaryColorTransparent: "rgba(42, 105, 167, .7)",
+                    accentColorTransparent: "rgba(95, 160, 167, .7)"
                 });
             },
 
