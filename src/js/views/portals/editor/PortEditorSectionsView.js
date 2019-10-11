@@ -85,7 +85,7 @@ function(_, $, Backbone, Portal, PortalSection,
     * A jQuery selector for the elements that are links to the individual sections
     * @type {string}
     */
-    sectionLinks: ".section-link",
+    sectionLinks: ".portal-section-link",
     /**
     * A jQuery selector for the element that the section links should be inserted into
     * @type {string}
@@ -124,15 +124,15 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     events: {
       "click .rename-section" : "renameSection",
-      "dblclick .section-link": "renameSection",
+      "dblclick .portal-section-link": "renameSection",
       "click .show-section"   : "showSection",
-      "click .section-link"   : "handleSwitchSection",
-      "focusout .section-link[contenteditable=true]" : "updateName",
+      "click .portal-section-link"   : "handleSwitchSection",
+      "focusout .portal-section-link[contenteditable=true]" : "updateName",
       "click .cancelled-section-removal" : "closePopovers",
       "click .confirmed-section-removal" : "removeSection",
       // both keyup and keydown events are needed for limitLabelLength function
-      "keyup .section-link[contenteditable=true]"    : "limitLabelInput",
-      "keydown .section-link[contenteditable=true]"  : "limitLabelInput"
+      "keyup .portal-section-link[contenteditable=true]"    : "limitLabelInput",
+      "keydown .portal-section-link[contenteditable=true]"  : "limitLabelInput"
     },
 
     /**
@@ -227,7 +227,8 @@ function(_, $, Backbone, Portal, PortalSection,
 
       // Replace the name "AddSection" with fontawsome "+" icon
       this.$el.find( this.sectionLinkContainer + "[data-section-name='AddPage'] a")
-              .html("<i class='icon icon-plus'></i>");
+              .html("<i class='icon icon-plus'></i>")
+              .attr("title", "Add a new page");
 
       // When a sectionOption is clicked in the addSectionView subview,
       // the "addNewSection" event is triggered.
@@ -746,7 +747,7 @@ function(_, $, Backbone, Portal, PortalSection,
           // If this is a newly added markdown section, highlight the section name
           // and make it content editable
           if(isFocused) {
-            var newSectionLink = $(newLink).children(".section-link");
+            var newSectionLink = $(newLink).children(".portal-section-link");
             newSectionLink.attr("contenteditable", true);
             newSectionLink.focus();
 
@@ -1101,7 +1102,7 @@ function(_, $, Backbone, Portal, PortalSection,
      * if user tries to exceed the limit. Also stops a user from entering
      * RETURN or TAB characters, and instead re-directs to updateName().
      * In the case of the TAB key, the focus moves to the title field.
-     * @param {Event} e - The keyup or keydown event when the user types in the section-link field
+     * @param {Event} e - The keyup or keydown event when the user types in the portal-section-link field
     */
     limitLabelInput: function(e){
 

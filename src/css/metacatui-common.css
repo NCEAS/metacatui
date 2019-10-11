@@ -2792,10 +2792,10 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-sections .section-link-container .menu:hover{
   display: block;
 }
-.port-editor-sections .section-link{
+.port-editor-sections .portal-section-link{
   display: inline-block;
 }
-.port-editor-sections .section-link-container .section-link[contenteditable=true]{
+.port-editor-sections .section-link-container .portal-section-link[contenteditable=true]{
 	box-shadow: 0 0 5px #00689d;
 	padding: 5px 10px;
 	margin: 5px 1px 3px 0px;
@@ -2809,22 +2809,21 @@ img[src*="googleapis.com/"].georegion-map{
   margin-right: 0px;
   padding-right: 9px;
 }
-.port-editor-sections .section-link-container .section-link,
-.port-editor-sections .section-link-container.active .section-link,
-.port-editor-sections .section-link-container.active .section-link:hover,
+.port-editor-sections .section-link-container .portal-section-link,
+.port-editor-sections .section-link-container.active .portal-section-link,
+.port-editor-sections .section-link-container.active .portal-section-link:hover,
 .port-editor-sections .section-link-container.active .section-menu-link,
 .port-editor-sections .section-link-container.active .section-menu-link:hover{
-  border: 0px;
+  border-color: transparent;
 }
-.port-editor-sections .section-link-container .section-link:hover,
+.port-editor-sections .section-link-container .portal-section-link:hover,
 .port-editor-sections .section-link-container .section-menu-link:hover{
   background-color: transparent;
-  border: 0px;
 }
 .port-editor-sections .section-link-container .dropdown-menu{
   width: 100%;
 }
-.section-link-container.error .section-link{
+.section-link-container.error .portal-section-link{
   color: #960303;
 }
 /* 'Add new section' icon  */
@@ -3249,6 +3248,10 @@ img[src*="googleapis.com/"].georegion-map{
 * Portals & Portal Editor (styles shared between both)
 ********************************************/
 
+.portal-editor #editor-header{
+  border-bottom: 0px;
+}
+
 /* Top level app navigation in the PortalView and EditorView */
 .Portal.Editor #Navbar,
 .PortalView #Navbar{
@@ -3355,12 +3358,11 @@ img[src*="googleapis.com/"].georegion-map{
 #portal-section-tabs{
   margin-bottom: 0px;
 }
-#portal-section-tabs li a {
+#portal-section-tabs .portal-section-link {
   background-color: transparent;
   border-radius: 0px;
-  border: 0px;
 }
-#portal-section-tabs a{
+#portal-section-tabs .portal-section-link{
   text-align: center;
 }
 .section-link-container{
@@ -3501,6 +3503,9 @@ i.toc-sub-item{
 	margin-left: 18px;
 	visibility: hidden;
 }
+.portal-view .portal-section-link {
+  width: 100%;
+}
 .portal-view .logo-row{
 	margin-bottom: 40px;
   display: flex;
@@ -3523,89 +3528,170 @@ i.toc-sub-item{
 }
 
 /*** Colors used in the Portal View ***/
-.portal-view .toc .icon{
+.portal-view .toc .icon,
+.portal-editor .toc .icon{
 	color: var(--portal-primary-color);
 }
-.portal-view a:hover{
+.portal-view a:hover,
+.portal-editor a:hover{
 	color: var(--portal-secondary-color);
 }
-.portal-view #portal-section-tabs li{
-  background-color: var(--portal-primary-color);
+#portal-section-tabs{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  border-bottom: 0px;
 }
-.portal-view #portal-section-tabs a:hover{
+#portal-section-tabs .section-link-container{
+  background-color: var(--portal-primary-color);
+  border: 0px;
+  margin-bottom: 0px;
+  flex-grow: 1;
+}
+#portal-section-tabs .section-link-container:hover,
+#portal-section-tabs .section-link-container:hover .portal-section-link,
+#portal-section-tabs .section-link-container:hover .section-menu-link{
   background-color: var(--portal-secondary-color);
   color: #FFF;
 }
-.portal-view #portal-section-tabs li.active{
+#portal-section-tabs .section-link-container.active{
   background-color: var(--portal-secondary-color);
 }
-.portal-view #portal-section-tabs a{
+#portal-section-tabs .portal-section-link,
+#portal-section-tabs .section-menu-link{
+	color: #FFF;
+  background-color: transparent;
+  margin-right: 0px;
+  float: left;
+  border: 0px;
+  cursor: pointer;
+}
+#portal-section-tabs .portal-section-link{
+  width: calc(100% - 35px);
+  box-sizing: border-box;
+}
+#portal-section-tabs .portal-section-link[contenteditable="true"]{
+  width: calc(100% - 45px);
+}
+#portal-section-tabs .section-menu-link{
+  width: 25px;
+}
+#portal-section-tabs .active .portal-section-link{
 	color: #FFF;
 }
-.portal-view #portal-section-tabs .active a{
-	color: #FFF;
+#portal-section-tabs .section-link-container.page-AddPage{
+  background-color: transparent;
+  flex-grow: unset;
+  margin-right: 40px;
 }
-.portal-view .toc-ul li > a:hover{
+#portal-section-tabs .section-link-container.page-AddPage .portal-section-link:hover,
+#portal-section-tabs .section-link-container.page-Settings .portal-section-link:hover{
+  background-color: transparent;
+  color: var(--portal-accent-color);
+}
+#portal-section-tabs .section-link-container.page-AddPage .portal-section-link,
+#portal-section-tabs .section-link-container.page-Settings .portal-section-link{
+  color: var(--portal-primary-color);
+  width: 100%;
+}
+#portal-section-tabs .section-link-container.page-Settings{
+  background-color: transparent;
+  flex-grow: unset;
+  width: 100px;
+}
+#portal-section-tabs .section-link-container .dropdown-menu>li>a{
+  color: var(--portal-primary-color);
+}
+#portal-section-tabs .section-link-container .dropdown-menu>li>a:hover{
+  background-image: none;
+  background-color: transparent;
+  color: var(--portal-secondary-color);
+}
+.portal-view .toc-ul li > a:hover,
+.portal-editor .toc-ul li > a:hover{
   background-color: var(--portal-secondary-color);
 }
-.portal-view .result-row .citation .title{
+.portal-view .result-row .citation .title,
+.portal-editor .result-row .citation .title{
 	color: var(--portal-primary-color);
 }
-.portal-view .applied-filter{
+.portal-view .applied-filter,
+.portal-editor .applied-filter{
 	background-color: var(--portal-primary-color);
 }
-.portal-view .filter-group-link a{
+.portal-view .filter-group-link a,
+.portal-editor .filter-group-link a{
 	color: var(--portal-primary-color);
 }
-.portal-view .filter-group-link a:hover{
+.portal-view .filter-group-link a:hover,
+.portal-editor .filter-group-link a:hover{
 	color: var(--portal-secondary-color);
 }
 .portal-view .filter-group-link.active a,
-.portal-view .filter-group-link.active a:hover{
+.portal-view .filter-group-link.active a:hover,
+.portal-editor .filter-group-link.active a,
+.portal-editor .filter-group-link.active a:hover{
 	color: inherit;
 }
 .portal-view .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch,
-.portal-view .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch{
+.portal-view .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch,
+.portal-editor .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch,
+.portal-editor .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch{
 	background-color: var(--portal-primary-color);
 }
-.portal-view .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch{
+.portal-view .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch,
+.portal-editor .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch{
 	background-color: var(--portal-secondary-color);
 }
-.portal-view .ui-slider-range{
+.portal-view .ui-slider-range,
+.portal-editor .ui-slider-range{
 	background-color: var(--portal-primary-color);
 }
 .portal-view .result-row .citation a:hover,
 .portal-view .result-row .citation a:hover .title,
-.portal-view .result-row .citation a:hover .id{
+.portal-view .result-row .citation a:hover .id,
+.portal-editor .result-row .citation a:hover,
+.portal-editor .result-row .citation a:hover .title,
+.portal-editor .result-row .citation a:hover .id{
 	color: var(--portal-secondary-color);
 }
-.portal-view .result-row .icon{
+.portal-view .result-row .icon,
+.portal-editor .result-row .icon{
 	color: #666;
 }
-.portal-view .profile .quick-stats circle{
+.portal-view .profile .quick-stats circle,
+.portal-editor .profile .quick-stats circle{
 	stroke:  var(--portal-primary-color);
 }
 .portal-view svg .packages,
-.portal-view .chart-title .packages{
+.portal-view .chart-title .packages,
+.portal-editor svg .packages,
+.portal-editor .chart-title .packages{
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
 }
-.portal-view svg circle.packages{
+.portal-view svg circle.packages,
+.portal-editor svg circle.packages{
 	fill: none;
 }
 .portal-view svg .metadata,
-.portal-view .fallback.metadata{
+.portal-view .fallback.metadata,
+.portal-editor svg .metadata,
+.portal-editor .fallback.metadata{
 	color: var(--portal-secondary-color);
 	fill: var(--portal-secondary-color);
 	stroke: var(--portal-secondary-color);
 }
-.portal-view .line-chart .line{
+.portal-view .line-chart .line,
+.portal-editor .line-chart .line{
 	fill: none;
 }
-.portal-view .line-chart text.line-chart-label{
+.portal-view .line-chart text.line-chart-label,
+.portal-editor .line-chart text.line-chart-label{
 	fill: #FFF;
 }
-.portal-view #portal-members a{
+.portal-view #portal-members a,
+.portal-editor #portal-members a{
 	color: var(--portal-primary-color);
 }
 .portal-list-container .logo{

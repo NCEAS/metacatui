@@ -190,8 +190,10 @@ define(["jquery",
                   //Create a navigation link
                   this.$("#portal-section-tabs").append(
                     $(document.createElement("li"))
+                      .addClass("section-link-container")
                       .append( $(document.createElement("a"))
                                  .text("Metrics")
+                                 .addClass("portal-section-link")
                                  .attr("id", "metrics-link")
                                  .attr("href", "#Metrics" )
                                  .attr("data-toggle", "tab")));
@@ -222,10 +224,6 @@ define(["jquery",
 
                 //Switch to the active section
                 this.switchSection();
-
-                //Space out the tabs evenly
-                var widthEach = 100/this.$("#portal-section-tabs").children().length;
-                this.$("#portal-section-tabs").children().css("width", widthEach + "%");
 
                 //Render the logos at the bottom of the portal page
                 var ackLogos = this.model.get("acknowledgmentsLogos") || [];
@@ -462,6 +460,7 @@ define(["jquery",
               //Create a navigation link
               this.$("#portal-section-tabs").append(
                 $(document.createElement("li"))
+                  .addClass("section-link-container")
                   .append( $(document.createElement("a"))
                              .text(label)
                              .attr("href", "#" + hrefLabel )

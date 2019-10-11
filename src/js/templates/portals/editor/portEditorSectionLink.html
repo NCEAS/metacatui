@@ -1,6 +1,6 @@
 <li class="section-link-container page-<%=uniqueLabel%>" data-section-id="<%=uniqueLabel%>"
   data-section-name="<%=sectionLabel%>" data-section-type="<%=sectionType%>">
-  <a href="<%=sectionURL%>" class="section-link">
+  <a href="<%=sectionURL%>" class="portal-section-link">
     <span class="error icon-exclamation-sign icon icon-on-left validation-error-icon hidden"></span>
     <% if( sectionLabel == "Settings" ){ %>
       <span class="icon-cog icon icon-on-left"></span>
@@ -14,35 +14,35 @@
     <ul class="dropdown-menu menu" role="menu">
         <% if(menuOptions.includes("Rename")){ %>
         <li>
-          <a href="#" class="rename-section">
+          <a href="#" class="rename-section" title="Rename this page">
             <i class="icon icon-on-left icon-pencil"></i> Rename
           </a>
         </li>
         <% } %>
         <% if(menuOptions.includes("Delete") && sectionType == "freeform"){ %>
         <li>
-          <a href="#" class="remove-section">
+          <a href="#" class="remove-section" title="Permanently delete this page">
             <i class="icon icon-on-left icon-remove"></i> Delete
           </a>
         </li>
         <% } %>
         <% if(menuOptions.includes("Delete") && sectionType != "freeform"){ %>
         <li>
-          <a href="#" class="remove-section confirmed-section-removal">
+          <a href="#" class="remove-section confirmed-section-removal" title="Permanently delete this page">
             <i class="icon icon-on-left icon-remove"></i> Delete
           </a>
         </li>
         <% } %>
         <% if(menuOptions.includes("Hide")){ %>
         <li>
-          <a href="#" class="remove-section">
+          <a href="#" class="remove-section" title="Hide this page">
             <i class="icon icon-on-left icon-eye-close"></i> Hide
           </a>
         </li>
         <% } %>
         <% if(menuOptions.includes("Show")){ %>
         <li>
-          <a href="#" class="show-section">
+          <a href="#" class="show-section" title="Show this page">
             <i class="icon icon-on-left icon-eye-open"></i> Show
           </a>
         </li>
