@@ -82,10 +82,9 @@ function(_, $, Backbone, PortalImage, ImageEdit){
 
         // Iterate over each logo in the PortalModel and render an ImageView
         _.each(this.model.get("acknowledgmentsLogos"), function(portalImage){
-
           this.renderAckLogoInput(portalImage);
-
         }, this);
+
       }
       catch(e){
         console.log("PortEditorLogosView failed to render, error message: " + e );
@@ -134,6 +133,7 @@ function(_, $, Backbone, PortalImage, ImageEdit){
           // it's the only place to add an acknowledgmentsLogo.
           $(imageEdit.el).find(".remove.icon").hide();
         }
+
       } catch (e) {
         console.log("Could not render an ImageEdit view for an acknowledgmentsLogo. Error message: " + e);
       }
@@ -164,47 +164,7 @@ function(_, $, Backbone, PortalImage, ImageEdit){
           return
         }
 
-        // Remove the model
-        var portalImage = $(e.target).parent().data("model");
-        this.model.removeAcknowledgementLogo(portalImage);
-
-        // Remove the div
-        $(e.target).parent().animate({width: "0px", overflow: "hidden"}, {
-          duration: 250,
-          complete: function(){
-
-            var view = $(this).data("view");
-            if( view.onClose )
-              view.onClose();
-
-            this.remove();
-
-          }
-        });
-
-      } catch (e) {
-        console.log("Failed to remove an acknowledgments logo. Error message:" + e) ;
-      }
-
-
-    },
-
-    /**
-     * handleNewInput - Called when a user enters any input into a new ImageEdit
-     * view. It removed the "new" class, shows the "remove" button, and adds a new
-     * ImageEdit with a blank PortalImage model.
-     *
-     * @param  {object} eOrEl either the keyup event when user enters text into a
-     * imageEdit input, OR the actual imageEdit element passed from imageEdit
-     * view when the user adds an image.
-     */
-    handleNewInput: function(eOrEl){
-
-      try {
-        var imageEditEl   = eOrEl.target ?
-                            $(eOrEl.target).closest(".edit-image.new") :
-                            $(eOrEl),
-            currentLogos  = this.model.get("acknowledgmentsLogos"),
+        var currentLogos  = this.model.get("acknowledgmentsLogos"),
             newLogo       = new PortalImage({ nodeName: "acknowledgmentsLogo" });
 
         // Remove the 'new' class
@@ -223,6 +183,20 @@ function(_, $, Backbone, PortalImage, ImageEdit){
       } catch (e) {
         console.log("Failed to handle user input in an acknowledgments logo imageEdit view. Error message: " + e);
       }
+
+    },
+
+
+    /**
+     * showValidation - Show validation errors for each logoView
+     */
+    showValidation: function(){
+
+      var logoViews = $(this.el).find(".edit-image");
+
+      _.each(logoViews, function(logoView){
+        $(logoView).data("view").showValidation();
+      });
 
     }
 

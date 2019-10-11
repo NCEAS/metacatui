@@ -166,6 +166,9 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
     },
 
+    /**
+     * showValidation - Display validation errors if any are retuned by the PortalSection model
+     */
     showValidation: function(){
       try{
         var errors = this.model.validate();

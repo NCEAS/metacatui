@@ -114,20 +114,26 @@ define(["jquery",
         validate: function(){
           try {
 
-            var errors = {};
+            var errors          = {},
+                label           = this.get("label"),
+                url             = this.get("associatedURL"),
+                id              = this.get("identifier"),
+                genericLabels   = ["logo", "image"], // not set by the user
+                hasLabel        = label && typeof label == "string" && !genericLabels.includes(label),
+                hasURL          = url && typeof url == "string",
+                hasId           = id && typeof id == "string";
 
-            if( // If there's an associateURL or a non-generic label but no identifier
-              ( this.get("associatedURL") || (this.get("label") && !this.get("label") == "logo") )  &&
-              (!this.get("identifier") || !typeof this.get("identifier") == "string")
-            ){
-              errors.identifier = "Images require an identifier"
+            // If none of the fields have values, the portalImage won't be serialized
+            if(!hasId && !hasURL && !hasLabel){
+              return
             }
-
-            //Return the errors object
-            if( Object.keys(errors).length )
-              return errors;
-            else{
-              return;
+            // As long as an image model has an ID, it's valid.
+            else if(hasId){
+              return
+            // If it has no ID, but a URL or Label, it's missing an image
+            }
+            else if (hasURL || hasLabel) {
+              return errors.identifier = "An image is required"
             }
 
           }
@@ -135,6 +141,20 @@ define(["jquery",
             console.error("Error validating a portal image. Error message:" + e);
             return;
           }
+        },
+
+
+        /**
+         * isEmpty - Returns true if the PortalImage model has no label, no associatedURL, and no identifier
+         *
+         * @return {boolean}  true if the model is empty, false if it has at least a label, url, or id      
+         */
+        isEmpty: function(){
+          return (
+            !this.get("label")          &&
+            !this.get("associatedURL")  &&
+            !this.get("identifier")
+          ) ;
         }
 
       });
