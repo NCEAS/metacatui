@@ -3162,7 +3162,7 @@ img[src*="googleapis.com/"].georegion-map{
 .editor-view.portal-editor div#Metrics svg{
 	width: 100%;
 	height: 400px;
-	margin: 20px;
+	margin-top: 40px;
 }
 
 /* Add section options */
