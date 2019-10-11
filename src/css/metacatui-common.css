@@ -3153,6 +3153,18 @@ img[src*="googleapis.com/"].georegion-map{
 	margin: 0;
 }
 
+/* Portal editor metrics page */
+
+
+.editor-view.portal-editor div#Metrics p {
+  margin: 20px;
+}
+
+.editor-view.portal-editor div#Metrics svg{
+	width: 100%;
+	height: 400px;
+	margin: 20px;
+}
 
 /* Add section options */
 
@@ -3211,37 +3223,37 @@ img[src*="googleapis.com/"].georegion-map{
 	margin: auto;
 }
 
-.section-option svg .theme-primary-fill{
+.port-editor-section svg .theme-primary-fill{
 	fill: #05446A
 }
-.section-option svg .theme-secondary-fill{
+.port-editor-section svg .theme-secondary-fill{
 	fill: #118AD5
 }
-.section-option svg .theme-accent-fill{
+.port-editor-section svg .theme-accent-fill{
 	fill: #05ab8f
 },
 
-.section-option svg .skintone-fill{
+.port-editor-section svg .skintone-fill{
 	fill: #72351c
 }
-.section-option svg .skintone2-fill{
+.port-editor-section svg .skintone2-fill{
 	fill: #9f7766
 }
 
 /* Disabled add section image fill color */
-.section-option.disabled svg .theme-primary-fill{
+.port-editor-section .disabled svg .theme-primary-fill{
 	fill: #3d3d3d
 }
-.section-option.disabled svg .theme-secondary-fill{
+.port-editor-section .disabled svg .theme-secondary-fill{
 	fill: #ebebeb
 }
-.section-option.disabled svg .theme-accent-fill{
+.port-editor-section .disabled svg .theme-accent-fill{
 	fill: #d6d6d6
 }
-.section-option.disabled svg .skintone-fill{
+.port-editor-section .disabled svg .skintone-fill{
 	fill: #575757
 }
-.section-option.disabled svg .skintone2-fill{
+.port-editor-section .disabled svg .skintone2-fill{
 	fill: #828282
 }
 

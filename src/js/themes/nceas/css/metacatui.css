@@ -62,13 +62,13 @@ input[type="password"]{
 
 /* Theme specific colours for the add section 'button' images */
 
-.section-option svg .theme-primary-fill{
+.port-editor-section svg .theme-primary-fill{
 	fill: #166194
 }
-.section-option svg .theme-secondary-fill{
+.port-editor-section svg .theme-secondary-fill{
 	fill: #67b8e5
 }
-.section-option svg .theme-accent-fill{
+.port-editor-section svg .theme-accent-fill{
 	fill: #f8e276
 },
 

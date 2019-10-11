@@ -9,11 +9,13 @@ define(['underscore',
         "views/portals/editor/PortEditorMdSectionView",
         "text!templates/portals/editor/portEditorSections.html",
         "text!templates/portals/editor/portEditorMetrics.html",
-        "text!templates/portals/editor/portEditorSectionLink.html"],
+        "text!templates/portals/editor/portEditorSectionLink.html",
+        "text!templates/portals/editor/portEditorSectionOptionImgs/metrics.svg"],
 function(_, $, Backbone, Portal, PortalSection,
           PortEditorSectionView, PortEditorSettingsView, PortEditorDataView,
           PortEditorMdSectionView,
-          Template, MetricsSectionTemplate, SectionLinkTemplate){
+          Template, MetricsSectionTemplate, SectionLinkTemplate,
+          MetricsSVG){
 
   /**
   * @class PortEditorSectionsView
@@ -132,7 +134,8 @@ function(_, $, Backbone, Portal, PortalSection,
       "click .confirmed-section-removal" : "removeSection",
       // both keyup and keydown events are needed for limitLabelLength function
       "keyup .section-link[contenteditable=true]"    : "limitLabelInput",
-      "keydown .section-link[contenteditable=true]"  : "limitLabelInput"
+      "keydown .section-link[contenteditable=true]"  : "limitLabelInput",
+      "click #link-to-data"                          :  "navigateToData"
     },
 
     /**
@@ -443,10 +446,13 @@ function(_, $, Backbone, Portal, PortalSection,
         });
 
         this.metricsView.$el.attr("id", "Metrics");
-        this.$(this.sectionsContainer).append(this.metricsView.el)
+        this.$(this.sectionsContainer).append(this.metricsView.el);
 
         //Render the view
         this.metricsView.render();
+
+        // Insert the metrics illustration
+        $(this.metricsView.el).find(".metrics-figure-container").html(MetricsSVG);
 
         // Add the data section to the list of subviews
         this.subviews.push(this.metricsView);
@@ -466,6 +472,16 @@ function(_, $, Backbone, Portal, PortalSection,
       //When the metrics section has been toggled, remove or add the link
       this.toggleMetricsLink();
 
+    },
+
+
+    /**
+     * navigateToData - Navigate to the data tab.
+     */
+    navigateToData: function(){
+      if(this.dataView){
+        this.switchSection(this.dataView);
+      }
     },
 
     /**
