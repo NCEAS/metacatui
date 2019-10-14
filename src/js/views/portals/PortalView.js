@@ -475,75 +475,93 @@ define(["jquery",
              */
             renderMetricsView: function() {
 
-              if( this.model.get("hideMetrics") == true ) {
-                return;
-              }
+              try{
 
-              //If this subview is already rendered, exit
-              if( this.sectionMetricsView ){
-                return;
-              }
-
-              //Add a loading message to the metrics tab since it can take a while for the metrics query to be sent
-              this.$("#Metrics").html(this.loadingTemplate({
-                msg: "Getting metrics..."
-              }));
-
-              //If the search results haven't been fetched yet, wait. We need the
-              // facet counts for the metrics view.
-              if( !this.model.get("searchResults").length ){
-                this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetricsView );
-                return;
-              }
-
-              //Get all the facet counts from the search results collection
-              var facetCounts = this.model.get("allSearchResults").facetCounts,
-                  //Get the id facet counts
-                  idFacets = facetCounts? facetCounts.id : [],
-                  //Get the documents facet counts
-                  documentsFacets = facetCounts? facetCounts.documents : [],
-                  //Start an array to hold all the ids
-                  allIDs = [];
-
-              //If there are resource map facet counts, get all the ids
-              if( idFacets && idFacets.length ){
-
-                //Merge the id and documents arrays
-                var allFacets = idFacets.concat(documentsFacets);
-
-                //Get all the ids, which should be every other element in the
-                // facets array
-                for( var i=0; i < allFacets.length; i+=2 ){
-                  allIDs.push( allFacets[i] );
+                if( this.model.get("hideMetrics") == true ) {
+                  return;
                 }
 
-                //Create a search model that filters by all the data object Ids
+                //If this subview is already rendered, exit
+                if( this.sectionMetricsView ){
+                  return;
+                }
+
+                //Add a loading message to the metrics tab since it can take a while for the metrics query to be sent
+                this.$("#Metrics").html(this.loadingTemplate({
+                  msg: "Getting metrics..."
+                }));
+
+                // If the search results haven't been fetched yet, wait.
+                if( !this.model.get("searchResults").header ){
+                  this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetricsView );
+                  return;
+                }
+
+                // If there are no datasets in the portal collection
+                if(this.model.get("searchResults").header.get("numFound") == 0 ){
+                      // The description for when there is no data in the collection
+                  var description = "There are no datasets in " + this.model.get("label") + " yet.",
+                      // use a dummy-ID to create a 'no-activity' metrics view
+                      allIDs = "0";
+                }
+
+                // For portals with data in the collection
+                else {
+                      // The description to use for a portal with data
+                  var description = "A summary of all datasets from " + this.model.get("label"),
+                      // Get all the facet counts from the search results collection
+                      facetCounts = this.model.get("allSearchResults").facetCounts,
+                      //Get the id facet counts
+                      idFacets = facetCounts? facetCounts.id : [],
+                      //Get the documents facet counts
+                      documentsFacets = facetCounts? facetCounts.documents : [],
+                      //Start an array to hold all the ids
+                      allIDs = [];
+
+                  //If there are resource map facet counts, get all the ids
+                  if( idFacets && idFacets.length ){
+
+                    //Merge the id and documents arrays
+                    var allFacets = idFacets.concat(documentsFacets);
+
+                    //Get all the ids, which should be every other element in the
+                    // facets array
+                    for( var i=0; i < allFacets.length; i+=2 ){
+                      allIDs.push( allFacets[i] );
+                    }
+                  }
+
+                }
+
+                // Create a search model that filters by all the data object Ids
                 var statsSearchModel = new SearchModel({
                   idOnly: allIDs,
                   formatType: [],
                   exclude: []
                 });
 
-                //Create a StatsModel
+                // Create a StatsModel
                 var statsModel = new StatsModel({
                   query: statsSearchModel.getQuery(),
                   searchModel: statsSearchModel,
                   supportDownloads: false
                 });
 
+                // Add a stats view
+                this.sectionMetricsView = new StatsView({
+                    title: "Statistics and Figures",
+                    description: description,
+                    el: "#Metrics",
+                    model: statsModel
+                });
+
+                this.sectionMetricsView.render();
+                this.subviews.push(this.sectionMetricsView);
+
               }
-
-              // add a stats view
-              this.sectionMetricsView = new StatsView({
-                  title: "Statistics and Figures",
-                  description: "A summary of all datasets from " + this.model.get("label"),
-                  el: "#Metrics",
-                  model: statsModel
-              });
-
-              this.sectionMetricsView.render();
-
-              this.subviews.push(this.sectionMetricsView);
+              catch(e){
+                console.log("Failed to render the metrics view. Error message: " + e);
+              }
 
             },
 
