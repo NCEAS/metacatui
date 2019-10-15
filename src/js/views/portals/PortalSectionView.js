@@ -125,8 +125,8 @@ define(["jquery",
 
           tocView.render();
 
-          //If at least one link was created in the TOCView, add it to this view
-          if( tocView.$el.find("a").length ){
+          //If more than one link was created in the TOCView, add it to this view
+          if( tocView.$el.find("a").length > 1){
             this.$(".portal-section-content").prepend(tocView.el);
 
             //Make a two-column layout
