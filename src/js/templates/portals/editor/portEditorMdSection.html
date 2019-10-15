@@ -121,5 +121,18 @@ block </pre></code></td>
   </div>
 
   <p class="error notification" data-category="content"></p>
-  <textarea rows="50" type="text" data-category="markdown" class="basic-text markdown" placeholder="<%=markdownPlaceholder%>" data-category="content"><%=markdown%></textarea>
+  <div class="tabbable">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#markdown-edit-<%=cid%>" data-toggle="tab">Edit</a></li>
+      <li id="markdown-preview-link"><a href="#markdown-preview-<%=cid%>" data-toggle="tab">Preview</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="markdown-edit-<%=cid%>">
+        <textarea rows="50" type="text" data-category="markdown" class="basic-text markdown" placeholder="<%=markdownPlaceholder%>" data-category="content"><%=markdown%></textarea>
+      </div>
+      <div class="tab-pane row-fluid" id="markdown-preview-<%=cid%>">
+        Preview will show here
+      </div>
+    </div>
+  </div>
 </div>

@@ -5,8 +5,9 @@ define(['underscore',
         "models/portals/PortalImage",
         "views/portals/editor/PortEditorSectionView",
         "views/ImageEditView",
+        "views/portals/PortalSectionView",
         "text!templates/portals/editor/portEditorMdSection.html"],
-function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView, ImageEdit, Template){
+function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView, ImageEdit, PortalSectionView, Template){
 
   /**
   * @class PortEditorMdSectionView
@@ -66,6 +67,8 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
     * @type {Object}
     */
     events: {
+      // update the markdown preview each time the preview tab is clicked.
+      "click #markdown-preview-link"   :     "previewMarkdown"
     },
 
     /**
@@ -163,6 +166,27 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
         console.log("The markdown view could not be rendered, error message: " + e);
       }
 
+
+    },
+
+    /**
+     * previewMarkdown - render the markdown preview.
+     */
+    previewMarkdown: function(){
+
+      try{
+        var markdownPreview = new PortalSectionView({
+          model: this.model,
+          template: _.template('<div class="portal-section-content"></div>')
+        });
+        //Render the section
+        markdownPreview.render();
+        //Add the section view to this portal view
+        this.$("#markdown-preview-"+this.model.cid).html(markdownPreview.el);
+      }
+      catch(e){
+        console.log("Failed to preview markdown content. Error message: " + e);
+      }
 
     },
 

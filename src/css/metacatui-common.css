@@ -3073,7 +3073,8 @@ img[src*="googleapis.com/"].georegion-map{
   opacity: 0.4;
 }
 
-.port-editor-md .markdown{
+/* the markdown editor textarea field */
+.port-editor-md textarea.markdown{
 	margin: 20px;
 	width: calc(100% - 40px);
 	line-height: 1.6em;
@@ -3350,6 +3351,76 @@ img[src*="googleapis.com/"].georegion-map{
 	font-weight: 300;
 }
 
+/* markdown section table of contents (portal and portal editor) */
+.Editor.Portal .toc-view.affix,
+.portal-section-content .toc-view.affix{
+  top: 20px;
+}
+.Editor.Portal .toc-view.affix-bottom,
+.portal-section-content .toc-view.affix-bottom{
+  top: 20px;
+  position: fixed;
+}
+.Editor.Portal .toc-view.span3.affix + .span9,
+.Editor.Portal .toc-view.span3.affix-bottom + .span9,
+.portal-section-content .toc-view.span3.affix + .span9,
+.portal-section-content .toc-view.span3.affix-bottom + .span9{
+  margin-left: 26.5%;
+}
+.Editor.Portal .toc-ul,
+.portal-view .toc-ul{
+	position: sticky;
+	position: -webkit-sticky;
+  background-color: var(--portal-primary-color);
+  margin-left: -20px;
+  padding: 0px;
+}
+.Editor.Portal .toc-ul > li > a,
+.portal-view .toc-ul > li > a{
+  padding-left: 20px;
+  padding-right: 20px;
+  margin: 0px;
+}
+.Editor.Portal .toc-ul a,
+.portal-view .toc-ul a{
+  line-height: 2em;
+}
+.Editor.Portal .toc-ul > li > ul,
+.portal-view .toc-ul > li > ul{
+  margin-left: 0px;
+  list-style: none;
+}
+.Editor.Portal .toc-ul > li > ul > li > a,
+.portal-view .toc-ul > li > ul > li > a{
+  padding-left: 40px;
+}
+.Editor.Portal .toc-ul li,
+.Editor.Portal .toc-ul a,
+.portal-view .toc-ul li,
+.portal-view .toc-ul a{
+  background-color: transparent;
+  color: #FFF;
+  border:0px;
+  border-radius: 0px;
+  text-shadow: none;
+}
+.Editor.Portal .toc-ul a:hover,
+.portal-view .toc-ul a:hover{
+  color: #FFF;
+  background-color: transparent;
+}
+.toc a{
+	color: #555;
+}
+.toc .icon{
+	color: #069;
+}
+i.toc-sub-item{
+	margin-left: 18px;
+	visibility: hidden;
+}
+/* end of markdown section table of contents */
+
 /******************************************
 * Portals
 ********************************************/
@@ -3460,61 +3531,7 @@ img[src*="googleapis.com/"].georegion-map{
 	background: inherit;
 	margin: 20px;
 }
-.portal-section-content .toc-view.affix{
-  top: 20px;
-}
-.portal-section-content .toc-view.affix-bottom{
-  top: 20px;
-  position: fixed;
-}
-.portal-section-content .toc-view.span3.affix + .span9,
-.portal-section-content .toc-view.span3.affix-bottom + .span9{
-  margin-left: 26.5%;
-}
-.portal-view .toc-ul{
-	position: sticky;
-	position: -webkit-sticky;
-  background-color: var(--portal-primary-color);
-  margin-left: -20px;
-  padding: 0px;
-}
-.portal-view .toc-ul > li > a{
-  padding-left: 20px;
-  padding-right: 20px;
-  margin: 0px;
-}
-.portal-view .toc-ul a{
-  line-height: 2em;
-}
-.portal-view .toc-ul > li > ul{
-  margin-left: 0px;
-  list-style: none;
-}
-.portal-view .toc-ul > li > ul > li > a{
-  padding-left: 40px;
-}
-.portal-view .toc-ul li,
-.portal-view .toc-ul a{
-  background-color: transparent;
-  color: #FFF;
-  border:0px;
-  border-radius: 0px;
-  text-shadow: none;
-}
-.portal-view .toc-ul a:hover{
-  color: #FFF;
-  background-color: transparent;
-}
-.toc a{
-	color: #555;
-}
-.toc .icon{
-	color: #069;
-}
-i.toc-sub-item{
-	margin-left: 18px;
-	visibility: hidden;
-}
+
 .portal-view .portal-section-link {
   width: 100%;
 }
