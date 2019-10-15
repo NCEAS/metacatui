@@ -556,8 +556,7 @@ define(["jquery",
     },
 
     /**
-     * Queries solr to check whether a label is already in use.
-     * Also checks that a label does not equal a restricted value
+     * Checks that a label does not equal a restricted value
      * (e.g. new temporary name), and that it's encoded properly
      * for use as part of a url
      *
@@ -569,8 +568,14 @@ define(["jquery",
       try{
 
         //Validate the label set on the model if one isn't given
-        if( typeof this.get("label") != "string" ){
+        if(typeof label != "string" ){
           var label = this.get("label");
+          if(typeof label != "string" ){
+            //Trigger an error event
+            this.trigger("errorValidatingLabel");
+            console.error("error validating label, label must be a string");
+            return
+          }
         }
 
         //If the label is empty

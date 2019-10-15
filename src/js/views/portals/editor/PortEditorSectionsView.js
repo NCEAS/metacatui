@@ -524,11 +524,8 @@ function(_, $, Backbone, Portal, PortalSection,
       }
 
       //Create a PortEditorSettingsView
-      // Pass on the 'newPortalTempName', so that it can be used as a
-      // restricted label during label validation
       var settingsView = new PortEditorSettingsView({
         model: this.model,
-        newPortalTempName: this.newPortalTempName,
         uniqueSectionLabel: "Settings"
       });
 

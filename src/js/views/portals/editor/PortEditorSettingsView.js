@@ -75,10 +75,12 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     */
     initialize: function(options){
 
-      //Call the superclass initialize() function
-      PortEditorSectionView.prototype.initialize(options);
-
-
+      try {
+        //Call the superclass initialize() function
+        PortEditorSectionView.prototype.initialize(options);
+      } catch (e) {
+        console.log("Error initializing the portal editor settings view. Error message: " + e);
+      }
     },
 
     /**
@@ -86,28 +88,38 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     */
     render: function(){
 
-      //Insert the template into the view
-      var portalTermSingular = MetacatUI.appModel.get("portalTermSingular");
-      this.$el.html(this.template({
-        label: this.model.get("label"),
-        description: this.model.get("description"),
-        portalTermPlural: MetacatUI.appModel.get("portalTermPlural"),
-        portalTermSingular: MetacatUI.appModel.get("portalTermSingular")
-      }));
+      try {
+        //Insert the template into the view
+        var portalTermSingular = MetacatUI.appModel.get("portalTermSingular");
+        this.$el.html(this.template({
+          label: this.model.get("label"),
+          description: this.model.get("description"),
+          portalTermPlural: MetacatUI.appModel.get("portalTermPlural"),
+          portalTermSingular: MetacatUI.appModel.get("portalTermSingular")
+        }));
 
-      //Render the AccessPolicyView
-      //TODO: Get the AccessPolicy collection for this PortalModel and send it to the view
-      var accessPolicyView = new AccessPolicyView();
-      accessPolicyView.render();
-      this.$(".permissions-container").html(accessPolicyView.el);
+        //Render the AccessPolicyView
+        //TODO: Get the AccessPolicy collection for this PortalModel and send it to the view
+        var accessPolicyView = new AccessPolicyView();
+        accessPolicyView.render();
+        this.$(".permissions-container").html(accessPolicyView.el);
 
-      //Render the PortEditorLogosView
-      var logosView = new PortEditorLogosView({ model: this.model });
-      logosView.render();
-      this.$(".logos-container").html(logosView.el).data("view", logosView);
+        //Render the PortEditorLogosView
+        var logosView = new PortEditorLogosView({ model: this.model });
+        logosView.render();
+        this.$(".logos-container").html(logosView.el).data("view", logosView);
 
-      //Save a reference to this view
-      this.$el.data("view", this);
+        //Save a reference to this view
+        this.$el.data("view", this);
+
+        // If it's a new model, it won't have a label (URL) yet. Display the label
+        // input field so the user doesn't miss it.
+        if (this.model.get("isNew")) {
+          this.changeLabel();
+        }
+      } catch (e) {
+        console.log("Error rendering the portal editor settings view. Error message: "+ e);
+      }
 
     },
 
@@ -118,15 +130,48 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
      */
     removeLabelValidation: function(e){
 
-      var container = this.$(".label-container"),
-          messageEl = $(container).find('.notification');
+      try {
+        var container = this.$(".label-container"),
+            messageEl = $(container).find('.notification');
 
-      // Remove input formating if there was any
-      messageEl.html("");
-      container.removeClass("error");
-      container.removeClass("success");
-      container.find(".error").removeClass("error");
-      container.find(".success").removeClass("success");
+        // Remove input formating if there was any
+        messageEl.html("");
+        container.removeClass("error");
+        container.removeClass("success");
+        container.find(".error").removeClass("error");
+        container.find(".success").removeClass("success");
+
+        if(!this.model.get("isNew")){
+          // Ensure that the OK button is showing, may be hidden if a previous
+          // attempt to change the label resulted in an error
+          this.$(".ok-change-label").show();
+        }
+      } catch (error) {
+        console.log("Error removing label validation, error message: " + error);
+      }
+
+    },
+
+
+    /**
+     * showLabelValidationError - add css formatting and hide OK button when there are errors in label validation.
+     *
+     * @param {Event} e - The keyup or focusout event
+     */
+    showLabelValidationError: function(e){
+
+      try {
+        var container = this.$(".label-container"),
+            input = container.find('input'),
+            messageEl = container.find('.notification'),
+            okButton = container.find('.ok-change-label');
+
+        messageEl.addClass("error");
+        input.addClass("error");
+        okButton.hide();
+      } catch (error) {
+        console.log("Error showing label validation error, message: " + error);
+      }
 
     },
 
@@ -139,124 +184,155 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
      */
     showLabelValidation: function(e){
 
-      var container = this.$(".label-container"),
-          input = $(container).find('input'),
-          messageEl = $(container).find('.notification'),
-          value = input.val();
+      try{
+        var container = this.$(".label-container"),
+            input = container.find('input'),
+            messageEl = container.find('.notification'),
+            value = input.val(),
+            model = this.model;
 
-      //If the label is unchanged, remove the validation messaging and exit
-      if( value == this.model.get("originalLabel") ){
-        this.removeLabelValidation(e);
-        return;
-      }
-
-      //If there is an error checking the validity, display a message
-      this.listenToOnce(this.model, "errorValidatingLabel", function(){
-        var email = MetacatUI.appModel.get('emailContact');
-        messageEl.html("There was a problem checking the availablity of this URL. " +
-                       "Please try again or <a href='mailto:" + email + "'> contact us at " +
-                       email + "</a>.")
-                 .removeClass("success")
-                 .addClass("error");
-        input.addClass("error");
-      });
-
-      //Validate the label string
-      var error = this.model.validateLabel(value, [this.newPortalTempName]);
-
-      //If there is an error, display it and exit
-      if( error ){
-        messageEl.html(error)
-                 .removeClass("success")
-                 .addClass("error");
-        input.addClass("error");
-        return;
-      }
-
-      this.listenToOnce(this.model, "labelAvailable", function(){
-        messageEl.html("<i class='icon-check'></i> This URL is available")
-                 .removeClass("error")
-                 .addClass("success");
-      });
-
-      this.listenToOnce(this.model, "labelTaken", function(){
-        messageEl.html("This URL is already taken, please try something else")
-                 .removeClass("success")
-                 .addClass("error");
-
-        input.addClass("error");
-
-        //Manually add the validation error message since this check is done outside of the validate() function
-        if( typeof this.model.validationError == "object" && this.model.validationError !== null ){
-          this.model.validationError.label = "This URL is already taken, please try something else";
+        //If the label is unchanged, remove the validation messaging and exit
+        if( value == this.model.get("originalLabel") ){
+          this.removeLabelValidation(e);
+          return;
         }
-        else{
-          this.model.validationError = {
-            label: "This URL is already taken, please try something else"
+
+        //If there is an error checking the validity, display a message
+        this.listenToOnce(this.model, "errorValidatingLabel", function(){
+          this.removeLabelValidation(e);
+          var email = MetacatUI.appModel.get('emailContact');
+          messageEl.html("There was a problem checking the availablity of this URL. " +
+                         "Please try again or <a href='mailto:" + email + "'> contact us at " +
+                         email + "</a>.");
+          this.showLabelValidationError(e);
+        });
+
+        // Validate the label string
+        var error = this.model.validateLabel(value);
+
+        // If there is an error, display it and exit
+        if( error ){
+          this.removeLabelValidation(e);
+          this.showLabelValidationError(e);
+          messageEl.html(error);
+          return;
+        }
+
+        // If there are no validation errors, check label availability
+
+        // Success
+        this.listenToOnce(this.model, "labelAvailable", function(){
+          this.removeLabelValidation(e);
+          messageEl.html("<i class='icon-check'></i> This URL is available")
+                   .addClass("success");
+          // Make sure the OK button is enabled
+          if(!this.model.isNew()){
+            this.$(".ok-change-label").show();
           }
-        }
-      });
+        });
 
-      // Validate label. The newPortalTempName is a restricted value.
-      this.model.checkLabelAvailability(value);
+        // Error: label taken
+        this.listenToOnce(this.model, "labelTaken", function(){
+          this.removeLabelValidation(e);
+          this.showLabelValidationError(e);
+          messageEl.html("This URL is already taken, please try something else");
 
-      // Show 'checking URL' message
-      messageEl.html(
-        "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
-        "Checking if URL is available"
-      );
+          //Manually add the validation error message since this check is done outside of the validate() function
+          if( typeof this.model.validationError == "object" && this.model.validationError !== null ){
+            this.model.validationError.label = "This URL is already taken, please try something else";
+          }
+          else{
+            this.model.validationError = {
+              label: "This URL is already taken, please try something else"
+            }
+          }
+        });
+
+        // Check label availability
+        this.model.checkLabelAvailability(value);
+
+        // Show 'checking URL' message
+        messageEl.html(
+          "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
+          "Checking if URL is available"
+        );
+      }
+      catch(error){
+        console.log("Error validating the label, error message: " + error);
+      }
     },
 
     /**
      * Makes the portal label editable whenever the `change url` button is clicked
      */
     changeLabel: function(){
-      //Get the label at this point in time
-      this.model.set("latestLabel", this.model.get("label"));
+      try {
+        //Get the label at this point in time
+        this.model.set("latestLabel", this.model.get("label"));
 
-      //Hide the label display and Change button
-      this.$(".display-label, .change-label").hide();
-      //Show the input and controls
-      this.$(".label-container").show();
+        //Hide the label display and Change button
+        this.$(".display-label, .change-label").hide();
+        //Show the input and controls
+        this.$(".label-container").show();
+
+        // If the model is new, hide the Cancel and Ok buttons.
+        if (this.model.get("isNew")) {
+          this.$(".ok-change-label").hide();
+          this.$(".cancel-change-label").hide();
+        }
+      } catch (e) {
+        console.log("Error changing label, error message: " + e);
+      }
     },
 
     /**
      * Cancels changing the portal label
      */
     cancelChangeLabel: function(){
-      //Reset the label
-      this.model.set("label", this.model.get("latestLabel"));
-      this.$(".label-container input").val(this.model.get("label"));
+      try {
+        //Reset the label
+        this.model.set("label", this.model.get("latestLabel"));
+        this.$(".label-container input").val(this.model.get("label"));
 
-      //Validate the label
-      this.showLabelValidation();
+        //Validate the label
+        this.showLabelValidation();
 
-      //Show the label display and Change button
-      this.$(".display-label, .change-label").show();
-      //Hide the input and controls
-      this.$(".label-container").hide();
+        //Show the label display and Change button
+        this.$(".display-label, .change-label").show();
+        // Ensure that the OK button is showing, may be hidden if a previous
+        // attempt to change the label resulted in an error
+        this.$(".ok-change-label").show();
+        //Hide the input and controls
+        this.$(".label-container").hide();
+      } catch (e) {
+        console.log("Error cancelling the changes to label, error message: " + e);
+      }
     },
 
     /**
      * Shows the portal label as saved
      */
     okChangeLabel: function(){
-      //Show the label display and Change button
-      this.$(".display-label, .change-label").show();
-      //Hide the input and controls
-      this.$(".label-container").hide();
+      try {
+        //Show the label display and Change button
+        this.$(".display-label, .change-label").show();
+        //Hide the input and controls
+        this.$(".label-container").hide();
 
-      //If there is a validation error with the label, revert it back
-      if( this.model.validationError && this.model.validationError.label ){
-        this.model.set("label", this.model.get("latestLabel"));
-        this.$(".label-container input").val(this.model.get("label"));
-      }
-      else{
-        this.$(".display-label-value").text(this.model.get("label"));
-      }
+        //If there is a validation error with the label, revert it back
+        if( this.model.validationError && this.model.validationError.label ){
+          this.model.set("label", this.model.get("latestLabel"));
+          this.$(".label-container input").val(this.model.get("label"));
+        }
+        else{
+          this.$(".display-label-value").text(this.model.get("label"));
+        }
 
-      //Validate the label
-      this.showLabelValidation();
+        //Validate the label
+        this.showLabelValidation();
+      } catch (e) {
+        console.log("Error showing the portal label as saved, error message: " + e);
+      }
     }
 
   });

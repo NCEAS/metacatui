@@ -1217,10 +1217,14 @@ define(["jquery",
             */
             checkLabelAvailability: function(label){
 
-              if( typeof label != "string" ){
+              //Validate the label set on the model if one isn't given
+              if(!label || typeof label != "string" ){
                 var label = this.get("label");
-                if( !label || typeof label != "string" ){
-                  return;
+                if(!label || typeof label != "string" ){
+                  //Trigger an error event
+                  this.trigger("errorValidatingLabel");
+                  console.error("error validating label, no label provided");
+                  return
                 }
               }
 
