@@ -135,7 +135,7 @@ function(_, $, Backbone, Portal, PortalSection,
       // both keyup and keydown events are needed for limitLabelLength function
       "keyup .portal-section-link[contenteditable=true]"    : "limitLabelInput",
       "keydown .portal-section-link[contenteditable=true]"  : "limitLabelInput",
-      "click #link-to-data"                          :  "navigateToData"
+      "click #link-to-data"                                 :  "navigateToData"
     },
 
     /**
@@ -191,6 +191,9 @@ function(_, $, Backbone, Portal, PortalSection,
         //Switch to the default section
         this.switchSection();
       }
+
+      // Disable the delete/hide section option if there is only one section
+      this.toggleRemoveSectionOption();
 
     },
 
@@ -807,6 +810,53 @@ function(_, $, Backbone, Portal, PortalSection,
     },
 
     /**
+     * toggleRemoveSectionOption - Disables the hide and remove option from
+     * section link if it's the only section left. Re-enables the remove/hide
+     * link when a new section is added. Called on initial render and each time
+     * a section is added, removed, shown, or hidden.
+     */
+    toggleRemoveSectionOption: function(){
+      try {
+
+        // Determine the number of pages (sections + metrics + data)
+        var totalPages         = this.model.get("sections").length +
+                                  !this.model.get("hideMetrics") +
+                                  !this.model.get("hideData"),
+            removeSectionLinks = this.$("li.section-link-container")
+                                  .find(".remove-section");
+
+        // If there's just one section, hide the delete and hide option on last
+        // remaining section link
+        if(totalPages == 1){
+
+          removeSectionLinks.addClass("disabled");
+
+          if(!removeSectionLinks.closest("li").find(".tooltip").length){
+            removeSectionLinks.closest("li").tooltip({
+              placement: "bottom",
+              trigger: "hover",
+              title: "At least one displayed page is required. To remove this page, first add or show another page."
+            });
+          }
+
+        // If there are 2 sections, re-show the delete or hide options.
+        } else if(totalPages == 2){
+
+          removeSectionLinks.removeClass("disabled");
+          removeSectionLinks.closest("li").tooltip("destroy");
+
+        // If there are three or more pages, nothing needs to be changed.
+        } else {
+          return
+        }
+
+
+      } catch (e) {
+        console.log("Failure to show/hide the remove section option. Error message: " + e);
+      }
+    },
+
+    /**
     * Add a link to the given editor section
     * @param {PortEditorSectionView} sectionView - The view to add a link to
     * @param {string[]} menuOptions - An array of menu options for this section. e.g. Rename, Delete
@@ -950,6 +1000,10 @@ function(_, $, Backbone, Portal, PortalSection,
               break;
           }
 
+          // If the section we just added is now one of two sections, re-enable
+          // the hide/delete button on the other section link.
+          this.toggleRemoveSectionOption();
+
         }
         else{
           return;
@@ -1026,6 +1080,11 @@ function(_, $, Backbone, Portal, PortalSection,
         } catch (error) {
           console.error(error);
         }
+
+        // If the section just removed was the second-to-last section, disable
+        // the hide/delete button on the last section link.
+        this.toggleRemoveSectionOption();
+
       }
       catch(e){
         console.error(e);
@@ -1058,6 +1117,11 @@ function(_, $, Backbone, Portal, PortalSection,
 
         //Mark this section as shown
         this.model.addSection(section);
+
+        // If the section we're now showing is now one of two sections, re-enable
+        // the hide/delete button on the other section link.
+        this.toggleRemoveSectionOption();
+
       }
       catch(e){
         console.error(e);

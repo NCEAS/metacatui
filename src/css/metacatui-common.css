@@ -2826,6 +2826,12 @@ img[src*="googleapis.com/"].georegion-map{
 .section-link-container.error .portal-section-link{
   color: #960303;
 }
+
+#portal-section-tabs .section-link-container .dropdown-menu>li>a.remove-section.disabled{
+	background: #f9f9f9;
+	color: #c4c4c4;
+}
+
 /* 'Add new section' icon  */
 .port-editor-sections .icon.icon-plus {
 	margin: 0 1px 0 1px;
