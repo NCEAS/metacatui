@@ -625,6 +625,109 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Send the Save request
               Backbone.Model.prototype.save.call(this, null, requestSettings);
         },
+        /*
+          * Updates the DataONEObject System Metadata to the server
+          */
+        updateSysMeta: function (attributes, options) {
+                var formData = new FormData();
+
+                //Add the identifier to the XHR data
+                formData.append("pid", this.get("id"));
+
+                var sysMetaXML = this.serializeSysMeta({systemMetadataOnly: true});
+
+                //Send the system metadata as a Blob
+                var xmlBlob = new Blob([sysMetaXML], {type: 'application/xml'});
+                //Add the system metadata XML to the XHR data
+                formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+
+                var model = this;
+
+                var requestSettings = {
+                    url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id"))),
+                    cache: false,
+                    contentType: false,
+                    dataType: "text",
+                    processData: false,
+                    data: formData,
+                    parse: false,
+                    xhr: function () {
+                        var xhr = new window.XMLHttpRequest();
+
+                        //Upload progress
+                        xhr.upload.addEventListener("progress", function (evt) {
+                            if (evt.lengthComputable) {
+                                var percentComplete = evt.loaded / evt.total * 100;
+
+                                model.set("uploadProgress", percentComplete);
+                            }
+                        }, false);
+
+                        return xhr;
+                    },
+                    success: function (model, response, xhr) {
+
+                        model.set("numSaveAttempts", 0);
+                        model.set("uploadStatus", "c");
+                        model.trigger("successSaving", model);
+
+                        // Get the newest sysmeta set by the MN
+                        model.fetch({
+                            merge: true,
+                            systemMetadataOnly: true
+                        });
+
+                        // Reset the content changes status
+                        model.set("hasContentChanges", false);
+
+                        //Reset the model isNew attribute
+                        model.set("isNew", false);
+                    },
+                    error: function (model, response, xhr) {
+
+                        model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                        var numSaveAttempts = model.get("numSaveAttempts");
+
+                        if (numSaveAttempts < 3 && (response.status == 408 || response.status == 0)) {
+
+                            //Try saving again in 10, 40, and 90 seconds
+                            setTimeout(function () {
+                                    model.save.call(model);
+                                },
+                                (numSaveAttempts * numSaveAttempts) * 10000);
+                        } else {
+                            model.set("numSaveAttempts", 0);
+
+                            var parsedResponse = $(response.responseText).not("style, title").text();
+
+                            //When there is no network connection (status == 0), there will be no response text
+                            if (!parsedResponse)
+                                parsedResponse = "There was a network issue that prevented this file from uploading. " +
+                                    "Make sure you are connected to a reliable internet connection.";
+
+                            model.set("errorMessage", parsedResponse);
+
+                            model.set("uploadStatus", "e");
+                            model.trigger("errorSaving", parsedResponse);
+
+                            //Send this exception to Google Analytics
+                            if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
+                                ga("send", "exception", {
+                                    "exDescription": "DataONEObject save error: " + parsedResponse +
+                                        " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                                    "exFatal": true
+                                });
+                            }
+                        }
+                    }
+                }
+
+                //Add the user settings
+                requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+                //Send the Save request
+                Backbone.Model.prototype.save.call(this, null, requestSettings);
+            },
 
         /**
          * Check if the current user is authorized to perform an action on this object
@@ -731,7 +834,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }
 
             //Update the checksum and checksum algorithm
-            xml.find("checksum").text(this.get("checksum"));
+            if(options.systemMetadataOnly) {
+                xml.find("checksum").text(this.get("checksum"));
+            }
             xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
 
             //Update the rightsholder
