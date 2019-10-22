@@ -75,6 +75,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     objectXML: null, // A cached version of the object fetched from the server
                     isAuthorized: null, // If the stated permission is authorized by the user
+                    createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
                     provSources: [],
                     provDerivations: [],
@@ -972,13 +973,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             //Set the old identifier
             var oldPid = this.get("id"),
-                    selfDocuments,
-                    selfDocumentedBy,
-                    documentedModels,
-                    documentedModel,
-                    index;
+                selfDocuments,
+                selfDocumentedBy,
+                documentedModels,
+                documentedModel,
+                index;
 
+            //Save the current id as the old pid
             this.set("oldPid", oldPid);
+
+            //Create a new seriesId, if there isn't one, and if this model specifies that one is required
+            if( !this.get("seriesId") && this.get("createSeriesId") ){
+              this.set("seriesId", "urn:uuid:" + uuid.v4());
+            }
 
             // Check to see if the old pid documents or is documented by itself
             selfDocuments = _.contains(this.get("documents"), oldPid);

@@ -57,6 +57,7 @@ define(["jquery",
                     awards: [],
                     literatureCited: [],
                     filterGroups: [],
+                    createSeriesId: true, //If true, a seriesId will be created when this object is saved.
                     // The portal document options may specify section to hide
                     hideMetrics: null,
                     hideData: null,
@@ -119,8 +120,16 @@ define(["jquery",
              * @return {string} The portal URL
             */
             url: function() {
+              //If this object is being updated, use the old pid in the URL
+              if ( !this.isNew() && this.get("oldPid") ) {
                 return MetacatUI.appModel.get("objectServiceUrl") +
-                    encodeURIComponent(this.get("seriesId") || this.get("id"));
+                    encodeURIComponent(this.get("oldPid"));
+              }
+              //If this object is new, use the new pid in the URL
+              else{
+                return MetacatUI.appModel.get("objectServiceUrl") +
+                    encodeURIComponent(this.get("id"));
+              }
             },
 
             /**
