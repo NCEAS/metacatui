@@ -612,6 +612,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         //Remove existing taxon coverage nodes that don't have an accompanying model
         this.removeExtraNodes(datasetNode.find("geographiccoverage"), validCoverages);
       }
+      else{
+        //If there are no geographic coverages, remove the nodes
+        coverageNode.children("geographiccoverage").remove();
+      }
 
       //Serialize the taxonomic coverage
       if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length > 0) {
@@ -674,6 +678,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       //Remove existing taxon coverage nodes that don't have an accompanying model
       this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
+
+      //Remove the temporal coverage if it is empty
+      if( !coverageNode.children("temporalcoverage").children().length ){
+        coverageNode.children("temporalcoverage").remove();
+      }
 
       //Remove the <coverage> node if it's empty
       if(coverageNode.children().length == 0){
@@ -1164,15 +1173,37 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
 
         // Validate the temporal coverage
-        if ( this.get("temporalCoverage").length ) {
+        errors.temporalCoverage = [];
+
+        //If temporal coverage is required and there aren't any, return an error
+        if( MetacatUI.appModel.get("emlEditorRequiredFields").temporalCoverage &&
+             !this.get("temporalCoverage").length ){
+          errors.temporalCoverage = [{ beginDate:  "Provide a begin date." }];
+        }
+        //If temporal coverage is required and they are all empty, return an error
+        else if( MetacatUI.appModel.get("emlEditorRequiredFields").temporalCoverage &&
+                 _.every(this.get("temporalCoverage"), function(tc){
+                   return tc.isEmpty();
+                 }) ){
+          errors.temporalCoverage = [{ beginDate:  "Provide a begin date." }];
+        }
+        //If temporal coverage is not required, validate each one
+        else if( this.get("temporalCoverage").length ||
+                  ( MetacatUI.appModel.get("emlEditorRequiredFields").temporalCoverage &&
+                           _.every(this.get("temporalCoverage"), function(tc){
+                             return tc.isEmpty();
+                           }) )) {
+          //Iterate over each temporal coverage and add it's validation errors
           _.each(this.get("temporalCoverage"), function(temporalCoverage){
-            if( !temporalCoverage.isValid() ){
-              if( !errors.temporalCoverage )
-                errors.temporalCoverage = [temporalCoverage.validationError];
-              else
-                errors.temporalCoverage.push(temporalCoverage.validationError);
+            if( !temporalCoverage.isValid() && !temporalCoverage.isEmpty() ){
+              errors.temporalCoverage.push(temporalCoverage.validationError);
             }
           });
+        }
+
+        //Remove the temporalCoverage attribute if no errors were found
+        if( errors.temporalCoverage.length == 0 ){
+          delete errors.temporalCoverage;
         }
 
         //Validate the EMLParty models
