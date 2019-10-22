@@ -566,6 +566,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       }, this);
 
+      //Create a <coverage> XML node if there isn't one
+      if( datasetNode.children('coverage').length === 0 ) {
+        var coverageNode = $(document.createElement('coverage')),
+            coveragePosition = this.getEMLPosition(eml, 'coverage');
+
+        if(coveragePosition)
+          coveragePosition.after(coverageNode);
+        else
+          datasetNode.append(coverageNode);
+      }
+      else{
+        var coverageNode = datasetNode.children("coverage").first();
+      }
+
       //Serialize the geographic coverage
       if ( typeof this.get('geoCoverage') !== 'undefined' && this.get('geoCoverage').length > 0) {
 
@@ -573,15 +587,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         var validCoverages = _.filter(this.get('geoCoverage'), function(cov) {
           return cov.isValid();
         });
-
-        if ( datasetNode.find('coverage').length === 0 && validCoverages.length ) {
-          var coveragePosition = this.getEMLPosition(eml, 'coverage');
-
-          if(coveragePosition)
-            coveragePosition.after(document.createElement('coverage'));
-          else
-            datasetNode.append(document.createElement('coverage'));
-        }
 
         //Get the existing geo coverage nodes from the EML
         var existingGeoCov = datasetNode.find("geographiccoverage");
@@ -600,7 +605,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             if(insertAfter)
               insertAfter.after(cov.updateDOM());
             else
-              datasetNode.find("coverage").append(cov.updateDOM());
+              coverageNode.append(cov.updateDOM());
           }
         }, this);
 
@@ -621,16 +626,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         if (nonEmptyCoverages.length > 0) {
 
-          //Create the <coverage> node if there isn't one already
-          if (datasetNode.find('coverage').length === 0) {
-            var insertAfter = this.getEMLPosition(eml, 'coverage');
-
-            if(insertAfter)
-              insertAfter.after(document.createElement('coverage'));
-            else
-              datasetNode.append(document.createElement("coverage"));
-          }
-
           //Get the existing taxon coverage nodes from the EML
           var existingTaxonCov = datasetNode.find("taxonomiccoverage");
 
@@ -643,7 +638,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             }
             //Or, append new nodes
             else{
-              datasetNode.find('coverage').append(taxonCoverage.updateDOM());
+              coverageNode.append(taxonCoverage.updateDOM());
             }
           });
 
@@ -665,15 +660,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
         //Or, append new nodes
         else{
-          datasetNode.find('coverage').append(temporalCoverage.updateDOM());
+          coverageNode.append(temporalCoverage.updateDOM());
         }
       });
 
       //Remove existing taxon coverage nodes that don't have an accompanying model
       this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
 
-      if(datasetNode.find("coverage").children().length == 0)
-        datasetNode.find("coverage").remove();
+      //Remove the <coverage> node if it's empty
+      if(coverageNode.children().length == 0){
+        coverageNode.remove();
+      }
 
       //If there is no creator, create one from the user
       if(!this.get("creator").length){
