@@ -615,22 +615,25 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       //Serialize the taxonomic coverage
       if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length > 0) {
-        // TODO: This nonEmptyCoverages business could be wrapped up in a empty()
-        // method on the model itself
-        var nonEmptyCoverages;
 
-        // Don't serialize if taxonCoverage is empty
-        nonEmptyCoverages = _.filter(this.get('taxonCoverage'), function(t) {
-          return _.flatten(t.get('taxonomicClassification')).length > 0;
+        // Group the taxonomic coverage models into empty and non-empty
+        var sortedTaxonModels = _.groupBy(this.get('taxonCoverage'), function(t) {
+          if( _.flatten(t.get('taxonomicClassification')).length > 0 ){
+            return "notEmpty";
+          }
+          else{
+            return "empty";
+          }
         });
 
-        if (nonEmptyCoverages.length > 0) {
+        //Get the existing taxon coverage nodes from the EML
+        var existingTaxonCov = coverageNode.children("taxonomiccoverage");
 
-          //Get the existing taxon coverage nodes from the EML
-          var existingTaxonCov = datasetNode.find("taxonomiccoverage");
+        //Iterate over each taxon coverage and update it's DOM
+        if(sortedTaxonModels["notEmpty"] && sortedTaxonModels["notEmpty"].length > 0) {
 
           //Update the DOM of each model
-          _.each(this.get("taxonCoverage"), function(taxonCoverage, position){
+          _.each(sortedTaxonModels["notEmpty"], function(taxonCoverage, position){
 
             //Update the existing taxonCoverage node if it exists
             if(existingTaxonCov.length-1 >= position){
@@ -646,6 +649,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           this.removeExtraNodes(existingTaxonCov, this.get("taxonCoverage"));
 
         }
+        //If all the taxon coverages are empty, remove the parent taxonomicCoverage node
+        else if( !sortedTaxonModels["notEmpty"] || sortedTaxonModels["notEmpty"].length == 0 ){
+          existingTaxonCov.remove();
+        }
+
       }
 
       //Serialize the temporal coverage
