@@ -123,6 +123,11 @@ define(['jquery', 'underscore', 'backbone'],
       if( $(xml).find("operator").length ){
         modelJSON.operator = this.parseTextNode(xml, "operator");
       }
+      else{
+        if( modelJSON.fields.includes('id') ){
+          modelJSON.operator = "OR";
+        }
+      }
 
       //Parse the exclude, if it exists
       if( $(xml).find("exclude").length ){

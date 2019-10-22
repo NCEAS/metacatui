@@ -89,8 +89,12 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               var allGroupsQueryFragments = [],
                   //The complete query string that eventually gets returned
                   completeQuery = "",
+                  //Get the list of filters that use the 'id' field, since these are used differently
+                  idFilters = this.filter(function(filter){
+                    return filter.get("fields").includes("id");
+                  }),
                   //Separate the filter models in this collection by their query group.
-                  groupedFilters = this.groupBy(function(m){
+                  groupedFilters = _.groupBy(this.without(idFilters), function(m){
                     return m.get("queryGroup");
                   });
 
@@ -128,17 +132,33 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 completeQuery += this.getGroupQuery(catalogFilters);
               }
 
+              //Create the grouped query for the id filters
+              var idFilterQuery = this.getGroupQuery(idFilters, "OR");
+
+              //Add the grouped query for the id filters
+              if( completeQuery.length && idFilterQuery.length ){
+                completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
+              }
+
               //Return the completed query
               return completeQuery;
 
             },
 
             /**
-            * Get a query string for a group of Filters. The Filters will be ANDed together.
+            * Get a query string for a group of Filters.
+            * The Filters will be ANDed together, unless a different operator is given.
             * @param {Filter[]} filterModels - The Filters to turn into a query string
+            * @param {string} [operator] - The oeprator to use between filter models
             * @return {string} The query string
             */
-            getGroupQuery: function(filterModels){
+            getGroupQuery: function(filterModels, operator){
+
+              //Default to the AND operator
+              if(typeof operator != "string"){
+                var operator = "AND";
+              }
+
               //Start an array to contian the query fragments
               var groupQueryFragments = [];
 
@@ -156,7 +176,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
 
               //Join this group's query fragments with an OR operator
               if( groupQueryFragments.length ){
-                return "(" + groupQueryFragments.join("%20AND%20") + ")"
+                return "(" + groupQueryFragments.join("%20" + operator + "%20") + ")"
               }
               //Otherwise, return an empty string
               else{
