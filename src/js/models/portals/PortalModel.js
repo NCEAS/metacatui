@@ -128,7 +128,7 @@ define(["jquery",
               //If this object is new, use the new pid in the URL
               else{
                 return MetacatUI.appModel.get("objectServiceUrl") +
-                    encodeURIComponent(this.get("id"));
+                    encodeURIComponent(this.get("seriesId") || this.get("id"));
               }
             },
 
