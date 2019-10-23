@@ -3000,7 +3000,7 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-section .edit-collection > h3,
 .port-editor-section .edit-collection > p{
   margin-top: 20px;
-  margin-left: 40px;
+  margin-left: 10px;
 }
 
 /* Portal Editor markdown section
@@ -3116,10 +3116,6 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-md .markdown-help table {
   width: 100%;
   border-collapse: collapse;
-}
-
-.port-editor-md .markdown-help-text {
-	margin: 20px;
 }
 
 .port-editor-md .markdown-help-column {
