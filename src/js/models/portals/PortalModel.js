@@ -1493,6 +1493,14 @@ define(["jquery",
               }
 
               this.on("change:id", this.cachePortal);
+            },
+
+            /**
+            * Creates a URL for viewing more information about this object
+            * @return {string}
+            */
+            createViewURL: function(){
+              return MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + (this.get("label") || this.get("seriesId") || this.get("id"));
             }
 
         });
