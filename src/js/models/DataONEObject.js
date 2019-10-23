@@ -636,7 +636,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           //Add the identifier to the XHR data
           formData.append("pid", this.get("id"));
 
-          var sysMetaXML = this.serializeSysMeta({systemMetadataOnly: true});
+          var sysMetaXML = this.serializeSysMeta();
 
           //Send the system metadata as a Blob
           var xmlBlob = new Blob([sysMetaXML], {type: 'application/xml'});
@@ -753,7 +753,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
         },
 
-        serializeSysMeta: function(options){
+        serializeSysMeta: function(){
             //Get the system metadata XML that currently exists in the system
             var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
                 xml, // sysmeta as DOM object
@@ -811,13 +811,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }
 
             //Update the checksum and checksum algorithm
-            if( options.systemMetadataOnly ){
+            if( !this.get("checksum") && this.get("originalChecksum") ){
               xml.find("checksum").text(this.get("originalChecksum"));
             }
             else{
               xml.find("checksum").text(this.get("checksum"));
             }
-            
+
             xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
 
             //Update the rightsholder
