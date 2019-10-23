@@ -3023,6 +3023,10 @@ img[src*="googleapis.com/"].georegion-map{
   padding-top: 0px;
   padding-bottom: 0px;
 }
+.portal-view h2 {
+    font-size: 2em;
+    font-weight: normal;
+}
 .port-editor-md .portal-display-image .dropzone .icon-upload{
   z-index: 1;
 }
@@ -3355,7 +3359,6 @@ img[src*="googleapis.com/"].georegion-map{
   margin: 0px;
   font-size: 2em;
   display: inline-block;
-	font-weight: 300;
 }
 
 /* markdown section table of contents (portal and portal editor) */
@@ -3460,24 +3463,26 @@ i.toc-sub-item{
 }
 .portal-section-content{
   padding: 20px;
-  margin-top: 40px;
 }
 .portal-display-image{
   background-repeat: no-repeat;
   background-position-x: 50%;
   background-position-y: 50%;
   background-size: cover;
-  min-height: 300px;
+  min-height: 200px;
   padding-top: 60px;
   padding-bottom: 60px;
   color: #FFF;
+  margin-bottom: 40px;
 }
 .portal-display-text{
   box-sizing: border-box;
-  background-color: var(--portal-primary-color-transparent);
   padding: 20px;
 }
-.portal-display-text *{
+.portal-display-image .portal-display-text{
+  background-color: var(--portal-primary-color-transparent);
+}
+.portal-display-image .portal-display-text *{
   color: #FFF;
 }
 .logo-container{

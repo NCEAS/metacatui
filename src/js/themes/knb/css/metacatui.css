@@ -70,10 +70,6 @@
     	font-weight: 400;
     }
 
-    h2{
-    	font-weight: 300;
-    }
-
     h1{
     	font-weight: normal;
     }
@@ -175,10 +171,6 @@
 /*
 * Portal View
 */
-
-.portal-view .portal-title{
-  font-weight: 100;
-}
 .portal-view .toc-ul a{
   font-weight: lighter;
 }
