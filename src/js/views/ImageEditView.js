@@ -69,9 +69,9 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
     /**
     * Text to instruct the user how to upload an image
-    * @type {string}
+    * @type {string[]}
     */
-    imageUploadInstructions: "Drag & drop an image or click here to upload",
+    imageUploadInstructions: ["Drag & drop an image or click here to upload"],
 
     /**
      * Label for the first text input where the user enters the ImageModel label.
@@ -122,7 +122,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * @param {Object} options - A literal object with options to pass to the view
     * @property {Portal}  options.parentModel - Gets set as ImageEditView.parentModel
     * @property {PortalImage}  options.model - Gets set as ImageEditView.model
-    * @property {string}  options.imageUploadInstructions - Gets set as ImageUploaderView.imageUploadInstructions
+    * @property {string[]}  options.imageUploadInstructions - Gets set as ImageUploaderView.imageUploadInstructions
     * @property {number}  options.imageWidth - Gets set as ImageUploaderView.imageWidth
     * @property {number}  options.imageHeight - Gets set as ImageUploaderView.imageHeight
     * @property {string}  options.nameLabel - Gets set as ImageEditView.nameLabel

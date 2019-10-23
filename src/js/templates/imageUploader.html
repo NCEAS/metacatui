@@ -5,7 +5,14 @@
     <div class='dz-default dz-message subtle'>
       <div class="remove-message">Remove this image</div>
       <span class="icon icon-upload"></span>
-      <div><%=uploadInstructions%></div>
+
+      <% if( Array.isArray(uploadInstructions) ){
+        _.each(uploadInstructions, function(paragraph){ %>
+          <div><%=paragraph%></div>
+    <%  });
+      } else { %>
+        <div><%=uploadInstructions%></div>
+    <% } %>
     </div>
   </div>
 

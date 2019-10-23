@@ -45,9 +45,9 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
     /**
     * Text to instruct the user how to upload an image
-    * @type {string}
+    * @type {string[]}
     */
-    uploadInstructions: "Drag & drop an image or click here to upload",
+    uploadInstructions: ["Drag & drop an image or click here to upload"],
 
     /**
     * The maximum display height of the image preview.
@@ -92,7 +92,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     * @property {DataONEObject}  options.model - Gets set as ImageUploaderView.model
     * @property {number}  options.height - Gets set as ImageUploaderView.height
     * @property {number}  options.width - Gets set as ImageUploaderView.width
-    * @property {string}  options.uploadInstructions - Gets set as ImageUploaderView.uploadInstructions
+    * @property {string[]}  options.uploadInstructions - Gets set as ImageUploaderView.uploadInstructions
     * @property {string}  options.url - Gets set as ImageUploaderView.url
     * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
     */

@@ -2751,11 +2751,11 @@ img[src*="googleapis.com/"].georegion-map{
 .portal-display-image .dropzone:hover .dz-message,
 .portal-display-image .dropzone.dz-started:hover .dz-message,
 .portal-display-image .dropzone.dz-drag-hover .dz-message{
-  font-size: 1.5em;
+  font-size: 1.1em;
   padding-top: 230px;
 }
 .portal-display-image .dropzone .dz-message{
-  padding-top: 240px;
+  padding-top: 230px;
 }
 .portal-display-image .image-uploader.remove-preview .image-container{
   opacity: .3;
