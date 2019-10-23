@@ -2972,6 +2972,10 @@ img[src*="googleapis.com/"].georegion-map{
   display: block;
   overflow: hidden;
 }
+.port-editor-settings {
+  padding-left: 40px;
+  padding-right: 40px;
+}
 .port-editor-settings .edit-image .remove{
   font-size: 1.5em;
   display: block;
@@ -2980,7 +2984,7 @@ img[src*="googleapis.com/"].georegion-map{
     display: none;
 }
 .port-editor-settings > .row-fluid{
-  padding: 20px;
+  padding: 20px 40px;
   box-sizing: border-box;
 }
 .port-editor-settings > .row-fluid:nth-child(odd){
@@ -2991,12 +2995,12 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .port-editor-section  > h3{
   margin-top: 20px;
-  margin-left: 20px;
+  margin-left: 40px;
 }
 .port-editor-section .edit-collection > h3,
 .port-editor-section .edit-collection > p{
   margin-top: 20px;
-  margin-left: 10px;
+  margin-left: 40px;
 }
 
 /* Portal Editor markdown section
@@ -3052,7 +3056,14 @@ img[src*="googleapis.com/"].georegion-map{
 	padding: 0;
 	min-height: 300px;
 }
-
+.port-editor-md > *{
+  padding-left: 40px;
+  padding-right: 40px;
+}
+.port-editor-md > .portal-display-image{
+  padding-left: 0px;
+  padding-right: 0px;
+}
 .port-editor-md .title,
 .port-editor-md .introduction {
 	width: 100%;
@@ -3109,7 +3120,6 @@ img[src*="googleapis.com/"].georegion-map{
 
 .port-editor-md .markdown-help-text {
 	margin: 20px;
-	margin: 20px 20px 5px 20px;
 }
 
 .port-editor-md .markdown-help-column {
@@ -3169,7 +3179,7 @@ img[src*="googleapis.com/"].georegion-map{
 
 
 .editor-view.portal-editor div#Metrics p {
-  margin: 20px;
+  margin: 20px 40px;
 }
 
 .editor-view.portal-editor div#Metrics svg{
