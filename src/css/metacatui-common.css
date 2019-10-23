@@ -3479,10 +3479,12 @@ i.toc-sub-item{
   box-sizing: border-box;
   padding: 20px;
 }
-.portal-display-image .portal-display-text{
+.portal-display-image .portal-display-text,
+.portal-editor .portal-display-text{
   background-color: var(--portal-primary-color-transparent);
 }
-.portal-display-image .portal-display-text *{
+.portal-display-image .portal-display-text *,
+.portal-editor .portal-display-text *{
   color: #FFF;
 }
 .logo-container{
