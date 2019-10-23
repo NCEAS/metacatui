@@ -864,6 +864,11 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     createSectionLink: function(sectionView, menuOptions){
 
+      var classes = "";
+      if( Array.isArray(menuOptions) && menuOptions.includes("Show") ){
+        classes = "hidden-section";
+      }
+
       //Create a section link
       var sectionLink = $(this.sectionLinkTemplate({
         menuOptions: menuOptions || [],
@@ -871,7 +876,8 @@ function(_, $, Backbone, Portal, PortalSection,
         sectionLabel: PortalSection.prototype.isPrototypeOf(sectionView.model)?
                       sectionView.model.get("label") : sectionView.uniqueSectionLabel,
         sectionURL: this.model.get("label") + "/" + sectionView.uniqueSectionLabel,
-        sectionType: sectionView.sectionType
+        sectionType: sectionView.sectionType,
+        classes: classes
       }));
 
       //Attach the section model to the link

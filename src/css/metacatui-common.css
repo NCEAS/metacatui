@@ -2822,6 +2822,7 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .port-editor-sections .section-link-container .dropdown-menu{
   width: 100%;
+  padding: 0px;
 }
 .section-link-container.error .portal-section-link{
   color: #960303;
@@ -3577,13 +3578,29 @@ i.toc-sub-item{
   align-items: stretch;
   border-bottom: 0px;
 }
+.portal-editor #portal-section-tabs{
+  display: block;
+}
 #portal-section-tabs .section-link-container{
   background-color: var(--portal-primary-color);
   border: 0px;
   margin-bottom: 0px;
   flex-grow: 1;
 }
-#portal-section-tabs .section-link-container:hover,
+.portal-editor #portal-section-tabs .section-link-container{
+  border-width: 1px 1px 0px 1px;
+  border-color: #333;
+  border-style: solid;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+}
+.portal-editor #portal-section-tabs .section-link-container.hidden-section{
+  background-color: #999;
+  border-color: #666;
+}
+.portal-editor #portal-section-tabs .section-link-container.hidden-section .hidden-section-icon{
+  display: inline;
+}
 #portal-section-tabs .section-link-container:hover .portal-section-link,
 #portal-section-tabs .section-link-container:hover .section-menu-link{
   background-color: var(--portal-secondary-color);
@@ -3602,7 +3619,6 @@ i.toc-sub-item{
   cursor: pointer;
 }
 #portal-section-tabs .portal-section-link{
-  width: calc(100% - 35px);
   box-sizing: border-box;
 }
 #portal-section-tabs .portal-section-link[contenteditable="true"]{
@@ -3618,29 +3634,44 @@ i.toc-sub-item{
   background-color: transparent;
   flex-grow: unset;
   margin-right: 40px;
+  height: 36px;
+}
+#portal-section-tabs .section-link-container.page-AddPage.active{
+  background-color: var(--portal-secondary-color);
+}
+#portal-section-tabs .section-link-container.page-AddPage .icon{
+  font-size: 1.75em;
 }
 #portal-section-tabs .section-link-container.page-AddPage .portal-section-link:hover,
 #portal-section-tabs .section-link-container.page-Settings .portal-section-link:hover{
   background-color: transparent;
-  color: var(--portal-accent-color);
+  color: var(--portal-secondary-color);
 }
-#portal-section-tabs .section-link-container.page-AddPage .portal-section-link,
-#portal-section-tabs .section-link-container.page-Settings .portal-section-link{
+#portal-section-tabs .section-link-container.page-AddPage .portal-section-link{
   color: var(--portal-primary-color);
   width: 100%;
 }
+#portal-section-tabs .section-link-container.page-AddPage.active .portal-section-link,
+#portal-section-tabs .section-link-container.page-Settings.active .portal-section-link{
+  color: #FFF;
+}
 #portal-section-tabs .section-link-container.page-Settings{
-  background-color: transparent;
   flex-grow: unset;
   width: 100px;
 }
 #portal-section-tabs .section-link-container .dropdown-menu>li>a{
   color: var(--portal-primary-color);
+  border-bottom: 1px solid #CCC;
+  line-height: 25px;
+}
+#portal-section-tabs .section-link-container .dropdown-menu>li:last-child>a{
+  border-bottom-width: 0px;
+  border-bottom-left-radius: 6px;
+  border-botttom-right-radius: 6px;
 }
 #portal-section-tabs .section-link-container .dropdown-menu>li>a:hover{
   background-image: none;
-  background-color: transparent;
-  color: var(--portal-secondary-color);
+  background-color: #DDD;
 }
 .portal-view .toc-ul li > a:hover,
 .portal-editor .toc-ul li > a:hover{

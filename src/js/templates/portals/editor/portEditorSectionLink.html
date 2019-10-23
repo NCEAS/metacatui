@@ -1,7 +1,8 @@
-<li class="section-link-container page-<%=uniqueLabel%>" data-section-id="<%=uniqueLabel%>"
+<li class="section-link-container page-<%=uniqueLabel%> <%=classes%>" data-section-id="<%=uniqueLabel%>"
   data-section-name="<%=sectionLabel%>" data-section-type="<%=sectionType%>">
   <a href="<%=sectionURL%>" class="portal-section-link">
     <span class="error icon-exclamation-sign icon icon-on-left validation-error-icon hidden"></span>
+    <span class="icon-eye-close icon icon-on-left hidden hidden-section-icon" title="This page is hidden"></span>
     <% if( sectionLabel == "Settings" ){ %>
       <span class="icon-cog icon icon-on-left"></span>
     <% } %>
