@@ -2733,8 +2733,7 @@ img[src*="googleapis.com/"].georegion-map{
 .dropzone,
 .dropzone.dz-started:hover,
 .dropzone.dz-started.dz-drag-hover {
-	outline: #999 1px dashed;
-  outline-offset: 0px;
+	border: dashed 2px #999;
 }
 
 .dropzone:hover{
@@ -2971,6 +2970,7 @@ img[src*="googleapis.com/"].georegion-map{
   margin-left: auto;
   margin-right: auto;
   display: block;
+  overflow: hidden;
 }
 .port-editor-settings .edit-image .remove{
   font-size: 1.5em;
@@ -3022,6 +3022,7 @@ img[src*="googleapis.com/"].georegion-map{
 .portal-editor .portal-display-image{
   padding-top: 0px;
   padding-bottom: 0px;
+  margin-top: -1px;
 }
 .portal-view h2 {
     font-size: 2em;
@@ -3228,7 +3229,6 @@ img[src*="googleapis.com/"].georegion-map{
 .section-option h5 {
 	margin: 11px 0 6px 0;
 }
-
 .section-option svg{
 	display: block;
 	margin: auto;

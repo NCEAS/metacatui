@@ -211,7 +211,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
       try{
 
         if(!sectionType || !(typeof sectionType === 'string' || sectionType instanceof String)){
-          console.log("Error: In disableSectionOption(sectionType), a string that indicates the sectionType is required");
+          console.error("Error: In disableSectionOption(sectionType), a string that indicates the sectionType is required");
           return
         }
 
@@ -221,16 +221,32 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
             title         = this.sectionsOptions[sectionType].title.toLowerCase(),
             limit         = (typeof limiter === 'number' || limiter instanceof Number) ?
                               limiter : 1,
-            singOrPlur    = (limit > 1) ? "s" : "";
+            singOrPlur    = (limit > 1) ? "s" : "",
+            descriptionMsg = "You've already added " + limit + " " + title + " page" + singOrPlur;
 
+        //Add the disabled class
         sectionOption.addClass("disabled");
-        description.html("You may only add " + limit + " " + title + " page" + singOrPlur );
+
+        //Add the new description
+        description.html(descriptionMsg);
+
+        //Create a tooltip
+        sectionOption.tooltip({
+          placement: "top",
+          delay: {
+            show: 800,
+            hide: 0
+          },
+          title: descriptionMsg,
+          trigger: "hover",
+          container: sectionOption
+        });
 
         // Make sure disabled option isn't clickable
         sectionOption.off("click");
 
       } catch(e){
-        console.log(e);
+        console.error(e);
       }
 
     },
@@ -252,11 +268,17 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
             descriptionEl   = sectionOption.find(".description"),
             descriptionText = this.sectionsOptions[sectionType].description;
 
+        //Remove the disabled class
         sectionOption.removeClass("disabled");
+
+        //Update the description
         descriptionEl.html(descriptionText);
 
+        //Remove the tooltip
+        sectionOption.tooltip("destroy");
+
       } catch(e) {
-        console.log(e);
+        console.error(e);
       }
 
     },
