@@ -55,17 +55,53 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     parentModel: undefined,
 
     /**
-    * The maximum display height of the image preview.
+    * The maximum height of the image preview. If set to false,
+    * no css width property is set.
     * @type {number}
     */
     imageHeight: 150,
 
     /**
-    * The maximum display width of the image preview. If set to false,
+    * The display width of the image preview. If set to false,
     * no css width property is set.
     * @type {number|boolean}
     */
     imageWidth: 150,
+
+    /**
+     * The minimum required height of the image file. If set, the uploader will
+     * reject images that are shorter than this. If null, any image height is
+     * accepted.
+     * @type {number}
+     */
+    minHeight: null,
+
+    /**
+     * The minimum required height of the image file. If set, the uploader will
+     * reject images that are shorter than this. If null, any image height is
+     * accepted.
+     * @type {number}
+     */
+    minWidth: null,
+
+    /**
+     * The maximum height for uploaded files. If a file is taller than this, it
+     * will be resized without warning before being uploaded. If set to null,
+     * the image won't be resized based on height (but might be depending on
+     * maxWidth).
+     * @type {number}
+     */
+    maxHeight: null,
+
+    /**
+     * The maximum width for uploaded files. If a file is wider than this, it
+     * will be resized without warning before being uploaded. If set to null,
+     * the image won't be resized based on width (but might be depending on
+     * maxHeight).
+     * @type {number}
+     */
+    maxWidth: null,
+
 
     /**
     * Text to instruct the user how to upload an image
@@ -123,12 +159,16 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * @property {Portal}  options.parentModel - Gets set as ImageEditView.parentModel
     * @property {PortalImage}  options.model - Gets set as ImageEditView.model
     * @property {string[]}  options.imageUploadInstructions - Gets set as ImageUploaderView.imageUploadInstructions
-    * @property {number}  options.imageWidth - Gets set as ImageUploaderView.imageWidth
-    * @property {number}  options.imageHeight - Gets set as ImageUploaderView.imageHeight
     * @property {string}  options.nameLabel - Gets set as ImageEditView.nameLabel
     * @property {string}  options.urlLabel - Gets set as ImageEditView.urlLabel
     * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
     * @property {string}  options.removeButton - Gets set as ImageUploaderView.removeButton
+    * @property {number}  options.imageWidth - Gets set as ImageUploaderView.width
+    * @property {number}  options.imageHeight - Gets set as ImageUploaderView.height
+    * @property {number}  options.minWidth - Gets set as ImageUploaderView.minWidth
+    * @property {number}  options.minHeight - Gets set as ImageUploaderView.minHeight
+    * @property {number}  options.maxWidth - Gets set as ImageUploaderView.maxWidth
+    * @property {number}  options.maxHeight - Gets set as ImageUploaderView.maxHeight
     */
     initialize: function(options){
 
@@ -144,6 +184,10 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
           this.urlLabel                 = options.urlLabel;
           this.imageTagName             = options.imageTagName;
           this.removeButton             = options.removeButton;
+          this.minHeight                = options.minHeight;
+          this.minWidth                 = options.minWidth;
+          this.maxHeight                = options.maxHeight;
+          this.maxWidth                 = options.maxWidth;
         }
 
         if(!this.model){
@@ -177,11 +221,15 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         // Create an ImageUploaderView and insert into this view. Allow it to be
         // accessed from parent views.
         this.uploader = new ImageUploaderView({
-          height:             this.imageHeight,
-          width:              this.imageWidth,
           url:                this.model.get("imageURL"),
           uploadInstructions: this.imageUploadInstructions,
-          imageTagName:       this.imageTagName
+          imageTagName:       this.imageTagName,
+          height:             this.imageHeight,
+          width:              this.imageWidth,
+          minHeight:          this.minHeight,
+          minWidth:           this.minWidth,
+          maxHeight:          this.maxHeight,
+          maxWidth:           this.maxWidth
         });
         this.$(this.imageUploaderContainer).append(this.uploader.el);
         this.uploader.render();
@@ -201,8 +249,8 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         });
 
         // Update the PortalImage model when the image is successfully uploaded
-        this.stopListening(this.uploader.model, "successSaving");
-        this.listenTo(this.uploader.model, "successSaving", function(dataONEObject){
+        this.stopListening(this.uploader, "successSaving");
+        this.listenTo(this.uploader, "successSaving", function(dataONEObject){
           view.model.set("identifier", dataONEObject.get("id"));
           view.model.set("imageURL", dataONEObject.url());
         });

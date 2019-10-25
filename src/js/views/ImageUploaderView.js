@@ -50,18 +50,54 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     uploadInstructions: ["Drag & drop an image or click here to upload"],
 
     /**
-    * The maximum display height of the image preview.
+    * The maximum display height of the image preview. This is only used for the
+    * css height propery, and doesn't influence the size of the saved image. If
+    * set to false, no css height property is set.
     * @type {number}
     */
-    height: 100,
+    height: false,
 
     /**
-    * The maximum display width of the image preview. This is only used for the
+    * The display width of the image preview. This is only used for the
     * css width propery, and doesn't influence the size of the saved image. If
     * set to false, no css width property is set.
     * @type {number}
     */
-    width: 100,
+    width: false,
+
+    /**
+     * The minimum required height of the image file. If set, the uploader will
+     * reject images that are shorter than this. If null, any image height is
+     * accepted.
+     * @type {number}
+     */
+    minHeight: null,
+
+    /**
+     * The minimum required height of the image file. If set, the uploader will
+     * reject images that are shorter than this. If null, any image height is
+     * accepted.
+     * @type {number}
+     */
+    minWidth: null,
+
+    /**
+     * The maximum height for uploaded files. If a file is taller than this, it
+     * will be resized without warning before being uploaded. If set to null,
+     * the image won't be resized based on height (but might be depending on
+     * maxWidth).
+     * @type {number}
+     */
+    maxHeight: null,
+
+    /**
+     * The maximum width for uploaded files. If a file is wider than this, it
+     * will be resized without warning before being uploaded. If set to null,
+     * the image won't be resized based on width (but might be depending on
+     * maxHeight).
+     * @type {number}
+     */
+    maxWidth: null,
 
     /**
      * The HTML tag name to insert the uploaded image into. Options are "img",
@@ -81,8 +117,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     * @type {Object}
     */
     events: {
-      "mouseover .remove"  : "previewImageRemove",
-      "mouseout  .remove"  : "previewImageRemove"
+      "mouseover .icon-remove.remove"  : "previewImageRemove",
+      "mouseout  .icon-remove.remove"  : "previewImageRemove"
     },
 
     /**
@@ -90,11 +126,15 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     * @constructs ImageUploaderView
     * @param {Object} options - A literal object with options to pass to the view
     * @property {DataONEObject}  options.model - Gets set as ImageUploaderView.model
-    * @property {number}  options.height - Gets set as ImageUploaderView.height
-    * @property {number}  options.width - Gets set as ImageUploaderView.width
     * @property {string[]}  options.uploadInstructions - Gets set as ImageUploaderView.uploadInstructions
     * @property {string}  options.url - Gets set as ImageUploaderView.url
     * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
+    * @property {number}  options.height - Gets set as ImageUploaderView.height
+    * @property {number}  options.width - Gets set as ImageUploaderView.width
+    * @property {number}  options.minWidth - Gets set as ImageUploaderView.minWidth
+    * @property {number}  options.minHeight - Gets set as ImageUploaderView.minHeight
+    * @property {number}  options.maxWidth - Gets set as ImageUploaderView.maxWidth
+    * @property {number}  options.maxHeight - Gets set as ImageUploaderView.maxHeight
     */
     initialize: function(options){
 
@@ -102,18 +142,18 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
         if( typeof options == "object" ){
 
           this.model              = options.model;
-          this.height             = options.height;
-          this.width              = options.width;
           this.uploadInstructions = options.uploadInstructions;
           this.url                = options.url;
           this.imageTagName       = options.imageTagName;
+          this.height             = options.height;
+          this.width              = options.width;
+          this.minHeight          = options.minHeight;
+          this.minWidth           = options.minWidth;
+          this.maxHeight          = options.maxHeight;
+          this.maxWidth           = options.maxWidth;
 
           if (!this.url && this.model) {
             this.url = this.model.url();
-          }
-
-          if(!this.model){
-            this.model = new DataONEObject();
           }
 
         }
@@ -126,6 +166,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
         // Identify which zones should be drag & drop manually
         Dropzone.autoDiscover = false;
+
       } catch (e) {
         console.log("ImageUploaderView failed to initialize. Error message: " + e);
       }
@@ -161,26 +202,102 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
         // Add upload & drag and drop functionality to the dropzone div.
         // For config details, see: https://www.dropzonejs.com/#configuration
         var $dropZone = this.$(".dropzone").dropzone({
-          url: "-", // a fake URL to allow dropzone to initialize properly
+
+          url: MetacatUI.appModel.get("objectServiceUrl"),
           acceptedFiles: "image/*",
           addRemoveLinks: false,
           maxFiles: 1,
           parallelUploads: 1,
           uploadMultiple: false,
-          resizeHeight: null,
-          thumbnailHeight: null,
-          thumbnailWidth: null,
-          autoProcessQueue: false, // Don't use dropzone's functionality to upload
+          resizeHeight: view.maxHeight,
+          resizeWidth: view.maxWidth,
+          thumbnailHeight: view.maxHeight < view.height ? view.maxHeight : null,
+          thumbnailWidth: view.maxWidth < view.width ? view.maxWidth : null,
+          dictInvalidFileType: "This file type is not allowed. Please select an image file",
+          autoProcessQueue: true,
           previewTemplate: previewTemplate,
-          // Override dropzone's function for showing images in the upload zone
-          // so that we have the option to disaply them as a background Images.
-          thumbnail: function(file, dataUrl){
-            view.showImage(file, dataUrl)
+          withCredentials: true,
+          paramName: "object",
+
+          headers: {
+              "Cache-Control": null,
+              "X-Requested-With": null,
+              "Authorization": MetacatUI.appUserModel.createAjaxSettings().headers.Authorization
           },
+
+          // Override dropzone's function for showing images in the upload zone
+          // so that we have the option to display them as a background images.
+          // Check for minimum dimensions at this stage because dropzone has
+          // calculated the file's height here.
+          thumbnail: function(file, dataURL){
+            // Don't bother size check for SVG images since they're vector
+            var dimCheck = file.type === "image/svg+xml" ? true : view.checkMinDimensions(file.width, file.height);
+            if(dimCheck != true){
+              if(file.rejectDimensions){
+                // Send reason for rejection rejectDimensions function
+                file.rejectDimensions(dimCheck);
+              }
+            } else {
+              if(file.acceptDimensions){
+                file.acceptDimensions();
+              };
+              view.showImage(file, dataURL);
+            };
+          },
+
+          // Dropzone will check filetype = options.acceptedFiles. Add functions
+          // for when the image is too small.
+          accept: function accept(file, done) {
+            file.rejectDimensions = function(message) {  done(message)  };
+            file.acceptDimensions = function(){  done()  };
+          },
+
+          // After the file is accepted (correct filetype and min size requirements),
+          // resize the image if it's too large in height or width, then
+          // provide image data to a dataOne object model and calulate checksum.
+          transformFile: function(file, done){
+            // Only resize images if dimensions are too large.
+            // Once the image is resized (or not), save the data to the model and get a checksum.
+            var resizeWidth = (file.width > this.options.resizeWidth) ? this.options.resizeWidth : null;
+            var resizeHeight = (file.height > this.options.resizeHeight) ? this.options.resizeHeight : null;
+            if (resizeHeight || resizeWidth) {
+              return this.resizeImage(file, resizeWidth, resizeHeight, this.options.resizeMethod, function(blob){
+                view.prepareD1Model(blob, file.name, file.type, done);
+              });
+            } else {
+              return view.prepareD1Model(file, file.name, file.type, done);
+            }
+          },
+
+          // Add some required formData right before the image is uploaded
+          sending: function(file, xhr, formData) {
+            //Create the system metadata XML & send as blob
+            var sysMetaXML = view.model.serializeSysMeta();
+            var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
+            formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+            formData.append("pid", view.model.get("id"));
+          },
+
+          // If there are any errors during the entire process...
+          error: function error(file, message, xhr) {
+            // Give a readable error if it's a server error
+            if(xhr){
+              console.log(message);
+              message = "There was an error uploading your file. Please try again later."
+            }
+            // Make sure image isn't showing (src for <img> and style for background images)
+            $(file.previewElement).find(".image-container").attr({
+              src: "",
+              style: ""
+            });
+            // Show error using dropzone's default behaviour
+            this.defaultOptions.error(file, message)
+          },
+
           init: function() {
-            // Use our own functionality for uploading
             this.on("addedfile", function(file){
-              view.uploadFile(file);
+              // Make sure only the most recently added image is shown in the upload zone
+              view.limitFileInput();
               // Required for parent views to use listenTo() on dropzone events
               view.trigger("addedfile");
             });
@@ -190,7 +307,10 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
               // Required for parent views to use listenTo() on dropzone events
               view.trigger("removedfile");
             });
-          }
+            this.on("success", function(){
+              view.trigger("successSaving", view.model);
+            });
+          },
         });
 
         // Save the dropzone element for other functions to access later
@@ -208,24 +328,117 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     },
 
     /**
+     * prepareD1Model - Called once an image file is resized or once it's
+     * determined the the image does not need to be resized. This function adds
+     * data about the image added by the user to a new DataOne model, then
+     * calculates the checksum. When the checksum is finished being calculated,
+     * calls the callback function (i.e. dropzone's done()).
+     *
+     * @param  {Blob|File} object Either the Blob or File to be saved to the server
+     * @param  {string} filename the name of the file
+     * @param  {string} filetype the filetype
+     * @param  {function} callback a function to call once the checksum is calculated.
+     */
+    prepareD1Model: function(object, filename, filetype, callback){
+
+      try{
+        // Reference to the view
+        var view = this;
+
+        this.model = new DataONEObject({
+          synced: true,
+          type: "image",
+          fileName: filename,
+          mediaType: filetype,
+          size: object.size,
+          uploadFile: object
+        });
+
+        this.model.updateID();
+        this.model.set("obsoletes", null);
+
+        // Start checksum, and call the callback function when it's complete
+        view.model.stopListening(view.model, "checksumCalculated");
+        view.model.listenToOnce(view.model, "checksumCalculated", function(){
+            callback(object);
+        });
+        view.model.calculateChecksum();
+
+      } catch (exception) {
+        console.log("there was a problem calculating the checksum, exception: " + exception);
+      }
+
+    },
+
+
+    /**
+     * limitFileInput - Ensures only the most recently added image is shown in
+     * the upload zone, as we limit each zone to 1 image but dropzone is
+     * designed to accept multiple files. Called whenever a file is added to a
+     * dropzone element.
+     */
+    limitFileInput: function(){
+      if (this.imageDropzone.files[1]!=null){
+        this.imageDropzone.removeFile(this.imageDropzone.files[0]);
+      }
+    },
+
+
+    /**
+     * checkMinDimensions - called from dropzone's thumbnail function before the
+     * image is displayed. Checks that the image meets at least the minimum
+     * height and width requirements provided to view.minHeight and
+     * view.minWidth.
+     *
+     * @param  {number} width  the image's height.
+     * @param  {number} height the image's width.
+     * @return {string|boolean}  returns true if the image is at least as wide as and as tall as the given height and width. Otherwise returns an error message to display to the user.
+     */
+    checkMinDimensions: function(width, height){
+
+      try{
+        if(width < this.minWidth && height < this.minHeight){
+          return("This image is too small. Please choose an image that's at least " + this.minWidth +"px wide and " + this.minHeight + "px tall.");
+        } else if (width < this.minWidth) {
+          return("This image is too narrow. Please choose an image that's at least " + this.minWidth +"px wide.")
+        } else if (height < this.minHeight){
+          return("This image is too short. Please choose an image that's at least " + this.minHeight +"px tall.")
+        } else {
+          // minimum height and width are met. If too large, then image will be resized.
+          return true
+        }
+      } catch(error){
+        console.log("Error checking the min dimensions of added file. Error message:" + error);
+        // Better to show an image that's too small in this case.
+        return true
+      }
+    },
+
+    /**
      * showImage - General function for displaying an image file in the upload zone, whether
      * just added or already uploaded. This is the function that we use to override
      * dropzone's thumbnail() function. It displays the image as the background of
      * a div if this view's imageTagName attribute is set to "div", or as an image
      * element if imageTagName is set to "img".
      * @param  {object} file    Information about the image file
-     * @param  {string} dataUrl A URL for the image to be displayed
+     * @param  {string} dataURL A URL for the image to be displayed
      */
-    showImage: function(file, dataUrl){
+    showImage: function(file, dataURL){
 
       try{
-        var previewEl = this.$(".dz-preview .image-container")[0];
+        // Don't show files that are the wrong size or type
+        if(!this.url && !file.accepted){
+          return
+        };
+
+        var previewEl = $(file.previewElement).find(".image-container")[0];
 
         if(this.imageTagName == "img"){
-          previewEl.src = dataUrl;
+          previewEl.src = dataURL;
         } else if (this.imageTagName == "div"){
-          $(previewEl).css("background-image", "url(" + dataUrl + ")");
+          $(previewEl).css("background-image", "url(" + dataURL + ")");
         }
+
       } catch(error) {
         console.log(error);
       }
@@ -249,7 +462,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
           url: this.url
         };
 
-        // Add it to filelist so uploadFile() can remove excess images if needed
+        // Add it to filelist so excess images can be removed if needed
         this.imageDropzone.files[0] = imageFile;
         // Call the default addedfile event handler
         this.imageDropzone.emit("addedfile", imageFile);
@@ -266,68 +479,21 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
     },
 
     /**
-    * Uploads an image if the file doesn't already have an id attribute
-    * @param {object} file - The image information provided by dropzone
-    * @property {string} file.url - A url for an image. Nothing will be uploaded if this property is set.
-    * @property {string} file.name - The image name
-    * @property {number} file.size - The size of the image
-    * @property {string} file.type - The file type
-    */
-    uploadFile: function(file){
-
-      try{
-
-        // Reference to this view
-        var view = this;
-
-        // Make sure only the most recently added image is shown in the upload zone
-        if (this.imageDropzone.files[1]!=null){
-          this.imageDropzone.removeFile(this.imageDropzone.files[0]);
-        }
-
-        // If the file already has a URL, then it doesn't need to be uploaded
-        if(file.url){
-          return
-        }
-
-        this.model.set({
-          synced: true,
-          type: "image",
-          fileName: file.name,
-          size: file.size,
-          mediaType: file.type,
-          uploadFile: file
-        });
-
-        // Asychronously calculate the checksum
-        if ( this.model.get("uploadFile") && ! this.model.get("checksum") ) {
-            this.model.stopListening(this.model, "checksumCalculated");
-            this.model.listenToOnce(this.model, "checksumCalculated", this.model.save);
-            try {
-                this.model.calculateChecksum();
-            } catch (exception) {
-                // TODO: Fail gracefully here for the user
-            }
-        }
-
-      } catch (error){
-        console.log("image file not saved! error message: " + error);
-      }
-
-    },
-
-
-    /**
      * previewImageRemove - When the user hovers over the remove button,
      * indicates to the user that the button will remove the image by 1) changing
      * the upload instruction text to a message about removing the image,
      * and 2) adding a warning class to the message div.
      */
-    previewImageRemove: function(){
+    previewImageRemove: function(e){
 
       try {
 
-        this.$el.toggleClass("remove-preview");
+        if(e){
+          this.$el.toggleClass("remove-preview");
+        } else {
+          this.$el.removeClass("remove-preview");
+        }
+
 
       } catch (error) {
         console.log(error);

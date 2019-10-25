@@ -151,12 +151,16 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           model: this.model.get("image"),
           imageUploadInstructions: ["Drag & drop a high quality image here or click to upload",
                                     "Suggested image size: 1200 x 1000 pixels"],
-          imageWidth: false, // set to 100% in metacatui-common.css
-          imageHeight: 300,
           nameLabel: false,
           urlLabel: false,
           imageTagName: "div",
-          removeButton: false
+          removeButton: false,
+          imageWidth: false, // set to 100% in metacatui-common.css
+          imageHeight: 300,
+          minWidth: 800,
+          minHeight: 300,
+          maxHeight: 4000,
+          maxWidth: 9000,
         });
         this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
         this.sectionImageUploader.render();

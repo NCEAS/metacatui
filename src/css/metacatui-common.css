@@ -2640,8 +2640,9 @@ img[src*="googleapis.com/"].georegion-map{
 * Image Uploader
 ********************************************/
 
-/* Image upload validaiton error formatting */
+/* Image upload error formatting (including validation) */
 .image-uploader-container.error .dz-message,
+.dropzone .dz-error,
 .dropzone:hover .dz-message.subtle.warning {
 	color: #960303;
 }
@@ -2650,6 +2651,33 @@ img[src*="googleapis.com/"].georegion-map{
 	outline-color: #960303;
 	background-color: rgba(255,0,0,0.1);
 	opacity: 0.5;
+}
+
+.dz-image-preview div.dz-error-message{
+	top: 0;
+	bottom: 0;
+	position: absolute;
+	color: #960303;
+  box-sizing: border-box;
+  padding: 4px;
+  width: 100%;
+	white-space: normal;
+	min-height: 100%;
+	max-height: 100%;
+	display: flex;
+  align-items: center;
+	z-index: 0; 	/* make sure it's below clickable dropzone items */
+	line-height: 100%;
+}
+
+.port-editor-md .dz-image-preview div.dz-error-message {
+    align-items: flex-start;
+    padding-top: 19px;
+    justify-content: center;
+}
+
+.remove-preview .dz-image-preview div.dz-error-message{
+	opacity: 0.2;
 }
 
 /* Image upload drag and drop zone */
@@ -2673,11 +2701,14 @@ img[src*="googleapis.com/"].georegion-map{
 	padding: 8px;
 	width: 100%;
 	justify-content: center;
+	z-index: 2; /* make sure it's above .dz-error message because this element must be clickable */
 }
 
 .dz-image-preview {
 	white-space: nowrap;
 	text-align: center;
+	box-sizing: border-box;
+	padding-bottom: 4px; /* to account for a 2px top border and 2px bottom border*/
 }
 
 .vertical-align-image-helper {
@@ -2697,7 +2728,7 @@ img[src*="googleapis.com/"].georegion-map{
 	background-position-x: 50%;
 	background-position-y: 50%;
 	background-size: cover;
-	min-height: 300px;
+	min-height: 296px; /* 300px - 4px for top and bottom border*/
 	color: #FFF;
 }
 
@@ -2724,20 +2755,25 @@ img[src*="googleapis.com/"].georegion-map{
   background-image: url(../img/transp_bg.png);
 }
 .dropzone.dz-started {
-	outline: none;
+	border-color: #ededed;
 	background: transparent;
 }
 .dropzone.dz-started .dz-message{
   opacity: 0;
 }
+
 .dropzone,
 .dropzone.dz-started:hover,
 .dropzone.dz-started.dz-drag-hover {
 	border: dashed 2px #999;
 }
 
-.dropzone:hover{
-	outline-color: #c2c2c2;
+.dz-message{
+	transition: all .2s ease;
+}
+
+.dropzone{
+	transition: all .2s ease;
 }
 
 /* Hide help text if image is already uploaded, show when user hovers */
@@ -2747,12 +2783,6 @@ img[src*="googleapis.com/"].georegion-map{
   background-color: rgba(0, 0, 0, 0.5);
   color: #FFF;
   opacity: 1;
-}
-.portal-display-image .dropzone:hover .dz-message,
-.portal-display-image .dropzone.dz-started:hover .dz-message,
-.portal-display-image .dropzone.dz-drag-hover .dz-message{
-  font-size: 1.1em;
-  padding-top: 230px;
 }
 .portal-display-image .dropzone .dz-message{
   padding-top: 230px;
@@ -2764,9 +2794,6 @@ img[src*="googleapis.com/"].georegion-map{
   font-size: 2.5em;
   margin-bottom: 10px;
   margin-top: 10px;
-}
-.dz-message{
-  transition: background-color .2s ease 150ms, font-size .2s ease 150ms, color .2s ease 150ms;
 }
 .dropzone .icon-upload{
   display: block;
@@ -2884,12 +2911,7 @@ img[src*="googleapis.com/"].georegion-map{
 .logo-editor-container .dropzone .dz-message{
   font-size: .9em;
 }
-.logo-editor-container .dropzone.dz-started .dz-message{
-  opacity: 0;
-}
-.logo-editor-container .dropzone.dz-started:hover .dz-message{
-  opacity: 1;
-}
+
 .portal-editor .title-container {
 	width: calc(100% - 150px);
 	min-width: 300px;
@@ -2956,6 +2978,7 @@ img[src*="googleapis.com/"].georegion-map{
   color: #fb5656;
   font-size: 1.25em;
   height: 2em;
+	z-index: 10; /* should be ontop of all other dropzone elements */
 }
 .port-editor-logos .edit-image{
   border: 1px solid #dedede;
@@ -2980,6 +3003,7 @@ img[src*="googleapis.com/"].georegion-map{
   font-size: 1.5em;
   display: block;
 }
+.port-editor-settings .logos-container .edit-image .dropzone .remove-message,
 .port-editor-settings .logos-container .edit-image .dropzone .remove {
     display: none;
 }
@@ -3040,6 +3064,7 @@ img[src*="googleapis.com/"].georegion-map{
     margin-right: 10px;
     margin-top: 10px;
     color: red;
+		z-index: 5; /* should be above all other elements in the dropzone area */
 }
 /* for the cs-message: calc(100% - 1px) */
 

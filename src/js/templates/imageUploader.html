@@ -18,7 +18,6 @@
 
   <!-- preview template -->
   <div class="dz-preview dz-image-preview" style="height:<%=height%>px">
-    <!-- <div class="dz-error-message"><span data-dz-errormessage></span></div> -->
     <% if(imageTagName == "img"){ %>
       <img class="image-container">
       <span class="vertical-align-image-helper"></span>
@@ -27,6 +26,7 @@
       <div class="image-container"></div>
     <% } %>
     <i class="icon-remove remove icon" data-dz-remove></i>
+    <div class="dz-error-message"><span data-dz-errormessage></span></div>
   </div>
 
 </div>
