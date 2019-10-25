@@ -356,6 +356,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
         this.model.updateID();
         this.model.set("obsoletes", null);
+        this.model.get("accessPolicy").makePublic();
 
         // Start checksum, and call the callback function when it's complete
         view.model.stopListening(view.model, "checksumCalculated");
