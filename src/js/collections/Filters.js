@@ -93,8 +93,9 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                   idFilters = this.filter(function(filter){
                     return filter.get("fields").includes("id");
                   }),
+                  otherFilters = this.difference(idFilters),
                   //Separate the filter models in this collection by their query group.
-                  groupedFilters = _.groupBy(this.without(idFilters), function(m){
+                  groupedFilters = _.groupBy(otherFilters, function(m){
                     return m.get("queryGroup");
                   });
 
