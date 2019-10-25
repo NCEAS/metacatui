@@ -309,6 +309,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			if(e){
 				e.preventDefault();
 			    var subsectionName = $(e.target).attr("data-section");
+          if( !subsectionName ){
+            subsectionName = $(e.target).parents("[data-section]").first().attr("data-section");
+          }
 			}
 
 			//Mark its links as active
