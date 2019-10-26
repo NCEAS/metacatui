@@ -115,26 +115,47 @@ define(["jquery",
           try {
 
             var errors          = {},
+                requiredFields = MetacatUI.appModel.get("portalEditorRequiredFields"),
                 label           = this.get("label"),
                 url             = this.get("associatedURL"),
                 id              = this.get("identifier"),
                 genericLabels   = ["logo", "image"], // not set by the user
                 hasLabel        = label && typeof label == "string" && !genericLabels.includes(label),
                 hasURL          = url && typeof url == "string",
-                hasId           = id && typeof id == "string";
+                hasId           = id && typeof id == "string",
+                urlRegex        = new RegExp('^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$', "i");
 
+            // If it's a logo, check whether it's a required image
+            if(this.get("nodeName") === "logo" && requiredFields.logo && !hasId){
+              errors.identifier = "An image is required."
+              return errors
+            }
+            // If it's a section image, check whether it's a required image
+            else if(this.get("nodeName") === "image" && requiredFields.sectionImage && !hasId){
+              errors.identifier = "An image is required."
+              return errors
+            }
             // If none of the fields have values, the portalImage won't be serialized
-            if(!hasId && !hasURL && !hasLabel){
+            else if(!hasId && !hasURL && !hasLabel){
               return
             }
-            // As long as an image model has an ID, it's valid.
-            else if(hasId){
-              return
-            // If it has no ID, but a URL or Label, it's missing an image
+            // Check that URL is valid
+            if(hasURL && !urlRegex.test(url)){
+              // If it's not, try prepending https:// and test again
+              url = "https://" + url;
+              // If it passes now
+              if(urlRegex.test(url)){
+                // then update the url
+                this.set("associatedURL", url)
+              } else {
+                // If it still fails, give an error
+                errors.associatedURL = "Enter a valid URL."
+              }
             }
-            else if (hasURL || hasLabel) {
-              return errors.identifier = "An image is required"
+            if (!hasId && (hasURL || hasLabel)) {
+              errors.identifier = "An image is required."
             }
+            return errors;
 
           }
           catch(e){
@@ -147,7 +168,7 @@ define(["jquery",
         /**
          * isEmpty - Returns true if the PortalImage model has no label, no associatedURL, and no identifier
          *
-         * @return {boolean}  true if the model is empty, false if it has at least a label, url, or id      
+         * @return {boolean}  true if the model is empty, false if it has at least a label, url, or id
          */
         isEmpty: function(){
           return (

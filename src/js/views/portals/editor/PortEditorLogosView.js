@@ -35,6 +35,12 @@ function(_, $, Backbone, PortalImage, ImageEdit){
     model: undefined,
 
     /**
+    * A reference to the PortalEditorView
+    * @type {PortalEditorView}
+    */
+    editorView: undefined,
+
+    /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
@@ -47,12 +53,14 @@ function(_, $, Backbone, PortalImage, ImageEdit){
     * @constructs PortEditorLogosView
     * @param {Object} options - A literal object with options to pass to the view
     * @property {Portal} options.model - The Portal whose logos are rendered in this view
+    * @property {PortalEditorView}  options.editorView - Gets set as PortalEditorLogosView.editorView
     */
     initialize: function(options){
 
       try{
         if( typeof options == "object" ){
           this.model = options.model || undefined;
+          this.editorView = options.editorView;
         }
       } catch(e){
         console.log("PortEditorLogosView failed to initialize. Error message: " + e);
@@ -110,6 +118,7 @@ function(_, $, Backbone, PortalImage, ImageEdit){
 
         var imageEdit = new ImageEdit({
           parentModel: this.model,
+          editorView: this.editorView,
           model: portalImage,
           imageUploadInstructions: "Drag & drop a partner logo here or click to upload",
           imageWidth: 150,

@@ -149,6 +149,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
         // Add the edit image view (incl. uploader) for the section image
         this.sectionImageUploader = new ImageEdit({
           model: this.model.get("image"),
+          editorView: this.editorView,
           imageUploadInstructions: ["Drag & drop a high quality image here or click to upload",
                                     "Suggested image size: 1200 x 1000 pixels"],
           nameLabel: false,

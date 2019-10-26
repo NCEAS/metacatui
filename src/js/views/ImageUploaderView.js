@@ -280,6 +280,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
           // If there are any errors during the entire process...
           error: function error(file, message, xhr) {
+            view.trigger("error");
             // Give a readable error if it's a server error
             if(xhr){
               console.log(message);

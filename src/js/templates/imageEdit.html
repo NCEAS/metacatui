@@ -1,4 +1,5 @@
 <div class="image-uploader-container"></div>
+<p class="error notification" data-category="identifier"></p>
 <% if(nameLabel){ %>
   <div>
     <h5><%=nameLabel%></h5>
@@ -8,6 +9,7 @@
 <% if(urlLabel){ %>
   <div>
     <h5><%=urlLabel%></h5>
+    <p class="error notification" data-category="associatedURL"></p>
     <input type="text" placeholder="https://" class="basic-text" value="<%=urlText%>" data-category="associatedURL"/>
   </div>
 <% } %>

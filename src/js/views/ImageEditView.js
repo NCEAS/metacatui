@@ -55,6 +55,12 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     parentModel: undefined,
 
     /**
+    * A reference to the PortalEditorView
+    * @type {PortalEditorView}
+    */
+    editorView: undefined,
+
+    /**
     * The maximum height of the image preview. If set to false,
     * no css width property is set.
     * @type {number}
@@ -147,9 +153,10 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * @type {Object}
     */
     events: {
-      "mouseover .toggle-remove-preview" : "showRemovePreview",
-      "mouseout  .toggle-remove-preview" : "hideRemovePreview",
-      "click .remove-image-edit-view"     : "removeSelf"
+      "mouseover .toggle-remove-preview"    : "showRemovePreview",
+      "mouseout  .toggle-remove-preview"    : "hideRemovePreview",
+      "click .remove-image-edit-view"       : "removeSelf",
+      "focusout .basic-text"                : "redoValidation"
     },
 
     /**
@@ -157,6 +164,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     * @constructs ImageEditView
     * @param {Object} options - A literal object with options to pass to the view
     * @property {Portal}  options.parentModel - Gets set as ImageEditView.parentModel
+    * @property {PortalEditorView}  options.editorView - Gets set as ImageEditView.editorView
     * @property {PortalImage}  options.model - Gets set as ImageEditView.model
     * @property {string[]}  options.imageUploadInstructions - Gets set as ImageUploaderView.imageUploadInstructions
     * @property {string}  options.nameLabel - Gets set as ImageEditView.nameLabel
@@ -176,6 +184,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
         if( typeof options == "object" ){
           this.parentModel              = options.parentModel;
+          this.editorView               = options.editorView;
           this.model                    = options.model;
           this.imageUploadInstructions  = options.imageUploadInstructions;
           this.imageWidth               = options.imageWidth;
@@ -234,18 +243,19 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         this.$(this.imageUploaderContainer).append(this.uploader.el);
         this.uploader.render();
 
-        // Remove validation error messages, if there are any, when image added
-        this.stopListening(this.uploader, "addedfile");
-        this.listenTo(this.uploader, "addedfile", function(){
-          view.removeValidation();
-        });
-
         // Reset image attributes when user removes image
         this.stopListening(this.uploader, "removedfile");
         this.listenTo(this.uploader, "removedfile", function(){
           var defaults = view.model.defaults();
           view.model.set("identifier", defaults.identifier);
           view.model.set("imageURL", defaults.imageURL);
+          view.redoValidation();
+        });
+
+        // Try to validate again when image is added but not yet uploaded
+        this.stopListening(this.uploader, "addedfile");
+        this.listenTo(this.uploader, "addedfile", function(){
+          view.redoValidation();
         });
 
         // Update the PortalImage model when the image is successfully uploaded
@@ -253,6 +263,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         this.listenTo(this.uploader, "successSaving", function(dataONEObject){
           view.model.set("identifier", dataONEObject.get("id"));
           view.model.set("imageURL", dataONEObject.url());
+          view.redoValidation();
         });
 
         // Allows model to update when user types in text field
@@ -297,6 +308,24 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
     },
 
+    /**
+     * redoValidation - Called when a user focuses out of input fields
+     * with the .basic-text class (organization name and associated URL), or
+     * when an image is successfully uploaded or removed. This function
+     * validates the PortalImage model again and shows errors if there are any.
+     */
+    redoValidation: function(){
+      try {
+        view = this;
+        // Add a small pause so that the model is updated first.
+        setTimeout(function () {
+          view.removeValidation();
+          view.showValidation();
+        }, 1);
+      } catch (e) {
+        console.log(e);
+      }
+    },
 
     /**
      * showValidation - show validation errors for this ImageEdit view
@@ -307,29 +336,38 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
         var errors = this.model.validate();
 
-        if(errors && errors.length){
-          this.$(this.imageUploaderContainer).addClass("error");
+        if(errors){
 
-          var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
-          if(dropzoneMessage.find(".error").length === 0){
-            dropzoneMessage.prepend("<h5 class='error'>Please add an image</h5>");
+          _.each(errors, function(errorMsg, category){
+            var categoryEls = this.$("[data-category='" + category + "']");
+            //Use the showValidationMessage function from the parent view
+            if( this.editorView && this.editorView.showValidationMessage ){
+              this.editorView.showValidationMessage(categoryEls, errorMsg);
+            }
+
+          }, this);
+
+          // add class to dropzone element if error has to do with image
+          if(errors.identifier){
+            this.$el.find(".dropzone").addClass("error");
           }
+
         }
 
       } catch (e) {
         console.log("Failed to validate portalImage, error: " + e);
       }
 
-
     },
 
     /**
-     * removeValidation - Removedisplayed validation errors, if any
+     * removeValidation - Remove displayed validation errors, if any
      */
     removeValidation: function(){
-      this.$(this.imageUploaderContainer).removeClass("error");
-      var dropzoneMessage = this.$(this.imageUploaderContainer).first(".dz-message");
-      dropzoneMessage.find(".error").remove();
+      this.$(".notification.error").removeClass("error").empty();
+      this.$(".section-link-container.error, input.error, textarea.error").removeClass("error");
+      this.$(".validation-error-icon").hide();
+      this.$el.find(".dropzone").removeClass("error");
     },
 
     /**

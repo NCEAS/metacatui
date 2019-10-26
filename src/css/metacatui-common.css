@@ -2641,16 +2641,14 @@ img[src*="googleapis.com/"].georegion-map{
 ********************************************/
 
 /* Image upload error formatting (including validation) */
-.image-uploader-container.error .dz-message,
-.dropzone .dz-error,
-.dropzone:hover .dz-message.subtle.warning {
+.dropzone .dz-error {
 	color: #960303;
 }
-
-.image-uploader-container.error .dropzone {
-	outline-color: #960303;
+.dropzone.error {
+	border-color: #960303;
+}
+.dropzone.error .dz-message {
 	background-color: rgba(255,0,0,0.1);
-	opacity: 0.5;
 }
 
 .dz-image-preview div.dz-error-message{
@@ -2790,6 +2788,10 @@ img[src*="googleapis.com/"].georegion-map{
 .portal-display-image .image-uploader.remove-preview .image-container{
   opacity: .3;
 }
+.portal-display-image p.notification.error {
+    text-align: center;
+}
+
 .logos-container .dropzone .icon-upload {
   font-size: 2.5em;
   margin-bottom: 10px;
@@ -2912,6 +2914,14 @@ img[src*="googleapis.com/"].georegion-map{
   font-size: .9em;
 }
 
+.logo-editor-container p.notification.error {
+    width: 100px;
+    text-align: center;
+    line-height: 102%;
+    padding-top: 5px;
+    font-size: 0.9em;
+}
+
 .portal-editor .title-container {
 	width: calc(100% - 150px);
 	min-width: 300px;
@@ -2978,7 +2988,7 @@ img[src*="googleapis.com/"].georegion-map{
   color: #fb5656;
   font-size: 1.25em;
   height: 2em;
-	z-index: 10; /* should be ontop of all other dropzone elements */
+	z-index: 5; /* should be ontop of all other dropzone elements */
 }
 .port-editor-logos .edit-image{
   border: 1px solid #dedede;
@@ -2994,6 +3004,10 @@ img[src*="googleapis.com/"].georegion-map{
   margin-right: auto;
   display: block;
   overflow: hidden;
+}
+.port-editor-logos p.notification.error {
+    text-align: center;
+    margin: 0;
 }
 .port-editor-settings {
   padding-left: 40px;
@@ -3075,6 +3089,7 @@ img[src*="googleapis.com/"].georegion-map{
 	box-sizing: border-box;
 	left: 0;
 	margin: 60px 3px 0px 2px;
+  z-index: 10; /* so it's above all the dropzone stuff */
 }
 
 .port-editor-markdown-container div.portal-display-image {

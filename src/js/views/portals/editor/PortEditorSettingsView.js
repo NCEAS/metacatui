@@ -52,6 +52,12 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
     model: undefined,
 
     /**
+    * A reference to the PortalEditorView
+    * @type {PortalEditorView}
+    */
+    editorView: undefined,
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -105,7 +111,10 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         this.$(".permissions-container").html(accessPolicyView.el);
 
         //Render the PortEditorLogosView
-        var logosView = new PortEditorLogosView({ model: this.model });
+        var logosView = new PortEditorLogosView({
+          model: this.model,
+          editorView: this.editorView
+        });
         logosView.render();
         this.$(".logos-container").html(logosView.el).data("view", logosView);
 

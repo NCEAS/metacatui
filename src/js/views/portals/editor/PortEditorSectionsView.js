@@ -290,6 +290,9 @@ function(_, $, Backbone, Portal, PortalSection,
             model: section
           });
 
+          // Pass the portal editor view onto the section
+          sectionView.editorView = this.editorView;
+
           //Create a unique label for this section and save it
           var uniqueLabel = this.getUniqueSectionLabel(section);
           //Set the unique section label for this view
@@ -531,6 +534,8 @@ function(_, $, Backbone, Portal, PortalSection,
         model: this.model,
         uniqueSectionLabel: "Settings"
       });
+
+      settingsView.editorView = this.editorView;
 
       //Add the Settings view to the page
       this.$(this.sectionsContainer).append(settingsView.$el);
