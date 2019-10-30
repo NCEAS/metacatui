@@ -48,7 +48,7 @@
 					</li>
 			    <li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
 
-          <li class="minimal-nav subtle hidden">
+          <li class="minimal-nav subtle hidden hosted-by">
             <a href="<%=MetacatUI.root%>/">Hosted by the
               <img src="<%= MetacatUI.root %>/js/themes/arctic/img/logo-small-no-title.png" class="logo" />
               Arctic Data Center</a>
@@ -56,7 +56,7 @@
 
 					<% if (loggedIn) { %>
         		<li class="dropdown minimal-nav">
-							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
+							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><span class="user-name"><%=formattedName%></span><b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="<%= MetacatUI.root %>/submit">Submit data</a></li>
 								<li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li>

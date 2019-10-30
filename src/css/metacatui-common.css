@@ -2819,6 +2819,7 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-sections .section-menu-link:hover ~ .menu,
 .port-editor-sections .section-link-container .menu:hover{
   display: block;
+	margin-top: -1px; /* to make it easier for user to keep menu open when moving mouse downward */
 }
 .port-editor-sections .portal-section-link{
   display: inline-block;
@@ -3655,7 +3656,8 @@ i.toc-sub-item{
   display: inline;
 }
 #portal-section-tabs .section-link-container:hover .portal-section-link,
-#portal-section-tabs .section-link-container:hover .section-menu-link{
+#portal-section-tabs .section-link-container:hover .section-menu-link,
+#portal-section-tabs .section-link-container:hover {
   background-color: var(--portal-secondary-color);
   color: #FFF;
 }

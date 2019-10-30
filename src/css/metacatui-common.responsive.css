@@ -62,6 +62,8 @@
 	}
 	.nav{
 		width: 100%;
+		flex-direction: column;
+    display: flex;
 	}
 	.navbar .home > a:after{
 		content: " Home";
@@ -75,16 +77,149 @@
 		position: relative;
 	}
 	.nav .right .dropdown-menu{
-		left: 30%;
-		width: 50%;
+		width: 100%;
 	}
 
+	.navbar .nav {
+		margin-right: 0;
+	}
+
+	.navbar .nav ul.dropdown-menu {
+		/* ensure the dropdown menu is covers width of viewport regardless of parent's width */
+		position: absolute;
+		left: 50%;
+		right: 50%;
+		margin-left: -50vw;
+		margin-right: -50vw;
+		width: 100vw;
+	}
+
+	a.dropdown-toggle.user {
+    margin: 4px 0 9px 0;
+	}
+
+	.dropdown-header {
+		padding: 3px 0;
+	}
+
+	/* put the drop down menu triangle in the middle  */
+	.navbar .nav>li>.dropdown-menu:before {
+    left: 50%;
+	}
+	.navbar .nav>li>.dropdown-menu:after {
+    left: calc(50% + 1px);
+	}
+
+	/* edit portal button */
+	.PortalView #Navbar .nav .edit-portal-link-container.minimal-nav{
+		display: flex;
+		justify-content: center;
+	}
+	#editPortal{
+		margin: 10px 0;
+		width: 96px;
+	}
+
+
+	/*************** User menu ***********/
+
+	#Content > .nav-tabs {
+		flex-direction: row;
+	}
+
+	#Content .span8.subsection {
+	    width: 100%;
+	}
+
+	#Content .panel.panel-default.span3 {
+	    width: 100%;
+	}
+
+	/*************** Sign In box ***********/
+	#signinPopup {
+    width: 100%;
+    box-sizing: border-box;
+    top: 50px;
+    position: absolute;
+    left: 0;
+	}
+
+	/*************** Portals ***********/
+
+	.PortalView #Navbar .nav {
+		float: none;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+
+	.portal-view {
+		width:100%;
+		margin-left: 0;
+	}
+
+	.portal-view #portal-header-container {
+		padding: 0px;
+		marign-bottom: 10px;
+	}
+
+	#portal-header-container .row{
+		margin: 0px;
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	#portal-header-container .row .portal-logo {
+		margin-top: 15px;
+		max-width: 70px;
+		max-height: 100%;
+	}
+
+	#portal-header-container .portal-logo{
+		margin: 0px 3px 0px 3px;
+	}
+
+	#portal-header-container .portal-title{
+		margin: 0px 3px 0px 3px;
+	}
+
+	#portal-section-tabs {
+		flex-direction: row;
+		flex-wrap: nowrap;
+		overflow: auto;
+		padding: 0 5px;
+		box-sizing: border-box;
+	}
+
+	#portal-section-tabs li.section-link-container {
+    width: auto;
+		border-radius: 5px;
+		margin: 0 2px;
+		padding: 10px;
+		white-space: nowrap;
+	}
+
+	.portal-display-text {
+		padding: 0 10px;
+		text-align: center;
+	}
+
+
+
+
 	/*************** General Structure ***********/
+
 	.row-fluid .span6.pagination-left {
   		width: 100%;
 	}
 	#Content{
 		width: 100%;
+		padding-left: 0;
+		padding-right: 0;
+
 	}
 
 	/************** Search page ****************/
@@ -227,8 +362,7 @@
 
 /* Smartphones (portrait) ----------- */
 @media only screen
-and (max-width : 320px) {
-/* STYLES GO HERE */
+and (max-width : 420px) {
 }
 
 /* iPads (portrait and landscape) ----------- */
