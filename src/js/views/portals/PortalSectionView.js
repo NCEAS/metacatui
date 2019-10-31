@@ -116,9 +116,11 @@ define(["jquery",
         },
 
         renderTOC: function(){
+
           //Create a table of contents view
           var tocView = new TOCView({
-            contentEl: this.markdownView.el
+            contentEl: this.markdownView.el,
+            className: "toc toc-view scrollspy-TOC"
           });
 
           this.tocView = tocView;
@@ -126,13 +128,14 @@ define(["jquery",
           tocView.render();
 
           //If more than one link was created in the TOCView, add it to this view
-          if( tocView.$el.find("a").length > 1){
+          if( tocView.$el.find("li").length > 1){
             this.$(".portal-section-content").prepend(tocView.el);
 
             //Make a two-column layout
             tocView.$el.addClass("span3");
             this.markdownView.$el.addClass("span9");
           }
+
         },
 
         /*
@@ -147,22 +150,23 @@ define(["jquery",
               }
           });
 
-          //Affix the TOC to the top of the window when scrolling past it
+          // When TOC is added...
+          // Affix the TOC to the top of the window when scrolling past it &
+          // add scrollSpy
           if( !this.tocView && this.markdownView ){
             this.listenToOnce(this.markdownView, "mdRendered", function(){
-
               this.tocView.$el.affix({
                 offset: this.tocView.$el.offset().top
               });
-
+              this.tocView.addScrollspy(".portal-section-view.active .scrollspy-TOC");
             });
           }
           else if( this.tocView ){
             this.tocView.$el.affix({
               offset: this.tocView.$el.offset().top
             });
+            this.tocView.addScrollspy(".portal-section-view.active .scrollspy-TOC");
           }
-
 
         },
 
@@ -179,11 +183,11 @@ define(["jquery",
 
             var view = this;
 
-            //Wait one second to allow images time to load before we scroll down the page
+            //Wait 0.5 seconds to allow images time to load before we scroll down the page
             setTimeout(function(){
               //Scroll to the element specified in the hash
               MetacatUI.appView.scrollTo( view.$(window.location.hash) );
-            }, 1000);
+            }, 500);
           }
 
         },
@@ -219,7 +223,6 @@ define(["jquery",
           return name;
 
         }
-
      });
 
      return PortalSectionView;

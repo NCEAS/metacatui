@@ -410,6 +410,10 @@ define(["jquery",
               // Activate the tab
               this.$(".nav-tabs").children().each(function(i, li){
                 if($(li).children().attr("href") == "#" + sectionName){
+                  var sectionView = $(li).find("a").data("view");
+                  if( typeof sectionView !== "undefined"){
+                    sectionView.postRender();
+                  }
                   $(li).addClass("active")
                 };
               });

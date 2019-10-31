@@ -3461,6 +3461,11 @@ img[src*="googleapis.com/"].georegion-map{
   border-radius: 0px;
   text-shadow: none;
 }
+.Editor.Portal .toc li.active > a,
+.portal-view .toc li.active > a {
+	background-color: var(--portal-secondary-color);
+}
+
 .Editor.Portal .toc-ul a:hover,
 .portal-view .toc-ul a:hover{
   color: #FFF;
@@ -3475,6 +3480,13 @@ img[src*="googleapis.com/"].georegion-map{
 i.toc-sub-item{
 	margin-left: 18px;
 	visibility: hidden;
+}
+/* hide mobile TOC by default */
+.portal-section-content .toc .mobile {
+	display: none;
+}
+.submenu.hidden{
+	display: none;
 }
 /* end of markdown section table of contents */
 

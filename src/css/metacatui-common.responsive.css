@@ -137,11 +137,12 @@
 
 	/*************** Sign In box ***********/
 	#signinPopup {
-    width: 100%;
+    width: 100vw;
     box-sizing: border-box;
     top: 50px;
-    position: absolute;
+    position:fixed;
     left: 0;
+		margin: 0;
 	}
 
 	/*************** Portals ***********/
@@ -207,8 +208,108 @@
 		text-align: center;
 	}
 
+	.tab-pane.portal-section-view {
+    width: 100vw;
+	}
+	.portal-section-content {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    padding: 0;
+	}
 
+	.portal-section-content .toc .mobile {
+		display: flex;
+		flex-direction: row;
+		width: 100vw;
+		margin: 0;
+		background-color: var(--portal-secondary-color);
+		color: white;
+	}
 
+	.portal-section-content .toc .mobile a {
+		color: white;
+	}
+
+	.portal-section-content .toc .desktop {
+	  display: none;
+	}
+
+	.toc-ul li, .portal-view .toc-ul a {
+		background-color: none;
+	}
+
+	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul {
+    position: sticky;
+    position: -webkit-sticky;
+    background-color: transparent;
+    margin-left: 0;
+    padding: 0px;
+	}
+
+	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul a {
+		color: #242424;
+	}
+
+	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul li.active > a {
+		color: white;
+		background-color: var(--portal-secondary-color);
+	}
+
+	.toc .mobile > * {
+		padding: 9px;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+	}
+	.toc .mobile > *.hidden {
+		display: none;
+	}
+
+	.toc .mobile > * > a {
+		padding-right: 7px;
+	}
+
+	.toc .mobile > .second-level-items {
+		min-width: 48vw;
+	}
+
+	.toc .mobile > .top-level-items {
+		margin: 0;
+		min-width: 48vw;
+		max-width: 100vw;
+		padding-left: 10px;
+	}
+
+	.toc .mobile > .mobile-toc-divider {
+		width: 4vw;
+	}
+
+	.toc .mobile > .mobile-toc-divider:before{
+		font-size: 21px;
+	}
+
+	.nav.mobile li > a {
+		display: list-item;
+	}
+
+	/* affix the TOC to the top */
+	.Editor.Portal .toc-view.affix,
+	.portal-section-content .toc-view.affix {
+    top: 0px;
+	}
+
+	/* make markdown content take full width */
+	.markdown.span9 {
+    padding: 13px 10px;
+    width: 100vw;
+    box-sizing: border-box;
+	}
+	.portal-section-content .toc-view.span3.affix + .span9 {
+		margin-left: 0;
+	}
 
 	/*************** General Structure ***********/
 
