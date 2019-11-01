@@ -134,6 +134,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 							svgClass: svgClass,
 							countClass: "data",
 							height: 300,
+              width: 380,
 							formatLabel: function(name){
 								//If this is the application/vnd.ms-excel formatID - let's just display "MS Excel"
 								if((name !== undefined) && (name.indexOf("ms-excel") > -1)) name = "MS Excel";
@@ -180,6 +181,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 							svgClass: svgClass,
 							countClass: "metadata",
 							height: 300,
+              width: 380,
 							formatLabel: function(name){
 								if((name !== undefined) && (name.indexOf("//ecoinformatics.org") > -1)){
 									//EML - extract the version only
@@ -549,7 +551,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 					yLabel: "all downloads",
 					barClass: "packages",
 					roundedRect: true,
-					roundedRadius: 10,
+					roundedRadius: 3,
 					barLabelClass: "packages",
 					width: width
 				};
@@ -636,7 +638,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 						yFormat: d3.format(",d"),
 						barClass: "packages",
 						roundedRect: true,
-						roundedRadius: 10,
+						roundedRadius: 3,
 						barLabelClass: "packages",
 						width: width
 					};
@@ -758,7 +760,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 					yFormat: d3.format(",%"),
 					barClass: "packages",
 					roundedRect: true,
-					roundedRadius: 10,
+					roundedRadius: 3,
 					barLabelClass: "packages",
 					width: width
 				};

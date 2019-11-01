@@ -18,6 +18,9 @@
 	    margin-left: auto;
 	    margin-right: auto;
   	}
+    footer .adc-contact {
+      width: 470px;
+    }
   	#logo{
   		font-size: 1.4em;
   	}
@@ -25,10 +28,10 @@
   		height: 70px;
   	}
   	.header nav{
-		float: right;
-		width: auto;
-		display: block;
-	}
+  		float: right;
+  		width: auto;
+  		display: block;
+	  }
   	.header .nav > li{
   		width: auto;
   		border-bottom: 0px;
@@ -190,16 +193,26 @@
 	#Footer{
 		height: 775px; /* Keeps footer down */
 	}
+
 	footer div.help-items,
 	footer .logos{
 		width: 100%;
 		min-width: 100%;
 		margin-top: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
 	}
-	footer .logos .logo{
-		margin-bottom: 0px;
-		margin-top: 0px;
+	footer .logos > a {
+		margin: 10px;
 	}
+
+  /* contact info */
+  footer nav.footer-links.col-1-4.offset-1-4 {
+    margin: 0;
+  }
 }
 
 @media only screen and (min-width : 1024px){

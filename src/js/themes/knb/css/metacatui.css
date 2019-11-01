@@ -358,6 +358,14 @@
       padding: 0px 15px 0px 15px;
     }
 
+		footer #FooterContent {
+	    display: flex;
+	    flex-direction: row;
+	    justify-content: left;
+	    align-items: center;
+	    flex-wrap: wrap;
+		}
+
     footer div.help-items{
     	min-width: 179px;
     }
@@ -420,6 +428,12 @@
       transition: opacity .5s;
       -webkit-transition: opacity .5s;
     }
+
+		footer#Footer .logos {
+			min-width: 320px;
+			justify-content: center;
+    	display: flex;
+		}
 
     footer#Footer .logos img:hover,
     footer#Footer .logos p:hover{

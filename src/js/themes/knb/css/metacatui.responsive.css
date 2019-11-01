@@ -6,16 +6,51 @@
       left: 50%;
       margin: 0px 0px 0px -380px;
       z-index: 1;
-      float: none;      
+      float: none;
     }
-    
+
     #Header {
 	    height: 95px;
 	    background-color: transparent;
 	    background-image: none;
 	    overflow: hidden;
-	    opacity: 1.0;   
+	    opacity: 1.0;
   	}
+}
+
+/* Smartphones (Smaller screens) ----------- */
+@media only screen and (max-width : 970px) {
+/************** Footer ****************/
+	#Content{
+		padding-bottom: 785px; /* Keeps footer down */
+		margin-top: 0px;
+	}
+
+	footer#Footer {
+		height: 785px;
+	}
+
+	/* footer div.help-items, */
+	footer #FooterContent {
+    justify-content: center;
+	}
+
+	footer#Footer .logos{
+		margin-top: 20px;
+    min-width: 100%;
+    order: 1;
+		flex-wrap: wrap;
+	}
+	footer#Footer .logos,
+	footer#Footer .help-items{
+		margin: 20px 10px;
+	}
+
+	footer .logos .logo{
+		margin-bottom: 0px;
+		margin-top: 0px;
+	}
+
 }
 
 /* Smartphones (portrait and landscape) ----------- */
@@ -27,23 +62,5 @@
 	#Navbar .navbar-inner{
 		border-bottom: 2px solid #992222;
 	}
-	#Content{
-		padding-bottom: 785px; /* Keeps footer down */
-		margin-top: 0px;
-	}
-	
-	/************** Footer ****************/
-	#Footer{
-		height: 775px; /* Keeps footer down */
-	}
-	footer div.help-items,
-	footer .logos{
-		width: 100%;
-		min-width: 100%;
-		margin-top: 20px;
-	}
-	footer .logos .logo{
-		margin-bottom: 0px;
-		margin-top: 0px;
-	}
+
 }
