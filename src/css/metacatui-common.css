@@ -3498,6 +3498,9 @@ i.toc-sub-item{
   width: calc(100% + 80px);
   margin-left: -40px;
 }
+.portal-view #sidebar {
+  display: none;
+}
 .PortalView #Content{
   padding-top: 0px;
 }

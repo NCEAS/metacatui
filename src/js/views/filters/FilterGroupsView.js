@@ -293,7 +293,7 @@ define(['jquery', 'underscore', 'backbone',
       _.each( groupTabs.find("a"), function(link){
 
         if( $(link).height() < maxHeight ){
-          $(link).css("line-height", maxHeight + "px");
+          $(link).height(maxHeight + "px");
         }
 
       });
