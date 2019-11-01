@@ -498,6 +498,8 @@ define(['jquery', 'underscore', 'backbone'],
           if( typeof filterOptionsNode != "undefined" && $(filterOptionsNode).children().length ){
             $objectDOM.append(filterOptionsNode);
           }
+
+          $objectDOM.find("matchSubstring").remove()
         }
 
         return $objectDOM[0];
