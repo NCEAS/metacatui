@@ -30,6 +30,10 @@ define(["jquery",
         templateInvisibleH1: _.template(
             '<h1 id="<%=linkDisplay%>" style="display: inline"></h1>'
         ),
+        
+        events: {
+          'click .dropdown'       : 'toggleDropdown'
+    		},
 
         //The element on the page that contains the content that this table of contents
         //  is associated with.
@@ -359,6 +363,39 @@ define(["jquery",
           } catch (error) {
             console.log("error adding extra scrollSpy functionality to portal section, error message: " + error);
           }
+        },
+        
+        /**        
+         * toggleDropdown - Extends bootstrap's dropdown menu functionality by
+         * hiding the dropdown menu when the user clicks the dropdown toggle or
+         * any of the options within the dropdown menu.
+         *          
+         * @param  {event} e The click event on any part of the dropdown element
+         */         
+        toggleDropdown: function(e){
+          
+          try {
+            if(e && e.target && $(e.target).closest(".dropdown").children(".dropdown-menu")){
+                
+                  // The entire dropdown element including toggle and menu
+              var $dropdown = $(e.target).closest(".dropdown"),
+                  // The menu that we wish to show and hide on click
+                  $menu     = $dropdown.children(".dropdown-menu");
+              
+              // Wait for bootstrap to add or remove the open class on $dropdown
+              setTimeout(function () {
+                if($menu.hasClass("hidden") || $dropdown.hasClass("open")){
+                  $menu.removeClass("hidden");
+                } else {
+                  $menu.addClass("hidden");
+                }
+              }, 5);
+              
+            }
+          } catch (error) {
+            console.log("error hiding TOC dropdown menu on click, error message: " + error);
+          }
+          
         },
 
 

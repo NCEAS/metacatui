@@ -5683,7 +5683,7 @@ ul.side-nav-items {
     box-sizing: border-box;
     bottom: 0px;
     padding: 20px;
-    z-index:3;
+    z-index: 11;
 }
 .metadata-view #editor-footer{
     display: none;
