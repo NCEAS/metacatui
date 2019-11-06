@@ -20,6 +20,12 @@ define(["jquery",
         // @type Array - An array of subviews in this view
         subviews: [],
 
+        /**
+        * The display name for this Section
+        * @type {string}
+        */
+        uniqueSectionLabel: "Data",
+
         render: function(){
 
           if( this.id ){
@@ -68,6 +74,7 @@ define(["jquery",
           });
 
           this.$el.append(dataCatalogView.el);
+          this.$el.data("view", this);
 
           dataCatalogView.render();
 

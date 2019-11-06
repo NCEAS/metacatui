@@ -98,6 +98,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
         this.$(".stripe.updates").remove();
       }
 
+      this.$el.data("view", this);
+
 			//Start retrieving data from Solr
 			this.model.getAll();
 

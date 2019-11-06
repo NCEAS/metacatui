@@ -63,6 +63,11 @@ define(["jquery",
                     hideData: null,
                     hideMembers: null,
                     hideMap: null,
+                    //Options for the custom section labels
+                    //NOTE: This are not fully supported yet.
+                    metricsLabel: "Metrics",
+                    dataLabel: "Data",
+                    membersLabel: "Members",
                     // Map options, as specified in the portal document options
                     mapZoomLevel: 3,
                     mapCenterLatitude: null,

@@ -625,7 +625,7 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     getUniqueSectionLabel: function(sectionModel){
       //Get the label for this section
-      var sectionLabel = sectionModel.get("label").replace(/[^a-zA-Z0-9]/g, ""),
+      var sectionLabel = sectionModel.get("label").replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-"),
           unalteredLabel = sectionLabel,
           sectionLabels = this.sectionLabels || [],
           i = 2;

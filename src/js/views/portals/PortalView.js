@@ -2,8 +2,6 @@ define(["jquery",
         "underscore",
         "backbone",
         "models/portals/PortalModel",
-        "models/Search",
-        "models/Stats",
         "text!templates/alert.html",
         "text!templates/loading.html",
         "text!templates/portals/portal.html",
@@ -11,12 +9,12 @@ define(["jquery",
         "views/portals/PortalHeaderView",
         "views/portals/PortalDataView",
         "views/portals/PortalSectionView",
+        "views/portals/PortalMetricsView",
         "views/portals/PortalMembersView",
-        "views/StatsView",
         "views/portals/PortalLogosView"
     ],
-    function($, _, Backbone, Portal, SearchModel, StatsModel, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
-        PortalDataView, PortalSectionView, PortalMembersView, StatsView, PortalLogosView) {
+    function($, _, Backbone, Portal, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
+        PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView) {
         "use_strict";
         /* The PortalView is a generic view to render
          * portals, it will hold portal sections
@@ -36,10 +34,16 @@ define(["jquery",
             type: "Portal",
 
             /**
-             * The currently active editor section. e.g. Data, Metrics, Settings, etc.
-             * @type {string}
+             * The currently active section view
+             * @type {PortalSectionView}
              */
-            activeSection: "",
+            activeSection: undefined,
+
+            /**
+            * The currently active section label. e.g. Data, Metrics, Settings, etc.
+            * @type {string}
+            */
+            activeSectionLabel: "",
 
             /**
              * The names of all sections in this portal editor
@@ -87,11 +91,26 @@ define(["jquery",
             editPortalsTemplate: _.template(EditPortalsTemplate),
 
             /**
+            * A jQuery selector for the element that a single section link will be inserted into
+            * @type {string}
+            */
+            sectionLinkContainer: ".section-link-container",
+            /**
+            * A jQuery selector for the elements that are links to the individual sections
+            * @type {string}
+            */
+            sectionLinks: ".portal-section-link",
+            /**
+            * A jQuery selector for the section elements
+            * @type {string}
+            */
+            sectionEls: ".portal-section-view",
+            /**
              * The events this view will listen to and the associated function to call.
              * @type {Object}
              */
             events: {
-              "click #metrics-link" : "renderMetricsView"
+              "click .portal-section-link"   : "handleSwitchSection",
             },
 
             /**
@@ -103,6 +122,7 @@ define(["jquery",
                 this.portalId = options.portalId ? options.portalId : undefined;
                 this.label = options.label ? options.label : undefined;
                 this.activeSection = options.activeSection ? options.activeSection : undefined;
+                this.activeSectionLabel = options.activeSectionLabel ? options.activeSectionLabel : undefined;
             },
 
             /**
@@ -187,20 +207,21 @@ define(["jquery",
 
                 //Render the metrics section link
                 if ( this.model.get("hideMetrics") !== true ) {
-                  //Create a navigation link
-                  this.$("#portal-section-tabs").append(
-                    $(document.createElement("li"))
-                      .addClass("section-link-container")
-                      .append( $(document.createElement("a"))
-                                 .text("Metrics")
-                                 .addClass("portal-section-link")
-                                 .attr("id", "metrics-link")
-                                 .attr("href", "#Metrics" )
-                                 .attr("data-toggle", "tab")));
 
-                  this.$("#portal-sections").append( $(document.createElement("div"))
-                                                      .attr("id", "Metrics")
-                                                      .addClass("tab-pane") );
+                  //Create a PortalMetricsView
+                  var metricsView = new PortalMetricsView({
+                    model: this.model,
+                    id: this.model.get("metricsLabel"),
+                    uniqueSectionName: this.model.get("metricsLabel")
+                  });
+
+                  this.subviews.push(metricsView);
+                  this.$("#portal-sections").append(metricsView.el);
+
+                  metricsView.render();
+
+                  this.addSectionLink( metricsView );
+
                 }
 
                 // Render the members section
@@ -272,65 +293,28 @@ define(["jquery",
             },
 
             /**
-              * Update the path when tabs are clicked
-              * @param {Event} [e] - The click event on the navigation elements (tabs)
-             */
-            updatePath: function(e){
+             * Update the window location path with the active section name
+             * @param {boolean} [showSectionLabel] - If true, the section label will be added to the path
+            */
+            updatePath: function(showSectionLabel){
 
-              // reset the flag during each updatePath call
-              this.displaySectionInUrl = true;
+              var label         = this.model.get("label") || this.newPortalTempName,
+                  originalLabel = this.model.get("originalLabel") || this.newPortalTempName,
+                  pathName      = decodeURIComponent(window.location.pathname)
+                                  .substring(MetacatUI.root.length)
+                                  // remove trailing forward slash if one exists in path
+                                  .replace(/\/$/, "");
 
-              if(e){
-                var sectionView = $(e.target).data("view");
-                if( typeof sectionView !== "undefined"){
-                  sectionView.postRender();
-                }
+              // Add or replace the label and section part of the path with updated values.
+              // pathRE matches "/label/section", where the "/section" part is optional
+              var pathRE = new RegExp("\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$", "i");
+              newPathName = pathName.replace(pathRE, "") + "/" + label;
 
-                // Get the href of the clicked link
-                var linkTarget = $(e.target).attr("href");
-                linkTarget = linkTarget.substring(1);
-
-                // Set this view's active section name to the link href
-                this.activeSection = linkTarget;
+              if( showSectionLabel && this.activeSection ){
+                newPathName += "/" + this.activeSection.uniqueSectionLabel;
               }
 
-              if (!e && this.activeSection == this.sectionNames[0])
-                this.displaySectionInUrl = false;
-
-              var label = this.label,
-                  seriesId = this.portalId,
-                  pathName = decodeURIComponent(window.location.pathname),
-                  section  = this.activeSection;
-
-              //Get the new pathname using the active section
-              if( !MetacatUI.root.length || MetacatUI.root == "/" ){
-                // If it's a new portal, the portal name might not be in the URL yet
-                // Or if navigation is via seriesId - remove the seriesId and display the portal name
-                if(pathName.indexOf(label) < 0){
-                  if (pathName.indexOf(seriesId) > 0)
-                  {
-                    // Remove the seriesId and the forward slash
-                    pathName = pathName.substring(0, pathName.indexOf(seriesId))
-                              .replace(/\/$/, "");;
-                  }
-                  var newPathName = pathName + "/" + label;
-                  newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
-
-                } else {
-                  var newPathName = pathName.substring(0, pathName.indexOf(label)) +
-                                      label;
-                  newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
-
-                }
-              }
-              else{
-                var newPathName = pathName.substring( pathName.indexOf(MetacatUI.root) + MetacatUI.root.length );
-                newPathName = newPathName.substring(0, newPathName.indexOf(label)) +
-                                    label ;
-                newPathName = this.displaySectionInUrl ? newPathName + "/" + section : newPathName;
-
-              }
-              //Update the window location
+              // Update the window location
               MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
 
             },
@@ -343,7 +327,7 @@ define(["jquery",
 
               // Get the section names from the tab elements
               var sectionNames = [];
-              this.$(".portal-section-link")
+              this.$(this.sectionLinks)
                 .each(function(i, anchorEl){
                   sectionNames[i] = $(anchorEl)
                                       .attr("href")
@@ -355,78 +339,134 @@ define(["jquery",
             },
 
             /**
-             * Manually switch to a section subview by making the tab and tab panel active.
-             * Navigation between sections is usually handled automatically by the Bootstrap
-             * library, but a manual switch may be necessary sometimes
-             * @param {string} [sectionName] - The section to switch to. If not given, defaults to the activeSection set on the view.
-             */
-            switchSection: function(sectionName){
+            * Manually switch to a section subview by making the tab and tab panel active.
+            * Navigation between sections is usually handled automatically by the Bootstrap
+            * library, but a manual switch may be necessary sometimes
+            * @param {PortalSectionView} [sectionView] - The section view to switch to. If not given, defaults to the activeSection set on the view.
+            */
+            switchSection: function(sectionView){
 
-              // Make sure the list of section names is up to date
-              this.updateSectionNames();
+              //Create a flag for whether the section label should be shown in the URL
+              var showSectionLabelInURL = true;
 
-              //If there are no sections in this portal, exit now
-              if( !this.sectionNames.length ){
-                return;
-              }
-
-              // If no section name is given, use the active section in the view.
-              // If there's also no activeSection, then default to an empty string,
-              // which will set the navigation to the first section listed
-              if( !sectionName ){
-                var sectionName = this.activeSection || ""
-              }
-
-              // Match the section name to the list of section names on the view
-              // Allow case insensitive navigation to sections
-              i = this.sectionNames
-                    .map(v => v.toLowerCase())
-                    .indexOf(
-                      sectionName.toLowerCase()
-                    );
-
-              // If there was a match
-              if(i>=0){
-                sectionName = this.sectionNames[i];
-              //Otherwise, switch to the first section listed
-              } else {
-                if(this.sectionNames.length){
-                  sectionName = this.sectionNames[0]
+              // If no section view is given, use the active section in the view.
+              if( !sectionView ){
+                //Use the sectionView set already
+                if( this.activeSection ){
+                  var sectionView = this.activeSection;
+                }
+                //Or find the section view by name, which may have been passed through the URL
+                else if( this.activeSectionLabel ){
+                  var sectionView = this.getSectionByLabel(this.activeSectionLabel);
                 }
               }
 
-              // Update the activeSection set on the view for consistency with the path
-              // and with capitalization
-              this.activeSection = sectionName;
+              //If no section view was indicated, just default to the first visible one
+              if( !sectionView ){
+                var sectionView = this.$(this.sectionLinkContainer).first().data("view");
 
-              // Render the metrics section if user navigated directly there
-              if( sectionName == "Metrics" ){
-                this.renderMetricsView();
+                //If we are defaulting to the first section, don't show the section label in the URL
+                showSectionLabelInURL = false;
+
+                //If there are no section views on the page at all, exit now
+                if( !sectionView ){
+                  return;
+                }
               }
 
-              // Activate the section content
-              this.$(".tab-content").children("#" + sectionName).addClass("active");
+              // Update the activeSection set on the view
+              this.activeSection = sectionView;
 
-              // Activate the tab
-              this.$(".nav-tabs").children().each(function(i, li){
-                if($(li).children().attr("href") == "#" + sectionName){
-                  var sectionView = $(li).find("a").data("view");
-                  if( typeof sectionView !== "undefined"){
-                    sectionView.postRender();
-                  }
-                  $(li).addClass("active")
+
+              // Activate the section content
+              this.$(this.sectionEls).each(function(i, contentEl){
+                if($(contentEl).data("view") == sectionView){
+                  $(contentEl).addClass("active");
+                } else {
+                  // make sure no other sections are active
+                  $(contentEl).removeClass("active");
+                }
+              });
+
+              // Activate the link to the content
+              this.$(this.sectionLinkContainer).each(function(i, linkEl){
+                if( $(linkEl).data("view") == sectionView ){
+                  $(linkEl).addClass("active")
+                } else {
+                  // make sure no other sections are active
+                  $(linkEl).removeClass("active")
                 };
               });
 
-              // Update the path with the new active section
-              this.updatePath();
+              //If the section view has post-render functionality, execute it now
+              if( typeof sectionView.postRender == "function" ){
+                sectionView.postRender();
+              }
 
-              // Update path when each tab is clicked and shown
-              view = this;
-              this.$('a[data-toggle="tab"]').on('shown', function(e){
-                view.updatePath(e)
+              //Update the location path with the new section name
+              this.updatePath(showSectionLabelInURL);
+
+            },
+
+            /**
+            * When a section link has been clicked, switch to that section
+            * @param {Event} e - The click event on the section link
+            */
+            handleSwitchSection: function(e){
+
+              e.preventDefault();
+
+              var sectionView = $(e.target).parents(this.sectionLinkContainer).first().data("view");
+
+              if( sectionView ){
+                this.switchSection(sectionView);
+              }
+
+            },
+
+            /**
+            * Returns the section view that has a label matching the one given.
+            * @param {string} label - The label for the section
+            * @return {PortalSectionView|false} - Returns false if a matching section view isn't found
+            */
+            getSectionByLabel: function(label){
+
+              //If no label is given, exit
+              if(!label){
+                return;
+              }
+
+              //Find the section view whose unique label matches the given label. Case-insensitive matching.
+              return _.find( this.subviews, function(view){
+                if( typeof view.uniqueSectionLabel == "string" ){
+                  return view.uniqueSectionLabel.toLowerCase() == label.toLowerCase();
+                }
+                else{
+                  return false;
+                }
               });
+            },
 
+            /**
+            * Creates and returns a unique label for the given section. This label is just used in the view,
+            * because portal sections can have duplicate labels. But unique labels need to be used for navigation in the view.
+            * @param {PortEditorSection} sectionModel - The section for which to create a unique label
+            * @return {string} The unique label string
+            */
+            getUniqueSectionLabel: function(sectionModel){
+              //Get the label for this section
+              var sectionLabel = sectionModel.get("label").replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-"),
+                  unalteredLabel = sectionLabel,
+                  sectionLabels = this.sectionLabels || [],
+                  i = 2;
+
+              //Concatenate a number to the label if this one already exists
+              while( sectionLabels.includes(sectionLabel) ){
+                sectionLabel = unalteredLabel + i;
+                i++;
+              }
+
+              return sectionLabel;
             },
 
             /**
@@ -450,6 +490,13 @@ define(["jquery",
 
               this.addSectionLink( sectionView );
 
+              //Create a unique label for this section and save it
+              var uniqueLabel = this.getUniqueSectionLabel(sectionModel);
+              //Set the unique section label for this view
+              sectionView.uniqueSectionLabel = uniqueLabel;
+
+              this.subviews.push(sectionView);
+
             },
 
             /**
@@ -465,107 +512,13 @@ define(["jquery",
               this.$("#portal-section-tabs").append(
                 $(document.createElement("li"))
                   .addClass("section-link-container")
+                  .data("view", sectionView)
                   .append( $(document.createElement("a"))
                              .text(label)
                              .attr("href", "#" + hrefLabel )
                              .attr("data-toggle", "tab")
                              .addClass("portal-section-link")
                              .data("view", sectionView)));
-
-            },
-
-            /**
-             * Render the metrics section
-             */
-            renderMetricsView: function() {
-
-              try{
-
-                if( this.model.get("hideMetrics") == true ) {
-                  return;
-                }
-
-                //If this subview is already rendered, exit
-                if( this.sectionMetricsView ){
-                  return;
-                }
-
-                //Add a loading message to the metrics tab since it can take a while for the metrics query to be sent
-                this.$("#Metrics").html(this.loadingTemplate({
-                  msg: "Getting metrics..."
-                }));
-
-                // If the search results haven't been fetched yet, wait.
-                if( !this.model.get("searchResults").header ){
-                  this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetricsView );
-                  return;
-                }
-
-                // If there are no datasets in the portal collection
-                if(this.model.get("searchResults").header.get("numFound") == 0 ){
-                      // The description for when there is no data in the collection
-                  var description = "There are no datasets in " + this.model.get("label") + " yet.",
-                      // use a dummy-ID to create a 'no-activity' metrics view
-                      allIDs = "0";
-                }
-
-                // For portals with data in the collection
-                else {
-                      // The description to use for a portal with data
-                  var description = "A summary of all datasets from " + this.model.get("label"),
-                      // Get all the facet counts from the search results collection
-                      facetCounts = this.model.get("allSearchResults").facetCounts,
-                      //Get the id facet counts
-                      idFacets = facetCounts? facetCounts.id : [],
-                      //Get the documents facet counts
-                      documentsFacets = facetCounts? facetCounts.documents : [],
-                      //Start an array to hold all the ids
-                      allIDs = [];
-
-                  //If there are resource map facet counts, get all the ids
-                  if( idFacets && idFacets.length ){
-
-                    //Merge the id and documents arrays
-                    var allFacets = idFacets.concat(documentsFacets);
-
-                    //Get all the ids, which should be every other element in the
-                    // facets array
-                    for( var i=0; i < allFacets.length; i+=2 ){
-                      allIDs.push( allFacets[i] );
-                    }
-                  }
-
-                }
-
-                // Create a search model that filters by all the data object Ids
-                var statsSearchModel = new SearchModel({
-                  idOnly: allIDs,
-                  formatType: [],
-                  exclude: []
-                });
-
-                // Create a StatsModel
-                var statsModel = new StatsModel({
-                  query: statsSearchModel.getQuery(),
-                  searchModel: statsSearchModel,
-                  supportDownloads: false
-                });
-
-                // Add a stats view
-                this.sectionMetricsView = new StatsView({
-                    title: "Statistics and Figures",
-                    description: description,
-                    el: "#Metrics",
-                    model: statsModel
-                });
-
-                this.sectionMetricsView.render();
-                this.subviews.push(this.sectionMetricsView);
-
-              }
-              catch(e){
-                console.log("Failed to render the metrics view. Error message: " + e);
-              }
 
             },
 

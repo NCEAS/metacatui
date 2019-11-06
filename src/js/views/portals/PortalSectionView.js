@@ -26,6 +26,13 @@ define(["jquery",
         sectionName: "",
 
         /**
+        * The unique label for this Section. It most likely matches the label on the model, but
+        * may include a number after if more than one section has the same name.
+        * @type {string}
+        */
+        uniqueSectionLabel: "",
+
+        /**
         * The HTML tag name for this view's element
         * @type {string}
         */
@@ -211,12 +218,12 @@ define(["jquery",
             name = this.model.get("label");
           }
           else{
-            name = "New section";
+            name = "Untitled";
           }
 
           if( typeof options == "object" ){
             if( options.linkFriendly ){
-              name = name.replace(/[^a-zA-Z0-9]/g, "-");
+              name = name.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-");
             }
           }
 

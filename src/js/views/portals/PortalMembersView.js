@@ -15,6 +15,12 @@ define(["jquery",
      var PortalMembersView = PortalSectionView.extend({
         type: "PortalMembers",
 
+        /**
+        * The display name for this Section
+        * @type {string}
+        */
+        uniqueSectionLabel: "Members",
+
       //   /* The list of subview instances contained in this view*/
       //   subviews: [], // Could be a literal object {}
 
@@ -110,6 +116,9 @@ define(["jquery",
               ack_div.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
 
             };
+
+            this.$el.data("view", this);
+
         },
 
       //   onClose: function() {
