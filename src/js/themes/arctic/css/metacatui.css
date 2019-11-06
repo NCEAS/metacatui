@@ -331,10 +331,11 @@
 -------------------------------------------------- */
 
 footer {
-     padding: 0px 20px 20px 20px;
+ padding: 0px 20px 20px 20px;
  margin-top: 0px;
  color: #FDFDFD;
- background-color: #b8cad2;
+ background-color: #b1cdd9;
+ border-top: 1px solid #9fc0cd;
  width: 100%;
  box-sizing: border-box;
  z-index: 2;
@@ -342,12 +343,6 @@ footer {
 }
 #Content{
 	padding-bottom: 350px; /* Keeps footer down */
-}
-footer ul{
-	list-style: none;
-}
-footer ul li{
-	line-height: 1.5em;
 }
 .mapMode footer{
 	position: fixed;
@@ -364,13 +359,28 @@ footer ul li{
 }
 footer .footer-inner{
 	max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 3em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-footer .footer-links .nav-title {
+footer .adc-contact {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+}
+footer .adc-contact .contact-title {
     color: #666;
     font-family: "Aller", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+footer .adc-contact .contact-info {
+  display: flex;
+  flex-direction: column;
 }
 footer .sign-up{
 	background-color: #ACC7D1;
@@ -405,7 +415,7 @@ footer .show-in-map-mode .btn{
 }
 footer .footnote{
 	font-size: .8em;
-    color: #333;
+  color: #333;
 }
 footer .logos{
 	margin-top: 2em;

@@ -1,5 +1,5 @@
 /* Smartphones (portrait) ----------- */
-@media only screen and (max-width : 480px) {
+@media only screen and (max-width : 768px) {
 
 	/************** Metadata View ****************/
 	.form-horizontal .control-label{
@@ -47,6 +47,12 @@
 		margin-left: 10px;
 		width: 95%;
 		width: calc(100% - 50px);
+	}
+
+	/************** Footer ****************/
+	#Footer{
+		overflow-x: hidden;
+		max-width: 100vw;
 	}
 
 	/************** Navbar ****************/
@@ -187,19 +193,19 @@
 		margin: 0px 3px 0px 3px;
 	}
 
-	#portal-section-tabs {
+	.portal-view #portal-section-tabs {
 		flex-direction: row;
 		flex-wrap: nowrap;
-		overflow: auto;
-		padding: 0 5px;
+		overflow-x: scroll;
+		padding: 0 6px 6px 6px;
 		box-sizing: border-box;
 	}
 
-	#portal-section-tabs li.section-link-container {
+	.portal-view #portal-section-tabs li.section-link-container {
     width: auto;
 		border-radius: 5px;
 		margin: 0 2px;
-		padding: 10px;
+		padding: 6px;
 		white-space: nowrap;
 	}
 
@@ -208,8 +214,16 @@
 		text-align: center;
 	}
 
+	.portal-display-text h2 {
+		font-size: 1.5em;
+		line-height: 1.4;
+		padding: 10px 2px;
+	}
+
 	.tab-pane.portal-section-view {
     width: 100vw;
+		overflow-y: scroll;
+		overflow-x: hidden;
 	}
 	.portal-section-content {
     display: flex;
@@ -275,6 +289,16 @@
 	.toc .mobile > .second-level-items {
 		min-width: 48vw;
 	}
+	
+	.toc .mobile > .second-level-items .dropdown-menu {
+		width: 100%;
+		min-width: 100%;
+		margin-left: -7px;
+	}
+	
+	.toc .mobile > .top-level-items .dropdown-menu {
+		min-width: 100%;
+	}
 
 	.toc .mobile > .top-level-items {
 		margin: 0;
@@ -302,13 +326,25 @@
 	}
 
 	/* make markdown content take full width */
-	.markdown.span9 {
+	.portal-section-content > .markdown {
     padding: 13px 10px;
     width: 100vw;
     box-sizing: border-box;
+		margin: 0;
+		overflow-y: scroll; /* so that vw calculation includes space for scroll bar */
 	}
+
 	.portal-section-content .toc-view.span3.affix + .span9 {
 		margin-left: 0;
+	}
+
+	.markdown code {
+		white-space: pre-wrap;
+	}
+
+	#portal-sections {
+    max-width: 100vw;
+    overflow-x: hidden;
 	}
 
 	/*************** General Structure ***********/
@@ -363,6 +399,48 @@
 	.fancybox-inline h2{
 		display: inline;
 	}
+
+	/******************************************
+	* Metrics Styling
+	********************************************/
+
+	.charts-container .charts.row-fluid {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+	}
+
+	.charts-container .span6.packages.badge-container {
+			/* width: 100%; */
+			display: flex;
+			flex-direction: column;
+	}
+
+	.charts-container .row-fluid .span6 {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			margin: 0;
+			box-sizing: border-box;
+	}
+
+	.charts-container .stripe.quick-stats {
+			height: auto;
+	}
+
+	.charts-container svg.circle-badge {
+			width: 220px;
+	}
+
+	.charts-container .temporal-coverage-chart.chart {
+		margin-left: 0;
+	}
+
+	.temporal-coverage-chart.chart {
+		width: 100%;
+	}
+
 
 }
 @media only screen and (max-width : 1300px){
