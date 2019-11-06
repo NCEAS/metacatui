@@ -541,25 +541,11 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Add the error class to inputs
       var inputs = elements.filter("textarea, input").addClass("error");
 
-      //Get the parent elements that have ids set
-      var elementsWithIDs = elements.parents("[id]"),
-          view = this;
-      //See if there is a matching section link
-      for(var i=0; i<elementsWithIDs.length; i++){
-
-        //Get the id of the element
-        var id = $(elementsWithIDs[i]).attr("id");
-        //Find the section link that links to this id
-        var matchingLink = view.$(".section-link-container[data-section-name='" + id + "']");
-
-        //Add the error class and display the error icon
-        if( matchingLink.length ){
-          matchingLink.addClass("error");
-          matchingLink.find(".icon.error").show();
-          //Exit the loop
-          i=elementsWithIDs.length+1;
-        }
+      //Show the validation message in the portal sections
+      if( this.sectionsView ){
+        this.sectionsView.showValidation(elements);
       }
+
     },
 
     /**

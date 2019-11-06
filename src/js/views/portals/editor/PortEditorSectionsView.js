@@ -753,7 +753,7 @@ function(_, $, Backbone, Portal, PortalSection,
         // If the new link is for a markdown section
         if($(newLink).data("view").type == "PortEditorMdSection"){
           // Find the last markdown section in the list of links
-          var currentLinks = this.$(this.sectionLinksContainer).find("li.section-link-container");
+          var currentLinks = this.$(this.sectionLinksContainer).find(this.sectionLinkContainer);
           var i = _.map(currentLinks, function(li){
             return $(li).data("view") ? $(li).data("view").type : "";
           }).lastIndexOf("PortEditorMdSection");
@@ -827,7 +827,7 @@ function(_, $, Backbone, Portal, PortalSection,
         var totalPages         = this.model.get("sections").length +
                                   !this.model.get("hideMetrics") +
                                   !this.model.get("hideData"),
-            removeSectionLinks = this.$("li.section-link-container")
+            removeSectionLinks = this.$(this.sectionLinkContainer)
                                   .find(".remove-section");
 
         // If there's just one section, hide the delete and hide option on last
@@ -1300,6 +1300,42 @@ function(_, $, Backbone, Portal, PortalSection,
 
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    /**
+    * Shows a validation error message and adds error styling to the given elements
+    * @param {jQuery Selection} elements - The elements to add error styling and messaging to
+    */
+    showValidation: function(elements){
+      try{
+        //Get the parent elements that have ids set
+        var sectionEls = elements.parents(this.sectionEls);
+
+        //See if there is a matching section link
+        for(var i=0; i<sectionEls.length; i++){
+
+          //Get the section view attached to the section element
+          var sectionView = sectionEls.data("view");
+
+          //If a section view was found,
+          if( sectionView ){
+            //Find the section link that links to this section view
+            var matchingLink = _.find($(this.sectionLinkContainer), function(link){
+              return $(link).data("view") == sectionView;
+            });
+
+            //Add the error class and display the error icon
+            if( matchingLink ){
+              $(matchingLink).addClass("error").find(".icon.error").show();
+              //Exit the loop
+              i=sectionEls.length+1;
+            }
+          }
+        }
+      }
+      catch(e){
+        console.error("Error showing validation message: ", e);
       }
     },
 
