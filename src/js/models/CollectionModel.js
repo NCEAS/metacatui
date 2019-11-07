@@ -530,7 +530,10 @@ define(["jquery",
 
         // ---- Validate the definition filters ----
         if( this.getAllDefinitionFilters().length == 0 ){
-          errors.definition = "Add at least one search term to find datasets for this collection.";
+          errors.definition = "Your dataset collection hasn't been created. Add at least one search " +
+                              "term below to find datasets for this " +
+                              this.type.toLowerCase() + ". For example, to create a " + this.type.toLowerCase() +
+                              " for datasets from a specific research project, try searching for the project name.";
         }
         else{
           _.each( this.getAllDefinitionFilters(), function(filter){

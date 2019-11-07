@@ -2907,7 +2907,6 @@ img[src*="googleapis.com/"].georegion-map{
 
 .portal-editor #editor-header {
 	display: flex;
-	padding-top: 20px;
 	padding-bottom: 20px;
 	flex-wrap: wrap;
   width: 100%;
@@ -5018,7 +5017,7 @@ a.disabled {
 }
 .filter-groups.vertical .filter .btn{
   margin-left: -5px;
-  padding: 6px 10px;
+  padding: 4px 10px;
 }
 .filter-groups .filter .btn .icon{
   line-height: 16px;

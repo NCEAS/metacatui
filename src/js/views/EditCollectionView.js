@@ -215,7 +215,9 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       }
       else{
         //Remove the message
-        this.$(this.helpTextContainer).children("alert").remove();
+        this.$(this.helpTextContainer).empty();
+        //Remove validation messaging, too
+        this.$(".notification.error[data-category='definition']").removeClass("error").empty();
       }
 
     }
