@@ -646,7 +646,7 @@ function(_, $, Backbone, Portal, PortalSection,
     * @param {PortEditorSectionView} [sectionView] - The section view to switch to. If not given, defaults to the activeSection set on the view.
     */
     switchSection: function(sectionView){
-
+      
       //Create a flag for whether the section label should be shown in the URL
       var showSectionLabelInURL = true;
 
@@ -682,6 +682,7 @@ function(_, $, Backbone, Portal, PortalSection,
       this.$(this.sectionEls).each(function(i, contentEl){
         if($(contentEl).data("view") == sectionView){
           $(contentEl).addClass("active");
+          sectionView.trigger("active");
         } else {
           // make sure no other sections are active
           $(contentEl).removeClass("active");

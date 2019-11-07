@@ -87,7 +87,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * @type {Object}
     */
     events: _.extend(EditorView.prototype.events, {
-      "focusout .basic-text"          : "updateBasicText",
+      "focusout .basic-text"                  : "updateBasicText",
+      "click .section-links-toggle-container" : "toggleSectionLinks"
     }),
 
     /**
@@ -96,6 +97,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
+               
       if(typeof options == "object"){
         // initializing the PortalEditorView properties
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
@@ -107,6 +109,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * Renders the PortalEditorView
     */
     render: function(){
+      
+      $("body").addClass("Editor")
+               .addClass("Portal");
 
       // Display a spinner to indicate loading until model is created.
       this.$el.html(this.loadingTemplate({
@@ -227,9 +232,19 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         secondaryColorTransparent: this.model.get("secondaryColorTransparent"),
         accentColorTransparent: this.model.get("accentColorTransparent")
       }));
-
-      $("body").addClass("Editor")
-               .addClass("Portal");
+      
+      // Auto-resize the height of the portal title field on user-input and on
+      // window resize events.
+      $( window ).resize(function() {
+        $("textarea.portal-title").trigger("windowResize");
+      });
+      this.$("textarea.portal-title").each(function () {
+        this.style.height = '0px'; // note: textfield MUST have a min-height set
+        this.style.height = (this.scrollHeight) + 'px';
+      }).on('input windowResize', function () {
+        this.style.height = '0px'; // note: textfield MUST have a min-height set
+        this.style.height = (this.scrollHeight) + 'px';
+      });
 
       // Get the portal identifier
       // or set it to a default value in the case that it's a new portal
@@ -259,6 +274,31 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       // Insert the logo editor
       this.renderLogoEditor();
+      
+      // On mobile, hide section tabs a moment after page loads so
+      // users notice where they are
+      var view= this;
+      setTimeout(function () {
+        view.toggleSectionLinks();
+      }, 700);
+      
+      // On mobile where the section-links-toggle-container is set to fixed,
+      // hide the portal navigation element when user scrolls down,
+      // show again when the user scrolls up.
+      var prevScrollpos = window.pageYOffset;
+      $(window).scroll(function() {
+        var menu = view.$(".section-links-toggle-container")[0],
+            menuHeight = $(menu).height(),
+            editorFooterHeight = 73,
+            hiddenHeight = (menuHeight * -1) + 73;
+        var currentScrollPos = window.pageYOffset;
+        if (prevScrollpos > currentScrollPos) {
+          menu.style.bottom = "73px";
+        } else {
+          menu.style.bottom = hiddenHeight +"px";
+        }
+        prevScrollpos = currentScrollPos;
+      });
 
     },
 
@@ -353,6 +393,28 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       if (this.$el.find(".loading")) {
         this.$el.find(".loading").remove();
       }
+    },
+    
+    /**            
+     * toggleSectionLinks - show or hide the section links. Used for the
+     * mobile/small screen view of the portal.    
+     */             
+    toggleSectionLinks: function(e){
+      try{
+        // Don't close the menu if the user clicked the dropdown for the rename/delete menu.
+        if(e && e.target){
+          if(e.target.closest(".section-menu-link") || e.target.closest(".dropdown-menu")){
+            return
+          }
+        }
+        // Only toggle the section links on mobile. On mobile, the
+        // ".show-sections-toggle" is visible.
+        if(this.$(".show-sections-toggle").is(":visible")){
+          this.$("#portal-section-tabs").slideToggle();
+        }
+      } catch(e){
+        console.log("Failed to toggle section links, error message: " + e);
+      }    
     },
 
     /**

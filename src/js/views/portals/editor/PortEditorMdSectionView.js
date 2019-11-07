@@ -119,21 +119,6 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           cid: this.model.cid
         })).data("view", this);
 
-        // Auto-resize the height of the intoduction and title fields on user-input
-        // and on window resize events.
-        // from: DreamTeK, https://stackoverflow.com/a/25621277
-        $( window ).resize(function() {
-          $("textarea.auto-resize").trigger("windowResize");
-        });
-        $("textarea.auto-resize").each(function () {
-          this.setAttribute(
-            "style", "height:" + (this.scrollHeight) + "px;overflow-y:hidden;"
-          );
-        }).on('input windowResize', function () {
-          this.style.height = '0px'; // note: textfield MUST have a min-height set
-          this.style.height = (this.scrollHeight) + 'px';
-        })
-
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
         this.$(".markdown"    ).data({ model: this.model.get("content") });
@@ -166,13 +151,52 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
         this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
         this.sectionImageUploader.render();
         this.$(this.imageUploaderContainer).data("view", this.sectionImageUploader);
-
+        
+        // Set listeners to auto-resize the height of the intoduction and title
+        // textareas on user-input and on window resize events. This way the
+        // fields appear more closely to how they will look on the portal view.
+        var view = this;
+        $( window ).resize(function() {
+          view.$("textarea.auto-resize").trigger("textareaResize");
+        });
+        this.$("textarea.auto-resize").off('input textareaResize');
+        this.$("textarea.auto-resize").on('input textareaResize', function(e){
+          view.resizeTextarea($(e.target));
+        });
+        // Make sure the textareas are the right size with their pre-filled
+        // content the first time the section is viewed, because scrollHeight
+        // is 0px when the element is not displayed.
+        this.listenToOnce(this, "active", function(){
+          view.resizeTextarea(view.$("textarea.auto-resize"));
+        });
+        
       }
       catch(e){
         console.log("The markdown view could not be rendered, error message: " + e);
       }
 
-
+    },
+    
+    
+    /**    
+     * resizeTextarea - Set the height of a textarea element based on its
+     * scrollHeight.
+     *      
+     * @param  {jQuery} textareas The textarea element or elements to be resized.
+     */     
+    resizeTextarea: function(textareas){
+      try {
+        if(textareas){
+          _.each(textareas, function(textarea){
+            if(textarea.style){
+              textarea.style.height = '0px'; // note: textfield MUST have a min-height set
+              textarea.style.height = (textarea.scrollHeight) + 'px';
+            }
+          })
+        }
+      } catch (e) {
+        console.log("failed to resize textarea element. Error message: " + r);
+      }
     },
 
     /**

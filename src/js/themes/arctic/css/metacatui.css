@@ -229,7 +229,6 @@
 .header nav{
 	display: none;
 	box-sizing: border-box;
-	padding: 0px 10px;
 }
 .header .nav-trigger.close{
 	display: none;
@@ -247,11 +246,11 @@
 	font-family: "AllerLight", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
 	font-weight: normal;
 	font-style: normal;
-    display: block;
-    text-decoration: none;
-    padding: 0.75em;
-    width: 100%;
-    text-align: center;
+  display: block;
+  text-decoration: none;
+  padding: 0.75em;
+  width: 100%;
+  text-align: center;
 }
 .header .dropdown-menu li a{
 	background-color: #1F254F;
@@ -306,8 +305,8 @@
 	margin-bottom: 1em;
 }
 .header #nav-trigger{
-   	margin-top: .5em;
-   	margin-right: .5em;
+   	margin-top: .4em;
+   	margin-right: .4em;
    	font-size: 2em;
    	float: right;
 }
@@ -321,7 +320,7 @@
     background-repeat: no-repeat;
     background-size: contain;
     height: 60px; /* height in CSS pixels */
-    width: 142px; /* width in CSS pixels */
+    width: 109px; /* width in CSS pixels */
     display: inline-block;
     font-family: AllerLight, Helvetica, sans-serif;
 }
@@ -551,12 +550,23 @@ footer .logos a:hover, a:focus{
 
 .Portal.Editor #Navbar #logo,
 .PortalView #Navbar #logo{
-  display: none;
+  background: url(/js/themes/arctic/img/logo-small-no-title.png);
+  height: 25px;
+  width: 25px;
+  background-size: contain;
+  margin-top: 12px;
 }
 
-.Portal.Editor #Navbar #main-nav,
-.PortalView #Navbar #main-nav{
-  width: 100%;
+.Portal.Editor #Navbar #logo::after,
+.PortalView #Navbar #logo::after{
+  content: "Hosted by the Arctic Data Center";
+  order: 3;
+  margin-left: 29px;
+  display: block;
+  margin-top: 2px;
+  color: #999;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .Portal.Editor #Navbar .#main-nav nav,
@@ -847,6 +857,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     #Navbar .user {
     	font-size: 14px;
+      white-space: nowrap;
     }
     #Content{
     	padding-top: 118px;
@@ -882,10 +893,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	}
 
 
-    /* Make sure the last dropdown menu in the nav bar doesn't go off the side of the page */
-    .top-nav .dropdown:last-child .dropdown-menu{
-      left: -53px;
-    }
+  /* Make sure the last dropdown menu in the nav bar doesn't go off the side of the page */
+  .top-nav .dropdown:last-child .dropdown-menu{
+    left: -53px;
+  }
 
 	.navbar .nav li.dropdown.open > .dropdown-toggle{
 		color: #555555;
@@ -924,6 +935,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   		border: 1px solid #CBCBCB;
 	}
 
+  
+  .dropdown:hover .dropdown-menu.hidden,
+	.dropdown-menu.hidden{
+		display: none;
+	}
 
 
   /* MAIN BODY CSS

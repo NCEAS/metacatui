@@ -1,3 +1,5 @@
+
+
 /* Tablets and large screens ----------- */
 @media only screen and (min-width : 768px){
 
@@ -59,14 +61,14 @@
   	.dropdown-menu{
   		position: absolute;
   	}
-    /** Backbone override for dropdowns so they dsplay on hover rather than click **/
+    /** Backbone override for dropdowns so they display on hover rather than click **/
     .dropdown-menu .sub-menu {
 	    left: 100%;
 	    position: absolute;
 	    top: 0;
 	    visibility: hidden;
 	    margin-top: -1px;
-	}
+	  }
 
 	.dropdown-menu li:hover .sub-menu {
 	    visibility: visible;
@@ -83,7 +85,8 @@
 
   	/*Dropdown menus - only appear on non-mobile*/
 	#Navbar .nav .dropdown-toggle .caret{
-		margin-top: 14px;
+		margin-top: 9px;
+    margin-left: 4px;
 		border-top-color: #1F254F;
 	}
   	#Navbar .nav .dropdown-menu{
@@ -117,46 +120,46 @@
   	}
 }
 
-/* Smartphones (portrait and landscape) ----------- */
-@media only screen and (max-width : 480px) {
-	/************** General Structure ****************/
-	#Header{
-		display: none;
-	}
-	#Navbar .navbar-inner{
+/* Tablets & smartphones (portrait and landscape) ----------- */
+@media only screen and (max-width : 767px) {
+  
+    /* navigation */
+    #nav-trigger{
+      display: block;
+    }
+     
+  .header .dropdown-menu{
+    position: relative;
+    width: 100%;
+    border-radius: 0px;
+    position: block;
+    background-color: white;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    float: none;
+      padding: 0px;
+      margin: 0px;
+      border: 0px;
+  }
+  #Navbar .navbar-inner{
 		border-bottom: 2px solid #992222;
 	}
-	.header .dropdown-menu{
-		position: block;
-		background-color: transparent;
-		-moz-box-shadow: none;
-		-webkit-box-shadow: none;
-		box-shadow: none;
-		float: none;
-	    padding: 0px;
-	    margin: 0px;
-	    border: 0px;
-	}
-
-	#Content{
-		padding-bottom: 785px; /* Keeps footer down */
-		margin-top: 0px;
-	}
-
+  
   .header #inner-header {
     margin-left: 7px;
     margin-right: 7px;
   }
-
+  
   nav#main-nav {
     width: 100%;
     padding: 0;
   }
-
+  
   .dropdown-menu.hidden {
     display: none;
   }
-
+  
   .header .nav li a {
     padding: 11px 0;
   }
@@ -164,21 +167,28 @@
   .dropdown-menu li {
     width: 100%;
   }
-
-  .PortalEditor #Navbar .nav,
-  .PortalView #Navbar .nav {
-    flex-direction: column;
-  }
-
-  #editPortal {
-    width: 100%;
-  }
-
-  /* navigation */
-
+  
   a#logo {
     margin-left: 7px;
   }
+  
+  footer .show-in-map-mode a {
+    margin-left: 25%;
+  }
+
+}
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (max-width : 480px) {
+	/************** General Structure ****************/
+	#Header{
+		display: none;
+	}
+	
+	#Content{
+		padding-bottom: 785px; /* Keeps footer down */
+		margin-top: 0px;
+	}
 
   /************** Portals ****************/
 
@@ -226,24 +236,4 @@
     .header .nav > li > a{
     	font-size: 1.4em;
     }
-}
-
-@media only screen and (max-width : 768px){
-  	footer .show-in-map-mode a {
-  		margin-left: 25%;
-  	}
-
-  	 #nav-trigger{
-  		display: block;
-  	}
-
-  	/* Take nav out of mobile-style */
-	nav{
-		float: right;
-		width: auto;
-		display: block;
-	}
-	.nav li a{
-		text-align: left;
-	}
 }
