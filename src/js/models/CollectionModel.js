@@ -428,7 +428,7 @@ define(["jquery",
         $(objectDOM).children(nodeName).remove();
 
         // Don't serialize falsey values
-        if(value){
+        if(value && (typeof value == "string" && value.trim().length)){
           // Make new sub-node
           var collectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
           $(collectionSubnodeSerialized).text(value);
