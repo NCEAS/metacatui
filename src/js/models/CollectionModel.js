@@ -523,7 +523,7 @@ define(["jquery",
         var errors = {};
 
         // ---- Validate label----
-        var labelError = this.validateLabel(label = this.get("label"));
+        var labelError = this.validateLabel(this.get("label"));
         if( labelError ){
           errors.label = labelError;
         }
@@ -570,17 +570,12 @@ define(["jquery",
         //Validate the label set on the model if one isn't given
         if(typeof label != "string" ){
           var label = this.get("label");
-          if(typeof label != "string" ){
-            //Trigger an error event
-            this.trigger("errorValidatingLabel");
-            console.error("error validating label, label must be a string");
-            return
-          }
         }
 
         //If the label is empty
-        if( !label || !label.trim().length ){
-          return "Please choose a name for this portal to use in the URL.";
+        if( typeof label != "string" || !label.trim().length ){
+          var type = this.type.toLowerCase();
+          return "Please choose a name for this " + type + " to use in the URL.";
         }
 
         // If the label is a restricted string
