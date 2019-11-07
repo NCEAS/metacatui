@@ -127,12 +127,12 @@ define(["jquery",
 
             // If it's a logo, check whether it's a required image
             if(this.get("nodeName") === "logo" && requiredFields.logo && !hasId){
-              errors.identifier = "An image is required."
+              errors["image-identifier"] = "An image is required."
               return errors
             }
             // If it's a section image, check whether it's a required image
             else if(this.get("nodeName") === "image" && requiredFields.sectionImage && !hasId){
-              errors.identifier = "An image is required."
+              errors["image-identifier"] = "An image is required."
               return errors
             }
             // If none of the fields have values, the portalImage won't be serialized
@@ -149,11 +149,11 @@ define(["jquery",
                 this.set("associatedURL", url)
               } else {
                 // If it still fails, give an error
-                errors.associatedURL = "Enter a valid URL."
+                errors["image-associatedURL"] = "Enter a valid URL."
               }
             }
             if (!hasId && (hasURL || hasLabel)) {
-              errors.identifier = "An image is required."
+              errors["image-identifier"] = "An image is required."
             }
             return errors;
 

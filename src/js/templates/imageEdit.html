@@ -1,16 +1,18 @@
 <div class="image-uploader-container"></div>
-<p class="error notification" data-category="identifier"></p>
+<p class="error notification" data-category="image-identifier"></p>
 <% if(nameLabel){ %>
   <div>
     <h5><%=nameLabel%></h5>
-    <input type="text" placeholder="National Center for Ecological Analysis and Synthesis" class="basic-text" value="<%=nameText%>" data-category="label"/>
+    <input type="text" placeholder="National Center for Ecological Analysis and Synthesis"
+           class="basic-text" value="<%=nameText%>" data-category="image-label"/>
   </div>
 <% } %>
 <% if(urlLabel){ %>
   <div>
     <h5><%=urlLabel%></h5>
-    <p class="error notification" data-category="associatedURL"></p>
-    <input type="text" placeholder="https://" class="basic-text" value="<%=urlText%>" data-category="associatedURL"/>
+    <p class="error notification" data-category="image-associatedURL"></p>
+    <input type="text" placeholder="https://" class="basic-text"
+           value="<%=urlText%>" data-category="image-associatedURL"/>
   </div>
 <% } %>
 <% if(removeButton){ %>
