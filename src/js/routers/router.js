@@ -309,6 +309,8 @@ function ($, _, Backbone) {
          * Render the portal view based on the given name, id, or section
          */
 		renderPortal: function(label, portalSection) {
+			// Add the overall class immediately so the navbar is styled correctly right away
+			$("body").addClass("PortalView");
       // Look up the portal document seriesId by its registered name if given
       if ( portalSection ) {
         this.routeHistory.push( MetacatUI.appModel.get("portalTermPlural") + "/" + label + "/" + portalSection);
@@ -333,6 +335,9 @@ function ($, _, Backbone) {
 		* @param {string} [portalSection] - The name of the section within the portal to navigate to (e.g. "data")
     */
     renderPortalEditor: function(portalIdentifier, portalSection){
+			// Add the overall class immediately so the navbar is styled correctly right away
+      $("body").addClass("Editor")
+               .addClass("Portal");
       // Look up the portal document seriesId by its registered name if given
       if ( portalSection ) {
         this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);

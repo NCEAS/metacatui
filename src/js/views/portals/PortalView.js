@@ -111,6 +111,7 @@ define(["jquery",
              */
             events: {
               "click .portal-section-link"   : "handleSwitchSection",
+              "click .section-links-container" : "toggleSectionLinks"
             },
 
             /**
@@ -131,9 +132,10 @@ define(["jquery",
              * @return {PortalView} Returns itself for easy function stacking in the app
              */
             render: function() {
-
+              
+                // Add the overall class immediately so the navbar is styled correctly right away
                 $("body").addClass("PortalView");
-
+                
                 this.$el.html(this.loadingTemplate({
                   msg: "Loading..."
                 }));
@@ -164,26 +166,30 @@ define(["jquery",
              * Render the Portal view
              */
             renderPortal: function() {
+              
+              
+              // Add edit button if user is authorized
+              this.insertOwnerControls();
 
               // Getting the correct portal label and seriesID
               this.label = this.model.get("label");
               this.portalId = this.model.get("seriesId");
 
-              //Remove the listeners thatt were set during the fetch() process
+              // Remove the listeners that were set during the fetch() process
               this.stopListening(this.model, "notFound", this.showNotFound);
               this.stopListening(this.model, "error", this.showError);
 
                 // Insert the overall portal template
                 this.$el.html(this.template(this.model.toJSON()));
 
-                //Render the header view
+                // Render the header view
                 this.headerView = new PortalHeaderView({
                     model: this.model
                 });
                 this.headerView.render();
                 this.subviews.push(this.headerView);
 
-                //Render the content sections
+                // Render the content sections
                 _.each(this.model.get("sections"), function(section){
                   this.addSection(section);
                 }, this);
@@ -258,10 +264,49 @@ define(["jquery",
                 if( window.location.hash && this.$(window.location.hash).length ){
                   MetacatUI.appView.scrollTo(this.$(window.location.hash));
                 }
+                
+                
+                // Save reference to this view
+                var view = this;
+                
+                // On mobile, hide section tabs a moment after page loads so
+                // users notice where they are
+                setTimeout(function () {
+                  view.toggleSectionLinks();
+                }, 700);
+                  
+                // On mobile where the section-links-container is set to fixed,
+                // hide the portal navigation element when user scrolls down,
+                // show again when the user scrolls up.
+                var prevScrollpos = window.pageYOffset;
+                $(window).scroll(function() {
+                  var menu = view.$(".section-links-container")[0],
+                      menuHeight = $(menu).height();
+                  var currentScrollPos = window.pageYOffset;
+                  if (prevScrollpos > currentScrollPos) {
+                    menu.style.bottom = "0";
+                  } else {
+                    menu.style.bottom = "-"+ menuHeight +"px";
+                  }
+                  prevScrollpos = currentScrollPos;
+                });
 
-                // Add edit button if user is authorized
-                this.insertOwnerControls();
-
+            },
+            
+            /**            
+             * toggleSectionLinks - show or hide the section links nav. Used for
+             * mobile/small screens only.
+             */             
+            toggleSectionLinks: function(){
+              try{
+                // Only toggle the section links on mobile. On mobile, the
+                // ".show-sections-toggle" is visible.
+                if(this.$(".show-sections-toggle").is(":visible")){
+                  this.$("#portal-section-tabs").slideToggle();
+                }
+              } catch(e){
+                console.log("Failed to toggle section links, error message: " + e);
+              }    
             },
 
             /*
