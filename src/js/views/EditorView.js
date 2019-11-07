@@ -119,12 +119,18 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         .html('<i class="icon icon-spinner icon-spin"></i> Submitting ...')
         .addClass("btn-disabled");
 
+      //Remove all the validation messaging
+      this.removeValidation();
+
       //Get all the inputs in the Editor
       var allInputs = this.$("input, textarea, select, button");
 
       //Mark the disabled inputs so we can re-disable them later
       allInputs.filter(":disabled")
                .addClass("disabled-saving");
+
+      //Remove the latest success or error alert
+      this.$el.children(".alert-container").remove();
 
       //Disable all the inputs
       allInputs.prop("disabled", true);
@@ -215,6 +221,14 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      */
     showValidation: function(){
       this.saveError("Unable to save. Either required information is missing or isn't filled out correctly.");
+    },
+
+    /**
+    * Removes all the validation error styling and messaging from this view
+    */
+    removeValidation: function(){
+      this.$(".notification.error").removeClass("error").empty();
+      this.$(".validation-error-icon").hide();
     },
 
     /**

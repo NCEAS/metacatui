@@ -552,9 +552,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * Removes all the validation error styling and messaging from this view
     */
     removeValidation: function(){
-      this.$(".notification.error").removeClass("error").empty();
+      EditorView.prototype.removeValidation.call(this);
       this.$(".section-link-container.error, input.error, textarea.error").removeClass("error");
-      this.$(".validation-error-icon").hide();
     },
 
     /**

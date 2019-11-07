@@ -3549,6 +3549,13 @@ i.toc-sub-item{
 .portal-editor .portal-display-text *{
   color: #FFF;
 }
+.portal-editor .portal-display-text .notification.error{
+  color: #a70704;
+  margin-bottom: 0px;
+}
+.portal-editor .portal-display-text textarea{
+  padding-left: 10px;
+}
 .logo-container{
 	height: 100px;
   white-space: nowrap;
@@ -3638,8 +3645,8 @@ i.toc-sub-item{
 .portal-editor .toc .icon{
 	color: var(--portal-primary-color);
 }
-.portal-view a:hover,
-.portal-editor a:hover{
+.portal-view a:not(.btn):hover,
+.portal-editor a:not(.btn):hover{
 	color: var(--portal-secondary-color);
 }
 #portal-section-tabs{
@@ -3679,6 +3686,13 @@ i.toc-sub-item{
 }
 #portal-section-tabs .section-link-container.active{
   background-color: var(--portal-secondary-color);
+}
+#portal-section-tabs .section-link-container.error{
+  border-color: #b94a48;
+  background-color: #f2dede;
+}
+#portal-section-tabs .section-link-container.error .portal-section-link{
+  color: #b94a48;
 }
 #portal-section-tabs .portal-section-link,
 #portal-section-tabs .section-menu-link{
@@ -3729,6 +3743,12 @@ i.toc-sub-item{
 #portal-section-tabs .section-link-container.page-Settings{
   flex-grow: unset;
   width: 100px;
+}
+#portal-section-tabs .section-link-container.page-Settings.error{
+  width: 120px;
+}
+#portal-section-tabs .section-link-container.page-Settings.error .portal-section-link{
+  color: #b94a48;
 }
 #portal-section-tabs .section-link-container .dropdown-menu>li>a{
   color: var(--portal-primary-color);
@@ -5950,7 +5970,8 @@ textarea.medium{
 	position: fixed;
     left: 0px;
     min-width: 100%;
-    z-index: 1;
+    /* Is z-index 11 so it displays over the portal-display-text element */
+    z-index: 11;
     margin-left: 0px;
     top: 0px;
 }
@@ -5982,6 +6003,7 @@ textarea.medium{
 	padding: .5em 1em;
 	box-sizing: border-box;
 	font-size: 1em;
+  border-radius: 3px;
 }
 .Editor .checkbox{
 	clear: both;
