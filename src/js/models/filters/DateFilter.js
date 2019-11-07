@@ -333,8 +333,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     */
     hasChangedValues: function(){
 
-      return (this.get("min") > this.get("rangeMin") ||
-              this.get("max") < this.get("rangeMax"))
+      return ((this.get("min") > this.get("rangeMin") && this.get("min") !== this.defaults().min) ||
+              (this.get("max") < this.get("rangeMax") && this.get("max") !== this.defaults().max))
 
     },
 
