@@ -36,7 +36,7 @@ define(["jquery",
     * @property {string[]} ignoreQueryGroups - The Filter query groups to not serialize to the collection definition part of the XML document
     */
     defaults: function(){
-      return {
+      return _.extend(DataONEObject.prototype.defaults(), {
         name: null,
         label: null,
         originalLabel: null,
@@ -59,7 +59,7 @@ define(["jquery",
         /**  @type {SolrResults} - A SolrResults collection that contains the */
         // unfiltered search results of all datasets in this collection
         allSearchResults: null
-      }
+      });
     },
 
     /**

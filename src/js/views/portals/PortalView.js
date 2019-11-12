@@ -591,11 +591,14 @@ define(["jquery",
             */
             showError: function(model, response){
 
+              var errorMsg = "";
+              if( response && response.responseText ){
+                errorMsg = "<p>Error details: " + $(response.responseText).text() + "</p>";
+              }
+
               //Show the error message
               MetacatUI.appView.showAlert(
-                "<h4><i class='icon icon-frown'></i>Something went wrong while displaying this portal.</h4>" +
-                "<p>Error details: " +
-                $(response.responseText).text() + "</p>",
+                "<h4><i class='icon icon-frown'></i>Something went wrong while displaying this portal.</h4>" + errorMsg,
                 "alert-error",
                 this.$el
               );

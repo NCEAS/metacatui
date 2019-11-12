@@ -45,6 +45,7 @@ define(["jquery",
             */
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
+                    id: null,
                     objectXML: null,
                     formatId: "https://purl.dataone.org/portals-1.0.0",
                     formatType: "METADATA",
@@ -181,7 +182,7 @@ define(["jquery",
                   error: function(model, response) {
                       model.trigger("error");
 
-                      if( response.status == 404 ){
+                      if( response && response.status == 404 ){
                         model.trigger("notFound");
                       }
                   }
@@ -214,6 +215,7 @@ define(["jquery",
                        "&sort=dateUploaded%20asc" +
                        "&rows=1" +
                        "&wt=json",
+                  dataType: "json",
                   error: function(response) {
                       model.trigger("error", model, response);
 

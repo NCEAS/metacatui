@@ -315,6 +315,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //If no objects were found in the index, mark as notFound and exit
               if(!response.response.docs.length){
                 this.set("notFound", true);
+                this.trigger("notFound");
                 return;
               }
 
@@ -582,6 +583,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   },
                   error: function(model, response, xhr){
 
+                    //Reset the identifier changes
+                    model.resetID();
+                    //Reset the checksum, if this is a model that needs to be serialized with each save.
+                    if( model.serialize ){
+                      model.set("checksum", model.defaults().checksum);
+                    }
+
                     model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
                     var numSaveAttempts = model.get("numSaveAttempts");
 
@@ -605,7 +613,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                       model.set("errorMessage", parsedResponse);
 
+                      //Set the model status as e for error
                       model.set("uploadStatus", "e");
+
+                      //Trigger a custom event for the model save error
                       model.trigger("errorSaving", parsedResponse);
 
                       //Send this exception to Google Analytics
@@ -743,6 +754,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             error: function(xhr, textStatus, errorThrown) {
               if(errorThrown == 404){
                 model.set("notFound", true);
+                model.trigger("notFound");
               }
               else{
                 model.set("isAuthorized", false);

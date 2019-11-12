@@ -363,9 +363,6 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
          //Remove the listeners for the seriesId and latest pid
          this.stopListening(this.model, "change:seriesId",    this.authorizeUser);
          this.stopListening(this.model, "latestVersionFound", this.authorizeUser);
-
-         // Remove the not found listener
-         this.stopListening(this.model, "notFound", this.showNotFound);
        }
 
        //Remove the loading message
@@ -646,7 +643,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       var notFoundMessage = "The portal \"" + (this.model.get("label") || this.portalIdentifier) +
                             "\" doesn't exist.";
 
-      MetacatUI.appView.showAlert(notFoundMessage, "alert-error", this.$el);
+      MetacatUI.appView.showAlert(notFoundMessage, "alert-error", this.$el, undefined, { remove: true });
     },
 
     /**
