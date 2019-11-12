@@ -6497,13 +6497,19 @@ textarea.medium{
 .metadata-container .party-details,
 .metadata-container .method-step{
 	width: calc(100% - 20px - 1em);
+  min-height: 30px;
 }
-
+.taxa input,
+.pubDate input,
+.party-details input{
+  min-height: 30px;
+}
 /** Locations section **/
 .locations .coord{
 	width: 5em;
     padding: 5px;
     font-size: .9em;
+  min-height: 30px;
 }
 .locations-table{
 	border: 1px solid #DDD;
