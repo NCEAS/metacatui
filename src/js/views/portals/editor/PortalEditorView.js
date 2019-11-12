@@ -97,7 +97,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
-               
+
       if(typeof options == "object"){
         // initializing the PortalEditorView properties
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
@@ -109,7 +109,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * Renders the PortalEditorView
     */
     render: function(){
-      
+
       $("body").addClass("Editor")
                .addClass("Portal");
 
@@ -232,7 +232,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         secondaryColorTransparent: this.model.get("secondaryColorTransparent"),
         accentColorTransparent: this.model.get("accentColorTransparent")
       }));
-      
+
       // Auto-resize the height of the portal title field on user-input and on
       // window resize events.
       $( window ).resize(function() {
@@ -274,31 +274,19 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       // Insert the logo editor
       this.renderLogoEditor();
-      
+
       // On mobile, hide section tabs a moment after page loads so
       // users notice where they are
       var view= this;
       setTimeout(function () {
         view.toggleSectionLinks();
       }, 700);
-      
+
       // On mobile where the section-links-toggle-container is set to fixed,
       // hide the portal navigation element when user scrolls down,
       // show again when the user scrolls up.
-      var prevScrollpos = window.pageYOffset;
-      $(window).scroll(function() {
-        var menu = view.$(".section-links-toggle-container")[0],
-            menuHeight = $(menu).height(),
-            editorFooterHeight = 73,
-            hiddenHeight = (menuHeight * -1) + 73;
-        var currentScrollPos = window.pageYOffset;
-        if (prevScrollpos > currentScrollPos) {
-          menu.style.bottom = "73px";
-        } else {
-          menu.style.bottom = hiddenHeight +"px";
-        }
-        prevScrollpos = currentScrollPos;
-      });
+      MetacatUI.appView.prevScrollpos = window.pageYOffset;
+      $(window).on("scroll", "", undefined, this.handleScroll);
 
     },
 
@@ -391,11 +379,11 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.$el.find(".loading").remove();
       }
     },
-    
-    /**            
+
+    /**
      * toggleSectionLinks - show or hide the section links. Used for the
-     * mobile/small screen view of the portal.    
-     */             
+     * mobile/small screen view of the portal.
+     */
     toggleSectionLinks: function(e){
       try{
         // Don't close the menu if the user clicked the dropdown for the rename/delete menu.
@@ -411,7 +399,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         }
       } catch(e){
         console.log("Failed to toggle section links, error message: " + e);
-      }    
+      }
     },
 
     /**
@@ -647,6 +635,23 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     },
 
     /**
+    * This function is called whenever the window is scrolled.
+    */
+    handleScroll: function() {
+      var menu = $(".section-links-toggle-container")[0],
+          menuHeight = $(menu).height(),
+          editorFooterHeight = 73,
+          hiddenHeight = (menuHeight * -1) + 73;
+      var currentScrollPos = window.pageYOffset;
+      if(MetacatUI.appView.prevScrollpos > currentScrollPos) {
+        menu.style.bottom = "73px";
+      } else {
+        menu.style.bottom = hiddenHeight +"px";
+      }
+      MetacatUI.appView.prevScrollpos = currentScrollPos;
+    },
+
+    /**
      * This function is called when the app navigates away from this view.
      * Any clean-up or housekeeping happens at this time.
      */
@@ -659,7 +664,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Remove listeners
       this.stopListening();
       this.undelegateEvents();
-
+      $(window).off("scroll", "", this.handleScroll);
     },
 
   });
