@@ -3725,15 +3725,22 @@ i.toc-sub-item{
   background-color: var(--portal-secondary-color);
   color: #FFF;
 }
-#portal-section-tabs .section-link-container.active{
-  background-color: #FFF;var(--portal-secondary-color);
+.portal-editor #portal-section-tabs .section-link-container.active{
+  background-color: #FFF;
+}
+.portal-view #portal-section-tabs .section-link-container.active{
+  background-color: var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container.error{
   border-color: #b94a48;
   background-color: #f2dede;
 }
-#portal-section-tabs .section-link-container.error .portal-section-link{
+.portal-editor #portal-section-tabs .section-link-container.error .portal-section-link{
   color: #b94a48;
+}
+.portal-view #portal-section-tabs .section-link-container .portal-section-link,
+.portal-view #portal-section-tabs .section-link-container.active .portal-section-link{
+  color: #FFF;
 }
 #portal-section-tabs .portal-section-link,
 #portal-section-tabs .section-menu-link{
