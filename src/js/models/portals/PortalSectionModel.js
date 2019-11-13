@@ -261,15 +261,15 @@ define(["jquery",
             //---Validate the section content---
             //Content is always required
             if( !this.get("content") ){
-              errors.content = "Please provide content for this page.";
+              errors.markdown = "Please provide content for this page.";
             }
             //Check if there is either markdown or an array of strings in the text attribute
             else if( !this.get("content").get("markdown") && !this.get("content").get("text").length ){
-              errors.content = "Please provide content for this page.";
+              errors.markdown = "Please provide content for this page.";
             }
             //Check if the markdown hasn't been changed from the example markdown
             else if( this.get("content").get("markdown") == this.get("content").get("markdownExample") ){
-              errors.content = "Please provide content for this page.";
+              errors.markdown = "Please provide content for this page.";
             }
 
             //---Validate the section image---
