@@ -132,10 +132,10 @@ define(["jquery",
              * @return {PortalView} Returns itself for easy function stacking in the app
              */
             render: function() {
-              
+
                 // Add the overall class immediately so the navbar is styled correctly right away
                 $("body").addClass("PortalView");
-                
+
                 this.$el.html(this.loadingTemplate({
                   msg: "Loading..."
                 }));
@@ -166,8 +166,8 @@ define(["jquery",
              * Render the Portal view
              */
             renderPortal: function() {
-              
-              
+
+
               // Add edit button if user is authorized
               this.insertOwnerControls();
 
@@ -264,39 +264,29 @@ define(["jquery",
                 if( window.location.hash && this.$(window.location.hash).length ){
                   MetacatUI.appView.scrollTo(this.$(window.location.hash));
                 }
-                
-                
+
+
                 // Save reference to this view
                 var view = this;
-                
+
                 // On mobile, hide section tabs a moment after page loads so
                 // users notice where they are
                 setTimeout(function () {
                   view.toggleSectionLinks();
                 }, 700);
-                  
+
                 // On mobile where the section-links-container is set to fixed,
                 // hide the portal navigation element when user scrolls down,
                 // show again when the user scrolls up.
-                var prevScrollpos = window.pageYOffset;
-                $(window).scroll(function() {
-                  var menu = view.$(".section-links-container")[0],
-                      menuHeight = $(menu).height();
-                  var currentScrollPos = window.pageYOffset;
-                  if (prevScrollpos > currentScrollPos) {
-                    menu.style.bottom = "0";
-                  } else {
-                    menu.style.bottom = "-"+ menuHeight +"px";
-                  }
-                  prevScrollpos = currentScrollPos;
-                });
+                MetacatUI.appView.prevScrollpos = window.pageYOffset;
+                $(window).on("scroll", "", undefined, this.handleScroll);
 
             },
-            
-            /**            
+
+            /**
              * toggleSectionLinks - show or hide the section links nav. Used for
              * mobile/small screens only.
-             */             
+             */
             toggleSectionLinks: function(){
               try{
                 // Only toggle the section links on mobile. On mobile, the
@@ -306,7 +296,7 @@ define(["jquery",
                 }
               } catch(e){
                 console.log("Failed to toggle section links, error message: " + e);
-              }    
+              }
             },
 
             /*
@@ -609,6 +599,23 @@ define(["jquery",
             },
 
             /**
+            * This function is called whenever the window is scrolled.
+            */
+            handleScroll: function() {
+              var menu = $(".section-links-container")[0],
+                  menuHeight = $(menu).height(),
+                  editorFooterHeight = 73,
+                  hiddenHeight = (menuHeight * -1) + 73;
+              var currentScrollPos = window.pageYOffset;
+              if(MetacatUI.appView.prevScrollpos > currentScrollPos) {
+                menu.style.bottom = "73px";
+              } else {
+                menu.style.bottom = hiddenHeight +"px";
+              }
+              MetacatUI.appView.prevScrollpos = currentScrollPos;
+            },
+
+            /**
              * This function is called when the app navigates away from this view.
              * Any clean-up or housekeeping happens at this time.
              */
@@ -625,6 +632,9 @@ define(["jquery",
                 delete this.sectionMetricsView;
                 //Delete the model from this view
                 delete this.model;
+
+                //Remove the scroll listener
+                $(window).off("scroll", "", this.handleScroll);
 
                 $("body").removeClass("PortalView");
 
