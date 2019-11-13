@@ -3726,7 +3726,7 @@ i.toc-sub-item{
   color: #FFF;
 }
 #portal-section-tabs .section-link-container.active{
-  background-color: var(--portal-secondary-color);
+  background-color: #FFF;var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container.error{
   border-color: #b94a48;
@@ -3744,6 +3744,9 @@ i.toc-sub-item{
   border: 0px;
   cursor: pointer;
 }
+#portal-section-tabs .active .section-menu-link{
+  color: var(--portal-primary-color);
+}
 #portal-section-tabs .portal-section-link{
   box-sizing: border-box;
 }
@@ -3753,17 +3756,10 @@ i.toc-sub-item{
 #portal-section-tabs .section-menu-link{
   width: 25px;
 }
-#portal-section-tabs .active .portal-section-link{
-	color: #FFF;
-}
 #portal-section-tabs .section-link-container.page-AddPage{
-  background-color: transparent;
   flex-grow: unset;
   margin-right: 40px;
   height: 36px;
-}
-#portal-section-tabs .section-link-container.page-AddPage.active{
-  background-color: var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container.page-AddPage .icon{
   font-size: 1.75em;
@@ -3774,12 +3770,11 @@ i.toc-sub-item{
   color: var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container.page-AddPage .portal-section-link{
-  color: var(--portal-primary-color);
+  color: #FFF;
   width: 100%;
 }
-#portal-section-tabs .section-link-container.page-AddPage.active .portal-section-link,
-#portal-section-tabs .section-link-container.page-Settings.active .portal-section-link{
-  color: #FFF;
+#portal-section-tabs .section-link-container.active .portal-section-link{
+  color: var(--portal-primary-color);
 }
 #portal-section-tabs .section-link-container.page-Settings{
   flex-grow: unset;
