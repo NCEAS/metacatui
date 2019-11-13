@@ -460,6 +460,19 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //We can't update anything without a category
       if(!category) return false;
 
+      //If the value is an empty string,
+      if( typeof value == "string" && !value.length ){
+        //Remove the value from the input
+        $(e.target).val("");
+      }
+      //If the value is only spaces,
+      else if( typeof value == "string" && !value.trim().length ){
+        //Remove the value from the input
+        $(e.target).val("");
+        //Update the model as if this is an empty string
+        value = "";
+      }
+
       //Get the current value
       var currentValue = model.get(category);
 
