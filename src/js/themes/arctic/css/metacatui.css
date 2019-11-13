@@ -236,7 +236,6 @@
 .header .nav li{
 	float: left;
 	position: relative;
-	border-bottom: 1px solid #DDD;
 }
 .header .nav li a {
 	color: #1f254f;
@@ -255,8 +254,10 @@
 .header .dropdown-menu li a{
 	background-color: #1F254F;
 	color: #FFF;
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   text-align: center;
   min-width: 180px;
+  border-bottom: 1px solid #495082;
 }
 
 .header .nav > li >  a:hover{
@@ -935,7 +936,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   		border: 1px solid #CBCBCB;
 	}
 
-  
+
   .dropdown:hover .dropdown-menu.hidden,
 	.dropdown-menu.hidden{
 		display: none;
