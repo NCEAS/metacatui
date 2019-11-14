@@ -266,8 +266,10 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
           view.redoValidation();
         });
 
+        this.listenTo(this.model, "change:associatedURL", this.showValidation);
+
         // Allows model to update when user types in text field
-        this.$el.find(".basic-text").data({ model: this.model });
+        this.$el.find(".basic-text").data({ model: this.model, view: this });
 
         //Initialize any tooltips
         this.$(".tooltip-this").tooltip();
@@ -303,7 +305,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         });
 
       } catch (e) {
-        console.log("Failed to remove an ImageEdit view. Errorm message: " + e);
+        console.log("Failed to remove an ImageEdit view. Error message: " + e);
       }
 
     },

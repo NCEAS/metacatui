@@ -120,19 +120,19 @@ define(["jquery",
                 url             = this.get("associatedURL"),
                 id              = this.get("identifier"),
                 genericLabels   = ["logo", "image"], // not set by the user
-                hasLabel        = label && typeof label == "string" && !genericLabels.includes(label),
-                hasURL          = url && typeof url == "string",
-                hasId           = id && typeof id == "string",
+                hasLabel        = (label && typeof label == "string" && !genericLabels.includes(label)) ? true : false,
+                hasURL          = (url && typeof url == "string") ? true : false,
+                hasId           = (id && typeof id == "string") ? true : false,
                 urlRegex        = new RegExp('^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$', "i");
 
             // If it's a logo, check whether it's a required image
             if(this.get("nodeName") === "logo" && requiredFields.logo && !hasId){
-              errors["image-identifier"] = "An image is required."
+              errors["identifier"] = "An image is required."
               return errors
             }
             // If it's a section image, check whether it's a required image
             else if(this.get("nodeName") === "image" && requiredFields.sectionImage && !hasId){
-              errors["image-identifier"] = "An image is required."
+              errors["identifier"] = "An image is required."
               return errors
             }
             // If none of the fields have values, the portalImage won't be serialized
@@ -149,11 +149,11 @@ define(["jquery",
                 this.set("associatedURL", url)
               } else {
                 // If it still fails, give an error
-                errors["image-associatedURL"] = "Enter a valid URL."
+                errors["associatedURL"] = "Enter a valid URL."
               }
             }
             if (!hasId && (hasURL || hasLabel)) {
-              errors["image-identifier"] = "An image is required."
+              errors["identifier"] = "An image is required."
             }
             return errors;
 

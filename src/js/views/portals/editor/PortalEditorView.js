@@ -549,6 +549,11 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       _.each(errors, function(errorMsg, category){
         var categoryEls = this.$("[data-category='" + category + "']");
 
+        //The label category is unique, because it is duplicated in the PortalImage, which can cause bugs
+        if( category == "label" ){
+          categoryEls = this.$(".change-label-container [data-category='label']");
+        }
+
         //Get the elements that have views attached to them
         var elsWithViews = _.filter(categoryEls, function(el){
             return ( $(el).data("view") &&
