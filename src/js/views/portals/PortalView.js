@@ -455,6 +455,15 @@ define(["jquery",
 
               if( sectionView ){
                 this.switchSection(sectionView);
+                
+                // If the user clicks a link and is not near the top of the page
+                // (i.e. on mobile), scroll to the top of the section content.
+                // Otherwise it might look like the page hasn't changed (e.g.
+                // when focus is on the footer)
+                if(window.pageYOffset > this.$("#portal-sections").offset().top){
+                  MetacatUI.appView.scrollTo(this.$("#portal-sections"));
+                }
+              
               }
 
             },
@@ -604,11 +613,10 @@ define(["jquery",
             handleScroll: function() {
               var menu = $(".section-links-container")[0],
                   menuHeight = $(menu).height(),
-                  editorFooterHeight = 73,
-                  hiddenHeight = (menuHeight * -1) + 73;
+                  hiddenHeight = (menuHeight * -1);
               var currentScrollPos = window.pageYOffset;
               if(MetacatUI.appView.prevScrollpos > currentScrollPos) {
-                menu.style.bottom = "73px";
+                menu.style.bottom = "0px";
               } else {
                 menu.style.bottom = hiddenHeight +"px";
               }
