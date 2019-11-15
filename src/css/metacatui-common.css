@@ -3097,11 +3097,11 @@ img[src*="googleapis.com/"].georegion-map{
 
 .Portal.Editor .portal-display-text {
 	position: absolute;
-	width: 100%;
+	width: calc(100% - 6px); /* so it doesn't overlap the dropzone border */
 	top: 0;
 	box-sizing: border-box;
 	left: 0;
-	margin: 60px 3px 0px 2px;
+	margin: 60px 0px 0px 3px;
   z-index: 10; /* so it's above all the dropzone stuff */
 }
 

@@ -716,6 +716,12 @@ function(_, $, Backbone, Portal, PortalSection,
 
       if( sectionView ){
         this.switchSection(sectionView);
+        // If the user clicks a link and is not near the top of the page
+        // (i.e. on mobile), scroll to the top of the section content.
+        // Otherwise it might look like the page hasn't changed
+        if(window.pageYOffset > $("#editor-body").offset().top){
+          MetacatUI.appView.scrollTo($("#editor-body"));
+        }
       }
 
     },

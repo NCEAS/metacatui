@@ -433,7 +433,10 @@ define(['jquery', 'underscore', 'backbone'],
         }
 
         var objectDOM = this.get("objectDOM"),
+            objectDOM = objectDOM.cloneNode(true),
             filterOptionsNode;
+        
+        $(objectDOM).empty();
 
         if (objectDOM) {
           // Empty to DOM so we can replace with new subnodes
@@ -471,15 +474,17 @@ define(['jquery', 'underscore', 'backbone'],
           // Serialize the nodes with multiple occurences
           if( Array.isArray(values) ){
               _.each(values, function(value){
-                if(value || value === false){
+                // Don't serialize falsey or default values
+                if((value || value === false) && value != this.defaults()[nodeName]){
                   var nodeSerialized = xmlDocument.createElement(nodeName);
                   $(nodeSerialized).text(value);
                   $objectDOM.append(nodeSerialized);
                 }
-              });
+              }, this);
           // Serialize the single occurence nodes
           }
-          else if(values || values === false) {
+          // Don't serialize falsey or default values
+          else if((value || value === false) && value != this.defaults()[nodeName]) {
             var nodeSerialized = xmlDocument.createElement(nodeName);
             $(nodeSerialized).text(values);
             $objectDOM.append(nodeSerialized);
