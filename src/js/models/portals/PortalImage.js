@@ -123,7 +123,7 @@ define(["jquery",
                 hasLabel        = (label && typeof label == "string" && !genericLabels.includes(label)) ? true : false,
                 hasURL          = (url && typeof url == "string") ? true : false,
                 hasId           = (id && typeof id == "string") ? true : false,
-                urlRegex        = new RegExp('^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$', "i");
+                urlRegex        = new RegExp(/^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/);
 
             // If it's a logo, check whether it's a required image
             if(this.get("nodeName") === "logo" && requiredFields.logo && !hasId){
@@ -139,19 +139,17 @@ define(["jquery",
             else if(!hasId && !hasURL && !hasLabel){
               return
             }
-            // Check that URL is valid
+
+            // If the URL isn't a valid format, add an error message
             if(hasURL && !urlRegex.test(url)){
-              // If it's not, try prepending https:// and test again
-              url = "https://" + url;
-              // If it passes now
-              if(urlRegex.test(url)){
-                // then update the url
-                this.set("associatedURL", url)
-              } else {
-                // If it still fails, give an error
-                errors["associatedURL"] = "Enter a valid URL."
-              }
+              errors["associatedURL"] = "Enter a valid URL."
             }
+            //If the URL is valid, check if there is an http or https protocol
+            else if(hasURL && url.substring(0,4) != "http"){
+              //If not, add the https protocol
+              this.set("associatedURL", "https://" + url);
+            }
+
             if (!hasId && (hasURL || hasLabel)) {
               errors["identifier"] = "An image is required."
             }
