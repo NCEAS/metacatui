@@ -74,13 +74,18 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           // Make and append new subnodes
           _.map(toggleData, function(value, nodeName){
 
-            if(value || value === false){
+            // Don't serialize falsey or default values
+            if((value || value === false) && value != this.defaults()[nodeName]){
+
+              // Remove the node if it exists in the DOM already
+              $(objectDOM).find(nodeName).remove();
+              
               var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
               $(nodeSerialized).text(value);
               $(objectDOM).append(nodeSerialized);
             }
 
-          });
+          }, this);
 
           //Move the filterOptions node to the end of the filter node
         /*  var filterOptionsNode = $(objectDOM).find("filterOptions");
@@ -105,6 +110,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       }
       //If there's an error, return the original DOM or an empty string
       catch(e){
+        console.log("error updating the toggle filter object DOM, returning un-updated object DOM instead. Error message: " + e);
         return this.get("objectDOM") || "";
       }
     }
