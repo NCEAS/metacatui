@@ -278,6 +278,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           //Add the date string to the XML node
           $(nodeSerialized).text( value + dateTime );
 
+          //Remove existing nodes and add the new one
+          $(objectDOM).children(nodeName).remove();
           $(objectDOM).append(nodeSerialized);
 
         }, this);

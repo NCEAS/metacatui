@@ -67,6 +67,11 @@ define(["jquery",
     		 */
         updateDOM: function() {
 
+          //If there is no identifier, don't serialize anything
+          if( !this.get("identifier") ){
+            return "";
+          }
+
           var objectDOM = this.get("objectDOM");
 
           if (objectDOM) {
@@ -84,7 +89,7 @@ define(["jquery",
             identifier: this.get("identifier"),
             label: this.get("label"),
             associatedURL: this.get("associatedURL")
-          };
+          }
 
           _.map(imageData, function(value, nodeName){
 
@@ -150,9 +155,6 @@ define(["jquery",
               this.set("associatedURL", "https://" + url);
             }
 
-            if (!hasId && (hasURL || hasLabel)) {
-              errors["identifier"] = "An image is required."
-            }
             return errors;
 
           }

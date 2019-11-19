@@ -74,12 +74,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           // Make and append new subnodes
           _.map(toggleData, function(value, nodeName){
 
+            // Remove the node if it exists in the DOM already
+            $(objectDOM).find(nodeName).remove();
+            
             // Don't serialize falsey or default values
             if((value || value === false) && value != this.defaults()[nodeName]){
 
-              // Remove the node if it exists in the DOM already
-              $(objectDOM).find(nodeName).remove();
-              
               var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
               $(nodeSerialized).text(value);
               $(objectDOM).append(nodeSerialized);

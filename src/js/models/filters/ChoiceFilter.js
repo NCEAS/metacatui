@@ -74,6 +74,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           var choices = this.get("choices");
 
           if(choices){
+            //Remove all the choice elements
+            $(objectDOM).children("choice").remove();
+
+            //Make a new choice element for each choice in the model
             _.each(choices, function(choice){
               // Make new <choice> node
               choiceSerialized = objectDOM.ownerDocument.createElement("choice");
@@ -94,8 +98,11 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
           }
 
-          // Serialize the <chooseMultiple> element
+          //Get the chooseMultiple value from the model
           var chooseMultiple = this.get("chooseMultiple");
+          //Remove the chooseMultiple element
+          $(objectDOM).children("chooseMultiple").remove();
+          //If the model value is a boolean, create a chooseMultiple element and add it to the DOM
           if(chooseMultiple === true || chooseMultiple === false){
             chooseMultipleSerialized = objectDOM.ownerDocument.createElement("chooseMultiple");
             $(chooseMultipleSerialized).text(chooseMultiple);
