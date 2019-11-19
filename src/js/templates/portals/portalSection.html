@@ -8,8 +8,10 @@
         <% if(typeof title != "undefined") { %>
           <h2><%=title%></h2>
         <% } %>
-        <% if(typeof introduction != "undefined") { %>
+        <% if(typeof introduction != "undefined" && (typeof imageURL != "undefined" && imageURL.length)) { %>
           <p><%=introduction%></p>
+        <% } else if (typeof introduction != "undefined"){ %>
+          <h3><%=introduction%></h3>
         <% } %>
       </div>
     </div>
