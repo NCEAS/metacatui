@@ -4539,6 +4539,19 @@ svg .default,
 	fill: #999;
 }
 
+/**** Static Image Chart Styles *****/
+.profile .stripe img{
+	width: 100%;
+	max-width: 950px;
+	min-width: 600px;
+	padding-top: 30px;
+	padding-left: 10px;
+	overflow-x: scroll;
+}
+
+.profile .stripe .static-img-container {
+	overflow-x: auto;
+}
 
 /**** No Activity Chart Styles (when Stats View is blank/ no activity found) *****/
 svg .no-activity,
@@ -4554,7 +4567,6 @@ svg .no-activity,
 .donut.default .donut-title-text{
 	fill: #CCCCCC;
 }
-
 
 
 /******************************************

@@ -126,7 +126,10 @@ define(["jquery",
                 title: "Statistics and Figures",
                 description: description,
                 el: "#Metrics",
-                model: statsModel
+                model: statsModel,
+                // @Peter TODO: change the following to false when StatsView.js
+                // is ready to render the metadata assessment image:
+                hideMetadataAssessment: true
             });
 
             //Render the StatsView
