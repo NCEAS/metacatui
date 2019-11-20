@@ -433,14 +433,17 @@ define(['jquery', 'underscore', 'backbone'],
         }
 
         var objectDOM = this.get("objectDOM"),
-            objectDOM = objectDOM.cloneNode(true),
             filterOptionsNode;
-        
-        $(objectDOM).empty();
 
-        if (objectDOM) {
-          // Empty to DOM so we can replace with new subnodes
-          var $objectDOM = $(objectDOM.cloneNode(true));
+        if( typeof objectDOM == "undefined" || !objectDOM || !$(objectDOM).length ){
+          // Create an XML filter element from scratch
+          var objectDOM = new DOMParser().parseFromString("<" + this.get("nodeName") +
+                          "></" + this.get("nodeName") + ">", "text/xml");
+          var $objectDOM = $(objectDOM).find(this.get("nodeName"));
+        }
+        else{
+          objectDOM = objectDOM.cloneNode(true);
+          var $objectDOM = $(objectDOM);
 
           //Detach the filterOptions so they are saved
           filterOptionsNode = $objectDOM.children("filterOptions");
@@ -448,11 +451,6 @@ define(['jquery', 'underscore', 'backbone'],
 
           //Empty the DOM
           $objectDOM.empty();
-        } else {
-            // Create an XML filter element from scratch
-            var objectDOM = new DOMParser().parseFromString("<" + this.get("nodeName") +
-                            "></" + this.get("nodeName") + ">", "text/xml");
-            var $objectDOM = $(objectDOM).find(this.get("nodeName"));
         }
 
         var xmlDocument = $objectDOM[0].ownerDocument;
@@ -484,13 +482,13 @@ define(['jquery', 'underscore', 'backbone'],
           // Serialize the single occurence nodes
           }
           // Don't serialize falsey or default values
-          else if((value || value === false) && value != this.defaults()[nodeName]) {
+          else if((values || values === false) && values != this.defaults()[nodeName]) {
             var nodeSerialized = xmlDocument.createElement(nodeName);
             $(nodeSerialized).text(values);
             $objectDOM.append(nodeSerialized);
           }
 
-        });
+        }, this);
 
         //If this is a UIFilterType that won't be serialized into a Collection definition,
         // then add extra XML nodes
@@ -510,6 +508,7 @@ define(['jquery', 'underscore', 'backbone'],
         return $objectDOM[0];
       }
       catch(e){
+        console.error("Unable to serialize a Filter.", e);
         return this.get("objectDOM") || "";
       }
     },
