@@ -48,6 +48,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     id: [],
                     seriesId: [],
                     idOnly: [],
+                    provFields: [],
                     formatType: [{
                         value: "METADATA",
                         label: "science metadata",
@@ -931,12 +932,18 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
             // Returns which fields are provenance-related in this model
             // Useful for querying the index and such
             getProvFields: function() {
-                var defaultFields = Object.keys(new SolrResult().defaults);
-                var provFields = _.filter(defaultFields, function(fieldName) {
+              var provFields = this.get("provFields");
+
+              if( !provFields.length ){
+                var defaultFields = Object.keys(SolrResult.prototype.defaults);
+                provFields = _.filter(defaultFields, function(fieldName) {
                     if (fieldName.indexOf("prov_") == 0) return true;
                 });
 
-                return provFields;
+                this.set("provFields", provFields);
+              }
+
+              return provFields;
             },
 
             getProvFlList: function() {
