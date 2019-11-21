@@ -15,7 +15,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         trueLabel: "On",
         trueValue: null,
         falseLabel: "Off",
-        falseValue: null
+        falseValue: null,
+        nodeName: "toggleFilter"
       });
     },
 
@@ -76,7 +77,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
             // Remove the node if it exists in the DOM already
             $(objectDOM).find(nodeName).remove();
-            
+
             // Don't serialize falsey or default values
             if((value || value === false) && value != this.defaults()[nodeName]){
 

@@ -16,7 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         max: (new Date()).getUTCFullYear(),
         rangeMin: 0,
         rangeMax: (new Date()).getUTCFullYear(),
-        matchSubstring: false
+        matchSubstring: false,
+        nodeName: "dateFilter"
       });
     },
 
