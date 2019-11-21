@@ -17,12 +17,32 @@ define(["jquery",
          */
         var DataCatalogViewWithFilters = DataCatalogView.extend({
 
-            /* The HTML template for this view */
+            el: null,
+
+            /**
+            * The HTML tag name for this view element
+            * @type {string}
+            */
+            tagName: "div",
+
+            /**
+            * The HTML class names for this view element
+            * @type {string}
+            */
+            className: "data-catalog",
+
+            /**
+            * The primary HTML template for this view
+            * @type {Underscore.template}
+            */
             template: _.template(template),
-            
-            /* The sort order for the Solr query */
+
+            /**
+            * The sort order for the Solr query
+            * @type {string}
+            */
             sortOrder: "dateUploaded+desc",
-            
+
             /**
              * Override DataCatalogView.render() to render this view with filters
              * from the Filters collection
@@ -35,10 +55,10 @@ define(["jquery",
                 var groupedTooltips;
                 var forFilterLabel = true;
                 var forOtherElements = false;
-                // TODO: Do we really need to cache the filters collection? 
+                // TODO: Do we really need to cache the filters collection?
                 // Reconcile this from DataCatalogView.render()
                 // See https://github.com/NCEAS/metacatui/blob/19d608df9cc17ac2abee76d35feca415137c09d7/src/js/views/DataCatalogView.js#L122-L145
-                
+
                 //Get the search mode - either "map" or "list"
                 if ((typeof this.mode === "undefined") || !this.mode) {
                     this.mode = MetacatUI.appModel.get("searchMode");
@@ -47,14 +67,14 @@ define(["jquery",
                     }
                     MetacatUI.appModel.set("searchMode", this.mode);
                 }
-                
+
                 // Use map mode on tablets and browsers only
                 if ($(window).outerWidth() <= 600) {
                     this.mode = "list";
                     MetacatUI.appModel.set("searchMode", "list");
                     gmaps = null;
                 }
-                
+
                 // If this is a subview, don't set the headerType
                 if (!this.isSubView) {
                     MetacatUI.appModel.set("headerType", "default");
@@ -66,7 +86,7 @@ define(["jquery",
                 loadingHTML = this.loadingTemplate({
                     msg: "Loading entries ..."
                 });
-                
+
                 templateVars = {
                     gmaps: gmaps,
                     mode: MetacatUI.appModel.get("searchMode"),
@@ -78,7 +98,7 @@ define(["jquery",
                     searchResultsRef: this.searchResults,
                     dataSourceTitle: (MetacatUI.theme == "dataone") ? "Member Node" : "Data source"
                 }
-                compiledEl = 
+                compiledEl =
                     this.template(_.extend(this.searchModel.toJSON(), templateVars));
                 this.$el.html(compiledEl);
 
@@ -96,8 +116,8 @@ define(["jquery",
 
                 //Find the tooltips that are on filter labels - add a slight delay to those
                 groupedTooltips = _.groupBy(tooltips, function(t) {
-                    return ((($(t).prop("tagName") == "LABEL") || 
-                        ($(t).parent().prop("tagName") == "LABEL")) && 
+                    return ((($(t).prop("tagName") == "LABEL") ||
+                        ($(t).parent().prop("tagName") == "LABEL")) &&
                         ($(t).parents(".filter-container").length > 0))
                 });
 
@@ -125,7 +145,7 @@ define(["jquery",
                 this.listenTo(this.searchResults, "add", this.addOne);
                 this.listenTo(this.searchResults, "reset", this.addAll);
                 this.listenTo(this.searchResults, "reset", this.checkForProv);
-                
+
                 // Listen to changes in the Search model Filters to trigger a search
                 this.stopListening(this.searchModel.get("filters"), "add remove update reset change");
                 this.listenTo(this.searchModel.get("filters"), "add remove update reset change", this.triggerSearch);
@@ -139,7 +159,7 @@ define(["jquery",
                 this.getResults();
 
                 //Set a custom height on any elements that have the .auto-height class
-                if ($(".auto-height").length > 0) {
+                if ($(".auto-height").length > 0 && !this.fixedHeight) {
                     //Readjust the height whenever the window is resized
                     $(window).resize(this.setAutoHeight);
                     $(".auto-height-member").resize(this.setAutoHeight);
@@ -151,7 +171,7 @@ define(["jquery",
 
                 return this;
             },
-            
+
             /*
              * Get Results from the Solr index by combining the Filter query string fragments
              * in each Filter instance in the Search collection and querying Solr.
@@ -168,9 +188,9 @@ define(["jquery",
                 if ( sortOrder ) {
                     this.searchResults.setSort(sortOrder);
                 }
-                
+
                 //Specify which fields to retrieve
-                var fields = []; 
+                var fields = [];
                     fields.push("id");
                     fields.push("seriesId");
                     fields.push("title");
@@ -194,10 +214,10 @@ define(["jquery",
                     fields.push("westBoundCoord");
                 }
                 this.searchResults.setfields(fields.join(","));
-                
+
                 // Get the Solr query string from the Search filter collection
                 query = this.searchModel.get("filters").getQuery();
-                
+
                 // Specify which geohash level is used to return tile counts
                 if ( gmaps && this.map ) {
                     geohashLevel = "geohash_" +
@@ -208,10 +228,10 @@ define(["jquery",
                         this.searchResults.facet.push(geohashLevel);
                     }
                 }
-                
+
                 // Run the query
                 this.searchResults.setQuery(query);
-                
+
                 // Get the page number
                 if ( this.isSubView ) {
                     page = 0;
@@ -222,7 +242,7 @@ define(["jquery",
                     }
                 }
                 this.searchResults.start = page * this.searchResults.rows;
-                
+
                 //Show or hide the reset filters button
                 this.toggleClearButton();
 
@@ -232,7 +252,7 @@ define(["jquery",
                 // don't want to follow links
                 return false;
             },
-            
+
             /**
              * Toggle the map filter to include or exclude it from the Solr query
              */
@@ -279,7 +299,7 @@ define(["jquery",
                     ga("send", "event", "map", action);
                 }
             },
-            
+
             /*
              * Either hides or shows the "clear all filters" button
              */
@@ -293,15 +313,15 @@ define(["jquery",
                     this.hideClearButton();
                 }
             },
-            
+
             /**
              * Toggle between map and list mode
-             * 
+             *
              * @param(Event)  the event passed by clicking the toggle-map class button
              */
             toggleMapMode: function(event) {
                 console.log(event);
-                
+
                 // Block the event from bubbling
                 if (typeof event === "object") {
                     event.preventDefault();
@@ -326,70 +346,70 @@ define(["jquery",
                     this.getResults();
                 }
             },
-            
+
             /**
              * Reset the map to the defaults
              */
             resetMap: function() {
-                
+
                 // The spatial models registered in the filters collection
                 var spatialModels;
-                
+
                 if (!gmaps) {
                     return;
                 }
-                
+
                 // Remove the SpatialFilter from the collection silently
                 // so we don't immediately trigger a new search
-                spatialModels = 
+                spatialModels =
                     _.where(this.searchModel.get("filters").models, {type: "SpatialFilter"});
                 this.searchModel.get("filters").remove(spatialModels, {"silent": true});
-                
+
                 // Reset the map options to defaults
                 this.mapModel.set("mapOptions", this.mapModel.defaults().mapOptions);
                 this.allowSearch = false;
             },
-            
+
             /**
              * Render the map based on the mapModel properties and search results
              */
             renderMap: function() {
-                
+
                 // If gmaps isn't enabled or loaded with an error, use list mode
                 if (!gmaps || this.mode == "list") {
                     this.ready = true;
                     this.mode = "list";
                     return;
                 }
-                
+
                 // The spatial filter instance used to constrain the search by zoom and extent
                 var spatialFilter;
-                
-                // The map's configuration 
+
+                // The map's configuration
                 var mapOptions;
-                
+
                 // The map extent
                 var boundingBox;
-                
+
                 // The map bounding coordinates
                 var north;
                 var west;
                 var south;
                 var east;
-                
+
                 // The map zoom level
                 var zoom;
-                
+
                 // The map geohash precision based on the zoom level
                 var precision;
-                
+
                 // The geohash boxes associated with the map extent and zoom
                 var geohashBBoxes;
-                
+
                 // References to the map and catalog view instances for callbacks
                 var mapRef;
                 var catalogViewRef;
-                
+
                 if (this.isSubView) {
                     this.$el.addClass("mapMode");
                 } else {
@@ -407,7 +427,7 @@ define(["jquery",
                 this.$(this.mapFilterToggle).hide();
 
                 // Get the existing spatial filter if it exists
-                if (this.searchModel.get("filters") && 
+                if (this.searchModel.get("filters") &&
                     this.searchModel.get("filters")
                         .where({type: "SpatialFilter"}).length > 0) {
                     spatialFilter = this.searchModel.get("filters")
@@ -415,11 +435,11 @@ define(["jquery",
                 } else {
                     spatialFilter = new SpatialFilter();
                 }
-                
+
                 // Store references
                 mapRef = this.map;
                 catalogViewRef = this;
-                
+
                 // Listen to idle events on the map (at rest), and render content as needed
                 google.maps.event.addListener(mapRef, "idle", function() {
                     catalogViewRef.ready = true;
@@ -429,17 +449,17 @@ define(["jquery",
                         catalogViewRef.resultMarkers[i].setMap(null);
                     }
                     catalogViewRef.resultMarkers = new Array();
-                    
+
                     // Trigger a resize so the map background image tiles load completely
                     google.maps.event.trigger(mapRef, "resize");
 
                     var currentMapCenter = catalogViewRef.mapModel.get("map").getCenter(),
                         savedMapCenter = catalogViewRef.mapModel.get("mapOptions").center,
                         needsRecentered = (currentMapCenter != savedMapCenter);
-                        
+
                     // If we are doing a new search
                     if ( catalogViewRef.allowSearch ) {
-                        
+
                         // If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
                         if (catalogViewRef.map.getZoom() == mapOptions.minZoom) {
                             if (!catalogViewRef.hasZoomed) {
@@ -462,7 +482,7 @@ define(["jquery",
 
                             // Show the map filter toggle element
                             catalogViewRef.$(catalogViewRef.mapFilterToggle).show();
-                            
+
                             // Get the Google map bounding box
                             boundingBox = mapRef.getBounds();
 
@@ -498,7 +518,7 @@ define(["jquery",
                                 "south": south,
                                 "east": east,
                             });
-                            
+
                             // Add the spatial filter to the filters collection if enabled
                             if ( catalogViewRef.searchModel.get("useGeohash") ) {
 
@@ -535,7 +555,7 @@ define(["jquery",
                             MetacatUI.appModel.set("page", 0);
                         }
                         catalogViewRef.allowSearch = false;
-                        
+
                     } else {
                         // Else, if this is the fresh map render on page load
                         if (needsRecentered && !catalogViewRef.hasDragged) {
@@ -547,17 +567,17 @@ define(["jquery",
                             catalogViewRef.$(catalogViewRef.mapFilterToggle).show();
                         }
                     }
-                    
+
                     catalogViewRef.hasZoomed = false;
                 });
-                
+
                 // When the user has zoomed the map, trigger a new search, idle event follows
                 google.maps.event.addListener(mapRef, "zoom_changed", function() {
                     catalogViewRef.allowSearch = true;
                     catalogViewRef.hasZoomed = true;
-                    
+
                 });
-                
+
                 // When the user has dragged the map, don't load cached results.
                 // We still may not trigger a new search because the user has to zoom in first,
                 // after the map initially loads at full-world view. Idel event follows

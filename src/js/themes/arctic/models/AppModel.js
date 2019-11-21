@@ -96,7 +96,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Set this configuration to true if using Metacat 2.10.2 or earlier
       disableQueryPOSTs: false,
 
-      defaultSearchFilters: ["all", "attribute", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+      defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
 			metaServiceUrl: null,
 			metacatBaseUrl: null,
@@ -121,7 +121,7 @@ define(['jquery', 'underscore', 'backbone'],
 			//signInUrlLdap: null,
 			tokenUrl: null,
 
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["arctic.data.center.suite.1"],
             suiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
@@ -163,12 +163,17 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// A lookup map of project names to project seriesIds
 			projectsMap: {
-			    "DBO": "urn:node:93834148-30ce-420d-8d6d-b6690d93b9bc"
+			    "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb",
+          "Arctic-Observing-Networks" : "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854d12o9",
+          "CALM" : "urn:uuid:f4667267-cfe5-49c9-951c-946ace894144"
 			},
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
-			archivedContentIsIndexed: true
+			archivedContentIsIndexed: true,
+			bioportalAPIKey: null,
+			bioportalLookupCache: {},
+			showAnnotationIndicator: false
 		},
 
 		defaultView: "data",

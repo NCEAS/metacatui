@@ -435,10 +435,6 @@ footer .logos a:hover, a:focus{
 	width: 128px;
 	background-position: -153px 0px;
 }
-.ncei-logo{
-	width: 67px;
-	background-position: -282px 0px;
-}
 .noaa-logo{
 	width: 65px;
 	background-position: -349px 0px;
@@ -530,6 +526,33 @@ footer .logos a:hover, a:focus{
     #clear-all{
     	background-color: #19B36A;
     }
+
+/* PROJECTS
+------------------------ */
+.project-view .project-title{
+  font-weight: 100;
+}
+.ProjectView .border-image{
+  display: none;
+}
+.ProjectView #Navbar #logo{
+  display: none;
+}
+.ProjectView #Navbar #main-nav{
+  width: 100%;
+}
+.ProjectView #Navbar .#main-nav nav{
+  margin-bottom: 0px;
+}
+.ProjectView #Navbar .minimal-nav .logo{
+  max-height: 1em;
+  margin-left: 3px;
+}
+.filters-header .filter-input-contain.input-append .btn{
+  padding: 4px;
+  color: #AAA;
+  border-color: #AAA;
+}
 
 /* EDITOR
 ----------------------- */
@@ -1373,6 +1396,11 @@ MDQ items
     	margin-bottom: 20px;
     }
 
+    /* The active attribute in the attribute name list */
+    .attributeListTable tr.active{
+      background-color: #323D90;
+    }
+
 /* MDQ CSS
 -------------------------------------------------- */
 
@@ -1922,7 +1950,21 @@ MDQ items
 		color: #FFF;
 		background-color: #00AAFF;
 	}
-
+  /*-------------- ANNOTATIONS CSS -----------------------------*/
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
+.annotation .annotation-value{
+  background-color: #146660;
+  border-color: #146660;
+}
+.annotation-icon .icon.icon-stack-base{
+  color: #146660;
+}
+.attributeListTable .active .annotation-icon .icon.icon-stack-base{
+  color: #068a80;
+}
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 

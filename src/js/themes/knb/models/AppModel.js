@@ -122,7 +122,7 @@ define(['jquery', 'underscore', 'backbone'],
 			groupsUrl: null,
 			portalUrl: null,
 
-            mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+            mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
             // suidIds and suiteLables must be specified as a list, even if only one suite is available.
             suiteIds: ["knb.suite.1"],
             suiteLabels: ["KNB Metadata Completeness Suite v1.0"],
@@ -170,7 +170,11 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
-			archivedContentIsIndexed: true
+			archivedContentIsIndexed: true,
+
+			bioportalAPIKey: null,
+			bioportalLookupCache: {},
+			showAnnotationIndicator: false
 		},
 
 		defaultView: "data",

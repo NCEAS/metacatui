@@ -154,12 +154,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 			//*** Find all the files that are a part of this resource map and the resource map itself
 			var provFlList = MetacatUI.appSearchModel.getProvFlList();
-			var query = 'fl=resourceMap,fileName,read_count_i,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,' +
-							'rightsHolder,dateUploaded,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic,isService,'+
-							'serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,' + provFlList +
-						'&rows=1000' +
-						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
-						'&wt=json';
+			var query = 'fl=resourceMap,fileName,obsoletes,obsoletedBy,size,formatType,formatId,id,datasource,' +
+							'rightsHolder,dateUploaded,archived,title,origin,prov_instanceOfClass,isDocumentedBy,isPublic' +
+  						'&rows=1000' +
+  						'&q=%28resourceMap:%22' + encodeURIComponent(this.id) + '%22%20OR%20id:%22' + encodeURIComponent(this.id) + '%22%29' +
+  						'&wt=json';
 
 			if( this.get("getArchivedMembers") ){
 				query += "&archived=archived:*";
@@ -750,11 +749,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 						metadata = (metadataList && metadataList.doclist)? metadataList.doclist.docs : [],
 						metadataModels = [];
 
-					_.each(metadata, function(m){
-						//If this metadata doc is in one of the filtered parent resource maps
-						if(_.intersection(parentIds, m.resourceMap).length)
-							metadataModels.push(new SolrResult(m));
-					})
+            //As long as this map isn't obsoleted by another map in our results list, we will show it
+  					_.each(metadata, function(m){
+
+              //Find the metadata doc that obsoletes this one
+              var isObsoletedBy = _.findWhere(metadata, { id: m.obsoletedBy });
+
+              //If one isn't found, then this metadata doc is the most recent
+  						if(typeof isObsoletedBy == "undefined"){
+                //If this metadata doc is in one of the filtered parent resource maps
+    						if(_.intersection(parentIds, m.resourceMap).length){
+                  //Create a SolrResult model and add to an array
+    							metadataModels.push(new SolrResult(m));
+                }
+  						}
+  					});
+
 					model.set("parentPackageMetadata", metadataModels);
 					model.trigger("change:parentPackageMetadata");
 				}
@@ -1221,11 +1231,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 		downloadWithCredentials: function(){
 			//Get info about this object
-			var filename = this.get("fileName") || "",
-				url = this.get("url"),
-				model = this;
-
-			if(filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4))) filename += ".zip";
+			var	url = this.get("url"),
+				  model = this;
 
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
@@ -1233,6 +1240,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
+
+        //Get the file name from the Content-Disposition header
+        var filename = xhr.getResponseHeader('Content-Disposition');
+
+        //As a backup, use the system metadata file name or the id
+        if(!filename){
+          filename = model.get("filename") || model.get("id");
+        }
+
+        //Add a ".zip" extension if it doesn't exist
+  			if( filename.indexOf(".zip") < 0 || (filename.indexOf(".zip") != (filename.length-4)) ){
+          filename += ".zip";
+        }
 
 			   //For IE, we need to use the navigator API
 			   if (navigator && navigator.msSaveOrOpenBlob) {
@@ -1248,6 +1268,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					delete a;
 			   }
 
+         //Send this exception to Google Analytics
+         if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+           ga("send", "event", "download", "Download Package", model.get("id"));
+         }
+
 			    model.trigger("downloadComplete");
 			};
 
@@ -1257,6 +1282,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			        model.set("downloadPercent", percent);
 			    }
 			};
+
+      xhr.onerror = function(e){
+        model.trigger("downloadError");
+
+        //Send this exception to Google Analytics
+        if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+          ga("send", "exception", {
+            "exDescription": "Download package error: " + (e || "") +
+              " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+            "exFatal": true
+          });
+        }
+      };
 
 			//Open and send the request with the user's auth token
 			xhr.open('GET', url);

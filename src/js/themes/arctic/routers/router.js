@@ -9,19 +9,20 @@ function ($, _, Backbone) {
 	var UIRouter = Backbone.Router.extend({
 		routes: {
 			''                          : 'renderData',    // the default route
-			'data/my-data(/page/:page)' : 'renderMyData',    // data search page
-			'data(/mode=:mode)(/query=:query)(/page/:page)' : 'renderData',    // data search page
-			'profile(/*username)(/s=:section)(/s=:subsection)' : 'renderProfile',
-			'my-profile(/s=:section)(/s=:subsection)' : 'renderMyProfile',
-			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
-			'signout'					: 'logout',
-			'signin'					: 'renderSignIn',
-			"signinsuccess"             : "renderSignInSuccess",
-			'share(/*pid)'              : 'renderEditor', // registry page
-			'submit(/*pid)'             : 'renderEditor', // registry page
-			'quality(/s=:suiteId)(/:pid)' : 'renderMdqRun', // MDQ page
-			'api(/:anchorId)'           : 'renderAPI',       // API page
-			'projects(/:projectId)(/:projectSection)': 'renderProject' // project page
+			'data/my-data(/page/:page)(/)' : 'renderMyData',    // data search page
+			'data(/mode=:mode)(/query=:query)(/page/:page)(/)' : 'renderData',    // data search page
+			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
+			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
+			'external(/*url)(/)'           : 'renderExternal', // renders the content of the given url in our UI
+			'signout(/)'					: 'logout',
+			'signin(/)'					: 'renderSignIn',
+			"signinsuccess(/)"             : "renderSignInSuccess",
+			'share(/*pid)(/)'              : 'renderEditor', // registry page
+			'submit(/*pid)(/)'             : 'renderEditor', // registry page
+			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
+			'api(/:anchorId)(/)'           : 'renderAPI',       // API page
+			'projects(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
+      'portals(/:projectId)(/:projectSection)(/)': 'renderProject' // project page
 		},
 
 		helpPages: {
@@ -395,7 +396,7 @@ function ($, _, Backbone) {
 			}
 		},
 
-    /*
+    /**
      * Render the project view based on the given name, id, or section
      */
      renderProject: function(projectId, projectSection) {
@@ -411,9 +412,9 @@ function ($, _, Backbone) {
                     projectId = projectsMap[projectId];
                     // Then set the history
                     if ( projectSection ) {
-                        this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                        this.routeHistory.push("portals/" + projectName + "/" + projectSection);
                     } else {
-                        this.routeHistory.push("projects/" + projectName);
+                        this.routeHistory.push("portals/" + projectName);
                     }
                 } else {
                     // Try a reverse lookup of the project name by values
@@ -423,9 +424,9 @@ function ($, _, Backbone) {
 
                     if ( typeof projectName !== "undefined" ) {
                         if ( projectSection ) {
-                            this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                            this.routeHistory.push("portals/" + projectName + "/" + projectSection);
                         } else {
-                            this.routeHistory.push("projects/" + projectName);
+                            this.routeHistory.push("portals/" + projectName);
                         }
                     } else {
 
@@ -442,16 +443,16 @@ function ($, _, Backbone) {
 
                         // Then set the history
                         if ( projectSection ) {
-                          this.navigate("projects/" + projectName + "/" + projectSection, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                          this.navigate("portals/" + projectName + "/" + projectSection, { trigger: false, replace: true });
+                          this.routeHistory.push("portals/" + projectName + "/" + projectSection);
                         } else {
-                          this.navigate("projects/" + projectName, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName);
+                          this.navigate("portals/" + projectName, { trigger: false, replace: true });
+                          this.routeHistory.push("portals/" + projectName);
                         }
                       }
                       else{
                         // Fall back to routing to the project by id, not name
-                        this.routeHistory.push("projects/" + projectId);
+                        this.routeHistory.push("portals/" + projectId);
                       }
                     }
                 }
@@ -466,14 +467,14 @@ function ($, _, Backbone) {
             MetacatUI.appView.projectView = new ProjectView({
                           projectId: projectId,
                           projectName: projectName,
-                          projectSection: projectSection
+                          activeSection: projectSection
                       });
             MetacatUI.appView.showView(MetacatUI.appView.projectView);
           });
         } else {
                   MetacatUI.appView.projectView.projectName = projectName;
                   MetacatUI.appView.projectView.projectId = projectId;
-                  MetacatUI.appView.projectView.projectSection = projectSection;
+                  MetacatUI.appView.projectView.activeSection = projectSection;
           MetacatUI.appView.showView(MetacatUI.appView.projectView);
         }
       },

@@ -64,7 +64,10 @@ define(['jquery', 'underscore', 'backbone'],
       editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted, but a draft " +
         "has been saved which can be accessed by our support team. Please contact us.",
 
-			defaultAccessPolicy: [],
+			defaultAccessPolicy: [{
+        subject: "public",
+        read: true
+      }],
 
 			baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 			allowAccessPolicyChanges: true,
@@ -153,7 +156,11 @@ define(['jquery', 'underscore', 'backbone'],
 
 			// If true, then archived content is available in the search index.
 			// Set to false if this MetacatUI is using a Metacat version before 2.10.0
-			archivedContentIsIndexed: true
+			archivedContentIsIndexed: true,
+
+      bioportalAPIKey: null,
+			bioportalLookupCache: {},
+			showAnnotationIndicator: false
 		},
 
 		defaultView: "data",

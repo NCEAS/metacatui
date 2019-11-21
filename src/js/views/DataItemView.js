@@ -457,6 +457,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     // Read each file, and make a DataONEObject
                     _.each(fileList, function(file) {
 
+                        var uploadStatus = "l",
+                            errorMessage = "";
+
+                        if( file.size == 0 ){
+                          uploadStatus = "e";
+                          errorMessage = "This is an empty file. It won't be included in the dataset.";
+                        }
+
                         var dataONEObject = new DataONEObject({
                             synced: true,
                             type: "Data",
@@ -464,7 +472,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                             size: file.size,
                             mediaType: file.type,
                             uploadFile: file,
-                            uploadStatus: "l",
+                            uploadStatus: uploadStatus,
+                            errorMessage: errorMessage,
                             isDocumentedBy: [this.parentSciMeta.id],
                             resourceMap: [this.collection.packageModel.id]
                         });

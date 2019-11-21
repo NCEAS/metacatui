@@ -20,11 +20,13 @@
 	        	<button class="btn direct-search" form="direct-search">Go</button>
 	        </form>
         </li>
-
+        <li class="minimal-nav hidden">
+          <a href="<%=MetacatUI.appModel.get('baseUrl')%>">Hosted by the <span class="brand">knb</span></a>
+        </li>
         <% if (loggedIn) { %>
-        	<li class="dropdown">
+        	<li class="dropdown minimal-nav">
 				<a href="#" class="dropdown-toggle user" data-toggle="dropdown">
-					<i class="icon-user icon icon-on-left"></i><%=MetacatUI.appUserModel.get("firstName")%><b class="caret"></b>
+					<i class="icon-user icon icon-on-left"></i><%=(firstName || formattedName)%><b class="caret"></b>
 				</a>
 				<ul class="dropdown-menu">
 					<li class="dropdown-header"><%=formattedName%></li>
@@ -36,7 +38,7 @@
 				</ul>
 			</li>
         <% } else { %>
-        		<li id="SignIn"><a href="<%= MetacatUI.root %>/signin">Sign In</a></li>
+        		<li id="SignIn" class="minimal-nav"><a href="<%= MetacatUI.root %>/signin">Sign In</a></li>
        <%  } %>
 
       </ul>

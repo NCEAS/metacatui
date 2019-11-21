@@ -48,7 +48,12 @@ define(["jquery",
 
             var row;
 
-            _.each(this.logos, function(logo, i) {
+            //Remove any logos that don't have a URL
+            var logos = _.reject(this.logos, function(logo){
+              return !logo || !logo.get("imageURL");
+            });
+
+            _.each(logos, function(logo, i) {
 
                 if (i % 4 == 0) {
                     // create a row for each multiple of 4
@@ -56,7 +61,10 @@ define(["jquery",
                     this.$el.append(row);
                 }
 
-                row.append(this.template({logoURL: logo, spanX: spanX}));
+                var templateVars = logo.toJSON();
+                templateVars.spanX = spanX;
+
+                row.append(this.template(templateVars));
 
             }, this);
 

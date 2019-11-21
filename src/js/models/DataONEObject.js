@@ -51,8 +51,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     dateModified: null,
                     id: "urn:uuid:" + uuid.v4(),
                     sizeStr: null,
-                    type: null, // Data, Metadata, or DataPackage
-                    formatType: null,
+                    type: "", // Data, Metadata, or DataPackage
+                    formatType: "",
                     metadataEntity: null, // A model that represents the metadata for this file, e.g. an EMLEntity model
                     latestVersion: null,
                     isDocumentedBy: null,
@@ -236,7 +236,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
 
               //Merge with the options passed to this function
-              var fetchOptions = _.extend(solrOptions, options);
+              var fetchOptions = _.extend(options, solrOptions);
             }
             else if(typeof options != "undefined"){
               //Use custom options for retreiving XML
@@ -454,6 +454,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               // Set missing file names before saving
               if ( ! this.get("fileName") ) {
                   this.setMissingFileName();
+              }
+              else{
+                //Replace all non-alphanumeric characters with underscores
+                var fileNameWithoutExt = this.get("fileName").substring(0, this.get("fileName").lastIndexOf(".")),
+                    extension = this.get("fileName").substring(this.get("fileName").lastIndexOf("."), this.get("fileName").length);
+                this.set("fileName", fileNameWithoutExt.replace(/[^a-zA-Z0-9]/g, "_") + extension);
               }
 
               if ( !this.hasUpdates() ) {
@@ -914,7 +920,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               this.set("id", id);
 
             } else {
-              this.set("id", "urn:uuid:" + uuid.v4());
+              if( this.get("type") == "DataPackage" ){
+                this.set("id", "resource_map_urn:uuid:" + uuid.v4());
+              }
+              else{
+                this.set("id", "urn:uuid:" + uuid.v4());
+              }
             }
 
             // Remove the old pid from the documents list if present
@@ -1017,7 +1028,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           handleChange: function(model, options) {
             if(!model) var model = this;
 
-              var sysMetaAttrs = ["serialVersion", "identifier", "formatId", "size", "checksum",
+              var sysMetaAttrs = ["serialVersion", "identifier", "formatId", "formatType", "size", "checksum",
                   "checksumAlgorithm", "submitter", "rightsHolder", "accessPolicy", "replicationAllowed",
                   "replicationPolicy", "obsoletes", "obsoletedBy", "archived", "dateUploaded", "dateSysMetadataModified",
                   "originMemberNode", "authoritativeMemberNode", "replica", "seriesId", "mediaType", "fileName"],
@@ -1060,6 +1071,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * Updates the upload status attribute on this model and marks the collection as changed
            */
           updateUploadStatus: function(){
+
+            if( !this.get("synced") ){
+              return;
+            }
 
               //Add this item to the queue
               if((this.get("uploadStatus") == "c") || (this.get("uploadStatus") == "e") || !this.get("uploadStatus")){
@@ -1295,8 +1310,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 extension = objectFormats[0].get("extension");
             }
 
-            filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
-            filename.replace(/[ :"'\/\\]/g, "-").replace(/[-]+/g, "-");
+            //Science metadata file names will use the title
+            if( this.get("type") == "Metadata" ){
+              filename = (Array.isArray(this.get("title")) && this.get("title").length)? this.get("title")[0] : this.get("id");
+            }
+            //Resource maps will use a "resource_map_" prefix
+            else if( this.get("type") == "DataPackage" ){
+              filename = "resource_map_" + this.get("id");
+              extension = ".rdf.xml";
+            }
+            //All other object types will just use the id
+            else{
+              filename = this.get("id");
+            }
+
+            //Replace all non-alphanumeric characters with underscores
+            filename = filename.replace(/[^a-zA-Z0-9]/g, "_");
 
             if ( typeof extension !== "undefined" ) {
               filename = filename + "." + extension;
@@ -1305,8 +1334,16 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             this.set("fileName", filename);
           },
 
-          getXMLSafeID: function(){
-            var id = this.get("id");
+          /**
+          * Converts the identifier string to a string safe to use in an XML id attribute
+          * @param {string} [id] - The ID string
+          * @return {string} - The XML-safe string
+          */
+          getXMLSafeID: function(id){
+
+            if(typeof id == "undefined"){
+              var id = this.get("id");
+            }
 
             //Replace XML id attribute invalid characters and patterns in the identifier
             id = id.replace(/</g, "-").replace(/:/g, "-").replace(/&[a-zA-Z0-9]+;/g);
@@ -1363,7 +1400,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             //Determine the type via provONE
             var instanceOfClass = this.get("prov_instanceOfClass");
-            if(typeof instanceOfClass !== "undefined" && instanceOfClass.length){
+            if(typeof instanceOfClass !== "undefined" && Array.isArray(instanceOfClass) && instanceOfClass.length){
               var programClass = _.filter(instanceOfClass, function(className){
                 return (className.indexOf("#Program") > -1);
               });
@@ -1456,7 +1493,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           isSoftware: function(){
-            //The list of formatIds that are programs 
+            //The list of formatIds that are programs
             var softwareIds =  ["text/x-python",
                       "text/x-rsrc",
                       "text/x-matlab",

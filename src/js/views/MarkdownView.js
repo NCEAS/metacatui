@@ -9,8 +9,7 @@ define([    "jquery", "underscore", "backbone",
     /* The markdownView is a view that will retrieve and parse markdown */
     var markdownView = Backbone.View.extend({
 
-        /* element: The markdown div */
-        el: ".markdown",
+        className: "markdown",
 
         type: "markdown",
 
@@ -31,18 +30,6 @@ define([    "jquery", "underscore", "backbone",
                 this.markdown = options.markdown         || "";
                 this.citations = options.citations       || [];
             }
-
-            // super hacky test insertion:
-            // this.markdown += '\nHere's a single citation [@jones_2001] that's not found in the bibtex. Here's one that is [@collins_2018]. 
-            // Here's one that is and one that isn't [@jones_2001, @brinckman_2018]. 
-            // Here's three [@hampton_2017, @brinckman_2018, @collins_2018] that are in there.
-            // Here's those along with a couple I just made up [@hampton_2017, @porkchop_1973, @brinckman_2018, @sandwiches_1982, @collins_2018].';
-            
-            if(this.citations.length) {
-                // put the bibtex into the markdown so it can be processed by 
-                // the showdown-citations extension.
-                this.markdown = this.markdown + "\n<bibtex>" + this.citations + "</bibtex>";
-            };
         },
 
         /* Render the view */
@@ -62,6 +49,14 @@ define([    "jquery", "underscore", "backbone",
                             emoji: true,
                             extensions: SDextensions
                 });
+
+                //If there are citations in the markdown text, add it to the markdown
+                // so it gets rendered.
+                if( _.contains(SDextensions, "showdown-citation") && this.citations.length ){
+                  // put the bibtex into the markdown so it can be processed by
+                  // the showdown-citations extension.
+                  this.markdown = this.markdown + "\n<bibtex>" + this.citations + "</bibtex>";
+                }
 
                 htmlFromMD = converter.makeHtml( this.markdown ); //
                 this.$el.append(this.template({ markdown: htmlFromMD }));
@@ -113,8 +108,8 @@ define([    "jquery", "underscore", "backbone",
                 regexFootnotes1     = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/mg,
                 regexFootnotes2     = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/mg,
                 regexFootnotes3     = /\[\^([\d\w]+)\]/m,
-                // test for all of the math/katex delimiters (TODO: see what katex uses for regex. this is too general.)
-                regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|&&.*&&"),
+                // test for all of the math/katex delimiters
+                regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|$.*$|```asciimath.*```|```latex.*```"),
                 regexCitation   = /\[@.+\]/g;
                 // test for any <h.> tags
                 regexHtags      = new RegExp('#\\s'),
@@ -138,9 +133,10 @@ define([    "jquery", "underscore", "backbone",
                     // custom config needed for katex
                     var katex = showdownKatex({
                         delimiters: [
-                            { left: "$",    right: "$",      display: false,    asciimath: true },
-                            { left: '$$',   right: '$$',     display: true,     asciimath: true },
-                        ],
+                            { left: "$", right: "$", display: false },
+                            { left: "$$", right: "$$", display: false},
+                            { left: '~', right: '~', display: false }
+                        ]
                     });
                     // because custom config, register katex with showdown
                     showdown.extension("katex", katex);

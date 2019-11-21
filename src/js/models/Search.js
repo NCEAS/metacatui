@@ -42,7 +42,8 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     submitter: [],
                     spatial: [],
                     attribute: [],
-                    //annotation: [],
+                    sem_annotation: [],
+                    annotation: [],
                     additionalCriteria: [],
                     id: [],
                     seriesId: [],
@@ -273,17 +274,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                             filterValue = annotationFilter;
                         }
 
-                        //Trim the spaces off
+                        // Trim leading and trailing whitespace just in case
                         filterValue = filterValue.trim();
 
-                        // Does this need to be wrapped in quotes?
-                        if (model.needsQuotes(filterValue)) {
-                            filterValue = "%22" + encodeURIComponent(filterValue) + "%22";
-                        } else {
-                            filterValue = encodeURIComponent(filterValue);
-                        }
-
-                        filterValue = model.escapeSpecialChar(filterValue);
+                        // Encode and wrap URI in urlencoded double quote chars
+                        filterValue = "%22" + encodeURIComponent(filterValue.trim()) + "%22";
 
                         query += model.fieldNameMap["annotation"] + ":" + filterValue;
                     });

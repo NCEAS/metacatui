@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone'],
 			datasource: null,
 			rightsHolder: null,
 			size: 0,
-			type: null,
+			type: "",
 			url: null,
 			obsoletedBy: null,
 			geohash_9: null,
@@ -50,6 +50,8 @@ define(['jquery', 'underscore', 'backbone'],
 			serviceOutput: null,
 			notFound: false,
 			newestVersion: null,
+      //@type {string} - The system metadata XML as a string
+      systemMetadata: null,
 			provSources: [],
 			provDerivations: [],
 			//Provenance index fields
@@ -266,22 +268,31 @@ define(['jquery', 'underscore', 'backbone'],
 			//Create an XHR
 			var xhr = new XMLHttpRequest();
 
+      //Open and send the request with the user's auth token
+      xhr.open('GET', url);
+
 			if(MetacatUI.appUserModel.get("loggedIn"))
 				xhr.withCredentials = true;
 
 			//When the XHR is ready, create a link with the raw data (Blob) and click the link to download
 			xhr.onload = function(){
 
+        if( this.status == 404 ){
+          this.onerror.call(this);
+          return;
+        }
+
 			   //Get the file name to save this file as
 			   var filename = xhr.getResponseHeader('Content-Disposition');
 
 			   if(!filename){
-				   filename = model.get("fileName") || model.get("title") || model.get("id") || "";
+				   filename = model.get("fileName") || model.get("title") || model.get("id") || "download";
 			   }
 			   else
 				   filename = filename.substring(filename.indexOf("filename=")+9).replace(/"/g, "");
 
-			   filename = filename.trim();
+         //Replace any whitespaces
+			   filename = filename.trim().replace(/ /g, "_");
 
 			   //For IE, we need to use the navigator API
 			   if (navigator && navigator.msSaveOrOpenBlob) {
@@ -302,21 +313,24 @@ define(['jquery', 'underscore', 'backbone'],
 			   }
 
 			    model.trigger("downloadComplete");
+
+          //Send this event to Google Analytics
+          if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+            ga("send", "event", "download", "Download DataONEObject", model.get("id"));
+          }
 			};
 
 			xhr.onerror = function(e){
-				var a = document.createElement('a');
-			    a.href = url;
+        model.trigger("downloadError");
 
-			    var filename = model.get("fileName") || model.get("title") || model.get("id") || "";
-				if(filename)
-					a.download = filename;
-
-			    a.style.display = 'none';
-			    document.body.appendChild(a);
-			    a.click();
-
-				model.trigger("downloadComplete");
+        //Send this exception to Google Analytics
+        if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+          ga("send", "exception", {
+            "exDescription": "Download DataONEObject error: " + (e || "") +
+              " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+            "exFatal": true
+          });
+        }
 			};
 
 			xhr.onprogress = function(e){
@@ -326,8 +340,6 @@ define(['jquery', 'underscore', 'backbone'],
 			    }
 			};
 
-			//Open and send the request with the user's auth token
-			xhr.open('GET', url);
 			xhr.responseType = "blob";
 
 			if(MetacatUI.appUserModel.get("loggedIn"))
@@ -462,6 +474,11 @@ define(['jquery', 'underscore', 'backbone'],
 				type: "GET",
 				dataType: "text",
 				success: function(data, response, xhr){
+
+          if( data && data.length ){
+            model.set("systemMetadata", data);
+          }
+
 					//Check if this is archvied
 					var archived = ($(data).find("archived").text() == "true");
 					model.set("archived", archived);
@@ -555,9 +572,12 @@ define(['jquery', 'underscore', 'backbone'],
 
 				},
 				error: function(xhr){
-					//If this newer version isn't accessible, link to the latest version that is
-					if(xhr.status == "401")
-						model.set("newestVersion", newestVersion);
+					//If this newer version isn't found or accessible, then save the last
+          // accessible id as the newest version
+          if(xhr.status == 401 || xhr.status == 404 || xhr.status == "401" ||
+             xhr.status == "404"){
+            model.set("newestVersion", newestVersion);
+          }
 				}
 			}
 

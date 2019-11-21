@@ -1,6 +1,6 @@
 /* Smartphones (portrait) ----------- */
 @media only screen and (max-width : 480px) {
-	
+
 	/************** Metadata View ****************/
 	.form-horizontal .control-label{
 		float: none;
@@ -48,7 +48,7 @@
 		width: 95%;
 		width: calc(100% - 50px);
 	}
-	
+
 	/************** Navbar ****************/
 	#Navbar{
 		width: 100%;
@@ -78,7 +78,7 @@
 		left: 30%;
 		width: 50%;
 	}
-	
+
 	/*************** General Structure ***********/
 	.row-fluid .span6.pagination-left {
   		width: 100%;
@@ -86,7 +86,7 @@
 	#Content{
 		width: 100%;
 	}
-	
+
 	/************** Search page ****************/
 	#sidebar{
 		width: 90%;
@@ -101,7 +101,7 @@
 	.filter-contain > label{
 		font-size: 1.1em;
 	}
-	
+
 	/***** Stats ********/
 	.profile .format-charts .chart{
 		width: 100%;
@@ -136,7 +136,7 @@
   }
   .attributeList > .row-fluid > .span10{
   	width: 76%;
-  	width: calc(100% - 165px);
+  	width: calc(97% - 165px);
   }
   .attributeList .tab-pane > .control-group{
     min-width: 400px;
@@ -151,7 +151,7 @@
 	.temporal-coverage .control-label {
     	height: 4em;
 	}
-    
+
     /******************************************
     * Metrics Controller Styling
     ********************************************/
@@ -224,20 +224,20 @@
   		width: 100%;
 	}
 }
- 
+
 /* Smartphones (portrait) ----------- */
 @media only screen
 and (max-width : 320px) {
 /* STYLES GO HERE */
 }
- 
+
 /* iPads (portrait and landscape) ----------- */
 @media only screen
 and (min-width : 768px)
 and (max-width : 1024px) {
 /* STYLES GO HERE */
 }
- 
+
 /* iPads (landscape) ----------- */
 @media only screen
 and (min-width : 768px)
@@ -245,7 +245,7 @@ and (max-width : 1024px)
 and (orientation : landscape) {
 /* STYLES GO HERE */
 }
- 
+
 /* iPads (portrait) ----------- */
 @media only screen
 and (min-width : 768px)
@@ -259,20 +259,20 @@ and (orientation : portrait) {
 and (min-width : 1224px) {
 /* STYLES GO HERE */
 }
- 
+
 /* Large screens ----------- */
 @media only screen
 and (min-width : 1824px) {
 /* STYLES GO HERE */
 }
- 
+
 /* iPhone 5 (portrait &amp; landscape)----------- */
 @media only screen
 and (min-width : 320px)
 and (max-width : 568px) {
 /* STYLES GO HERE */
 }
- 
+
 /* iPhone 5 (landscape)----------- */
 @media only screen
 and (min-width : 320px)
@@ -280,7 +280,7 @@ and (max-width : 568px)
 and (orientation : landscape) {
 /* STYLES GO HERE */
 }
- 
+
 /* iPhone 5 (portrait)----------- */
 @media only screen
 and (min-width : 320px)

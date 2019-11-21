@@ -19,11 +19,16 @@
 	        	<button class="btn direct-search" form="direct-search">Go</button>
 	        </form>
         </li>
+        <li class="minimal-nav hidden">
+          <a href="<%=MetacatUI.appModel.get('baseUrl')%>">Hosted by <%=MetacatUI.appModel.get('title')%></a>
+        </li>
         <% if (loggedIn && username) {
         	print(
-        	'<li class="dropdown">',
+        	'<li class="dropdown minimal-nav user-menu">',
 				'<a href="" class="dropdown-toggle" data-toggle="dropdown">',
-					'<i class="icon icon-on-left icon-user"></i><i class="icon-caret-down"></i>',
+					'<i class="icon icon-on-left icon-user"></i>',
+          (firstName || formattedName),
+          '<i class="icon icon-caret-down icon-on-right"></i>',
 				'</a>',
 				'<ul class="dropdown-menu">',
 					'<li class="dropdown-header">', formattedName, '</li>',
@@ -38,7 +43,7 @@
         	);
         } else {
         	print(
-        		'<li id="SignIn" class="share-feature"><a href="' + MetacatUI.root + '/signin">Sign In</a></li>'
+        		'<li id="SignIn" class="share-feature minimal-nav"><a href="' + MetacatUI.root + '/signin">Sign In</a></li>'
         	);
         } %>
 

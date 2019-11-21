@@ -123,6 +123,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "attributelist" : "attributeList",
                 "attributename" : "attributeName",
                 "attributeorientation" : "attributeOrientation",
+                "blockedmembernode" : "blockedMemberNode",
                 "casesensitive" : "caseSensitive",
                 "changehistory" : "changeHistory",
                 "changedate" : "changeDate",
@@ -132,29 +133,48 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "codeexplanation" : "codeExplanation",
                 "codesetname" : "codesetName",
                 "codeseturl" : "codesetURL",
+                "collapsedelimiters" : "collapseDelimiters",
+                "constanttosi" : "constantToSI",
                 "customunit" : "customUnit",
                 "dataformat" : "dataFormat",
                 "datatable" : "dataTable",
+                "datatype" : "dataType",
                 "datetime" : "dateTime",
                 "datetimedomain" : "dateTimeDomain",
                 "datetimeprecision" : "dateTimePrecision",
                 "definitionattributereference" : "definitionAttributeReference",
+                "dictref" : "dictRef",
+                "endcondition" : "endCondition",
                 "entitycodelist" : "entityCodeList",
                 "entitydescription" : "entityDescription",
                 "entityname" : "entityName",
                 "entityreference" : "entityReference",
                 "entitytype" : "entityType",
                 "enumerateddomain" : "enumeratedDomain",
+                "errorbasis" : "errorBasis",
+                "errorvalues" : "errorValues",
                 "externalcodeset" : "externalCodeSet",
                 "externallydefinedformat" : "externallyDefinedFormat",
                 "fielddelimiter" : "fieldDelimiter",
                 "formatname" : "formatName",
                 "formatstring" : "formatString",
+                "fractiondigits" : "fractionDigits",
                 "intellectualrights" : "intellectualRights",
+                "literalcharacter" : "literalCharacter",
+                "literallayout" : "literalLayout",
                 "maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
+                "matrixtype" : "matrixType",
+                "maxexclusive" : "maxExclusive",
+                "maxinclusive" : "maxInclusive",
+                "maxlength" : "maxLength",
                 "maxrecordlength" : "maxRecordLength",
+                "maxvalues" : "maxValues",
                 "measurementscale" : "measurementScale",
                 "methodstep" : "methodStep",
+                "minexclusive" : "minExclusive",
+                "mininclusive" : "minInclusive",
+                "minlength" : "minLength",
+                "minvalues" : "minValues",
                 "missingvaluecode" : "missingValueCode",
                 "multipliertosi" : "multiplierToSI",
                 "nonnumericdomain" : "nonNumericDomain",
@@ -173,24 +193,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "packageid" : "packageId",
                 "parentsi" : "parentSI",
                 "physicallinedelimiter" : "physicalLineDelimiter",
+                "preferredmembernode" : "preferredMemberNode",
                 "pubdate" : "pubDate",
                 "pubplace" : "pubPlace",
                 "quantitativeattributeaccuracyassessment" : "quantitativeAttributeAccuracyAssessment",
+                "quotecharacter" : "quoteCharacter",
+                "recommendedunits" : "recommendedUnits",
                 "researchtopic" : "researchTopic",
                 "recorddelimiter" : "recordDelimiter",
                 "samplingdescription" : "samplingDescription",
+                "shortname" : "shortName",
                 "simpledelimited" : "simpleDelimited",
                 "standardunit" : "standardUnit",
+                "startcondition" : "startCondition",
                 "storagetype" : "storageType",
                 "studyextent" : "studyExtent",
                 "studytype" : "studyType",
                 "textdomain" : "textDomain",
                 "textformat" : "textFormat",
+                "totaldigits" : "totalDigits",
                 "typesystem" : "typeSystem",
                 "unittype" : "unitType",
                 "unitlist" : "unitList",
                 "valueattributereference" : "valueAttributeReference",
-                        "xsi:schemalocation" : "xsi:schemaLocation"
+                "whitespace" : "whiteSpace",
+                "xsi:schemalocation" : "xsi:schemaLocation"
               }
           );
         },
@@ -471,16 +498,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           }
         });
 
-        // Insert new nodes
-        if (fieldName.toLowerCase() === "alternateidentifier") {
-          datasetNode.prepend(nodes);
+        var insertAfter = this.getEMLPosition(eml, fieldName.toLowerCase());
+
+        if(insertAfter){
+          insertAfter.after(nodes);
         }
-        else if (fieldName.toLowerCase() === "title") {
-          if (datasetNode.find("alternateidentifier").length > 0) {
-            datasetNode.find("alternateidentifier").last().after(nodes);
-          } else {
-            datasetNode.prepend(nodes);
-          }
+        else{
+          datasetNode.prepend(nodes);
         }
 
       }, this);
@@ -908,19 +932,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           this.trigger("valid");
         }
 
-        // Update the file name to match the title
-        if( Array.isArray(this.get("title")) ){
-          this.set("fileName", this.get("title")[0] + ".xml");
-        }
-        else if( typeof this.get("title") == "string" ){
-          this.set("fileName", this.get("title") + ".xml");
-        }
-
-        //If that doesn't work for some reason, set the missing file name via the
-        // DataONEObject inherited function setMissingFileName()
-        if ( ! this.get("fileName") ) {
-            this.setMissingFileName();
-        }
+        this.setFileName();
 
         //Set the upload transfer as in progress
         this.set("uploadStatus", "p");
@@ -1407,8 +1419,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       getEntity: function(dataONEObj){
 
         //If an EMLEntity model has been found for this object before, then return it
-        if( dataONEObj.get("metadataEntity") )
+        if( dataONEObj.get("metadataEntity") ){
+          dataONEObj.get("metadataEntity").set("dataONEObject", dataONEObj);
           return dataONEObj.get("metadataEntity");
+        }
 
         var entity = _.find(this.get("entities"), function(e){
 
@@ -1458,6 +1472,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           if( entity.get("dataONEObject") ){
             return;
           }
+          else{
+            entity.set("dataONEObject", dataONEObj);
+          }
 
             //Create an XML-safe ID and set it on the Entity model
             var entityID = this.getUniqueEntityId(dataONEObj);
@@ -1503,6 +1520,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               entityType : dataONEObject.get("formatId") ||
                            dataONEObject.get("mediaType") ||
                            "application/octet-stream",
+              dataONEObject: dataONEObject,
               parentModel: this,
               xmlID: dataONEObject.getXMLSafeID()
           });
@@ -1671,6 +1689,18 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         textString = textString.trim();
 
+        //Check for XML/HTML elements
+        _.each(textString.match(/<\s*[^>]*>/g), function(xmlNode){
+
+          //Encode <, >, and </ substrings
+          var tagName = xmlNode.replace(/>/g, "&gt;");
+          tagName = tagName.replace(/</g, "&lt;");
+
+          //Replace the xmlNode in the full text string
+          textString = textString.replace(xmlNode, tagName);
+
+        });
+
         return textString;
 
       },
@@ -1714,6 +1744,40 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               }, xmlDOM);
           }
           return (new XMLSerializer()).serializeToString(xmlDOM);
+      },
+
+      /*
+      * Uses the EML `title` to set the `fileName` attribute on this model.
+      */
+      setFileName: function(){
+
+        var title = "";
+
+        // Get the title from the metadata
+        if( Array.isArray(this.get("title")) ){
+          title = this.get("title")[0];
+        }
+        else if( typeof this.get("title") == "string" ){
+          title = this.get("title");
+        }
+
+        //Max title length
+        var maxLength = 50;
+
+        //trim the string to the maximum length
+        var trimmedTitle = title.trim().substr(0, maxLength);
+
+        //re-trim if we are in the middle of a word
+        if( trimmedTitle.indexOf(" ") > -1 ){
+          trimmedTitle = trimmedTitle.substr(0, Math.min(trimmedTitle.length, trimmedTitle.lastIndexOf(" ")));
+        }
+
+        //Replace all non alphanumeric characters with underscores
+        // and make sure there isn't more than one underscore in a row
+        trimmedTitle = trimmedTitle.replace(/[^a-zA-Z0-9]/g, "_").replace(/_{2,}/g, "_");
+
+        //Set the fileName on the model
+        this.set("fileName", trimmedTitle + ".xml");
       },
 
       trickleUpChange: function(){

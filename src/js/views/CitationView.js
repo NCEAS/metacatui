@@ -64,13 +64,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					journal =this.model.get("publisher"),
 					volume =this.model.get("volume"),
 					page =this.model.get("page");
-			
+
 				// Format the Author textarea				else if (this.model.type == "CitationModel") {
 				if (authorText.length > 0) {
                 	var authors = authorText.split(", "),
 						count = 0,
 						authorText = "";
-				
+
 					_.each(authors, function (author) {
 						count++;
 
@@ -282,7 +282,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 												.attr("data-id", this.metadata.get("id"))
 												.text(title);
 				}
-				
+
 			}
 			else
 				var titleEl = document.createElement("span");
@@ -299,7 +299,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 						var volumeText = "Vol. " + volume + ". ";
 					}
 					var volumeEl = $(document.createElement("span")).addClass("publisher").text(volumeText);
-					
+
 					// Creating a 'pages' element to display in Citations Modal Window
 					if(page === "NULL") {
 						var pageText = "";
@@ -320,7 +320,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 					var linkEl = $(document.createElement("a"))
 									.addClass("route-to-metadata")
 									.attr("data-id", id)
-									.attr("href", MetacatUI.root + "/view/" + id)
+									.attr("href", MetacatUI.root + "/view/" + (seriesId || id))
 									.append(authorEl, pubDateEl, titleEl, publisherEl, idEl);
 				}
 
@@ -329,8 +329,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			else if(this.createTitleLink){
 				var linkEl = $(document.createElement("a"))
 								.addClass("route-to-metadata")
-								.attr("data-id", id)
-								.attr("href", MetacatUI.root + "/view/" + id)
+								.attr("data-id", seriesId)
+								.attr("href", MetacatUI.root + "/view/" + (seriesId || id))
 								.append(titleEl);
 				this.$el.append(authorEl, pubDateEl, linkEl, publisherEl, idEl);
 			}

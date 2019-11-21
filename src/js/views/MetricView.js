@@ -12,7 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
         model: null,
 
         //Templates
-        metricButtonTemplate:  _.template( "<span class='metric-icon'> <i class='icon" + 
+        metricButtonTemplate:  _.template( "<span class='metric-icon'> <i class='icon" +
                             " <%=metricIcon%>'></i> </span>" +
                             "<span class='metric-name'> <%=metricName%> </span>" +
                             "<span class='metric-value'> <i class='icon metric-icon icon-spinner icon-spin'>" +
@@ -64,7 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
 
             // waiting for the fetch() call to succeed.
             this.listenTo(this.model, "sync", this.renderResults);
-            
+
             // in case when there is an error for the fetch call.
             this.listenTo(this.model, "error", this.renderError);
 
@@ -79,6 +79,11 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
                 var modalView = new MetricModalView({metricName: this.metricName, metricsModel: this.model});
                 modalView.render();
                 modalView.show();
+
+                //Send this event to Google Analytics
+                if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                  ga("send", "event", "metrics", "Click metric", this.metricName);
+                }
             }
         },
 
@@ -98,7 +103,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
                 this.$el.click(function(){return false;});
             }
         },
-        
+
         renderError: function() {
             // Replacing the spinning icon with a question-mark
             // when the metrics are not loaded
@@ -106,7 +111,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             iconEl.removeClass('icon-spinner');
             iconEl.removeClass('icon-spin');
             iconEl.addClass("icon-exclamation-sign more-info");
-            
+
             // Setting the error tool-tip
             this.$el.removeAttr("data-title");
 

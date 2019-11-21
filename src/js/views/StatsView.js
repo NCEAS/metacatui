@@ -2,10 +2,12 @@
 define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'collections/Citations', 'models/MetricsModel', 'views/MetricsChartView', 'text!templates/metricModalTemplate.html', 'views/CitationListView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
 	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
-			
+
 	var StatsView = Backbone.View.extend({
 
 		el: '#Content',
+
+    model: null,
 
     hideUpdatesChart: false,
 
@@ -14,15 +16,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		metricTemplate: _.template(MetricModalTemplate),
 		
 		alertTemplate: _.template(AlertTemplate),
-		
+
 		loadingTemplate: _.template(LoadingTemplate),
-						
+
 		initialize: function(options){
 			if(!options) options = {};
 			
 
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
-			this.description = (typeof options.description === "undefined") ? 
+			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
 			this.metricsModel = options.metricsModel;
 			this.userType = options.userType;
@@ -31,12 +33,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
       this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
 
-      this.model = options.model || MetacatUI.statsModel;
+      this.model = options.model || null;
 		},
-				
+
 		render: function () {
-			
-			//Clear the page 
+
+      if( !this.model ){
+        this.model = new StatsModel();
+      }
+
+			//Clear the page
 			this.$el.html("");
 
 			// Adding support for DataONE profile
@@ -240,9 +246,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 								else if((name != undefined) && (name == "application/vnd.openxmlformats-officedocument.wordprocessingml.document")) name= "MS Word OpenXML"
 								//Application/octet-stream - shorten it
 								else if((name !== undefined) && (name == "application/octet-stream")) name = "Application file";
-								
+
 								if(name === undefined) name = "";
-								
+
 								return name;
 							}
 						});
@@ -919,7 +925,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.stopListening(this.model);
 
 			//Reset the stats model
-			this.model.clear().set(this.model.defaults);
+			this.model = null;
 		}
 
 	});

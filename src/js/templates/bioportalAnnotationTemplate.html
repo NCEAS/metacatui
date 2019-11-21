@@ -1,0 +1,17 @@
+<div clas="annotation-popover-context">
+    <%= context %> <em><a href="<%= propertyURI %>"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong>
+</div>
+<div class="annotation-popover-definition">
+    <% if (!valueResolved) { %>
+        Looking for more information about <a href="<%= valueURI %>"><%= valueLabel %></a>.
+    <% } else if (valueResolved && valueDefinition === null) { %>
+        No extra information could be found for <a href="<%= valueURI %>"><%= valueLabel %></a>.
+    <% } else { %>
+        <i class="icon-link"></i> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong> is defined as "<%= valueDefinition %>".
+    <% } %>
+
+    Find more information about this term at <a href="<%= valueURI %>"><%= valueURI %></a>.
+</div>
+<div class="annotation-popover-findmore">
+    <i class="icon-search"></i> Find more datasets with measurements of <strong><a href="#" data-uri="<%= valueURI %>"><%= valueLabel %></a></strong>.
+</div>

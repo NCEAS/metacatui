@@ -1,46 +1,56 @@
 /* global define */
-define(["jquery", 
-        "underscore", 
-        "backbone", 
-        "gmaps", 
-        "collections/Filters", 
+define(["jquery",
+        "underscore",
+        "backbone",
+        "gmaps",
+        "collections/Filters",
         "collections/SolrResults",
-        "models/metadata/eml211/EMLParty", 
+        "models/project/ProjectSectionModel",
+        "models/project/ProjectImage",
+        "models/metadata/eml211/EMLParty",
         "models/metadata/eml220/EMLText",
-        "models/CollectionModel", 
-        "models/Search", 
-        "models/filters/FilterGroup", 
+        "models/CollectionModel",
+        "models/Search",
+        "models/filters/FilterGroup",
         "models/Map"
     ],
-    function($, _, Backbone, gmaps, Filters, SolrResults, EMLParty, EMLText, CollectionModel,
-        SearchModel, FilterGroup, MapModel) {
+    function($, _, Backbone, gmaps, Filters, SolrResults, ProjectSectionModel, ProjectImage,
+        EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
 
         /**
          * A ProjectModel is a specialized collection that represents a project,
-         * including the associated data, people, project descriptions, results and 
-         * visualizations.  It also includes settings for customized filtering of the 
-         * associated data, and properties used to customized the map display and the 
+         * including the associated data, people, project descriptions, results and
+         * visualizations.  It also includes settings for customized filtering of the
+         * associated data, and properties used to customized the map display and the
          * overall branding of the project.
          */
         var ProjectModel = CollectionModel.extend({
 
+            //@type {string} - The name of this type of model
+            type: "Project",
+
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
                     logo: null,
-                    overview: null,
-                    results: null,
+                    sections: [],
                     associatedParties: [],
                     acknowledgments: null,
                     acknowledgmentsLogos: [],
                     awards: [],
                     literatureCited: [],
                     filterGroups: [],
-                    // A Search model with a Filters collection that contains the filters associated with this project
-                    searchModel: new SearchModel({filters: new Filters()}),
+                    //@type {Search} - A Search model with a Filters collection
+                    // that contains the filters associated with this project
+                    searchModel: null,
+                    //@type {SolrResults} - A SolrResults collection that contains the
+                    // filtered search results of datasets in this project
                     searchResults: new SolrResults(),
+                    //@type {SolrResults} - A SolrResults collection that contains the
+                    // unfiltered search results of all datasets in this project
+                    allSearchResults: null,
                     //The project document options may specify section to hide
                     hideMetrics: false,
-                    hideHome: false,
+                    hideData: false,
                     hidePeople: false,
                     hideMap: false,
                     //Map options, as specified in the project document options
@@ -51,14 +61,22 @@ define(["jquery",
                     //The MapModel
                     mapModel: gmaps ? new MapModel() : null,
                     //Project view colors, as specified in the project document options
-                    primaryColor: "#333",
-                    secondaryColor: "#333",
-                    accentColor: "#333"
+                    primaryColor: "",
+                    secondaryColor: "",
+                    accentColor: "",
+                    primaryColorRGB: null,
+                    secondaryColorRGB: null,
+                    accentColorRGB: null,
+                    primaryColorTransparent: null,
+                    secondaryColorTransparent: null,
+                    accentColorTransparent: null
                 });
             },
 
-            initialize: function(options) {},
-            
+            initialize: function(options) {
+              this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+            },
+
             /*
              * Return the project URL
              */
@@ -123,22 +141,44 @@ define(["jquery",
 
                 //Parse the simple text nodes
                 var projLogo = this.parseTextNode(projectNode, "logo");
-                modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
+                if( projLogo ){
+                  modelJSON.logo = MetacatUI.appModel.get("objectServiceUrl") + projLogo;
+                }
 
                 //Parse acknowledgement logos into urls
-                var logos = this.parseTextNode(projectNode, "acknowledgmentsLogo", true);
+                var logos = $(projectNode).children("acknowledgmentsLogo");
                 modelJSON.acknowledgmentsLogos = [];
                 _.each(logos, function(logo, i) {
                     if ( !logo ) return;
-                    
-                    modelJSON.acknowledgmentsLogos.push(
-                        MetacatUI.appModel.get("objectServiceUrl") + logo
-                    );
+
+                    var imageModel = new ProjectImage({ objectDOM: logo });
+                    imageModel.set(imageModel.parse());
+
+                    if( imageModel.get("imageURL") ){
+                      modelJSON.acknowledgmentsLogos.push( imageModel );
+                    }
+                });
+
+                // Parse the literature cited
+                // This will only work for bibtex at the moment
+                var bibtex = $(projectNode).children("literatureCited").children("bibtex");
+                if (bibtex.length > 0) {
+                    modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
+                }
+
+                //Parse the project content sections
+                modelJSON.sections = [];
+                $(projectNode).children("section").each(function(i, section){
+                  //Create a new ProjectSectionModel
+                  modelJSON.sections.push( new ProjectSectionModel({
+                    objectDOM: section,
+                    literatureCited: modelJSON.literatureCited
+                  }) );
+                  //Parse the ProjectSectionModel
+                  modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
                 });
 
                 //Parse the EMLText elements
-                modelJSON.overview = this.parseEMLTextNode(projectNode, "overview");
-                modelJSON.results = this.parseEMLTextNode(projectNode, "results");
                 modelJSON.acknowledgments = this.parseEMLTextNode(projectNode, "acknowledgments");
 
                 //Parse the awards
@@ -151,20 +191,6 @@ define(["jquery",
                     });
                     modelJSON.awards.push(award_parsed);
                 });
-
-                // Parse the literature cited
-                // This will only work for bibtex at the moment
-                var bibtex = $(projectNode).children("literatureCited").children("bibtex");
-                if (bibtex.length > 0) {
-                    modelJSON.literatureCited = this.parseTextNode(projectNode, "literatureCited");
-                    // I'm not sure we actually need to set this on the model?
-                    thisModel = this;
-                    require(["citation"], function(citation) {
-                        const Cite = require("citation-js");
-                        thisModel.set("literatureCited", thisModel.parseTextNode(projectNode, "literatureCited"));
-                        // Maybe inject the BibTex into the Markdown here?
-                    });
-                }
 
                 //Parse the associatedParties
                 modelJSON.associatedParties = [];
@@ -192,6 +218,26 @@ define(["jquery",
 
                 });
 
+                //Convert all the hex colors to rgb
+                if(modelJSON.primaryColor){
+                  modelJSON.primaryColorRGB = this.hexToRGB(modelJSON.primaryColor);
+                  modelJSON.primaryColorTransparent = "rgba(" +  modelJSON.primaryColorRGB.r +
+                    "," + modelJSON.primaryColorRGB.g + "," + modelJSON.primaryColorRGB.b +
+                    ", .7)";
+                }
+                if(modelJSON.secondaryColor){
+                  modelJSON.secondaryColorRGB = this.hexToRGB(modelJSON.secondaryColor);
+                  modelJSON.secondaryColorTransparent = "rgba(" +  modelJSON.secondaryColorRGB.r +
+                    "," + modelJSON.secondaryColorRGB.g + "," + modelJSON.secondaryColorRGB.b +
+                    ", .5)";
+                }
+                if(modelJSON.accentColor){
+                  modelJSON.accentColorRGB = this.hexToRGB(modelJSON.accentColor);
+                  modelJSON.accentColorTransparent = "rgba(" +  modelJSON.accentColorRGB.r +
+                    "," + modelJSON.accentColorRGB.g + "," + modelJSON.accentColorRGB.b +
+                    ", .5)";
+                }
+
                 if (gmaps) {
                     //Create a MapModel with all the map options
                     modelJSON.mapModel = new MapModel();
@@ -210,13 +256,19 @@ define(["jquery",
                     }
                 }
 
-                //Parse the filterGroups
+                //Parse the FilterGroups
                 modelJSON.filterGroups = [];
+                var allFilters = modelJSON.searchModel.get("filters");
                 $(projectNode).find("filterGroup").each(function(i, filterGroup) {
 
-                    modelJSON.filterGroups.push(new FilterGroup({
-                        objectDOM: filterGroup
-                    }));
+                  //Create a FilterGroup model
+                  var filterGroupModel = new FilterGroup({
+                      objectDOM: filterGroup
+                  });
+                  modelJSON.filterGroups.push(filterGroupModel);
+
+                  //Add the Filters from this FilterGroup to the project's Search model
+                  allFilters.add(filterGroupModel.get("filters").models);
 
                 });
 
@@ -263,22 +315,30 @@ define(["jquery",
             },
 
             /*
-             * Creates a Filters collection with all filters associated with this collection
-             * and project. Sets it on the `searchModel.filters` attribute.
-             *
-             * @return {Filters} - Returns a Filters collection that contains all the Filter
-             * models associated with this project
-             */
-            createFilters: function() {
-                
-                var filters = this.get("searchModel").get("filters") || new Filters();
-                
-                // Add each filter in the filter groups to this filter collection
-                _.each(this.get("filterGroups"), function(filterGroup) {
-                    filters.add(filterGroup.get("filters").models);
-                });
+            * Creates a copy of the SolrResults collection and saves it in this
+            * model so that there is always access to the unfiltered list of datasets
+            *
+            * @param {SolrResults} - The SolrResults collection to cache
+            */
+            cacheSearchResults: function(searchResults){
 
-                return filters;
+              //Save a copy of the SolrResults so that we always have a copy of
+              // the unfiltered list of datasets
+              this.set("allSearchResults", searchResults.clone());
+
+              //Make a copy of the facetCounts object
+              var allSearchResults = this.get("allSearchResults");
+              allSearchResults.facetCounts = Object.assign({}, searchResults.facetCounts);
+
+            },
+
+            hexToRGB: function(hex){
+              var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+              return result ? {
+                  r: parseInt(result[1], 16),
+                  g: parseInt(result[2], 16),
+                  b: parseInt(result[3], 16)
+              } : null;
             }
 
         });

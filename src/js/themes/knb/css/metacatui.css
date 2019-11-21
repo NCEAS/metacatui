@@ -172,7 +172,31 @@
       margin: 35px auto auto auto;
     }
 
-
+/*
+* Project View
+*/
+.ProjectView #HeaderContainer{
+  display: none !important;
+}
+.ProjectView #Navbar .brand {
+    color: #992222;
+    float: none;
+    margin: 0px;
+    display: inline;
+    text-shadow: none;
+    padding: 0px;
+    margin-left: 2px;
+}
+.ProjectView #Navbar .nav .minimal-nav a:hover {
+    background-color: transparent;
+    color: #660000;
+}
+.project-view .project-title{
+  font-weight: 100;
+}
+.project-view .toc-ul a{
+  font-weight: lighter;
+}
 /* Editor
 -------------------------------------------------- */
 .Editor #Content {
@@ -2039,6 +2063,12 @@ svg .no-activity,
 	.pagination ul>li>a{
 		color: inherit;
 	}
+
+/*-------------- ANNOTATION CSS -----------------------------*/
+.controls-well.annotations-container{
+  box-shadow: none;
+  border: 0px;
+}
 
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */

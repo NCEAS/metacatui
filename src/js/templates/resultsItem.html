@@ -9,28 +9,15 @@
 		<div class="private icons "><i class="icon icon-lock private " title="This is private content."></i></div>
 	<% } %>
 	<div class="icons ">
-           <%
-           if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) {
-
-           	  // handle multiple resourceMaps
-				print('<a class="dropdown-toggle " data-toggle="dropdown" title="Download">');
-				print('<i class="icon icon-cloud-download " title="There are multiple packages of data associated with this metadata document. Download each individually."></i><i class="icon-caret-down icon "></i>');
-				print('</a>');
-				print('<ul class="dropdown-menu ">');
-				var cnt = 1;
-				_.each(resourceMap, function(resourceMapId) {
-					print('<li class="">');
-					print('<a href="', package_service, resourceMapId, '" title="', resourceMapId ,'" class="pointer download" data-id="' + resourceMapId + '">', 'Dataset ', cnt, '</a>');
-					print('</li>');
-					cnt++;
-				});
-				print('</ul>');
-			}
-			else{
-				var URLid = resourceMap || id;
+    <% if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) { %>
+        <a class="download disabled-download" title="There may be multiple datasets associated with this metadata record. View the metadata page to choose a dataset to download."><i class="icon icon-cloud-download"></i></a>
+	 <%	 }
+			else if(resourceMap && (typeof resourceMap != "undefined")){
 				print('<a class="download pointer" download title="Click to Download" href="', MetacatUI.appModel.get('packageServiceUrl'), encodeURIComponent(resourceMap), '" title="Click to Download"><i class="icon icon-cloud-download "></i></a>');
 			}
-          	%>
+      else{ %>
+        <a class="download pointer" download title="Click to download" href="<%=(MetacatUI.appModel.get('objectServiceUrl') + encodeURIComponent(id))%>"><i class="icon icon-cloud-download"></i></a>
+   <% } %>
       </div>
     <% if(typeof abstract != "undefined"){  %>
 		<div class="abstract icons"><i class="icon icon-info-sign popover-this abstract " data-delay="1500"></i></div>
@@ -61,6 +48,12 @@
       		}
       	%>
       	</div>
+
+				<% if (showAnnotationIndicator && hasAnnotations) { %>
+					<div class="icons annotations ">
+						<span class="icon-stack annotation-icon"><i class="icon icon-certificate icon-stack-base"></i><i class="icon icon-ok" title="This dataset includes annotations."></i></span>
+					</div>
+				<% } %>
 
 				<div class="catalog-metrics icons">
 			      <span class='catalog-stat resultItem-CitationCount'>

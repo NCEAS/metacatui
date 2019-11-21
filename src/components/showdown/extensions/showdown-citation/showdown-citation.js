@@ -2,7 +2,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 
 	return showdown.extension('showdown-citation', function() {
 
-		const Cite = require('citation-js');
+		const Cite = citationRequire('citation-js');
 
 		var allCites = new Cite();
 
@@ -797,7 +797,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 
 		var read_bibli = {
 			// This sub-extension will look for bibtex, wrapped in <bibtex></bibtex> tags.
-			// When found, they'll be added to the cite object. 
+			// When found, they'll be added to the cite object.
 			type: "lang",
 			filter: function (text, converter, options) {
 				var left = '<bibtex>',
@@ -849,7 +849,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 
 			}
 		};
-		
+
 		var print_inline_cites = {
 			type: "lang",
 			filter: function(text) {
@@ -875,7 +875,7 @@ define(['showdown', 'citation'], function (showdown, citation) {
 						// At least one of the keys found a match, but not all keys
 						// We'll insert the not found keys into the citation
 						let nope = not_in_bib(allCites, keys).join("; ").replace(/_/g, "\\_");
-						citestring = citestring.replace(/([^)]*)\)/g, "$1; " + nope + ")");						
+						citestring = citestring.replace(/([^)]*)\)/g, "$1; " + nope + ")");
 					}
 
 					// Now we have to deal with a hacky work around to get links to the bibliography
