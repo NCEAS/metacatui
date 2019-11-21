@@ -340,6 +340,60 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
     },
 
+    /**
+    * Checks if the values set on this model are valid and expected
+    * @return {object} - Returns a literal object with the invalid attributes and their corresponding error message
+    */
+    validate: function(){
+
+      //Validate most of the DateFilter attributes using the parent validate function
+      var errors = Filter.prototype.validate.call(this);
+
+      //Delete error messages for the attributes that are going to be validated specially for the DateFilter
+      delete errors.values;
+      delete errors.min;
+      delete errors.max;
+
+      //If everything is valid so far, then we have to create a new object to store errors
+      if( typeof errors != "object" ){
+        errors = {};
+      }
+
+      //Check that there aren't any negative numbers
+      if( this.get("min") < 0 ){
+        errors.min = "The minimum year cannot be a negative number."
+      }
+      if( this.get("max") < 0 ){
+        errors.max = "The maximum year cannot be a negative number."
+      }
+      if( this.get("rangeMin") < 0 ){
+        errors.min = "The range minimum year cannot be a negative number."
+      }
+      if( this.get("rangeMax") < 0 ){
+        errors.min = "The range maximum year cannot be a negative number."
+      }
+
+      //Check that the min and max values are in order, if the minimum is not the default value of 0
+      if( this.get("min") > this.get("max") && this.get("min") != 0 ){
+        errors.min = "The minimum year is after the maximum year. The minimum year must be a year before the maximum year of " + this.get("max");
+      }
+
+      //Check that all the values are numbers
+      if( !errors.min && typeof this.get("min") != "number" ){
+        errors.min = "The minimum year must be a number.";
+      }
+      if( !errors.max && typeof this.get("max") != "number" ){
+        errors.max = "The maximum year must be a number.";
+      }
+      if( !errors.rangeMax && typeof this.get("rangeMax") != "number" ){
+        errors.rangeMax = "The maximum year in the date slider must be a number.";
+      }
+      if( !errors.rangeMin && typeof this.get("rangeMin") != "number" ){
+        errors.rangeMin = "The minimum year in the date slider must be a number.";
+      }
+
+    }
+
   });
 
   return DateFilter;

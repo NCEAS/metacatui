@@ -295,6 +295,72 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
               this.get("min") != this.defaults().min ||
               this.get("max") != this.defaults().max);
 
+    },
+
+    /**
+    * Checks if the values set on this model are valid and expected
+    * @return {object} - Returns a literal object with the invalid attributes and their corresponding error message
+    */
+    validate: function(){
+
+      //Validate most of the NumericFilter attributes using the parent validate function
+      var errors = Filter.prototype.validate.call(this);
+
+      //Delete error messages for the attributes that are going to be validated specially for the NumericFilter
+      delete errors.values;
+      delete errors.min;
+      delete errors.max;
+      delete errors.rangeMin;
+      delete errors.rangeMax;
+
+      //If everything is valid so far, then we have to create a new object to store errors
+      if( typeof errors != "object" ){
+        errors = {};
+      }
+
+      //If there is an exact number set as the search term
+      if( Array.isArray(this.get("values")) && this.get("values").length ){
+        //Check that all the values are numbers
+        if(_.find(this.get("values"), function(n){ return typeof n != "number" })){
+          errors.values = "All of the search terms for this filter need to be numbers.";
+        }
+      }
+      //If there is a search term set on the model that is not an array, or number,
+      // or undefined, or null, then it is some other invalid value like a string or date.
+      else if( !Array.isArray(this.get("values")) && typeof values != "number" && typeof values != "undefined" && values !== null){
+        errors.values = "The search term for this filter needs to a number.";
+      }
+      //Check that the min and max values are in order, if the minimum is not the default value of 0
+      else if( typeof this.get("min") == "number" && typeof this.get("max") == "number" ){
+        if( this.get("min") > this.get("max") && this.get("min") != 0 ){
+          errors.min = "The minimum is after the maximum. The minimum must be a number less than the maximum, which is " + this.get("max");
+        }
+      }
+      //If there is only a minimum number specified, check that it is a number
+      else if( this.get("min") && typeof this.get("min") != "number"){
+        errors.min = "The minimum needs to be a number."
+        if( this.get("max") && typeof this.get("max") != "number" ){
+          errors.max = "The maximum needs to be a number."
+        }
+      }
+      //Check if the maximum is a value other than a number
+      else if( this.get("max") && typeof this.get("max") != "number"){
+        errors.max = "The maximum needs to be a number."
+      }
+      //If there is no min, max, or value, then return an errors
+      else if( !this.get("max") && this.get("max") !== 0 && !this.get("min") && this.get("min") !== 0 &&
+               ( (!this.get("values") && this.get("values") !== 0) || (Array.isArray(this.get("values")) && !this.get("values").length) )){
+        errors.values = "This search filter needs an exact number or a number range to use in the search query."
+      }
+
+      //Return the error messages
+      if( Object.keys(errors).length ){
+        return errors;
+      }
+      else{
+        return;
+      }
+
     }
 
   });
