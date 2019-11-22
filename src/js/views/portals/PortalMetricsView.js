@@ -122,18 +122,21 @@ define(["jquery",
             });
 
             // Add a stats view
-            var statsView = new StatsView({
+            this.statsView = new StatsView({
                 title: "Statistics and Figures",
                 description: description,
-                el: "#Metrics",
+                el: document.createElement("div"),
                 model: statsModel,
                 // @Peter TODO: change the following to false when StatsView.js
                 // is ready to render the metadata assessment image:
                 hideMetadataAssessment: true
             });
 
+            //Insert the StatsView into this view
+            this.$el.html(this.statsView.el);
+
             //Render the StatsView
-            statsView.render();
+            this.statsView.render();
 
           }
           catch(e){
@@ -146,7 +149,10 @@ define(["jquery",
          * Functionality to execute after the view has been created and rendered initially
          */
         postRender: function(){
-          this.renderMetrics();
+          //If there is no StatsView rendered yet, then render it
+          if( !this.statsView ){
+            this.renderMetrics();
+          }
         }
 
      });

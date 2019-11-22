@@ -215,18 +215,18 @@ define(["jquery",
                 if ( this.model.get("hideMetrics") !== true ) {
 
                   //Create a PortalMetricsView
-                  var metricsView = new PortalMetricsView({
+                  this.metricsView = new PortalMetricsView({
                     model: this.model,
                     id: this.model.get("metricsLabel"),
                     uniqueSectionName: this.model.get("metricsLabel")
                   });
 
-                  this.subviews.push(metricsView);
-                  this.$("#portal-sections").append(metricsView.el);
+                  this.subviews.push(this.metricsView);
+                  this.$("#portal-sections").append(this.metricsView.el);
 
-                  metricsView.render();
+                  this.metricsView.render();
 
-                  this.addSectionLink( metricsView );
+                  this.addSectionLink( this.metricsView );
 
                 }
 
@@ -455,7 +455,7 @@ define(["jquery",
 
               if( sectionView ){
                 this.switchSection(sectionView);
-                
+
                 // If the user clicks a link and is not near the top of the page
                 // (i.e. on mobile), scroll to the top of the section content.
                 // Otherwise it might look like the page hasn't changed (e.g.
@@ -463,7 +463,7 @@ define(["jquery",
                 if(window.pageYOffset > this.$("#portal-sections").offset().top){
                   MetacatUI.appView.scrollTo(this.$("#portal-sections"));
                 }
-              
+
               }
 
             },
