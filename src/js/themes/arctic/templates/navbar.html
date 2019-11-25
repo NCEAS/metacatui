@@ -48,23 +48,30 @@
 					</li>
 			    <li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
 
-          <li class="minimal-nav subtle hidden">
-            <a href="<%=MetacatUI.appModel.get('baseUrl')%>">Hosted by the
-              <img src="<%= MetacatUI.root %>/js/themes/arctic/img/logo-small-no-title.png" class="logo" />
-              Arctic Data Center</a>
-          </li>
-
 					<% if (loggedIn) { %>
         		<li class="dropdown minimal-nav">
-							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><%=formattedName%><b class="caret"></b></a>
+							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><span class="user-name"><%=formattedName%></span><b class="caret"></b></a>
 							<ul class="dropdown-menu">
 								<li><a href="<%= MetacatUI.root %>/submit">Submit data</a></li>
 								<li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li>
 								<li><a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=groups">My groups</a></li>
 								<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
+                <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+                  <li>
+                    <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
+                      My <%= MetacatUI.appModel.get("portalTermPlural") %>
+                      <span class="new-icon">
+                        <i class="icon icon-star icon-on-right"></i>
+                        NEW
+                      </span>
+                    </a>
+                  </li>
+                <% } %>
 								<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
 							</ul>
 						</li>
+            <li class="edit-portal-link-container minimal-nav">
+            </li>
 			        <% } else { %>
 			        		<li class="minimal-nav">
 			        			<a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="login btn redirect"><img src="<%= MetacatUI.root %>/img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>

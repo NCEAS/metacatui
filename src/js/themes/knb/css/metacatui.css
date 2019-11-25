@@ -70,10 +70,6 @@
     	font-weight: 400;
     }
 
-    h2{
-    	font-weight: 300;
-    }
-
     h1{
     	font-weight: normal;
     }
@@ -173,12 +169,25 @@
     }
 
 /*
-* Project View
+* Portal View
 */
-.ProjectView #HeaderContainer{
+.portal-view .toc-ul a{
+  font-weight: lighter;
+}
+
+/* Portal & Editor (minimal header common to both views)
+-------------------------------------------------- */
+#Navbar .navbar-inner:before, .navbar-inner:after {
+	display: none;
+}
+
+.Portal.Editor #HeaderContainer,
+.PortalView #HeaderContainer{
   display: none !important;
 }
-.ProjectView #Navbar .brand {
+
+.Portal.Editor #Navbar .brand,
+.PortalView #Navbar .brand {
     color: #992222;
     float: none;
     margin: 0px;
@@ -186,17 +195,51 @@
     text-shadow: none;
     padding: 0px;
     margin-left: 2px;
+		font-size: 20px;
+		letter-spacing: 0;
 }
-.ProjectView #Navbar .nav .minimal-nav a:hover {
+
+.PortalView .navbar .nav {
+	align-items: center;
+}
+
+.Portal.Editor #Navbar .brand::before,
+.PortalView #Navbar .brand::before {
+  content: "Hosted by the ";
+	color: #555555;
+	font-family: "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif";
+	font-size: 14px;
+}
+
+.Portal.Editor #Navbar .nav .minimal-nav a:hover,
+.PortalView #Navbar .nav .minimal-nav a:hover {
     background-color: transparent;
     color: #660000;
 }
-.project-view .project-title{
-  font-weight: 100;
+
+.PortalView #Navbar .nav .minimal-nav .btn-primary{
+  color: #FFF;
 }
-.project-view .toc-ul a{
-  font-weight: lighter;
+.PortalView #Navbar .nav .minimal-nav .btn-primary:hover{
+  background-color: #0093DD;
+  color: #FFF;
 }
+
+/* Portal editor
+-------------------------------------------------- */
+
+/* Theme specific colours for the add section 'button' images */
+
+.port-editor-section svg .theme-primary-fill{
+	fill: #006699
+}
+.port-editor-section svg .theme-secondary-fill{
+	fill: #1981cc
+}
+.port-editor-section svg .theme-accent-fill{
+	fill: #b90004
+},
+
 /* Editor
 -------------------------------------------------- */
 .Editor #Content {
@@ -335,6 +378,14 @@
       padding: 0px 15px 0px 15px;
     }
 
+		footer #FooterContent {
+	    display: flex;
+	    flex-direction: row;
+	    justify-content: left;
+	    align-items: center;
+	    flex-wrap: wrap;
+		}
+
     footer div.help-items{
     	min-width: 179px;
     }
@@ -397,6 +448,12 @@
       transition: opacity .5s;
       -webkit-transition: opacity .5s;
     }
+
+		footer#Footer .logos {
+			min-width: 320px;
+			justify-content: center;
+    	display: flex;
+		}
 
     footer#Footer .logos img:hover,
     footer#Footer .logos p:hover{
@@ -820,12 +877,28 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       margin-bottom: 15px;
     }
 
-    .navbar-inner {
+    .navbar .navbar-inner {
       border: none;
       z-index: 220;
+			display: flex;
+	    flex-direction: row;
+	    flex-wrap: nowrap;
+	    align-items: center;
+	    justify-content: space-between;
     }
+		
+		#nav-trigger{
+	   	margin-top: .5em;
+	   	margin-right: .5em;
+	   	font-size: 2em;
+	   	float: right;
+		}
+		
+		.navbar nav{
+			display: none;
+		}
 
-    .navbar .nav > li > a.brand {
+    .navbar a.brand {
       font-size: 48px;
       font-weight: 300;
       font-family: "Lato", Helvetica, sans-serif;
@@ -833,21 +906,22 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       letter-spacing: -3px;
       padding: 10px 10px 10px 0px;
       text-transform: none;
+			margin: 0;
     }
 
     .navbar .nav > li > * {
       margin: 0px 5px 7px 5px;
     }
 
-    .navbar .nav > li > a {
+    .navbar-inner .nav > li > a {
       color: #555555;
       font-size: 18px;
       font-weight: 400;
       text-transform: uppercase;
     }
 
-    .navbar .nav > li > a:focus,
-    .navbar .nav > li > a:hover {
+    .navbar-inner .nav > li > a:focus,
+    .navbar-inner .nav > li > a:hover {
       color: #555555;
       font-weight: 400;
       background-color: #E5E5E5;
@@ -858,9 +932,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       /*background-color: transparent;*/
     }
 
-    .navbar .nav > .active > a,
-    .navbar .nav > .active > a:hover,
-    .navbar .nav > .active > a:focus {
+    .navbar .nav > li.active > a,
+    .navbar .nav > li.active > a:hover,
+    .navbar .nav > li.active > a:focus {
       color: #555555;
       font-weight: 400;
       text-decoration: none;
@@ -872,9 +946,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
+		
+		.navbar .nav li > .user{
+    	font-size: 15px;
+    	text-transform: capitalize;
+			white-space: nowrap;
+    }
 
-    .navbar .nav > li > a.brand:focus,
-    .navbar .nav > li > a.brand:hover {
+    .navbar a.brand:focus,
+    .navbar a.brand:hover {
     	color: #992222;
     	background-color: transparent;
     }
@@ -894,13 +974,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       margin: 0px 0px 0px 0px;
       padding: 0px 0px 0px 0px;
     }
-    .navbar .nav > li > .user{
-    	font-size: 15px;
-    	text-transform: capitalize;
-    }
 
     .navbar .nav {
       margin-top: 8px;
+			display: flex;
+    	flex-wrap: nowrap;
     }
 
     #Content > .nav-tabs{
@@ -1514,9 +1592,8 @@ svg .no-activity,
     }
 
     /* Resource map contents table */
-    .table tr > th{
-    	background-color: #DEDEDE;
-    	font-weight: bold;
+    .download-contents th{
+      font-weight: bold;
     }
     .table .table-header{
     	background-color: #7F9FAF;

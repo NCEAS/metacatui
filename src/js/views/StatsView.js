@@ -10,6 +10,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
     model: null,
 
     hideUpdatesChart: false,
+    
+    /**    
+     * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
+     * @type {boolean}
+     */     
+    hideMetadataAssessment: false,
 
 		template: _.template(profileTemplate),
 
@@ -32,6 +38,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.el = options.el;
 
       this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
+      
+      this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
 
       this.model = options.model || null;
 		},
@@ -85,6 +93,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.listenTo(this.model, 'change:mdqStats',	  	  this.drawMdqStats);
 
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
+      
 
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
@@ -94,9 +103,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				query: this.model.get('query'),
 				title: this.title,
 				description: this.description,
-				userType: this.userType
+                userType: this.userType,
+				hideUpdatesChart: this.hideUpdatesChart,
+				hideDownloadsChart: !this.model.get("supportDownloads"),
+				hideMetadataAssessment: this.hideMetadataAssessment
 			}));
-
+      
+      // Insert the metadata assessment chart
+      if(!this.hideMetadataAssessment){
+        // @Peter TODO: 
+        // this.listenTo(this.model, "change:???", this.drawMetadataAssessment);
+        // OR
+        this.drawMetadataAssessment();
+      }
+      
+      
 			//Insert the loading template into the space where the charts will go
 			if(d3){
 				this.$(".chart").html(this.loadingTemplate);
@@ -110,20 +131,39 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					email: false
 				}));
 			}
-
-			if(!this.model.get("supportDownloads"))
-				this.$(".stripe.downloads").remove();
-
-      //Hide the Latest Updates chart if it's turned off
-      if( this.hideUpdatesChart ){
-        this.$(".stripe.updates").remove();
-      }
+      
+      this.$el.data("view", this);
 
 			//Start retrieving data from Solr
 			this.model.getAll();
 
 			return this;
 		},
+    
+    
+    /**    
+     * drawMetadataAssessment - Insert the metadata assessment image into the view
+     */     
+    drawMetadataAssessment: function(){
+      
+      try {
+        // @Peter TODO:
+        // Example figure:
+        var imgSrc = "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/urn:uuid:cce87580-1800-40cb-9e46-c52d6a3119a4";
+        if(typeof imgSrc === 'string' || imgSrc instanceof String){
+          // Hide the spinner
+          this.$("#metadata-assessment-loading").remove();
+          // Show the figure
+          this.$("#metadata-assessment-graphic").attr('src', imgSrc);
+        }
+      } catch (e) {
+        // If there's an error inserting the image, remove the entire section
+        // that contains the image.
+        console.log("Error displaying the metadata assessment figure. Error message: " + e);
+        this.$el.find(".stripe.metadata-assessment").remove();
+      }
+      
+    },
 
 		renderMetrics: function(){
 			this.renderCitationMetric();
@@ -239,6 +279,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							svgClass: svgClass,
 							countClass: "data",
 							height: 300,
+              width: 380,
 							formatLabel: function(name){
 								//If this is the application/vnd.ms-excel formatID - let's just display "MS Excel"
 								if((name !== undefined) && (name.indexOf("ms-excel") > -1)) name = "MS Excel";
@@ -285,6 +326,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							svgClass: svgClass,
 							countClass: "metadata",
 							height: 300,
+              width: 380,
 							formatLabel: function(name){
 								if((name !== undefined) && (name.indexOf("//ecoinformatics.org") > -1)){
 									//EML - extract the version only
@@ -654,7 +696,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					yLabel: "all downloads",
 					barClass: "packages",
 					roundedRect: true,
-					roundedRadius: 10,
+					roundedRadius: 3,
 					barLabelClass: "packages",
 					width: width
 				};
@@ -741,7 +783,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 						yFormat: d3.format(",d"),
 						barClass: "packages",
 						roundedRect: true,
-						roundedRadius: 10,
+						roundedRadius: 3,
 						barLabelClass: "packages",
 						width: width
 					};
@@ -863,7 +905,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					yFormat: d3.format(",%"),
 					barClass: "packages",
 					roundedRect: true,
-					roundedRadius: 10,
+					roundedRadius: 3,
 					barLabelClass: "packages",
 					width: width
 				};

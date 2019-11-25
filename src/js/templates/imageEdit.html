@@ -1,0 +1,20 @@
+<div class="image-uploader-container"></div>
+<p class="error notification" data-category="identifier"></p>
+<% if(nameLabel){ %>
+  <div>
+    <h5><%=nameLabel%></h5>
+    <input type="text" placeholder="National Center for Ecological Analysis and Synthesis"
+           class="basic-text" value="<%=nameText%>" data-category="label"/>
+  </div>
+<% } %>
+<% if(urlLabel){ %>
+  <div>
+    <h5><%=urlLabel%></h5>
+    <p class="error notification" data-category="associatedURL"></p>
+    <input type="text" placeholder="https://" class="basic-text url"
+           value="<%=urlText%>" data-category="associatedURL"/>
+  </div>
+<% } %>
+<% if(removeButton){ %>
+  <i class="icon-remove remove icon danger center tooltip-this toggle-remove-preview remove-image-edit-view" data-title="Remove this image" data-trigger="hover" data-placement="top" data-toggle="tooltip" data-container="body" data-delay="300"></i>
+<% } %>

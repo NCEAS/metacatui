@@ -1,30 +1,43 @@
 
 <div class="span6 eml-party"> <!--style="border: solid 1px #6c757d">-->
-    <p>
-      <span class="name">
-        <%=individualName.salutation.join(', ')%>
-        <%=individualName.givenName.join(' ')%>
-        <%=individualName.surName%>
-        <% if(organizationName){ %>
-          (<%=organizationName%>)
-        <% } %>
-      </span>
-      <span class="position">
-        <br>
-        <%=positionName%>
-      </span>
-      <span class="url">
-        <br>
-        <% if (urlLink.length) {%>
-            <%=urlLink.join(' / ')%> <br>
-        <%}%>
-      </span>
-      <span class="email phone">
-        <a href="mailto:<%=email%>"><%=email%></a>
-        <% if (email.length && phone.length) {%> / <%}%>
-        <%=phone%>
-      </span>
-      <br/>
-      <%=orcids%>
-    </p>
+    <div>
+      <% if(individualName){ %>
+        <span class="name">
+          <%=individualName.salutation.join(', ')%>
+          <%=individualName.givenName.join(' ')%>
+          <%=individualName.surName%>
+        </span>
+        <br/>
+      <% } %>
+      <% if(positionName){ %>
+        <span class="position">
+          <%=positionName%>
+        </span>
+        <br/>
+      <% } %>
+      <% if(organizationName){ %>
+        <span class="organization">
+          <%=organizationName%>
+        </span>
+        <br/>
+      <% } %>
+      <% if(urlLink.length){ %>
+        <span class="url">
+          <%=urlLink.join(' / ')%> <br>
+        </span>
+      <% } %>
+      <% if(email || phone){ %>
+        <span class="email phone">
+          <% if(email){ %>
+            <a href="mailto:<%=email%>"><%=email%></a>
+          <% } %>
+          <% if (email.length && phone.length) {%> / <%}%>
+          <%=phone%>
+        </span>
+      <% } %>
+      <% if(orcids){ %>
+        <br/>
+        <%=orcids%>
+      <% } %>
+    </div>
 </div>

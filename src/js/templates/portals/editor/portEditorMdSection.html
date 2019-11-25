@@ -1,0 +1,142 @@
+
+<div class="portal-display-image" data-category="sectionImage">
+</div>
+<p class="error notification" data-category="sectionImage"></p>
+<div class="portal-display-text">
+  <p class="error notification" data-category="title"></p>
+  <textarea type="text" data-category="title" class="basic-text title auto-resize" placeholder="<%=titlePlaceholder%>"><%=title%></textarea>
+  <p class="error notification" data-category="introduction"></p>
+  <textarea type="text" data-category="introduction" class="basic-text introduction auto-resize" placeholder="<%=introPlaceholder%>"><%=introduction%></textarea>
+</div>
+
+<div class="markdown-container">
+  <p class="subtle markdown-help-text">Communicate your science or project details on this page.
+    <a data-toggle="collapse" data-target="#markdown-mini-cheatsheet-<%=cid%>">
+      Styling using markdown is supported <i class="icon-info-sign"></i>.
+    </a>
+  </p>
+  <div class="markdown-help subtle collapse" id="markdown-mini-cheatsheet-<%=cid%>">
+    <!-- col 1 of markdown help -->
+    <div class="markdown-help-column">
+      <table>
+      	<thead>
+      	<tr>
+      		<th>Type...</th>
+      		<th>...to Get</th>
+      	</tr>
+      	</thead>
+      	<tbody>
+          <tr>
+            <td><code># Heading 1</code></td>
+            <td><h1>Heading 1</h1></td>
+          </tr>
+          <tr>
+            <td><code>## Heading 2</code></td>
+            <td><h2>Heading 2</h2></td>
+          </tr>
+        	<tr>
+        		<td><code>*Italic*</code></td>
+        		<td><em>Italic</em></td>
+        	</tr>
+        	<tr>
+        		<td><code>**Bold**</code></td>
+        		<td><strong>Bold</strong></td>
+        	</tr>
+          <tr>
+            <td><code>[Link](link-url.com)</code></td>
+            <td><a href="https://dataone.org">Link</a></td>
+          </tr>
+      	</tbody>
+      </table>
+    </div>
+    <!-- col 2 of markdown help -->
+    <div class="markdown-help-column">
+      <table>
+        <thead>
+        <tr>
+          <th>Type...</th>
+          <th>...to Get</th>
+        </tr>
+        </thead>
+          <tr>
+            <td><code>`Inline code`</code></td>
+            <td><code>Inline code</code></td>
+          </tr>
+          <tr>
+            <td><code><pre>```
+Code
+block
+```</pre></code></td>
+            <td><code><pre>Code
+block </pre></code></td>
+          </tr>
+          <tr>
+            <td><code>![Image](image-url.com)</code></td>
+            <td><img src="https://commonmark.org/help/images/favicon.png" width="36" height="36" alt="MarkdownLogo"></td>
+          </tr>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+    <!-- col 3 of markdown help -->
+    <div class="markdown-help-column">
+      <table>
+      	<thead>
+      	<tr>
+      		<th>Type...</th>
+      		<th>...to Get</th>
+      	</tr>
+      	</thead>
+      	<tbody>
+      	<tr>
+      		<td>
+            <code>* List</code><br>
+            <code>* List</code><br>
+            <code>* List</code>
+          </td>
+      		<td>
+            <ul>
+              <li>List</li>
+              <li>List</li>
+              <li>List</li>
+            </ul>
+          </td>
+      	</tr>
+        <tr>
+      		<td>
+            <code>1. List</code><br>
+            <code>2. List</code><br>
+            <code>3. List</code>
+          </td>
+      		<td>
+            <ol>
+              <li>List</li>
+              <li>List</li>
+              <li>List</li>
+            </ol>
+          </td>
+      	</tr>
+
+      	</tbody>
+      </table>
+      <p class="more-help">Get more markdown help <a href="https://commonmark.org/help/" target="_blank">here</a></p>
+    </div>
+  </div>
+
+  <p class="error notification" data-category="markdown"></p>
+  <div class="tabbable">
+    <ul class="nav nav-tabs">
+      <li class="active"><a href="#markdown-edit-<%=cid%>" data-toggle="tab">Edit</a></li>
+      <li id="markdown-preview-link"><a href="#markdown-preview-<%=cid%>" data-toggle="tab">Preview</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="markdown-edit-<%=cid%>">
+        <textarea rows="50" type="text" data-category="markdown" class="basic-text markdown" placeholder="<%=markdownPlaceholder%>" data-category="markdown"><%=markdown%></textarea>
+      </div>
+      <div class="tab-pane row-fluid" id="markdown-preview-<%=cid%>">
+        Preview will show here
+      </div>
+    </div>
+  </div>
+</div>

@@ -566,6 +566,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       }, this);
 
+      //Create a <coverage> XML node if there isn't one
+      if( datasetNode.children('coverage').length === 0 ) {
+        var coverageNode = $(document.createElement('coverage')),
+            coveragePosition = this.getEMLPosition(eml, 'coverage');
+
+        if(coveragePosition)
+          coveragePosition.after(coverageNode);
+        else
+          datasetNode.append(coverageNode);
+      }
+      else{
+        var coverageNode = datasetNode.children("coverage").first();
+      }
+
       //Serialize the geographic coverage
       if ( typeof this.get('geoCoverage') !== 'undefined' && this.get('geoCoverage').length > 0) {
 
@@ -573,15 +587,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         var validCoverages = _.filter(this.get('geoCoverage'), function(cov) {
           return cov.isValid();
         });
-
-        if ( datasetNode.find('coverage').length === 0 && validCoverages.length ) {
-          var coveragePosition = this.getEMLPosition(eml, 'coverage');
-
-          if(coveragePosition)
-            coveragePosition.after(document.createElement('coverage'));
-          else
-            datasetNode.append(document.createElement('coverage'));
-        }
 
         //Get the existing geo coverage nodes from the EML
         var existingGeoCov = datasetNode.find("geographiccoverage");
@@ -600,42 +605,39 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             if(insertAfter)
               insertAfter.after(cov.updateDOM());
             else
-              datasetNode.find("coverage").append(cov.updateDOM());
+              coverageNode.append(cov.updateDOM());
           }
         }, this);
 
         //Remove existing taxon coverage nodes that don't have an accompanying model
         this.removeExtraNodes(datasetNode.find("geographiccoverage"), validCoverages);
       }
+      else{
+        //If there are no geographic coverages, remove the nodes
+        coverageNode.children("geographiccoverage").remove();
+      }
 
       //Serialize the taxonomic coverage
       if ( typeof this.get('taxonCoverage') !== 'undefined' && this.get('taxonCoverage').length > 0) {
-        // TODO: This nonEmptyCoverages business could be wrapped up in a empty()
-        // method on the model itself
-        var nonEmptyCoverages;
 
-        // Don't serialize if taxonCoverage is empty
-        nonEmptyCoverages = _.filter(this.get('taxonCoverage'), function(t) {
-          return _.flatten(t.get('taxonomicClassification')).length > 0;
+        // Group the taxonomic coverage models into empty and non-empty
+        var sortedTaxonModels = _.groupBy(this.get('taxonCoverage'), function(t) {
+          if( _.flatten(t.get('taxonomicClassification')).length > 0 ){
+            return "notEmpty";
+          }
+          else{
+            return "empty";
+          }
         });
 
-        if (nonEmptyCoverages.length > 0) {
+        //Get the existing taxon coverage nodes from the EML
+        var existingTaxonCov = coverageNode.children("taxonomiccoverage");
 
-          //Create the <coverage> node if there isn't one already
-          if (datasetNode.find('coverage').length === 0) {
-            var insertAfter = this.getEMLPosition(eml, 'coverage');
-
-            if(insertAfter)
-              insertAfter.after(document.createElement('coverage'));
-            else
-              datasetNode.append(document.createElement("coverage"));
-          }
-
-          //Get the existing taxon coverage nodes from the EML
-          var existingTaxonCov = datasetNode.find("taxonomiccoverage");
+        //Iterate over each taxon coverage and update it's DOM
+        if(sortedTaxonModels["notEmpty"] && sortedTaxonModels["notEmpty"].length > 0) {
 
           //Update the DOM of each model
-          _.each(this.get("taxonCoverage"), function(taxonCoverage, position){
+          _.each(sortedTaxonModels["notEmpty"], function(taxonCoverage, position){
 
             //Update the existing taxonCoverage node if it exists
             if(existingTaxonCov.length-1 >= position){
@@ -643,7 +645,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             }
             //Or, append new nodes
             else{
-              datasetNode.find('coverage').append(taxonCoverage.updateDOM());
+              coverageNode.append(taxonCoverage.updateDOM());
             }
           });
 
@@ -651,6 +653,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           this.removeExtraNodes(existingTaxonCov, this.get("taxonCoverage"));
 
         }
+        //If all the taxon coverages are empty, remove the parent taxonomicCoverage node
+        else if( !sortedTaxonModels["notEmpty"] || sortedTaxonModels["notEmpty"].length == 0 ){
+          existingTaxonCov.remove();
+        }
+
       }
 
       //Serialize the temporal coverage
@@ -665,15 +672,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
         //Or, append new nodes
         else{
-          datasetNode.find('coverage').append(temporalCoverage.updateDOM());
+          coverageNode.append(temporalCoverage.updateDOM());
         }
       });
 
       //Remove existing taxon coverage nodes that don't have an accompanying model
       this.removeExtraNodes(existingTemporalCoverages, this.get("temporalCoverage"));
 
-      if(datasetNode.find("coverage").children().length == 0)
-        datasetNode.find("coverage").remove();
+      //Remove the temporal coverage if it is empty
+      if( !coverageNode.children("temporalcoverage").children().length ){
+        coverageNode.children("temporalcoverage").remove();
+      }
+
+      //Remove the <coverage> node if it's empty
+      if(coverageNode.children().length == 0){
+        coverageNode.remove();
+      }
 
       //If there is no creator, create one from the user
       if(!this.get("creator").length){
@@ -1159,15 +1173,37 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }
 
         // Validate the temporal coverage
-        if ( this.get("temporalCoverage").length ) {
+        errors.temporalCoverage = [];
+
+        //If temporal coverage is required and there aren't any, return an error
+        if( MetacatUI.appModel.get("emlEditorRequiredFields").temporalCoverage &&
+             !this.get("temporalCoverage").length ){
+          errors.temporalCoverage = [{ beginDate:  "Provide a begin date." }];
+        }
+        //If temporal coverage is required and they are all empty, return an error
+        else if( MetacatUI.appModel.get("emlEditorRequiredFields").temporalCoverage &&
+                 _.every(this.get("temporalCoverage"), function(tc){
+                   return tc.isEmpty();
+                 }) ){
+          errors.temporalCoverage = [{ beginDate:  "Provide a begin date." }];
+        }
+        //If temporal coverage is not required, validate each one
+        else if( this.get("temporalCoverage").length ||
+                  ( MetacatUI.appModel.get("emlEditorRequiredFields").temporalCoverage &&
+                           _.every(this.get("temporalCoverage"), function(tc){
+                             return tc.isEmpty();
+                           }) )) {
+          //Iterate over each temporal coverage and add it's validation errors
           _.each(this.get("temporalCoverage"), function(temporalCoverage){
-            if( !temporalCoverage.isValid() ){
-              if( !errors.temporalCoverage )
-                errors.temporalCoverage = [temporalCoverage.validationError];
-              else
-                errors.temporalCoverage.push(temporalCoverage.validationError);
+            if( !temporalCoverage.isValid() && !temporalCoverage.isEmpty() ){
+              errors.temporalCoverage.push(temporalCoverage.validationError);
             }
           });
+        }
+
+        //Remove the temporalCoverage attribute if no errors were found
+        if( errors.temporalCoverage.length == 0 ){
+          delete errors.temporalCoverage;
         }
 
         //Validate the EMLParty models

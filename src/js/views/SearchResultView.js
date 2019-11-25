@@ -22,7 +22,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		// The DOM events specific to an item.
 		events: {
 			'click .result-selection' : 'toggleSelected',
-			//'click'                   : 'routeToMetadata',
 			'click .download'         : 'download'
 		},
 
@@ -30,6 +29,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 		// a one-to-one correspondence between a **SolrResult** and a **SearchResultView** in this
 		// app, we set a direct reference on the model for convenience.
 		initialize: function (options) {
+
+      if(typeof options !== "object"){
+        var options = {}
+      }
+
 			this.listenTo(this.model, 'change', this.render);
 			this.listenTo(this.model, 'reset', this.render);
 			//this.listenTo(this.model, 'destroy', this.remove);
@@ -58,7 +62,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			//Find the member node object
 			json.memberNode = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: this.model.get("datasource")});
-			//Determine if this metadata doc documents any data files
+
+      //Figure out if this objbect is a collection or portal
+      var isCollection = this.model.getType() == "collection" || this.model.getType() == "portal";
+
+      //Determine if this metadata doc documents any data files
 			if( Array.isArray(json.documents) && json.documents.length ){
 				var dataFileIDs = _.without(json.documents, this.model.get("id"), this.model.get("seriesId"), this.model.get("resourceMap"));
 				json.numDataFiles = dataFileIDs.length;
@@ -72,18 +80,44 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				json.dataFilesMessage = "This dataset doesn't contain any data files";
 			}
 
+      //If this result has a logo and it is not a URL, assume it is an ID and create a full URL
+      if( json.logo && !json.logo.startsWith("http") ){
+        json.logo = MetacatUI.appModel.get("objectServiceUrl") + json.logo;
+      }
+
+      //Create a URL that leads to a view of this object
+      json.viewURL = this.model.createViewURL();
+
 			var resultRow = this.template(json);
 			this.$el.html(resultRow);
 
-			//Create the citation
-			var citation = new CitationView({metadata: this.model}).render().el;
-			var placeholder = this.$(".citation");
-			if(placeholder.length < 1) this.$el.append(citation);
-			else $(placeholder).replaceWith(citation);
+      //Create the citation
+      var citation = new CitationView({metadata: this.model}).render().el;
+      var placeholder = this.$(".citation");
+      if(placeholder.length < 1) this.$el.append(citation);
+      else $(placeholder).replaceWith(citation);
 
-			//Create the OpenURL COinS
-			var span = this.getOpenURLCOinS();
-			this.$el.append(span);
+      //Create the OpenURL COinS
+      var span = this.getOpenURLCOinS();
+      this.$el.append(span);
+
+      //Non-collection metadata types will display metrics
+      if( !isCollection ){
+
+        if( MetacatUI.appModel.get("displayDatasetMetrics") && this.metricsModel ){
+          if (this.metricsModel.get("views") !== null) {
+            // Display metrics if the model has already been fetched
+            this.displayMetrics();
+          }
+          else if( this.metricsModel ) {
+            // waiting for the fetch() call to succeed.
+            this.listenTo(this.metricsModel, "sync", this.displayMetrics);
+          }
+        }
+      }
+      else{
+        this.$el.addClass("collection");
+      }
 
 			//Save the id in the DOM for later use
 			var id = json.id;
@@ -107,18 +141,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				this.$(".popover-this.abstract").addClass("inactive");
 				this.$(".icon.abstract").addClass("inactive");
 			}
-
-			if( MetacatUI.appModel.get("displayDatasetMetrics") ){
-				if (this.metricsModel.get("views") !== null) {
-					// Display metrics if the model has already been fetched
-					this.displayMetrics();
-				}
-				else {
-					// waiting for the fetch() call to succeed.
-	            	this.listenTo(this.metricsModel, "sync", this.displayMetrics);
-				}
-			}
-
 
 			return this;
 		},

@@ -461,6 +461,17 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			return false;
 		},
 
+    /**
+    * Checks if this model has no values set on it
+    * @return {boolean}
+    */
+    isEmpty: function(){
+
+      return (!this.get('beginDate') && !this.get('beginTime') && !this.get('endDate')
+              && !this.get('endTime'));
+
+    },
+
     /*
     * Climbs up the model heirarchy until it finds the EML model
     *

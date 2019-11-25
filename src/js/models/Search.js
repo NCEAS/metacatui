@@ -1,6 +1,6 @@
 /*global define */
 define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Filters"],
-    function($, _, Backbone, SolrResult) {
+    function($, _, Backbone, SolrResult, Filters) {
         'use strict';
 
         // Search Model
@@ -48,6 +48,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     id: [],
                     seriesId: [],
                     idOnly: [],
+                    provFields: [],
                     formatType: [{
                         value: "METADATA",
                         label: "science metadata",
@@ -56,14 +57,25 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                     exclude: [{
                         field: "obsoletedBy",
                         value: "*"
+                    },
+                    {
+                      field: "formatId",
+                      value: "*dataone.org/collections*"
+                    },
+                    {
+                      field: "formatId",
+                      value: "*dataone.org/portals*"
                     }],
-                    /* The collection of filters used to build a query, an instance of Filters */
+                    /**
+                    * The collection of filters used to build a query, an instance of Filters
+                    * @type {Filters}
+                    */
                     filters: null
                 }
             },
 
             //A list of all the filter names that are related to the spatial/map filter
-            spatialFilters: ["useGeohash", "geohashes", "geohashLevel", 
+            spatialFilters: ["useGeohash", "geohashes", "geohashLevel",
                 "geohashGroups", "east", "west", "north", "south"],
 
             initialize: function() {
@@ -460,7 +472,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
 
                       query += this.getGroupedQuery(this.fieldNameMap["dataSource"], filterValues, {
                           operator: "OR"
-                      });  
+                      });
                     }
                 }
 
@@ -920,12 +932,18 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
             // Returns which fields are provenance-related in this model
             // Useful for querying the index and such
             getProvFields: function() {
-                var defaultFields = Object.keys(new SolrResult().defaults);
-                var provFields = _.filter(defaultFields, function(fieldName) {
+              var provFields = this.get("provFields");
+
+              if( !provFields.length ){
+                var defaultFields = Object.keys(SolrResult.prototype.defaults);
+                provFields = _.filter(defaultFields, function(fieldName) {
                     if (fieldName.indexOf("prov_") == 0) return true;
                 });
 
-                return provFields;
+                this.set("provFields", provFields);
+              }
+
+              return provFields;
             },
 
             getProvFlList: function() {

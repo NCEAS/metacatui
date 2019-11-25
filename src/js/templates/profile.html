@@ -1,3 +1,6 @@
+<%
+	var portalTerm = MetacatUI.appModel.get("portalTermSingular") || "portal";
+%>
 <article id="Profile" class="profile">
 <h2 class="profile-title"><%=title%></h2>
 <section class="charts-container">
@@ -33,75 +36,49 @@
 			</div>
 		</section>
 	</section>
-	<section id="user-citations" class="stripe metrics">
-		<div class="metrics-title">
-			<h3><i class='icon icon-quote-right'></i></h3>
-			<h3 class="citation-count"></h3>
-			<h3>Citations</h3>
-		</div>
-		<div class="citations-metrics-list">
-			<div class="metric-chart-loading">
-                <i class="icon-spinner icon-spin icon-large loading icon"></i>
-            </div>
-		</div>
-		<div class="clear"></div>
+	<% if(!hideMetadataAssessment){ %>
+	<section class="stripe metadata-assessment">
+		<section class="charts">
+			<h3>Metadata Assessment</h3>
+			<p>This graph shows the assessment score for all metadata in this <%= portalTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
+			<div class = "static-img-container">
+				<div id="metadata-assessment-loading" class="show-loading"></div>
+				<img id="metadata-assessment-graphic">
+			</div>
+		</section>
 	</section>
-	<section id="user-downloads" class="stripe metrics">
-		<div class="metrics-title">
-			<h3><i class='icon icon-cloud-download'></i></h3>
-			<h3 class="download-count"></h3>
-			<h3>Downloads</h3>
-		</div>
-		<div class="downloads-metrics">
-			<div class="metric-description">
-				<p>For all versions of this data set, the number of times that all or part of this data set was downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
-				<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
-			</div>
-			<div id="user-downloads-chart" class='metric-chart'>
-				<div class="metric-chart-loading">
-                    <i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
-                </div>
-			</div>
-		</div>
-		<div class="clear"></div>
+	<% } %>
+	<% if(!hideDownloadsChart){ %>
+	<section class="stripe downloads">
+		<section class="charts">
+			<section class="row-fluid">
+				<div id="downloads-title" class="show-loading span4"></div>
+				<div class="span8">
+					<h3>Downloads</h3>
+					<p>The number of individual metadata and data files downloaded over time. These download counts are partially 
+					<a href="http://www.projectcounter.org/" target="_blank">COUNTER</a> compliant, meaning that downloads from some Internet robots and 
+					repeat downloads within a certain time window are excluded.</p>
+				</div>
+			</section>
+			<div class="download-chart chart"></div>
+			<div class="clear"></div>
+		</section>
 	</section>
-	<section id="user-views" class="stripe metrics">
-		<div class="metrics-title">
-			<h3><i class='icon icon-eye-open'></i></h3>
-			<h3 class="view-count"></h3>
-			<h3>Views</h3>
-		</div>
-		<div class="views-metrics">
-			<div class="metric-description">
-				<p>For all versions of this data set, the number of times that all or part of this data set was viewed over time. These view counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that views from some Internet robots and repeat views within a certain time window are excluded.</p>
-				<p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
-			</div>
-			<div id="user-views-chart" class='metric-chart'>
-                <div class="metric-chart-loading">
-	                <i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
-                </div>
-			</div>
-		</div>
-		<div class="clear"></div>
-	</section>
-
-	<section class="stripe">
-		<div id="user-updates" >
-			<section class="charts">
-				<section class="updates">
-					<div class="metrics-title">
-						<h3><i class='icon icon-refresh'></i></h3>
-						<h3>Latest Updates</h3>
-					</div>
-					<p>When datasets were last updated, separated by content type (science metadata or data).</p>
-				</section>
-				<section class="row-fluid">
-					<div class="metadata-updates-chart show-loading span6"></div>
-					<div class="data-updates-chart show-loading span6"></div>
-				</section>
+	<% } %>
+	<% if(!hideUpdatesChart){ %>
+	<section class="stripe updates">
+		<section class="charts">
+			<section class="updates">
+				<h3>Latest Updates</h3>
+				<p>When datasets were last updated, separated by content type (science metadata or data).</p>
+			</section>
+			<section class="row-fluid">
+				<div class="metadata-updates-chart show-loading span6"></div>
+				<div class="data-updates-chart show-loading span6"></div>
 			</section>
 		</div>
 	</section>
+	<% } %>
 	<section class="stripe format-charts-container">
 		<section class="charts">
 			<section class="chart-title">	

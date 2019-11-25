@@ -1,0 +1,11 @@
+<div class="<%=spanX%>">
+    <% if(associatedURL && typeof associatedURL === "string"){ %>
+      <a href="<%=associatedURL%>" target="_blank">
+    <% } %>
+
+        <img class="img-logo" src="<%=imageURL%>" title="<%=label%>" />
+
+    <% if(associatedURL && typeof associatedURL === "string"){ %>
+      </a>
+    <% } %>
+</div>

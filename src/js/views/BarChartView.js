@@ -120,11 +120,14 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 			    .orient("left")
 			    .innerTickSize(["-" + this.width])
 			    .tickFormat(this.yFormat);
-			
+
 			var chart = d3.select(this.el)
-				.attr("class", "bar-chart " + this.className)
-			    .attr("width", width + margin.left + margin.right)
-			    .attr("height", height + margin.top + margin.bottom)
+					.attr("class", "bar-chart " + this.className)
+					// make responsive
+					.attr("viewBox", "0, 0," +
+							(width + margin.left + margin.right) + "," +
+							(height + margin.top + margin.bottom)
+						)
 			    .append("g")
 			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 			  

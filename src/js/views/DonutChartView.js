@@ -80,8 +80,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 	        //Select the SVG element and connect our data to it
 	        var vis = d3.select(this.el)
 	        			.attr("class", "donut " + this.svgClass)
-	        			.data([viewRef.data]);
-	        
+	        			.data([viewRef.data])
+								.attr("viewBox", "0, 0," + w + "," + h + ""); // make responsive
+
 	        /*
 	         * ========================================================================
 	         * Draw the arcs

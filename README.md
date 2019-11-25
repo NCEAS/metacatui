@@ -1,6 +1,6 @@
 ## MetacatUI: A client-side web interface for DataONE data repositories
 
-- **Author**: Matthew B. Jones, Chris Jones, Ben Leinfelder, Lauren Walker, Bryce Mecum, Peter Slaughter ([NCEAS](http://www.nceas.ucsb.edu))
+- **Author**: Matthew B. Jones, Chris Jones, Ben Leinfelder, Lauren Walker, Bryce Mecum, Peter Slaughter, Rushiraj Nenuji, Robyn Thiessen-Bock ([NCEAS](http://www.nceas.ucsb.edu))
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatui)
 - [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues)
@@ -57,10 +57,10 @@ To run MetacatUI, you will need to first install a web server such as [Apache](h
       ServerName metacatui.localhost
       ErrorLog "/private/var/log/apache2/metacatui-error_log"
       CustomLog "/private/var/log/apache2/metacatui-access_log" common
-      
+
       # Allow encoded slashes in URLs so encoded identifiers can be sent in MetacatUI URLs
       AllowEncodedSlashes On
-      
+
      <Directory "/Users/walker/Sites/metacatui">
       FallbackResource /metacatui/index.html
     </Directory>

@@ -2,6 +2,10 @@
 define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
+  /**
+  * @constructs ChoiceFilter
+  * @extends Filter
+  */
 	var ChoiceFilter = Filter.extend({
 
     type: "ChoiceFilter",
@@ -10,7 +14,8 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       return _.extend(Filter.prototype.defaults(), {
         chooseMultiple: true,
         //@type {object} - A literal JS object with a "label" and "value" attribute
-        choices: []
+        choices: [],
+        nodeName: "choiceFilter"
       });
     },
 
@@ -22,7 +27,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     */
     parse: function(xml){
 
-      var modelJSON = Filter.prototype.parse(xml);
+      var modelJSON = Filter.prototype.parse.call(this, xml);
 
       //Parse the chooseMultiple boolean field
       modelJSON.chooseMultiple = (this.parseTextNode(xml, "chooseMultiple") === "true")? true : false;
@@ -48,6 +53,82 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       });
 
       return modelJSON;
+    },
+
+    /**
+     * Updates the XML DOM with the new values from the model
+     *  @inheritdoc
+     *  @return {XMLElement} An updated choiceFilter XML element from a portal document
+    */
+    updateDOM:function(options){
+
+      try{
+
+        var objectDOM = Filter.prototype.updateDOM.call(this);
+
+        if(typeof options != "object"){
+          var options = {};
+        }
+
+        if( !options.forCollection ){
+          // Serialize <choice> elements
+          var choices = this.get("choices");
+
+          if(choices){
+            //Remove all the choice elements
+            $(objectDOM).children("choice").remove();
+
+            //Make a new choice element for each choice in the model
+            _.each(choices, function(choice){
+              // Make new <choice> node
+              choiceSerialized = objectDOM.ownerDocument.createElement("choice");
+              // Make choice subnodes <label> and <value>
+              _.map(choice, function(value, nodeName){
+
+                if(value || value === false){
+                  var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+                  $(nodeSerialized).text(value);
+                  $(choiceSerialized).append(nodeSerialized);
+                }
+
+              });
+            // append subnodes
+            $(objectDOM).append(choiceSerialized);
+
+            });
+
+          }
+
+          //Get the chooseMultiple value from the model
+          var chooseMultiple = this.get("chooseMultiple");
+          //Remove the chooseMultiple element
+          $(objectDOM).children("chooseMultiple").remove();
+          //If the model value is a boolean, create a chooseMultiple element and add it to the DOM
+          if(chooseMultiple === true || chooseMultiple === false){
+            chooseMultipleSerialized = objectDOM.ownerDocument.createElement("chooseMultiple");
+            $(chooseMultipleSerialized).text(chooseMultiple);
+            $(objectDOM).append(chooseMultipleSerialized);
+          };
+        }
+        else{
+          //Remove the filterOptions
+          $(objectDOM).find("filterOptions").remove();
+
+          //Change the root element into a <filter> element
+          var newFilterEl = objectDOM.ownerDocument.createElement("filter");
+          $(newFilterEl).html( $(objectDOM).children() );
+
+          //Return this node
+          return newFilterEl;
+        }
+
+        return objectDOM;
+      }
+      //If there's an error, return the original DOM or an empty string
+      catch(e){
+        return this.get("objectDOM") || "";
+      }
+
     }
 
   });

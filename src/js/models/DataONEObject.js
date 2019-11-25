@@ -23,6 +23,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     formatId: null,
                     size: null,
                     checksum: null,
+                    originalChecksum: null,
                     checksumAlgorithm: "MD5",
                     submitter: null,
                     rightsHolder : null,
@@ -74,6 +75,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     objectXML: null, // A cached version of the object fetched from the server
                     isAuthorized: null, // If the stated permission is authorized by the user
+                    createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
                     provSources: [],
                     provDerivations: [],
@@ -295,6 +297,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 }
               }, this);
 
+              //Save the checksum from the system metadata in a separate attribute on the model
+              sysMetaValues.originalChecksum = sysMetaValues.checksum;
+              sysMetaValues.checksum = this.defaults().checksum;
+
+              //Save the identifier as the id attribute
+              sysMetaValues.id = sysMetaValues.identifier;
 
               //Create a new AccessPolicy collection
               sysMetaValues.accessPolicy = this.createAccessPolicy($(systemMetadata).find("accesspolicy"));
@@ -307,6 +315,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //If no objects were found in the index, mark as notFound and exit
               if(!response.response.docs.length){
                 this.set("notFound", true);
+                this.trigger("notFound");
                 return;
               }
 
@@ -484,8 +493,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Create a FormData object to send data with our XHR
               var formData = new FormData();
 
-              //Add the identifier to the XHR data
-              formData.append("pid", this.get("id"));
+              //If this is not a new object, update the id. New DataONEObjects will have an id
+              // created during initialize.
+              if( !this.isNew() ){
+                this.updateID();
+                formData.append("pid", this.get("oldPid"));
+                formData.append("newPid", this.get("id"));
+              }
+              else{
+                //Create an ID if there isn't one
+                if( !this.get("id") ){
+                  this.set("id", "urn:uuid:" + uuid.v4());
+                }
+
+                //Add the identifier to the XHR data
+                formData.append("pid", this.get("id"));
+              }
 
               //Create the system metadata XML
               var sysMetaXML = this.serializeSysMeta();
@@ -495,14 +518,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Add the system metadata XML to the XHR data
               formData.append("sysmeta", xmlBlob, "sysmeta.xml");
 
-              if ( this.isNew() ) {
-                  // Create the new object (MN.create())
-                  formData.append("object", this.get("uploadFile"), this.get("fileName"));
-
-              } else if (this.hasContentChanges) {
-                  // Update the object (MN.update())
-                  //TODO: enable replacement of DATA objects
-              }
+              // Create the new object (MN.create())
+              formData.append("object", this.get("uploadFile"), this.get("fileName"));
 
               var model = this;
 
@@ -547,11 +564,31 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                       model.set("numSaveAttempts", 0);
                       model.set("uploadStatus", "c");
                       model.trigger("successSaving", model);
-                      model.fetch({merge: true}); // Get the newest sysmeta set by the MN
+
+                      // Get the newest sysmeta set by the MN
+                      model.fetch({
+                        merge: true,
+                        systemMetadataOnly: true
+                      });
+
                       // Reset the content changes status
                       model.set("hasContentChanges", false);
+
+                      //Reset the model isNew attribute
+                      model.set("isNew", false);
+
+                      //Set the last-calculated checksum as the original checksum
+                      model.set("originalChecksum", model.get("checksum"));
+                      model.set("checksum", model.defaults().checksum);
                   },
                   error: function(model, response, xhr){
+
+                    //Reset the identifier changes
+                    model.resetID();
+                    //Reset the checksum, if this is a model that needs to be serialized with each save.
+                    if( model.serialize ){
+                      model.set("checksum", model.defaults().checksum);
+                    }
 
                     model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
                     var numSaveAttempts = model.get("numSaveAttempts");
@@ -576,7 +613,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                       model.set("errorMessage", parsedResponse);
 
+                      //Set the model status as e for error
                       model.set("uploadStatus", "e");
+
+                      //Trigger a custom event for the model save error
                       model.trigger("errorSaving", parsedResponse);
 
                       //Send this exception to Google Analytics
@@ -598,10 +638,104 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               Backbone.Model.prototype.save.call(this, null, requestSettings);
         },
 
-        /*
+        /**
+          * Updates the DataONEObject System Metadata to the server
+          */
+        updateSysMeta: function () {
+          var formData = new FormData();
+
+          //Add the identifier to the XHR data
+          formData.append("pid", this.get("id"));
+
+          var sysMetaXML = this.serializeSysMeta();
+
+          //Send the system metadata as a Blob
+          var xmlBlob = new Blob([sysMetaXML], {type: 'application/xml'});
+          //Add the system metadata XML to the XHR data
+          formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+
+          var model = this;
+
+          var requestSettings = {
+              url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id"))),
+              cache: false,
+              contentType: false,
+              dataType: "text",
+              processData: false,
+              data: formData,
+              parse: false,
+              success: function(newSysMetaResponse) {
+
+                  model.set("numSaveAttempts", 0);
+
+                  //Parse the updated system metadata XML string returned from the repository
+                  model.set(model.parse(newSysMetaResponse));
+
+                  model.trigger("sysMetaUpdated");
+              },
+              error: function (model, response, xhr) {
+
+                  model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                  var numSaveAttempts = model.get("numSaveAttempts");
+
+                  if (numSaveAttempts < 3 && (response.status == 408 || response.status == 0)) {
+
+                      //Try saving again in 10, 40, and 90 seconds
+                      setTimeout(function () {
+                              model.updateSysMeta.call(model);
+                          },
+                          (numSaveAttempts * numSaveAttempts) * 10000);
+                  } else {
+                      model.set("numSaveAttempts", 0);
+
+                      var parsedResponse = $(response.responseText).not("style, title").text();
+
+                      //When there is no network connection (status == 0), there will be no response text
+                      if (!parsedResponse)
+                          parsedResponse = "There was a network issue that prevented this file from updating. " +
+                              "Make sure you are connected to a reliable internet connection.";
+
+                      model.set("errorMessage", parsedResponse);
+                      model.set("uploadStatus", "e");
+
+                      //Send this exception to Google Analytics
+                      if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
+                          ga("send", "exception", {
+                              "exDescription": "DataONEObject update system metadata error: " + parsedResponse +
+                                  " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                              "exFatal": true
+                          });
+                      }
+                  }
+              }
+          }
+
+          //Add the user settings
+          requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+          //Send the XHR
+          $.ajax(requestSettings);
+        },
+
+        /**
          * Check if the current user is authorized to perform an action on this object
+         * @param {string} action - The action (read, write, or changePermission) to check
+         * if the current user has authorization to perform. This function doesn't return
+         * the result of the check, but it sends an XHR, updates this model, and triggers a change event.
          */
         checkAuthority: function(action){
+
+          // return false - if neither PID nor SID is present to check the authority
+          if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
+            return false;
+          }
+
+          // If PID is not present - check authority with seriesId
+          var identifier = this.get("id");
+          if ( (identifier == null) ) {
+            identifier = this.get("seriesId");
+          }
+
           if(!action) var action = "changePermission";
 
           var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
@@ -609,23 +743,29 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             return false;
 
           var model = this;
-
           var requestSettings = {
-            url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=" + action,
+            url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
+
             type: "GET",
             success: function(data, textStatus, xhr) {
               model.set("isAuthorized", true);
               model.trigger("change:isAuthorized");
             },
             error: function(xhr, textStatus, errorThrown) {
-              model.set("isAuthorized", false);
+              if(errorThrown == 404){
+                model.set("notFound", true);
+                model.trigger("notFound");
+              }
+              else{
+                model.set("isAuthorized", false);
+              }
             }
           }
           $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
         },
 
-        serializeSysMeta: function(options){
+        serializeSysMeta: function(){
             //Get the system metadata XML that currently exists in the system
             var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
                 xml, // sysmeta as DOM object
@@ -653,15 +793,43 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             xml.find("submitter").text(this.get("submitter") || MetacatUI.appUserModel.get("username"));
             xml.find("formatid").text(this.get("formatId") || this.getFormatId());
 
+            //If there is a seriesId, add it
+            if( this.get("seriesId") ){
+              //Get the seriesId XML node
+              var seriesIdNode = xml.find("seriesId");
+
+              //If it doesn't exist, create one
+              if( !seriesIdNode.length ){
+                seriesIdNode = $(document.createElement("seriesid"));
+                xml.find("identifier").before(seriesIdNode);
+              }
+
+              //Add the seriesId string to the XML node
+              seriesIdNode.text( this.get("seriesId") );
+            }
+
             //If there is no size, get it
             if( !this.get("size") && this.get("uploadFile")){
               this.set("size", this.get("uploadFile").size);
             }
 
-            xml.find("size").text(this.get("size"));
+            //Get the size of the file, if there is one
+            if( this.get("uploadFile") ){
+              xml.find("size").text( this.get("uploadFile").size );
+            }
+            //Otherwise, use the last known size
+            else{
+              xml.find("size").text(this.get("size"));
+            }
 
             //Update the checksum and checksum algorithm
-            xml.find("checksum").text(this.get("checksum"));
+            if( !this.get("checksum") && this.get("originalChecksum") ){
+              xml.find("checksum").text(this.get("originalChecksum"));
+            }
+            else{
+              xml.find("checksum").text(this.get("checksum"));
+            }
+
             xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
 
             //Update the rightsholder
@@ -851,7 +1019,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   '    <checksum />',
                   '    <submitter />',
                   '    <rightsholder />',
-                  '    <originmembernode />',
                   '    <filename />',
                   '</d1_v2.0:systemmetadata>'
               );
@@ -903,13 +1070,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             //Set the old identifier
             var oldPid = this.get("id"),
-                    selfDocuments,
-                    selfDocumentedBy,
-                    documentedModels,
-                    documentedModel,
-                    index;
+                selfDocuments,
+                selfDocumentedBy,
+                documentedModels,
+                documentedModel,
+                index;
 
+            //Save the current id as the old pid
             this.set("oldPid", oldPid);
+
+            //Create a new seriesId, if there isn't one, and if this model specifies that one is required
+            if( !this.get("seriesId") && this.get("createSeriesId") ){
+              this.set("seriesId", "urn:uuid:" + uuid.v4());
+            }
 
             // Check to see if the old pid documents or is documented by itself
             selfDocuments = _.contains(this.get("documents"), oldPid);
@@ -1060,11 +1233,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             },
 
-            /* A DataONE object is new if dateUploaded is not null and synced is true */
-
+          /**
+          * Returns true if this DataONE object is new. A DataONE object is new
+          * if there is no upload date and it's been synced (i.e. been fetched)
+          * @return {boolean}
+          */
           isNew: function(){
             //Check if there is an upload date that was retrieved from the server
-            return ( this.get("dateUploaded") === null  && this.get("synced") );
+            return ( this.get("dateUploaded") === this.defaults().dateUploaded &&
+                     this.get("synced") );
           },
 
           /*
@@ -1142,9 +1319,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             //If there is no system metadata, then retrieve it first
             if(!this.get("sysMetaXML")){
               this.once("sync", this.findLatestVersion);
+              this.once("systemMetadataSync", this.findLatestVersion);
               this.fetch({
                 url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
-                dataType: "text"
+                dataType: "text",
+                systemMetadataOnly: true
               });
               return;
             }
@@ -1163,6 +1342,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               // attribute was actually changed
               this.trigger("latestVersionFound", this);
 
+              //Remove the listeners now that we found the latest version
+              this.stopListening("sync", this.findLatestVersion);
+              this.stopListening("systemMetadataSync", this.findLatestVersion);
+
               return;
             }
 
@@ -1178,17 +1361,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 var obsoletedBy = $(data).find("obsoletedBy").text();
 
                 //If there is an even newer version, then get it and rerun this function
-                if(obsoletedBy)
+                if(obsoletedBy){
                   model.findLatestVersion(possiblyNewer, obsoletedBy);
+                }
                 //If there isn't a newer version, then this is it
-                else
+                else{
                   model.set("latestVersion", possiblyNewer);
+                  model.trigger("latestVersionFound", model);
+
+                  //Remove the listeners now that we found the latest version
+                  model.stopListening("sync", model.findLatestVersion);
+                  model.stopListening("systemMetadataSync", model.findLatestVersion);
+                }
 
               },
               error: function(xhr){
                 //If this newer version isn't accessible, link to the latest version that is
-                if(xhr.status == "401")
+                if(xhr.status == "401"){
                   model.set("latestVersion", latestVersion);
+                  model.trigger("latestVersionFound", model);
+                }
               }
             }
 
@@ -1332,6 +1524,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }
 
             this.set("fileName", filename);
+          },
+
+          /**
+          * Creates a URL for viewing more information about this object
+          * @return {string}
+          */
+          createViewURL: function(){
+            return MetacatUI.root + "/view/" + (this.get("seriesId") || this.get("id"));
           },
 
           /**

@@ -1,5 +1,5 @@
 /* Smartphones (portrait) ----------- */
-@media only screen and (max-width : 480px) {
+@media only screen and (max-width : 768px) {
 
 	/************** Metadata View ****************/
 	.form-horizontal .control-label{
@@ -49,6 +49,12 @@
 		width: calc(100% - 50px);
 	}
 
+	/************** Footer ****************/
+	#Footer{
+		overflow-x: hidden;
+		max-width: 100vw;
+	}
+
 	/************** Navbar ****************/
 	#Navbar{
 		width: 100%;
@@ -62,6 +68,8 @@
 	}
 	.nav{
 		width: 100%;
+		flex-direction: column;
+    display: flex;
 	}
 	.navbar .home > a:after{
 		content: " Home";
@@ -75,16 +83,567 @@
 		position: relative;
 	}
 	.nav .right .dropdown-menu{
-		left: 30%;
-		width: 50%;
+		width: 100%;
 	}
 
-	/*************** General Structure ***********/
+	.navbar .nav {
+		margin-right: 0;
+	}
+
+	.navbar .nav ul.dropdown-menu {
+		/* ensure the dropdown menu is covers width of viewport regardless of parent's width */
+		position: absolute;
+		left: 50%;
+		right: 50%;
+		margin-left: -50vw;
+		margin-right: -50vw;
+		width: 100vw;
+	}
+
+	.navbar .nav ul.dropdown-menu li > a {
+		padding: 10px;
+		width: auto;
+	}
+
+	a.dropdown-toggle.user {
+    margin: 4px 0 9px 0;
+	}
+
+	.dropdown-header {
+		padding: 3px 0;
+	}
+
+	/* put the drop down menu triangle in the middle  */
+	.navbar .nav>li>.dropdown-menu:before {
+    left: 50%;
+	}
+	.navbar .nav>li>.dropdown-menu:after {
+    left: calc(50% + 1px);
+	}
+
+	/* edit portal button */
+	.PortalView #Navbar .nav .edit-portal-link-container.minimal-nav{
+		display: flex;
+		justify-content: center;
+	}
+
+
+	/*************** User menu ***********/
+
+	#Content > .nav-tabs {
+		flex-direction: row;
+	}
+
+	#Content .span8.subsection {
+	    width: 100%;
+			margin-left: 0px;
+	}
+
+	#Content .panel.panel-default.span3 {
+	   width: 100%;
+		 margin-left: 0px;
+	}
+
+	/*************** Sign In box ***********/
+	#signinPopup {
+    width: 100vw;
+    box-sizing: border-box;
+    top: 50px;
+    position:fixed;
+    left: 0;
+		margin: 0;
+	}
+
+
+	/*************** Portals ***********/
+
+	/* portal list in settings */
+
+	.my-portals-container.panel-body {
+		padding: 0px 10px;
+  }
+
+	.create-btn-container .btn {
+    float: center;
+    margin: 10px 10px;
+	}
+
+	/* Hide table headers (but not display: none;, for accessibility) */
+  .my-portals-container table thead {
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+  }
+
+  .my-portals-container table tr {
+		border-bottom: 1px solid #dddddd;
+		position: relative;
+		padding-left: 90px; /* space for logo */
+		padding-right: 50px; /* space for button */
+		min-height: 90px;
+		height: auto;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+  }
+
+	.my-portals-container tr:nth-child(odd) {
+		background: #f9f9f9;
+	}
+
+	.my-portals-container tr:first-child {
+		border-top: 1px solid #dddddd;
+	}
+
+  .my-portals-container table td {
+		background-color: inherit !important; /* to overwrite bootstrap's striped table colors */
+    border: 0px;
+		width: 100%;
+		box-sizing: border-box;
+  }
+
+	/* move logos to the left of the row */
+	.my-portals-container table td.logo {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		top: 0;
+		left: 0;
+		width: 90px;
+		position: absolute;
+		height: 100%;
+		display: flex;
+	}
+
+	/* move buttons to the right of the row */
+	.my-portals-container table td.controls {
+		display: flex;
+		align-items: center;
+		order: 3;
+		padding: 1px 5px 5px 0px;
+		top: 0;
+		right: 0;
+		width: 50px;
+		position: absolute;
+		height: 100%;
+	}
+
+	.my-portals-container table td.controls .btn {
+		padding: 4px 9px;
+	}
+
+	.my-portals-container table td.title {
+		padding: 8px 5px 1px 0px;
+		order: 1;
+		/* hide the end of very long titles */
+		max-height: 190px;
+    overflow: hidden;
+    position: relative;
+	}
+
+	td.title:after {
+		content: "...";
+		position: absolute;
+		top: 169px;
+		right: 0;
+		background: inherit;
+	}
+
+	.my-portals-container table td.portal-label {
+		padding: 1px 5px 8px 0px;
+		order: 2;
+	}
+
+	.my-portals-container table td.portal-label::before {
+		content: "ID: ";
+	}
+
+	/* end portal list */
+
+	/* .PortalView #Navbar .nav {
+		float: none;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	} */
+	.Portal.Editor #Navbar .nav,
+	.PortalView #Navbar .nav{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 5px;
+    background-color: #f1f1f1;
+		justify-content: space-evenly;
+		border-top: 1px solid #ebebeb;
+		border-bottom: 1px solid #ebebeb;
+	}
+
+	.PortalView #Navbar li.minimal-nav,
+	.Portal.Editor #Navbar li.minimal-nav {
+    border-bottom: none;
+		width: auto;
+	}
+
+	.portal-view {
+		width:100%;
+		margin-left: 0;
+	}
+
+	/* Portal header */
+
+	.Portal.Editor #editor-header,
+	.PortalView .portal-view #portal-header-container {
+		padding: 0px;
+	}
+
+	.Portal.Editor #editor-header,
+	.PortalView #portal-header-container .row{
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0;
+	}
+
+	.PortalView #portal-header-container .row{
+		padding: 60px 5px 60px 5px;
+	}
+
+	.Portal.Editor #editor-header{
+		padding: 40px 5px 40px 5px;
+	}
+
+	.Portal.Editor #editor-header .logo-editor-container,
+	.PortalView #portal-header-container .row .portal-logo {
+		max-width: 80px;
+		max-height: 100%;
+		margin: 0px 0px 25px 0px;
+	}
+
+	.Portal.Editor #editor-header .logo-editor-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.PortalView #portal-header-container .portal-title{
+		margin: 0px 3px 0px 3px;
+		font-size: 35px;
+		line-height: 1.2;
+	}
+
+	.Portal.Editor .title-container {
+		width: 100%;
+		padding-left: 5px;
+		padding-right: 5px;
+		box-sizing: border-box;
+	}
+
+	.Portal.Editor #editor-header h5 {
+		margin: 5px 0px;
+		text-align: left;
+	}
+
+	/* Portal & portal editor navigation ('tabs') */
+
+	.Editor.Portal .section-links-toggle-container,
+	.PortalView .section-links-container {
+		width: 100%;
+		background: var(--portal-primary-color);
+		color: white;
+		position: fixed;
+		box-shadow: 0px 1px 12px 3px rgba(0,0,0,0.3);
+		z-index: 12; /* so it stays above footer and editor dropzone elements*/
+		transition: bottom 0.3s;
+	}
+
+	.Editor.Portal .section-links-toggle-container {
+		bottom: 73px;
+	}
+
+	.PortalView .section-links-container {
+		bottom: 0;
+	}
+
+	.PortalView #portal-section-tabs,
+	.Editor.Portal	#portal-section-tabs {
+		display: flex;
+		flex-direction: column;
+		flex-wrap: nowrap;
+	}
+
+	.Editor.Portal .show-sections-toggle,
+	.PortalView .show-sections-toggle{
+		visibility: visible;
+		display: block;
+		text-align: center;
+		padding: 10px;
+		font-size: 14px;
+		cursor: pointer;
+	}
+
+	/* .Editor.Portal #portal-section-tabs .section-links-container > li > a, */
+	/* .Editor.Portal #portal-section-tabs .section-links-container > li, */
+	.Editor.Portal #portal-section-tabs .section-link-container {
+		width: 100%;
+		border-top-right-radius: 0px;
+		border-top-left-radius: 0px;
+		background: white;
+	}
+
+	.Editor.Portal #portal-section-tabs a.portal-section-link {
+		width: calc(100% - 60px);
+		text-align: left;
+	}
+
+	.Editor.Portal #portal-section-tabs .portal-section-link,
+	.Editor.Portal #portal-section-tabs .section-menu-link {
+		color: #555;
+	}
+
+	.Editor.Portal #portal-section-tabs .section-menu-link {
+		padding: 8px 10px;
+	}
+
+	.Editor.Portal .port-editor-sections .section-link-container .dropdown-menu > li > a {
+		border-radius: 6px;
+		padding: 8px;
+	}
+
+	.section-link-container .popover.fade.right.in{
+		left: 0px !important;
+		margin-left: 6px;
+		box-sizing: content-box;
+	}
+	.section-link-container .popover.fade.right.in > .arrow {
+		display: none;
+	}
+	.section-link-container .popover.fade.right.in p{
+		color: #555;
+	}
+
+	.Editor.Portal ul.section-links-container > li.active,
+	.Editor.Portal ul.section-links-container > li:hover {
+		background: var(--portal-secondary-color) !important;
+	}
+	.Editor.Portal ul.section-links-container > li:hover > a,
+	.Editor.Portal ul.section-links-container > li.active > a {
+		font-weight: bolder;
+		color: white !important;
+	}
+
+	#portal-section-tabs .section-link-container.page-AddPage .portal-section-link {
+		width: unset;
+		margin-left: 0px !important;
+	}
+
+	#portal-section-tabs .section-link-container.page-AddPage .icon {
+		font-size: 1em;
+		margin-right: 5px;
+	}
+
+	#portal-section-tabs .section-link-container.page-AddPage .portal-section-link::after{
+		content: " Add a page"
+	}
+
+	.Editor.Portal #portal-section-tabs .section-menu-link {
+		float: right;
+	}
+
+	/* Portal markdown section */
+
+	.portal-display-text {
+		padding: 0 10px;
+		text-align: center;
+	}
+
+	.portal-display-text h2 {
+		font-size: 1.5em;
+		line-height: 1.4;
+		padding: 10px 2px;
+	}
+
+	.tab-pane.portal-section-view {
+    width: 100vw;
+		overflow-y: scroll;
+		overflow-x: hidden;
+	}
+	.portal-section-content {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    padding: 0;
+	}
+
+	.portal-section-content .toc .mobile {
+		display: flex;
+		flex-direction: row;
+		width: 100vw;
+		margin: 0;
+		background-color: var(--portal-secondary-color);
+		color: white;
+	}
+
+	.portal-section-content .toc .mobile a {
+		color: white;
+	}
+
+	.portal-section-content .toc .desktop {
+	  display: none;
+	}
+
+	.toc-ul li, .portal-view .toc-ul a {
+		background-color: none;
+	}
+
+	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul {
+    position: sticky;
+    position: -webkit-sticky;
+    background-color: transparent;
+    margin-left: 0;
+    padding: 0px;
+	}
+
+	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul a {
+		color: #242424;
+	}
+
+	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul li.active > a {
+		color: white;
+		background-color: var(--portal-secondary-color);
+	}
+
+	.toc .mobile > * {
+		padding: 9px;
+		box-sizing: border-box;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+	}
+	.toc .mobile > *.hidden {
+		display: none;
+	}
+
+	.toc .mobile > * > a {
+		padding-right: 7px;
+	}
+
+	.toc .mobile > .second-level-items {
+		min-width: 48vw;
+	}
+
+	.toc .mobile > .second-level-items .dropdown-menu {
+		right: 0;
+    left: unset;
+    min-width: 100%;
+    margin-right: 4px;
+	}
+
+	.toc .mobile > .top-level-items .dropdown-menu {
+		min-width: 100%;
+	}
+
+	.toc .mobile > .top-level-items {
+		margin: 0;
+		min-width: 48vw;
+		max-width: 100vw;
+		padding-left: 10px;
+	}
+
+	.toc .mobile > .mobile-toc-divider {
+		width: 4vw;
+	}
+
+	.toc .mobile > .mobile-toc-divider:before{
+		font-size: 21px;
+	}
+
+	.nav.mobile li > a {
+		display: list-item;
+	}
+
+	/* affix the TOC to the top */
+	.Editor.Portal .toc-view.affix,
+	.portal-section-content .toc-view.affix {
+    top: 0px;
+	}
+
+	/* make markdown content take full width */
+	.portal-section-content > .markdown {
+    padding: 13px 10px;
+    width: 100vw;
+    box-sizing: border-box;
+		margin: 0;
+		overflow-y: scroll; /* so that vw calculation includes space for scroll bar */
+	}
+
+	.portal-section-content .toc-view.span3.affix + .span9 {
+		margin-left: 0;
+	}
+
+	.markdown code {
+		white-space: pre-wrap;
+	}
+
+	#portal-sections {
+    max-width: 100vw;
+    overflow-x: hidden;
+	}
+
+	/*************** Portal Editor ***********/
+
+	.port-editor-md textarea.markdown {
+		margin: 0;
+		width: 100%;
+	}
+
+	.Portal.Editor .port-editor-md textarea.auto-resize {
+    max-height: 80px !important;
+    overflow-y: scroll;
+	}
+
+	.Portal.Editor .portal-display-text {
+		margin-top: 40px;
+	}
+
+	.port-editor-section.port-editor-md .dropzone .dz-message {
+		font-size: 12px;
+	}
+
+	.port-editor-section  > h3 {
+		line-height: 1.2;
+		margin-bottom: 10px;
+	}
+
+	.editor-view.portal-editor div#Metrics p,
+	.port-editor-section  > h3,
+	.port-editor-settings,
+	.port-editor-settings > .row-fluid,
+	.port-editor-md > * {
+		padding-left: 9px;
+	  padding-right: 9px;
+		margin-left: 0;
+		margin-right: 0;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	#Metrics metrics-figure-container {
+		max-width: 100%;
+	}
+
 	.row-fluid .span6.pagination-left {
   		width: 100%;
 	}
 	#Content{
 		width: 100%;
+		padding-left: 0;
+		padding-right: 0;
+
 	}
 
 	/************** Search page ****************/
@@ -127,6 +686,48 @@
 	.fancybox-inline h2{
 		display: inline;
 	}
+
+	/******************************************
+	* Metrics Styling
+	********************************************/
+
+	.charts-container .charts.row-fluid {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+	}
+
+	.charts-container .span6.packages.badge-container {
+			/* width: 100%; */
+			display: flex;
+			flex-direction: column;
+	}
+
+	.charts-container .row-fluid .span6 {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			justify-content: center;
+			margin: 0;
+			box-sizing: border-box;
+	}
+
+	.charts-container .stripe.quick-stats {
+			height: auto;
+	}
+
+	.charts-container svg.circle-badge {
+			width: 220px;
+	}
+
+	.charts-container .temporal-coverage-chart.chart {
+		margin-left: 0;
+	}
+
+	.temporal-coverage-chart.chart {
+		width: 100%;
+	}
+
 
 }
 @media only screen and (max-width : 1300px){
@@ -227,8 +828,7 @@
 
 /* Smartphones (portrait) ----------- */
 @media only screen
-and (max-width : 320px) {
-/* STYLES GO HERE */
+and (max-width : 420px) {
 }
 
 /* iPads (portrait and landscape) ----------- */

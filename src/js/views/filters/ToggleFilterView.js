@@ -2,8 +2,9 @@
 define(['jquery', 'underscore', 'backbone',
         'models/filters/ToggleFilter',
         'views/filters/FilterView',
-        'text!templates/filters/toggleFilter.html'],
-  function($, _, Backbone, ToggleFilter, FilterView, Template) {
+        'text!templates/filters/toggleFilter.html',
+        'text!templates/filters/booleanFilter.html'],
+  function($, _, Backbone, ToggleFilter, FilterView, Template, BooleanTemplate) {
   'use strict';
 
   // Render a view of a single ToggleFilter model
@@ -15,6 +16,7 @@ define(['jquery', 'underscore', 'backbone',
     className: "filter toggle",
 
     template: _.template(Template),
+    booleanTemplate: _.template(BooleanTemplate),
 
     events: {
       "change input" : "updateModel"
@@ -35,7 +37,17 @@ define(['jquery', 'underscore', 'backbone',
       var modelJSON = this.model.toJSON();
       modelJSON.id = this.model.cid;
 
-      this.$el.html( this.template( modelJSON ) );
+      if( !this.model.get("falseLabel") ){
+        //If the value is the same as the trueValue, the checkbox should be checked
+        modelJSON.checked = (this.model.get("values")[0] == this.model.get("trueValue"))? true : false;
+
+        //Use the BooleanFilter template for toggles with only a true value
+        this.$el.html( this.booleanTemplate( modelJSON ) )
+                .addClass("boolean");
+      }
+      else{
+        this.$el.html( this.template( modelJSON ) );
+      }
 
       this.listenTo(this.model, "change:values", this.updateToggle);
 
@@ -71,6 +83,12 @@ define(['jquery', 'underscore', 'backbone',
     * necessary for the switch to fully display each label
     */
     setToggleWidth: function(){
+
+      //If there is no toggle element, exit now
+      if( !this.$(".can-toggle-switch").length ){
+        return;
+      }
+
       //Get the padding and widths of the switch elements
       var switchPadding    = 24,
           onSwitchWidth = this.$(".true-label").width(),
@@ -136,17 +154,23 @@ define(['jquery', 'underscore', 'backbone',
 
       //If the toggle is checked, then set the true toggle value on the model
       if( isChecked ){
-        this.model.set("values", [ this.model.get("trueValue") ]);
+        if( this.model.get("values")[0] !== this.model.get("trueValue") ){
+          this.model.set("values", [ this.model.get("trueValue") ]);
+        }
       }
       //If the toggle is not checked and there is no false value specified,
       // then remove the value from the model completely
       else if(!this.model.get("falseValue")){
-        this.model.set("values", []);
+        if( this.model.get("values").length > 0 ){
+          this.model.set("values", []);
+        }
       }
       //If the toggle is not checked and there is a false value specified,
       // then set the false toggle value on the model
       else{
-        this.model.set("values", [ this.model.get("falseValue") ]);
+        if( this.model.get("values")[0] !== this.model.get("falseValue") ){
+          this.model.set("values", [ this.model.get("falseValue") ]);
+        }
       }
 
     }

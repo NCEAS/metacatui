@@ -247,6 +247,30 @@ Bold 700
 		color: #597F99;
 	}
 
+  /* Portal Views
+  -------------------------------------------------- */
+.PortalView #Navbar .nav .minimal-nav .btn-primary{
+  color: #FFF;
+}
+.PortalView #Navbar .nav .minimal-nav .btn-primary:hover{
+  background-color: #0377DD;
+  color: #FFF;
+}
+
+/* Portal editor
+-------------------------------------------------- */
+
+/* Theme specific colours for the add section 'button' images */
+
+.port-editor-section svg .theme-primary-fill{
+	fill: #05446A
+}
+.port-editor-section svg .theme-secondary-fill{
+	fill: #118AD5
+}
+.port-editor-section svg .theme-accent-fill{
+	fill: #05ab8f
+},
 
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */
@@ -446,7 +470,6 @@ select{
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
     border-color: #CCC;
-    color: #444444;
     box-shadow: none;
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
@@ -615,8 +638,6 @@ select{
     }
 
     .navbar .nav > li  i{
-      color: #FFFFFF; /*IE fallback */
-      color: rgba(255, 255, 255, 0.8);
       text-shadow: none;
     }
 
@@ -984,21 +1005,6 @@ select{
     	margin-left: -40%;
     }
 
-	/* Inherit for these registry labels */
-	.label {
-	  display: inherit;
-	  padding: inherit;
-	  font: inherit;
-	  line-height: inherit;
-	  color: inherit;
-	  white-space: inherit;
-	  vertical-align: inherit;
-	  background-color: inherit;
-	  -webkit-border-radius: inherit;
-	     -moz-border-radius: inherit;
-	          border-radius: inherit;
-	}
-
 /* Combobox styles, overlay text input on select
 <!-- example here -->
 <div class="select-editable">
@@ -1074,10 +1080,6 @@ select{
 	 overflow-x: visible;
 	 float: left;
 	 clear: left;
-}
-#sidebar > * {
-    padding-right: 0px;
-    width: calc(100% - 10px);
 }
   .filter-contain{
  	  border-bottom: 1px dashed #BBB;
