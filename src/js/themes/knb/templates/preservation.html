@@ -1,0 +1,138 @@
+<article id="Preservation">
+    <div class="container">
+        <div class="row-fluid">
+            <div class="text-left">
+                <h2>
+                    <a name="knb-preservation-plan"></a>
+                    <i class="icon icon-gear"></i>
+                    Data Preservation
+                </h2>
+                <p>
+                    Data preservation is critically important to the KNB. We recognize that data
+                    preservation is difficult, both for technical and non-technical reasons.
+                    We have developed this data preservation plan to be explicit about how the
+                    KNB ensures the long-term preservation of the data entrusted to the
+                    repository. Key to this plan is our belief that no single organization can
+                    possibly provide sufficient institutional stability to guarantee multi-decadal
+                    preservation, and that partnerships among committed archives are necessary for
+                    successful data longevity. The guiding principles for our preservation plan
+                    follow.
+                </p>
+                <ul>
+                    <li>
+                        Preserve the bits.
+                        <p>
+                            The primary mission of the KNB is data preservation and data access.
+                            High-quality data management is essential to data preservation.
+                            Data are managed following best practice for systems administration
+                            at UCSB’s North Hall Data Center (NHDC), which complies with a
+                            subset of Tier 1 ANSI/TIA Data Center Standards.
+                        </p>
+                    </li>
+                    <li>
+                        Open Science, Open Standards.
+                        <p>
+                            Wherever possible, we utilize and encourage the use of open
+                            standards for representation of data and metadata, and for
+                            provisioning of services. Metadata are managed in the open
+                            Ecological Metadata Language (EML), and we encourage researchers
+                            to provide data using open data formats such as ASCII CSV for
+                            tabular data and open formats for imagery. Open formats support
+                            accessibility of the data in the future even in the face of
+                            large software changes. In addition, the repository supports
+                            open access via the
+                            <a href="<%= MetacatUI.root %>/api">DataONE REST API</a>
+                            for external groups to be able to access all components of the system.
+                        </p>
+                    </li>
+                    <li>
+                        Replicate data and metadata.
+                        <p>
+                            All metadata and data are replicated at geographically distinct
+                            locations including DataONE replication nodes. Replication
+                            is automated, and occurs any time that a change to any file in
+                            the system is made. Replication assures that data and metadata
+                            remain available even in the case of unplanned local system
+                            outages (such as a regional-scale fire or earthquake event),
+                            and provides for higher-performance access to data from
+                            multiple replica sites.
+                        </p>
+                    </li>
+                    <li>
+                        Strong Versioning.
+                        <p>
+                            Following the
+                            <a href="https://www.force11.org/datacitation">
+                                Force11 Data Citation guidelines
+                            </a>,
+                            every version of every object in the system is assigned a
+                            unique identifier which is used to track that version of the object
+                            and relate it to earlier versions. For data packages, a
+                            <a href="http://datacite.org/">DataCite DOI identifier</a> is
+                            assigned and registered upon publication. All
+                            updates to objects are tracked, and old versions of data packages
+                            and data objects remain accessible even after an update, ensuring
+                            that any citations to the original versions of data can continue to
+                            be resolved to exactly the version of the data that was cited.
+                            Older versions of data packages are clearly marked, making it easy
+                            to navigate to the most recently updated versions, and search
+                            systems point users to the most recent version.
+                        </p>
+                    </li>
+                    <li>
+                        Frequent Auditing.
+                        <p>
+                            All data, metadata, and other objects in the system are provided 
+                            with a checksum that can be used to validate that the contents 
+                            of the object have not changed over time. The KNB participates 
+                            in the DataONE federation, which audits all objects to ensure 
+                            that the current copy of the object matches the original 
+                            authoritative copy. In addition, DataONE checks all replica copies 
+                            to ensure that they continue to persist and have matching 
+                            checksums. This periodic auditing ensures that accidental 
+                            content corruption due to disk, network, and human error are 
+                            detected and remedied in a timely manner.
+                        </p>
+                    </li>
+                </ul>
+                <h3>Wind-down Plan</h3>
+                <p>
+                    In addition to this preservation plan, we recognize that over long time 
+                    periods spanning many decades, it is extremely difficult to predict and 
+                    sustain funding for single institutions. Our replication policy ensures 
+                    high-availability during normal operations, but also provides security 
+                    should investment in data archival wane. Should the main KNB fail to 
+                    be sustained, then the management of the KNB will work with our 
+                    partnering institutions to ensure that the archival replicas that they 
+                    hold continue to be preserved and available to the scientific community. 
+                    This will likely mean that another DataONE member node would become 
+                    the authoritative holder of the data until a time when continued support can
+                    be obtained to re-establish operations.
+                </p>
+                <h3>UCSB North Hall Data Center</h3>
+                <p>
+                    Primary systems are maintained at the 
+                    <a href="https://www.it.ucsb.edu/north-hall-data-center">North Hall Data Center</a>,
+                    which complies with a subset of the Tier 1 ANSI/TIA Data Center 
+                    Standards. Networking at 10GbE is via redundant connections to the 
+                    public Internet and Internet2 through the CalREN2 and CENIC networks. Room 
+                    UPS power backed by an emergency generator is available up to the 
+                    162kW capacity of the data center. Primary cooling capacity is derived from 
+                    the campus chilled water loop. With the campus chilled water loop subject 
+                    to regional power outages, secondary emergency cooling is from two 
+                    locally installed chillers with a total 60 Tons of capacity. When NHDC is 
+                    on emergency power, the emergency chilled water is used for the UPS room, 
+                    AHU 5 (campus networking) and chilled water distribution to advanced 
+                    rack cooling technologies. All racks are mounted on zone 4 ISO-Base 
+                    platforms for seismic protection. The NHDC is subject to the 
+                    environmental conditions of the campus and the region. Planned 
+                    outages involving all equipment within NHDC will be uncommon, but 
+                    occasionally necessary for certain types of maintenance activity. 
+                    During such outages, data and metadata from the KNB will still be 
+                    available via our replica holdings, but data submissions will be delayed 
+                    until normal operations are restored.
+                </p>
+            </div>
+        </div>
+    </div>
+</article>
