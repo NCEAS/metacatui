@@ -1,0 +1,19 @@
+<div class="portal-section">
+  <% if(typeof imageURL != "undefined" && imageURL.length){ %>
+    <div class="portal-display-image" style="background-image: url('<%=imageURL%>')">
+  <% } else { %>
+    <div>
+  <% } %>
+      <div class="portal-display-text">
+        <% if(typeof title != "undefined") { %>
+          <h2><%=title%></h2>
+        <% } %>
+        <% if(typeof introduction != "undefined" && (typeof imageURL != "undefined" && imageURL.length)) { %>
+          <p><%=introduction%></p>
+        <% } else if (typeof introduction != "undefined"){ %>
+          <h3><%=introduction%></h3>
+        <% } %>
+      </div>
+    </div>
+    <div class="portal-section-content"></div>
+</div>

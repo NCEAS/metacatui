@@ -122,38 +122,38 @@ function ($, _, Backbone) {
     */
 		renderEditor: function (pid) {
 
-			//If there is no EditorView yet, create one
-			if( ! MetacatUI.appView.editorView ){
+			//If there is no EML211EditorView yet, create one
+			if( ! MetacatUI.appView.eml211EditorView ){
 
 				var router = this;
 
-				//Load the EditorView file
-				require(['views/EditorView'], function(EditorView) {
+				//Load the EML211EditorView file
+				require(['views/metadata/EML211EditorView'], function(EML211EditorView) {
 					//Add the submit route to the router history
 					router.routeHistory.push("submit");
 
-					//Create a new EditorView
-					MetacatUI.appView.editorView = new EditorView({pid: pid});
+					//Create a new EML211EditorView
+					MetacatUI.appView.eml211EditorView = new EML211EditorView({pid: pid});
 
 					//Set the pid from the pid given in the URL
-					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.eml211EditorView.pid = pid;
 
-					//Render the EditorView
-					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+					//Render the EML211EditorView
+					MetacatUI.appView.showView(MetacatUI.appView.eml211EditorView);
 				});
 
 			}
-			// If the EditorView already exists, check if we need to show a confirmation alert
+			// If the EML211EditorView already exists, check if we need to show a confirmation alert
 			else {
 
 					//Set the pid from the pid given in the URL
-					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.eml211EditorView.pid = pid;
 
 					//Add the submit route to the router history
 					this.routeHistory.push("submit");
 
 					//Render the Editor View
-					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+					MetacatUI.appView.showView(MetacatUI.appView.eml211EditorView);
 
 			}
 		},

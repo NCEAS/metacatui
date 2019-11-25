@@ -157,8 +157,6 @@ define(['underscore', 'jquery', 'backbone',
   	    	this.renderProject();
   	    	this.renderSharing();
 
-	    	  this.renderRequiredIcons();
-
   	    	//Scroll to the active section
   	    	if(this.activeSection != "overview"){
   	    		MetacatUI.appView.scrollTo(this.$(".section." + this.activeSection));
@@ -251,11 +249,11 @@ define(['underscore', 'jquery', 'backbone',
 	    renderPeople: function(){
 	    	this.$(".section.people").empty().append("<h2>People</h2>");
 
-	    	var PIs        = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "principalInvestigator" }),
-	    		coPIs      = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "coPrincipalInvestigator" }),
-	    		collbalPIs = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "collaboratingPrincipalInvestigator" }),
-	    		custodian  = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "custodianSteward" }),
-	    		user       = _.filter(this.model.get("associatedParty"), function(party){ return party.get("role") == "user" });
+	    	var PIs      = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("principalInvestigator") }),
+	    		coPIs      = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("coPrincipalInvestigator") }),
+	    		collbalPIs = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("collaboratingPrincipalInvestigator") }),
+	    		custodian  = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("custodianSteward") }),
+	    		user       = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("user") });
 
 	    	var emptyTypes = [];
 
@@ -276,7 +274,9 @@ define(['underscore', 'jquery', 'backbone',
 
         if( this.model.get("creator").length ){
   	    	//Creators
-  	    	_.each(this.model.get("creator"), this.renderPerson, this);
+  	    	_.each(this.model.get("creator"), function(creator){
+            this.renderPerson(creator, "creator")
+          }, this);
   	    	this.renderPerson(null, "creator");
         }
         else{
@@ -289,7 +289,9 @@ define(['underscore', 'jquery', 'backbone',
 
         if( this.model.get("contact").length ){
   	    	//Contacts
-  	    	_.each(this.model.get("contact"), this.renderPerson, this);
+          _.each(this.model.get("contact"), function(contact){
+            this.renderPerson(contact, "contact")
+          }, this);
   	    	this.renderPerson(null, "contact");
         }
         else{
@@ -304,7 +306,10 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(PIs.length){
 		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["principalInvestigator"] + "<i class='required-icon hidden' data-category='principalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="principalInvestigator"></div>');
-		    	_.each(PIs, this.renderPerson, this);
+
+          _.each(PIs, function(PI){
+            this.renderPerson(PI, "principalInvestigator")
+          }, this);
 
 	    		this.renderPerson(null, "principalInvestigator");
 	    	}
@@ -316,7 +321,9 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(coPIs.length){
 		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["coPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='coPrincipalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="coPrincipalInvestigator"></div>');
-		    	_.each(coPIs, this.renderPerson, this);
+          _.each(coPIs, function(coPI){
+            this.renderPerson(coPI, "coPrincipalInvestigator")
+          }, this);
 
 	    		this.renderPerson(null, "coPrincipalInvestigator");
 	    	}
@@ -327,7 +334,9 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(collbalPIs.length){
 		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["collaboratingPrincipalInvestigator"] + "<i class='required-icon hidden' data-category='collaboratingPrincipalInvestigator'></i></h4>",
 		    			'<div class="row-striped" data-attribute="collaboratingPrincipalInvestigator"></div>');
-		    	_.each(collbalPIs, this.renderPerson, this);
+          _.each(collbalPIs, function(collbalPI){
+            this.renderPerson(collbalPI, "collaboratingPrincipalInvestigator")
+          }, this);
 
 	    		this.renderPerson(null, "collaboratingPrincipalInvestigator");
 	    	}
@@ -338,7 +347,9 @@ define(['underscore', 'jquery', 'backbone',
 	    	if(this.model.get("metadataProvider").length){
 		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["metadataProvider"] + "<i class='required-icon hidden' data-category='metadataProvider'></i></h4>",
 		    			'<div class="row-striped" data-attribute="metadataProvider"></div>');
-		    	_.each(this.model.get("metadataProvider"), this.renderPerson, this);
+          _.each(this.model.get("metadataProvider"), function(provider){
+            this.renderPerson(provider, "metadataProvider")
+          }, this);
 
 		    	this.renderPerson(null, "metadataProvider");
 	    	}
@@ -350,7 +361,9 @@ define(['underscore', 'jquery', 'backbone',
 	    		this.$(".section.people").append("<h4>" + this.partyTypeMap["custodianSteward"] + "<i class='required-icon hidden' data-category='custodianSteward'></i></h4>",
 	    			'<div class="row-striped" data-attribute="custodianSteward"></div>');
 
-	    		_.each(custodian, this.renderPerson, this);
+          _.each(custodian, function(custodianInd){
+            this.renderPerson(custodianInd, "custodianSteward")
+          }, this);
 
 	    		this.renderPerson(null, "custodianSteward");
 	    	}
@@ -363,7 +376,9 @@ define(['underscore', 'jquery', 'backbone',
 	    			'<p class="subtle">Only one publisher can be specified.</p>',
 	    			'<div class="row-striped" data-attribute="publisher"></div>');
 
-	    		_.each(this.model.get("publisher"), this.renderPerson, this);
+          _.each(this.model.get("publisher"), function(publisher){
+            this.renderPerson(publisher, "publisher")
+          }, this);
 	    	}
 	    	else
 	    		emptyTypes.push("publisher");
@@ -373,7 +388,9 @@ define(['underscore', 'jquery', 'backbone',
 		    	this.$(".section.people").append("<h4>" + this.partyTypeMap["user"] + "<i class='required-icon hidden' data-category='user'></i></h4>",
 		    			'<div class="row-striped" data-attribute="user"></div>');
 
-		    	_.each(user, this.renderPerson, this);
+          _.each(user, function(userInd){
+            this.renderPerson(userInd, "user")
+          }, this);
 
 		    	this.renderPerson(null, "user");
 	    	}
@@ -445,63 +462,79 @@ define(['underscore', 'jquery', 'backbone',
 	    		var isNew = true;
 
 	    		//Find the party type or role based on the type given
-	    		if(_.contains(emlParty.get("roleOptions"), partyType))
-	    			emlParty.set("role", partyType);
-	    		else if(_.contains(emlParty.get("typeOptions"), partyType))
-	    			emlParty.set("type", partyType);
+          if(partyType){
+            if(emlParty.get("roleOptions").some(r=> partyType.indexOf(r) >= 0)){
+              emlParty.get("roles").push(partyType);
+            } else if (emlParty.get("typeOptions").some(r=> partyType.indexOf(r) >= 0)) {
+              emlParty.set("type", partyType);
+            }
+          }
 
 	    	}
 	    	else{
 	    		var isNew = false;
 
 		    	//Get the party type, if it was not sent as a parameter
-		    	if(!partyType || typeof partyType != "string")
-		    		var partyType = emlParty.get("role") || emlParty.get("type");
+		    	if(!partyType || !partyType.length ){
+            var partyType = emlParty.get("type") || emlParty.get("roles");
+          }
+
 	    	}
 
+        // partyType is a string when if it's a 'type' and an array if it's 'roles'
+        // If it's a string, convert to an array for the subsequent _.each() function
+        if(typeof partyType == "string"){
+          partyType = [partyType]
+        }
 
-	    	//Find the container section for this party type
-	    	var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
+        _.each(partyType, function(partyType){
 
-	    	//See if this view already exists
-	    	if( !isNew && container.length && emlParty ){
-	    		var partyView;
+  	    	//Find the container section for this party type
+  	    	var container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
 
-	    		_.each(container.find(".eml-party"), function(singlePartyEl){
+  	    	//See if this view already exists
+  	    	if( !isNew && container.length && emlParty ){
+  	    		var partyView;
 
-	    			//If this EMLPartyView element is for the current model, then get the View
-	    			if( $(singlePartyEl).data("model") == emlParty )
-	    				partyView = $(singlePartyEl).data("view");
-	    		});
+  	    		_.each(container.find(".eml-party"), function(singlePartyEl){
 
-	    		//If a partyView was found, just rerender it and exit
-	    		if(partyView){
-	    			partyView.render();
-	    			return;
-	    		}
-	    	}
+  	    			//If this EMLPartyView element is for the current model, then get the View
+  	    			if( $(singlePartyEl).data("model") == emlParty )
+  	    				partyView = $(singlePartyEl).data("view");
+  	    		});
 
-	    	//If there still is no partyView found, create a new one
-	    	var partyView = new EMLPartyView({
-    			model: emlParty,
-    			edit: this.edit,
-    			isNew: isNew
-	    	});
+  	    		//If a partyView was found, just rerender it and exit
+  	    		if(partyView){
+  	    			partyView.render();
+  	    			return;
+  	    		}
+  	    	}
 
-	    	//If this person type is not on the page yet, add it
-	    	if(!container.length){
-	    		this.addNewPersonType(emlParty.get("type") || emlParty.get("role"));
-	    		container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
-	    	}
+  	    	//If there still is no partyView found, create a new one
+  	    	var partyView = new EMLPartyView({
+      			model: emlParty,
+      			edit: this.edit,
+      			isNew: isNew
+  	    	});
 
-	    	if(isNew)
-	    		container.append(partyView.render().el);
-	    	else{
-	    		if(container.find(".new").length)
-	    			container.find(".new").before(partyView.render().el);
-	    		else
-	    			container.append(partyView.render().el);
-	    	}
+  	    	//If this person type is not on the page yet, add it
+          // For now, this only adds the first role if person has multiple roles
+  	    	if(!container.length){
+  	    		this.addNewPersonType(emlParty.get("type") || emlParty.get("roles")[0]);
+  	    		container = this.$(".section.people").find('[data-attribute="' + partyType + '"]');
+  	    	}
+
+  	    	if(isNew){
+            container.append(partyView.render().el);
+          }else{
+  	    		if(container.find(".new").length)
+  	    			container.find(".new").before(partyView.render().el);
+  	    		else
+  	    			container.append(partyView.render().el);
+  	    	}
+
+        }, this);
+
 
 	    },
 
@@ -511,7 +544,7 @@ define(['underscore', 'jquery', 'backbone',
 	    handlePersonTyping: function(e){
 	    	var container = $(e.target).parents(".eml-party"),
     			emlParty  = container.length? container.data("model") : null,
-    			partyType = container.length && emlParty? emlParty.get("role") || emlParty.get("type") : null;
+    			partyType = container.length && emlParty ? emlParty.get("roles")[0] || emlParty.get("type") : null;
 
     		if(this.$("[data-attribute='" + partyType + "'] .eml-party.new").length > 1) return;
 
@@ -559,8 +592,11 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(newPartyContainer).before(partyMenu);
 
 	    	//Update the model
-	    	var attrToUpdate = _.contains(partyModel.get("roleOptions"), partyType)? "role" : "type";
-	    	partyModel.set(attrToUpdate, partyType);
+        if(partyModel.get("roleOptions").some(r=> partyType.indexOf(r) >= 0)){
+          partyModel.get("roles").push(partyType);
+        } else {
+          partyModel.set("type", partyType);
+        }
 
 	    	if(partyModel.isValid()){
 	    		partyModel.mergeIntoParent();
@@ -635,12 +671,20 @@ define(['underscore', 'jquery', 'backbone',
 	    	}
 
 	    	//Disable the roles this person is already in
-	    	var currentRole = partyToCopy.get("role") || partyToCopy.get("type") || "";
-	    	menu.find("input[value='" + currentRole + "']")
-	    		.prop("disabled", "disabled")
-	    		.addClass("disabled")
-	    		.parent(".checkbox")
-	    		.attr("title", "This person is already in the " + this.partyTypeMap[currentRole] + " list.");
+	    	var currentRoles = partyToCopy.get("roles") || partyToCopy.get("type") || "";
+        // "type" is a string and "roles" is an array.
+        // so that we can use _.each() on both, convert "type" to an array
+        if(typeof currentRoles == "string"){
+          currentRoles = [currentRoles];
+        }
+        _.each(currentRoles, function(currentRole){
+          menu.find("input[value='" + currentRole + "']")
+  	    		.prop("disabled", "disabled")
+  	    		.addClass("disabled")
+  	    		.parent(".checkbox")
+  	    		.attr("title", "This person is already in the " + this.partyTypeMap[currentRole] + " list.");
+
+        }, this);
 
 	    	//If there is already one publisher, disable that option
 	    	if( this.model.get("publisher").length ){
@@ -705,7 +749,7 @@ define(['underscore', 'jquery', 'backbone',
 	    			//Create all the attributes for the new person. We're only changing the role
 	    			newPerson.set( partyToCopy.copyValues() );
 	    			newPerson.set("type", "associatedParty");
-	    			newPerson.set("role", role);
+	    			newPerson.set("roles", [role]);
 
             //Add this new EMLParty to the EML model
             this.model.addParty(newPerson);
@@ -727,7 +771,7 @@ define(['underscore', 'jquery', 'backbone',
     				// and set it on the new person
     				newPerson.set(partyToCopy.copyValues());
     				newPerson.set("type", role);
-    				newPerson.set("role", newPerson.defaults().role);
+    				newPerson.set("roles", newPerson.defaults().role);
 
             //Add this new EMLParty to the EML model
             this.model.addParty(newPerson);
@@ -1537,27 +1581,6 @@ define(['underscore', 'jquery', 'backbone',
 
 	    previewTextRemove: function(e){
 	    	$(e.target).parents(".basic-text-row").toggleClass("remove-preview");
-	    },
-
-	    renderRequiredIcons: function(){
-	    	var requiredFields = MetacatUI.appModel.get("emlEditorRequiredFields");
-
-	    	_.each( Object.keys(requiredFields), function(field){
-
-	    		if(requiredFields[field]){
-	    			var reqEl = this.$(".required-icon[data-category='" + field + "']");
-
-	    			//Show the required icon for this category/field
-	    			reqEl.show();
-
-	    			//Show the required icon for the section
-	    			var sectionName = reqEl.parents(".section[data-section]").attr("data-section");
-	    			this.$(".required-icon[data-section='" + sectionName + "']").show();
-	    		}
-
-	    	}, this);
-
-
 	    },
 
 		// publication date validation.

@@ -43,6 +43,7 @@ define([    "jquery", "underscore", "backbone",
                             metadata: true,
                             simplifiedAutoLink:true,
                             customizedHeaderId:true,
+                            parseImgDimension: true,
                             tables:true,
                             strikethrough: true,
                             tasklists: true,
@@ -99,7 +100,7 @@ define([    "jquery", "underscore", "backbone",
             // ===== the regular expressions used to test whether showdown extensions are required ===== //
             // note: these expressions test the *markdown* and *not* the html
 
-            var regexHighlight  = new RegExp("'.*'"), // too general?
+            var regexHighlight  = new RegExp("`.*`"), // too general?
                 regexDocbook    = new RegExp("<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>"),
                 // for bootstrap: test for tables, directly from showdown/src/subParsers/makehtml/tables.js
                 // if we add more bootstrap classes, this will become more complicated since we have to test the markdown before the initial parse

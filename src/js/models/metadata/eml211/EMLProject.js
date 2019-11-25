@@ -105,7 +105,7 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
                 positionName = creator.get("positionName");
 
 						var newPersonnel = new EMLParty({
-							role: "principalInvestigator",
+							roles: ["principalInvestigator"],
 							parentModel: this,
 							type: "personnel",
 							individualName: individualName,

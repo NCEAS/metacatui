@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 201.6 209.6" width="165" height="180">
+  <defs>
+    <linearGradient id="a" x1=".5" x2=".5" y1="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="gray" stop-opacity=".3"/>
+      <stop offset=".5" stop-color="gray" stop-opacity=".1"/>
+      <stop offset="1" stop-color="gray" stop-opacity=".1"/>
+    </linearGradient>
+    <linearGradient id="b" x1=".5" x2=".5"/>
+    <linearGradient id="c" x1=".5" x2=".5"/>
+  </defs>
+  <g>
+    <path fill="#f7f7f7" d="M7.7 33.9h52.6v6H7.7z"/>
+    <path fill="#f7f7f7" d="M121.7 148.9h52.6v6h-52.6z"/>
+    <path fill="#f7f7f7" d="M7.7 44h52.6v6H7.7z"/>
+    <path fill="#f7f7f7" d="M121.7 159h52.6v6h-52.6z"/>
+    <path fill="#f7f7f7" d="M7 54h87.8v6H7z"/>
+    <path fill="#f7f7f7" d="M121 169h87.8v6H121z"/>
+    <path fill="#f7f7f7" d="M7.7 64h86.4v6H7.7z"/>
+    <path fill="#f7f7f7" d="M121.7 179h86.4v6h-86.4z"/>
+    <path fill="#fafafa" d="M0 136h15.8v73.6H0z"/>
+    <path fill="#fafafa" d="M26.1 136H42v73.6H26.1z"/>
+    <path fill="#fafafa" d="M52.3 136H68v73.6H52.3z"/>
+    <path fill="#fafafa" d="M78.4 136h15.8v73.6H78.4z"/>
+    <path fill="#e0e0e0" d="M0 172.8h15.8v36.9H0z"/>
+    <g>
+      <path fill="#e0e0e0" d="M0 157.4h15.8v16H0z" opacity=".4"/>
+    </g>
+    <path class="theme-accent-fill" d="M26.1 180.8H42v28.9H26.1z"/>
+    <path class="theme-accent-fill" d="M26.1 162H42v18.7H26.1z" opacity=".4"/>
+    <path fill="#c7c7c7" d="M52.3 167.4H68v42.2H52.3z"/>
+    <path fill="#c7c7c7" d="M52.3 152.7H68v14.7H52.3z" opacity=".4"/>
+    <path class="theme-secondary-fill" d="M78.4 182h15.8v27.7H78.4z"/>
+    <path class="theme-secondary-fill" d="M78.4 173.5h15.8v8.6H78.4z" opacity=".4"/>
+    <path fill="url(#a)" d="M790.2 314h-.2v78h.2a39 39 0 1 0 0-78z" transform="translate(-630 -314)"/>
+    <path fill="url(#b)" d="M683.6 387.3a39 39 0 0 0 36.7 51.8v-33.6z" transform="translate(-560.3 -361)"/>
+    <path fill="url(#c)" d="M724.2 314a39 39 0 0 0-36.7 26.2l36.7 18.3z" transform="translate(-564.2 -314)"/>
+    <path fill="#c7c7c7" d="M160.2 1.8h-.2v74.4h.2a37.2 37.2 0 0 0 0-74.4z"/>
+    <path fill="#e0e0e0" d="M125 26.8a37.2 37.2 0 0 0 35 49.4v-32z"/>
+    <path class="theme-accent-fill" d="M160 1.8a37.2 37.2 0 0 0-35 25l35 17.4z"/>
+    <path fill="#fafafa" d="M127.4 87h16.1v2.9h-16z"/>
+    <path fill="#fafafa" d="M166.5 87h16v2.9h-16z"/>
+    <path fill="#fafafa" d="M205.5 87h16v2.9h-16z"/>
+  </g>
+</svg>

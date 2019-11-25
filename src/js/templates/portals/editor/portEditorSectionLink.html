@@ -1,0 +1,53 @@
+<li class="section-link-container page-<%=uniqueLabel%> <%=classes%>" data-section-id="<%=uniqueLabel%>"
+  data-section-name="<%=sectionLabel%>" data-section-type="<%=sectionType%>">
+  <a href="<%=sectionURL%>" class="portal-section-link">
+    <span class="error icon-exclamation-sign icon icon-on-left validation-error-icon hidden"></span>
+    <span class="icon-eye-close icon icon-on-left hidden hidden-section-icon" title="This page is hidden"></span>
+    <% if( sectionLabel == "Settings" ){ %>
+      <span class="icon-cog icon icon-on-left"></span>
+    <% } %>
+    <%=sectionLabel%>
+  </a>
+  <% if( menuOptions && menuOptions.length ){ %>
+    <a href="#" class="section-menu-link pointer">
+      <i class="icon icon-on-right pointer icon-caret-down"></i>
+    </a>
+    <ul class="dropdown-menu menu" role="menu">
+        <% if(menuOptions.includes("Rename")){ %>
+        <li>
+          <a href="#" class="rename-section" title="Rename this page">
+            <i class="icon icon-on-left icon-pencil"></i> Rename
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Delete") && sectionType == "freeform"){ %>
+        <li>
+          <a href="#" class="remove-section" title="Permanently delete this page">
+            <i class="icon icon-on-left icon-remove"></i> Delete
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Delete") && sectionType != "freeform"){ %>
+        <li>
+          <a href="#" class="remove-section confirmed-section-removal" title="Permanently delete this page">
+            <i class="icon icon-on-left icon-remove"></i> Delete
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Hide")){ %>
+        <li>
+          <a href="#" class="remove-section confirmed-section-removal" title="Hide this page">
+            <i class="icon icon-on-left icon-eye-close"></i> Hide
+          </a>
+        </li>
+        <% } %>
+        <% if(menuOptions.includes("Show")){ %>
+        <li>
+          <a href="#" class="show-section" title="Show this page">
+            <i class="icon icon-on-left icon-eye-open"></i> Show
+          </a>
+        </li>
+        <% } %>
+      </ul>
+  <% } %>
+</li>

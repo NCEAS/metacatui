@@ -15,10 +15,9 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',
 			         'click .show-new-search' : 'resetSearch',
-			 		 'click .dropdown-menu a' : 'hideDropdown',
-			 		 	    'click .dropdown' : 'hideDropdown',
-			 		 	'mouseover .dropdown' : 'showDropdown',
-			 		 	 'mouseout .dropdown' : 'hideDropdown',
+			 		 'click .dropdown-menu a' :  'hideDropdown',
+			 		 	'mouseenter .dropdown' : 'showDropdown',
+			 		 	 'mouseleave .dropdown' : 'hideDropdown',
 			 		 	'click #nav-trigger'  : 'showNav',
 			 		 		  'click .nav li' : 'showSubNav'
 		},
@@ -101,17 +100,31 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			MetacatUI.appView.resetSearch();
 		},
 
-		hideDropdown: function(){
-			//Close the dropdown menu when a link is clicked
+		hideDropdown: function(e){
 			this.$('.dropdown-menu').addClass('hidden');
 			this.$('.dropdown').removeClass('open');
 		},
 
-		showDropdown: function(){
-			//Only show the dropdown menu on hover when not on mobile
-			if($(window).width() < 768) return;
-
+		showDropdown: function(e){
 			this.$('.dropdown-menu').removeClass('hidden');
+
+			// Prevent click events immediately following mouseenter events, otherwise
+			// toggleDropdown() is called right after showDropdown on touchscreen devices.
+			// (on touch screen, both mouseenter and click are called when user touches element)
+			this.$('.dropdown .dropdown-toggle').off('click');
+			var view = this;
+			setTimeout(function () {
+				view.$('.dropdown .dropdown-toggle').on('click', function(e){
+					view.toggleDropdown(e)
+				});
+			}, 10);
+		},
+
+		toggleDropdown: function(e){
+			// this.$(".navbar-inner").append(" TOGG: " + e.handleObj.origType)
+			// console.log(e);
+			this.$('.dropdown-menu').toggleClass('hidden');
+			this.$('.dropdown').removeClass('open');
 		},
 
 		showNav: function(){

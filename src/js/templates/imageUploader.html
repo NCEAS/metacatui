@@ -1,0 +1,32 @@
+<div>
+
+  <!-- outer dropzone template -->
+  <div class='dropzone' style='height:<%=height%>px; <% if(width){ %>width:<%=width%>px<% } %>'>
+    <div class='dz-default dz-message subtle'>
+      <div class="remove-message">Remove this image</div>
+      <span class="icon icon-upload"></span>
+
+      <% if( Array.isArray(uploadInstructions) ){
+        _.each(uploadInstructions, function(paragraph){ %>
+          <div><%=paragraph%></div>
+    <%  });
+      } else { %>
+        <div><%=uploadInstructions%></div>
+    <% } %>
+    </div>
+  </div>
+
+  <!-- preview template -->
+  <div class="dz-preview dz-image-preview" style="height:<%=height%>px">
+    <% if(imageTagName == "img"){ %>
+      <img class="image-container">
+      <span class="vertical-align-image-helper"></span>
+    <% } %>
+    <% if(imageTagName == "div"){ %>
+      <div class="image-container"></div>
+    <% } %>
+    <i class="icon-remove remove icon" data-dz-remove></i>
+    <div class="dz-error-message"><span data-dz-errormessage></span></div>
+  </div>
+
+</div>

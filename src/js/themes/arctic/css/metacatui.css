@@ -67,7 +67,6 @@
       background-color: #FDFDFD;
       font-family: "Helvetica Nueue", "Helvetica", "Arial", "Lato", "sans serif";
       font-weight: normal;
-      font-size: 1em;
       line-height: 1.5em;
     }
     body p {
@@ -230,7 +229,6 @@
 .header nav{
 	display: none;
 	box-sizing: border-box;
-	padding: 0px 10px;
 }
 .header .nav-trigger.close{
 	display: none;
@@ -238,7 +236,6 @@
 .header .nav li{
 	float: left;
 	position: relative;
-	border-bottom: 1px solid #DDD;
 }
 .header .nav li a {
 	color: #1f254f;
@@ -248,17 +245,19 @@
 	font-family: "AllerLight", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
 	font-weight: normal;
 	font-style: normal;
-    display: block;
-    text-decoration: none;
-    padding: 0.75em;
-    width: 100%;
-    text-align: center;
+  display: block;
+  text-decoration: none;
+  padding: 0.75em;
+  width: 100%;
+  text-align: center;
 }
 .header .dropdown-menu li a{
 	background-color: #1F254F;
 	color: #FFF;
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
   text-align: center;
   min-width: 180px;
+  border-bottom: 1px solid #495082;
 }
 
 .header .nav > li >  a:hover{
@@ -279,7 +278,8 @@
 .header .nav li a.btn.btn-primary:hover{
 	background-color: #146660;
 }
-.header .nav li .btn.btn-primary{
+.header .nav li .btn.btn-primary,
+.PortalView #Navbar .minimal-nav .btn-primary{
 	color: #FFF;
 }
 .header .login.btn{
@@ -306,8 +306,8 @@
 	margin-bottom: 1em;
 }
 .header #nav-trigger{
-   	margin-top: .5em;
-   	margin-right: .5em;
+   	margin-top: .4em;
+   	margin-right: .4em;
    	font-size: 2em;
    	float: right;
 }
@@ -321,7 +321,7 @@
     background-repeat: no-repeat;
     background-size: contain;
     height: 60px; /* height in CSS pixels */
-    width: 142px; /* width in CSS pixels */
+    width: 109px; /* width in CSS pixels */
     display: inline-block;
     font-family: AllerLight, Helvetica, sans-serif;
 }
@@ -331,10 +331,11 @@
 -------------------------------------------------- */
 
 footer {
-     padding: 0px 20px 20px 20px;
+ padding: 0px 20px 20px 20px;
  margin-top: 0px;
  color: #FDFDFD;
- background-color: #b8cad2;
+ background-color: #b1cdd9;
+ border-top: 1px solid #9fc0cd;
  width: 100%;
  box-sizing: border-box;
  z-index: 2;
@@ -342,12 +343,6 @@ footer {
 }
 #Content{
 	padding-bottom: 350px; /* Keeps footer down */
-}
-footer ul{
-	list-style: none;
-}
-footer ul li{
-	line-height: 1.5em;
 }
 .mapMode footer{
 	position: fixed;
@@ -364,13 +359,28 @@ footer ul li{
 }
 footer .footer-inner{
 	max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 3em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-footer .footer-links .nav-title {
+footer .adc-contact {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+}
+footer .adc-contact .contact-title {
     color: #666;
     font-family: "Aller", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+footer .adc-contact .contact-info {
+  display: flex;
+  flex-direction: column;
 }
 footer .sign-up{
 	background-color: #ACC7D1;
@@ -405,7 +415,7 @@ footer .show-in-map-mode .btn{
 }
 footer .footnote{
 	font-size: .8em;
-    color: #333;
+  color: #333;
 }
 footer .logos{
 	margin-top: 2em;
@@ -527,32 +537,64 @@ footer .logos a:hover, a:focus{
     	background-color: #19B36A;
     }
 
-/* PROJECTS
+/* PORTALS
 ------------------------ */
-.project-view .project-title{
+.portal-view .portal-title{
   font-weight: 100;
 }
-.ProjectView .border-image{
+.PortalView .border-image{
   display: none;
 }
-.ProjectView #Navbar #logo{
-  display: none;
+
+/* Portal & Editor (minimal header common to both views)
+-------------------------------------------------- */
+
+.Portal.Editor #Navbar #logo,
+.PortalView #Navbar #logo{
+  background: url(/js/themes/arctic/img/logo-small-no-title.png);
+  height: 25px;
+  width: 25px;
+  background-size: contain;
+  margin-top: 12px;
 }
-.ProjectView #Navbar #main-nav{
-  width: 100%;
+
+.Portal.Editor #Navbar #logo::after,
+.PortalView #Navbar #logo::after{
+  content: "Hosted by the Arctic Data Center";
+  order: 3;
+  margin-left: 29px;
+  display: block;
+  margin-top: 2px;
+  color: #999;
+  font-size: 14px;
+  white-space: nowrap;
 }
-.ProjectView #Navbar .#main-nav nav{
+
+.Portal.Editor #Navbar .#main-nav nav,
+.PortalView #Navbar .#main-nav nav{
   margin-bottom: 0px;
 }
-.ProjectView #Navbar .minimal-nav .logo{
+
+.Portal.Editor #Navbar .minimal-nav .logo,
+.PortalView #Navbar .minimal-nav .logo{
   max-height: 1em;
   margin-left: 3px;
 }
-.filters-header .filter-input-contain.input-append .btn{
-  padding: 4px;
-  color: #AAA;
-  border-color: #AAA;
+
+/* Portal editor
+-------------------------------------------------- */
+
+/* Theme specific colours for the add section 'button' images */
+
+.port-editor-section svg .theme-primary-fill{
+	fill: #1e254f
 }
+.port-editor-section svg .theme-secondary-fill{
+	fill: #b5e1e7
+}
+.port-editor-section svg .theme-accent-fill{
+	fill: #3ad29f
+},
 
 /* EDITOR
 ----------------------- */
@@ -604,8 +646,6 @@ footer .logos a:hover, a:focus{
 #map-container{
 	display: none;
 	height: 500px;
-	width: 33%; /* IE fallback */
-	width: calc((100% - 217px) / 2);
 	float: left;
 }
 
@@ -818,6 +858,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     }
     #Navbar .user {
     	font-size: 14px;
+      white-space: nowrap;
     }
     #Content{
     	padding-top: 118px;
@@ -852,18 +893,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 		margin-left: 20px;
 	}
 
-    .dropdown-menu{
-    	top: 83%;
-	    position: relative;
-	    border: 0px;
-	    box-shadow: none;
-	    width: 100%;
-    }
 
-    /* Make sure the last dropdown menu in the nav bar doesn't go off the side of the page */
-    .top-nav .dropdown:last-child .dropdown-menu{
-      left: -53px;
-    }
+  /* Make sure the last dropdown menu in the nav bar doesn't go off the side of the page */
+  .top-nav .dropdown:last-child .dropdown-menu{
+    left: -53px;
+  }
 
 	.navbar .nav li.dropdown.open > .dropdown-toggle{
 		color: #555555;
@@ -902,6 +936,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   		border: 1px solid #CBCBCB;
 	}
 
+
+  .dropdown:hover .dropdown-menu.hidden,
+	.dropdown-menu.hidden{
+		display: none;
+	}
 
 
   /* MAIN BODY CSS
@@ -1349,7 +1388,6 @@ MDQ items
 
     /* Resource map contents table */
     .table tr > th{
-    	background-color: #DEDEDE;
     	font-weight: bold;
     }
     .table .table-header{
@@ -1797,6 +1835,12 @@ MDQ items
    		float: left;
    }
 
+/* Filter views
+-------------------------------------------------- */
+.filter-groups .filter .btn:hover {
+    background-color: #e6e6e6;
+    color: #333;
+}
 
 /* RESULTS CSS
 -------------------------------------------------- */
@@ -1818,7 +1862,9 @@ MDQ items
 		height: 700px;
 		margin-left: 0px;
 	}
-
+.mapMode #map-container{
+  width: calc((100% - 216px) / 2);
+}
 	#results{
 		margin-bottom: 10px;
 	}

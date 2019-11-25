@@ -1,6 +1,10 @@
 <div class="filter-input-contain input-append">
   <label>
-  <input type="checkbox" />
+  <% if( typeof checked !== "undefined" && checked ){ %>
+    <input type="checkbox" checked="checked"/>
+  <% } else { %>
+    <input type="checkbox" />
+  <% } %>
     <% if(icon){
          print('<i class="icon icon-on-left icon-' + icon + '"></i>');
        } %>

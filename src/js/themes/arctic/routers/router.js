@@ -21,8 +21,7 @@ function ($, _, Backbone) {
 			'submit(/*pid)(/)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'           : 'renderAPI',       // API page
-			'projects(/:projectId)(/:projectSection)(/)': 'renderProject', // project page
-      'portals(/:projectId)(/:projectSection)(/)': 'renderProject' // project page
+			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal' // portal page
 		},
 
 		helpPages: {
@@ -31,6 +30,16 @@ function ($, _, Backbone) {
 		},
 
 		initialize: function(){
+
+			// Add routes to portal dynamically using the appModel portal term
+			var portalTermPlural = MetacatUI.appModel.get("portalTermPlural");
+			this.route( portalTermPlural + "(/:portalId)(/:portalSection)(/)",
+									["portalId", "portalSection"], this.renderPortal
+								);
+			this.route( "edit/" + portalTermPlural + "(/:portalIdentifier)(/:portalSection)(/)",
+									["portalIdentifier", "portalSection"], this.renderPortalEditor
+								);
+
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
 
 			// This route handler replaces the route handler we had in the
@@ -211,7 +220,7 @@ function ($, _, Backbone) {
 
 			var viewChoice;
 
-			if(!username || !MetacatUI.appModel.get("userProfiles")){
+			if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
 				this.routeHistory.push("summary");
 
 				if(!MetacatUI.appView.statsView){
@@ -268,24 +277,24 @@ function ($, _, Backbone) {
     */
 		renderEditor: function (pid) {
 
-			//If there is no EditorView yet, create one
-			if( ! MetacatUI.appView.editorView ){
+			//If there is no EML211EditorView yet, create one
+			if( ! MetacatUI.appView.eml211EditorView ){
 
 				var router = this;
 
-				//Load the EditorView file
-				require(['views/EditorView'], function(EditorView) {
+				//Load the EML211EditorView file
+				require(['views/metadata/EML211EditorView'], function(EML211EditorView) {
 					//Add the submit route to the router history
 					router.routeHistory.push("submit");
 
-					//Create a new EditorView
-					MetacatUI.appView.editorView = new EditorView({pid: pid});
+					//Create a new EML211EditorView
+					MetacatUI.appView.eml211EditorView = new EML211EditorView({pid: pid});
 
 					//Set the pid from the pid given in the URL
-					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.eml211EditorView.pid = pid;
 
-					//Render the EditorView
-					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+					//Render the EML211EditorView
+					MetacatUI.appView.showView(MetacatUI.appView.eml211EditorView);
 				});
 
 			}
@@ -293,16 +302,41 @@ function ($, _, Backbone) {
 
 
 					//Set the pid from the pid given in the URL
-					MetacatUI.appView.editorView.pid = pid;
+					MetacatUI.appView.eml211EditorView.pid = pid;
 
 					//Add the submit route to the router history
 					this.routeHistory.push("submit");
 
 					//Render the Editor View
-					MetacatUI.appView.showView(MetacatUI.appView.editorView);
+					MetacatUI.appView.showView(MetacatUI.appView.eml211EditorView);
 
 			}
 		},
+
+    /**
+    * Renders the PortalEditorView
+    * @param {string} [portalIdentifier] - The id or label of the portal
+    */
+    renderPortalEditor: function(portalIdentifier, portalSection){
+			// Add the overall class immediately so the navbar is styled correctly right away
+      $("body").addClass("Editor")
+               .addClass("Portal");
+      // Look up the portal document seriesId by its registered name if given
+      if ( portalSection ) {
+        this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);
+      }
+      else{
+        this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+      }
+
+      require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
+        MetacatUI.appView.portalEditorView = new PortalEditorView({
+            portalIdentifier: portalIdentifier,
+            activeSectionLabel: portalSection,
+        });
+        MetacatUI.appView.showView(MetacatUI.appView.portalEditorView);
+      });
+    },
 
 		renderMdqRun: function (suiteId, pid) {
 			this.routeHistory.push("quality");
@@ -397,87 +431,27 @@ function ($, _, Backbone) {
 		},
 
     /**
-     * Render the project view based on the given name, id, or section
+     * Render the portal view based on the given name, id, or section
      */
-     renderProject: function(projectId, projectSection) {
-        var projectName;
-        var projectsMap = MetacatUI.appModel.get("projectsMap");
+     renderPortal: function(label, portalSection) {
+			 // Add the overall class immediately so the navbar is styled correctly right away
+ 			 $("body").addClass("PortalView");
+       // Look up the portal document seriesId by its registered name if given
+       if ( portalSection ) {
+         this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label + "/" + portalSection);
+       }
+       else{
+         this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label);
+       }
 
-        // Look up the project document seriesId by its registered name if given
-        if ( projectId ) {
-            if ( projectsMap ) {
-                // Do a forward lookup by key
-                if ( typeof (projectsMap[projectId] ) !== "undefined" ) {
-                    projectName = projectId;
-                    projectId = projectsMap[projectId];
-                    // Then set the history
-                    if ( projectSection ) {
-                        this.routeHistory.push("portals/" + projectName + "/" + projectSection);
-                    } else {
-                        this.routeHistory.push("portals/" + projectName);
-                    }
-                } else {
-                    // Try a reverse lookup of the project name by values
-                    projectName = _.findKey(projectsMap, function(value){
-                      return( value ==  projectId );
-                    });
-
-                    if ( typeof projectName !== "undefined" ) {
-                        if ( projectSection ) {
-                            this.routeHistory.push("portals/" + projectName + "/" + projectSection);
-                        } else {
-                            this.routeHistory.push("portals/" + projectName);
-                        }
-                    } else {
-
-                      //Try looking up the project name with case-insensitive matching
-                      projectName = _.findKey(projectsMap, function(value, key){
-                        return( key.toLowerCase() == projectId.toLowerCase() );
-                      });
-
-                      //If a matching project name was found, route to it
-                      if( projectName ){
-
-                        //Get the project ID from the map
-                        projectId = projectsMap[projectName];
-
-                        // Then set the history
-                        if ( projectSection ) {
-                          this.navigate("portals/" + projectName + "/" + projectSection, { trigger: false, replace: true });
-                          this.routeHistory.push("portals/" + projectName + "/" + projectSection);
-                        } else {
-                          this.navigate("portals/" + projectName, { trigger: false, replace: true });
-                          this.routeHistory.push("portals/" + projectName);
-                        }
-                      }
-                      else{
-                        // Fall back to routing to the project by id, not name
-                        this.routeHistory.push("portals/" + projectId);
-                      }
-                    }
-                }
-            }
-        } else {
-            // TODO: Show a ProjectsView here of the Projects collection (no projectId given)
-            return;
-        }
-
-        if ( !MetacatUI.appView.projectView ) {
-          require(['views/project/ProjectView'], function(ProjectView){
-            MetacatUI.appView.projectView = new ProjectView({
-                          projectId: projectId,
-                          projectName: projectName,
-                          activeSection: projectSection
-                      });
-            MetacatUI.appView.showView(MetacatUI.appView.projectView);
-          });
-        } else {
-                  MetacatUI.appView.projectView.projectName = projectName;
-                  MetacatUI.appView.projectView.projectId = projectId;
-                  MetacatUI.appView.projectView.activeSection = projectSection;
-          MetacatUI.appView.showView(MetacatUI.appView.projectView);
-        }
-      },
+       require(['views/portals/PortalView'], function(PortalView){
+         MetacatUI.appView.portalView = new PortalView({
+             label: label,
+             activeSectionLabel: portalSection
+         });
+         MetacatUI.appView.showView(MetacatUI.appView.portalView);
+       });
+     },
 
 
 		/*

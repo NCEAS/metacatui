@@ -20,26 +20,38 @@
 	        </form>
         </li>
         <li class="minimal-nav hidden">
-          <a href="<%=MetacatUI.appModel.get('baseUrl')%>">Hosted by <%=MetacatUI.appModel.get('title')%></a>
+          <a href="<%=MetacatUI.root%>/">Hosted by <%=MetacatUI.appModel.get('title')%></a>
         </li>
         <% if (loggedIn && username) {
         	print(
         	'<li class="dropdown minimal-nav user-menu">',
 				'<a href="" class="dropdown-toggle" data-toggle="dropdown">',
-					'<i class="icon icon-on-left icon-user"></i>',
+					'<i class="icon icon-on-left icon-user"></i><span class="user-name">',
           (firstName || formattedName),
-          '<i class="icon icon-caret-down icon-on-right"></i>',
+          '</span><i class="icon icon-caret-down icon-on-right"></i>',
 				'</a>',
-				'<ul class="dropdown-menu">',
+				'<ul class="dropdown-menu hidden">',
 					'<li class="dropdown-header">', formattedName, '</li>',
 					'<li class="divider"></li>',
 					'<li><a href="' + MetacatUI.root + '/submit" class="show-new-editor">Submit data</a></li>',
 					'<li><a href="' + MetacatUI.root + '/profile/' + username + '">My Profile</a></li>',
-					'<li><a href="' + MetacatUI.root + '/data/my-data">My datasets</a></li>',
-					'<li class="divider"></li>',
+					'<li><a href="' + MetacatUI.root + '/data/my-data">My datasets</a></li>');
+          if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+            <li>
+              <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
+                My <%= MetacatUI.appModel.get("portalTermPlural") %>
+                <span class="new-icon">
+                  <i class="icon icon-star icon-on-right"></i>
+                  NEW
+                </span>
+              </a>
+            </li>
+          <% }
+					print('<li class="divider"></li>',
 					'<li><a href="' + MetacatUI.root + '/signout">Sign out</a></li>',
 				'</ul>',
-			'</li>'
+			'</li>',
+      '<li class="edit-portal-link-container minimal-nav"></li>'
         	);
         } else {
         	print(

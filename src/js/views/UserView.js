@@ -1,6 +1,17 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup', 'models/UserModel', 'views/SignInView', 'views/StatsView', 'views/DataCatalogView', 'views/GroupListView', 'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
-	function($, _, Backbone, Clipboard, UserGroup, UserModel, SignInView, StatsView, DataCatalogView, GroupListView, userProfileTemplate, AlertTemplate, LoadingTemplate, ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
+define(['jquery', 'underscore', 'backbone', 'clipboard',
+        'collections/UserGroup',
+        'models/UserModel',
+        'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
+        'views/GroupListView', 'views/portals/PortalListView',
+        'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
+        'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
+	function($, _, Backbone, Clipboard,
+    UserGroup,
+    UserModel,
+    SignInView, StatsView, DataCatalogView, GroupListView, PortalListView,
+    userProfileTemplate, AlertTemplate, LoadingTemplate,
+    ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
 
 	/*
@@ -19,6 +30,12 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		settingsTemplate: _.template(SettingsTemplate),
 		menuTemplate:     _.template(ProfileMenuTemplate),
 		noResultsTemplate: _.template(NoResultsTemplate),
+
+    /**
+    * A jQuery selector for the element that the PortalListView should be inserted into
+    * @type {string}
+    */
+    portalListContainer: ".my-portals-container",
 
 		events: {
 			"click .section-link"          : "switchToSection",
@@ -42,6 +59,11 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
 		render: function (options) {
+      //Don't render anything if the user profiles are turned off
+      if( MetacatUI.appModel.get("enableUserProfiles") === false ){
+        return;
+      }
+
 			this.stopListening();
 			if(this.model) this.model.stopListening();
 
@@ -124,32 +146,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 
 		},
 
-		/* COMMENTED OUT for now because it was possibly over-engineering the problem... But keeping this code just in case its usable in the future...
-		 * the idea was to create an inherited view for groups that reuses a lot of the UserView code, but because it was tied to a collection (vs model) it was going to be a
-		 * lot of refactoring
-		 * -------
-		 * Checks if the current model is a person or a group, and renders this UserView for people and the UsersGroupView for groups
-		 */
-/*		checkType: function(){
-			//If this user is a group
-			if(this.model.get("type") == "group"){
-				var el = this.el;
-
-				//Create a User Group collection
-				var group = new UserGroup([], this.model.toJSON());
-				//PUll in the UserGroupView, an inherited view, and render that
-				require(["views/UserGroupView"], function(UserGroupView){
-					var groupView = new UserGroupView({ collection: group });
-					groupView.setElement(el);
-					groupView.render();
-				});
-
-			}
-			//For non-group (person) accounts, render the profile here
-			else
-				this.renderProfile();
-		},*/
-
 		renderProfile: function(){
 
 			//Insert the template first
@@ -215,32 +211,37 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 		},
 
 		renderSettings: function(){
+      //Don't render anything if the user profile settings are turned off
+      if( MetacatUI.appModel.get("enableUserProfileSettings") === false ){
+        return;
+      }
+
 			//Insert the template first
 			this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
 			this.$settings = this.$("[data-section='settings']");
 
-			if(MetacatUI.appModel.get("userProfiles")){
+			//Draw the group list
+			this.insertCreateGroupForm();
+			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
+			this.getGroups();
 
-				//Draw the group list
-				this.insertCreateGroupForm();
-				this.listenTo(this.model, "change:isMemberOf", this.getGroups);
-				this.getGroups();
+			//Listen for the identity list
+			this.listenTo(this.model, "change:identities", this.insertIdentityList);
+			this.insertIdentityList();
 
-				//Listen for the identity list
-				this.listenTo(this.model, "change:identities", this.insertIdentityList);
-				this.insertIdentityList();
+			//Listen for the pending list
+			this.listenTo(this.model, "change:pending", this.insertPendingList);
+			this.model.getPendingIdentities();
 
-				//Listen for the pending list
-				this.listenTo(this.model, "change:pending", this.insertPendingList);
-				this.model.getPendingIdentities();
+      //Render the portals subsection
+      this.renderMyPortals();
 
-				//Listen for updates to person details
-				this.listenTo(this.model, "change:lastName change:firstName change:email change:registered", this.updateModForm);
-				this.updateModForm();
+			//Listen for updates to person details
+			this.listenTo(this.model, "change:lastName change:firstName change:email change:registered", this.updateModForm);
+			this.updateModForm();
 
-				// init autocomplete fields
-				this.setUpAutocomplete();
-			}
+			// init autocomplete fields
+			this.setUpAutocomplete();
 
 			//Get the token right away
 			this.getToken();
@@ -308,6 +309,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			if(e){
 				e.preventDefault();
 			    var subsectionName = $(e.target).attr("data-section");
+          if( !subsectionName ){
+            subsectionName = $(e.target).parents("[data-section]").first().attr("data-section");
+          }
 			}
 
 			//Mark its links as active
@@ -1252,6 +1256,24 @@ define(['jquery', 'underscore', 'backbone', 'clipboard', 'collections/UserGroup'
 			});
 
 		},
+
+    /**
+    * Renders a list of portals that this user is an owner of.
+    */
+    renderMyPortals: function(){
+
+      //If my portals has been disabled, don't render the list
+      if( MetacatUI.appModel.get("showMyPortals") === false ){
+        return;
+      }
+
+      //Render the list of portals using the PortalListView
+      var portalListView = new PortalListView();
+      portalListView.render();
+      this.$(this.portalListContainer)
+          .html(portalListView.el);
+
+    },
 
 		//---------------------------------- Misc. and Utilities -----------------------------------------//
 

@@ -1,3 +1,6 @@
+<%
+	var portalTerm = MetacatUI.appModel.get("portalTermSingular") || "portal";
+%>
 <article id="Profile" class="profile">
 <h2 class="profile-title"><%=title%></h2>
 <section class="charts-container">
@@ -29,6 +32,19 @@
 			</div>
 		</section>
 	</section>
+	<% if(!hideMetadataAssessment){ %>
+	<section class="stripe metadata-assessment">
+		<section class="charts">
+			<h3>Metadata Assessment</h3>
+			<p>This graph shows the assessment score for all metadata in this <%= portalTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
+			<div class = "static-img-container">
+				<div id="metadata-assessment-loading" class="show-loading"></div>
+				<img id="metadata-assessment-graphic">
+			</div>
+		</section>
+	</section>
+	<% } %>
+	<% if(!hideDownloadsChart){ %>
 	<section class="stripe downloads">
 		<section class="charts">
 			<section class="row-fluid">
@@ -44,6 +60,8 @@
 			<div class="clear"></div>
 		</section>
 	</section>
+	<% } %>
+	<% if(!hideUpdatesChart){ %>
 	<section class="stripe updates">
 		<section class="charts">
 			<section class="updates">
@@ -56,6 +74,7 @@
 			</section>
 		</section>
 	</section>
+	<% } %>
 	<section class="stripe format-charts-container">
 		<section class="charts">
 			<section class="chart-title">	

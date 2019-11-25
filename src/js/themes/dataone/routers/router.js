@@ -246,7 +246,7 @@ function ($, _, Backbone) {
 
 			var viewChoice;
 
-			if(!username || !MetacatUI.appModel.get("userProfiles")){
+			if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
 				this.routeHistory.push("summary");
 
 				if(!MetacatUI.appView.statsView){
@@ -346,85 +346,85 @@ function ($, _, Backbone) {
 		},
 
     /**
-     * Render the project view based on the given name, id, or section
+     * Render the portal view based on the given name, id, or section
      */
-     renderProject: function(projectId, projectSection) {
-        var projectName;
-        var projectsMap = MetacatUI.appModel.get("projectsMap");
+     renderPortal: function(portalId, portalSection) {
+        var label;
+        var portalsMap = MetacatUI.appModel.get("portalsMap");
 
-        // Look up the project document seriesId by its registered name if given
-        if ( projectId ) {
-            if ( projectsMap ) {
+        // Look up the portal document seriesId by its registered name if given
+        if ( portalId ) {
+            if ( portalsMap ) {
                 // Do a forward lookup by key
-                if ( typeof (projectsMap[projectId] ) !== "undefined" ) {
-                    projectName = projectId;
-                    projectId = projectsMap[projectId];
+                if ( typeof (portalsMap[portalId] ) !== "undefined" ) {
+                    label = portalId;
+                    portalId = portalsMap[portalId];
                     // Then set the history
-                    if ( projectSection ) {
-                        this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                    if ( portalSection ) {
+                        this.routeHistory.push("portals/" + label + "/" + portalSection);
                     } else {
-                        this.routeHistory.push("projects/" + projectName);
+                        this.routeHistory.push("portals/" + label);
                     }
                 } else {
-                    // Try a reverse lookup of the project name by values
-                    projectName = _.findKey(projectsMap, function(value){
-                      return( value ==  projectId );
+                    // Try a reverse lookup of the portal name by values
+                    label = _.findKey(portalsMap, function(value){
+                      return( value ==  portalId );
                     });
 
-                    if ( typeof projectName !== "undefined" ) {
-                        if ( projectSection ) {
-                            this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                    if ( typeof label !== "undefined" ) {
+                        if ( portalSection ) {
+                            this.routeHistory.push("portals/" + label + "/" + portalSection);
                         } else {
-                            this.routeHistory.push("projects/" + projectName);
+                            this.routeHistory.push("portals/" + label);
                         }
                     } else {
 
-                      //Try looking up the project name with case-insensitive matching
-                      projectName = _.findKey(projectsMap, function(value, key){
-                        return( key.toLowerCase() == projectId.toLowerCase() );
+                      //Try looking up the portal name with case-insensitive matching
+                      label = _.findKey(portalsMap, function(value, key){
+                        return( key.toLowerCase() == portalId.toLowerCase() );
                       });
 
-                      //If a matching project name was found, route to it
-                      if( projectName ){
+                      //If a matching portal name was found, route to it
+                      if( label ){
 
-                        //Get the project ID from the map
-                        projectId = projectsMap[projectName];
+                        //Get the portal ID from the map
+                        portalId = portalsMap[label];
 
                         // Then set the history
-                        if ( projectSection ) {
-                          this.navigate("projects/" + projectName + "/" + projectSection, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName + "/" + projectSection);
+                        if ( portalSection ) {
+                          this.navigate("portals/" + label + "/" + portalSection, { trigger: false, replace: true });
+                          this.routeHistory.push("portals/" + label + "/" + portalSection);
                         } else {
-                          this.navigate("projects/" + projectName, { trigger: false, replace: true });
-                          this.routeHistory.push("projects/" + projectName);
+                          this.navigate("portals/" + label, { trigger: false, replace: true });
+                          this.routeHistory.push("portals/" + label);
                         }
                       }
                       else{
-                        // Fall back to routing to the project by id, not name
-                        this.routeHistory.push("projects/" + projectId);
+                        // Fall back to routing to the portal by id, not name
+                        this.routeHistory.push("portals/" + portalId);
                       }
                     }
                 }
             }
         } else {
-            // TODO: Show a ProjectsView here of the Projects collection (no projectId given)
+            // TODO: Show a PortalsView here of the Portals collection (no portalId given)
             return;
         }
 
-        if ( !MetacatUI.appView.projectView ) {
-          require(['views/project/ProjectView'], function(ProjectView){
-            MetacatUI.appView.projectView = new ProjectView({
-                          projectId: projectId,
-                          projectName: projectName,
-                          activeSection: projectSection
+        if ( !MetacatUI.appView.portalView ) {
+          require(['views/portals/PortalView'], function(PortalView){
+            MetacatUI.appView.portalView = new PortalView({
+                          portalId: portalId,
+                          label: label,
+                          activeSectionLabel: portalSection
                       });
-            MetacatUI.appView.showView(MetacatUI.appView.projectView);
+            MetacatUI.appView.showView(MetacatUI.appView.portalView);
           });
         } else {
-                  MetacatUI.appView.projectView.projectName = projectName;
-                  MetacatUI.appView.projectView.projectId = projectId;
-                  MetacatUI.appView.projectView.activeSection = projectSection;
-          MetacatUI.appView.showView(MetacatUI.appView.projectView);
+                  MetacatUI.appView.portalView.label = label;
+                  MetacatUI.appView.portalView.portalId = portalId;
+                  MetacatUI.appView.portalView.activeSectionLabel = portalSection;
+          MetacatUI.appView.showView(MetacatUI.appView.portalView);
         }
       },
 

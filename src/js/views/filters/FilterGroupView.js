@@ -52,28 +52,42 @@ define(['jquery', 'underscore', 'backbone',
       //Render each filter model in the FilterGroup model
       filters.each(function(filter, i){
 
-        //Depending on the filter type, create a filter view
-        switch( filter.type ){
-          case "Filter":
-            var filterView = new FilterView({ model: filter });
-            break;
-          case "BooleanFilter":
-            var filterView = new BooleanFilterView({ model: filter });
-            break;
-          case "ChoiceFilter":
-            var filterView = new ChoiceFilterView({ model: filter });
-            break;
-          case "DateFilter":
-            var filterView = new DateFilterView({ model: filter });
-            break;
-          case "NumericFilter":
-            var filterView = new NumericFilterView({ model: filter });
-            break;
-          case "ToggleFilter":
-            var filterView = new ToggleFilterView({ model: filter });
-            break;
-          default:
-            var filterView = new FilterView({ model: filter });
+        //Some filters are handled specially
+        //The isPartOf filter should be rendered as a ToggleFilter
+        if( filter.get("fields").includes("isPartOf") ){
+
+          //Set a trueValue on the model so it works with the ToggleView
+          if( filter.get("values").length && filter.get("values")[0] ){
+            filter.set("trueValue", filter.get("values")[0]);
+          }
+
+          //Create a ToggleView
+          var filterView = new ToggleFilterView({ model: filter });
+        }
+        else{
+          //Depending on the filter type, create a filter view
+          switch( filter.type ){
+            case "Filter":
+              var filterView = new FilterView({ model: filter });
+              break;
+            case "BooleanFilter":
+              var filterView = new BooleanFilterView({ model: filter });
+              break;
+            case "ChoiceFilter":
+              var filterView = new ChoiceFilterView({ model: filter });
+              break;
+            case "DateFilter":
+              var filterView = new DateFilterView({ model: filter });
+              break;
+            case "NumericFilter":
+              var filterView = new NumericFilterView({ model: filter });
+              break;
+            case "ToggleFilter":
+              var filterView = new ToggleFilterView({ model: filter });
+              break;
+            default:
+              var filterView = new FilterView({ model: filter });
+          }
         }
 
         //Render the view and append it's element to this view

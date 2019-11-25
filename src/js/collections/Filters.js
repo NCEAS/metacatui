@@ -11,18 +11,11 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
          */
         var Filters = Backbone.Collection.extend({
 
-            /* Reference to this collection's model.
-             * This collection can contain any type of Filter model:
-             * - Filter
-             * - BooleanFilter
-             * - ChoiceFilter
-             * - DateFilter
-             * - NumericFilter
-             * - ToggleFilter
-             */
-            model: Filter,
-
-            initialize: function(options) {
+            /**
+            * Creates a new Filters collection
+            * @constructs Filters
+            */
+            initialize: function(models, options) {
                 if (typeof options === "undefined") {
                     var options = {};
                 }
@@ -32,31 +25,168 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 }
             },
 
-            /*
+            /**
+            *  Creates the type of Filter Model based on the given filter type. This
+            * function is typically not called directly. It is used by Backbone.js when adding
+            * a new model to the collection.
+            * @param {object} attrs - A literal object that contains the attributes to pass to the model
+            * @property {string} attrs.filterType - The type of Filter to create
+            * @param {object} options - A literal object of additional options to pass to the model
+            * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter}
+            */
+            model: function(attrs, options){
+
+              //If no filterType was specified, but an objectDOM exists (from parsing a Collection
+              // or Portal document), get the filter type from the objectDOM node name
+              if( !attrs.filterType && attrs.objectDOM ){
+                switch( attrs.objectDOM.nodeName ){
+                  case "booleanFilter":
+                    return new BooleanFilter(attrs, options);
+
+                  case "dateFilter":
+                    return new DateFilter(attrs, options);
+
+                  case "numericFilter":
+                    return new NumericFilter(attrs, options);
+
+                  default:
+                    return new Filter(attrs, options);
+                }
+              }
+
+              switch ( attrs.filterType ) {
+
+                case "BooleanFilter":
+                    return new BooleanFilter(attrs, options);
+
+                case "ChoiceFilter":
+                    return new ChoiceFilter(attrs, options);
+
+                case "DateFilter":
+                    return new DateFilter(attrs, options);
+
+                case "NumericFilter":
+                    return new NumericFilter(attrs, options);
+
+                case "ToggleFilter":
+                    return new ToggleFilter(attrs, options);
+
+                default:
+                  return new Filter(attrs, options);
+              }
+
+            },
+
+            /**
              * Builds the query string to send to the query engine. Iterates over each filter
              * in the collection and adds to the query string.
              *
              * @return {string} The query string to send to Solr
              */
             getQuery: function() {
-                var queryFragments = [];
 
-                //Iterate over each Filter model in this collection
-                this.forEach(function(filterModel, i) {
+              //Create an array to store all the query pieces
+              var allGroupsQueryFragments = [],
+                  //The complete query string that eventually gets returned
+                  completeQuery = "",
+                  //Get the list of filters that use the 'id' field, since these are used differently
+                  idFilters = this.filter(function(filter){
+                    return filter.get("fields").includes("id");
+                  }),
+                  otherFilters = this.difference(idFilters),
+                  //Separate the filter models in this collection by their query group.
+                  groupedFilters = _.groupBy(otherFilters, function(m){
+                    return m.get("queryGroup");
+                  });
 
-                    //Get the Solr query string from this model
-                    var filterQuery = filterModel.getQuery();
+              //Filters that are used in the data catalog are treated specially
+              var catalogFilters = groupedFilters.catalog;
+              delete groupedFilters.catalog;
 
-                    //Add the filter query string to the overall array
-                    if ( filterQuery && filterQuery.length > 0 ) {
-                        queryFragments.push(filterQuery);
-                    }
-                }, this);
-                
-                return queryFragments.join("%20AND%20");
+              //Create a query string for each group of filters
+              _.mapObject(groupedFilters, function(filterModels, groupName) {
+
+                //Get a query string for this group of Filters
+                var groupQuery = this.getGroupQuery(filterModels);
+
+                //If there is a query string, add it to the array
+                if( groupQuery ){
+                  allGroupsQueryFragments.push(groupQuery);
+                }
+
+              }, this);
+
+              //Join the query fragments with an OR. By default, Filter model groups are ORed together
+              if( allGroupsQueryFragments.length ){
+                completeQuery += "(" + allGroupsQueryFragments.join("%20OR%20") + ")";
+              }
+
+              //Add the Data Catalog filters, if there are any
+              if( Array.isArray(catalogFilters) && catalogFilters.length ){
+
+                //If there are other filters besides the catalog filters, AND them
+                if( completeQuery.trim().length ){
+                  completeQuery += "%20AND%20";
+                }
+
+                //Get the query string for the catalog filters
+                completeQuery += this.getGroupQuery(catalogFilters);
+              }
+
+              //Create the grouped query for the id filters
+              var idFilterQuery = this.getGroupQuery(idFilters, "OR");
+
+              //Add the grouped query for the id filters
+              if( completeQuery.length && idFilterQuery.length ){
+                completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
+              }
+
+              //Return the completed query
+              return completeQuery;
+
             },
 
-            /*
+            /**
+            * Get a query string for a group of Filters.
+            * The Filters will be ANDed together, unless a different operator is given.
+            * @param {Filter[]} filterModels - The Filters to turn into a query string
+            * @param {string} [operator] - The oeprator to use between filter models
+            * @return {string} The query string
+            */
+            getGroupQuery: function(filterModels, operator){
+
+              //Default to the AND operator
+              if(typeof operator != "string"){
+                var operator = "AND";
+              }
+
+              //Start an array to contian the query fragments
+              var groupQueryFragments = [];
+
+              //For each Filter in this group, get the query string
+              _.each(filterModels, function(filterModel){
+
+                //Get the Solr query string from this model
+                var filterQuery = filterModel.getQuery();
+
+                //Add the filter query string to the overall array
+                if ( filterQuery && filterQuery.length > 0 ) {
+                  groupQueryFragments.push(filterQuery);
+                }
+              }, this);
+
+              //Join this group's query fragments with an OR operator
+              if( groupQueryFragments.length ){
+                return "(" + groupQueryFragments.join("%20" + operator + "%20") + ")"
+              }
+              //Otherwise, return an empty string
+              else{
+                return "";
+              }
+
+            },
+
+            /**
              * Given a Solr field name, determines if that field is set as a filter option
              */
             filterIsAvailable: function(field) {
@@ -118,15 +248,36 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                     fields: ["obsoletedBy"],
                     values: ["*"],
                     exclude: true,
-                    isInvisible: true
+                    isInvisible: true,
+                    queryGroup: "catalog"
                 }));
 
                 //Only search for metadata objects
                 this.add(new Filter({
                     fields: ["formatType"],
                     values: ["METADATA"],
-                    isInvisible: true
+                    matchSubstring: false,
+                    isInvisible: true,
+                    queryGroup: "catalog"
                 }));
+            },
+
+            /**
+            * Removes Filter models from this collection if they match the given field
+            * @param {string} field - The field whose matching filters that should be removed from this collection
+            */
+            removeFiltersByField: function(field){
+
+              var toRemove = [];
+
+              this.each(function(filter){
+                if(filter.get("fields").includes(field)){
+                  toRemove.push(filter);
+                }
+              });
+
+              this.remove(toRemove);
+
             }
             /*
             hasGeohashFilter: function() {

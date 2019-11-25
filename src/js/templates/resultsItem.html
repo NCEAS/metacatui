@@ -1,6 +1,13 @@
 <% if(memberNode && memberNode.logo){ %>
-	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>"><img src="<%=memberNode.logo%>" class="logo <%=memberNode.shortIdentifier%>" title="From the <%=memberNode.name%> repository" /></a>
+	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>">
+    <img src="<%=memberNode.logo%>" class="logo <%=memberNode.shortIdentifier%>" title="From the <%=memberNode.name%> repository" />
+  </a>
 <% } %>
+
+<% if(typeof logo == "string"){ %>
+	<a href="<%=viewURL%>"><img src="<%=logo%>" class="logo" /></a>
+<% } %>
+
 <div class="citation">
 </div>
 <div class="clear"></div>

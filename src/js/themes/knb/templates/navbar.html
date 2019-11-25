@@ -1,46 +1,58 @@
 <div class="navbar" >
   <div class="navbar-inner">
-      <ul class="nav">
-	    <li><a class="brand" href="<%= MetacatUI.root || "/" %>">knb</a></li>
-        <li><a href="<%= MetacatUI.root %>/about">About</a></li>
-        <li class="dropdown">
-        	<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
-        	<ul class="dropdown-menu">
-        		<li class="dropdown-header"> Data </li>
-        		<li><a href="<%= MetacatUI.root %>/data" class="show-new-search">Search</a></li>
-        		<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
-        	</ul>
-        </li>
-        <li><a href="<%= MetacatUI.root %>/submit" class="show-new-editor">Submit</a></li>
-        <li><a href="<%= MetacatUI.root %>/tools">Tools</a></li>
-        <li class="input input-append">
-        	<form id="direct-search" action="#">
-	        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label>
-	        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="jump-width-input direct-search subtle" form="direct-search"/>
-	        	<button class="btn direct-search" form="direct-search">Go</button>
-	        </form>
-        </li>
-        <li class="minimal-nav hidden">
-          <a href="<%=MetacatUI.appModel.get('baseUrl')%>">Hosted by the <span class="brand">knb</span></a>
-        </li>
-        <% if (loggedIn) { %>
-        	<li class="dropdown minimal-nav">
-				<a href="#" class="dropdown-toggle user" data-toggle="dropdown">
-					<i class="icon-user icon icon-on-left"></i><%=(firstName || formattedName)%><b class="caret"></b>
-				</a>
-				<ul class="dropdown-menu">
-					<li class="dropdown-header"><%=formattedName%></li>
-					<li><a href="<%= MetacatUI.root %>/submit" class="show-new-editor">Upload data</a></li>
-					<% if(MetacatUI.appModel.get("userProfiles")){ %><li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li> <% } %>
-					<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
-					<li class="divider"></li>
-					<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
-				</ul>
-			</li>
-        <% } else { %>
-        		<li id="SignIn" class="minimal-nav"><a href="<%= MetacatUI.root %>/signin">Sign In</a></li>
-       <%  } %>
+      <a class="brand" href="<%= MetacatUI.root || "/" %>">knb</a>
+      <a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
+      <nav role="navigation" itemtype="http://schema.org/SiteNavigationElement">
+        <ul class="nav">
+          <li><a href="<%= MetacatUI.root %>/about">About</a></li>
+          <li class="dropdown">
+          	<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
+          	<ul class="dropdown-menu hidden">
+          		<li class="dropdown-header"> Data </li>
+          		<li><a href="<%= MetacatUI.root %>/data" class="show-new-search">Search</a></li>
+          		<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
+          	</ul>
+          </li>
+          <li><a href="<%= MetacatUI.root %>/submit" class="show-new-editor">Submit</a></li>
+          <li><a href="<%= MetacatUI.root %>/tools">Tools</a></li>
+          <li class="input input-append">
+          	<form id="direct-search" action="#">
+  	        	<label class="tooltip-this" data-title="Go directly to a dataset by pasting its full DOI or ID here.">Jump to:</label>
+  	        	<input type="text" name="direct-search" value="" placeholder="DOI or ID" class="jump-width-input direct-search subtle" form="direct-search"/>
+  	        	<button class="btn direct-search" form="direct-search">Go</button>
+  	        </form>
+          </li>
+          <% if (loggedIn) { %>
+          	<li class="dropdown minimal-nav">
+      				<a href="#" class="dropdown-toggle user" data-toggle="dropdown">
+      					<i class="icon-user icon icon-on-left"></i><span class="user-name"><%=(firstName || formattedName)%></span><b class="caret"></b>
+      				</a>
+      				<ul class="dropdown-menu hidden">
+      					<li class="dropdown-header"><%=formattedName%></li>
+      					<li><a href="<%= MetacatUI.root %>/submit" class="show-new-editor">Upload data</a></li>
+      					<% if(MetacatUI.appModel.get("enableUserProfiles")){ %><li><a href="<%= MetacatUI.root %>/profile/<%=username%>">My profile</a></li> <% } %>
+      					<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
+                <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+                  <li>
+                    <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
+                      My <%= MetacatUI.appModel.get("portalTermPlural") %>
+                      <span class="new-icon">
+                        <i class="icon icon-star icon-on-right"></i>
+                        NEW
+                      </span>
+                    </a>
+                  </li>
+                <% } %>
+                <li class="divider"></li>
+      					<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
+      				</ul>
+  			     </li>
+             <li class="edit-portal-link-container minimal-nav"></li>
+          <% } else { %>
+          		<li id="SignIn" class="minimal-nav"><a href="<%= MetacatUI.root %>/signin">Sign In</a></li>
+         <%  } %>
 
-      </ul>
+        </ul>
+      </nav>
   </div><!-- /.navbar-inner -->
 </div><!-- /.navbar -->

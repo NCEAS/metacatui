@@ -1,0 +1,56 @@
+<aside id="sidebar" class="auto-height filter-groups-container"></aside>
+
+		<!--CONTENT AREA-->
+		<div id="results-container" class="auto-height">
+
+			<div id="results-view">
+				<% if((typeof gmaps !== "undefined") && (gmaps)){ %>
+					<div class="map-toggle-container">
+						<a class="toggle-map" href=""><i class="icon icon-double-angle-left"></i> Show Map</a>
+					</div>
+				<% } %>
+				<div id="results-header" class="row-fluid result-header">
+
+					<!-- count stats -->
+					<div class="result-header-count">
+						<div id="statcounts"></div>
+							<div class="sort-by">
+								<label for="sortOrder">Sort by</label>
+								<select id="sortOrder">
+									<option <% if (searchResultsRef.sort == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
+									<option <% if (searchResultsRef.sort == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
+									<option <% if (searchResultsRef.sort == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
+									<option <% if (searchResultsRef.sort == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
+									<% if (searchModelRef.get("sortByReads")){ %><option <% if (searchResultsRef.sort == "read_count_i+asc") { print('selected="selected"'); } %> value="read_count_i+desc">Popularity</option><% } %>
+								</select>
+							</div>
+					</div>
+
+					<div class="row-fluid pagination pagination-centered">
+						<div class="resultspager"></div>
+					</div>
+				</div>
+
+        <div id="filter-help-text"></div>
+        
+				<!-- search results here -->
+				<div id="results" class="search-results"></div>
+
+				<!-- pager -->
+				<div class="row-fluid pagination pagination-centered">
+					<div class="resultspager"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="map-container" class="auto-height">
+			<div class="map-toggle-container">
+				<a class="toggle-map" href="">Hide Map <i class="icon icon-double-angle-right"></i></a>
+
+				<% var checked = useMapBounds ? 'checked="checked"' : ''; %>
+				<label class="toggle-map-filter">Limit my search to the map area</label>
+				<input type="checkbox" name="map" <%=checked%> class="toggle-map-filter" />
+			</div>
+		</div>
+
+		<div class="clear"></div>

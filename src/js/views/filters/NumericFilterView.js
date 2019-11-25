@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone',
       this.$el.html( this.template( this.model.toJSON() ) );
 
       //If a range of values is allowed, show the filter as a numeric slider
-      if( this.model.get("range") && (this.model.get("minDefault") || this.model.get("maxDefault")) ){
+      if( this.model.get("range") && (this.model.get("rangeMin") || this.model.get("rangeMax")) ){
 
         var view = this;
 
@@ -45,8 +45,8 @@ define(['jquery', 'underscore', 'backbone',
         this.$('.slider').slider({
             range: true,
             disabled: false,
-            min: this.model.get("minDefault"),  //sets the minimum on the UI slider on initialization
-            max: this.model.get("maxDefault"),   //sets the maximum on the UI slider on initialization
+            min: this.model.get("rangeMin"),  //sets the minimum on the UI slider on initialization
+            max: this.model.get("rangeMax"),   //sets the maximum on the UI slider on initialization
             values: [ this.model.get("min"), this.model.get("max") ], //where the left and right slider handles are
             stop: function( event, ui ) {
 
@@ -128,7 +128,7 @@ define(['jquery', 'underscore', 'backbone',
 
       //Send this event to Google Analytics
       if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-        ga("send", "event", "project search", "filter, Data Year", minVal + " to " + maxVal);
+        ga("send", "event", "portal search", "filter, Data Year", minVal + " to " + maxVal);
       }
 
     },
@@ -139,11 +139,11 @@ define(['jquery', 'underscore', 'backbone',
     resetSlider: function(){
 
       //Set the min and max values on the slider widget
-      this.$( ".slider" ).slider( "option", "values", [ this.model.get("minDefault"), this.model.get("maxDefault") ] );
+      this.$( ".slider" ).slider( "option", "values", [ this.model.get("rangeMin"), this.model.get("rangeMax") ] );
 
       //Reset the min and max values
-      this.$('input.min').val( this.model.get("minDefault") );
-      this.$('input.max').val( this.model.get("maxDefault") );
+      this.$('input.min').val( this.model.get("rangeMin") );
+      this.$('input.max').val( this.model.get("rangeMax") );
 
     }
 

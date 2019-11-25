@@ -200,6 +200,20 @@
 		word-wrap: break-word;
 	}
 
+/* Portal editor
+-------------------------------------------------- */
+
+/* Theme specific colours for the add section 'button' images */
+
+.port-editor-section svg .theme-primary-fill{
+	fill: #660033
+}
+.port-editor-section svg .theme-secondary-fill{
+	fill: #1C6E84
+}
+.port-editor-section svg .theme-accent-fill{
+	fill: #91285f
+},
 
 /* FORM/INPUT CUSTOMIZATIONS
 -------------------------------------------------- */
