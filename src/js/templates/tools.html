@@ -1,31 +1,36 @@
 <article id="Tools">
 	<div class="container">
-		<div class="row-fluid">
+		<div class="row-fluid example">
 			<div class="text-left">
 				<h2>
-					<i class="icon icon-cog"></i> <a name="tools">Tools</a>
+					<a name="tools"></a>
+					<i class="icon icon-cog"></i>
+					Tools
 				</h2>
 				<p class="lead">Over the years, many tools have been developed
 					to facilitate effective data management, archiving content, and
 					retrieving data for synthetic analysis projects.</p>
 			</div>
 		</div>
-	
 		<hr/>
-		<div class="row-fluid">
+		<div class="row-fluid example">
 			<div class="text-left">
 				<h3>
-					<i class="icon icon-table"></i> <a name="morpho">Morpho</a>
+					<a name="morpho"></a>
+					<i class="icon icon-table"></i>
+					Morpho
 				</h3>
 				<p class="lead">Data management for earth, environmental and ecological scientists.</p>
-        <img class="pull-right" style="height: auto;width: 150px; margin: 10px 40px 10px 20px" alt="Morpho image" src="<%= MetacatUI.root %>/img/morpho-image.png">
-				<p><a href="http://knb.ecoinformatics.org">Morpho</a> allows researchers to create metadata, (i.e. describe
+        <img class="pull-right" style="height: auto;width: 150px; margin: 10px 40px 10px 20px" alt="Morpho image" src="<%= MetacatUI.root %>/img/morpho-image.png?v=<%=MetacatUI.metacatUIVersion%>">
+				<p>Morpho allows researchers to create metadata, (i.e. describe
 					their data in a standardized format), and create a catalog of data
-					& metadata upon which to query, edit and view data collections. In
+					&amp; metadata upon which to query, edit and view data collections. In
 					addition, it also provides the means to access network servers -
 					like the KNB - in order to query, view and retrieve all relevant,
-					public ecological data! 
-					<ul class="plain-list indent">
+					public ecological data!
+					Check the <a href="https://knb.ecoinformatics.org/software/dist/MorphoUserGuide.pdf">Morpho User Guide</a> for complete details.
+					</p>
+					<ul>
 						<li>Create and Edit EML metadata</li>
 						<li>Search for existing data packages</li>
 						<li>View and download data packages</li>
@@ -33,20 +38,73 @@
 						<li>Specify Access Control rules for your data</li>
 						<li>Share and publish your data via the KNB</li>
 					</ul>
+
+				<p class="lead">Download the Morpho data management application.
 				</p>
+				<p>
+					Easy-to-use installers are available for various platforms. For
+					windows and mac versions, users need to double click the
+					installers. For linux version, users need to run "java -jar
+					morpho-version-linux.jar". <span class="text-info">To run
+					Morpho, you must have Java 1.7 or later installed on your
+					computer.</span>
+				</p>
+				<ul>
+					<li><a href="https://knb.ecoinformatics.org/software/dist/morpho-1.11.0.exe">Windows <i
+							class="icon-download"></i></a></li>
+					<li><a href="https://knb.ecoinformatics.org/software/dist/morpho-1.11.0-linux.jar">Linux
+							<i class="icon-download"></i>
+					</a></li>
+					<li><a href="https://knb.ecoinformatics.org/software/dist/morpho-1.11.0-mac.jar">Mac OSX
+							<i class="icon-download"></i>
+					</a>
+					<li>
+					<li><a href="https://knb.ecoinformatics.org/software/dist">Older Versions <i class="icon-double-angle-right"></i></a></li>
+				</ul>
 			</div>
 		</div>
-
 		<hr/>
-		<div class="row-fluid">
+		<div class="row-fluid example">
 			<div class="text-left">
 				<h3>
-					<i class="icon icon-cloud-upload"></i> <a name="metacat">Metacat</a>
+					<a name="rdataone"></a>
+					<i class="icon icon-code"></i>
+					rDataONE
+				</h3>
+				<p class="lead">An R package for accessing the KNB and other DataONE repositories.</p>
+        <img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 110px 0px" alt="rDataONE image" src="<%= MetacatUI.root %>/img/rDataONE-logo-256px.png?v=<%=MetacatUI.metacatUIVersion%>">
+				<p>
+		          rDataONE provides the ability to seamlessly access and
+		          contribute data from within the R programming language to
+		          various DataONE repositories, including the KNB.  By accessing
+		          data using a persistent DataONE identifier, R scripts become
+		          significatly more portable -- any user with the script can run
+		          it because all of the data is accessed directly from the KNB
+		          or other repositories.  Also, as much data is generated within
+		          R, we have made it seamless to upload data objects, assign
+		          them an identifier (including a DOI), and provide metadata so
+		          that others can use the data in their own analyses and models.
+				</p>
+			    <p>Install rDataONE from CRAN:
+                    <code>install.packages("rdataone")</code>
+				<p>
+					<a href="https://github.com/DataONEorg/rdataone" target="_external">More about rDataONE <i class="icon-double-angle-right"></i></a>
+				</p>
+
+			</div>
+		</div>
+		<hr/>
+		<div class="row-fluid example">
+			<div class="text-left">
+				<h3>
+					<a name="metacat"></a>
+					<i class="icon icon-cloud-upload"></i>
+					Metacat
 				</h3>
 				<p class="lead">A flexible metadata database.</p>
-        		<img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 0px 0px" alt="Metacat image" src="<%= MetacatUI.root %>/img/metacat-logo-256px.png">
+        <img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 0px 0px" alt="Metacat image" src="<%= MetacatUI.root %>/img/metacat-logo-256px.png?v=<%=MetacatUI.metacatUIVersion%>">
 				<p>As a repository for data and metadata (documentation
-					about data) it helps scientists find, understand and effectively
+					about data), Metacat helps scientists find, understand and effectively
 					use data sets they manage or that have been created by others.
 					Thousands of data sets are currently documented in a standardized
 					way and stored in Metacat systems around the world, providing the scientific
@@ -54,30 +112,42 @@
 					are well and consistently described - can be easily searched,
 					compared, merged, or used in other ways.
 				</p>
-				
-				<p>	
-					<a href="http://knb.ecoinformatics.org/knb/docs/">More about Metacat <i class="icon-circle-arrow-right"></i></a>
+
+				<p>
+					<a href="https://knb.ecoinformatics.org/knb/docs">More about Metacat <i class="icon-double-angle-right"></i></a>
 				</p>
 
 			</div>
 		</div>
-		
-		<div class="clear"></div>
-		
+
 		<hr/>
-		<div class="row-fluid">
+		<div class="row-fluid example">
 			<div class="text-left">
 				<h3>
-					<i class="icon icon-file-text"></i> <a name="eml">EML - Ecological Metadata Language</a>
+				 	<a name="eml"></a>
+					<i class="icon icon-file-text"></i>
+					EML - Ecological Metadata Language
 				</h3>
 				<p class="lead">A metadata standard developed for the earth, environmental and ecological sciences.</p>
-				<p>It is based on prior work done by the Ecological Society of America and associated efforts. 
+				<p>It is based on prior work done by the Ecological Society of America and associated efforts.
 					EML is implemented as a series of XML document types that can by used in a modular and extensible manner to document scientific research data.
+				</p>
+				<p>
+					<a href="https://eml.ecoinformatics.org/">More about EML <i class="icon-double-angle-right"></i></a>
 				</p>
 
 			</div>
 		</div>
-
+		<hr/>
+		<div class="example row-fluid">
+		   <h3>KNB Developer Tools</h3>
+			<p>
+				The KNB supports the DataONE REST API for automating the process of
+                uploading, downloading, and searching for data on the KNB using scripted
+                languages such as shell, R, Matlab, and Python, among others.
+            </p>
+            <a href="<%= MetacatUI.root %>/api">Learn more about the KNB Developer Tools and API <i class="icon icon-on-right icon-double-angle-right"></i></a>
+		</div>
 
 	</div>
 </article>

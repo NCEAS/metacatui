@@ -21,7 +21,6 @@ MetacatUI.themeMap =
         'templates/metadataControls.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/metadataControls.html',
         'templates/altHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/altHeader.html',
         'templates/defaultHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
-        'templates/tools.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/tools.html',
         'templates/about.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/about.html',
         'templates/preservation.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/preservation.html'
     }
