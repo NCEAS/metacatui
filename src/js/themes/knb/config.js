@@ -14,6 +14,7 @@ MetacatUI.themeMap =
 
         // Templates include extension
         'templates/app.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/app.html',
+        'templates/jsonld.txt' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/jsonld.txt',
         'templates/navbar.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/navbar.html',
         'templates/featuredData.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/featuredData.html',
         'templates/footer.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/footer.html',

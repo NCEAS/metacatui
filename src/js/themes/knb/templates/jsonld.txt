@@ -1,0 +1,42 @@
+{
+    "@context": {
+        "@vocab": "http://schema.org/",
+        "datacite": "http://purl.org/spar/datacite/"
+    },
+    "@type": ["Service", "ResearchProject"],
+    "@id": "https://knb.ecoinformatics.org",
+    "identifier": {
+        "@type": ["PropertyValue", "datacite:OrganizationIdentifier"],
+        "propertyID": "DOI",
+        "value": "10.17616/R3KK5T",
+        "url": "http://doi.org/10.17616/R3KK5T"
+    },
+    "name": "Knowledge Network for Biocomplexity",
+    "legalName": "Knowledge Network for Biocomplexity",
+    "sameAs": [
+        "https://www.re3data.org/repository/r3d100010092",
+        "http://doi.org/10.17616/R3KK5T",
+        "urn:node:KNB"
+    ],
+    "url": "https://knb.ecoinformatics.org",
+    "description": "The Knowledge Network for Biocomplexity (KNB) is an international repository intended to facilitate ecological and environmental research.",
+    "category": [
+        "Environmental Research"
+    ],
+    "provider": {
+        "@id": "https://knb.ecoinformatics.org"
+    },
+    "parentOrganization": {
+        "@type": "Organization",
+        "legalName": "National Center for Ecological Analysis and Synthesis",
+        "alternateName": "NCEAS",
+        "url": "http://nceas.ucsb.edu",
+        "parentOrganization": {
+            "@type": "Organization",
+            "legalName": "University of California, Santa Barbara",
+            "alternateName": "UCSBM",
+            "url": "http://ucsb.edu"
+        }
+    }
+  }
+}
