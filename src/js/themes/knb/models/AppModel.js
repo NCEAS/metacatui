@@ -212,7 +212,7 @@ define(['jquery', 'underscore', 'backbone'],
       * when they are not associated with a whitelisted subject in the `limitPortalsToSubjects` list
       * @type {string}
       */
-      portalEditNotAuthCreateMessage: "You have not been authorized to create new portals. Please contact us with any questions.",
+      portalEditNotAuthCreateMessage: "Creating new portals is a feature currently only available to a select group of Beta testers. You should still be able to access your existing portals. Please contact us with any questions at the email address below.",
 
       /**
       * This message will display when a user tries to access the Portal Editor for a portal
