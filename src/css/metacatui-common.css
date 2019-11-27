@@ -3442,6 +3442,7 @@ img[src*="googleapis.com/"].georegion-map{
 .portal-view .toc-ul{
 	position: sticky;
 	position: -webkit-sticky;
+  background-color: #2c6f90; /* Back-up color for IE */
   background-color: var(--portal-primary-color);
   margin-left: -20px;
   padding: 0px;
@@ -3477,6 +3478,7 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .Editor.Portal .toc li.active > a,
 .portal-view .toc li.active > a {
+  background-color: #2c7e90; /* Back-up color for IE */
 	background-color: var(--portal-secondary-color);
 }
 
@@ -3576,6 +3578,7 @@ i.toc-sub-item{
 }
 .portal-display-image .portal-display-text,
 .portal-editor .portal-display-text{
+  background-color: rgba(44, 111, 144, .5);
   background-color: var(--portal-primary-color-transparent);
 }
 .portal-display-image .portal-display-text *,
@@ -3676,10 +3679,12 @@ i.toc-sub-item{
 /*** Colors used in the Portal View ***/
 .portal-view .toc .icon,
 .portal-editor .toc .icon{
+  color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 }
 .portal-view a:not(.btn):hover,
 .portal-editor a:not(.btn):hover{
+  color: #2c7e90; /* Back-up color for IE */
 	color: var(--portal-secondary-color);
 }
 #portal-section-tabs{
@@ -3708,10 +3713,12 @@ i.toc-sub-item{
   left: 0;
 }
 .portal-editor #portal-section-tabs .section-link-container.active:hover::after {
+  border-bottom: 1px solid #2c7e90; /* Back-up color for IE */
 	border-bottom: 1px solid var(--portal-secondary-color);
 }
 
 #portal-section-tabs .section-link-container{
+  background-color: #2c6f90; /* Back-up color for IE */
   background-color: var(--portal-primary-color);
   border: 0px;
   margin-bottom: 0px;
@@ -3750,6 +3757,7 @@ i.toc-sub-item{
   background-color: #FFF;
 }
 .portal-view #portal-section-tabs .section-link-container.active{
+  background-color: #2c7e90; /* Back-up color for IE */
   background-color: var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container.error{
@@ -3779,6 +3787,7 @@ i.toc-sub-item{
 	max-width: 44px;
 }
 #portal-section-tabs .active .section-menu-link{
+  color: #2c6f90; /* Back-up color for IE */
   color: var(--portal-primary-color);
 }
 #portal-section-tabs .portal-section-link[contenteditable="true"]{
@@ -3797,6 +3806,7 @@ i.toc-sub-item{
 #portal-section-tabs .section-link-container.page-AddPage .portal-section-link:hover,
 #portal-section-tabs .section-link-container.page-Settings .portal-section-link:hover{
   background-color: transparent;
+  color: #2c7e90; /* Back-up color for IE */
   color: var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container.page-AddPage .portal-section-link{
@@ -3804,10 +3814,12 @@ i.toc-sub-item{
   width: 100%;
 }
 #portal-section-tabs .section-link-container.active .portal-section-link{
+  color: #2c6f90; /* Back-up color for IE */
   color: var(--portal-primary-color);
 }
 #portal-section-tabs .section-link-container.active:hover,
 #portal-section-tabs .section-link-container:hover {
+  background-color: #2c7e90; /* Back-up color for IE */
   background-color: var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container:hover .portal-section-link,
@@ -3831,6 +3843,7 @@ i.toc-sub-item{
   color: #b94a48;
 }
 #portal-section-tabs .section-link-container .dropdown-menu>li>a{
+  color: #2c6f90; /* Back-up color for IE */
   color: var(--portal-primary-color);
   border-bottom: 1px solid #CCC;
   line-height: 25px;
@@ -3846,23 +3859,28 @@ i.toc-sub-item{
 }
 .portal-view .toc-ul li > a:hover,
 .portal-editor .toc-ul li > a:hover{
+  background-color: #2c7e90; /* Back-up color for IE */
   background-color: var(--portal-secondary-color);
 	color: white;
 }
 .portal-view .result-row .citation .title,
 .portal-editor .result-row .citation .title{
+  color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 }
 .portal-view .applied-filter,
 .portal-editor .applied-filter{
+  background-color: #2c6f90; /* Back-up color for IE */
 	background-color: var(--portal-primary-color);
 }
 .portal-view .filter-group-link a,
 .portal-editor .filter-group-link a{
+  color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 }
 .portal-view .filter-group-link a:hover,
 .portal-editor .filter-group-link a:hover{
+  color: #2c7e90; /* Back-up color for IE */
 	color: var(--portal-secondary-color);
 }
 .portal-view .filter-group-link.active a,
@@ -3875,14 +3893,17 @@ i.toc-sub-item{
 .portal-view .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch,
 .portal-editor .can-toggle input[type="checkbox"]:checked ~ label .can-toggle-switch,
 .portal-editor .can-toggle input[type="checkbox"]:checked:focus ~ label .can-toggle-switch{
+  background-color: #2c6f90; /* Back-up color for IE */
 	background-color: var(--portal-primary-color);
 }
 .portal-view .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch,
 .portal-editor .can-toggle input[type="checkbox"]:checked:hover ~ label .can-toggle-switch{
+  background-color: #2c7e90; /* Back-up color for IE */
 	background-color: var(--portal-secondary-color);
 }
 .portal-view .ui-slider-range,
 .portal-editor .ui-slider-range{
+  background-color: #2c6f90; /* Back-up color for IE */
 	background-color: var(--portal-primary-color);
 }
 .portal-view .result-row .citation a:hover,
@@ -3891,6 +3912,7 @@ i.toc-sub-item{
 .portal-editor .result-row .citation a:hover,
 .portal-editor .result-row .citation a:hover .title,
 .portal-editor .result-row .citation a:hover .id{
+  color: #2c7e90; /* Back-up color for IE */
 	color: var(--portal-secondary-color);
 }
 .portal-view .result-row .icon,
@@ -3899,12 +3921,15 @@ i.toc-sub-item{
 }
 .portal-view .profile .quick-stats circle,
 .portal-editor .profile .quick-stats circle{
+  stroke: #2c6f90; /* Back-up color for IE */
 	stroke:  var(--portal-primary-color);
 }
 .portal-view svg .packages,
 .portal-view .chart-title .packages,
 .portal-editor svg .packages,
 .portal-editor .chart-title .packages{
+  color: #2c6f90; /* Back-up color for IE */
+  fill: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
 }
@@ -3916,6 +3941,9 @@ i.toc-sub-item{
 .portal-view .fallback.metadata,
 .portal-editor svg .metadata,
 .portal-editor .fallback.metadata{
+  color: #2c7e90; /* Back-up color for IE */
+  fill: #2c7e90; /* Back-up color for IE */
+  stroke: #2c7e90; /* Back-up color for IE */
 	color: var(--portal-secondary-color);
 	fill: var(--portal-secondary-color);
 	stroke: var(--portal-secondary-color);
@@ -3930,6 +3958,7 @@ i.toc-sub-item{
 }
 .portal-view #portal-members a,
 .portal-editor #portal-members a{
+  color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 }
 
