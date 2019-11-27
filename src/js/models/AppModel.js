@@ -183,6 +183,26 @@ define(['jquery', 'underscore', 'backbone'],
       limitPortalsToSubjects: [],
 
       /**
+      * This message will display when a user tries to create a new Portal in the PortalEditor
+      * when they are not associated with a whitelisted subject in the `limitPortalsToSubjects` list
+      * @type {string}
+      */
+      portalEditNotAuthCreateMessage: "You have not been authorized to create new portals. Please contact us with any questions.",
+
+      /**
+      * This message will display when a user tries to access the Portal Editor for a portal
+      * for which they do not have write permission.
+      * @type {string}
+      */
+      portalEditNotAuthEditMessage: "The portal owner has not granted you permission to edit this portal. Please contact the owner to be given edit permission.",
+
+      /**
+      * This message will display when a user tries to create a new portal when they have exceeded their DataONE portal quota
+      * @type {string}
+      */
+      portalEditNoQuotaMessage: "You have already reached the maximum number of portals for your membership level.",
+
+      /**
       * The list of fields that should be required in the portal editor.
       * Set individual properties to `true` to require them in the portal editor.
       * @type {Object}

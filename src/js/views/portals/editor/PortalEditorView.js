@@ -152,10 +152,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
             }
             else {
               // generate error message
-              var msg = "The portal owner has not granted you access to edit this portal. Please contact the owner to be given edit access.";
+              var msg = MetacatUI.appModel.get("portalEditNotAuthEditMessage");
 
               //Show the not authorized error message
-              MetacatUI.appView.showAlert(msg, "alert-error", this.$el);
+              MetacatUI.appView.showAlert(msg, "alert-error non-fixed", this.$el);
             }
           });
 
@@ -185,19 +185,18 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
             else{
               //If the user doesn't have quota left, display this message
               if( MetacatUI.appUserModel.get("portalQuota") == 0 ){
-                var errorMessage = "You have already reached the maximum number of portals for your membership level.";
+                var errorMessage = MetacatUI.appModel.get("portalEditNoQuotaMessage");
               }
               //Otherwise, display a more generic error message
               else{
-                var errorMessage = "You have not been authorized to create new portals. " +
-                                   "Please contact us with any questions.";
+                var errorMessage = MetacatUI.appModel.get("portalEditNotAuthCreateMessage");
               }
 
               //Hide the loading icon
               this.hideLoading();
 
               //Show the error message
-              MetacatUI.appView.showAlert(errorMessage, "alert-error", this.$el);
+              MetacatUI.appView.showAlert(errorMessage, "alert-error non-fixed", this.$el);
             }
 
             //Reset the isAuthorizedCreatePortal attribute
@@ -649,7 +648,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       var notFoundMessage = "The portal \"" + (this.model.get("label") || this.portalIdentifier) +
                             "\" doesn't exist.";
 
-      MetacatUI.appView.showAlert(notFoundMessage, "alert-error", this.$el, undefined, { remove: true });
+      MetacatUI.appView.showAlert(notFoundMessage, "alert-error non-fixed", this.$el, undefined, { remove: true });
     },
 
     /**

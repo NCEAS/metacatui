@@ -6085,14 +6085,19 @@ textarea.medium{
 #editor-body .alert {
     position: relative;
 }
-.Editor #Content > .alert-container{
+.Editor #Content > .alert-container .alert{
 	position: fixed;
-    left: 0px;
-    min-width: 100%;
-    z-index: 14;
-    margin-left: 0px;
-    top: 0px;
-		max-width: 100%;
+  left: 0px;
+  min-width: 100%;
+  z-index: 14;
+  margin-left: 0px;
+  top: 0px;
+	max-width: 100%;
+}
+.Editor #Content > .alert-container .alert.non-fixed{
+	position: relative;
+  min-width: auto;
+  z-index: 0;
 }
 .Editor #Content > .alert-container .alert{
 	padding: 20px;
