@@ -6131,6 +6131,7 @@ textarea.medium{
 .Editor #Content > .alert-container .alert{
 	padding: 20px;
 	font-weight: bold;
+  box-sizing: border-box;
 	border-radius: 0px;
 	-moz-border-radius: 0px;
 	-webkit-border-radius: 0px;
