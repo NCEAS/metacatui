@@ -48,23 +48,68 @@
 		</section>
 	</section>
 	<% } %>
-	<% if(!hideDownloadsChart){ %>
-	<section class="stripe downloads">
-		<section class="charts">
-			<section class="row-fluid">
-				<div id="downloads-title" class="show-loading span4"></div>
-				<div class="span8">
-					<h3>Downloads</h3>
-					<p>The number of individual metadata and data files downloaded over time. These download counts are partially 
-					<a href="http://www.projectcounter.org/" target="_blank">COUNTER</a> compliant, meaning that downloads from some Internet robots and 
-					repeat downloads within a certain time window are excluded.</p>
-				</div>
-			</section>
-			<div class="download-chart chart"></div>
-			<div class="clear"></div>
-		</section>
+
+	<% if(!hideCitationsChart){ %>
+	<section id="user-citations" class="stripe metrics">
+		<div class="metrics-title">
+			<h3><i class='icon icon-quote-right'></i></h3>
+			<h3 class="citation-count"></h3>
+			<h3>Citations</h3>
+		</div>
+		<div class="citations-metrics-list">
+			<div class="metric-chart-loading">
+                <i class="icon-spinner icon-spin icon-large loading icon"></i>
+            </div>
+		</div>
+		<div class="clear"></div>
 	</section>
 	<% } %>
+	
+
+	<% if(!hideDownloadsChart){ %>
+		<section id="user-downloads" class="stripe metrics">
+			<div class="metrics-title">
+				<h3><i class='icon icon-cloud-download'></i></h3>
+				<h3 class="download-count"></h3>
+				<h3>Downloads</h3>
+			</div>
+			<div class="downloads-metrics">
+				<div class="metric-description">
+					<p>For all versions of this data set, the number of times that all or part of this data set was downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
+					<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
+				</div>
+				<div id="user-downloads-chart" class='metric-chart'>
+					<div class="metric-chart-loading">
+						<i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
+					</div>
+				</div>
+			</div>
+			<div class="clear"></div>
+		</section>
+	<% } %>
+
+	<% if(!hideViewsChart){ %>
+	<section id="user-views" class="stripe metrics">
+		<div class="metrics-title">
+			<h3><i class='icon icon-eye-open'></i></h3>
+			<h3 class="view-count"></h3>
+			<h3>Views</h3>
+		</div>
+		<div class="views-metrics">
+			<div class="metric-description">
+				<p>For all versions of this data set, the number of times that all or part of this data set was viewed over time. These view counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that views from some Internet robots and repeat views within a certain time window are excluded.</p>
+				<p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
+			</div>
+			<div id="user-views-chart" class='metric-chart'>
+                <div class="metric-chart-loading">
+	                <i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
+                </div>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</section>
+	<% } %>
+
 	<% if(!hideUpdatesChart){ %>
 	<section class="stripe updates">
 		<section class="charts">
@@ -92,6 +137,7 @@
 			</div>
 		</section>
 	</section>
+	
 	<section id="user-data-range" class="stripe metrics">
 		<div class="metrics-title">
 			<div id="coverage-title"></div>
@@ -103,6 +149,7 @@
 			<div class="clear"></div>
 		</div>
 	</section>
+
 	<!-- <section class="stripe" id="quality-chart">
 		<section class="charts">
 			<section>	
@@ -113,17 +160,5 @@
 			</div>
 		</section>
 	</section> -->
-
-	<% if((userType == "person") || (userType == "user")){ %>
-		<section id="user-groups" class="stripe">
-			<div class="metrics-title">
-				<h3><i class="icon icon-group"></i>User groups </h3>
-				<p>The groups that this user belongs to.</p>
-				<div class="clearfix"></div>
-			</div>
-			<div id="profile-group-list-container">
-			</div>
-		</section>
-	<% } %>
 </section>
 </article>
