@@ -1,21 +1,21 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'collections/Citations', 'models/MetricsModel', 'views/MetricsChartView', 'text!templates/metricModalTemplate.html', 'views/CitationListView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'collections/Citations', 'models/MetricsModel', 'models/Stats', 'views/MetricsChartView', 'text!templates/metricModalTemplate.html', 'views/CitationListView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel, StatsModel, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 
 	var StatsView = Backbone.View.extend({
 
 		el: '#Content',
 
-    model: null,
+		model: null,
 
-    hideUpdatesChart: false,
-    
-    /**    
-     * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
-     * @type {boolean}
-     */     
-    hideMetadataAssessment: false,
+		hideUpdatesChart: false,
+		
+		/**    
+		 * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
+		 * @type {boolean}
+		 */     
+		hideMetadataAssessment: false,
 
 		template: _.template(profileTemplate),
 
@@ -37,18 +37,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 
-      this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
-      
-      this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
+			this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
+			
+			this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
 
-      this.model = options.model || null;
+			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
+			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
+			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
+
+			this.model = options.model || null;
 		},
 
 		render: function () {
 
-      if( !this.model ){
-        this.model = new StatsModel();
-      }
+			if( !this.model ){
+				this.model = new StatsModel();
+			}
 
 			//Clear the page
 			this.$el.html("");
@@ -61,7 +65,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.listenTo(this.metricsModel, "sync" , this.renderMetrics);
 			}
 
-			if (this.userType == "node" || this.userType == "person" || this.userType == "user") {
+			if (this.userType == "portal") {
 				if(this.metricsModel.get("totalViews") !== null) {
 					this.renderMetrics();
 				}
@@ -93,7 +97,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.listenTo(this.model, 'change:mdqStats',	  	  this.drawMdqStats);
 
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
-      
+		
 
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
@@ -103,21 +107,23 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				query: this.model.get('query'),
 				title: this.title,
 				description: this.description,
-                userType: this.userType,
+				userType: this.userType,
 				hideUpdatesChart: this.hideUpdatesChart,
-				hideDownloadsChart: !this.model.get("supportDownloads"),
+				hideCitationsChart: this.hideCitationsChart,
+				hideDownloadsChart: this.hideDownloadsChart,
+				hideViewsChart: this.hideViewsChart,
 				hideMetadataAssessment: this.hideMetadataAssessment
 			}));
-      
-      // Insert the metadata assessment chart
-      if(!this.hideMetadataAssessment){
-        // @Peter TODO: 
-        // this.listenTo(this.model, "change:???", this.drawMetadataAssessment);
-        // OR
-        this.drawMetadataAssessment();
-      }
-      
-      
+		
+			// Insert the metadata assessment chart
+			if(!this.hideMetadataAssessment){
+				// @Peter TODO: 
+				// this.listenTo(this.model, "change:???", this.drawMetadataAssessment);
+				// OR
+				this.drawMetadataAssessment();
+			}
+		
+		
 			//Insert the loading template into the space where the charts will go
 			if(d3){
 				this.$(".chart").html(this.loadingTemplate);
@@ -131,8 +137,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					email: false
 				}));
 			}
-      
-      this.$el.data("view", this);
+		
+			this.$el.data("view", this);
 
 			//Start retrieving data from Solr
 			this.model.getAll();
@@ -141,30 +147,33 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
     
     
-    /**    
-     * drawMetadataAssessment - Insert the metadata assessment image into the view
-     */     
-    drawMetadataAssessment: function(){
-      
-      try {
-        // @Peter TODO:
-        // Example figure:
-        var imgSrc = "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/urn:uuid:cce87580-1800-40cb-9e46-c52d6a3119a4";
-        if(typeof imgSrc === 'string' || imgSrc instanceof String){
-          // Hide the spinner
-          this.$("#metadata-assessment-loading").remove();
-          // Show the figure
-          this.$("#metadata-assessment-graphic").attr('src', imgSrc);
-        }
-      } catch (e) {
-        // If there's an error inserting the image, remove the entire section
-        // that contains the image.
-        console.log("Error displaying the metadata assessment figure. Error message: " + e);
-        this.$el.find(".stripe.metadata-assessment").remove();
-      }
-      
-    },
+		/**    
+		 * drawMetadataAssessment - Insert the metadata assessment image into the view
+		 */     
+		drawMetadataAssessment: function(){
+		
+			try {
+				// @Peter TODO:
+				// Example figure:
+				var imgSrc = "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/urn:uuid:cce87580-1800-40cb-9e46-c52d6a3119a4";
+				if(typeof imgSrc === 'string' || imgSrc instanceof String){
+				// Hide the spinner
+				this.$("#metadata-assessment-loading").remove();
+				// Show the figure
+				this.$("#metadata-assessment-graphic").attr('src', imgSrc);
+				}
+			} catch (e) {
+				// If there's an error inserting the image, remove the entire section
+				// that contains the image.
+				console.log("Error displaying the metadata assessment figure. Error message: " + e);
+				this.$el.find(".stripe.metadata-assessment").remove();
+			}
+		
+		},
 
+        /**    
+         * renderMetrics - Insert the metrics charts into the view
+         */     
 		renderMetrics: function(){
 			this.renderCitationMetric();
 			this.renderDownloadMetric();
@@ -223,12 +232,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			viewEl.html(this.drawMetricsChart(metricName));
 		},
 
-		// Currently only being used for repository profiles
+		// Currently only being used for portals
         drawMetricsChart: function(metricName){
 
             var metricNameLemma     = metricName.toLowerCase()
-            var metricMonths        = MetacatUI.appView.currentView.metricsModel.get("months");
-            var metricCount 		= MetacatUI.appView.currentView.metricsModel.get(metricNameLemma);
+            var metricMonths        = this.metricsModel.get("months");
+            var metricCount 		= this.metricsModel.get(metricNameLemma);
             var width               = document.getElementById('user-'+metricNameLemma+'-chart' ).offsetWidth;
             var viewType                = this.userType;
 

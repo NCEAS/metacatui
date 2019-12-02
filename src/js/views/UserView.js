@@ -1,13 +1,15 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'clipboard',
-        'collections/UserGroup',
+		'collections/UserGroup',
+		'models/MetricsModel',
         'models/UserModel',
         'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
         'views/GroupListView', 'views/portals/PortalListView',
         'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
         'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
 	function($, _, Backbone, Clipboard,
-    UserGroup,
+	UserGroup,
+	MetricsModel,
     UserModel,
     SignInView, StatsView, DataCatalogView, GroupListView, PortalListView,
     userProfileTemplate, AlertTemplate, LoadingTemplate,
@@ -319,9 +321,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			if(e){
 				e.preventDefault();
 			    var subsectionName = $(e.target).attr("data-section");
-          if( !subsectionName ){
-            subsectionName = $(e.target).parents("[data-section]").first().attr("data-section");
-          }
+				if( !subsectionName ){
+					subsectionName = $(e.target).parents("[data-section]").first().attr("data-section");
+				}
 			}
 
 			//Mark its links as active
