@@ -59,7 +59,25 @@ define([    "jquery", "underscore", "backbone",
                   this.markdown = this.markdown + "\n<bibtex>" + this.citations + "</bibtex>";
                 }
 
-                htmlFromMD = converter.makeHtml( this.markdown ); //
+                try{
+                  //Use the Showdown converter to make HTML from the Markdown string
+                  htmlFromMD = converter.makeHtml( this.markdown );
+                }
+                //If there was a Showdown error, show an error message instead of the Markdown preview.
+                catch(e){
+                  //Create a temporary div to hold the error message
+                  var errorMsgTempContainer = document.createElement("div");
+                  //Create the error message
+                  MetacatUI.appView.showAlert("This content can't be displayed.",
+                    "alert-error",
+                    errorMsgTempContainer,
+                    {
+                      remove: false
+                    });
+                  //Get the inner HTML of the temporary div
+                  htmlFromMD = errorMsgTempContainer.innerHTML;
+                }
+
                 this.$el.append(this.template({ markdown: htmlFromMD }));
                 this.trigger("mdRendered");
             });
