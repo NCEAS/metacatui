@@ -352,16 +352,16 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
          this.stopListening(this.model, "latestVersionFound", this.authorizeUser);
        }
 
-       //Remove the loading message
-       this.hideLoading();
-
        //Only proceed if the user is logged in
-       if ( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
+       if ( MetacatUI.appUserModel.get("loggedIn") ){
 
            // checking for the write Permission
            this.model.checkAuthority("write");
        }
-       else if ( !MetacatUI.appUserModel.get("loggedIn") ){
+       else if ( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ){
+
+        //Remove the loading message
+        this.hideLoading();
 
         // show the sign in view
         this.showSignIn();
@@ -387,7 +387,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       try{
         // Don't close the menu if the user clicked the dropdown for the rename/delete menu.
         if(e && e.target){
-          if(e.target.closest(".section-menu-link") || e.target.closest(".dropdown-menu")){
+          if( $(e.target).closest(".section-menu-link") || $(e.target).closest(".dropdown-menu")){
             return
           }
         }
