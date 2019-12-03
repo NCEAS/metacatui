@@ -323,7 +323,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
         }
       }
       catch(error){
-        console.log("image uploader could not be rendered, error message: " + error);
+        console.log("ImageUploaderView could not be rendered, error message: ", error);
       }
 
     },
