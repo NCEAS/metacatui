@@ -203,6 +203,12 @@ define(['jquery', 'underscore', 'backbone'],
       portalEditNoQuotaMessage: "You have already reached the maximum number of portals for your membership level.",
 
       /**
+      * This message will display when there is any non-specific error during the save process of the PortalEditor.
+      * @type {string}
+      */
+      portalEditSaveErrorMsg: "Something went wrong while attempting to save your changes.",
+
+      /**
       * The list of fields that should be required in the portal editor.
       * Set individual properties to `true` to require them in the portal editor.
       * @type {Object}
