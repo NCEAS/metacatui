@@ -2,7 +2,7 @@ define(['underscore',
         'jquery',
         'backbone',
         "models/portals/PortalImage",
-        "views/ImageEditView"],
+        "views/portals/editor/PortEditorImageView"],
 function(_, $, Backbone, PortalImage, ImageEdit){
 
   /**

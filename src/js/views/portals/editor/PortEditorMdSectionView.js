@@ -4,7 +4,7 @@ define(['underscore',
         "models/portals/PortalSectionModel",
         "models/portals/PortalImage",
         "views/portals/editor/PortEditorSectionView",
-        "views/ImageEditView",
+        "views/portals/editor/PortEditorImageView",
         "views/portals/PortalSectionView",
         "text!templates/portals/editor/portEditorMdSection.html"],
 function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView, ImageEdit, PortalSectionView, Template){
@@ -151,7 +151,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
         this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
         this.sectionImageUploader.render();
         this.$(this.imageUploaderContainer).data("view", this.sectionImageUploader);
-        
+
         // Set listeners to auto-resize the height of the intoduction and title
         // textareas on user-input and on window resize events. This way the
         // fields appear more closely to how they will look on the portal view.
@@ -169,21 +169,21 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
         this.listenToOnce(this, "active", function(){
           view.resizeTextarea(view.$("textarea.auto-resize"));
         });
-        
+
       }
       catch(e){
         console.log("The markdown view could not be rendered, error message: " + e);
       }
 
     },
-    
-    
-    /**    
+
+
+    /**
      * resizeTextarea - Set the height of a textarea element based on its
      * scrollHeight.
-     *      
+     *
      * @param  {jQuery} textareas The textarea element or elements to be resized.
-     */     
+     */
     resizeTextarea: function(textareas){
       try {
         if(textareas){

@@ -7,7 +7,7 @@ define(['underscore',
         'views/EditorView',
         "views/SignInView",
         "views/portals/editor/PortEditorSectionsView",
-        "views/ImageEditView",
+        "views/portals/editor/PortEditorImageView",
         "text!templates/loading.html",
         "text!templates/portals/editor/portalEditor.html",
         "text!templates/portals/editor/portalEditorSubmitMessage.html"
