@@ -881,8 +881,8 @@ define(["jquery",
                   _.each(parties, function(party){
 
                     // Update the DOM of the EMLParty
-                    var partyEl  = party.updateDOM(),
-                        partyDoc = $.parseXML(party.formatXML(partyEl));
+                    var partyEl  = party.updateDOM();
+                        partyDoc = $.parseXML(party.formatXML( $(partyEl)[0] ));
 
                     // Make sure we don't insert empty EMLParty nodes into the EML
                     if(partyDoc.childNodes.length){
