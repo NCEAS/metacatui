@@ -375,6 +375,12 @@ MetacatUI.preventCompatibilityIssues = function(){
         return -1;
       };
     }
+
+    //Polyfill for NodeList.forEach, which isn't supported in IE at all, or Edge before v16.
+    // https://developer.mozilla.org/en-US/docs/Web/API/NodeList/forEach#Polyfill
+    if (window.NodeList && !NodeList.prototype.forEach) {
+      NodeList.prototype.forEach = Array.prototype.forEach;
+    }
 }
 
 if (typeof Object.assign != 'function') {
