@@ -4586,6 +4586,12 @@ address.email-container:before{
     stroke: #CCC;
     fill: #CCC;
 }
+
+/*Moving the circle badge at the center of the div*/
+.profile .circle-badge {
+	display: block;
+	margin: auto;
+}
 .profile .circle-badge circle.no-activity{
 	stroke: #CCC;
 	fill: transparent;
