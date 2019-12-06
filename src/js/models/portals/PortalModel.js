@@ -50,6 +50,8 @@ define(["jquery",
                     formatId: "https://purl.dataone.org/portals-1.0.0",
                     formatType: "METADATA",
                     type: "portal",
+                    //Is true if the last fetch was sent with user credentials. False if not.
+                    fetchedWithAuth: null,
                     logo: null,
                     sections: [],
                     associatedParties: [],
@@ -188,6 +190,10 @@ define(["jquery",
                   }
               };
 
+              //Save a boolean flag for whether or not this fetch was done with user authentication.
+              //This is helpful when the app is dealing with potentially private data
+              this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
+
               // Add the user settings to the fetch settings
               requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
 
@@ -252,6 +258,10 @@ define(["jquery",
                     }
                   }
               }
+
+              //Save a boolean flag for whether or not this fetch was done with user authentication.
+              //This is helpful when the app is dealing with potentially private data
+              this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
 
               requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
 
