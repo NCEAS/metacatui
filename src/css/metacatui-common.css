@@ -1685,8 +1685,8 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle{
 }
 .controls-container .info-icons .icon-stack{
 	width: 1.25em;
-  height: 1.25em;
-  vertical-align: top;
+	height: 1.25em;
+	vertical-align: top;
 }
 .controls-container .info-icons .icon-stack .icon {
 	margin-top: -15px;
@@ -1759,10 +1759,6 @@ a.btn.metrics {
 .metric-value {
     float: right;
 }
-
-
-
-
 i.icon.icon-cloud-download {
     font-size: 1.2em; !important;
 }
@@ -1866,6 +1862,26 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	padding-right: 18px;
 	padding-top: 22px;
 }
+.empty-citation-list-text {
+    font-size: 16px;
+    font-weight: 100;
+    color: #d0d0d0;
+    text-align: center;
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+}
+.empty-citation-list {
+    width: 80%;
+    top: 22%;
+    left: 10%;
+    display: block;
+    position: absolute;
+    height: 50%;
+    border-radius: 2px;
+    background-color: #f5f5f5;
+    box-shadow: 0 0 black;
+}
 
 
 /******************************************
@@ -1880,100 +1896,145 @@ i.catalog-metric-icon {
 }
 
 /**********************************************************
-*	  Metric Modal Chart (Views, Downloads, Citations)	  *
+*	  Metric Modal / Profile Chart (Views, Downloads, Citations)	  *
 ***********************************************************/
 
+#user-views-chart,
+#user-downloads-chart {
+    width: 90%;
+}
+
+.metric-chart-loading {
+    font-size: 3em;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#user-views-chart > .metric-chart-loading,
+#user-downloads-chart > .metric-chart-loading {
+    font-size: 1em;
+    margin: 0 auto;
+    text-align: center;
+}
 
 /*
-============ GENERAL CHART TEXT STYLE ===========		[metric modal chart]
+============ GENERAL CHART TEXT STYLE ===========		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text {
+#metric-modal .metric-chart text,
+.views-metrics .metric-chart text,
+.downloads-metrics .metric-chart text {
 	fill: #565656;
-	font-size: 9px;
+	font-size: 10px;
 	font-family: Helvetica, Arial, "sans serif";
 }
 
 /*
-============ WHEN THERE IS NO DATA: ===========		[metric modal chart]
+============ WHEN THERE IS NO DATA: ===========		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text.no-data {
+#metric-modal .metric-chart text.no-data,
+.views-metrics .metric-chart text.no-data,
+.downloads-metrics .metric-chart text.no-data {
 	font-size: 16px;
 	font-weight: 100;
 	fill:#d0d0d0;
 }
 
-#metric-modal .metric-chart rect.no-data {
+#metric-modal .metric-chart rect.no-data,
+.views-metrics .metric-chart rect.no-data,
+.downloads-metrics .metric-chart rect.no-data {
 	fill: #f5f5f5;
 }
 
 /*
-	============ WHEN THERE IS DATA: ===========		[metric modal chart]
+	============ WHEN THERE IS DATA: ===========		[metric modal / profile chart]
 */
 
 /*
-	--- AXES ---		[metric modal chart]
+	--- AXES ---		[metric modal / profile chart]
 */
 
 /* --- x axis focus --- */
 
-#metric-modal .metric-chart .focus .axis {
+#metric-modal .metric-chart .focus .axis,
+.views-metrics .metric-chart .focus .axis,
+.downloads-metrics .metric-chart .focus .axis {
 	shape-rendering: crispEdges;
 }
 
-#metric-modal .metric-chart .focus .x.axis {
+#metric-modal .metric-chart .focus .x.axis,
+.views-metrics .metric-chart .focus .x.axis,
+.downloads-metrics .metric-chart .focus .x.axis {
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .focus .x.axis line {
+#metric-modal .metric-chart .focus .x.axis line,
+.views-metrics .metric-chart .focus .x.axis line,
+.downloads-metrics .metric-chart .focus .x.axis line  {
 	display: none;
 }
 
-#metric-modal .metric-chart .focus .x.axis .tick:hover {
+#metric-modal .metric-chart .focus .x.axis .tick:hover,
+.views-metrics .metric-chart .focus .x.axis .tick:hover,
+.downloads-metrics .metric-chart .focus .x.axis .tick:hover {
 	cursor: default;
 }
 
 
 /* --- x axis context --- */
 
-#metric-modal .metric-chart .context .x.axis line {
+#metric-modal .metric-chart .context .x.axis line,
+.views-metrics .metric-chart .context .x.axis line,
+.downloads-metrics .metric-chart .context .x.axis line {
 	display: none;
 }
 
-#metric-modal .metric-chart .context .x.axis {
+#metric-modal .metric-chart .context .x.axis,
+.views-metrics .metric-chart .context .x.axis,
+.downloads-metrics .metric-chart .context .x.axis {
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .context .x.axis .domain {
+#metric-modal .metric-chart .context .x.axis .domain,
+.views-metrics .metric-chart .context .x.axis .domain,
+.downloads-metrics .metric-chart .context .x.axis .domain {
 	display:none;
 }
 
 /* --- focus y-axis --- */
 
-#metric-modal .metric-chart .focus .y.axis .domain {
+#metric-modal .metric-chart .focus .y.axis .domain,
+.views-metrics .metric-chart .focus .y.axis .domain,
+.downloads-metrics .metric-chart .focus .y.axis .domain {
 	display: none;
 }
 
-#metric-modal .metric-chart .y.axis.title {
+#metric-modal .metric-chart .y.axis.title,
+.views-metrics .metric-chart .y.axis.title,
+.downloads-metrics .metric-chart .y.axis.title {
 	font-size: 13px;
 	font-weight: 100;
 }
 
 /* horizontal focus gridlines */
-#metric-modal .metric-chart .y.axis line {
+#metric-modal .metric-chart .y.axis line,
+.views-metrics .metric-chart .y.axis line,
+.downloads-metrics .metric-chart .y.axis line {
 	stroke: #565656;
 	stroke-dasharray: 2,2;
 	stroke-opacity: 0.3;
 }
 
 /*
-	--- BRUSH ---		[metric modal chart]
+	--- BRUSH ---		[metric modal / profile chart]
 */
 
 /* --- brush window --- */
 
-#metric-modal .metric-chart .brush .extent {
+#metric-modal .metric-chart .brush .extent,
+.views-metrics .metric-chart .brush .extent,
+.downloads-metrics .metric-chart .brush .extent {
   fill-opacity: .07;
   shape-rendering: crispEdges;
   clip-path: url(#clip);
@@ -1982,30 +2043,40 @@ i.catalog-metric-icon {
 
 /* --- brush handles --- */
 
-#metric-modal .metric-chart .resize .handle {
+#metric-modal .metric-chart .resize .handle,
+.views-metrics .metric-chart .resize .handle,
+.downloads-metrics .metric-chart .resize .handle {
 	fill: #555;
 }
 
-#metric-modal .metric-chart .resize .handle-mini {
+#metric-modal .metric-chart .resize .handle-mini,
+.views-metrics .metric-chart .resize .handle-mini,
+.downloads-metrics .metric-chart .resize .handle-mini {
 	fill: white;
     stroke-width: 1px;
     stroke: #555;
 }
 
 /*
-	--- ZOOM TO BUTTONS ---		[metric modal chart]
+	--- ZOOM TO BUTTONS ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart .scale_button rect {
+#metric-modal .metric-chart .scale_button rect,
+.views-metrics .metric-chart .scale_button rect,
+.downloads-metrics .metric-chart .scale_button rect {
 	fill: #eaeaea;
 }
 
-#metric-modal .metric-chart .scale_button:hover text {
+#metric-modal .metric-chart .scale_button:hover text,
+.views-metrics .metric-chart .scale_button:hover text,
+.downloads-metrics .metric-chart .scale_button:hover text  {
 	fill: white;
 	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
 }
 
-#metric-modal .metric-chart .scale_button:hover rect {
+#metric-modal .metric-chart .scale_button:hover rect,
+.views-metrics .metric-chart .scale_button:hover rect,
+.downloads-metrics .metric-chart .scale_button:hover rect {
 	fill: grey;	/* change for each theme */
 	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
 }
@@ -2013,31 +2084,41 @@ i.catalog-metric-icon {
 
 
 /*
-	--- EXPLANATORY TEXT (# views/downloads) ---		[metric modal chart]
+	--- EXPLANATORY TEXT (# views/downloads) ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text#totalCount  {
+#metric-modal .metric-chart text#totalCount,
+.views-metrics .metric-chart text#totalCount,
+.downloads-metrics .metric-chart text#totalCount  {
 	font-size: 15px;
 	font-weight: bold;
 }
 
-#metric-modal .metric-chart text#displayDates  {
+#metric-modal .metric-chart text#displayDates,
+.views-metrics .metric-chart text#displayDates,
+.downloads-metrics .metric-chart text#displayDates  {
 	font-weight: bold;
 }
 
 /*
-	--- BARS ---		[metric modal chart]
+	--- BARS ---		[metric modal / profile chart]
 */
 
 
 #metric-modal .metric-chart .bar,
-#metric-modal .metric-chart .bar_context {
+#metric-modal .metric-chart .bar_context,
+.views-metrics .metric-chart .bar,
+.views-metrics .metric-chart .bar_context,
+.downloads-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar_context {
 	fill: black;  /* change for each theme */
 	stroke-width: 0;
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .bar {
+#metric-modal .metric-chart .bar,
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar {
 	stroke: black; /* change for each theme */
 	cursor: default;
 }
@@ -2046,26 +2127,32 @@ i.catalog-metric-icon {
 
 
 /*
-	--- PANE CURSORS ---		[metric modal chart]
+	--- PANE CURSORS ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart rect.pane {
+#metric-modal .metric-chart rect.pane,
+.views-metrics .metric-chart rect.pane,
+.downloads-metrics .metric-chart rect.pane {
 	cursor: move; /* fallback if grab cursor is unsupported */
 	cursor: grab;
 	fill: #FAFAFA;
 	pointer-events: all;
 }
 
-#metric-modal .metric-chart rect.pane:active {
+#metric-modal .metric-chart rect.pane:active,
+.views-metrics .metric-chart rect.pane:active,
+.downloads-metrics .metric-chart rect.pane:active {
 	cursor: move; /* fallback if grab cursor is unsupported */
 	cursor: grabbing;
 }
 
 /*
-	--- TOOLTIPS ---		[metric modal chart]
+	--- TOOLTIPS ---		[metric modal / profile chart]
 */
 
-#metric-modal div.metric_tooltip {
+#metric-modal div.metric_tooltip,
+.views-metrics div.metric_tooltip,
+.downloads-metrics div.metric_tooltip {
     position: fixed;
     text-align: center;
     height: 25px;
@@ -2079,10 +2166,11 @@ i.catalog-metric-icon {
 	box-shadow: 0 0px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
 }
-/*  ====== END: Metrics modal chart ======  */
+/*  ====== END: Metrics modal / profile chart ======  */
+
 
 .metric-table.table.table-striped.table-condensed {
-    width: 930px;
+    width: 100%;
 }
 .metric-table.table.table-striped.table-condensed td {
     padding: 5px 15px 5px 85px;
@@ -2143,6 +2231,48 @@ a.btn.metrics-button-disabled {
     color: #888888;
     background-color: #F5F5F5;
     border-color: #C3C3C3;
+}
+
+/******************************************
+* Repository + User Profile Metrics
+********************************************/
+section#user-citations {
+    min-height: 360px;
+}
+.metrics-title > h3 {
+	display: inline-block;
+}
+.views-metrics .metric-chart,
+.downloads-metrics .metric-chart {
+    margin: 0 auto;
+}
+.citations-metrics-list {
+    overflow-y: auto;
+    max-height: 300px;
+    content: " "; 
+    display: block;
+    clear: both;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed {
+    width: 90%;
+    height: 5%;
+    max-height: 240px;
+    overflow-y: scroll;
+    top: unset;
+    margin: 0 auto;
+}
+.citations-metrics-list > .empty-citation-list {
+    width: 66%;
+    height: 5%;
+    top: unset;
+    left: 25%;
+    margin: 0 auto;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
+    padding: 5px 15px 5px 85px;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed td > .citation {
+    margin-left: -70px;
 }
 
 /******************************************
@@ -4286,23 +4416,24 @@ tfoot .control i{
 /******************************************
 ** User Profile ***
 ******************************************/
-#user-profile{
-	padding-top: 20px;
-}
-#user-profile #data-list{
-	padding-bottom: 20px;
-	padding-left: 25px;
-	margin-bottom: 20px;
-}
-#user-profile #clear-all{
-	display: none;
-}
+
 .user-view-section > section {
     max-width: 1200px;
     width: 90%;
     margin-left: auto;
     margin-right: auto;
 }
+#profile-content {
+    float: right;
+}
+#user-profile #data-list{
+	padding-bottom: 20px;
+	margin-bottom: 20px;
+}
+#user-profile #clear-all{
+	display: none;
+}
+
 .user-view-section > .section > .span12{
 	margin-left: 0px;
 }
@@ -4405,7 +4536,7 @@ textarea.token{
 #first-upload-container{
 	font-size: .9em;
 	width: 50%;
-	width: calc(97% - 125px);
+	width: calc(97% - 135px);
 }
 #total-replicas-wrapper{
 	display: none;
@@ -4485,7 +4616,7 @@ address.email-container:before{
 }
 .profile .quick-stats,
 .profile .quick-stats .badge-container{
-	height: 280px;
+	height: 330px;
 }s
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
@@ -4505,17 +4636,13 @@ address.email-container:before{
 }
 .profile .stripe{
 	border-top: 1px dashed #CCC;
-    padding-bottom: 20px;
-    padding-top: 20px;
+    padding: 20px 20px 20px 20px;
 }
 .profile .packages p {
     color: #333;
 }
 .no-activity .profile .packages p{
 	color: inherit;
-}
-.temporal-coverage-chart{
-	width: calc(100% - 300px);
 }
 .profile .circle-badge circle{
 	fill: transparent;
@@ -4671,10 +4798,25 @@ svg .no-activity,
   border: 1px solid #ddd;
 }
 .list-group-header.list-group-item{
-	background-color: #f5f5f5;
+	background-color: #ECF1F5;
 	min-width: auto;
-	padding: 10px;
 }
+#profile-group-list-container > ul > .list-group-header.list-group-item:hover,
+#profile-group-list-container > ul > .list-group-header.list-group-item.active{
+	background-color: #208095;
+	min-width: auto;
+}
+#profile-group-list-container > ul > li.list-group-item.member.current-page:hover{
+    background-color: #fff;
+}
+#profile-group-list-container > ul > .pager.list-group-item:hover {
+    background-color: #fff;
+}
+#profile-group-list-container > ul > .pager > .pager-link:hover {
+    background-color: #208095;
+    color: #fff;
+}
+
 .panel>.list-group .list-group-item.active{
 	border-left-width: 5px;
 }
@@ -6913,4 +7055,13 @@ CSS library fixes
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
   background-image:      -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
   background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+}
+
+/* Portal Citations Metric Chart */
+#user-citations > .citations-metrics-list > .empty-citation-list {
+	width: 90%;
+	height: 5%;
+	top: unset;
+	left: 5%;
+	margin: 0 auto;
 }

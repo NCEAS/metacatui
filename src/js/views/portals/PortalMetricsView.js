@@ -2,11 +2,12 @@ define(["jquery",
     "underscore",
     "backbone",
     "models/Search",
+    "models/MetricsModel",
     "models/Stats",
     "views/portals/PortalSectionView",
     "views/StatsView",
     "text!templates/loading.html"],
-    function($, _, Backbone, SearchModel, StatsModel, PortalSectionView, StatsView,
+    function($, _, Backbone, SearchModel, MetricsModel, StatsModel, PortalSectionView, StatsView,
       LoadingTemplate){
 
     /* The PortalMetricsView is a view to render the
@@ -121,15 +122,28 @@ define(["jquery",
               supportDownloads: false
             });
 
+            
+            var label_list = [];
+            label_list.push(this.model.get("label"));
+            var metricsModel = new MetricsModel({pid_list: label_list, type: "portal"});
+            metricsModel.fetch();
+
             // Add a stats view
             this.statsView = new StatsView({
                 title: "Statistics and Figures",
                 description: description,
+                metricsModel: metricsModel,
                 el: document.createElement("div"),
                 model: statsModel,
+                userType: "portal",
                 // @Peter TODO: change the following to false when StatsView.js
                 // is ready to render the metadata assessment image:
-                hideMetadataAssessment: true
+                hideMetadataAssessment: true,
+
+                // Rendering metrics on the portal
+                hideCitationsChart: false,
+                hideDownloadsChart: false,
+                hideViewsChart: false
             });
 
             //Insert the StatsView into this view

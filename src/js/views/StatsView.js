@@ -1,54 +1,78 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
-  'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'],
-	function($, _, Backbone, d3, StatsModel,
-    LineChart, BarChart, DonutChart, CircleBadge, profileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'collections/Citations', 'models/MetricsModel', 'models/Stats', 'views/MetricsChartView', 'text!templates/metricModalTemplate.html', 'views/CitationListView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel, StatsModel, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 
 	var StatsView = Backbone.View.extend({
 
 		el: '#Content',
 
-    model: null,
+		model: null,
 
-    hideUpdatesChart: false,
-    
-    /**    
-     * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
-     * @type {boolean}
-     */     
-    hideMetadataAssessment: false,
+		hideUpdatesChart: false,
+		
+		/**    
+		 * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
+		 * @type {boolean}
+		 */     
+		hideMetadataAssessment: false,
 
 		template: _.template(profileTemplate),
 
+		metricTemplate: _.template(MetricModalTemplate),
+		
 		alertTemplate: _.template(AlertTemplate),
 
 		loadingTemplate: _.template(LoadingTemplate),
 
 		initialize: function(options){
 			if(!options) options = {};
+			
 
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
 			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
+			this.metricsModel = options.metricsModel;
+			this.userType = options.userType;
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 
-      this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
-      
-      //this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
+			this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
+			
+			// this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
 
-      this.model = options.model || null;
+			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
+			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
+			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
+
+			this.model = options.model || null;
 		},
 
 		render: function () {
 
-      if( !this.model ){
-        this.model = new StatsModel();
-      }
+			if( !this.model ){
+				this.model = new StatsModel();
+			}
 
 			//Clear the page
 			this.$el.html("");
+
+			// Adding support for DataONE profile
+			if (typeof this.userType === 'undefined') {
+				var metricsModel = new MetricsModel({pid_list:['urn:node:CN'], type:'repository'});
+				this.metricsModel = metricsModel;
+				this.metricsModel.fetch();
+				this.listenTo(this.metricsModel, "sync" , this.renderMetrics);
+			}
+
+			if (this.userType == "portal") {
+				if(this.metricsModel.get("totalViews") !== null) {
+					this.renderMetrics();
+				}
+				else{
+					this.listenTo(this.metricsModel, "sync" , this.renderMetrics);
+				}
+			}
 
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
@@ -73,7 +97,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			this.listenTo(this.model, 'change:mdqStats',	  	  this.drawMdqStats);
 
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
-      
+		
 
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
@@ -83,8 +107,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 				query: this.model.get('query'),
 				title: this.title,
 				description: this.description,
+				userType: this.userType,
 				hideUpdatesChart: this.hideUpdatesChart,
-				hideDownloadsChart: !this.model.get("supportDownloads"),
+				hideCitationsChart: this.hideCitationsChart,
+				hideDownloadsChart: this.hideDownloadsChart,
+				hideViewsChart: this.hideViewsChart,
 				hideMetadataAssessment: this.hideMetadataAssessment
 			}));
       
@@ -112,8 +139,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 					email: false
 				}));
 			}
-      
-      this.$el.data("view", this);
+		
+			this.$el.data("view", this);
 
 			//Start retrieving data from Solr
 			this.model.getAll();
@@ -121,25 +148,122 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			return this;
 		},
     
-    
-    /**    
-     * drawMetadataAssessment - Insert the metadata assessment image into the view
-     */     
-    drawMetadataAssessment: function(){
-      try {
-        var scoresImage = this.model.get("mdqScoresImage");
-          // Hide the spinner
-          this.$("#metadata-assessment-loading").remove();
-          // Show the figure
-          this.$("#metadata-assessment-graphic").append(scoresImage);
-      } catch (e) {
-        // If there's an error inserting the image, remove the entire section
-        // that contains the image.
-        console.log("Error displaying the metadata assessment figure. Error message: " + e);
-        this.$el.find(".stripe.metadata-assessment").remove();
-      }
-    },
+        /**    
+         * drawMetadataAssessment - Insert the metadata assessment image into the view
+         */     
+        drawMetadataAssessment: function(){
+          try {
+            var scoresImage = this.model.get("mdqScoresImage");
+              // Hide the spinner
+              this.$("#metadata-assessment-loading").remove();
+              // Show the figure
+              this.$("#metadata-assessment-graphic").append(scoresImage);
+          } catch (e) {
+            // If there's an error inserting the image, remove the entire section
+            // that contains the image.
+            console.log("Error displaying the metadata assessment figure. Error message: " + e);
+            this.$el.find(".stripe.metadata-assessment").remove();
+          }
+        },
 
+		renderMetrics: function(){
+			this.renderCitationMetric();
+			this.renderDownloadMetric();
+			this.renderViewMetric();
+
+			var self = this;
+			$(window).on("resize", function(){
+				self.renderDownloadMetric();
+				self.renderViewMetric();
+			});
+		},
+
+		renderCitationMetric: function() {
+			var citationEl = this.$('.citations-metrics-list');
+			var citationCountEl = this.$('.citation-count');
+			var metricName = "Citations";
+			var metricCount = this.metricsModel.get("totalCitations");
+			citationCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
+
+			// Displaying Citations
+			var resultDetails = this.metricsModel.get("resultDetails");
+			var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+
+			this.citationCollection = citationCollection;
+
+			// Checking if there are any citations available for the List display.
+			if(this.metricsModel.get("totalCitations") == 0) {
+				var citationList = new CitationList();
+			}
+			else {
+				var citationList = new CitationList({citations: this.citationCollection});
+			}
+
+			this.citationList = citationList;
+
+			citationEl.html(this.citationList.render().$el.html());
+		},
+
+		renderDownloadMetric: function() {
+			var downloadEl = this.$('.downloads-metrics > .metric-chart');
+			var metricName = "Downloads";
+			var metricCount = this.metricsModel.get("totalDownloads");
+			var downloadCountEl = this.$('.download-count');
+			downloadCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
+
+			downloadEl.html(this.drawMetricsChart(metricName));
+		},
+
+		renderViewMetric: function() {
+			var viewEl = this.$('.views-metrics > .metric-chart');
+			var metricName = "Views";
+			var metricCount = this.metricsModel.get("totalViews");
+			var viewCountEl = this.$('.view-count');
+			viewCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
+
+			viewEl.html(this.drawMetricsChart(metricName));
+		},
+
+		// Currently only being used for portals
+        drawMetricsChart: function(metricName){
+
+            var metricNameLemma     = metricName.toLowerCase()
+            var metricMonths        = this.metricsModel.get("months");
+            var metricCount 		= this.metricsModel.get(metricNameLemma);
+            var width               = document.getElementById('user-'+metricNameLemma+'-chart' ).offsetWidth;
+            var viewType                = this.userType;
+
+            if (width == null || width < 0) {
+                width = 600;
+			}
+
+			var trimmedMetricMonths = [].concat(metricMonths)
+			
+			//trim off the leading zeros and their corresponding months
+			for (var i = 0 ; i < metricCount.length; i++) {
+				if ( metricCount[i] == 0 ) {
+					metricCount.splice(i,1);
+					trimmedMetricMonths.splice(i,1);
+					i--;
+				}
+				else {
+					break;
+				}		
+			}
+
+            //Draw a metric chart
+            var modalMetricChart = new MetricsChart({
+                            id: metricNameLemma + "-chart",
+                            metricCount: metricCount,
+                            metricMonths: trimmedMetricMonths,
+                            type: viewType,
+                            metricName: metricName,
+                            width: width
+                        });
+
+            return modalMetricChart.render().el;
+        },
+		
 		drawDataCountChart: function(){
 			var dataCount = this.model.get('dataCount');
 			var data = this.model.get('dataFormatIDs');

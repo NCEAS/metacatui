@@ -19,6 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             this.metricCount  = options.metricCount   || "0";     // for now, use individual arrays
             this.metricMonths = options.metricMonths  || "0";
             this.id           = options.id            || "metrics-chart";
+            this.viewType     = options.type          || "dataset"
             this.width        = options.width         || 600;
             this.height       = options.height        || 370;
             this.metricName   = options.metricName;
@@ -55,18 +56,23 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         * ========================================================================
         */
-
+        
         // check if there have been any views/citations
         var sumMetricCount = 0;
         for (var i = 0; i < this.metricCount.length; i++) {
             sumMetricCount += this.metricCount[i]
         }
 
+        var self = this;
+
         // when ther no data or no views/citations yet, just show some text:
         if(this.metricCount.length == 0 || this.metricCount == 0 || sumMetricCount ==0){
 
             var metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             var textMessage = "This dataset hasn’t been " + metricNameLemma + "ed yet."
+            if (this.viewType != "dataset") {
+                textMessage = "This " + this.viewType + " has no " + metricNameLemma + "s to display "
+            }
 
             var margin	= {top: 25, right: 40, bottom: 40, left: 40},
                 width	= this.width - margin.left - margin.right,
@@ -606,7 +612,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             var bar_width_px = bar_width * get_zoom_scale();
 
             // get the width of the modal. Need for tooltip x-position.
-            var modal_width = d3.select("#metric-modal")
+            var modal_width = d3.select("#" + self.id)
                 .style('width')
                 .slice(0, -2);
             var modal_width = Math.round(Number(modal_width));
@@ -786,7 +792,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             vis.select("#displayDates")
                 .text(start_month == end_month ? "in " + start_month : "from " + start_month + " to " + end_month);
         	vis.select("#totalCount")
-        		.text(total_count + " " + convert_metric_name(total_count));
+        		.text(MetacatUI.appView.commaSeparateNumber(total_count) + " " + convert_metric_name(total_count));
 
         	// Fade all years in the bar chart not within the brush
             context.selectAll(".bar_context")
@@ -829,7 +835,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
             brush.extent([brush_start_new, brush_end_new]);
 
-            brush(d3.select(".brush").transition());
+            brush(d3.select("#" + self.id + " > .context > .brush").transition());
             change_focus_brush();
             change_focus_zoom();
 
@@ -870,9 +876,10 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             brush.extent([brush_start_new, brush_end_new]);
 
             // now draw the brush to match our extent
-            brush(d3.select(".brush").transition());
+
+            brush(d3.select("#" + self.id + " > .context > .brush").transition());
             // now fire the brushstart, brushmove, and check_bounds events
-            brush.event(d3.select(".brush").transition());
+            brush.event(d3.select("#" + self.id + " > .context > .brush").transition());
         };
 
         // that's it!
