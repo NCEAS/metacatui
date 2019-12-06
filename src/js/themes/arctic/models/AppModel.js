@@ -126,6 +126,9 @@ define(['jquery', 'underscore', 'backbone'],
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
       suiteIds: ["arctic.data.center.suite.1"],
       suiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
+      // Quality suites for aggregated quality scores (i.e. metrics tab) 
+      aggregatedSuiteIds: ["FAIR.suite.1"],
+      aggregatedSuiteLabels: ["FAIR Suite v1.0"],
 
       // Metrics endpoint url
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
@@ -351,8 +354,11 @@ define(['jquery', 'underscore', 'backbone'],
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
+      this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
       this.set('mdqSuiteIds', this.get("suiteIds"));
       this.set('mdqSuiteLabels', this.get("suiteLabels"));
+      this.set('mdqAggregatedSuiteIds', this.get("aggregatedSuiteIds"));
+      this.set('mdqAggregatedSuiteLabels', this.get("aggregatedSuiteLabels"));
 
       //Set the NSF Award API proxy
       if(typeof this.get("grantsUrl") != "undefined")

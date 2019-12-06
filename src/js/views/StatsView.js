@@ -36,7 +36,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 
       this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
       
-      this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
+      //this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
 
       this.model = options.model || null;
 		},
@@ -90,12 +90,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
       
       // Insert the metadata assessment chart
       if(!this.hideMetadataAssessment){
-        // @Peter TODO: 
-        // this.listenTo(this.model, "change:???", this.drawMetadataAssessment);
-        // OR
-        this.drawMetadataAssessment();
+        this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
+        this.listenTo(this.model, "change:mdqScoresError", function () {
+                this.$el.find(".stripe.metadata-assessment").remove();
+                var msg = this.model.get("mdqScoresError");
+                MetacatUI.appView.showAlert("Metadata Assessment Metrics are not available for this collection: " + msg, 
+                    "alert-error", this.$("#metadata-assesment-graphic"), 4000, {remove: true});
+            });
       }
-      
       
 			//Insert the loading template into the space where the charts will go
 			if(d3){
@@ -124,24 +126,18 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
      * drawMetadataAssessment - Insert the metadata assessment image into the view
      */     
     drawMetadataAssessment: function(){
-      
       try {
-        // @Peter TODO:
-        // Example figure:
-        var imgSrc = "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/urn:uuid:cce87580-1800-40cb-9e46-c52d6a3119a4";
-        if(typeof imgSrc === 'string' || imgSrc instanceof String){
+        var scoresImage = this.model.get("mdqScoresImage");
           // Hide the spinner
           this.$("#metadata-assessment-loading").remove();
           // Show the figure
-          this.$("#metadata-assessment-graphic").attr('src', imgSrc);
-        }
+          this.$("#metadata-assessment-graphic").append(scoresImage);
       } catch (e) {
         // If there's an error inserting the image, remove the entire section
         // that contains the image.
         console.log("Error displaying the metadata assessment figure. Error message: " + e);
         this.$el.find(".stripe.metadata-assessment").remove();
       }
-      
     },
 
 		drawDataCountChart: function(){

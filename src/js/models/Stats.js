@@ -117,7 +117,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			this.getFormatTypes();
 
 			this.getDownloadDates();
-
+            this.getMdqScores();
 			//this.getMdqStatsTotal();
 			//this.getDataDownloadDates();
 			//this.getMetadataDownloadDates();
@@ -1237,6 +1237,64 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 
       $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+    },
+    
+    imgLoad: function(url) {
+        // Create new promise with the Promise() constructor;
+        // This has as its argument a function with two parameters, resolve and reject
+        var model = this;
+        return new Promise(function (resolve, reject) {
+            // Standard XHR to load an image
+            var request = new XMLHttpRequest();
+            request.open('GET', url);
+            request.responseType = 'blob';
+            
+            // When the request loads, check whether it was successful
+            request.onload = function () {
+                if (request.status === 200) {
+                    // If successful, resolve the promise by passing back the request response
+                    resolve(request.response);
+                } else {
+                    // If it fails, reject the promise with a error message
+                    reject(new Error('Image didn\'t load successfully; error code:' + request.statusText));
+                    model.set('mdqScoresError', request.statusText);
+                }
+            };
+          
+            request.onerror = function () {
+                console.log("onerror");
+                // Also deal with the case when the entire request fails to begin with
+                // This is probably a network error, so reject the promise with an appropriate message
+                reject(new Error('There was a network error.'));
+            };
+          
+            // Send the request
+            request.send();
+        });
+    },
+
+    getMdqScores: function(){
+        // Get a reference to the body element, and create a new image object
+        var body = document.querySelector('body'),
+        myImage = new Image();
+        var model = this;
+        myImage.crossOrigin = ""; // or "anonymous"
+        
+        // Call the function with the URL we want to load, but then chain the
+        // promise then() method on to the end of it. This contains two callbacks
+        var serviceUrl = MetacatUI.appModel.get('mdqScoresServiceUrl');
+        var suite = MetacatUI.appModel.get('mdqAggregatedSuiteIds')[0];
+        var id = MetacatUI.appView.currentView.model.get("id");
+        var url = serviceUrl + "?collection=" + id + "&suite=" + suite;
+        this.imgLoad(url).then(function (response) {
+            // The first runs when the promise resolves, with the request.reponse specified within the resolve() method.
+            var imageURL = window.URL.createObjectURL(response);
+            myImage.src = imageURL;
+            model.set('mdqScoresImage', myImage);
+            // The second runs when the promise is rejected, and logs the Error specified with the reject() method.
+        }, function (Error) {
+            console.log(Error);
+        });
     },
 
     setRequestType: function(){
