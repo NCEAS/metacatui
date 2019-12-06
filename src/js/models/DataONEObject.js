@@ -661,17 +661,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               cache: false,
               contentType: false,
               dataType: "text",
+              type: "PUT",
               processData: false,
               data: formData,
               parse: false,
-              success: function(newSysMetaResponse) {
+              success: function() {
 
-                  model.set("numSaveAttempts", 0);
+                model.set("numSaveAttempts", 0);
 
-                  //Parse the updated system metadata XML string returned from the repository
-                  model.set(model.parse(newSysMetaResponse));
+                //Fetch the system metadata from the server so we have a fresh copy of the newest sys meta.
+                model.fetch({ systemMetadataOnly: true });
 
-                  model.trigger("sysMetaUpdated");
+                //Trigger a custom event that the sys meta was updated
+                model.trigger("sysMetaUpdated");
               },
               error: function (model, response, xhr) {
 

@@ -392,7 +392,7 @@ define(["jquery",
       $(objectDOM).find("definition").remove();
 
       // Create new definition element
-      var definitionSerialized = $(objectDOM.ownerDocument.createElement("definition"));
+      var definitionSerialized = objectDOM.ownerDocument.createElement("definition");
 
       //Get the filters that are currently applied to the search.
       var filtersToSerialize = this.getAllDefinitionFilters();
@@ -404,12 +404,17 @@ define(["jquery",
         var filterSerialized = filterModel.updateDOM({
           forCollection: true
         });
-        definitionSerialized.append(filterSerialized);
+
+        //Add the filter node to the XMLDocument
+        objectDOM.ownerDocument.adoptNode(filterSerialized);
+
+        //Append the filter node to the definition node
+        definitionSerialized.appendChild(filterSerialized);
 
       }, this);
 
       //If at least one filter was serialized, add the <definition> node
-      if( definitionSerialized.children().length ){
+      if( definitionSerialized.childNodes.length ){
         $(objectDOM).prepend(definitionSerialized);
       }
 
@@ -456,6 +461,8 @@ define(["jquery",
       // set attributes
       colNode.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
       colNode.setAttribute("xsi:schemaLocation", "https://purl.dataone.org/collections-1.0.0");
+
+      this.set("ownerDocument", colNode.ownerDocument);
 
       return(xmlNew);
     },

@@ -261,6 +261,20 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
       messageParagraph.append(errorMsg);
 
+      //If the model has an error message set on it, show it in a collapseable technical details section
+      if( this.model.get("errorMessage") ){
+        var errorId = "error" + Math.round(Math.random()*100);
+        messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))
+                  .text("See technical details")
+                  .attr("data-toggle", "collapse")
+                  .attr("data-target", "#" + errorId)
+                  .addClass("pointer")),
+                $(document.createElement("div"))
+                  .addClass("collapse")
+                  .attr("id", errorId)
+                  .append($(document.createElement("pre")).text(this.model.get("errorMessage"))));
+      }
+
       MetacatUI.appView.showAlert(messageContainer, messageClasses, this.$el, null, {
         emailBody: errorMsg,
         remove: true

@@ -7,15 +7,15 @@ define(['underscore',
 function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
   /**
-  * @class ImageEditView
+  * @class PortEditorImageView
   */
-  var ImageEditView = Backbone.View.extend({
+  var PortEditorImageView = Backbone.View.extend({
 
     /**
     * The type of View this is
     * @type {string}
     */
-    type: "ImageEdit",
+    type: "PortEditorImage",
 
     /**
     * The HTML tag name to use for this view's element
@@ -160,15 +160,15 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     },
 
     /**
-    * Creates a new ImageEditView
-    * @constructs ImageEditView
+    * Creates a new PortEditorImageView
+    * @constructs PortEditorImageView
     * @param {Object} options - A literal object with options to pass to the view
-    * @property {Portal}  options.parentModel - Gets set as ImageEditView.parentModel
-    * @property {PortalEditorView}  options.editorView - Gets set as ImageEditView.editorView
-    * @property {PortalImage}  options.model - Gets set as ImageEditView.model
+    * @property {Portal}  options.parentModel - Gets set as PortEditorImageView.parentModel
+    * @property {PortalEditorView}  options.editorView - Gets set as PortEditorImageView.editorView
+    * @property {PortalImage}  options.model - Gets set as PortEditorImageView.model
     * @property {string[]}  options.imageUploadInstructions - Gets set as ImageUploaderView.imageUploadInstructions
-    * @property {string}  options.nameLabel - Gets set as ImageEditView.nameLabel
-    * @property {string}  options.urlLabel - Gets set as ImageEditView.urlLabel
+    * @property {string}  options.nameLabel - Gets set as PortEditorImageView.nameLabel
+    * @property {string}  options.urlLabel - Gets set as PortEditorImageView.urlLabel
     * @property {string}  options.imageTagName - Gets set as ImageUploaderView.imageTagName
     * @property {string}  options.removeButton - Gets set as ImageUploaderView.removeButton
     * @property {number}  options.imageWidth - Gets set as ImageUploaderView.width
@@ -204,7 +204,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
         }
 
       } catch (e) {
-        console.log("ImageEditView failed to initialize. Error message: " + e);
+        console.log("PortEditorImageView failed to initialize. Error message: " + e);
       }
 
     },
@@ -407,6 +407,6 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
   });
 
-  return ImageEditView;
+  return PortEditorImageView;
 
 });

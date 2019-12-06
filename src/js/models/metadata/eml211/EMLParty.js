@@ -45,6 +45,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		nodeNameMap: function(){
 			return {
 				"administrativearea"    : "administrativeArea",
+        "associatedparty"       : "associatedParty",
 				"deliverypoint"         : "deliveryPoint",
 				"electronicmailaddress" : "electronicMailAddress",
 				"givenname"             : "givenName",

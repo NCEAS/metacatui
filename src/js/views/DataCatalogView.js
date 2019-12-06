@@ -2411,14 +2411,15 @@ define(["jquery",
                     }
                 }
 
+                //If there are no tiles on the page, the map may have failed to render, so exit.
+                if( typeof filteredTileGeohashes == "undefined" || !filteredTileGeohashes.length ){
+                  return;
+                }
+
                 // Make a copy of the array that is geohash counts only
                 var countsOnly = [];
-                if (typeof filteredTileGeohashes.length !== "undefined") {
-                    for (var i = 1; i < filteredTileGeohashes.length; i += 2) {
-                        countsOnly.push(filteredTileGeohashes[i]);
-                    }
-                } else {
-                    console.log("filteredTileGeohashes is undefined.");
+                for (var i = 1; i < filteredTileGeohashes.length; i += 2) {
+                    countsOnly.push(filteredTileGeohashes[i]);
                 }
 
                 // Create a range of lightness to make different colors on the tiles
@@ -2439,17 +2440,7 @@ define(["jquery",
                     }),
                     maxCount = sortedCounts[sortedCounts.length - 1],
                     minCount = sortedCounts[0];
-                /*median = findMedian(sortedCounts),
-                partitionedCounts = _.partition(sortedCounts, function(num){ return( num < median ) }),
-                firstQuartile = findMedian(partitionedCounts[0]),
-                thirdQuartile = findMedian(partitionedCounts[1]),
-                iqr = (thirdQuartile - firstQuartile)*1.5,
-                minInterval = firstQuartile - iqr,
-                maxInterval = thirdQuartile + iqr;
 
-            var lowOutliers = _.filter(partitionedCounts[0], function(num){ return(num < minInterval); }),
-                highOutliers = _.filter(partitionedCounts[1], function(num){ return(num > maxInterval); });
-            */
                 var viewRef = this;
 
                 // Now draw a tile for each geohash facet

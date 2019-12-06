@@ -164,6 +164,13 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
             MetacatUI.objectFormats.fetch();
         }
 
+        // Bug fix: Overwrite a dropzone function that causes a bug in Edge 16 &
+        // 17 browser. If we update our dropzone with a fallback, this function
+        // should return the fallback element.
+        Dropzone.prototype.getExistingFallback = function(){
+          return false
+        };
+        
         // Identify which zones should be drag & drop manually
         Dropzone.autoDiscover = false;
 
@@ -323,7 +330,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
         }
       }
       catch(error){
-        console.log("image uploader could not be rendered, error message: " + error);
+        console.log("ImageUploaderView could not be rendered, error message: ", error);
       }
 
     },

@@ -158,6 +158,10 @@ define(["jquery",
 
               //Only insert the new element if there is content in it
               if( $(newElement).children().length || $(newElement).text().length ){
+
+                //Add the new element to the owner Document
+                objectDOM.ownerDocument.adoptNode(newElement);
+
                 //Get the existing node
                 var existingNodes = $(objectDOM).children(nodeName);
 
@@ -168,7 +172,7 @@ define(["jquery",
                   //Insert it into that position
                   $(insertAfter).after(newElement);
                 } else {
-                  objectDOM.append(newElement);
+                  objectDOM.appendChild(newElement);
                 }
 
                 existingNodes.remove();

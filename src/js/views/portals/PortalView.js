@@ -151,7 +151,7 @@ define(["jquery",
                 this.listenToOnce(this.model, "sync", this.renderPortal);
 
                 //If the portal isn't found, display a 404 message
-                this.listenToOnce(this.model, "notFound", this.showNotFound);
+                this.listenTo(this.model, "notFound", this.handleNotFound);
 
                 //Listen to errors that might occur during fetch()
                 this.listenToOnce(this.model, "error", this.showError);
@@ -176,7 +176,7 @@ define(["jquery",
               this.portalId = this.model.get("seriesId");
 
               // Remove the listeners that were set during the fetch() process
-              this.stopListening(this.model, "notFound", this.showNotFound);
+              this.stopListening(this.model, "notFound", this.handleNotFound);
               this.stopListening(this.model, "error", this.showError);
 
                 // Insert the overall portal template
@@ -563,6 +563,36 @@ define(["jquery",
                              .attr("data-toggle", "tab")
                              .addClass("portal-section-link")
                              .data("view", sectionView)));
+
+            },
+
+            /**
+            * Handles the case where the PortalModel is fetched and nothing is found.
+            */
+            handleNotFound: function(){
+
+              //If the user is NOT logged in
+              if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ){
+                //Display a not found message
+                this.showNotFound();
+              }
+              //If the user IS logged in
+              else if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
+                //If the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
+                if( this.model.get("fetchedWithAuth") ){
+                  //Show the "not found" message
+                  this.showNotFound();
+                }
+                //If user credentials were not sent with the last fetch, then fetch again now that the user is logged in
+                else{
+                  this.model.fetch();
+                }
+              }
+              //If the user login status is unknown, because authentication is still pending
+              else if( !MetacatUI.appUserModel.get("checked") ){
+                //Wait for the authentication to be checked, and then start this function over again
+                this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.handleNotFound);
+              }
 
             },
 

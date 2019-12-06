@@ -50,6 +50,8 @@ define(["jquery",
                     formatId: "https://purl.dataone.org/portals-1.0.0",
                     formatType: "METADATA",
                     type: "portal",
+                    //Is true if the last fetch was sent with user credentials. False if not.
+                    fetchedWithAuth: null,
                     logo: null,
                     sections: [],
                     associatedParties: [],
@@ -188,6 +190,10 @@ define(["jquery",
                   }
               };
 
+              //Save a boolean flag for whether or not this fetch was done with user authentication.
+              //This is helpful when the app is dealing with potentially private data
+              this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
+
               // Add the user settings to the fetch settings
               requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
 
@@ -252,6 +258,10 @@ define(["jquery",
                     }
                   }
               }
+
+              //Save a boolean flag for whether or not this fetch was done with user authentication.
+              //This is helpful when the app is dealing with potentially private data
+              this.set("fetchedWithAuth", MetacatUI.appUserModel.get("loggedIn"));
 
               requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
 
@@ -574,456 +584,488 @@ define(["jquery",
             */
             serialize: function(){
 
-              // So we can call getXMLPosition() from within if{}
-              var model = this;
+              try{
 
-              var xmlDoc,
-                  portalNode,
-                  xmlString;
+                // So we can call getXMLPosition() from within if{}
+                var model = this;
 
-              xmlDoc = this.get("objectXML");
+                var xmlDoc,
+                    portalNode,
+                    xmlString;
 
-              // Check if there is a portal doc already
-              if (xmlDoc == null){
-                // If not create one
-                xmlDoc = this.createXML();
-              } else {
-                // If yes, clone it
-                xmlDoc = xmlDoc.cloneNode(true);
-              };
+                xmlDoc = this.get("objectXML");
 
-              // Iterate over each root XML node to find the portal node
-              $(xmlDoc).children().each(function(i, el) {
-                  if (el.tagName.indexOf("portal") > -1) {
-                      portalNode = el;
-                  }
-              });
+                // Check if there is a portal doc already
+                if (xmlDoc == null){
+                  // If not create one
+                  xmlDoc = this.createXML();
+                } else {
+                  // If yes, clone it
+                  xmlDoc = xmlDoc.cloneNode(true);
+                };
 
-              // Serialize the collection elements
-              // ("name", "label", "description", "definition")
-              portalNode = this.updateCollectionDOM(portalNode);
-
-              /* ==== Serialize portal logo ==== */
-
-              // Remove node if it exists already
-              $(xmlDoc).find("logo").remove();
-
-              // Get new values
-              var logo = this.get("logo");
-
-              // Don't serialize falsey values or empty logos
-              if(logo && logo.get("identifier")){
-
-                // Make new node
-                var logoSerialized = logo.updateDOM("logo");
-
-                // Insert new node at correct position
-                var insertAfter = this.getXMLPosition(portalNode, "logo");
-                if(insertAfter){
-                  insertAfter.after(logoSerialized);
-                }
-                else{
-                  portalNode.append(logoSerialized);
-                }
-
-              };
-
-              /* ==== Serialize acknowledgment logos ==== */
-
-              // Remove element if it exists already
-              $(xmlDoc).find("acknowledgmentsLogo").remove();
-
-              var acknowledgmentsLogos = this.get("acknowledgmentsLogos");
-
-              // Don't serialize falsey values
-              if(acknowledgmentsLogos){
-
-                _.each(acknowledgmentsLogos, function(imageModel) {
-
-                  // Don't serialize empty imageModels
-                  if(
-                    imageModel.get("identifier") ||
-                    imageModel.get("label") ||
-                    imageModel.get("associatedURL")
-                  ){
-
-                    var ackLogosSerialized = imageModel.updateDOM();
-
-                    // Insert new node at correct position
-                    var insertAfter = model.getXMLPosition(portalNode, "acknowledgmentsLogo");
-                    if(insertAfter){
-                      insertAfter.after(ackLogosSerialized);
+                // Iterate over each root XML node to find the portal node
+                $(xmlDoc).children().each(function(i, el) {
+                    if (el.tagName.indexOf("portal") > -1) {
+                        portalNode = el;
                     }
-                    else {
-                      portalNode.append(ackLogosSerialized);
-                    }
-                  }
-                })
-              };
-
-              /* ==== Serialize literature cited ==== */
-              // Assumes the value of literatureCited is a block of bibtex text
-
-              // Remove node if it exists already
-              $(xmlDoc).find("literatureCited").remove();
-
-              // Get new values
-              var litCit = this.get("literatureCited");
-
-              // Don't serialize falsey values
-              if( litCit.length ){
-
-                // If there's only one element in litCited, it will be a string
-                // turn it into an array so that we can use _.each
-                if(typeof litCit == "string"){
-                  litCit = [litCit]
-                }
-
-                // Make new <literatureCited> element
-                var litCitSerialized = $(xmlDoc.createElement("literatureCited"));
-
-                _.each(litCit, function(bibtex){
-
-                  // Wrap in literature cited in cdata tags
-                  var cdataLitCit = xmlDoc.createCDATASection(bibtex);
-                  var bibtexSerialized = $(xmlDoc.createElement("bibtex"));
-                  // wrap in CDATA tags so that bibtex characters aren't escaped
-                  $(bibtexSerialized).append(cdataLitCit);
-                  // <bibxtex> is a subelement of <literatureCited>
-                  $(litCitSerialized).append(bibtexSerialized);
-
                 });
 
-                // Insert new element at correct position
-                var insertAfter = this.getXMLPosition(portalNode, "literatureCited");
-                if(insertAfter){
-                  insertAfter.after(litCitSerialized);
+                // Serialize the collection elements
+                // ("name", "label", "description", "definition")
+                portalNode = this.updateCollectionDOM(portalNode);
+                var $portalNode = $(portalNode);
+
+                /* ==== Serialize portal logo ==== */
+
+                // Remove node if it exists already
+                $(xmlDoc).find("logo").remove();
+
+                // Get new values
+                var logo = this.get("logo");
+
+                // Don't serialize falsey values or empty logos
+                if(logo && logo.get("identifier")){
+
+                  // Make new node
+                  var logoSerialized = logo.updateDOM("logo");
+
+                  //Add the logo node to the XMLDocument
+                  xmlDoc.adoptNode(logoSerialized);
+
+                  // Insert new node at correct position
+                  var insertAfter = this.getXMLPosition(portalNode, "logo");
+                  if(insertAfter){
+                    insertAfter.after(logoSerialized);
+                  }
+                  else{
+                    portalNode.appendChild(logoSerialized);
+                  }
+
+                };
+
+                /* ==== Serialize acknowledgment logos ==== */
+
+                // Remove element if it exists already
+                $(xmlDoc).find("acknowledgmentsLogo").remove();
+
+                var acknowledgmentsLogos = this.get("acknowledgmentsLogos");
+
+                // Don't serialize falsey values
+                if(acknowledgmentsLogos){
+
+                  _.each(acknowledgmentsLogos, function(imageModel) {
+
+                    // Don't serialize empty imageModels
+                    if(
+                      imageModel.get("identifier") ||
+                      imageModel.get("label") ||
+                      imageModel.get("associatedURL")
+                    ){
+
+                      var ackLogosSerialized = imageModel.updateDOM();
+
+                      //Add the logo node to the XMLDocument
+                      xmlDoc.adoptNode(ackLogosSerialized);
+
+                      // Insert new node at correct position
+                      var insertAfter = model.getXMLPosition(portalNode, "acknowledgmentsLogo");
+                      if(insertAfter){
+                        insertAfter.after(ackLogosSerialized);
+                      }
+                      else {
+                        portalNode.appendChild(ackLogosSerialized);
+                      }
+                    }
+                  })
+                };
+
+                /* ==== Serialize literature cited ==== */
+                // Assumes the value of literatureCited is a block of bibtex text
+
+                // Remove node if it exists already
+                $(xmlDoc).find("literatureCited").remove();
+
+                // Get new values
+                var litCit = this.get("literatureCited");
+
+                // Don't serialize falsey values
+                if( litCit.length ){
+
+                  // If there's only one element in litCited, it will be a string
+                  // turn it into an array so that we can use _.each
+                  if(typeof litCit == "string"){
+                    litCit = [litCit]
+                  }
+
+                  // Make new <literatureCited> element
+                  var litCitSerialized = xmlDoc.createElement("literatureCited");
+
+                  _.each(litCit, function(bibtex){
+
+                    // Wrap in literature cited in cdata tags
+                    var cdataLitCit = xmlDoc.createCDATASection(bibtex);
+                    var bibtexSerialized = xmlDoc.createElement("bibtex");
+                    // wrap in CDATA tags so that bibtex characters aren't escaped
+                    bibtexSerialized.appendChild(cdataLitCit);
+                    // <bibxtex> is a subelement of <literatureCited>
+                    litCitSerialized.appendChild(bibtexSerialized);
+
+                  });
+
+                  // Insert new element at correct position
+                  var insertAfter = this.getXMLPosition(portalNode, "literatureCited");
+                  if(insertAfter){
+                    insertAfter.after(litCitSerialized);
+                  }
+                  else{
+                    portalNode.appendChild(litCitSerialized);
+                  }
                 }
-                else{
-                  portalNode.append(litCitSerialized);
-                }
-              }
 
-              /* ==== Serialize portal content sections ==== */
+                /* ==== Serialize portal content sections ==== */
 
-              // Remove node if it exists already
-              $(xmlDoc).find("section").remove();
+                // Remove node if it exists already
+                $portalNode.children("section").remove();
 
-              var sections = this.get("sections");
+                var sections = this.get("sections");
 
-              // Don't serialize falsey values
-              if(sections){
+                // Don't serialize falsey values
+                if(sections){
 
-                _.each(sections, function(sectionModel) {
+                  _.each(sections, function(sectionModel) {
 
-                  // Don't serialize sections with default values
-                  if(!this.sectionIsDefault(sectionModel)){
+                    // Don't serialize sections with default values
+                    if(!this.sectionIsDefault(sectionModel)){
 
-                    var sectionSerialized = sectionModel.updateDOM();
+                      var sectionSerialized = sectionModel.updateDOM();
 
-/*                    // Check that the <markdown> content isn't the example markdown
-                    // and that it isn't blank
-                    var newMD = $(sectionSerialized).find("markdown")[0];
-                    if(newMD && (newMD.textContent == this.markdownExample || newMD.textContent == "") ){
-                      // Remove it if it is.
-                      $(sectionSerialized).find("markdown").remove();
-                    };
-*/
-                    // Remove sections entirely if the content is blank
-                    var newMD = $(sectionSerialized).find("markdown")[0];
-                    if( !newMD || newMD.textContent == "" ){
-                      $(sectionSerialized).find("markdown").remove();
+                      //If there was an error serializing this section, or if
+                      // nothing was returned, don't do anythiing further
+                      if( !sectionSerialized ){
+                        return;
+                      }
+
+                      //Add the section node to the XMLDocument
+                      xmlDoc.adoptNode(sectionSerialized);
+
+                      // Remove sections entirely if the content is blank
+                      var newMD = $(sectionSerialized).find("markdown")[0];
+                      if( !newMD || newMD.textContent == "" ){
+                        $(sectionSerialized).find("markdown").remove();
+                      }
+
+                      // Remove the <content> element if it's empty.
+                      // This will trigger a validation error, prompting user to
+                      // enter content.
+                      if($(sectionSerialized).find("content").is(':empty')){
+                        $(sectionSerialized).find("content").remove();
+                      }
+
+                      // Insert new node at correct position
+                      var insertAfter = model.getXMLPosition(portalNode, "section");
+                      if(insertAfter){
+                        insertAfter.after(sectionSerialized);
+                      }
+                      else {
+                        portalNode.appendChild(sectionSerialized);
+                      }
+
                     }
 
-                    // Remove the <content> element if it's empty.
-                    // This will trigger a validation error, prompting user to
-                    // enter content.
-                    if($(sectionSerialized).find("content").is(':empty')){
-                      $(sectionSerialized).find("content").remove();
-                    }
+                  }, this)
+                };
 
-                    // Insert new node at correct position
-                    var insertAfter = model.getXMLPosition(portalNode, "section");
-                    if(insertAfter){
-                      insertAfter.after(sectionSerialized);
+                /* ====  Serialize the EMLText elements ("acknowledgments") ==== */
+
+                var textFields = ["acknowledgments"];
+
+                _.each(textFields, function(field){
+
+                  var fieldName = field;
+
+                  // Get the EMLText model
+                  var emlTextModels = Array.isArray(this.get(field)) ? this.get(field) : [this.get(field)];
+                  if( ! emlTextModels.length ) return;
+
+                  // Get the node from the XML doc
+                  var nodes = $portalNode.children(fieldName);
+
+                  // Update the DOMs for each model
+                  _.each(emlTextModels, function(thisTextModel, i){
+                    //Don't serialize falsey values
+                    if(!thisTextModel) return;
+
+                    var node;
+
+                    //Get the existing node or create a new one
+                    if(nodes.length < i+1){
+                      node = xmlDoc.createElement(fieldName);
+                      this.getXMLPosition(portalNode, fieldName).after(node);
                     }
                     else {
-                      portalNode.append(sectionSerialized);
+                       node = nodes[i];
                     }
 
-                  }
+                    var textModelSerialized = thisTextModel.updateDOM();
 
-                }, this)
-              };
+                    //If the text model wasn't serialized correctly or resulted in nothing
+                    if(typeof textModelSerialized == "undefined" || !textModelSerialized){
+                      //Remove the existing node
+                      $(node).remove();
+                    }
+                    else{
+                      xmlDoc.adoptNode(textModelSerialized);
+                      $(node).replaceWith(textModelSerialized);
+                    }
 
-              /* ====  Serialize the EMLText elements ("acknowledgments") ==== */
+                  }, this);
 
-              var textFields = ["acknowledgments"];
-
-              _.each(textFields, function(field){
-
-                var fieldName = field;
-
-                // Get the EMLText model
-                var emlTextModels = Array.isArray(this.get(field)) ? this.get(field) : [this.get(field)];
-                if( ! emlTextModels.length ) return;
-
-                // Get the node from the XML doc
-                var nodes = $(xmlDoc).find(fieldName);
-
-                // Update the DOMs for each model
-                _.each(emlTextModels, function(thisTextModel, i){
-                  //Don't serialize falsey values
-                  if(!thisTextModel) return;
-
-                  var node;
-
-                  //Get the existing node or create a new one
-                  if(nodes.length < i+1){
-                    node = xmlDoc.createElement(fieldName);
-                    this.getXMLPosition(portalNode, fieldName).after(node);
-
-                  }
-                  else {
-                     node = nodes[i];
-                  }
-
-                  $(node).html( $(thisTextModel.updateDOM() ).html());
+                  // Remove the extra nodes
+                  this.removeExtraNodes(nodes, emlTextModels);
 
                 }, this);
 
-                // Remove the extra nodes
-                this.removeExtraNodes(nodes, emlTextModels);
+                /* ====  Serialize awards ==== */
 
-              }, this);
+                // Remove award node if it exists already
+                $portalNode.children("award").remove();
 
-              /* ====  Serialize awards ==== */
+                // Get new values
+                var awards = this.get("awards");
 
-              // Remove award node if it exists already
-              $(xmlDoc).find("award").remove();
+                // Don't serialize falsey values
+                if(awards && awards.length>0){
 
-              // Get new values
-              var awards = this.get("awards");
+                  _.each(awards, function(award){
 
-              // Don't serialize falsey values
-              if(awards && awards.length>0){
+                    // Make new node
+                    var awardSerialized = xmlDoc.createElement("award");
 
-                _.each(awards, function(award){
+                    // create the <award> subnodes
+                    _.map(award, function(value, nodeName){
 
-                  // Make new node
-                  var awardSerialized = xmlDoc.createElement("award");
-
-                  // create the <award> subnodes
-                  _.map(award, function(value, nodeName){
-
-                    // serialize the simple text nodes
-                    if(nodeName != "funderLogo"){
-                      // Don't serialize falsey values
-                      if(value){
-                        // Make new sub-nodes
-                        var awardSubnodeSerialized = xmlDoc.createElement(nodeName);
-                        $(awardSubnodeSerialized).text(value);
-                        $(awardSerialized).append(awardSubnodeSerialized);
+                      // serialize the simple text nodes
+                      if(nodeName != "funderLogo"){
+                        // Don't serialize falsey values
+                        if(value){
+                          // Make new sub-nodes
+                          var awardSubnodeSerialized = xmlDoc.createElement(nodeName);
+                          $(awardSubnodeSerialized).text(value);
+                          $(awardSerialized).append(awardSubnodeSerialized);
+                        }
+                      } else {
+                        // serialize "funderLogo" which is ImageType
+                        var funderLogoSerialized = value.updateDOM();
+                        xmlDoc.adoptNode(funderLogoSerialized);
+                        $(awardSerialized).append(funderLogoSerialized);
                       }
-                    } else {
-                      // serialize "funderLogo" which is ImageType
-                      var funderLogoSerialized = value.updateDOM();
-                      $(awardSerialized).append(funderLogoSerialized);
-                    }
 
-                  });
+                    });
 
-                  // Insert new node at correct position
-                  var insertAfter = model.getXMLPosition(portalNode, "award");
-                  if(insertAfter){
-                    insertAfter.after(awardSerialized);
-                  }
-                  else{
-                    portalNode.append(awardSerialized);
-                  }
-
-                });
-
-              }
-
-              /* ====  Serialize associatedParties ==== */
-
-              // Remove element if it exists already
-              $(xmlDoc).find("associatedParty").remove();
-
-              // Get new values
-              var parties = this.get("associatedParties");
-
-              // Don't serialize falsey values
-              if(parties){
-
-                // Serialize each associatedParty
-                _.each(parties, function(party){
-
-                  // Update the DOM of the EMLParty
-                  var partyDOM  = party.updateDOM(),
-                      //re-Camel-case the XML
-                      xmlString = partyDOM[0].outerHTML,
-                      xmlString = party.formatXML(xmlString).replace(/associatedparty/g, "associatedParty");
-                      partySerialized = $($.parseXML(xmlString)).find("associatedParty");
-
-                  // Get the last node of this type to insert after
-                  var insertAfter = $(xmlDoc).find("associatedParty").last();
-
-                  // If there isn't a node found, find the EML position to insert after
-                  if( !insertAfter.length ) {
-                    insertAfter = model.getXMLPosition(portalNode, "associatedParty");
-                  }
-
-                  // Make sure we don't insert empty EMLParty nodes into the EML
-                  if( $(partySerialized).children().length ){
-                    //Insert the party DOM at the insert position
-                    if ( insertAfter && insertAfter.length ){
-                      insertAfter.after(partySerialized);
-                    } else {
-                      portalNode.append(partySerialized);
-                    }
-                  }
-                });
-              }
-
-              try{
-                /* ====  Serialize options (including map options) ==== */
-                // This will only serialize the options named in `optNames` (below)
-                // Functionality needed in order to serialize new or custom options
-
-                // The standard list of options used in portals
-                var optNames = this.get("optionNames");
-
-                _.each(optNames, function(optName){
-
-                  //Get the value on the model
-                  var optValue = model.get(optName),
-                      existingValue;
-
-                  //Get the existing optionName element
-                  var matchingOption = $(portalNode).children("option")
-                                                    .find("optionName:contains('" + optName + "')");
-
-                  //
-                  if( !matchingOption.length || matchingOption.first().text() != optName ){
-                    matchingOption = false;
-                  }
-                  else{
-                    //Get the value for this option from the Portal doc
-                    existingValue = matchingOption.siblings("optionValue").text();
-                  }
-
-                  // Don't serialize null or undefined values. Also don't serialize values that match the default model value
-                  if( (optValue || optValue === 0 || optValue === false) &&
-                      (optValue != model.defaults()[optName]) ){
-
-                    //Replace the existing option, if it exists
-                    if( matchingOption ){
-                      matchingOption.siblings("optionValue").text(optValue);
+                    // Insert new node at correct position
+                    var insertAfter = model.getXMLPosition(portalNode, "award");
+                    if(insertAfter){
+                      insertAfter.after(awardSerialized);
                     }
                     else{
-                      // Make new node
-                      // <optionName> and <optionValue> are subelements of <option>
-                      var optionSerialized   = xmlDoc.createElement("option"),
-                          optNameSerialized  = xmlDoc.createElement("optionName"),
-                          optValueSerialized = xmlDoc.createElement("optionValue");
-
-                      $(optNameSerialized).text(optName);
-                      $(optValueSerialized).text(optValue);
-
-                      $(optionSerialized).append(optNameSerialized, optValueSerialized);
-
-                      // Insert new node at correct position
-                      var insertAfter = model.getXMLPosition(portalNode, "option");
-
-                      if(insertAfter){
-                        insertAfter.after(optionSerialized);
-                      }
-
-                    }
-
-                  }
-                  else{
-                    //Remove the elements from the portal XML when the value is invalid
-                    if( matchingOption ){
-                      matchingOption.parent("option").remove();
-                    }
-                  }
-                });
-              }
-              catch(e){
-                console.error(e);
-              }
-
-              /* ====  Serialize FilterGroups ==== */
-
-              // Get new filter group values
-              var filterGroups = this.get("filterGroups");
-
-              // Remove any filter groups in the current objectDOM
-              $(xmlDoc).find("filterGroup").remove();
-
-              // Make a new node for each filter group in the model
-              _.each(filterGroups, function(filterGroup){
-
-                filterGroupSerialized = filterGroup.updateDOM();
-
-                // Insert new node at correct position
-                var insertAfter = model.getXMLPosition(portalNode, "filterGroup");
-
-                if(insertAfter){
-                  insertAfter.after(filterGroupSerialized);
-                }
-                else{
-                  portalNode.append(filterGroupSerialized);
-                }
-              });
-
-              /* ====  Remove duplicates ==== */
-
-              //Do a final check to make sure there are no duplicate ids in the XML
-              var elementsWithIDs = $(xmlDoc).find("[id]"),
-              //Get an array of all the ids in this EML doc
-                  allIDs = _.map(elementsWithIDs, function(el){ return $(el).attr("id") });
-
-              //If there is at least one id in the EML...
-              if(allIDs && allIDs.length){
-                //Boil the array down to just the unique values
-                var uniqueIDs = _.uniq(allIDs);
-
-                //If the unique array is shorter than the array of all ids,
-                // then there is a duplicate somewhere
-                if(uniqueIDs.length < allIDs.length){
-
-                  //For each element in the EML that has an id,
-                  _.each(elementsWithIDs, function(el){
-
-                    //Get the id for this element
-                    var id = $(el).attr("id");
-
-                    //If there is more than one element in the EML with this id,
-                    if( $(xmlDoc).find("[id='" + id + "']").length > 1 ){
-                      //And if it is not a unit node, which we don't want to change,
-                      if( !$(el).is("unit") )
-                        //Then change the id attribute to a random uuid
-                        $(el).attr("id", "urn-uuid-" + uuid.v4());
+                      portalNode.appendChild(awardSerialized);
                     }
 
                   });
 
                 }
+
+                /* ====  Serialize associatedParties ==== */
+
+                // Remove element if it exists already
+                $portalNode.children("associatedParty").remove();
+
+                // Get new values
+                var parties = this.get("associatedParties");
+
+                // Don't serialize falsey values
+                if(parties){
+
+                  // Serialize each associatedParty
+                  _.each(parties, function(party){
+
+                    // Update the DOM of the EMLParty
+                    var partyEl  = party.updateDOM();
+                        partyDoc = $.parseXML(party.formatXML( $(partyEl)[0] ));
+
+                    // Make sure we don't insert empty EMLParty nodes into the EML
+                    if(partyDoc.childNodes.length){
+                      //Save a reference to the associated party element in the NodeList
+                      var assocPartyEl = partyDoc.childNodes[0];
+                      //Add the associated part element to the portal XML doc
+                      xmlDoc.adoptNode(assocPartyEl);
+
+                      // Get the last node of this type to insert after
+                      var insertAfter = $portalNode.children("associatedParty").last();
+
+                      // If there isn't a node found, find the EML position to insert after
+                      if( !insertAfter.length ) {
+                        insertAfter = model.getXMLPosition(portalNode, "associatedParty");
+                      }
+
+                      //Insert the party DOM at the insert position
+                      if ( insertAfter && insertAfter.length ){
+                        insertAfter.after(assocPartyEl);
+                      } else {
+                        portalNode.appendChild(assocPartyEl);
+                      }
+                    }
+                  });
+                }
+
+                try{
+                  /* ====  Serialize options (including map options) ==== */
+                  // This will only serialize the options named in `optNames` (below)
+                  // Functionality needed in order to serialize new or custom options
+
+                  // The standard list of options used in portals
+                  var optNames = this.get("optionNames");
+
+                  _.each(optNames, function(optName){
+
+                    //Get the value on the model
+                    var optValue = model.get(optName),
+                        existingValue;
+
+                    //Get the existing optionName element
+                    var matchingOption = $portalNode.children("option")
+                                                   .find("optionName:contains('" + optName + "')");
+
+                    //
+                    if( !matchingOption.length || matchingOption.first().text() != optName ){
+                      matchingOption = false;
+                    }
+                    else{
+                      //Get the value for this option from the Portal doc
+                      existingValue = matchingOption.siblings("optionValue").text();
+                    }
+
+                    // Don't serialize null or undefined values. Also don't serialize values that match the default model value
+                    if( (optValue || optValue === 0 || optValue === false) &&
+                        (optValue != model.defaults()[optName]) ){
+
+                      //Replace the existing option, if it exists
+                      if( matchingOption ){
+                        matchingOption.siblings("optionValue").text(optValue);
+                      }
+                      else{
+                        // Make new node
+                        // <optionName> and <optionValue> are subelements of <option>
+                        var optionSerialized   = xmlDoc.createElement("option"),
+                            optNameSerialized  = xmlDoc.createElement("optionName"),
+                            optValueSerialized = xmlDoc.createElement("optionValue");
+
+                        $(optNameSerialized).text(optName);
+                        $(optValueSerialized).text(optValue);
+
+                        $(optionSerialized).append(optNameSerialized, optValueSerialized);
+
+                        // Insert new node at correct position
+                        var insertAfter = model.getXMLPosition(portalNode, "option");
+
+                        if(insertAfter){
+                          insertAfter.after(optionSerialized);
+                        }
+
+                      }
+
+                    }
+                    else{
+                      //Remove the elements from the portal XML when the value is invalid
+                      if( matchingOption ){
+                        matchingOption.parent("option").remove();
+                      }
+                    }
+                  });
+                }
+                catch(e){
+                  console.error(e);
+                }
+
+                /* ====  Serialize FilterGroups ==== */
+
+                // Get new filter group values
+                var filterGroups = this.get("filterGroups");
+
+                // Remove any filter groups in the current objectDOM
+                $(xmlDoc).find("filterGroup").remove();
+
+                // Make a new node for each filter group in the model
+                _.each(filterGroups, function(filterGroup){
+
+                  filterGroupSerialized = filterGroup.updateDOM();
+
+                  //Add the new element to the XMLDocument
+                  xmlDoc.adoptNode(filterGroupSerialized);
+
+                  // Insert new node at correct position
+                  var insertAfter = model.getXMLPosition(portalNode, "filterGroup");
+
+                  if(insertAfter){
+                    insertAfter.after(filterGroupSerialized);
+                  }
+                  else{
+                    portalNode.appendChild(filterGroupSerialized);
+                  }
+                });
+
+                /* ====  Remove duplicates ==== */
+
+                //Do a final check to make sure there are no duplicate ids in the XML
+                var elementsWithIDs = $(xmlDoc).find("[id]"),
+                //Get an array of all the ids in this EML doc
+                    allIDs = _.map(elementsWithIDs, function(el){ return $(el).attr("id") });
+
+                //If there is at least one id in the EML...
+                if(allIDs && allIDs.length){
+                  //Boil the array down to just the unique values
+                  var uniqueIDs = _.uniq(allIDs);
+
+                  //If the unique array is shorter than the array of all ids,
+                  // then there is a duplicate somewhere
+                  if(uniqueIDs.length < allIDs.length){
+
+                    //For each element in the EML that has an id,
+                    _.each(elementsWithIDs, function(el){
+
+                      //Get the id for this element
+                      var id = $(el).attr("id");
+
+                      //If there is more than one element in the EML with this id,
+                      if( $(xmlDoc).find("[id='" + id + "']").length > 1 ){
+                        //And if it is not a unit node, which we don't want to change,
+                        if( !$(el).is("unit") )
+                          //Then change the id attribute to a random uuid
+                          $(el).attr("id", "urn-uuid-" + uuid.v4());
+                      }
+
+                    });
+
+                  }
+                }
+
+                // Convert xml to xmlString and return xmlString
+                xmlString = new XMLSerializer().serializeToString(xmlDoc);
+
+                //If there isn't an XML declaration, add one
+                if( xmlString.indexOf("<?xml") == -1 ){
+                  xmlString = '<?xml version="1.0" encoding="UTF-8"?>' + xmlString;
+                }
+
+                return xmlString;
               }
-
-              // Convert xml to xmlString and return xmlString
-              xmlString = new XMLSerializer().serializeToString(xmlDoc);
-
-              //If there isn't an XML declaration, add one
-              if( xmlString.indexOf("<?xml") == -1 ){
-                xmlString = '<?xml version="1.0" encoding="UTF-8"?>' + xmlString;
+              catch(e){
+                console.error("Error while serializing the Portal XML document: ", e);
+                this.set("errorMessage", e.stack);
+                this.trigger("errorSaving", MetacatUI.appModel.get("portalEditSaveErrorMsg"));
+                return;
               }
-
-              return xmlString;
             },
 
             /**
@@ -1334,6 +1376,20 @@ define(["jquery",
               if( !this.get("checksum") ){
                 // Serialize the XML
                 var xml = this.serialize();
+
+                //If there is no xml returned from the serialize() function, then there
+                // was an error, so don't save.
+                if( typeof xml === "undefined" || !xml ){
+                  //If no error message is set on the model, trigger an error now.
+                  // If there is an error message already, it means the error has already
+                  // been triggered inside the serialize() function.
+                  if( !this.get("errorMessage") ){
+                    this.trigger("errorSaving", MetacatUI.appModel.get("portalEditSaveErrorMsg"));
+                  }
+
+                  return;
+                }
+
                 var xmlBlob = new Blob([xml], {type : 'application/xml'});
 
                 //Set the Blob as the upload file

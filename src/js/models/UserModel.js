@@ -217,23 +217,6 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			//Only proceed if there is a username
 			if(!this.get("username")) return;
 
-				/*
-			//Check if this is an ORCID
-			if(this.isOrcid()){
-				//Get the person's info from their ORCID bio
-				appLookupModel.orcidGetBio({
-					userModel: this,
-					success: function(){
-						model.set("checked", true);
-					},
-					error: function(){
-						model.set("checked", true);
-					}
-				});
-				return;
-			}*/
-
-
 			//Get the user info using the DataONE API
 			var url = MetacatUI.appModel.get("accountsUrl") + encodeURIComponent(this.get("username"));
 
@@ -928,7 +911,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
     /**
     * Checks if the user has authorization to perform the given action.
     */
-    isAuthorizedCreatePortal: function(action){
+    isAuthorizedCreatePortal: function(){
 
       //Reset the isAuthorized attribute silently so a change event is always triggered
       this.set("isAuthorizedCreatePortal", null, {silent: true});
@@ -945,30 +928,40 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         return;
       }
       //If creating portals has been limited to only certain subjects, check if this user is one of them
-      else{
-        if( MetacatUI.appModel.get("limitPortalsToSubjects").length &&
-            !_.intersection(MetacatUI.appModel.get("limitPortalsToSubjects"), this.get("allIdentitiesAndGroups")).length ){
+      else if( MetacatUI.appModel.get("limitPortalsToSubjects").length ){
+        if( !this.get("allIdentitiesAndGroups").length ){
+          this.on("change:allIdentitiesAndGroups", this.isAuthorizedCreatePortal);
+          return;
+        }
+
+        //Find the subjects that have access to create portals. Could be specific users or groups.
+        var subjectsThatHaveAccess = _.intersection(MetacatUI.appModel.get("limitPortalsToSubjects"), this.get("allIdentitiesAndGroups"));
+        if( !subjectsThatHaveAccess.length ){
           //If this user is not in the whitelist, set to false
           this.set("isAuthorizedCreatePortal", false);
-          return;
         }
-        //If this person is whitelisted, check if they have the quota to create a portal
         else{
-          //Listen to the response from the quota check
-          this.once("change:portalQuota", function(){
-            //If the quota is at least 1, set to true
-            if( this.get("portalQuota") > 0 ){
-              this.set("isAuthorizedCreatePortal", true);
-            }
-            //If the quota is less than or equal to zero, set to false
-            else{
-              this.set("isAuthorizedCreatePortal", false);
-            }
-          });
-          //Check the quota
-          this.checkQuota("createPortal");
-          return;
+          //If this user is in the whitelist, set to true
+          this.set("isAuthorizedCreatePortal", true);
         }
+        return;
+      }
+      //If anyone is allowed to create a portal, check if they have the quota to create a portal
+      else{
+        //Listen to the response from the quota check
+        this.once("change:portalQuota", function(){
+          //If the quota is at least 1, set to true
+          if( this.get("portalQuota") > 0 ){
+            this.set("isAuthorizedCreatePortal", true);
+          }
+          //If the quota is less than or equal to zero, set to false
+          else{
+            this.set("isAuthorizedCreatePortal", false);
+          }
+        });
+        //Check the quota
+        this.checkQuota("createPortal");
+        return;
       }
 
     },

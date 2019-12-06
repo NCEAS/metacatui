@@ -8,10 +8,12 @@ define(['jquery',
 		'views/SignInView',
 		'text!templates/alert.html',
 		'text!templates/appHead.html',
+    'text!templates/jsonld.txt',
 		'text!templates/app.html',
 		'text!templates/loading.html'
 	    ],
-	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, SignInView, AlertTemplate, AppHeadTemplate, AppTemplate, LoadingTemplate) {
+	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, SignInView,
+    AlertTemplate, AppHeadTemplate, JsonLDTemplate, AppTemplate, LoadingTemplate) {
 	'use strict';
 
 	var app = app || {};
@@ -29,6 +31,7 @@ define(['jquery',
 		template: _.template(AppTemplate),
 		alertTemplate: _.template(AlertTemplate),
 		appHeadTemplate: _.template(AppHeadTemplate),
+    jsonLDTemplate: _.template(JsonLDTemplate),
 		loadingTemplate: _.template(LoadingTemplate),
 
 		events: {
@@ -61,7 +64,11 @@ define(['jquery',
 				theme: MetacatUI.theme,
 				themeTitle: MetacatUI.themeTitle,
 				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
-				}));
+      }))
+      //Add the JSON-LD to the head element
+      .append($(document.createElement("script")).attr("type", "application/ld+json")
+                                                 .attr("id", "jsonld")
+                                                 .html(this.jsonLDTemplate()));
 
 			// set up the body
 			this.$el.append(this.template());
