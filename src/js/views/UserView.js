@@ -1,15 +1,13 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'clipboard',
-		'collections/UserGroup',
-		'models/MetricsModel',
+        'collections/UserGroup',
         'models/UserModel',
         'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
         'views/GroupListView', 'views/portals/PortalListView',
         'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
         'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
 	function($, _, Backbone, Clipboard,
-	UserGroup,
-	MetricsModel,
+    UserGroup,
     UserModel,
     SignInView, StatsView, DataCatalogView, GroupListView, PortalListView,
     userProfileTemplate, AlertTemplate, LoadingTemplate,
@@ -53,20 +51,10 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			"keypress #add-group-name"     : "preventSubmit",
 			"click #add-group-submit"      : "createGroup",
 			"click .token-tab" 			   : "switchTabs"
-
 		},
 
 		initialize: function(){
 			this.subviews = new Array();
-
-			var self = this;
-
-			$(window).bind('scroll', function (ev) {
-				self.onScroll(ev);
-			});
-
-			$("body").attr("data-spy", "scroll");
-			$("body").attr("data-target", "#user-nav");
 		},
 
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
@@ -213,7 +201,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				var userGroup = new UserGroup([], options);
 
 				//Create the group list and add it to the page
-				var viewOptions = { collapsable: true, showGroupName: false }
+				var viewOptions = { collapsable: false, showGroupName: false }
 				var groupList = this.createGroupList(userGroup, viewOptions);
 				this.$("#user-membership-container").html(groupList);
 			}
@@ -321,9 +309,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			if(e){
 				e.preventDefault();
 			    var subsectionName = $(e.target).attr("data-section");
-				if( !subsectionName ){
-					subsectionName = $(e.target).parents("[data-section]").first().attr("data-section");
-				}
+          if( !subsectionName ){
+            subsectionName = $(e.target).parents("[data-section]").first().attr("data-section");
+          }
 			}
 
 			//Mark its links as active
@@ -369,104 +357,11 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 		//------------------------------------------ Inserting public profile UI elements ------------------------------------------------//
 		insertStats: function(){
-			var self = this;
 			if(this.model.noActivity && this.statsView){
 				this.statsView.$el.addClass("no-activity");
-				this.$("#total-citation-container, section.citations").hide();
-				this.$("#total-download-container, section.downloads").hide();
-				this.$("#total-view-container, section.views").hide();
+				this.$("#total-download-wrapper, section.downloads").hide();
 				return;
 			}
-
-			//Create a base query for the statistics
-			var statsSearchModel = this.model.get("searchModel").clone();
-			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
-			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-			MetacatUI.statsModel.set("searchModel", statsSearchModel);
-
-			if (this.model.get("type") == "node" || this.model.get("type") == "person" || this.model.get("type") == "user") {
-				var pid_list = [];
-				var metricsModel = new MetricsModel({});
-				this.metricsModel = metricsModel;
-
-				// // Retrieving the first upload date to send to the Metrics Service
-
-				this.listenTo(MetacatUI.statsModel, 'change:firstUpload' , function() {
-					var firstUpload = MetacatUI.statsModel.get("firstUpload");
-					if (firstUpload != null) {
-						var dateParts = ((firstUpload).slice(0,10)).split("-");
-						var startDate = dateParts[1] + "/" + dateParts[2] + "/" + dateParts[0];
-						self.metricsModel.set({
-							"startDate": startDate
-						});
-					}
-					else {
-						self.metricsModel.set({
-							"startDate": "01/01/2012"
-						});
-					}
-				});
-
-				
-
-				if (this.model.get("type") == "node") {
-					var dateParts = null;
-					pid_list.push(this.model.get("nodeInfo").identifier);
-
-					// Setting request object parameters to retrieve the metrics
-					this.metricsModel.set({
-						"pid_list": pid_list,
-						"filterType": "repository"
-					});
-					this.metricsModel.fetch();
-				}
-				else if (this.model.get("type") == "person" || this.model.get("type") == "user") {
-					this.model.get("searchResults").facet.push("id");
-					this.model.get("searchResults").once("sync", function(){
-						var user_pids = self.model.get("searchResults").facetCounts.id
-						for(var i = 0; i < user_pids.length; i = i + 2) {
-							if (user_pids[i].length > 1) {
-								pid_list.push(user_pids[i])
-							}
-						}
-
-						// Setting request object parameters to retrieve the metrics
-						self.metricsModel.set({
-							"pid_list": pid_list,
-							"filterType": "user"
-						});
-						self.metricsModel.fetch();
-					});
-
-					this.listenTo(this.model, "change:isMemberOf", this.getProfileGroups);
-					this.getProfileGroups();
-				}
-
-				MetacatUI.statsModel.once("change:metadataCount", function(){
-					if( MetacatUI.statsModel.get("metadataCount") )
-						view.$("#total-dataset-container").text(MetacatUI.appView.numberAbbreviator(this.get("metadataCount"), 1));
-				});
-				
-
-				// Render the statsView for this profile
-				this.statsView = new StatsView({
-					title: "Statistics and Figures",
-					userType: this.model.get("type"),
-					metricsModel: this.metricsModel,
-					description: description,
-					el: this.$("#user-stats")
-				});
-
-				this.subviews.push(this.statsView);
-				this.statsView.render();
-
-				if(this.model.noActivity)
-					this.statsView.$el.addClass("no-activity");
-
-				if(this.model.isNode())
-					this.insertReplicas();
-			}
-			
 
 			var username = this.model.get("username"),
 				view = this;
@@ -475,38 +370,21 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.listenToOnce(MetacatUI.statsModel, "change:firstUpload", this.insertFirstUpload);
 
 			this.listenToOnce(MetacatUI.statsModel, "change:totalUploads", function(){
-				view.$("#total-upload-container").text(MetacatUI.appView.numberAbbreviator(MetacatUI.statsModel.get("totalUploads"), 1));
+				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalUploads")));
 			});
 
-			// If the user type is Node/Person then insert metric counts from Stats View
+			MetacatUI.statsModel.once("change:downloads", function(){
+				if( !this.get("downloads") )
+					view.$("#total-download-wrapper, section.downloads").hide();
+				else
+					view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
+			});
 
-			if (this.model.get("type") == "node" || this.model.get("type") == "person") {
-				// Insert Citations
-				this.metricsModel.once("change:totalCitations", function(){
-					if( !this.get("totalCitations"))
-						view.$("#total-citation-container, section.citations").hide();
-					else
-						view.$("#total-citation-container").text(MetacatUI.appView.numberAbbreviator(this.get("totalCitations"),1));
-				});
-
-				// Insert Downloads
-				this.metricsModel.once("change:totalDownloads", function(){
-					if( !this.get("totalDownloads"))
-						view.$("#total-download-wrapper, section.downloads").hide();
-					else
-						view.$("#total-download-container").text(MetacatUI.appView.numberAbbreviator(this.get("totalDownloads"),1));
-				});
-
-
-				// Insert Views
-				this.metricsModel.once("change:totalViews", function(){
-					if( !this.get("totalViews"))
-						view.$("#total-view-wrapper, section.views").hide();
-					else
-						view.$("#total-view-container").text(MetacatUI.appView.numberAbbreviator(this.get("totalViews"),1));
-				});
-
-			}
+			//Create a base query for the statistics
+			var statsSearchModel = this.model.get("searchModel").clone();
+			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
+			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+			MetacatUI.statsModel.set("searchModel", statsSearchModel);
 
 			//Create the description for this profile
 			var description;
@@ -525,6 +403,20 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 					description = "";
 					break;
 			}
+
+			//Render the Stats View for this person
+			this.statsView = new StatsView({
+				title: "Statistics and Figures",
+				description: description,
+				el: this.$("#user-stats")
+			});
+			this.subviews.push(this.statsView);
+			this.statsView.render();
+			if(this.model.noActivity)
+				this.statsView.$el.addClass("no-activity");
+
+			if(this.model.isNode())
+				this.insertReplicas();
 		},
 
 		/*
@@ -680,7 +572,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 					dataType: "json",
 					success: function(data, textStatus, xhr){
 						if( data.response.numFound > 0 ){
-							view.$("#total-replicas-container").html(MetacatUI.appView.numberAbbreviator(data.response.numFound, 1));
+							view.$("#total-replicas-container").html(MetacatUI.appView.commaSeparateNumber(data.response.numFound));
 							view.$("#total-replicas-wrapper").show();
 						}
 						else{
@@ -712,7 +604,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				isSubView     : true,
 				filters       : false
 			});
-
 			this.subviews.push(view);
 			view.render();
 			view.$el.addClass("list-only");
@@ -781,26 +672,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				view.listenTo(userGroup, "sync", function(){
 					var list = view.createGroupList(userGroup);
 					this.$("#group-list-container").append(list);
-					this.$("#profile-group-list-container").append(list);
-				});
-				userGroup.getGroup();
-			});
-		},
-        
-        
-        getProfileGroups: function(){
-			var view = this,
-				groups = [];
-
-			//Create a group Collection for each group this user is a member of
-			_.each(_.sortBy(this.model.get("isMemberOf"), "name"), function(group){
-				var userGroup = new UserGroup([view.model], group);
-				groups.push(userGroup);
-
-				view.listenTo(userGroup, "sync", function(){
-					var list = view.createGroupList(userGroup);
-					$(list).attr("id", userGroup);
-					this.$("#profile-group-list-container").append(list);
 				});
 				userGroup.getGroup();
 			});
@@ -1440,9 +1311,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 		},
 
 		onClose: function () {
-			$("body").removeAttr("data-spy");
-			$("body").removeAttr("data-target");
-
 			//Clear the template
 			this.$el.html("");
 
@@ -1464,36 +1332,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				view.onClose();
 			});
 			this.subviews = new Array();
-		},
-
-		// Perform the fixed menu logic for user profile
-		onScroll: function(ev) {
-			$.fn.scrollBottom = function() {
-				return $(document).height() - this.scrollTop() - this.height();
-			};
-
-			var width = $('#user-profile-menu').width();
-
-			// Fix the nav menu once we reach to the top-left corner of the screen
-			var y = 180;
-			var gap = $(window).height() - $('#user-profile-menu').height() - 10;
-			var scrollPos = $(window).scrollTop();
-			var visibleFoot = y - $(window).scrollBottom();
-
-			if(scrollPos < 180){
-				$('#user-profile-menu').removeClass('fixed-menu');
-			} else if (visibleFoot > gap) {
-				$('#user-profile-menu').css({
-					top: "auto",
-					bottom: visibleFoot + "px"
-				});
-			} else {
-				// A temporary hack to fix the `fixed` witdth solution.
-				$('#user-profile-menu').addClass('fixed-menu');
-				$('#user-profile-menu').css("width", width.toString() + "px");
-			}
 		}
-
 
 	});
 

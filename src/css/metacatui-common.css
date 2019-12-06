@@ -1899,7 +1899,8 @@ i.catalog-metric-icon {
 *	  Metric Modal / Profile Chart (Views, Downloads, Citations)	  *
 ***********************************************************/
 
-#user-views-chart, #user-downloads-chart {
+#user-views-chart,
+#user-downloads-chart {
     width: 90%;
 }
 
@@ -4387,94 +4388,11 @@ tfoot .control i{
 ** User Profile ***
 ******************************************/
 
-/* Basic stylig of user menu navigation */
-.list-group-item {
-	color: #208095;
-}
-.user-menu-nav {
-	display: block;
-}
-.user-menu-icon {
-	width: 25px;
-	color: #208095;
-	float: left;
-	font-size: 16px;
-}
-.user-menu-text {
-	width: 175px;
-	font-weight: normal;
-	color: #555;
-}
-
-
-/* User menu nav hover effects*/
-.list-group-item:hover {
-	display: block;
-	color: #FFF;
-	background-color: #208095;
-}
-.list-group-item:hover > a > span {
-	color: #FFF;
-}
-.list-group-item:hover > .user-menu-nav > .user-menu-container > .badge {
-	background-color: #FFF;
-	color: #208095;
-	font-weight: normal;
-}
-
-
-/* Active list sections of the user profile navigation */
-.list-group-item.active {
-	display: block;
-	color: #FFF;
-	background-color: #208095;
-}
-.list-group-item.active > a > span {
-	color: #FFF;
-}
-.list-group-item.active > .user-menu-nav > .user-menu-container > .badge {
-	background-color: #FFF;
-	color: #208095;
-	font-weight: normal;
-}
-
-.user-menu-container {
-	width: auto;
-	margin-right: -20px;
-	margin-top: -10px;
-	float: right;
-}
-.user-menu-container > .badge {
-	background-color: #208095;
-	color: #FFF;
-}
-
-.user-menu-container > .badge:hover {
-	background-color: #208095;
-	color: #FFF;
-}
-
-section #user-profile-menu > .hgroup > .logo {
-	display: block;
+.user-view-section > section {
+    max-width: 1200px;
+    width: 90%;
     margin-left: auto;
     margin-right: auto;
-    width: 50%;
-}
-#user-profile-menu > #user-membership-container > ul > li.list-group-item {
-    padding: none;
-    display: block;
-}
-#user-profile-menu > #user-membership-container > ul > li.list-group-item:hover,
-#user-profile-menu > #user-membership-container > ul > li.list-group-item > a:hover {
-    background-color: #208095;
-    color: #fff;
-}
-.section.profile {
-    position: relative;
-}
-.fixed-menu {
-    top: 10px;
-    position: fixed;
 }
 #profile-content {
     float: right;
