@@ -1,6 +1,11 @@
-<%
-	var portalTerm = MetacatUI.appModel.get("portalTermSingular") || "portal";
-%>
+<% 	if (userType == "portal") { %>
+		<% var summaryTerm = "Summary" %>
+		<% var userTerm = MetacatUI.appModel.get("portalTermSingular") || "portal"; %>
+	<%} else { %>
+		<% var summaryTerm = "Summary of holdings" %>
+		<% var userTerm = "repository" %>
+	<%}%>
+
 <article id="Profile" class="profile">
 <h2 class="profile-title"><%=title%></h2>
 <section class="charts-container">
@@ -10,11 +15,11 @@
 	<section id="user-summary" class="stripe quick-stats">
 		<div class="metrics-title">
 			<h3><i class='icon icon-signal'></i></h3>
-			<h3> Summary of holdings </h3>
+			<h3> <%= summaryTerm %> </h3>
 		</div>	
 		<section class="charts row-fluid">
 			<div class="span6 packages badge-container">
-				<div id="total-datasets" class="span6 show-loading"></div>
+				<div id="total-datasets" class="span4 show-loading"></div>
 				<div class="span8">
 					<p>
 						The total number of publicly-available metadata records. 
@@ -25,11 +30,11 @@
 				</div>
 			</div>
 			<div class="span6 packages badge-container">
-				<div id="total-size" class="span6 show-loading"></div>
+				<div id="total-size" class="span4 show-loading"></div>
 				<div class="span8">
 					<p>
 						The volume of all publicly-available metadata and data files
-						in this repository. Only the latest version of each file is 
+						in this <%= userTerm %>. Only the latest version of each file is 
 						included.
 					</p>
 				</div>
@@ -40,7 +45,7 @@
 	<section class="stripe metadata-assessment">
 		<section class="charts">
 			<h3>Metadata Assessment</h3>
-			<p>This graph shows the assessment score for all metadata in this <%= portalTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
+			<p>This graph shows the assessment score for all metadata in this <%= userTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
 			<div class = "static-img-container">
 				<div id="metadata-assessment-loading" class="show-loading"></div>
 				<img id="metadata-assessment-graphic">
@@ -64,7 +69,6 @@
 		<div class="clear"></div>
 	</section>
 	<% } %>
-	
 
 	<% if(!hideDownloadsChart){ %>
 		<section id="user-downloads" class="stripe metrics">
@@ -75,7 +79,7 @@
 			</div>
 			<div class="downloads-metrics">
 				<div class="metric-description">
-					<p>For all versions of this data set, the number of times that all or part of this data set was downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
+					<p>For all versions of the data sets in this <%= userTerm %>, the number of times that all or part of these data sets were downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
 					<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
 				</div>
 				<div id="user-downloads-chart" class='metric-chart'>
@@ -97,7 +101,7 @@
 		</div>
 		<div class="views-metrics">
 			<div class="metric-description">
-				<p>For all versions of this data set, the number of times that all or part of this data set was viewed over time. These view counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that views from some Internet robots and repeat views within a certain time window are excluded.</p>
+				<p>For all versions of the data sets in this <%= userTerm %>, the number of times that all or part of these data sets was viewed over time. These view counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that views from some Internet robots and repeat views within a certain time window are excluded.</p>
 				<p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
 			</div>
 			<div id="user-views-chart" class='metric-chart'>
@@ -121,9 +125,10 @@
 				<div class="metadata-updates-chart show-loading span6"></div>
 				<div class="data-updates-chart show-loading span6"></div>
 			</section>
-		</div>
+		</section>
 	</section>
 	<% } %>
+	
 	<section class="stripe format-charts-container">
 		<section class="charts">
 			<section class="chart-title">	

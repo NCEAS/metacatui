@@ -1925,7 +1925,7 @@ i.catalog-metric-icon {
 .views-metrics .metric-chart text,
 .downloads-metrics .metric-chart text {
 	fill: #565656;
-	font-size: 9px;
+	font-size: 10px;
 	font-family: Helvetica, Arial, "sans serif";
 }
 
@@ -4607,8 +4607,7 @@ address.email-container:before{
 }
 .profile .stripe{
 	border-top: 1px dashed #CCC;
-    padding-bottom: 20px;
-    padding-top: 20px;
+    padding: 20px 20px 20px 20px;
 }
 .profile .packages p {
     color: #333;
@@ -7021,4 +7020,13 @@ CSS library fixes
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
   background-image:      -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
   background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+}
+
+/* Portal Citations Metric Chart */
+#user-citations > .citations-metrics-list > .empty-citation-list {
+	width: 90%;
+	height: 5%;
+	top: unset;
+	left: 5%;
+	margin: 0 auto;
 }
