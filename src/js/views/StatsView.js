@@ -171,9 +171,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		
 		},
 
-        /**    
-         * renderMetrics - Insert the metrics charts into the view
-         */     
 		renderMetrics: function(){
 			this.renderCitationMetric();
 			this.renderDownloadMetric();
@@ -243,13 +240,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
             if (width == null || width < 0) {
                 width = 600;
-            }
+			}
+
+			var trimmedMetricMonths = [].concat(metricMonths)
+			
+			//trim off the leading zeros and their corresponding months
+			for (var i = 0 ; i < metricCount.length; i++) {
+				if ( metricCount[i] == 0 ) {
+					metricCount.splice(i,1);
+					trimmedMetricMonths.splice(i,1);
+					i--;
+				}
+				else {
+					break;
+				}		
+			}
 
             //Draw a metric chart
             var modalMetricChart = new MetricsChart({
                             id: metricNameLemma + "-chart",
                             metricCount: metricCount,
-                            metricMonths: metricMonths,
+                            metricMonths: trimmedMetricMonths,
                             type: viewType,
                             metricName: metricName,
                             width: width
