@@ -136,10 +136,7 @@ define(["jquery",
                 el: document.createElement("div"),
                 model: statsModel,
                 userType: "portal",
-                // @Peter TODO: change the following to false when StatsView.js
-                // is ready to render the metadata assessment image:
-                hideMetadataAssessment: true,
-
+                hideMetadataAssessment: false,
                 // Rendering metrics on the portal
                 hideCitationsChart: false,
                 hideDownloadsChart: false,
