@@ -1274,12 +1274,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
     },
 
     getMdqScores: function(){
-        // Get a reference to the body element, and create a new image object
-        var body = document.querySelector('body'),
-        myImage = new Image();
+        var myImage = new Image();
         var model = this;
         myImage.crossOrigin = ""; // or "anonymous"
-        
+        if(MetacatUI.appView.currentView === null) return;
         // Call the function with the URL we want to load, but then chain the
         // promise then() method on to the end of it. This contains two callbacks
         var serviceUrl = MetacatUI.appModel.get('mdqScoresServiceUrl');
