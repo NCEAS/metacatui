@@ -25,10 +25,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       else if(this.model && this.model.type == "Package")
         this.metadata = this.model.getMetadata();
       //If the model is a metadata doc and there was no other metadata specified, then use the model
-      else if(this.model && (this.model.get("formatType") == "METADATA") && !this.metadata)
+      else if(this.model && (this.model.getType() == "metadata") && !this.metadata)
         this.metadata = this.model;
 
-      this.isCollection = this.metadata.getType() == "collection" || this.metadata.getType() == "portal";
+      //Check if the given metadata object is a portal or collection
+      if( this.metadata ){
+        this.isCollection = this.metadata.getType() == "collection" || this.metadata.getType() == "portal";
+      }
 
     },
 
