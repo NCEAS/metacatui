@@ -447,8 +447,7 @@ img.icon{
 ** Results and Result Rows ***
 ******************************************/
 .result-row{
-	padding: 5px;
-	padding-left: 10px;
+	padding: 10px 20px;
 	 width: 95%;
 	 width: calc(100% - 15px);
 	 border-top: 1px solid #EEE;
@@ -1871,9 +1870,15 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 /******************************************
 * Search Page / Data Catalog Page Metrics
 ******************************************/
+.catalog-metrics{
+  float: right;
+  margin-right: 0px;
+}
 .catalog-metrics .badge {
 	background-color: #dedede;
 	color: #666;
+  min-width: 47px;
+  text-align: center;
 }
 i.catalog-metric-icon {
 	margin-right: 3px;

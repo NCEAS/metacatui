@@ -12,9 +12,6 @@
 </div>
 <div class="clear"></div>
 <div class="info-icons  ">
-	<% if(!isPublic){ %>
-		<div class="private icons "><i class="icon icon-lock private " title="This is private content."></i></div>
-	<% } %>
 	<div class="icons ">
     <% if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) { %>
         <a class="download disabled-download" title="There may be multiple datasets associated with this metadata record. View the metadata page to choose a dataset to download."><i class="icon icon-cloud-download"></i></a>
@@ -73,5 +70,8 @@
 			        <i class='icon catalog-metric-icon'></i>
 			      </span>
 			    </div>
+          <% if(!isPublic){ %>
+            <div class="private icons "><i class="icon icon-lock private " title="This is private content."></i></div>
+          <% } %>
       	<div class="clear"></div>
   </div><!-- END info-icons -->
