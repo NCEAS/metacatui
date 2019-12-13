@@ -136,7 +136,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
           model.set('totalBeginDates', 0);
 
           //Construct a query
-          var query = decodeURIComponent(model.get('query')) +
+          var query = model.get('query') +
                 " AND endDate:[" + model.firstPossibleDate + " TO " + (new Date()).toISOString() + "]" + //Use date filter to weed out badly formatted data
                 " AND -obsoletedBy:*",
               //Get one row only
@@ -201,7 +201,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       }
 
       //Construct a query
-      var query = decodeURIComponent(this.get('query')) +
+      var query = this.get('query') +
             //Use date filter to weed out badly formatted data
             " AND beginDate:[" + this.firstPossibleDate + " TO " + (new Date()).toISOString() + "]" +
             " AND -obsoletedBy:*",
@@ -258,7 +258,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       var now = new Date();
 
       //Get the latest temporal data coverage year
-      var query = decodeURIComponent(this.get('query')) +
+      var query = this.get('query') +
           " AND endDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "]" + //Use date filter to weed out badly formatted data
           " AND -obsoletedBy:*";
       var rows = 1,
@@ -328,7 +328,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       var model = this;
 
       //Build the query to get the format types
-      var query = decodeURIComponent(this.get('query')) + " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*",
+      var query = this.get('query') + " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*",
           rows  = "2",
           group = true,
           groupField = "formatType",
@@ -438,7 +438,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         return;
       }
 
-      var query = decodeURIComponent(this.get('query')) + " AND formatType:DATA AND -obsoletedBy:*",
+      var query = this.get('query') + " AND formatType:DATA AND -obsoletedBy:*",
           facet = "true",
           facetField = "formatId",
           facetLimit = "-1",
@@ -494,7 +494,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			var model = this;
 
-      var query = decodeURIComponent(this.get('query')) + " AND formatType:METADATA AND -obsoletedBy:*",
+      var query = this.get('query') + " AND formatType:METADATA AND -obsoletedBy:*",
           facet = "true",
           facetField = "formatId",
           facetLimit = "-1",
@@ -552,7 +552,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
       var now = new Date();
 
-      var metadataQuery = decodeURIComponent(model.get('query')) +
+      var metadataQuery = model.get('query') +
                           " AND -obsoletedBy:* AND formatType:METADATA";
 
       var firstPossibleUpdate = MetacatUI.nodeModel.isCN(MetacatUI.nodeModel.get("currentMemberNode"))?
@@ -625,7 +625,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
           model.set('firstUpdate', updateDates[0]);
         }
 
-        var dataQuery = decodeURIComponent(model.get('query')) +
+        var dataQuery = model.get('query') +
                         " AND -obsoletedBy:* AND formatType:DATA";
 
         if( model.get("usePOST") ){
@@ -725,7 +725,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         firstPossibleUpload = firstPossibleUpload.toISOString();
 
       //Get the earliest upload date
-      var query = decodeURIComponent(this.get('query')) +
+      var query = this.get('query') +
                   " AND formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
                   " AND dateUploaded:[" + firstPossibleUpload + " TO " + now.toISOString() + "]" + //Weeds out badly formatted dates
                   " AND -obsoletes:*",    //Only count one version of a revision chain
@@ -892,7 +892,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       var now = new Date();
 
       //The full query
-      var query = decodeURIComponent(this.get('query')) +
+      var query = this.get('query') +
         //Use date filter to weed out badly formatted data
         " AND beginDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "]" +
         " AND -obsoletedBy:*",
