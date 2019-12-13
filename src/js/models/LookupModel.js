@@ -20,12 +20,15 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		bioportalSearch: function(request, response, localValues, allValues) {
 
 			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalAPIKey')) {
 				response(localValues);
 				return;
 			}
 
-			var query = MetacatUI.appModel.get('bioportalSearchUrl') + request.term;
+			var query = MetacatUI.appModel.get('bioportalSearchUrl') +
+                  "?q=" + request.term +
+                  "&apikey=" + MetacatUI.appModel.get("bioportalAPIKey") +
+                  "&ontologies=ECSO&pagesize=1000&suggest=true";
 			var availableTags = [];
 			$.get(query, function(data, textStatus, xhr) {
 
@@ -79,7 +82,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		bioportalExpand: function(term) {
 
 			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalAPIKey')) {
 				response(null);
 				return;
 			}
@@ -87,7 +90,10 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			var terms = [];
 			var countdown = 0;
 
-			var query = MetacatUI.appModel.get('bioportalSearchUrl') + term;
+			var query = MetacatUI.appModel.get('bioportalSearchUrl') +
+                  "?q=" + term +
+                  "&apikey=" + MetacatUI.appModel.get("bioportalAPIKey") +
+                  "&ontologies=ECSO&pagesize=1000&suggest=true";;
 			$.ajax(
 			{
 				url: query,
@@ -150,11 +156,14 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			}
 
 			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
+			if (!MetacatUI.appModel.get('bioportalAPIKey')) {
 				return;
 			}
 
-			var query = MetacatUI.appModel.get('bioportalSearchUrl') + encodeURIComponent(uri);
+			var query = MetacatUI.appModel.get('bioportalSearchUrl') +
+                  "?q=" + encodeURIComponent(uri) +
+                  "&apikey=" + MetacatUI.appModel.get("bioportalAPIKey") +
+                  "&ontologies=ECSO&pagesize=1000&suggest=true";
 			var availableTags = [];
 			var model = this;
 			$.get(query, function(data, textStatus, xhr) {
@@ -257,11 +266,6 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 				people = [];
 			}
 
-			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
-				return;
-			}
-
 			var query = MetacatUI.appModel.get('orcidBaseUrl')  + uri.substring(uri.lastIndexOf("/"));
 			var model = this;
 			$.get(query, function(data, status, xhr) {
@@ -287,12 +291,6 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		 * Supplies search results for ORCiDs to autocomplete UI elements
 		 */
 		orcidSearch: function(request, response, more, ignore) {
-
-			// make sure we have something to lookup
-			if (!MetacatUI.appModel.get('bioportalSearchUrl')) {
-				response(more);
-				return;
-			}
 
 			var people = [];
 

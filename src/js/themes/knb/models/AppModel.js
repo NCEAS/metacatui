@@ -108,7 +108,6 @@ define(['jquery', 'underscore', 'backbone'],
       formatsServiceUrl: null,
       formatsUrl: "/formats",
       //grantsUrl: null,
-      //bioportalSearchUrl: null,
       //orcidSearchUrl: null,
       //orcidBioUrl: null,
       signInUrl: null,
@@ -116,7 +115,6 @@ define(['jquery', 'underscore', 'backbone'],
       signInUrlOrcid: null,
       signInUrlLdap: null,
       tokenUrl: null,
-      //annotatorUrl: null,
       accountsUrl: null,
       pendingMapsUrl: null,
       accountsMapsUrl: null,
@@ -167,9 +165,29 @@ define(['jquery', 'underscore', 'backbone'],
       // Set to false if this MetacatUI is using a Metacat version before 2.10.0
       archivedContentIsIndexed: true,
 
-      /* Semantic annotation configuration */
-      bioportalAPIKey: null,
+      /**
+      * Semantic annotation configuration
+      * Include your Bioportal api key to show ontology information for metadata annotations
+      * see: http://bioportal.bioontology.org/account
+      * @type {string}
+      */
+      bioportalAPIKey: "",
+      /**
+      * The Bioportal REST API URL, which is set dynamically only if a bioportalAPIKey is configured
+      * @readonly
+      * @type {string}
+      */
+      bioportalSearchUrl: "https://data.bioontology.org/search",
+      /**
+      * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
+      * @readonly
+      * @type {object}
+      */
       bioportalLookupCache: {},
+      /**
+      * Set this option to true to display the annotation icon in search result rows when a dataset has an annotation
+      * @type {boolean}
+      */
       showAnnotationIndicator: false,
 
       // A lookup map of portal names to portal seriesIds
@@ -327,6 +345,21 @@ define(['jquery', 'underscore', 'backbone'],
           ]
         }
       ]
+
+      /**
+      * The following configuration options are deprecated or experimental and should only be changed by advanced users
+      */
+      /**
+      * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
+      * @deprecated
+      * @readonly
+      */
+      //bioportalBatchUrl: "https://data.bioontology.org/batch",
+      /**
+      * This DataONE API Annotator URL is used by the experimental and unsupported AnnotatorView to save an annotation
+      * @deprecated
+      */
+      //annotatorUrl: null
     },
 
     defaultView: "data",
@@ -411,6 +444,10 @@ define(['jquery', 'underscore', 'backbone'],
 
         if(typeof this.get("d1LogServiceUrl") != "undefined")
           this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
+
+        //Annotator API
+        if(typeof this.get("annotatorUrl") !== "undefined")
+          this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');
 
       }
 

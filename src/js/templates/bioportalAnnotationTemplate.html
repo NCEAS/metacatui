@@ -2,11 +2,11 @@
     <%= context %> <em><a href="<%= propertyURI %>"><%= propertyLabel %></a></em> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong>
 </div>
 <div class="annotation-popover-definition">
-    <% if (!valueResolved) { %>
+    <% if (!valueResolved && MetacatUI.appModel.get("bioportalAPIKey")) { %>
         Looking for more information about <a href="<%= valueURI %>"><%= valueLabel %></a>.
     <% } else if (valueResolved && valueDefinition === null) { %>
         No extra information could be found for <a href="<%= valueURI %>"><%= valueLabel %></a>.
-    <% } else { %>
+    <% } else if(valueDefinition) { %>
         <i class="icon-link"></i> <strong><a href="<%= valueURI %>"><%= valueLabel %></a></strong> is defined as "<%= valueDefinition %>".
     <% } %>
 
