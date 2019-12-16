@@ -9,7 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		defaults: function(){
 			return{
 				type: "person", //assume this is a person unless we are told otherwise - other possible type is a "group"
-				checked: false, //Set to true when we have checked the status of this user
+				checked: false, //Is set to true when we have checked the account/subject info of this user
+        tokenChecked: false, //Is set to true when the uer auth token has been checked
 				basicUser: false, //Set to true to only query for basic info about this user - prevents sending queries for info that will never be displayed in the UI
 				lastName: null,
 				firstName: null,
@@ -536,6 +537,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				model.set('username', username);
 				model.set("token", token);
 				model.set("loggedIn", loggedIn);
+        model.set("tokenChecked", true);
 
 				model.getTokenExpiration(payload);
 
