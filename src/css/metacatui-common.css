@@ -1582,6 +1582,10 @@ body > .alert-container {
 .attributeList > .row-fluid > .span2 {
   max-height: 700px;
   overflow: scroll;
+  width: 25%;
+}
+.attributeList > .row-fluid > .span10{
+  width: 72%;
 }
 .attributeListTable tr td:last-child a{
 	white-space: nowrap;
