@@ -1159,7 +1159,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           }
 
           var mapBlob = new Blob([mapXML], {type : 'application/xml'});
-          formData.append("object", mapBlob);
 
           //Get the size of the new resource map
           this.packageModel.set("size", mapBlob.size);
@@ -1178,7 +1177,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
           //Send the system metadata
           var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
+
+          //Add the object XML and System Metadata XML to the form data
+          //Append the system metadata first, so we can take advantage of Metacat's streaming multipart handler
           formData.append("sysmeta", xmlBlob, "sysmeta");
+          formData.append("object", mapBlob);
 
           var collection = this;
           var requestSettings = {

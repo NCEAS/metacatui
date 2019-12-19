@@ -1027,8 +1027,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         var sysMetaXMLBlob = new Blob([sysMetaXML], {type : 'application/xml'});
 
         //Add the object XML and System Metadata XML to the form data
-        formData.append("object", xmlBlob);
+        //Append the system metadata first, so we can take advantage of Metacat's streaming multipart handler
         formData.append("sysmeta", sysMetaXMLBlob, "sysmeta");
+        formData.append("object", xmlBlob);
       }
       catch(error){
          //Reset the identifier since we didn't actually update the object
