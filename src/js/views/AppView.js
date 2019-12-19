@@ -124,16 +124,28 @@ define(['jquery',
 			// close the current view
 			if (this.currentView){
 
-				if( typeof this.currentView.confirmClose == "function" ){
-					var confirmMsg = this.currentView.confirmClose();
+        //If the current view has a function to confirm closing of the view, call it
+				if( typeof this.currentView.canClose == "function" ){
 
-					if(confirmMsg){
-						var leave = confirm(confirmMsg);
-						if( !leave ){
-							MetacatUI.uiRouter.undoLastRoute();
-							return;
-						}
-					}
+          //If the user or view confirmed that the view shouldn't be closed, then don't navigate to the next route
+          if( !this.currentView.canClose() ){
+
+            //Get a confirmation message from the view, or use a default one
+            if( typeof this.currentView.getConfirmCloseMessage == "function" ){
+              var confirmMessage = this.currentView.getConfirmCloseMessage();
+            }
+            else{
+              var confirmMessage = "Leave this page?";
+            }
+
+            //Show a confirm alert to the user and wait for their response
+            var leave = confirm(confirmMessage);
+            //If they clicked Cancel, then don't navigate to the next route
+            if(!leave){
+              MetacatUI.uiRouter.undoLastRoute();
+              return;
+            }
+          }
 				}
 
 				// need reference to the old/current view for the callback method

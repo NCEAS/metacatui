@@ -20,6 +20,13 @@ define(['underscore',
             EditorView, CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
             EditorTemplate, ObjectFormats, EditorSubmitMessageTemplate){
 
+    /**
+    * @class EML211EditorView
+    * @classdesc A view of a form for creating and editing EML 2.1.1 documents
+    * @name EML211EditorView
+    * @extends EditorView
+    * @constructs
+    */
     var EML211EditorView = EditorView.extend({
 
         type: "EML211Editor",
@@ -91,10 +98,12 @@ define(['underscore',
         /* Render the view */
         render: function() {
 
+          //Execute the superclass render() function, which will add some basic Editor functionality
+          EditorView.prototype.render.call(this);
+
           MetacatUI.appModel.set('headerType', 'default');
 
-          //Style the body as an Editor
-          $("body").addClass("Editor rendering");
+          //Empty the view element first
           this.$el.empty();
 
           //Inert the basic template on the page
@@ -119,10 +128,8 @@ define(['underscore',
           //If we haven't checked for authentication yet,
           //wait until the user info is loaded before we request the Metadata
           else{
-              this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
+            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
           }
-
-          window.onbeforeunload = this.confirmClose;
 
           // When the user mistakenly drops a file into an area in the window
           // that isn't a proper drop-target, prevent navigating away from the
@@ -526,11 +533,28 @@ define(['underscore',
           this.listenTo(this.model, "invalid", this.showValidation);
           this.listenTo(this.model, "valid",   this.showValidation);
 
-            // When a data package member fails to load, remove it and warn the user
-            this.listenTo(MetacatUI.eventDispatcher, "fileLoadError", this.handleFileLoadError);
+          // When a data package member fails to load, remove it and warn the user
+          this.listenTo(MetacatUI.eventDispatcher, "fileLoadError", this.handleFileLoadError);
 
-            // When a data package member fails to be read, remove it and warn the user
-            this.listenTo(MetacatUI.eventDispatcher, "fileReadError", this.handleFileReadError);
+          // When a data package member fails to be read, remove it and warn the user
+          this.listenTo(MetacatUI.eventDispatcher, "fileReadError", this.handleFileReadError);
+
+          //Set a beforeunload event only if there isn't one already
+          if( !this.beforeunloadCallback ){
+            var view = this;
+            //When the Window is about to be closed, show a confirmation message
+            this.beforeunloadCallback = function(e){
+              if( !view.canClose() ){
+                //Browsers don't support custom confirmation messages anymore,
+                // so preventDefault() needs to be called or the return value has to be set
+                e.preventDefault();
+                e.returnValue = "";
+              }
+              return;
+            }
+            window.addEventListener("beforeunload", this.beforeunloadCallback);
+          }
+
         },
 
         /**
@@ -880,25 +904,30 @@ define(['underscore',
 
         },
 
-        /*
-        * This function is called whenever the user is about to leave the webpage
+        /**
+        * @inheritdoc
         */
-        confirmClose: function(){
-
-          //If the user isn't logged in, we can leave this view without confirmation
-          if(!MetacatUI.appUserModel.get("loggedIn"))
-            return;
-
+        hasUnsavedChanges: function(){
           //If the form hasn't been edited, we can close this view without confirmation
-          if( typeof MetacatUI.rootDataPackage.getQueue != "function" || !MetacatUI.rootDataPackage.getQueue().length)
-            return;
-
-          return "Are you sure you want to leave this page? All of your changes will be lost.";
-
+          if( typeof MetacatUI.rootDataPackage.getQueue != "function" || MetacatUI.rootDataPackage.getQueue().length)
+            return true;
+          else
+            return false;
         },
 
-        /* Close the view and its sub views */
+        /**
+        *  @inheritdoc
+        */
         onClose: function() {
+
+          //Execute the parent class onClose() function
+          //EditorView.prototype.onClose.call(this);
+
+          //Remove the listener on the Window
+          if( this.beforeunloadCallback ){
+            window.removeEventListener("beforeunload", this.beforeunloadCallback);
+            delete this.beforeunloadCallback;
+          }
 
           //Stop listening to the "add" event so that new package members aren't rendered.
           //Check first if the DataPackage has been intialized. An easy check is to see is
@@ -924,9 +953,6 @@ define(['underscore',
           });
 
           this.subviews = [];
-
-          //Remove the click listener on the onbeforeunload event
-          window.onbeforeunload = null;
 
         },
 

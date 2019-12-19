@@ -18,6 +18,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
   /**
   * @class PortalEditorView
+  * @classdesc A view of a form for creating and editing DataONE Portal documents
+  * @name PortalEditorView
+  * @extends EditorView
+  * @constructs
   */
   var PortalEditorView = EditorView.extend({
 
@@ -110,8 +114,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     render: function(){
 
-      $("body").addClass("Editor")
-               .addClass("Portal");
+      //Execute the superclass render() function, which will add some basic Editor functionality
+      EditorView.prototype.render.call(this);
+
+      $("body").addClass("Portal");
 
       // Display a spinner to indicate loading until model is created.
       this.$el.html(this.loadingTemplate({
@@ -243,6 +249,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         secondaryColorTransparent: this.model.get("secondaryColorTransparent"),
         accentColorTransparent: this.model.get("accentColorTransparent")
       }));
+
+      //Remove the rendering class from the body element
+      $("body").removeClass("rendering");
 
       // Auto-resize the height of the portal title field on user-input and on
       // window resize events.
@@ -689,18 +698,17 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     },
 
     /**
-     * This function is called when the app navigates away from this view.
-     * Any clean-up or housekeeping happens at this time.
+     * @inheritdoc
      */
     onClose: function(){
 
-      $("body")
-        .removeClass("Editor")
-        .removeClass("Portal");
+      //Call the superclass onClose() function
+      EditorView.prototype.onClose.call(this);
 
-      //Remove listeners
-      this.stopListening();
-      this.undelegateEvents();
+      //Remove the Portal class from the body element
+      $("body").removeClass("Portal");
+
+      //Remove the scroll listener
       $(window).off("scroll", "", this.handleScroll);
     },
 
