@@ -532,12 +532,6 @@ define(['jquery',
 			$("body,html").stop(true,true) //stop first for it to work in FF
 						  .animate({ scrollTop: $(pageElement).offset().top - 40 - totalOffset}, 1000);
 			return false;
-		},
-
-		//Will pop up an alert asking if the user wants to leave the page or not.
-		confirmLeave: function(e){
-			var decision = confirm("Do you want to leave this page? All information you've entered will be lost.");
-			return decision;
 		}
 
 	});
