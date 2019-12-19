@@ -9,7 +9,7 @@ function ($, _, Backbone) {
 	var UIRouter = Backbone.Router.extend({
 
 		routes: {
-			''                               : 'renderIndex',    // the default route
+			''                                  : 'renderIndex',    // the default route
 			'about(/:anchorId)(/)'              : 'renderAbout',    // about page
 			'help(/:page)(/:anchorId)(/)'       : 'renderHelp',
 			'tools(/:anchorId)(/)'              : 'renderTools',    // tools page
@@ -18,7 +18,6 @@ function ($, _, Backbone) {
 			'data/my-data(/)'                   : 'renderMyData',
 			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
-			//'my-account'                   : 'renderUserSettings',
 			'external(/*url)(/)'                : 'renderExternal', // renders the content of the given url in our UI
 			'logout(/)'                         : 'logout', // logout the user
 			'signout(/)'                        : 'logout', // logout the user
@@ -31,8 +30,8 @@ function ($, _, Backbone) {
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
-			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal' // portal page
-
+			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
+      "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor"
 		},
 
 		helpPages: {
@@ -46,9 +45,6 @@ function ($, _, Backbone) {
 			var portalTermPlural = MetacatUI.appModel.get("portalTermPlural");
   		this.route( portalTermPlural + "(/:portalId)(/:portalSection)(/)",
 									["portalId", "portalSection"], this.renderPortal
-								);
-			this.route( "edit/" + portalTermPlural + "(/:portalIdentifier)(/:portalSection)(/)",
-									["portalIdentifier", "portalSection"], this.renderPortalEditor
 								);
 
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
@@ -331,13 +327,22 @@ function ($, _, Backbone) {
 
     /**
     * Renders the PortalEditorView
+    * @param {string} [portalTermPlural] - This should match the `portalTermPlural` configured in the AppModel.
     * @param {string} [portalIdentifier] - The id or labebl of the portal
 		* @param {string} [portalSection] - The name of the section within the portal to navigate to (e.g. "data")
     */
-    renderPortalEditor: function(portalIdentifier, portalSection){
+    renderPortalEditor: function(portalTermPlural, portalIdentifier, portalSection){
+
+      //If the user navigated to a route with a portal term other than the one supported, then this is not a portal editor route.
+      if( portalTermPlural != MetacatUI.appModel.get("portalTermPlural") ){
+        this.navigateToDefault();
+        return;
+      }
+
 			// Add the overall class immediately so the navbar is styled correctly right away
       $("body").addClass("Editor")
                .addClass("Portal");
+
       // Look up the portal document seriesId by its registered name if given
       if ( portalSection ) {
         this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);
@@ -615,9 +620,12 @@ function ($, _, Backbone) {
 
 			});
 
-			//The "view" route is not included in the route hash (it is set up during initialize),
+			//The "view" and portals routes are not included in the route hash (they are set up during initialize),
 			// so we have to manually add it here.
 			routeNames.push("view");
+      if( !routeNames.includes(MetacatUI.appModel.get("portalTermPlural")) ){
+        routeNames.push(MetacatUI.appModel.get("portalTermPlural"));
+      }
 
 			return routeNames;
 
