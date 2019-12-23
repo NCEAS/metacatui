@@ -151,10 +151,43 @@ define(['jquery', 'underscore', 'backbone'],
             else {
                 metricsObject["totalViews"] =  0
             }
-            
+
+            //trim off the leading zeros and their corresponding months
+            if (response.results.months != null) {
+                
+                // iterate all the metrics objects and remove the entry if the counts are 0
+                for (var i = 0 ; i < metricsObject["months"].length; i++) {
+
+                    if ( metricsObject["citations"] != null &&
+                        metricsObject["views"]     != null &&
+                        metricsObject["downloads"] != null ) {
+                            
+                        if (( metricsObject["citations"][i] == 0 ) &&
+                            ( metricsObject["views"][i]     == 0 ) &&
+                            ( metricsObject["downloads"][i] == 0 )) {
+                        
+                            metricsObject["months"].splice(i,1);
+                            metricsObject["citations"].splice(i,1);
+                            metricsObject["views"].splice(i,1);
+                            metricsObject["downloads"].splice(i,1);
+                            
+                            // if country facet was part of the request; update object;
+                            if ( metricsObject["country"] != null) {
+                                metricsObject["country"].splice(i,1)
+                            }
+                            
+                            // modified array size; decrement the counter;
+                            i--;
+                        }
+                        else {
+                            break;
+                        }	
+                    }
+                }
+            }
             
             return metricsObject;
-        }
+        },
 
     });
     return Metrics;
