@@ -5,7 +5,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 	// Statistics Model
 	// ------------------
-	var Stats = Backbone.Model.extend({
+	var Stats = Backbone.Model.extend(
+    /** @lends Stats.prototype */{
 		// This model contains all of the statistics in a user's or query's profile
 		defaults: {
 			query: "*:*", //Show everything

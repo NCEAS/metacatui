@@ -4,16 +4,18 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
     function($, _, Backbone, Filter, BooleanFilter, ChoiceFilter, DateFilter, NumericFilter, ToggleFilter) {
         "use strict";
 
-        /*
-         * Filters collection
-         * A collection of Filter models that represents a full search
-         * @typedef {Backbone.Collection} Filters
+        /**
+         * @class Filters
+         * @classdesc A collection of Filter models that represents a full search
+         * @name Filters
+         * @extends Backbone.Collection
+        * @constructor
          */
-        var Filters = Backbone.Collection.extend({
+        var Filters = Backbone.Collection.extend(
+          /** @lends Filters.prototype */{
 
             /**
-            * Creates a new Filters collection
-            * @constructs Filters
+            * Is executed when a new Filters collection is created
             */
             initialize: function(models, options) {
                 if (typeof options === "undefined") {

@@ -13,7 +13,8 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
   /**
   * @class PortEditorSettingsView
   */
-  var PortEditorSettingsView = PortEditorSectionView.extend({
+  var PortEditorSettingsView = PortEditorSectionView.extend(
+    /** @lends PortEditorSettingsView.prototype */{
 
     /**
     * The type of View this is
@@ -76,7 +77,6 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
 
     /**
     * Creates a new PortEditorSettingsView
-    * @constructs PortEditorSettingsView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){

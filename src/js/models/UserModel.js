@@ -3,9 +3,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 	function($, _, Backbone, JWS, SearchModel, SearchResults) {
 	'use strict';
 
-	// User Model
-	// ------------------
-	var UserModel = Backbone.Model.extend({
+	/**
+  * @class UserModel
+  * @extends Backbone.Model
+  * @constructor
+  */
+	var UserModel = Backbone.Model.extend(
+    /** @lends UserModel.prototype */{
 		defaults: function(){
 			return{
 				type: "person", //assume this is a person unless we are told otherwise - other possible type is a "group"

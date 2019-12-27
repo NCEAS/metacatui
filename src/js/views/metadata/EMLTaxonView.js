@@ -8,29 +8,30 @@
 */
 
 /* global define */
-define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLTaxonCoverage', 
-        'text!templates/metadata/taxonomicClassificationTable.html', 
-		'text!templates/metadata/taxonomicClassificationRow.html'], 
+define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLTaxonCoverage',
+        'text!templates/metadata/taxonomicClassificationTable.html',
+		'text!templates/metadata/taxonomicClassificationRow.html'],
     function(_, $, Backbone, EMLTaxonCoverage, TaxonomicClassificationTable, TaxonomicClassificationRow){
-	
-	var EMLTaxonView = Backbone.Model.extend({
-		
+
+	var EMLTaxonView = Backbone.Model.extend(
+    /** @lends EMLTaxonView.prototype */{
+
 		className: "row-fluid taxonomic-coverage",
-		
-		tagName: "div"
-		
+
+		tagName: "div",
+
 		initialize: function(options){
 			if(!options)
 				var options = {};
-			
+
 			this.isNew = options.isNew || false;
 			this.model = options.model || new EMLTaxonCoverage();
 		},
-		
+
 		// Creates a table to hold a single EMLTaxonCoverage element (table) for
 		// each root-level taxonomicClassification
 		render: function(coverage) {
-            
+
 			var finishedEl = $('<div class="row-fluid taxonomic-coverage"></div>');
 			$(finishedEl).data({ model: coverage });
 			$(finishedEl).attr("data-category", "taxonomic-coverage");
@@ -58,10 +59,10 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLTaxonCove
 			var newTableEl = this.createTaxonomicClassifcationTable();
 
 			$(finishedEl).append(newTableEl);
-			
+
 			return finishedEl;
 		}
 	});
-	
+
 	return EMLTaxonView;
 });

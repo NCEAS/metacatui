@@ -4,10 +4,12 @@ define(['underscore', 'jquery', 'backbone',
     'text!templates/metadata/EMLGeoCoverage.html'],
     function (_, $, Backbone, EMLGeoCoverage, EMLGeoCoverageTemplate) {
 
-        /*
-            The EMLGeoCoverage renders the content of an EMLGeoCoverage model
+        /**
+        * @class EMlGeoCoverageView
+        * @classdesc  The EMLGeoCoverage renders the content of an EMLGeoCoverage model
         */
-        var EMLGeoCoverageView = Backbone.View.extend({
+        var EMLGeoCoverageView = Backbone.View.extend(
+            /** @lends EMLGeoCoverageView.prototype */{
 
             type: "EMLGeoCoverageView",
 
@@ -60,7 +62,6 @@ define(['underscore', 'jquery', 'backbone',
              * If this is called from the user switching between latitude and longitude boxes,
              * we check to see if the input was valid and display any errors if we need to.
              *
-             * @function updateModel
              * @param e The event
              */
             updateModel: function (e) {
@@ -179,7 +180,6 @@ define(['underscore', 'jquery', 'backbone',
              * across the row and displays any errors. This id called when the user clicks out of an edit box
              * on to the page.
              *
-             * @function validate
              * @param e The event
              * @param options
              */
@@ -232,7 +232,6 @@ define(['underscore', 'jquery', 'backbone',
             /**
              * Highlight what will be removed when the remove icon is hovered over
              *
-             * @function toggleRemoveClass
              */
             toggleRemoveClass: function () {
                 this.$el.toggleClass("remove-preview");
@@ -241,7 +240,6 @@ define(['underscore', 'jquery', 'backbone',
             /**
              * Unmarks this view as new
              *
-             * @function notNew
              */
             notNew: function () {
                 this.$el.removeClass("new");

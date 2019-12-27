@@ -12,7 +12,8 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
   * @extends Backbone.View
   * @constructs
   */
-  var EditorView = Backbone.View.extend({
+  var EditorView = Backbone.View.extend(
+    /** @lends EditorView.prototype */{
 
 
     /**
@@ -40,6 +41,9 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       "click #save-editor" : "save"
     },
 
+    /**
+    * Renders this view
+    */
     render: function(){
       //Style the body as an Editor
       $("body").addClass("Editor rendering");

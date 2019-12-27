@@ -18,7 +18,6 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map"
     ],
-    /** @lends PortalModel.prototype */
     function($, _, Backbone, gmaps, uuid, Filters, SolrResults, PortalSectionModel, PortalImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
@@ -32,16 +31,20 @@ define(["jquery",
          * @module models/PortalModel
          * @name PortalModel
          * @constructor
-         * @return
         */
-        var PortalModel = CollectionModel.extend({
+        var PortalModel = CollectionModel.extend(
+            /** @lends PortalModel.prototype */{
 
-            /** @type {string} - The name of this type of model */
+            /**
+            * The name of this type of model
+            * @type {string}
+            */
             type: "Portal",
 
             /**
              * Overrides the default Backbone.Model.defaults() function to
              * specify default attributes for the portal model
+            * @type {object}
             */
             defaults: function() {
                 return _.extend(CollectionModel.prototype.defaults(), {
@@ -512,7 +515,7 @@ define(["jquery",
             },
 
             /**
-             * @typedef {Object} rgb - An RGB color value
+             * @typedef {Object} PortalModel#rgb - An RGB color value
              * @property {number} r - A value between 0 and 255 defining the intensity of red
              * @property {number} g - A value between 0 and 255 defining the intensity of green
              * @property {number} b - A value between 0 and 255 defining the intensity of blue
@@ -540,7 +543,7 @@ define(["jquery",
              * @param {Element} portalNode - The portal element of an XML document
              * @param {string} nodeName - The name of the node to be inserted
              *                             into xml
-             * @return {(jQuery\|boolean)} A jQuery object indicating a position,
+             * @return {(jQuery|boolean)} A jQuery object indicating a position,
              *                            or false when nodeName is not in the
              *                            portal schema
             */

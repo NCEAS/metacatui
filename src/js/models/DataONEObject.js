@@ -8,7 +8,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
          metadata attributes for the object at a minimum.
          TODO: incorporate Backbone.UniqueModel
         */
-        var DataONEObject = Backbone.Model.extend({
+        var DataONEObject = Backbone.Model.extend(
+          /** @lends DataONEObject.prototype */{
 
           type: "DataONEObject",
           selectedInEditor: false, // Has this package member been selected and displayed in the provenance editor?

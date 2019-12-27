@@ -13,17 +13,16 @@ define(["jquery",
 
   /**
   * @class CollectionModel
+  * @classdesc A collection of datasets, defined by one or more search filters
   * @name CollectionModel
   * @extends DataONEObject
-  * @constructs
+  * @constructor
   */
 	var CollectionModel = DataONEObject.extend(
-    /** @lends CollectionModel.prototype */
-    {
+    /** @lends CollectionModel.prototype */{
 
     /**
     * The name of this Model
-    * @name CollectionModel#type
     * @type {string}
     * @readonly
     */
@@ -31,9 +30,12 @@ define(["jquery",
 
     /**
     * Default attributes for CollectionModels
-    * @name CollectionModel#defaults
     * @type {Object}
     * @property {string[]} ignoreQueryGroups - The Filter query groups to not serialize to the collection definition part of the XML document
+    * @property {Filters} definitionFilters - A Filters collection that stores filters that have been serialized to the Collection.
+    * @property {Search} searchModel - A Search model with a Filters collection that contains the filters associated with this collection
+    * @property {SolrResults} searchResults - A SolrResults collection that contains the filtered search results of datasets in this collection
+    * @property {SolrResults} allSearchResults - A SolrResults collection that contains the unfiltered search results of all datasets in this collection
     */
     defaults: function(){
       return _.extend(DataONEObject.prototype.defaults(), {
@@ -46,18 +48,9 @@ define(["jquery",
         formatType: "METADATA",
         type: "collection",
         ignoreQueryGroups: ["catalog"],
-        /**
-        * A Filters collection that stores filters that have been serialized to the Collection.
-        * @type {Filters} */
         definitionFilters: null,
-        /** @type {Search} - A Search model with a Filters collection */
-        // that contains the filters associated with this collection
         searchModel: null,
-        /** @type {SolrResults} - A SolrResults collection that contains the */
-        // filtered search results of datasets in this collection
         searchResults: new SolrResults(),
-        /**  @type {SolrResults} - A SolrResults collection that contains the */
-        // unfiltered search results of all datasets in this collection
         allSearchResults: null
       });
     },

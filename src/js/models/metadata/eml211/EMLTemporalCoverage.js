@@ -2,7 +2,11 @@
 define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     function($, _, Backbone, DataONEObject) {
 
-	var EMLTemporalCoverage = Backbone.Model.extend({
+  /**
+  * @class EMLTemporalCoverage
+  */
+	var EMLTemporalCoverage = Backbone.Model.extend(
+    /** @lends EMLTemporalCoverage.prototype */{
 
 		defaults: {
 			objectXML: null,
@@ -353,7 +357,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		/**
 		 * This function checks whether the begin date is greater than the end date.
 		 *
-		 * @function isGreaterDate
 		 * @param {string} beginDate the begin date string
 		 * @param {string} endDate the end date string
 		 * @return {boolean}
@@ -405,7 +408,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         /**
 		 * This function checks whether the begin time is greater than the end time.
 		 *
-		 * @function isGreaterTime
 		 * @param {string} beginDate the begin date string
 		 * @param {string} endDate the end date string
 		 * @param {string} beginTime the begin time string

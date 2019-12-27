@@ -7,30 +7,58 @@ define(['jquery', 'underscore', 'backbone',
   function($, _, Backbone, Filter, FilterGroup, FilterGroupView, FilterView) {
   'use strict';
 
-  // Renders a display multiple FilterGroups
-  var FilterGroupsView = Backbone.View.extend({
+  /**
+  * @class FilterGroupsView
+  * @classdesc Creates a view of one or more FilterGroupViews
+  * @module views/filters/FilterGroupsView
+  * @name FilterGroupsView
+  * @extends Backbone.View
+  * @constructor
+  */
+  var FilterGroupsView = Backbone.View.extend(
+    /** @lends FilterGroupsView.prototype */{
 
-    //An array of FilterGroups
+    /**
+    * The FilterGroup models to display in this view
+    * @type {FilterGroup[]}
+    */
     filterGroups: [],
 
-    /** @type {Filters} - The Filters Collection that contains the same Filter
+    /**
+    * The Filters Collection that contains the same Filter
     * models from each FilterGroup and any additional Filter Models that may not be in
     * FilterGroups because they're not displayed or applied behind the scenes.
+    * @type {Filters}
     */
     filters: null,
 
+    /**
+    * @inheritdoc
+    */
     tagName: "div",
 
+    /**
+    * @inheritdoc
+    */
     className: "filter-groups tabbable",
 
-    /** @type {Boolean} - If true, displays the FilterGroups in a vertical list */
+    /**
+    * If true, displays the FilterGroups in a vertical list
+    * @type {Boolean}
+    */
     vertical: false,
 
+    /**
+    * @inheritdoc
+    */
     events: {
       "click .remove-filter" : "handleRemove",
       "click .clear-all"     : "removeAllFilters"
     },
 
+    /**
+    * @inheritdoc
+    */
     initialize: function (options) {
 
       if( !options || typeof options != "object" ){
@@ -48,6 +76,9 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
+    /**
+    * @inheritdoc
+    */
     render: function () {
 
       //Since this view may be re-rendered at some point, empty the element and remove listeners
@@ -460,7 +491,7 @@ define(['jquery', 'underscore', 'backbone',
     *  have multiple values, so one value is passed to this function at a time.
     * @param {Filter} filterModel - The Filter model that is being added to the display
     * @param {string|number|Boolean} value - The new value set on the Filter model that is displayed in this applied filter
-    * @returns {jQuery Element} - The complete applied filter element
+    * @returns {jQuery} - The complete applied filter element
     */
     createAppliedFilter: function(filterModel, value){
 

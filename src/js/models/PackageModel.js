@@ -4,7 +4,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 
 	// Package Model
 	// ------------------
-	var PackageModel = Backbone.Model.extend({
+	var PackageModel = Backbone.Model.extend(
+    /** @lends PackageModel.prototype */{
 		// This model contains information about a package/resource map
 		defaults: function(){
 			return {
@@ -1265,7 +1266,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					a.style.display = 'none';
 					document.body.appendChild(a);
 					a.click();
-					delete a;
+					a.remove();
 			   }
 
          //Send this exception to Google Analytics

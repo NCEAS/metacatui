@@ -10,8 +10,13 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
 
   /**
   * @class PortEditorSectionView
+  * @classdesc A view of a single section of the PortalEditorView.
+  * This default section view displays a choice of which PortalSection to add to the Portal.
+  * @extends Backbone.View
+  * @constructor
   */
-  var PortEditorSectionView = Backbone.View.extend({
+  var PortEditorSectionView = Backbone.View.extend(
+    /** @lends PortEditorSectionView.prototype */{
 
     /**
     * The type of View this is
@@ -57,7 +62,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
     sectionsOptionsContainer: "#section-options-container",
 
     /**
-     * @typedef {Object} sectionOption - Information about a section type that can be added to a portal
+     * @typedef {Object} PorttEditorSectionView#sectionOption - Information about a section type that can be added to a portal
      * @property {string} title - The name of the section type to be displayed to the user
      * @property {string} description - A brief description of the section type, to be displayed to the user
      * @property {string|number} limiter - The limiter is used to determine whether the user is allowed to add more of this section type. If limiter is a number, then it's used as the maximum number of the given sections allowed (currently this only applies to 'freeform'/markdown sections). If limiter is a string, it should be the name of the 'hide' option in the project model (e.g. hideMetrics for the metrics view). In this case, it's assumed that only one of the given page type is allowed.
@@ -66,7 +71,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
 
     /**
     * Information about each of the section types available to a user. Note that the key (e.g. "freeform") is used to ID the UI selection element.
-    * @type {sectionOption[]}
+    * @type {PorttEditorSectionView#sectionOption[]}
     */
     sectionsOptions: {
       freeform: {
@@ -93,7 +98,6 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
 
     /**
     * Creates a new PortEditorSectionView
-    * @constructs PortEditorSectionView
     * @param {Object} options - A literal object with options to pass to the view
     * @property {PortalSection} options.model - The PortalSection rendered in this view
     */

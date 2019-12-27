@@ -3,7 +3,14 @@ define(['underscore',
         'backbone'],
 function(_, $, Backbone){
 
-  var ColorPaletteView = Backbone.View.extend({
+  /**
+  * @class ColorPaletteView
+  * @classdesc A view that allows the user to select colors to form a color palette/scheme
+  * @extends Backbone.View
+  * @constructor
+  */
+  var ColorPaletteView = Backbone.View.extend(
+    /** @lends ColorPaletteView.prototype */{
 
     /**
     * The type of View this is
@@ -26,7 +33,6 @@ function(_, $, Backbone){
 
     /**
     * Creates a new ColorPaletteView
-    * @constructs ColorPaletteView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){

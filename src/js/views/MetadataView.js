@@ -44,8 +44,14 @@ define(['jquery',
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
   'use strict';
 
-
-  var MetadataView = Backbone.View.extend({
+ /**
+ * @class MetadataView
+ * @classdesc A human-readable view of a science metadata file
+ * @extends Backbone.View
+ * @constructor
+ */
+  var MetadataView = Backbone.View.extend(
+    /** @lends MetadataView.prototype */{
 
     subviews: [],
 
@@ -1670,8 +1676,8 @@ define(['jquery',
     * Finds the element in the rendered metadata that describes the given data entity.
     *
     * @param {(DataONEObject|SolrResult|string)} model - Either a model that represents the data object or the identifier of the data object
-    * @param {DOM Element} [el] - The DOM element to exclusivly search inside.
-    * @return {DOM Element} - The DOM element that describbbes the given data entity.
+    * @param {Element} [el] - The DOM element to exclusivly search inside.
+    * @return {Element} - The DOM element that describbbes the given data entity.
     */
     findEntityDetailsContainer: function(model, el){
       if(!el) var el = this.el;

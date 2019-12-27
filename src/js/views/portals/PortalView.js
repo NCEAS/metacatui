@@ -16,10 +16,16 @@ define(["jquery",
     function($, _, Backbone, Portal, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
         PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView) {
         "use_strict";
-        /* The PortalView is a generic view to render
+
+        /**
+        * @class PortalView
+        * @classdesc The PortalView is a generic view to render
          * portals, it will hold portal sections
+         * @extends Backbone.View
+         * @constructor
          */
-        var PortalView = Backbone.View.extend({
+        var PortalView = Backbone.View.extend(
+            /** @lends PortalView.prototype */{
 
             /**
              * The Portal element
@@ -115,8 +121,7 @@ define(["jquery",
             },
 
             /**
-             * Creates a new PortalView
-             * @constructs PortalView
+             * Is executed when a new PortalView is created
              */
             initialize: function(options) {
                 // Set the current PortalView properties

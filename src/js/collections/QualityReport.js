@@ -4,10 +4,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
   ],
   function ($, _, Backbone, rdf, uuid, md5, QualityCheck) {
 
-    /*
-     A DataPackage represents a hierarchical collection of
+    /**
+     @class QualityReport
+     @classdesc A DataPackage represents a hierarchical collection of
      packages, metadata, and data objects, modeling an OAI-ORE RDF graph.
      TODO: incorporate Backbone.UniqueModel
+     @extends Backbone.Collection
+     @constructor
     */
     var QualityReport = Backbone.Collection.extend({
 
@@ -35,7 +38,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
        * report that is generated from the MetaDIG quality engine.
        */
       model: QualityCheck,
-      
+
       parse: function(response, options) {
         // runStatus can be one of "success", "failure", "queued"
         this.runStatus = response.runStatus;
@@ -43,7 +46,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
         this.timestamp = response.timestamp;
         return response.result;
       },
-      
+
       fetch: function(options) {
         var collectionRef = this;
         var fetchOptions = {};
@@ -72,7 +75,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           return Backbone.Collection.prototype.fetch.call(collectionRef, fetchOptions);
         }
       },
-      
+
       groupResults: function (results) {
         var groupedResults = _.groupBy(results, function (result) {
           var color;
@@ -134,7 +137,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
       groupByType: function (results) {
         var groupedResults = _.groupBy(results, function (result) {
-            
+
           var check = result.get("check");
           var status = result.get("status");
 

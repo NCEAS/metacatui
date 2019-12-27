@@ -11,8 +11,12 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
 
   /**
   * @class EditCollectionView
+  * @classdesc A view that allows the user to edit the search filters that define their dataset collection
+  * @extends Backbone.View
+  * @constructor
   */
-  var EditCollectionView = Backbone.View.extend({
+  var EditCollectionView = Backbone.View.extend(
+    /** @lends EditCollectionView.prototype */{
 
     /**
     * The type of View this is
@@ -67,8 +71,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     },
 
     /**
-    * Creates a new EditCollectionView
-    * @constructs EditCollectionView
+    * Is exexcuted when a new EditCollectionView is created
     * @param {Object} options - A literal object with options to pass to the view
     * @property {CollectionModel} options.model - The collection whose search results will be displayed and edited in this view
     */

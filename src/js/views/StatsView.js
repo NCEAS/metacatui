@@ -5,18 +5,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
     LineChart, BarChart, DonutChart, CircleBadge, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 
-	var StatsView = Backbone.View.extend({
+	var StatsView = Backbone.View.extend(
+  /** @lends StatsView.prototype */{
 
 		el: '#Content',
 
     model: null,
 
     hideUpdatesChart: false,
-    
-    /**    
+
+    /**
      * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
      * @type {boolean}
-     */     
+     */
     hideMetadataAssessment: false,
 
 		template: _.template(profileTemplate),
@@ -35,7 +36,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 				this.el = options.el;
 
       this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
-      
+
       this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
 
       this.model = options.model || null;
@@ -73,7 +74,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			this.listenTo(this.model, 'change:mdqStats',	  	  this.drawMdqStats);
 
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
-      
+
 
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
@@ -87,16 +88,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 				hideDownloadsChart: !this.model.get("supportDownloads"),
 				hideMetadataAssessment: this.hideMetadataAssessment
 			}));
-      
+
       // Insert the metadata assessment chart
       if(!this.hideMetadataAssessment){
-        // @Peter TODO: 
+        // @Peter TODO:
         // this.listenTo(this.model, "change:???", this.drawMetadataAssessment);
         // OR
         this.drawMetadataAssessment();
       }
-      
-      
+
+
 			//Insert the loading template into the space where the charts will go
 			if(d3){
 				this.$(".chart").html(this.loadingTemplate);
@@ -110,7 +111,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 					email: false
 				}));
 			}
-      
+
       this.$el.data("view", this);
 
 			//Start retrieving data from Solr
@@ -118,13 +119,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 
 			return this;
 		},
-    
-    
-    /**    
+
+
+    /**
      * drawMetadataAssessment - Insert the metadata assessment image into the view
-     */     
+     */
     drawMetadataAssessment: function(){
-      
+
       try {
         // @Peter TODO:
         // Example figure:
@@ -141,7 +142,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
         console.log("Error displaying the metadata assessment figure. Error message: " + e);
         this.$el.find(".stripe.metadata-assessment").remove();
       }
-      
+
     },
 
 		drawDataCountChart: function(){

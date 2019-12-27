@@ -3,10 +3,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 	function($, _, Backbone, SolrHeader, SolrResult, LogsSearch) {
 	'use strict';
 
-	// SolrResults Collection
-	// ------------------------
-
-	// The collection of SolrResult
+  /**
+   @class SolrResultList
+   @classdesc A collection of SolrResult models that represent a list of search results from the DataONE query service.
+   @extends Backbone.Collection
+   @constructor
+  */
 	var SolrResultList = Backbone.Collection.extend({
 		// Reference to this collection's model.
 		model: SolrResult,

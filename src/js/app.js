@@ -2,7 +2,12 @@
 /*jshint unused:false */
 'use strict';
 
-/** NOTE: The theme name and themeMap are specified in the loader.js file **/
+/* NOTE: The theme name and themeMap are specified in the loader.js file */
+
+/**
+* The global variable that stores all the top-level data for this application 
+* @type {object}
+*/
 var MetacatUI = MetacatUI || {};
 MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if( MetacatUI.mapKey ){
@@ -190,8 +195,9 @@ function(Bootstrap, AppView, AppModel) {
 
 		  _.extend(Backbone.History.prototype, {
 
-		    /**
+		    /*
 		     * Override loadUrl & watch return value. Trigger event if no route was matched.
+         * @extends Backbone.History
 		     * @return {Boolean} True if a route was matched
 		     */
 		    loadUrl : function(fragment) {

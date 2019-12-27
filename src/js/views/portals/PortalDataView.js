@@ -7,17 +7,28 @@ define(["jquery",
     "views/filters/FilterGroupsView"],
     function($, _, Backbone, Filters, PortalSectionView, DataCatalogView, FilterGroupsView){
 
-    /* The PortalDataView is a view to render the
+    /**
+    * @class PortalDataView
+    * @classdesc The PortalDataView is a view to render the
      * portal data tab (within PortalView) to display all the datasets related to this portal.
+     * @extends PortalSectionView
+     * @constructor
      */
-      var PortalDataView = PortalSectionView.extend({
+      var PortalDataView = PortalSectionView.extend(
+        /** @lends PortalDataView.prototype */{
 
         tagName: "div",
 
-        // @type {PortalModel} - The Portal associated with this view
+        /**
+        * The Portal associated with this view
+        * @type {PortalModel}
+        */
         model: null,
 
-        // @type Array - An array of subviews in this view
+        /**
+        * An array of subviews in this view
+        * @type {Backbone.View[]}
+         */
         subviews: [],
 
         /**

@@ -9,7 +9,8 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
   /**
   * @class PortEditorDataView
   */
-  var PortEditorDataView = PortEditorSectionView.extend({
+  var PortEditorDataView = PortEditorSectionView.extend(
+    /** @lends PortEditorDataView.prototype */{
 
     /**
     * The type of View this is
@@ -69,7 +70,6 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
 
     /**
     * Creates a new PortEditorDataView
-    * @constructs PortEditorDataView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){

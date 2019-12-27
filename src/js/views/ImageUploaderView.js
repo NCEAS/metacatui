@@ -10,7 +10,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
   /**
   * @class ImageUploaderView
   */
-  var ImageUploaderView = Backbone.View.extend({
+  var ImageUploaderView = Backbone.View.extend(
+    /** @lends ImageUploaderView.prototype */{
 
     /**
     * The type of View this is
@@ -123,7 +124,6 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
     /**
     * Creates a new ImageUploaderView
-    * @constructs ImageUploaderView
     * @param {Object} options - A literal object with options to pass to the view
     * @property {DataONEObject}  options.model - Gets set as ImageUploaderView.model
     * @property {string[]}  options.uploadInstructions - Gets set as ImageUploaderView.uploadInstructions
@@ -170,7 +170,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
         Dropzone.prototype.getExistingFallback = function(){
           return false
         };
-        
+
         // Identify which zones should be drag & drop manually
         Dropzone.autoDiscover = false;
 

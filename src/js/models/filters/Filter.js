@@ -4,7 +4,7 @@ define(['jquery', 'underscore', 'backbone'],
 
   /**
   * @class Filter
-  * @name Filter
+  * @classdesc A single search filter that is used in queries sent to the DataONE search service.
   * @extends Backbone.Model
   * @constructs
   */
@@ -22,7 +22,6 @@ define(['jquery', 'underscore', 'backbone'],
 
     /**
     * Default attributes for this model
-    * @name Filter#defaults
     * @type {Object}
     * @property {Element} objectDOM - The XML DOM for this filter
     * @property {string} nodeName - The XML node name for this filter's XML DOM
@@ -63,7 +62,6 @@ define(['jquery', 'underscore', 'backbone'],
 
     /**
     * Creates a new Filter model
-    * @function
     */
     initialize: function(){
       if( this.get("objectDOM") ){
@@ -501,7 +499,7 @@ define(['jquery', 'underscore', 'backbone'],
           if( typeof filterOptionsNode != "undefined" && $(filterOptionsNode).children().length ){
             $objectDOM.append(filterOptionsNode);
           }
-          
+
         }
 
         return $objectDOM[0];

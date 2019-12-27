@@ -4,9 +4,14 @@
 define(['jquery', 'underscore', 'backbone'],
 function ($, _, Backbone) {
 
-	// MetacatUI Router
-	// ----------------
-	var UIRouter = Backbone.Router.extend({
+  /**
+  * @class UIRouter
+  * @classdesc MetacatUI Router
+  * @extends Backbone.Router
+  * @constructor
+  */
+	var UIRouter = Backbone.Router.extend(
+    /** @lends UIRouter.prototype */{
 		routes: {
 			''                          : 'renderData',    // the default route
 			'data/my-data(/page/:page)(/)' : 'renderMyData',    // data search page

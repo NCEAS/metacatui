@@ -23,7 +23,13 @@ define(["jquery",
         MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
         "use strict";
 
-        var DataCatalogView = Backbone.View.extend({
+        /**
+        * @class DataCatalogView
+        * @extends Backbone.View
+        * @constructor
+        */
+        var DataCatalogView = Backbone.View.extend(
+          /** @lends DataCatalogView.prototype */ {
 
             el: "#Content",
 
@@ -577,11 +583,11 @@ define(["jquery",
                 }
             },
 
-            /**
+            /*
              * ==================================================================================================
              *                                         PERFORMING SEARCH
              * ==================================================================================================
-             **/
+             */
             triggerSearch: function() {
 
                 // Set the sort order
@@ -617,6 +623,7 @@ define(["jquery",
 
             /**
              * getResults gets all the current search filters from the searchModel, creates a Solr query, and runs that query.
+             * @param {number} page - The page of search results to get results for
              */
             getResults: function(page) {
 
@@ -780,11 +787,11 @@ define(["jquery",
                 MetacatUI.appModel.trigger("change:searchHistory");
             },
 
-            /**
+            /*
              * ==================================================================================================
              *                                             FILTERS
              * ==================================================================================================
-             **/
+             */
             updateCheckboxFilter: function(e, category, value) {
                 if (!this.filters) return;
 
@@ -1853,11 +1860,11 @@ define(["jquery",
                 this.setAutoHeight();
             },
 
-            /**
+            /*
              * ==================================================================================================
              *                                             NAVIGATING THE UI
              * ==================================================================================================
-             **/
+             */
             // Update all the statistics throughout the page
             updateStats: function() {
                 if (this.searchResults.header != null) {
@@ -1977,11 +1984,11 @@ define(["jquery",
                 this.updateYearRange();
             },
 
-            /**
+            /*
              * ==================================================================================================
              *                                             THE MAP
              * ==================================================================================================
-             **/
+             */
             renderMap: function() {
 
                 // If gmaps isn't enabled or loaded with an error, use list mode
@@ -2178,7 +2185,9 @@ define(["jquery",
             },
 
             /**
-             * Show the marker, infoWindow, and bounding coordinates polygon on the map when the user hovers on the marker icon in the result list
+             * Show the marker, infoWindow, and bounding coordinates polygon on
+             the map when the user hovers on the marker icon in the result list
+             * @param {Event} e
              */
             showResultOnMap: function(e) {
                 // Exit if maps are not in use
@@ -2236,7 +2245,9 @@ define(["jquery",
             },
 
             /**
-             * Hide the marker, infoWindow, and bounding coordinates polygon on the map when the user stops hovering on the marker icon in the result list
+             * Hide the marker, infoWindow, and bounding coordinates polygon on
+             the map when the user stops hovering on the marker icon in the result list
+             * @param {Event} e - The event that brought us to this function
              */
             hideResultOnMap: function(e) {
                 // Exit if maps are not in use
@@ -2511,6 +2522,9 @@ define(["jquery",
 
             /**
              * With the options and label object given, add a single tile to the map and set its event listeners
+             * @param {object} options
+             * @param {string} geohash
+             * @param {string} label
              **/
             drawTile: function(options, geohash, label) {
                 // Exit if maps are not in use
@@ -2828,6 +2842,7 @@ define(["jquery",
             /**
              * Iterate over each infowindow that we have stored in the view and close it.
              * Pass an infoWindow object to this function to keep that infoWindow open/skip it
+             * @param {infoWindow} - An infoWindow to keep open
              */
             closeInfoWindows: function(except) {
                 var infoWindowLists = [this.markerInfoWindows, this.tileInfoWindows];
@@ -2887,11 +2902,11 @@ define(["jquery",
             },
 
 
-            /**
+            /*
              * ==================================================================================================
              *                                             ADDING RESULTS
              * ==================================================================================================
-             **/
+             */
 
             /** Add all items in the **SearchResults** collection
              * This loads the first 25, then waits for the map to be
@@ -3051,11 +3066,11 @@ define(["jquery",
             },
 
 
-            /**
+            /*
              * ==================================================================================================
              *                                             STYLING THE UI
              * ==================================================================================================
-             **/
+             */
             toggleMapMode: function(e) {
                 if (typeof e === "object") {
                     e.preventDefault();

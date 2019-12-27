@@ -8,7 +8,8 @@ function(_, $, Backbone, PortalImage, ImageEdit){
   /**
   * @class PortEditorLogosView
   */
-  var PortEditorLogosView = Backbone.View.extend({
+  var PortEditorLogosView = Backbone.View.extend(
+    /** @lends PortEditorLogosView.prototype */{
 
     /**
     * The type of View this is
@@ -50,7 +51,6 @@ function(_, $, Backbone, PortalImage, ImageEdit){
 
     /**
     * Creates a new PortEditorLogosView
-    * @constructs PortEditorLogosView
     * @param {Object} options - A literal object with options to pass to the view
     * @property {Portal} options.model - The Portal whose logos are rendered in this view
     * @property {PortalEditorView}  options.editorView - Gets set as PortalEditorLogosView.editorView

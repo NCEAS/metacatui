@@ -16,12 +16,16 @@ define(["jquery",
       template, nGeohash) {
 
         /**
-         * A DataCatalogView that uses the Search collection
+         * @class DataCatalogViewWithFilters
+         * @classdesc A DataCatalogView that uses the Search collection
          * and the Filter models for managing queries rather than the
          * Search model and the filter literal objects used in the
          * parent DataCatalogView.  This accommodates custom portal filters.
+         * @extends DataCatalogView
+         * @constructor
          */
-        var DataCatalogViewWithFilters = DataCatalogView.extend({
+        var DataCatalogViewWithFilters = DataCatalogView.extend(
+          /** @lends DataCatalogViewWithFilters.prototype */{
 
             el: null,
 
@@ -43,10 +47,16 @@ define(["jquery",
             */
             template: _.template(template),
 
-            /** @type {string} - The sort order for the Solr query */
+            /**
+            * The sort order for the Solr query
+            * @type {string}
+            */
             sortOrder: "dateUploaded+desc",
 
-            /** @type {string} - The jQuery selector for the FilterGroupsView container */
+            /**
+            * The jQuery selector for the FilterGroupsView container
+            * @type {string}
+            */
             filterGroupsContainer: ".filter-groups-container",
 
             /**

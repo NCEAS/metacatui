@@ -9,10 +9,15 @@ define(["jquery",
     function($, _, Backbone, SearchModel, StatsModel, PortalSectionView, StatsView,
       LoadingTemplate){
 
-    /* The PortalMetricsView is a view to render the
+    /**
+     * @class PortalMetricsView
+     * @classdec The PortalMetricsView is a view to render the
      * portal metrics tab (within PortalSectionView)
+     * @extends PortalSectionView
+     * @constructor
      */
-     var PortalMetricsView = PortalSectionView.extend({
+     var PortalMetricsView = PortalSectionView.extend(
+       /** @lends PortalMetricsView.prototype */{
         type: "PortalMetrics",
 
         /**
@@ -35,6 +40,7 @@ define(["jquery",
 
         /**
         A template for displaying a loading message
+        * @type {Underscore.Template}
         */
         loadingTemplate: _.template(LoadingTemplate),
 

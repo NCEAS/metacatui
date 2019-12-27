@@ -27,7 +27,8 @@ define(['underscore',
     * @extends EditorView
     * @constructs
     */
-    var EML211EditorView = EditorView.extend({
+    var EML211EditorView = EditorView.extend(
+      /** @lends EML211EditorView.prototype */{
 
         type: "EML211Editor",
 
@@ -50,16 +51,27 @@ define(['underscore',
           "click .data-package-item .edit" : "showEntity"
         }),
 
-        /* The identifier of the root package EML being rendered */
+        /**
+        The identifier of the root package EML being rendered
+        * @type {string}
+        */
         pid: null,
 
-        /* A list of the subviews of the editor */
+        /**
+        * A list of the subviews of the editor
+        * @type {Backbone.Views[]}
+        */
         subviews: [],
 
-        /* The data package view */
+        /**
+        * The data package view
+        * @type {DataPackageView}
+        */
         dataPackageView: null,
 
-        /* Initialize a new EML211EditorView - called post constructor */
+        /**
+        * Initialize a new EML211EditorView - called post constructor
+        */
         initialize: function(options) {
 
             // Ensure the object formats are cached for the editor's use

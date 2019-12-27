@@ -7,15 +7,23 @@ define(["jquery",
     "text!templates/portals/portalSection.html"],
     function($, _, Backbone, PortalSectionModel, MarkdownView, TOCView, Template){
 
-    /* The PortalSectionView is a generic view to render
+    /**
+     * @class PortalSectionView
+     * @classdesc The PortalSectionView is a generic view to render
      * portal sections, with a default rendering of a
      * MarkdownView
+     * @module views/PortalSectionView
+     * @name PortalSectionView
+     * @extends Backbone.View
+     * @constructor
      */
-     var PortalSectionView = Backbone.View.extend({
+     var PortalSectionView = Backbone.View.extend(
+       /** @lends PortalSectionView.prototype */{
 
        /**
        * The type of View this is
        * @type {string}
+       * @readonly
        */
         type: "PortalSection",
 
@@ -56,11 +64,12 @@ define(["jquery",
         */
         model: undefined,
 
+        /**
+        * @type {UnderscoreTemplate}
+        */
         template: _.template(Template),
 
         /**
-        * Creates a new PortalSectionView
-        * @constructs PortalSectionView
         * @param {Object} options - A literal object with options to pass to the view
         * @property {PortalSection} options.model - The PortalSection rendered in this view
         * @property {string} options.sectionName - The name of the portal section
@@ -77,7 +86,9 @@ define(["jquery",
 
         },
 
-        /* Render the view */
+        /**
+         Renders the view
+        */
         render: function() {
 
           //Add the active class to the element
@@ -122,6 +133,9 @@ define(["jquery",
 
         },
 
+        /**
+        * Renders a table of contents (a TOCView) that links to different sections of the MarkdownView
+        */
         renderTOC: function(){
 
           //Create a table of contents view
@@ -145,7 +159,7 @@ define(["jquery",
 
         },
 
-        /*
+        /**
         * This funciton is called after this view has fully rendered and is
         * visible on the webpage
         */
@@ -177,7 +191,7 @@ define(["jquery",
 
         },
 
-        /*
+        /**
         * When the portal section markdown is rendered in a MarkdownView, format the
         * resulting HTML as needed for this view
         */

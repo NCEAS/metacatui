@@ -4,13 +4,28 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 	function($, _, Backbone, SignInView, NavbarTemplate) {
 	'use strict';
 
-	// Build the navbar view of the application
-	var NavbarView = Backbone.View.extend({
+	/**
+  * @class NavbarView
+  * @classdesc Build the navbar view of the application
+  * @extends Backbone.View
+  * @constructor
+  */
+	var NavbarView = Backbone.View.extend(
+    /** @lends NavbarView.prototype */ {
 
+    /**
+    * @type {string}
+    */
 		el: '#Navbar',
 
+    /**
+    * @type {Underscore.Template}
+    */
 		template: _.template(NavbarTemplate),
 
+    /**
+    * @type {object}
+    */
 		events: {
 						  'click #search_btn' : 'triggerSearch',
 					   'keypress #search_txt' : 'triggerOnEnter',

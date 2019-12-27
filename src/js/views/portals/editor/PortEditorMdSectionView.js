@@ -11,12 +11,17 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
   /**
   * @class PortEditorMdSectionView
+  * @classdesc A section of the Portal Editor for adding/editing a Markdown page to a Portal
+  * @extends PortEditorSectionView
+  * @constructor
   */
-  var PortEditorMdSectionView = PortEditorSectionView.extend({
+  var PortEditorMdSectionView = PortEditorSectionView.extend(
+    /** @lends PortEditorMdSectionView.prototype */{
 
     /**
     * The type of View this is
     * @type {string}
+    * @readonly
     */
     type: "PortEditorMdSection",
 
@@ -28,6 +33,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
     /**
     * The HTML attributes to set on this view's element
+    * @type {object}
     */
     attributes: {
       "data-category": "sections"
@@ -59,6 +65,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
     /**
     * The type of section view this is
     * @type {string}
+    * @readonly
     */
     sectionType: "freeform",
 
@@ -72,8 +79,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
     },
 
     /**
-    * Creates a new PortEditorMdSectionView
-    * @constructs PortEditorMdSectionView
+    * Is executed when a new PortEditorMdSectionView is created
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){

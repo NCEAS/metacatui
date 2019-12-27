@@ -3,13 +3,29 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
   /**
+  * @class ChoiceFilter
+  * @classdesc A Filter whose search term is one or more choices from a defined list
+  * @name ChoiceFilter
   * @constructs ChoiceFilter
   * @extends Filter
   */
-	var ChoiceFilter = Filter.extend({
+	var ChoiceFilter = Filter.extend(
+    /** @lends ChoiceFilter.prototype */{
 
+    /**
+    * @inheritdoc
+    * @type {string}
+    */
     type: "ChoiceFilter",
 
+    /**
+    * The Backbone Model attributes set on this ChoiceFilter
+    * @type {object}
+    * @extends Filter#defaultts
+    * @property {boolean} chooseMultiple - If true, this ChoiceFilter can have multiple choices set as the search term
+    * @property {string[]} choices - The list of search terms that can possibly be set on this Filter
+    * @property {string} nodeName - The XML node name to use when serializing this model into XML
+    */
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         chooseMultiple: true,

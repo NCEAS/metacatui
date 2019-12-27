@@ -181,8 +181,8 @@ define(['jquery',
 										//Iterate over each id in the package and try to fuzzily match the ecogrid link to the id
 										if(view.parentView.packageModels){
 											//Get all the data objects in this metadata's packages
-											_.each(view.parentView.packageModels, function(package){
-												dataObjects.push(package.get("members"));
+											_.each(view.parentView.packageModels, function(pckg){
+												dataObjects.push(pckg.get("members"));
 											});
 
 											dataObjects = _.flatten(dataObjects);

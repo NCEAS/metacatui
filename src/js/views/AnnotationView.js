@@ -6,7 +6,8 @@ define(['jquery',
     function($, _, Backbone, AnnotationPopoverTemplate) {
     'use strict';
 
-    var AnnotationView = Backbone.View.extend({
+    var AnnotationView = Backbone.View.extend(
+      /** @lends AnnotationView.prototype */{
         className: 'annotation-view',
         annotationPopoverTemplate: _.template(AnnotationPopoverTemplate),
 

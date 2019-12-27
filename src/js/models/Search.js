@@ -3,18 +3,24 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
     function($, _, Backbone, SolrResult, Filters) {
         'use strict';
 
-        // Search Model
-        // ------------------
-        var Search = Backbone.Model.extend({
-            // This model contains all of the search/filter terms
-            /*
-             * Search filters can be either plain text or a filter object with the following options:
-             * filterLabel - text that will be displayed in the filter element in the UI
-             * label - text that will be displayed in the autocomplete  list
-             * value - the value that will be included in the query
-             * description - a longer text description of the filter value
-             * Example: {filterLabel: "Creator", label: "Jared Kibele (16)", value: "Kibele", description: "Search for data creators"}
-             */
+        /**
+         * @class Search
+         * @classdesc Search filters can be either plain text or a filter object with the following options:
+         * filterLabel - text that will be displayed in the filter element in the UI
+         * label - text that will be displayed in the autocomplete  list
+         * value - the value that will be included in the query
+         * description - a longer text description of the filter value
+         * Example: {filterLabel: "Creator", label: "Jared Kibele (16)", value: "Kibele", description: "Search for data creators"}
+         * @extends Backbone.Model
+         * @constructor
+         */
+        var Search = Backbone.Model.extend(
+          /** @lends Search.prototype */{
+
+            /**
+            * @type {object}
+            * @property {Filters} filters - The collection of filters used to build a query, an instance of Filters
+            */
             defaults: function() {
                 return {
                     all: [],
@@ -66,10 +72,6 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                       field: "formatId",
                       value: "*dataone.org/portals*"
                     }],
-                    /**
-                    * The collection of filters used to build a query, an instance of Filters
-                    * @type {Filters}
-                    */
                     filters: null
                 }
             },

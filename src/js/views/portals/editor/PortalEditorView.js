@@ -23,7 +23,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
   * @extends EditorView
   * @constructs
   */
-  var PortalEditorView = EditorView.extend({
+  var PortalEditorView = EditorView.extend(
+    /** @lends PortalEditorView.prototype */{
 
     /**
     * The type of View this is
@@ -96,8 +97,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     }),
 
     /**
-    * Creates a new PortalEditorView
-    * @constructs PortalEditorView
+    * Is executed when a new PortalEditorView is created
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
@@ -624,7 +624,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
     /**
     * Shows a validation error message and adds error styling to the given elements
-    * @param {jQuery Selection} elements - The elements to add error styling and messaging to
+    * @param {jQuery} elements - The elements to add error styling and messaging to
     * @param {string} errorMsg - The error message to display
     */
     showValidationMessage: function(elements, errorMsg){

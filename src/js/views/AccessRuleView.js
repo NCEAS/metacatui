@@ -4,7 +4,8 @@ define(['underscore',
         "models/AccessRule"],
 function(_, $, Backbone, AccessRule){
 
-  var AccessRuleView = Backbone.View.extend({
+  var AccessRuleView = Backbone.View.extend(
+    /** @lends AccessRuleView.prototype */{
 
     /**
     * The type of View this is
@@ -38,8 +39,7 @@ function(_, $, Backbone, AccessRule){
     },
 
     /**
-    * Creates a new AccessRuleView
-    * @constructs AccessRuleView
+    * Is executed when a new AccessRuleView is created
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
