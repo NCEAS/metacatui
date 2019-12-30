@@ -38,7 +38,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.el = options.el;
 
 			this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
+			
 			this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
+
 			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
 			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
 			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
@@ -55,20 +57,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Clear the page
 			this.$el.html("");
 
-			// Adding support for DataONE profile
-			if (typeof this.userType === 'undefined') {
-				var metricsModel = new MetricsModel({pid_list:['urn:node:CN'], type:'repository'});
-				this.metricsModel = metricsModel;
-				this.metricsModel.fetch();
-				this.listenTo(this.metricsModel, "sync" , this.renderMetrics);
-			}
-
 			if (this.userType == "portal") {
 				if(this.metricsModel.get("totalViews") !== null) {
 					this.renderMetrics();
 				}
 				else{
 					this.listenTo(this.metricsModel, "sync" , this.renderMetrics);
+
+					// in case when there is an error for the fetch call.
+					this.listenTo(this.metricsModel, "error", this.renderUsageMetricsError);
 				}
 			}
 
@@ -177,6 +174,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		renderCitationMetric: function() {
+			var citationSectionEl = this.$('#user-citations');
 			var citationEl = this.$('.citations-metrics-list');
 			var citationCountEl = this.$('.citation-count');
 			var metricName = "Citations";
@@ -192,6 +190,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			// Checking if there are any citations available for the List display.
 			if(this.metricsModel.get("totalCitations") == 0) {
 				var citationList = new CitationList();
+
+				// reattaching the citations at the bottom when the counts are 0.
+				var detachCitationEl = this.$(citationSectionEl).detach();
+				this.$('.charts-container').append(detachCitationEl);
 			}
 			else {
 				var citationList = new CitationList({citations: this.citationCollection});
@@ -235,25 +237,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
                 width = 600;
 			}
 
-			var trimmedMetricMonths = [].concat(metricMonths)
-			
-			//trim off the leading zeros and their corresponding months
-			for (var i = 0 ; i < metricCount.length; i++) {
-				if ( metricCount[i] == 0 ) {
-					metricCount.splice(i,1);
-					trimmedMetricMonths.splice(i,1);
-					i--;
-				}
-				else {
-					break;
-				}		
-			}
 
             //Draw a metric chart
             var modalMetricChart = new MetricsChart({
                             id: metricNameLemma + "-chart",
                             metricCount: metricCount,
-                            metricMonths: trimmedMetricMonths,
+                            metricMonths: metricMonths,
                             type: viewType,
                             metricName: metricName,
                             width: width
@@ -981,6 +970,24 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			//Reset the stats model
 			this.model = null;
+		},
+
+		renderUsageMetricsError: function() {
+			// Remove the Spinning icons and display error
+
+			var metricsEls = new Array();
+
+			metricsEls.push(this.$('.citations-metrics-list').find('.loading'));
+			metricsEls.push(this.$('#user-downloads-chart').find('.loading'));
+			metricsEls.push(this.$('#user-views-chart').find('.loading'));
+
+			for (var iconEl in metricsEls) {
+				this.$(iconEl).removeClass('icon-spinner');
+				this.$(iconEl).removeClass('icon-spin');
+				this.$(iconEl).removeClass('icon-large');
+				this.$(iconEl).removeClass('loading');
+			}
+            
 		}
 
 	});
