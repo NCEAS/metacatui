@@ -44,9 +44,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 
 		render: function () {
 
-      if( !this.model ){
-        this.model = new StatsModel();
-      }
+			if( !this.model ){
+				this.model = new StatsModel();
+			}
 
 			//Clear the page
 			this.$el.html("");
