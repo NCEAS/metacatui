@@ -3,13 +3,28 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
   /**
-  * @constructs NumericFilter
+  * @class NumericFilter
+  * @classdesc A search filter whose search term is always an exact number or numbber range
   * @extends Filter
+  * @constructs
   */
-	var NumericFilter = Filter.extend({
+	var NumericFilter = Filter.extend(
+    /** @lends NumericFilter.prototype */{
 
     type: "NumericFilter",
 
+    /**
+    * Default attributes for this model
+    * @extends Filter#defaults
+    * @type {Object}
+    * @property {Date}    min - The minimum number to use in the query for this filter
+    * @property {Date}    max - The maximum number to use in the query for this filter
+    * @property {Date}    rangeMin - The lowest possible number that 'min' can be
+    * @property {Date}    rangeMax - The highest possible number that 'max' can be
+    * @property {string}  nodeName - The XML node name to use when serializing this model into XML
+    * @property {boolean} range - If true, this Filter will use a numeric range as the search tterm instead of an exact number
+    * @property {number}  step - The number to increase the search value by when incrementally increasing or decreasing the numeric range
+    */
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         nodeName: "numericFilter",

@@ -7,8 +7,13 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
   /**
   * @class EditorView
+  * @classdesc A basic shell of a view, primarily meant to be extended for views that allow editing capabilities.
+  * @name EditorView
+  * @extends Backbone.View
+  * @constructs
   */
-  var EditorView = Backbone.View.extend({
+  var EditorView = Backbone.View.extend(
+    /** @lends EditorView.prototype */{
 
 
     /**
@@ -36,8 +41,12 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       "click #save-editor" : "save"
     },
 
+    /**
+    * Renders this view
+    */
     render: function(){
-
+      //Style the body as an Editor
+      $("body").addClass("Editor rendering");
     },
 
     /**
@@ -57,6 +66,21 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       this.listenTo(this.model, "successSaving", this.saveSuccess);
       this.listenTo(this.model, "invalid", this.showValidation);
 
+      //Set a beforeunload event only if there isn't one already
+      if( !this.beforeunloadCallback ){
+        var view = this;
+        //When the Window is about to be closed, show a confirmation message
+        this.beforeunloadCallback = function(e){
+          if( !view.canClose() ){
+            //Browsers don't support custom confirmation messages anymore,
+            // so preventDefault() needs to be called or the return value has to be set
+            e.preventDefault();
+            e.returnValue = "";
+          }
+          return;
+        }
+        window.addEventListener("beforeunload", this.beforeunloadCallback);
+      }
     },
 
     /**
@@ -309,7 +333,65 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         }
 
       }, this);
+    },
 
+    /**
+    * Checks if there are unsaved changes in this Editor that should prevent closing of this view.
+    * This function is also executed by the AppView, which controls the top-level navigation.
+    * @returns {boolean} Returns true if this view should be closed. False if it should remain opened and active.
+    */
+    canClose: function(){
+
+      //If the user isn't logged in, we can leave this view without confirmation
+      if( !MetacatUI.appUserModel.get("loggedIn") )
+        return true;
+
+      //If there are no unsaved changes, we can leave this view without confirmation
+      if( !this.hasUnsavedChanges() ){
+        return true;
+      }
+
+      return false;
+
+    },
+
+    /**
+    * This function is called whenever the user is about to leave this view.
+    * @returns {string} The message that asks the user if they are sure they want to close this view
+    */
+    getConfirmCloseMessage: function(){
+
+      //Return a confirmation message
+      return "Leave this page? All of your unsaved changes will be lost.";
+
+    },
+
+    /**
+    * Returns true if there are unsaved changes in this Editor
+    * This function should be exended by each subclass of EditorView to check for unsaved changes for that model type
+    * @returns {boolean}
+    */
+    hasUnsavedChanges: function(){
+      return true;
+    },
+
+    /**
+    *  Perform clean-up functions when this view is about to be removed from the page or navigated away from.
+    */
+    onClose: function(){
+
+      //Remove the listener on the Window
+      if( this.beforeunloadCallback ){
+        window.removeEventListener("beforeunload", this.beforeunloadCallback);
+        delete this.beforeunloadCallback;
+      }
+
+      //Remove the class from the body element
+      $("body").removeClass("Editor rendering");
+
+      //Remove listeners
+      this.stopListening();
+      this.undelegateEvents();
 
     }
 

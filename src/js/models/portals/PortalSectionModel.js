@@ -10,7 +10,8 @@ define(["jquery",
       /**
        * A Portal Section model represents the ContentSectionType from the portal schema
        */
-      var PortalSectionModel = Backbone.Model.extend({
+      var PortalSectionModel = Backbone.Model.extend(
+        /** @lends PortalSectionModel.prototype */{
         defaults: function(){
           return {
             label: "Untitled",
@@ -193,7 +194,7 @@ define(["jquery",
          * @param {Element} parentNode - The parent XML element
          * @param {string} nodeName - The name of the node to be inserted
          *                             into xml
-         * @return {(jQuery\|boolean)} A jQuery object indicating a position,
+         * @return {(jQuery|boolean)} A jQuery object indicating a position,
          *                            or false when nodeName is not in the
          *                            portal schema
         */

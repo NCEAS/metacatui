@@ -8,8 +8,10 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
   /**
   * @class PortEditorImageView
+  * @classdesc A view that allows the user to upload an image as a DataONEObject
   */
-  var PortEditorImageView = Backbone.View.extend({
+  var PortEditorImageView = Backbone.View.extend(
+      /** @lends PortEditorImageView.prototype */{
 
     /**
     * The type of View this is
@@ -30,8 +32,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
     className: "edit-image",
 
     /**
-    * A jQuery selector for the element that the ImageUploaderView should be
-    * inserted into.
+    * A jQuery selector for the element that the ImageUploaderView should be inserted into
     * @type {string}
     */
     imageUploaderContainer: ".image-uploader-container",
@@ -161,7 +162,6 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
 
     /**
     * Creates a new PortEditorImageView
-    * @constructs PortEditorImageView
     * @param {Object} options - A literal object with options to pass to the view
     * @property {Portal}  options.parentModel - Gets set as PortEditorImageView.parentModel
     * @property {PortalEditorView}  options.editorView - Gets set as PortEditorImageView.editorView

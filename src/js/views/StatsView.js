@@ -3,7 +3,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel, StatsModel, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
 	'use strict';
 
-	var StatsView = Backbone.View.extend({
+	var StatsView = Backbone.View.extend(
+  /** @lends StatsView.prototype */{
 
 		el: '#Content',
 
@@ -38,9 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.el = options.el;
 
 			this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
-			
 			this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
-
 			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
 			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
 			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
@@ -92,7 +91,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.listenTo(this.model, 'change:mdqStats',	  	  this.drawMdqStats);
 
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
-		
 
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
@@ -109,7 +107,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				hideViewsChart: this.hideViewsChart,
 				hideMetadataAssessment: this.hideMetadataAssessment
 			}));
-      
+
       // Insert the metadata assessment chart
       if(!this.hideMetadataAssessment){
         this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
@@ -134,14 +132,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					email: false
 				}));
 			}
-		
-			this.$el.data("view", this);
+
+      this.$el.data("view", this);
 
 			//Start retrieving data from Solr
 			this.model.getAll();
 
 			return this;
-		},
+	},
     
         /**    
          * drawMetadataAssessment - Insert the metadata assessment image into the view

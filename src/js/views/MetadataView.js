@@ -18,7 +18,6 @@ define(['jquery',
     'views/ExpandCollapseListView',
     'views/ProvStatementView',
     'views/PackageTableView',
-    'views/AnnotatorView',
     'views/CitationView',
     'views/AnnotationView',
     'views/MarkdownView',
@@ -40,13 +39,19 @@ define(['jquery',
     ],
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
        MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-       AnnotatorView, CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+       CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
        VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
   'use strict';
 
-
-  var MetadataView = Backbone.View.extend({
+ /**
+ * @class MetadataView
+ * @classdesc A human-readable view of a science metadata file
+ * @extends Backbone.View
+ * @constructor
+ */
+  var MetadataView = Backbone.View.extend(
+    /** @lends MetadataView.prototype */{
 
     subviews: [],
 
@@ -1442,7 +1447,7 @@ define(['jquery',
       _.each(this.subviews, function(thisView, i) {
 
         // Check if this is a ProvChartView
-        if(thisView.className.indexOf("prov-chart") !== -1) {
+        if(thisView.className && thisView.className.indexOf("prov-chart") !== -1) {
           // Check if this ProvChartView is marked for re-rendering
           // Erase the current ProvChartView
           thisView.onClose();
@@ -1451,7 +1456,7 @@ define(['jquery',
 
       // Remove prov charts from the array of subviews.
       this.subviews = _.filter(this.subviews, function(item) {
-          return item.className.indexOf("prov-chart") == -1;
+          return (item.className && (item.className.indexOf("prov-chart") == -1));
        });
 
       view.drawProvCharts(this.dataPackage);
@@ -1671,8 +1676,8 @@ define(['jquery',
     * Finds the element in the rendered metadata that describes the given data entity.
     *
     * @param {(DataONEObject|SolrResult|string)} model - Either a model that represents the data object or the identifier of the data object
-    * @param {DOM Element} [el] - The DOM element to exclusivly search inside.
-    * @return {DOM Element} - The DOM element that describbbes the given data entity.
+    * @param {Element} [el] - The DOM element to exclusivly search inside.
+    * @return {Element} - The DOM element that describbbes the given data entity.
     */
     findEntityDetailsContainer: function(model, el){
       if(!el) var el = this.el;
@@ -2264,15 +2269,24 @@ define(['jquery',
         }));
     },
 
+    /**
+    * If the annotator feature is enabled, this function renders an AnnotatorView.
+    * The Annotator feature is experiemental and unsupported, so this should only be enabled by advanced users
+    * @deprecated
+    */
     setUpAnnotator: function() {
-      if(!MetacatUI.appModel.get("annotatorUrl")) return;
+      if(!MetacatUI.appModel.get("annotatorUrl"))
+        return;
 
+      var thisView = this;
 
-      var annotator = new AnnotatorView({
-        parentView: this
-        });
-      this.subviews.push(annotator);
-      annotator.render();
+      require(["views/AnnotatorView"], function(AnnotatorView){
+        var annotator = new AnnotatorView({
+          parentView: thisView
+          });
+        thisView.subviews.push(annotator);
+        annotator.render();
+      });
     },
 
     /**

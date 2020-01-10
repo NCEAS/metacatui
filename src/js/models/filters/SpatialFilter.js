@@ -10,12 +10,17 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
         * @constructs
         * @extends Filter
         */
-        var SpatialFilter = Filter.extend({
+        var SpatialFilter = Filter.extend(
+          /** @lends SpatialFilter.prototype */{
 
             /* The type of the filter */
             type: "SpatialFilter",
 
-            /* Default attributes of this model */
+            /**
+            * @type {object}
+            * @property {string} icon - The icon to display with the Spatial filter
+            * @property {string} label - A short intuitive label
+            */
             defaults: function() {
                 return _.extend(Filter.prototype.defaults(), {
 
@@ -40,10 +45,7 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
                     /* The list of grouped geohashes, as complete or incomplete 32 tiles */
                     groupedGeohashes: {},
 
-                    /* A short intuitive label */
                     label: "Limit search to the map area",
-
-                    /** @type {string} - The icon to display with the Spatial filter */
                     icon: "globe"
                 });
             },

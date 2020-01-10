@@ -3,13 +3,27 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
   /**
+  * @class DateFilter
+  * @classdesc A search filter whose search term is an exact date or date range
   * @constructs DateFilter
   * @extends Filter
   */
-	var DateFilter = Filter.extend({
+	var DateFilter = Filter.extend(
+    /** @lends DateFilter.prototype */{
 
     type: "DateFilter",
 
+    /**
+    * The Backbone Model attributes set on this DateFilter
+    * @type {object}
+    * @extends Filter#defaultts
+    * @property {Date} min - The minimum Date to use in the query for this filter
+    * @property {Date} max - The maximum Date to use in the query for this filter
+    * @property {Date} rangeMin - The earliest possible Date that 'min' can be
+    * @property {Date} rangeMax - The latest possible Date that 'max' can be
+    * @property {Boolean} matchSubstring - Will always be stet to false, since Dates don't have substrings
+    * @property {string} nodeName - The XML node name to use when serializing this model into XML
+    */
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         min: 0,

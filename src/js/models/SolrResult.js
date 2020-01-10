@@ -4,7 +4,8 @@ define(['jquery', 'underscore', 'backbone'],
 
 	// SolrResult Model
 	// ------------------
-	var SolrResult = Backbone.Model.extend({
+	var SolrResult = Backbone.Model.extend(
+    /** @lends SolrResult.prototype */{
 		// This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element
 		defaults: {
 			abstract: null,
@@ -318,7 +319,7 @@ define(['jquery', 'underscore', 'backbone'],
 				    a.style.display = 'none';
 				    document.body.appendChild(a);
 				    a.click();
-				    delete a;
+				    a.remove();
 			   }
 
 			    model.trigger("downloadComplete");

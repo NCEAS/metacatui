@@ -3,13 +3,16 @@ define(["jquery", "underscore", "backbone",
     function($, _, Backbone, DataONEObject) {
 
         /**
-         * EMLNonNumericDomain represents the measurement scale of a nominal
+         * @class EMLNonNumericDomain
+         * @classdesc EMLNonNumericDomain represents the measurement scale of a nominal
          * or ordinal measurement scale attribute, and is an extension of
          * EMLMeasurementScale.
-         *
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         * @extends Backbone.Model
+         * @constructor
          */
-        var EMLNonNumericDomain = Backbone.Model.extend({
+        var EMLNonNumericDomain = Backbone.Model.extend(
+            /** @lends EMLNonNumericDomain.prototype */{
 
         	type: "EMLNonNumericDomain",
 
@@ -26,6 +29,7 @@ define(["jquery", "underscore", "backbone",
              * The map of lower case to camel case node names
              * needed to deal with parsing issues with $.parseHTML().
              * Use this until we can figure out issues with $.parseXML().
+             * @type {object}
              */
             nodeNameMap: {
                 "nonnumericdomain": "nonNumericDomain",

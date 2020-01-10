@@ -14,12 +14,13 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
     ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
 
-	/*
-	 * UserView
-	 * A major view that displays a public profile for the user and a settings page for the logged-in user
+	/**
+	 * @class UserView
+	 * @classdesc A major view that displays a public profile for the user and a settings page for the logged-in user
 	 * to manage their account info, groups, identities, and API tokens.
 	 */
-	var UserView = Backbone.View.extend({
+	var UserView = Backbone.View.extend(
+    /** @lends UserView.prototype */{
 
 		el: '#Content',
 

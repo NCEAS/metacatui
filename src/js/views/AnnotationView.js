@@ -6,7 +6,8 @@ define(['jquery',
     function($, _, Backbone, AnnotationPopoverTemplate) {
     'use strict';
 
-    var AnnotationView = Backbone.View.extend({
+    var AnnotationView = Backbone.View.extend(
+      /** @lends AnnotationView.prototype */{
         className: 'annotation-view',
         annotationPopoverTemplate: _.template(AnnotationPopoverTemplate),
 
@@ -113,8 +114,8 @@ define(['jquery',
 
             // Query the API and handle the response
             // TODO: Looks like we should proxy this so the token doesn't leak
-            var url = "https://data.bioontology.org/search?q=" +
-                encodeURIComponent(this.valueURI) +
+            var url = MetacatUI.appModel.get("bioportalSearchUrl") +
+                "?q=" + encodeURIComponent(this.valueURI) +
                 "&apikey=" +
                 token;
 

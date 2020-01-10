@@ -3,10 +3,15 @@ define(['jquery', 'underscore', 'backbone'],
   function($, _, Backbone) {
   'use strict';
 
-  // Application Model
-  // ------------------
-  var AppModel = Backbone.Model.extend({
-    // This model contains all of the attributes for the Application
+  /**
+  * @class AppModel
+  * @classdesc A utility model that contains top-level configuration and storage for the application
+  * @name AppModel
+  * @extends Backbone.Model
+  * @constructor
+  */
+  var AppModel = Backbone.Model.extend(
+    /** @lends AppModel.prototype */ {
     defaults: {
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
@@ -33,14 +38,18 @@ define(['jquery', 'underscore', 'backbone'],
 
       maxDownloadSize: 3000000000,
 
-      // Flag which, when true shows Whole Tale features in the UI
+      /**
+      * Flag which, when true shows Whole Tale features in the UI
+      * @type {boolean}
+      */
       showWholeTaleFeatures: false,
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
-			/*
+			/**
 			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
 			 * Any field set to true will prevent the user from saving the Editor until a value has been given
+       * @type {object}
 			 */
 			emlEditorRequiredFields: {
 				abstract: true,
@@ -60,8 +69,15 @@ define(['jquery', 'underscore', 'backbone'],
 
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
 
-      //These error messages are displayed when the Editor encounters an error saving
+      /**
+      * This error message is displayed when the Editor encounters an error saving
+      * @type {string}
+      */
       editorSaveErrorMsg: "Not all of your changes could be submitted.",
+      /**
+      * This error message is displayed when the Editor encounters an error saving, and a plain-text draft is saved instead
+      * @type {string}
+      */
       editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted, but a draft " +
         "has been saved which can be accessed by our support team. Please contact us.",
 
@@ -86,9 +102,12 @@ define(['jquery', 'underscore', 'backbone'],
       queryServiceUrl: null,
       reserveServiceUrl: null,
 
-      //If set to false, some parts of the app will send POST HTTP requests to the
-      // Solr search index via the `/query/solr` DataONE API.
-      // Set this configuration to true if using Metacat 2.10.2 or earlier
+      /**
+      * If set to false, some parts of the app will send POST HTTP requests to the
+      * Solr search index via the `/query/solr` DataONE API.
+      * Set this configuration to true if using Metacat 2.10.2 or earlier
+      * @type {boolean}
+      */
       disableQueryPOSTs: false,
 
       defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
@@ -100,7 +119,6 @@ define(['jquery', 'underscore', 'backbone'],
       formatsServiceUrl: null,
       formatsUrl: "/formats",
       //grantsUrl: null,
-      //bioportalSearchUrl: null,
       //orcidSearchUrl: null,
       //orcidBioUrl: null,
       //signInUrl: null,
@@ -109,7 +127,6 @@ define(['jquery', 'underscore', 'backbone'],
       signInUrlLdap: null,
       tokenUrl: null,
       checkTokenUrl: null,
-      //annotatorUrl: null,
       accountsUrl: null,
       pendingMapsUrl: null,
       accountsMapsUrl: null,
@@ -117,11 +134,17 @@ define(['jquery', 'underscore', 'backbone'],
       portalUrl: null,
       mdqUrl: null,
 
-      // Metrics endpoint url
+      /**
+      * Metrics endpoint url
+      * @type {string}
+      */
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 
-      // Metrics flags for the Dataset Landing Page
-      // Enable these flags to enable metrics display
+      /**
+      * Metrics flag for the Dataset Landing Page
+      * Enable this flag to enable metrics display
+      * @type {boolean}
+      */
       displayDatasetMetrics: true,
 
       // Controlling individual functionality
@@ -135,9 +158,10 @@ define(['jquery', 'underscore', 'backbone'],
       displayDatasetAnalyzeButton: false,
       displayMetricModals: true,
       displayDatasetControls: true,
-      /* Hide metrics display for SolrResult models that match the given properties.
+      /** Hide metrics display for SolrResult models that match the given properties.
       *  Properties can be functions, which are given the SolrResult model value as a parameter.
-      * Example:
+      * @type {object}
+      * @example
       * {
       *    formatId: "eml://ecoinformatics.org/eml-2.1.1",
       *    isPublic: true,
@@ -229,8 +253,10 @@ define(['jquery', 'underscore', 'backbone'],
         associatedParties: false
       },
 
-      // If true, then archived content is available in the search index.
-      // Set to false if this MetacatUI is using a Metacat version before 2.10.0
+      /** If true, then archived content is available in the search index.
+      * Set to false if this MetacatUI is using a Metacat version before 2.10.0
+      * @type {boolean}
+      */
       archivedContentIsIndexed: true,
 
       /**
@@ -308,10 +334,44 @@ define(['jquery', 'underscore', 'backbone'],
         }
       ],
 
-      /* Semantic annotation configuration */
-      bioportalAPIKey: null,
-			bioportalLookupCache: {},
-			showAnnotationIndicator: false
+      /**
+      * Semantic annotation configuration
+      * Include your Bioportal api key to show ontology information for metadata annotations
+      * see: http://bioportal.bioontology.org/account
+      * @type {string}
+      */
+      bioportalAPIKey: "",
+      /**
+      * The Bioportal REST API URL, which is set dynamically only if a bioportalAPIKey is configured
+      * @readonly
+      * @type {string}
+      */
+      bioportalSearchUrl: null,
+      /**
+      * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
+      * @readonly
+      * @type {object}
+      */
+      bioportalLookupCache: {},
+      /**
+      * Set this option to true to display the annotation icon in search result rows when a dataset has an annotation
+      * @type {boolean}
+      */
+      showAnnotationIndicator: false
+
+      /**
+      * The following configuration options are deprecated or experimental and should only be changed by advanced users
+      */
+      /**
+      * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
+      * @deprecated
+      */
+      //bioportalBatchUrl: "https://data.bioontology.org/batch",
+      /**
+      * This DataONE API Annotator URL is used by the experimental and unsupported AnnotatorView to save an annotation
+      * @deprecated
+      */
+      //annotatorUrl: null
 		},
 
     defaultView: "data",
@@ -396,6 +456,10 @@ define(['jquery', 'underscore', 'backbone'],
         //Turn the seriesId feature on
         if(typeof this.get("useSeriesId") != "undefined")
           this.set("useSeriesId", true);
+
+        //Annotator API
+        if(typeof this.get("annotatorUrl") !== "undefined")
+          this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');
       }
 
       //The package service for v2 DataONE API

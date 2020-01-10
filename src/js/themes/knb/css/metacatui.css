@@ -886,14 +886,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	    align-items: center;
 	    justify-content: space-between;
     }
-		
+
 		#nav-trigger{
 	   	margin-top: .5em;
 	   	margin-right: .5em;
 	   	font-size: 2em;
 	   	float: right;
 		}
-		
+
 		.navbar nav{
 			display: none;
 		}
@@ -946,7 +946,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
          -moz-box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
               box-shadow: none; /*inset 0 3px 8px rgba(0, 0, 0, 0.125);*/
     }
-		
+
 		.navbar .nav li > .user{
     	font-size: 15px;
     	text-transform: capitalize;
@@ -2078,6 +2078,9 @@ svg .no-activity,
  	   color: #1C6E84;
  	   transition: color .3s;
 	}
+  .result-row .info-icons{
+    margin-top:10px;
+  }
 
     /*-- Popovers --*/
     .popover{

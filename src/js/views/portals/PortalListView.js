@@ -6,7 +6,14 @@ define(["jquery",
     "text!templates/portals/portalList.html"],
     function($, _, Backbone, Filters, SearchResults, Template){
 
-      return Backbone.View.extend({
+      /**
+      * @class PortalListView
+      * @classdesc A view that shows a list of Portals
+      * @extends Backbone.View
+      * @constructor
+      */
+      return Backbone.View.extend(
+        /** @lends PortalListView.prototype */{
 
         /**
         * An array of Filter models  or Filter model JSON to use in the query.

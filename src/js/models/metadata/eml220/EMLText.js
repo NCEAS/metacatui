@@ -3,7 +3,8 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText',
         "text!templates/portals/editor/MarkdownExample.md"],
     function($, _, Backbone, EMLText211, MarkdownExample) {
 
-  var EMLText = EMLText211.extend({
+  var EMLText = EMLText211.extend(
+    /** @lends EMLText.prototype */{
 
     defaults: function(){
       return _.extend(EMLText211.prototype.defaults(), {

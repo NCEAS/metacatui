@@ -8,8 +8,6 @@
     <link href="<%= MetacatUI.root %>/components/fancybox/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
     <link href="<%= MetacatUI.root %>/components/fancybox/helpers/jquery.fancybox-buttons.css?v=1.0.5" rel="stylesheet" type="text/css">
     <link href="<%= MetacatUI.root %>/components/fancybox/helpers/jquery.fancybox-thumbs.css?v=1.0.7" rel="stylesheet" type="text/css">
-    <link href="<%= MetacatUI.root %>/components/annotator/v1.2.10/annotator.css" rel="stylesheet" type="text/css">
-    <link href="<%= MetacatUI.root %>/components/bioportal/jquery.ncbo.tree.min.css" rel="stylesheet" type="text/css">
     <link href="<%= MetacatUI.root %>/css/bootstrap.min.css" type="text/css" rel="stylesheet">
     <link href="<%= MetacatUI.root %>/css/font-awesome-3.2.1.min.css" type="text/css" rel="stylesheet">
     <link href="<%= MetacatUI.root %>/css/metacatui-common.css?v=<%=MetacatUI.metacatUIVersion%>" type="text/css" rel="stylesheet">
@@ -40,6 +38,14 @@
 	<meta name="msapplication-TileColor" content="#ffffff">
 	<meta name="msapplication-TileImage" content="<%=MetacatUI.root%>/js/themes/<%=MetacatUI.theme%>/img/favicons/ms-icon-144x144.png">
 	<meta name="theme-color" content="#ffffff">
+
+  <% if(MetacatUI.appModel.get("annotatorUrl")){ %>
+    <link href="<%= MetacatUI.root %>/components/annotator/v1.2.10/annotator.min.css" rel="stylesheet" type="text/css">
+  <% } %>
+
+  <% if(MetacatUI.appModel.get("bioportalAPIKey")){ %>
+    <link href="<%= MetacatUI.root %>/components/bioportal/jquery.ncbo.tree.min.css" rel="stylesheet" type="text/css">
+  <% } %>
 
 	<!--  Google Analytics  -->
 	<% if(googleAnalyticsKey){ %>

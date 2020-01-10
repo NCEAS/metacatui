@@ -19,8 +19,12 @@ function(_, $, Backbone, Portal, PortalSection,
 
   /**
   * @class PortEditorSectionsView
+  * @classdesc A view of one or more Portal Editor sections
+  * @extends Backbone.View
+  * @constructor
   */
-  var PortEditorSectionsView = Backbone.View.extend({
+  var PortEditorSectionsView = Backbone.View.extend(
+    /** @lends PortEditorSectionsView.prototype */{
 
     /**
     * The type of View this is
@@ -79,8 +83,17 @@ function(_, $, Backbone, Portal, PortalSection,
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
+    /**
+    @type {Underscore.Template}
+    */
     template: _.template(Template),
+    /**
+    @type {Underscore.Template}
+    */
     sectionLinkTemplate: _.template(SectionLinkTemplate),
+    /**
+    @type {Underscore.Template}
+    */
     metricsSectionTemplate: _.template(MetricsSectionTemplate),
 
     /**
@@ -646,7 +659,7 @@ function(_, $, Backbone, Portal, PortalSection,
     * @param {PortEditorSectionView} [sectionView] - The section view to switch to. If not given, defaults to the activeSection set on the view.
     */
     switchSection: function(sectionView){
-      
+
       //Create a flag for whether the section label should be shown in the URL
       var showSectionLabelInURL = true;
 
@@ -1280,7 +1293,6 @@ function(_, $, Backbone, Portal, PortalSection,
     /**
      * Update the section label
      *
-     * @function updateName
      * @param e The event triggering this method
      */
     updateName: function(e) {
@@ -1312,7 +1324,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
     /**
     * Shows a validation error message and adds error styling to the given elements
-    * @param {jQuery Selection} elements - The elements to add error styling and messaging to
+    * @param {jQuery} elements - The elements to add error styling and messaging to
     */
     showValidation: function(elements){
       try{

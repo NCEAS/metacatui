@@ -3,13 +3,26 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
     function($, _, Backbone, Filter) {
 
   /**
+  * @class ToggleFilter
+  * @classdesc A search filter whose search term is only one of two opposing choices
   * @constructs ToggleFilter
   * @extends Filter
   */
-	var ToggleFilter = Filter.extend({
+	var ToggleFilter = Filter.extend(
+    /** @lends ToggleFilter.prototype */{
 
     type: "ToggleFilter",
 
+    /**
+    * The Backbone Model attributes set on this ToggleFilter
+    * @type {object}
+    * @extends Filter#defaultts
+    * @property {string}         trueLabel - A human-readable label for the first search term
+    * @property {string}         falseLabel - A human-readable label for the second search term
+    * @property {string|boolean} trueValue - The exact search value to use for search term one
+    * @property {string|boolean} falseValue - The exact search value to use for search term two
+    * @property {string}         nodeName - The XML node name to use when serializing this model into XML
+    */
     defaults: function(){
       return _.extend(Filter.prototype.defaults(), {
         trueLabel: "On",

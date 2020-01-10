@@ -6,7 +6,15 @@ define(['underscore',
         "text!templates/accessPolicy.html"],
 function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
 
-  var AccessPolicyView = Backbone.View.extend({
+  /**
+  * @class AccessPolicyView
+  * @classdesc A view of an Access Policy of a DataONEObject
+  * @extends Backbone.View
+  * @constructor
+  */
+  var AccessPolicyView = Backbone.View.extend(
+    /** @lends AccessPolicyView.prototype */
+    {
 
     /**
     * The type of View this is
@@ -28,6 +36,7 @@ function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
+    * @type {Underscore.Template}
     */
     template: _.template(Template),
 
@@ -43,7 +52,6 @@ function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
 
     /**
     * Creates a new AccessPolicyView
-    * @constructs AccessPolicyView
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){

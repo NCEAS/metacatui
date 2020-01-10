@@ -8,72 +8,107 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
     function($, _, Backbone, rdf, uuid, md5, SolrResults, Filter,
       DataONEObject, ScienceMetadata, EML211) {
 
-      /*
-       A DataPackage represents a hierarchical collection of
+      /**
+       * @class DataPackage
+       * @classdesc A DataPackage represents a hierarchical collection of
        packages, metadata, and data objects, modeling an OAI-ORE RDF graph.
        TODO: incorporate Backbone.UniqueModel
-      */
-      var DataPackage = Backbone.Collection.extend({
+       * @name DataPackage
+       * @extends Backbone.Collection
+       * @constructor
+       */
+      var DataPackage = Backbone.Collection.extend(
+        /** @lends DataPackage.prototype */{
 
-        //The name of this type of collection
+        /**
+        * The name of this type of collection
+        * @type {string}
+        */
         type: "DataPackage",
 
-        // The package identifier
+        /**
+        * The package identifier
+        * @type {string}
+        */
         id: null,
 
-        // The type of the object (DataPackage, Metadata, Data)
-        // Simple queue to enqueue file transfers. Use push() and shift()
-        // to add and remove items. If this gets to large/slow, possibly
-        // switch to http://code.stephenmorley.org/javascript/queues/
+        /**
+        * The type of the object (DataPackage, Metadata, Data)
+        * Simple queue to enqueue file transfers. Use push() and shift()
+        * to add and remove items. If this gets to large/slow, possibly
+        * switch to http://code.stephenmorley.org/javascript/queues/
+        * @type {DataPackage|Metadata|Data[]}
+        */
         transferQueue: [],
 
-        // A flag ued for the package's edit status. Can be
-        // set to false to 'lock' the package
+        /** A flag ued for the package's edit status. Can be
+        * set to false to 'lock' the package
+        * @type {boolean}
+        */
         editable: true,
 
-        // The RDF graph representing this data package
+        /**
+        * The RDF graph representing this data package
+        * @type {RDFGraph}
+        */
         dataPackageGraph: null,
 
-        //A DataONEObject representing the resource map itself
+        /**
+        * A DataONEObject representing the resource map itself
+        * @type {DataONEObject}
+        */
         packageModel: null,
 
-        // The science data identifiers associated with this
-        // data package (from cito:documents), mapped to the science metadata
-        // identifier that documents it
-        // Not to be changed after initial fetch - this is to keep track of the relationships in their original state
+        /** The science data identifiers associated with this
+        * data package (from cito:documents), mapped to the science metadata
+        * identifier that documents it
+        * Not to be changed after initial fetch - this is to keep track of the relationships in their original state
+        * @type {object}
+        */
         originalIsDocBy: {},
 
-        // An array of ids that are aggregated in the resource map on the server.
-        // Taken from the original RDF XML that was fetched from the server.
-        // Used for comparing the original aggregation with the aggregation of this collection.
+        /** An array of ids that are aggregated in the resource map on the server.
+        * Taken from the original RDF XML that was fetched from the server.
+        * Used for comparing the original aggregation with the aggregation of this collection.
+        * @type {string[]}
+        */
         originalMembers: [],
 
-        // Keep the collection sorted by model "sortOrder".  The three model types
-        // are ordered as:
-        //  Metadata: 1
-        //  Data: 2
-        //  DataPackage: 3
-        // See getMember(). We do this so that Metadata get rendered first, and Data are
-        // rendered as DOM siblings of the Metadata rows of the DataPackage table.
+        /**
+        *  Keep the collection sorted by model "sortOrder".  The three model types are ordered as:
+        *  Metadata: 1
+        *  Data: 2
+        *  DataPackage: 3
+        * See getMember(). We do this so that Metadata get rendered first, and Data are
+        * rendered as DOM siblings of the Metadata rows of the DataPackage table.
+        * @type {string}
+        */
         comparator: "sortOrder",
 
-        // The nesting level in a data package hierarchy
+        /**
+        * The nesting level in a data package hierarchy
+        * @type {number}
+        */
         nodeLevel: 0,
 
         /**
-        * @type {SolrResults} - The SolrResults collection associated with this DataPackage.
+        * The SolrResults collection associated with this DataPackage.
         * This can be used to fetch the package from Solr by passing the 'fromIndex' option
         * to fetch().
+        * @type {SolrResults}
         */
         solrResults: new SolrResults(),
 
         /**
-        * @type {Filter} - A Filter model that should filter the Solr index for only the
+        *  A Filter model that should filter the Solr index for only the
         * objects aggregated by this package.
+        * @type {Filter}
         */
         filterModel: null,
 
-        //Define the namespaces used in the RDF XML
+        /** Define the namespaces used in the RDF XML
+        * @type {object}
+        */
         namespaces: {
           RDF:     "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
           FOAF:    "http://xmlns.com/foaf/0.1/",
@@ -93,8 +128,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
         sourcePackages: [],
         derivationPackages: [],
         relatedModels: [],
-        provEdits: [],    // Contains provenance relationships added or deleted to this DataONEObject.
-        // Each entry is [<operation ('add' or 'delete'), <prov field name>, <object id>], i.e. ['add', 'prov_used', 'urn:uuid:5678']
+
+        /**
+        * Contains provenance relationships added or deleted to this DataONEObject.
+        * Each entry is [operation ('add' or 'delete'), prov field name, object id], i.e. ['add', 'prov_used', 'urn:uuid:5678']
+        */
+        provEdits: [],
 
         // Constructor: Initialize a new DataPackage
         initialize: function(models, options) {
@@ -1159,7 +1198,6 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           }
 
           var mapBlob = new Blob([mapXML], {type : 'application/xml'});
-          formData.append("object", mapBlob);
 
           //Get the size of the new resource map
           this.packageModel.set("size", mapBlob.size);
@@ -1178,7 +1216,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
           //Send the system metadata
           var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
+
+          //Add the object XML and System Metadata XML to the form data
+          //Append the system metadata first, so we can take advantage of Metacat's streaming multipart handler
           formData.append("sysmeta", xmlBlob, "sysmeta");
+          formData.append("object", mapBlob);
 
           var collection = this;
           var requestSettings = {

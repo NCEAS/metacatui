@@ -9,10 +9,15 @@ define(["jquery",
     function($, _, Backbone, EMLPartyDisplayTemplate, PortalSectionView,
         PortalLogosView, AcknowledgementsTemplate, AwardsTemplate){
 
-    /* The PortalMembersView is a view to render the
+    /**
+    * @class PortalMembersView
+    * @classdesc The PortalMembersView is a view to render the
      * portal members tab (within PortalSectionView)
+     * @extends PortalSectionView
+     * @constructor
      */
-     var PortalMembersView = PortalSectionView.extend({
+     var PortalMembersView = PortalSectionView.extend(
+        /** @lends PortalMembersView.prototype */{
         type: "PortalMembers",
 
         /**

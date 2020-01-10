@@ -3,10 +3,12 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         'text!templates/metadata/EMLParty.html'],
     function(_, $, Backbone, EMLParty, EMLPartyTemplate){
 
-        /*
-            The EMLParty renders the content of an EMLParty model
+        /**
+          @class EMLPartyView
+          @classdesc  The EMLParty renders the content of an EMLParty model
         */
-        var EMLPartyView = Backbone.View.extend({
+        var EMLPartyView = Backbone.View.extend(
+          /** @lends EMLPartyView.prototype */{
 
           type: "EMLPartyView",
 
@@ -336,7 +338,6 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
              * Validates and displays error messages for the persons' name, position
              * and organization name.
              *
-             * @function showValidation
              */
           showValidation: function() {
 
@@ -426,7 +427,7 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
             this.$("input, img, label").toggleClass("remove-preview");
           },
 
-          /*
+          /**
            * Changes this view and its model from -new- to -not new-
            * "New" means this EMLParty model is not referenced or stored on a
            * parent model, and this view is being displayed to the user so they can

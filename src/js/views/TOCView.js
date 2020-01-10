@@ -16,7 +16,8 @@ define(["jquery",
         there are 'h2' tags within the 'topLevelItem' containers, these will be listed under
         the 'topLevelItem'.
     */
-    var TOCView = Backbone.View.extend({
+    var TOCView = Backbone.View.extend(
+        /** @lends TOCView.prototype */{
 
         tagName: "div",
         className: "toc toc-view",
@@ -30,7 +31,7 @@ define(["jquery",
         templateInvisibleH1: _.template(
             '<h1 id="<%=linkDisplay%>" style="display: inline"></h1>'
         ),
-        
+
         events: {
           'click .dropdown'       : 'toggleDropdown'
     		},
@@ -364,24 +365,24 @@ define(["jquery",
             console.log("error adding extra scrollSpy functionality to portal section, error message: " + error);
           }
         },
-        
-        /**        
+
+        /**
          * toggleDropdown - Extends bootstrap's dropdown menu functionality by
          * hiding the dropdown menu when the user clicks the dropdown toggle or
          * any of the options within the dropdown menu.
-         *          
+         *
          * @param  {event} e The click event on any part of the dropdown element
-         */         
+         */
         toggleDropdown: function(e){
-          
+
           try {
             if(e && e.target && $(e.target).closest(".dropdown").children(".dropdown-menu")){
-                
+
                   // The entire dropdown element including toggle and menu
               var $dropdown = $(e.target).closest(".dropdown"),
                   // The menu that we wish to show and hide on click
                   $menu     = $dropdown.children(".dropdown-menu");
-              
+
               // Wait for bootstrap to add or remove the open class on $dropdown
               setTimeout(function () {
                 if($menu.hasClass("hidden") || $dropdown.hasClass("open")){
@@ -390,19 +391,19 @@ define(["jquery",
                   $menu.addClass("hidden");
                 }
               }, 5);
-              
+
             }
           } catch (error) {
             console.log("error hiding TOC dropdown menu on click, error message: " + error);
           }
-          
+
         },
 
 
         /**
          * onClose - Close and destroy the view
          */
-        onClose: function() { 
+        onClose: function() {
           // Make sure to stop scrollSpy listeners
           $("body").off("activate");
           $(window).off("resize");

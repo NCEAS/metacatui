@@ -6,7 +6,14 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
         BooleanFilter, ChoiceFilter, DateFilter,
         NumericFilter, ToggleFilter) {
 
-	var FilterGroup = Backbone.Model.extend({
+  /**
+  * @class FilterGroup
+  * @classdesc A group of multiple Filters, which may be combined to create a complex query
+  * @extends Backbone.Model
+  * @constructs
+  */
+	var FilterGroup = Backbone.Model.extend(
+    /** @lends FilterGroup.prototype */{
 
     //Default attributes for this model
     defaults: function(){

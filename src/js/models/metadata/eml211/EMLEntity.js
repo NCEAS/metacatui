@@ -2,15 +2,17 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
         "models/metadata/eml211/EMLAttribute"],
     function($, _, Backbone, uuid, DataONEObject, EMLAttribute) {
 
-        /*
-         * EMLEntity represents an abstract data entity, corresponding
+        /**
+         * @class EMLEntity
+         * @classdesc EMLEntity represents an abstract data entity, corresponding
          * with the EML EntityGroup and other elements common to all
          * entity types, including otherEntity, dataTable, spatialVector,
          * spatialRaster, and storedProcedure
          *
          * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
          */
-        var EMLEntity = Backbone.Model.extend({
+        var EMLEntity = Backbone.Model.extend(
+          /** @lends EMLEntity.prototype */{
 
         	//The class name for this model
         	type: "EMLEntity",

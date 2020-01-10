@@ -6,9 +6,11 @@ define(["jquery",
     function($, _, Backbone) {
 
       /**
+       * @class PortalImage
        * A Portal Image model represents a single image used in a Portal
        */
-      var PortalImageModel = Backbone.Model.extend({
+      var PortalImageModel = Backbone.Model.extend(
+        /** @lends PortalImage.prototype */{
         defaults: function(){
           return {
             identifier: "",

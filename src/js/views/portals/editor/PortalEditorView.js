@@ -18,8 +18,13 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
   /**
   * @class PortalEditorView
+  * @classdesc A view of a form for creating and editing DataONE Portal documents
+  * @name PortalEditorView
+  * @extends EditorView
+  * @constructs
   */
-  var PortalEditorView = EditorView.extend({
+  var PortalEditorView = EditorView.extend(
+    /** @lends PortalEditorView.prototype */{
 
     /**
     * The type of View this is
@@ -92,8 +97,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     }),
 
     /**
-    * Creates a new PortalEditorView
-    * @constructs PortalEditorView
+    * Is executed when a new PortalEditorView is created
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
@@ -110,8 +114,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     render: function(){
 
-      $("body").addClass("Editor")
-               .addClass("Portal");
+      //Execute the superclass render() function, which will add some basic Editor functionality
+      EditorView.prototype.render.call(this);
+
+      $("body").addClass("Portal");
 
       // Display a spinner to indicate loading until model is created.
       this.$el.html(this.loadingTemplate({
@@ -166,11 +172,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       else {
 
         // if the user is not signed in, display the sign in view
-        if (!MetacatUI.appUserModel.get("loggedIn")) {
+        if ( MetacatUI.appUserModel.get("tokenChecked") && !MetacatUI.appUserModel.get("loggedIn")) {
           this.showSignIn();
         }
-        //If the user is signed in and is attempting to create a new portal,
-        else {
+        else{
 
           //Check the user's quota to create a new Portal
           this.listenToOnce(MetacatUI.appUserModel, "change:isAuthorizedCreatePortal", function(){
@@ -204,9 +209,22 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
           });
 
-          //Check if this user is authorized to create a new portal
-          MetacatUI.appUserModel.isAuthorizedCreatePortal();
-
+          //If the user authentication hasn't been checked yet, then wait for it
+          if ( !MetacatUI.appUserModel.get("tokenChecked") ) {
+            this.listenTo(MetacatUI.appUserModel, "change:tokenChecked", function(){
+              MetacatUI.appUserModel.isAuthorizedCreatePortal();
+            });
+            return;
+          }
+          //If the user is logged in,
+          else if( MetacatUI.appUserModel.get("loggedIn") ){
+            //Check if this user is authorized to create a new portal
+            MetacatUI.appUserModel.isAuthorizedCreatePortal();
+          }
+          //If the user is not logged in, show the sign in buttons
+          else if( !MetacatUI.appUserModel.get("loggedIn") ){
+            this.showSignIn();
+          }
         }
 
 
@@ -231,6 +249,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         secondaryColorTransparent: this.model.get("secondaryColorTransparent"),
         accentColorTransparent: this.model.get("accentColorTransparent")
       }));
+
+      //Remove the rendering class from the body element
+      $("body").removeClass("rendering");
 
       // Auto-resize the height of the portal title field on user-input and on
       // window resize events.
@@ -333,39 +354,47 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
      */
      authorizeUser: function() {
 
-       //If the seriesId hasn't been found yet, but we have the label
-       if( !this.model.get("seriesId") && !this.model.get("latestVersion") && this.model.get("label") ){
-         //When the seriesId or latest pid is found, come back to this function
-         this.listenToOnce(this.model, "change:seriesId",    this.authorizeUser);
-         this.listenToOnce(this.model, "latestVersionFound", this.authorizeUser);
-
-         //If the portal isn't found, display a 404 message
-         this.listenToOnce(this.model, "notFound", this.showNotFound);
-
-         //Get the seriesId or latest pid
-         this.model.getSeriesIdByName();
+       //If the user authentication hasn't been checked yet, wait for it to finish.
+       if( !MetacatUI.appUserModel.get("tokenChecked") ){
+         this.listenToOnce(MetacatUI.appUserModel, "change:tokenChecked", this.authorizeUser);
          return;
        }
-       else{
-         //Remove the listeners for the seriesId and latest pid
-         this.stopListening(this.model, "change:seriesId",    this.authorizeUser);
-         this.stopListening(this.model, "latestVersionFound", this.authorizeUser);
-       }
-
-       //Only proceed if the user is logged in
-       if ( MetacatUI.appUserModel.get("loggedIn") ){
-
-           // checking for the write Permission
-           this.model.checkAuthority("write");
-       }
-       else if ( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ){
+       //If the user authentication has been checked and they are not logged in, then display the Sign In buttons
+       else if ( MetacatUI.appUserModel.get("tokenChecked") && !MetacatUI.appUserModel.get("loggedIn") ){
 
         //Remove the loading message
         this.hideLoading();
 
         // show the sign in view
         this.showSignIn();
+
+        return;
        }
+       else{
+
+         //If the seriesId hasn't been found yet, but we have the label
+         if( !this.model.get("seriesId") && !this.model.get("latestVersion") && this.model.get("label") ){
+           //When the seriesId or latest pid is found, come back to this function
+           this.listenToOnce(this.model, "change:seriesId",    this.authorizeUser);
+           this.listenToOnce(this.model, "latestVersionFound", this.authorizeUser);
+
+           //If the portal isn't found, display a 404 message
+           this.listenToOnce(this.model, "notFound", this.showNotFound);
+
+           //Get the seriesId or latest pid
+           this.model.getSeriesIdByName();
+           return;
+         }
+         else{
+           //Remove the listeners for the seriesId and latest pid
+           this.stopListening(this.model, "change:seriesId",    this.authorizeUser);
+           this.stopListening(this.model, "latestVersionFound", this.authorizeUser);
+         }
+
+         // checking for the write Permission
+         this.model.checkAuthority("write");
+       }
+
      },
 
     /**
@@ -397,7 +426,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           this.$("#portal-section-tabs").slideToggle();
         }
       } catch(e){
-        console.log("Failed to toggle section links, error message: " + e);
+        console.error("Failed to toggle section links, error message: " + e);
       }
     },
 
@@ -437,7 +466,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.logoEdit.editorView = this;
 
       } catch (e) {
-        console.log("Logo editor view could not be rendered. Error message: " + e);
+        console.error("Logo editor view could not be rendered. Error message: " + e);
       }
     },
 
@@ -595,7 +624,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
     /**
     * Shows a validation error message and adds error styling to the given elements
-    * @param {jQuery Selection} elements - The elements to add error styling and messaging to
+    * @param {jQuery} elements - The elements to add error styling and messaging to
     * @param {string} errorMsg - The error message to display
     */
     showValidationMessage: function(elements, errorMsg){
@@ -669,18 +698,17 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     },
 
     /**
-     * This function is called when the app navigates away from this view.
-     * Any clean-up or housekeeping happens at this time.
+     * @inheritdoc
      */
     onClose: function(){
 
-      $("body")
-        .removeClass("Editor")
-        .removeClass("Portal");
+      //Call the superclass onClose() function
+      EditorView.prototype.onClose.call(this);
 
-      //Remove listeners
-      this.stopListening();
-      this.undelegateEvents();
+      //Remove the Portal class from the body element
+      $("body").removeClass("Portal");
+
+      //Remove the scroll listener
       $(window).off("scroll", "", this.handleScroll);
     },
 

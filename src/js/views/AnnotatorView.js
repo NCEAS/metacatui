@@ -115,10 +115,10 @@ define(['jquery',
 
 		setUpAnnotator: function() {
 
-			var bioportalSearchUrl = MetacatUI.appModel.get('bioportalSearchUrl');
-			if (!bioportalSearchUrl) {
+			var bioportalAPIKey = MetacatUI.appModel.get('bioportalAPIKey');
+			if (!bioportalAPIKey) {
 				// do not use annotator
-				console.log("bioportalSearchUrl is not configured, annotation is disabled");
+				console.log("bioportalAPIKey is not configured, annotation is disabled");
 				this.disabled = true;
 				return;
 			}
