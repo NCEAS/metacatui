@@ -78,9 +78,11 @@ define(['jquery', 'underscore', 'backbone'],
 
       allowAccessPolicyChanges: true,
 
-      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      //baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      baseUrl: 'https://knb.ecoinformatics.org',
       // the most likely item to change is the Metacat deployment context
-      context: '/metacat',
+      //context: '/metacat',
+      context: '/knb',
       d1Service: '/d1/mn/v2',
       d1CNBaseUrl: "https://cn.dataone.org/",
       d1CNService: "cn/v2",

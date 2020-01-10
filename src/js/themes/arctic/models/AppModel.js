@@ -1,4 +1,4 @@
-/*global define */
+    /*global define */
 define(['jquery', 'underscore', 'backbone'],
   function($, _, Backbone) {
   'use strict';
@@ -77,7 +77,8 @@ define(['jquery', 'underscore', 'backbone'],
 
       allowAccessPolicyChanges: false,
 
-      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      //baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      baseUrl: 'https://arcticdata.io',
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',

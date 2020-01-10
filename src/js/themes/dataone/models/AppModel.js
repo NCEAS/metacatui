@@ -80,7 +80,7 @@ define(['jquery', 'underscore', 'backbone'],
       signInUrlOrcid: null,
       //signInUrlLdap: null,
       tokenUrl: null,
-      //mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
+      //mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
       mdqBaseUrl: "",
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
       suiteIds: ["dataone.suite.1"],
