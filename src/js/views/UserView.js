@@ -409,7 +409,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.statsView = new StatsView({
 				title: "Statistics and Figures",
 				description: description,
-				el: this.$("#user-stats")
+				el: this.$("#user-stats"),
+				model: MetacatUI.statsModel
 			});
 			this.subviews.push(this.statsView);
 			this.statsView.render();
