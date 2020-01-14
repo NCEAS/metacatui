@@ -413,21 +413,8 @@ MetacatUI.preventCompatibilityIssues = function(){
       });
     }
 
-    //Polyfill for Array.includes, taken from https://stackoverflow.com/questions/31221341/ie-does-not-support-includes-method
-    if (!String.prototype.includes) {
-      String.prototype.includes = function(search, start) {
-        'use strict';
-        if (typeof start !== 'number') {
-          start = 0;
-        }
-
-        if (start + search.length > this.length) {
-          return false;
-        } else {
-          return this.indexOf(search, start) !== -1;
-        }
-      };
-    }
+    //Polyfill for Array.includes, taken from https://github.com/kevlatus/polyfill-array-includes#readme
+    Array.prototype.includes||Object.defineProperty(Array.prototype,"includes",{value:function(r,e){if(null==this)throw new TypeError('"this" is null or not defined');var t=Object(this),n=t.length>>>0;if(0===n)return!1;var i,o,a=0|e,u=Math.max(a>=0?a:n-Math.abs(a),0);for(;u<n;){if((i=t[u])===(o=r)||"number"==typeof i&&"number"==typeof o&&isNaN(i)&&isNaN(o))return!0;u++}return!1}});
 }
 
 MetacatUI.preventCompatibilityIssues();
