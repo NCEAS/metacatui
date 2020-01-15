@@ -1,42 +1,50 @@
-# Milestones from MetacatUI prioritization
+# Milestones from MetacatUI prioritization: - ~6 month plan
 
-## Milestone 2.6.0 (February 2019)
-- Project pages MVP (Lauren, Chris, Jared, Robyn)
-- Ability to reorder parties in the editor (Needs assignee)
-- Project section in editor (Lauren)
+## 2.9.0 - January 2020
+- Aggregated usage metrics in portals (Rushiraj)
+- Aggregated quality scores in portals (Peter)
 
-## MIlestone 2.7.0 (March 2019)
-- JSON-LD for Google Datasets (Bryce and Lauren)
-- Save emergency draft for manual recovery (MVP) (Chris)
+## 2.10.0 - January 2020
+- Portal View in the DataONE theme (Lauren)
+- Improve deployment efficiency and reliability by moving app configuration to a JSON file (Lauren)
 
-## Milestone 3.0.0 (April 2019)
-- Configuration refactor (Lauren)
-- Code minimization/optimization (Lauren)
+## 2.11.0 - February 2020
+- Permissions view in the portal editor (Lauren)
 
-## Milestone 3.1.0 ( 2019)
-- Finalize collection and project schema (Lauren)
-- People graph with disambiguated user profile pages (linking Creator metadata to accounts) (Bryce)
-- Semantic Search (Bryce with Lauren/Chris) 
-- Annotation Display in MetadataView (Bryce with Lauren/Chris)
-- New attribute editor mockup (Chris)
+## 2.12.0 - March 2020
+- Permissions view in the EML editor
 
-## Milestone 3.2.0 (2019)
-- New attribute editor UX review (Chris)
-- Replace entity - ??
-- Copy attribute metadata in Editor (Dominic)
-- Repository Profile Metrics (Rushiraj)
+## 2.13.0 - Spring 2020
+- Save a draft of the EML locally, for manual retrieval after an error (Lauren, Chris)
 
-## Milestone 3.3.0 ( 2019)
-- User profile metrics (Rushiraj)
-- Ability to edit local drafts (Chris)
-- New attribute editor, including semantic annotations and custom units (Chris)
+## 2.14.0 - late Spring 2020
+- Ability to view and edit the local EML drafts in the editor
+- Serialize all EML documents from the editor as 2.2.0
 
-## Milestone 3.5.0 (Summer 2019)
-- Project editor
-- Parsing data files and prepopulating metadata
-- Editing hierarchical packages in editor
-- Project search view
-- Data paper views (Jared/Matt)
-- Funder views (Jared)
-- Award views (Jared)
+## 2.15.0 - Summer 2020
+- "Replace file" feature in the editor
+- Ability to reorder EML parties in the editor
 
+## 2.16.0 - Summer 2020
+- Redesign the portal editor EditCollectionView (mockups completed already)
+
+
+## Other priorities that were not added to this 6-month plan
+- Portal Editor improvements
+    - Portal Editor in the DataONE theme
+    - Reordering tabs/pages in the portal editor
+    - Members tab in portal editor
+    - Colors editing
+    - Renaming the Data and Metrics tabs
+    - Better Markdown editor
+
+- Portal search page
+- App optimization (faster page load times)
+- Implement user graph (Bryce's design) to link user accounts to creators - Improves search results and user profiles
+- Various EML editor improvements
+    - Attribute editor redesign
+    - Duplicating attribute metadata to another file
+    - Changing the format id of a file
+    - Sorting files in the package display
+    - Custom unit editor
+    - Many more...

@@ -411,6 +411,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				description: description,
 				userType: "user",
 				el: this.$("#user-stats")
+				model: MetacatUI.statsModel
 			});
 			this.subviews.push(this.statsView);
 			this.statsView.render();
