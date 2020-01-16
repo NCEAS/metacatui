@@ -25,7 +25,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
             if(options.citations === "undefined") {
                 this.emptyCitations = true;
             }
-            this.emptyCitations = true;
 
             if( options.citationsForDataCatalogView !== "undefined" ) {
                 this.citationsForDataCatalogView = options.citationsForDataCatalogView;
@@ -53,7 +52,6 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
             var self = this;
 
             if (this.emptyCitations) {
-                console.log(self.citationsForDataCatalogView);
                 var $emptyList = $(document.createElement("div"))
                                             .addClass("empty-citation-list");
 
