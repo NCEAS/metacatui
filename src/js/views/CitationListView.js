@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         className: 'table',
         citationsCollection: null,
         emptyCitations: null,
+        citationsForDataCatalogView: null,
 
         events: {
 
@@ -18,10 +19,24 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
             if((typeof options == "undefined")){
                 var options = {};
                 this.emptyCitations = true;
+                this.citationsForDataCatalogView = false;
             }
 
+            if(options.citations === "undefined") {
+                this.emptyCitations = true;
+            }
+            this.emptyCitations = true;
+
+            if( options.citationsForDataCatalogView !== "undefined" ) {
+                this.citationsForDataCatalogView = options.citationsForDataCatalogView;
+            }
+            else {
+                this.citationsForDataCatalogView = false;
+            }
+            
             // Initializing the Citation collection
             this.citationsCollection = options.citations;
+            
         },
 
 
@@ -38,12 +53,24 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
             var self = this;
 
             if (this.emptyCitations) {
+                console.log(self.citationsForDataCatalogView);
                 var $emptyList = $(document.createElement("div"))
                                             .addClass("empty-citation-list");
 
+                if ( self.citationsForDataCatalogView ) {
+                    var emptyString = `To report a citation of this dataset,
+                        send the citation information to our support team at ` + 
+                        MetacatUI.appModel.get("emailContact") + ".";
+                }
+                else {
+                    var emptyString = `To report a citation of one of these datasets,
+                        send the citation information to our support team at ` + 
+                        MetacatUI.appModel.get("emailContact") + ".";
+                }
+                
                 var $emptyDataElement = $(document.createElement("p"))
-                                            .text("This data hasn't been cited yet.")
-                                            .addClass("empty-citation-list-text");
+                                        .text(emptyString)
+                                        .addClass("empty-citation-list-text");
 
                 $emptyList.append($emptyDataElement);
                 this.$el.append($emptyList);
