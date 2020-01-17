@@ -330,7 +330,7 @@ define(['underscore',
                 view.renderMember(model);
 
               //Listen for changes on this member
-                model.on("change:fileName", model.updateUploadStatus);
+                model.on("change:fileName", model.addToUploadQueue);
             });
 
           //Render the Data Package view
