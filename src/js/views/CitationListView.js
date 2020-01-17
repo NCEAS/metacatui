@@ -55,14 +55,16 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                 var $emptyList = $(document.createElement("div"))
                                             .addClass("empty-citation-list");
 
+                // backtick syntax for a string is a Template Literal,
+                // not supported by IE11. 
                 if ( self.citationsForDataCatalogView ) {
-                    var emptyString = `To report a citation of this dataset,
-                        send the citation information to our support team at ` + 
+                    var emptyString = "To report a citation of this dataset, " +
+                        "send the citation information to our support team at " + 
                         MetacatUI.appModel.get("emailContact") + ".";
                 }
                 else {
-                    var emptyString = `To report a citation of one of these datasets,
-                        send the citation information to our support team at ` + 
+                    var emptyString = "To report a citation of one of these datasets, "
+                        "send the citation information to our support team at " + 
                         MetacatUI.appModel.get("emailContact") + ".";
                 }
                 
