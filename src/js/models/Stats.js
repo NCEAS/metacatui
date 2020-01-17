@@ -9,7 +9,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     /** @lends Stats.prototype */{
 		// This model contains all of the statistics in a user's or query's profile
 		defaults: {
-			query: "*:*", //Show everything
+			query: "*:* ", //Show everything
+      postQuery: "", //An unencoded version of the query
 
 			metadataCount: 0,
 			dataCount: 0,
@@ -202,10 +203,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       //Construct a query
-      var query = this.get('query') +
-            //Use date filter to weed out badly formatted data
-            " AND beginDate:[" + this.firstPossibleDate + " TO " + (new Date()).toISOString() + "]" +
-            " AND -obsoletedBy:*",
+      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + (new Date()).toISOString() + "] AND -obsoletedBy:*",
+          query = this.get("query") + specialQueryParams,
           //Get one row only
           rows = "1",
           //Sort the results in ascending order
@@ -214,6 +213,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
           fl = "beginDate";
 
       if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
 
         var queryData = new FormData();
         queryData.append("q", query);
@@ -259,10 +268,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       var now = new Date();
 
       //Get the latest temporal data coverage year
-      var query = this.get('query') +
-          " AND endDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "]" + //Use date filter to weed out badly formatted data
-          " AND -obsoletedBy:*";
-      var rows = 1,
+      var specialQueryParams = " AND endDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "]" + //Use date filter to weed out badly formatted data
+            " AND -obsoletedBy:*",
+          query = this.get('query') + specialQueryParams,
+          rows = 1,
           fl   = "endDate",
           sort = "endDate desc",
           wt   = "json";
@@ -291,6 +300,17 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
+
         var queryData = new FormData();
         queryData.append("q", query);
         queryData.append("rows", rows);
@@ -329,7 +349,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       var model = this;
 
       //Build the query to get the format types
-      var query = this.get('query') + " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*",
+      var specialQueryParams = " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*",
+          query = this.get('query') + specialQueryParams,
           rows  = "2",
           group = true,
           groupField = "formatType",
@@ -387,6 +408,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       if( this.get("usePOST") ){
 
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
+
         var requestData = new FormData();
         requestData.append("q", query);
         requestData.append("rows", rows);
@@ -439,7 +470,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
         return;
       }
 
-      var query = this.get('query') + " AND formatType:DATA AND -obsoletedBy:*",
+      var specialQueryParams = " AND formatType:DATA AND -obsoletedBy:*",
+          query = this.get('query') + specialQueryParams,
           facet = "true",
           facetField = "formatId",
           facetLimit = "-1",
@@ -452,6 +484,17 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
+
         var queryData = new FormData();
         queryData.append("q", query);
         queryData.append("facet", facet);
@@ -495,7 +538,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
 			var model = this;
 
-      var query = this.get('query') + " AND formatType:METADATA AND -obsoletedBy:*",
+      var specialQueryParams = " AND formatType:METADATA AND -obsoletedBy:*",
+          query = this.get("query") + specialQueryParams,
           facet = "true",
           facetField = "formatId",
           facetLimit = "-1",
@@ -508,6 +552,17 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
+
         var queryData = new FormData();
         queryData.append("q", query);
         queryData.append("facet", facet);
@@ -553,8 +608,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       var now = new Date();
 
-      var metadataQuery = model.get('query') +
-                          " AND -obsoletedBy:* AND formatType:METADATA";
+      var metadataQueryParams = "AND -obsoletedBy:* AND formatType:METADATA";
+      var metadataQuery = this.get('query') + metadataQueryParams;
 
       var firstPossibleUpdate = MetacatUI.nodeModel.isCN(MetacatUI.nodeModel.get("currentMemberNode"))?
         this.firstPossibleDataONEDate : model.get("firstUpload");
@@ -626,10 +681,21 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
           model.set('firstUpdate', updateDates[0]);
         }
 
-        var dataQuery = model.get('query') +
-                        " AND -obsoletedBy:* AND formatType:DATA";
+        var dataQueryParams = " AND -obsoletedBy:* AND formatType:DATA",
+            dataQuery = model.get("query") + dataQueryParams;
 
         if( model.get("usePOST") ){
+
+          //Get the unencoded query string
+          if( model.get("postQuery") ){
+            dataQuery = model.get("postQuery") + dataQueryParams;
+          }
+          else if( model.get("searchModel") ){
+            dataQuery = this.get("searchModel").getQuery(undefined, { forPOST: true });
+            this.set("postQuery", query);
+            dataQuery = dataQuery + dataQueryParams;
+          }
+
           var queryData = new FormData();
           queryData.append("q", dataQuery);
           queryData.append("sort", sort);
@@ -671,6 +737,17 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          metadataQuery = this.get("postQuery") + metadataQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          metadataQuery = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", metadataQuery);
+          metadataQuery = metadataQuery + metadataQueryParams;
+        }
+
         var queryData = new FormData();
         queryData.append("q", metadataQuery);
         queryData.append("sort", sort);
@@ -719,17 +796,17 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     getFirstUpload: function(){
 
       var now = new Date(),
-        model = this,
-        firstPossibleUpload = new Date();
+          model = this,
+          firstPossibleUpload = new Date();
 
         firstPossibleUpload.setYear( firstPossibleUpload.getYear() - 100 );
         firstPossibleUpload = firstPossibleUpload.toISOString();
 
       //Get the earliest upload date
-      var query = this.get('query') +
-                  " AND formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
+      var specialQueryParams = " AND formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
                   " AND dateUploaded:[" + firstPossibleUpload + " TO " + now.toISOString() + "]" + //Weeds out badly formatted dates
                   " AND -obsoletes:*",    //Only count one version of a revision chain
+          query = this.get('query') + specialQueryParams,
           fl   = "dateUploaded",
           rows = "1",
           sort = "dateUploaded asc",
@@ -756,6 +833,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
 
         var requestData = new FormData();
         requestData.append("q", query);
@@ -845,7 +932,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
             var now = new Date();
 
             allFacetQueries.push("{!key=" + lastYear + "}(beginDate:[* TO " +
-                              oneYearFromNow.toISOString() + "/YEAR] endDate:[" +
+                              oneYearFromNow.toISOString() + "/YEAR] AND endDate:[" +
                               now.toISOString() + "/YEAR TO *])");
           }
           else{
@@ -858,7 +945,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
             endDateLimit.setFullYear( endDateLimit.getFullYear() - yearsAgo );
 
             allFacetQueries.push("{!key=" + key + "}(beginDate:[* TO " +
-                              beginDateLimit.toISOString() + "/YEAR] endDate:[" +
+                              beginDateLimit.toISOString() + "/YEAR] AND endDate:[" +
                               endDateLimit.toISOString() + "/YEAR TO *])");
           }
         }
@@ -872,7 +959,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
           endDateLimit.setFullYear( endDateLimit.getFullYear() - yearsAgo );
 
           allFacetQueries.push("{!key=" + key + "}(beginDate:[* TO " +
-                            beginDateLimit.toISOString() +"/YEAR] endDate:[" +
+                            beginDateLimit.toISOString() +"/YEAR] AND endDate:[" +
                             endDateLimit.toISOString() + "/YEAR TO *])");
         }
         else{
@@ -885,7 +972,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
           endDateLimit.setFullYear( endDateLimit.getFullYear() - yearsAgo );
 
           allFacetQueries.push("{!key=" + key + "}(beginDate:[* TO " +
-                         beginDateLimit.toISOString() + "/YEAR] endDate:[" +
+                         beginDateLimit.toISOString() + "/YEAR] AND endDate:[" +
                          endDateLimit.toISOString() + "/YEAR TO *])");
         }
       }
@@ -893,31 +980,39 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       var now = new Date();
 
       //The full query
-      var query = this.get('query') +
-        //Use date filter to weed out badly formatted data
-        " AND beginDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "]" +
-        " AND -obsoletedBy:*",
-        rows = "0",
-        facet = "true",
-        facetLimit = "30000", //Put some reasonable limit here so we don't wait forever for this query
-        facetMissing = "true", //We want to retrieve years with 0 results
-        wt = "json";
+      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "] AND -obsoletedBy:*",
+          query = this.get('query') + specialQueryParams,
+          rows = "0",
+          facet = "true",
+          facetLimit = "30000", //Put some reasonable limit here so we don't wait forever for this query
+          facetMissing = "true", //We want to retrieve years with 0 results
+          wt = "json";
 
       var successCallback = function(data, textStatus, xhr) {
         model.set('temporalCoverage', data.facet_counts.facet_queries);
       }
 
       if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true }) + specialQueryParams;
+        }
+
         var requestData = new FormData();
         requestData.append("q", query);
         requestData.append("rows", rows);
+        requestData.append("wt", wt);
         requestData.append("facet", facet);
         requestData.append("facet.limit", facetLimit);
         requestData.append("facet.missing", facetMissing);
+
         _.each(allFacetQueries, function(facetQuery){
           requestData.append("facet.query", facetQuery);
         });
-        requestData.append("wt", wt);
 
         //Request settings for POST requests
         var requestSettings = {
