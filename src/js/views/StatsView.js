@@ -181,7 +181,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			// Displaying Citations
 			var resultDetails = this.metricsModel.get("resultDetails");
-			var citationCollection = new Citations(resultDetails["citations"], {parse:true});
+
+			// Creating a new collection object
+			// Parsing result-details with updated format
+			var resultDetailsCitationCollection = new Array();
+			for (var key in resultDetails["citations"]) {
+				resultDetailsCitationCollection.push(resultDetails["citations"][key]);
+			}
+
+			var citationCollection = new Citations(resultDetailsCitationCollection, {parse:true});
 
 			this.citationCollection = citationCollection;
 
@@ -417,7 +425,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				//Create the line chart and draw the metadata line
 				var lineChartView = new LineChart(
 						{	  data: this.model.get('metadataUploadDates'),
-			  formatFromSolrFacets: true,
+			  		formatFromSolrFacets: true,
 						cumulative: true,
 								id: "upload-chart",
 						 className: "metadata",
