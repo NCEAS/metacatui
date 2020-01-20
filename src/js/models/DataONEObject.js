@@ -643,6 +643,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           * Updates the DataONEObject System Metadata to the server
           */
         updateSysMeta: function () {
+
+          //Update the upload status to "p" for "in progress"
+          this.set("uploadStatus", "p");
+
           var formData = new FormData();
 
           //Add the identifier to the XHR data
@@ -672,6 +676,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                 //Fetch the system metadata from the server so we have a fresh copy of the newest sys meta.
                 model.fetch({ systemMetadataOnly: true });
+
+                //Update the upload status to "c" for "complete"
+                model.set("uploadStatus", "c");
 
                 //Trigger a custom event that the sys meta was updated
                 model.trigger("sysMetaUpdated");
@@ -1059,8 +1066,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             var self = this;
             this.listenTo(accessPolicy, "change update", function(){
               self.trigger("change");
-              this.set("hasContentChanges", true);
-              this.updateUploadStatus();
+              this.addToUploadQueue();
 
             });
 
@@ -1231,7 +1237,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
               if ( changedContentAttrs.length > 0 && !this.get("hasContentChanges") && model.get("synced") ) {
                 this.set("hasContentChanges", true);
-                this.updateUploadStatus();
+                this.addToUploadQueue();
               }
 
             },
@@ -1247,10 +1253,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                      this.get("synced") );
           },
 
-          /*
+          /**
            * Updates the upload status attribute on this model and marks the collection as changed
            */
-          updateUploadStatus: function(){
+          addToUploadQueue: function(){
 
             if( !this.get("synced") ){
               return;

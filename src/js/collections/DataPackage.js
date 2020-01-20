@@ -1144,8 +1144,14 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             this.stopListening(model, "cancelSave", this.save);
             this.listenToOnce(model,  "cancelSave", this.save);
 
-            //Save the model and watch for fails
-            model.save();
+            //If this is a Data model and it has no content changes, we only want to save the system metadata
+            if( model.get("type") == "Data" && !model.get("hasContentChanges") ){
+              model.updateSysMeta();
+            }
+            else{
+              //Save the model and watch for fails
+              model.save();
+            }
 
             //Add it to the list of models in progress
             modelsInProgress.push(model);
