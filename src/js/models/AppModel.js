@@ -132,7 +132,15 @@ define(['jquery', 'underscore', 'backbone'],
       accountsMapsUrl: null,
       groupsUrl: null,
       portalUrl: null,
-      mdqUrl: null,
+      // Metadata quality report services
+      mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
+      // Quality Suites for the dataset quality chart
+      // suidIds and suiteLables must be specified as a list, even if only one suite is available.
+      mdqSuiteIds: ["FAIR.suite.1"],
+      mdqSuiteLabels: ["FAIR Suite v1.0"],
+      // Quality suites for aggregated quality scores (i.e. metrics tab) 
+      mdqAggregatedSuiteIds: ["FAIR.suite.1"],
+      mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
 
       /**
       * Metrics endpoint url
@@ -464,6 +472,11 @@ define(['jquery', 'underscore', 'backbone'],
 
       //The package service for v2 DataONE API
       this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+      
+      // Metadata quality report services
+      this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
+      this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
+      this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
 
       this.on("change:pid", this.changePid);
 
