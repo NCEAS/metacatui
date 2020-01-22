@@ -410,7 +410,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				title: "Statistics and Figures",
 				description: description,
 				userType: "user",
-				el: this.$("#user-stats")
+				el: this.$("#user-stats"),
 				model: MetacatUI.statsModel
 			});
 			this.subviews.push(this.statsView);
