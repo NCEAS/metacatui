@@ -693,7 +693,7 @@ select{
     }
 
     #Navbar .dropdown-menu{
-    	left: -90px;
+    	width: 100%;
     }
 
     #Navbar .dropdown-menu:before,
