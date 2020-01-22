@@ -1799,6 +1799,9 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 #owner-controls-container > .btn {
     margin-right: 10px;
 }
+#owner-controls-container > .btn[disabled]{
+  cursor: not-allowed;
+}
 .edit-toolbar > #owner-controls-container #publish {
     width: 138px;
 }
