@@ -1506,7 +1506,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         if(entity){
 
           //If this entity has been matched to another DataONEObject already, then don't match it again
-          if( entity.get("dataONEObject") ){
+          if( entity.get("dataONEObject") == dataONEObj ){
+            return entity;
+          }
+          //If this entity has been matched to a different DataONEObject already, then don't match it again.
+          //i.e. We will not override existing entity<->DataONEObject pairings
+          else if( entity.get("dataONEObject") ){
             return;
           }
           else{
