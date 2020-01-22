@@ -19,7 +19,7 @@ MetacatUI.useD3 = true;
 // of assets and, if not set correctly, a lot of things break. Your web server
 // should also set a FallbackResource directive accordingly in order to support
 // users entering MetacatUI from URLs other than the root
-MetacatUI.root = "/"
+MetacatUI.root = "/metacatui"
 // Remove trailing slash if one is present
 MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
 
@@ -415,7 +415,7 @@ MetacatUI.preventCompatibilityIssues = function(){
 
     //Polyfill for Array.includes, taken from https://github.com/kevlatus/polyfill-array-includes#readme
 	Array.prototype.includes||Object.defineProperty(Array.prototype,"includes",{value:function(r,e){if(null==this)throw new TypeError('"this" is null or not defined');var t=Object(this),n=t.length>>>0;if(0===n)return!1;var i,o,a=0|e,u=Math.max(a>=0?a:n-Math.abs(a),0);for(;u<n;){if((i=t[u])===(o=r)||"number"==typeof i&&"number"==typeof o&&isNaN(i)&&isNaN(o))return!0;u++}return!1}});
-	
+
 	// Polyfill
 	// This Polyfill emulates the Math.log2 function.
 	if (!Math.log2) Math.log2 = function(x) {
