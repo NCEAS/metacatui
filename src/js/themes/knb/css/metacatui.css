@@ -1174,13 +1174,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       padding-top: 90px;
     }
 
-	.subset-choice.keyword-search-link {
-		background-color: #115E95;
-		color: white;
-		text-shadow: none;
-		margin-bottom: 10px;
-	}
-
 	.keyword-search-link.active{
 		background-color: #1981CC;
 	}
