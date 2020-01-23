@@ -56,19 +56,26 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                                             .addClass("empty-citation-list");
 
                 if ( self.citationsForDataCatalogView ) {
-                    var emptyString = "To report a citation of this dataset, " +
-                        "send the citation information to our support team at " + 
-                        MetacatUI.appModel.get("emailContact") + ".";
+                    var emptyString = "We couldn't find any citations for this dataset. " +
+                        "To report a citation of this dataset, " +
+                        "send the citation information to our support team at " ;
                 }
                 else {
-                    var emptyString = "To report a citation of one of these datasets, " +
-                        "send the citation information to our support team at " + 
-                        MetacatUI.appModel.get("emailContact") + ".";
+                    var emptyString = "We couldn't find any citations for these datasets. " +
+                        "To report a citation of one of these datasets, " +
+                        "send the citation information to our support team at " ;
                 }
                 
                 var $emptyDataElement = $(document.createElement("p"))
                                         .text(emptyString)
                                         .addClass("empty-citation-list-text");
+
+                // Adding Email link 
+                var $emailLink = $('<a>', {
+                    href: 'mailto:' + MetacatUI.appModel.get("emailContact"),
+                    text: MetacatUI.appModel.get("emailContact")
+                });
+                $emptyDataElement.append($emailLink);
 
                 $emptyList.append($emptyDataElement);
                 this.$el.append($emptyList);
