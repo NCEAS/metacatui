@@ -1947,7 +1947,7 @@ i.catalog-metric-icon {
 .downloads-metrics .metric-chart text.no-data {
 	font-size: 16px;
 	font-weight: 100;
-	fill:#d0d0d0;
+	fill:#555555;
 }
 
 #metric-modal .metric-chart rect.no-data,

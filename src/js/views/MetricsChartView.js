@@ -71,7 +71,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             var metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             var textMessage = "This dataset hasn’t been " + metricNameLemma + "ed yet."
             if (this.viewType != "dataset") {
-                textMessage = "This " + this.viewType + " has no " + metricNameLemma + "s to display "
+                textMessage = "These datasets have not been " + metricNameLemma + "ed yet."
             }
 
             var margin	= {top: 25, right: 40, bottom: 40, left: 40},
