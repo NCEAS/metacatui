@@ -4,8 +4,9 @@ define(['underscore',
         "models/DataONEObject",
         'collections/ObjectFormats',
         "Dropzone",
-        "text!templates/imageUploader.html"],
-function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
+        "text!templates/imageUploader.html",
+        "corejs"],
+function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corejs){
 
   /**
   * @class ImageUploaderView
@@ -204,11 +205,11 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
                               .outerHTML;
 
         // Insert the main template for this view
-        this.$el.html(dropzoneTemplate);
+        view.$el.html(dropzoneTemplate);
 
         // Add upload & drag and drop functionality to the dropzone div.
         // For config details, see: https://www.dropzonejs.com/#configuration
-        var $dropZone = this.$(".dropzone").dropzone({
+        var $dropZone = view.$(".dropzone").dropzone({
 
           url: MetacatUI.appModel.get("objectServiceUrl"),
           acceptedFiles: "image/*",
@@ -237,102 +238,128 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
           // Check for minimum dimensions at this stage because dropzone has
           // calculated the file's height here.
           thumbnail: function(file, dataURL){
-            // Don't bother size check for SVG images since they're vector
-            var dimCheck = file.type === "image/svg+xml" ? true : view.checkMinDimensions(file.width, file.height);
-            if(dimCheck != true){
-              if(file.rejectDimensions){
-                // Send reason for rejection rejectDimensions function
-                file.rejectDimensions(dimCheck);
-              }
-            } else {
-              if(file.acceptDimensions){
-                file.acceptDimensions();
+            try {
+              // Don't bother size check for SVG images since they're vector
+              var dimCheck = file.type === "image/svg+xml" ? true : view.checkMinDimensions(file.width, file.height);
+              if(dimCheck != true){
+                if(file.rejectDimensions){
+                  // Send reason for rejection rejectDimensions function
+                  file.rejectDimensions(dimCheck);
+                }
+              } else {
+                if(file.acceptDimensions){
+                  file.acceptDimensions();
+                };
+                view.showImage(file, dataURL);
               };
-              view.showImage(file, dataURL);
-            };
+            } catch (e) {
+              console.log("Error generating thumbnail image, error message: " + e);
+            }
+            
           },
 
           // Dropzone will check filetype = options.acceptedFiles. Add functions
           // for when the image is too small.
           accept: function accept(file, done) {
-            file.rejectDimensions = function(message) {  done(message)  };
-            file.acceptDimensions = function(){  done()  };
+            try {
+              file.rejectDimensions = function(message) {  done(message)  };
+              file.acceptDimensions = function(){  done()  };
+            } catch (e) {
+              console.log("Error during dropzone's accept function. Error code: " + e);
+            }
           },
+
 
           // After the file is accepted (correct filetype and min size requirements),
           // resize the image if it's too large in height or width, then
           // provide image data to a dataOne object model and calulate checksum.
           transformFile: function(file, done){
-            // Only resize images if dimensions are too large.
-            // Once the image is resized (or not), save the data to the model and get a checksum.
-            var resizeWidth = (file.width > this.options.resizeWidth) ? this.options.resizeWidth : null;
-            var resizeHeight = (file.height > this.options.resizeHeight) ? this.options.resizeHeight : null;
-            if (resizeHeight || resizeWidth) {
-              return this.resizeImage(file, resizeWidth, resizeHeight, this.options.resizeMethod, function(blob){
-                view.prepareD1Model(blob, file.name, file.type, done);
-              });
-            } else {
-              return view.prepareD1Model(file, file.name, file.type, done);
+            try {
+              // Only resize images if dimensions are too large.
+              // Once the image is resized (or not), save the data to the model and get a checksum.
+              var resizeWidth = (file.width > this.options.resizeWidth) ? this.options.resizeWidth : null;
+              var resizeHeight = (file.height > this.options.resizeHeight) ? this.options.resizeHeight : null;
+              if (resizeHeight || resizeWidth) {
+                return this.resizeImage(file, resizeWidth, resizeHeight, this.options.resizeMethod, function(blob){
+                  view.prepareD1Model(blob, file.name, file.type, done);
+                });
+              } else {
+                return view.prepareD1Model(file, file.name, file.type, done);
+              }
+            } catch (e) {
+              console.log("Error during dropzone's transformFile function. Error code: " + e);
             }
           },
 
           // Add some required formData right before the image is uploaded
           sending: function(file, xhr, formData) {
-            //Create the system metadata XML & send as blob
-            var sysMetaXML = view.model.serializeSysMeta();
-            var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
-            formData.append("sysmeta", xmlBlob, "sysmeta.xml");
-            formData.append("pid", view.model.get("id"));
+            try {
+              //Create the system metadata XML & send as blob
+              var sysMetaXML = view.model.serializeSysMeta();
+              var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
+              formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+              formData.append("pid", view.model.get("id"));
+            } catch (e) {
+              console.log("Error during dropzone's sending function. Error code: " + e);
+            }
           },
 
           // If there are any errors during the entire process...
           error: function error(file, message, xhr) {
-            view.trigger("error");
-            // Give a readable error if it's a server error
-            if(xhr){
-              console.log(message);
-              message = "There was an error uploading your file. Please try again later."
+            try {
+              view.trigger("error");
+              // Give a readable error if it's a server error
+              if(xhr){
+                console.log(message);
+                message = "There was an error uploading your file. Please try again later."
+              }
+              // Make sure image isn't showing (src for <img> and style for background images)
+              $(file.previewElement).find(".image-container").attr({
+                src: "",
+                style: ""
+              });
+              // Show error using dropzone's default behaviour
+              this.defaultOptions.error(file, message);
+            } catch (e) {
+              console.log("Problem handling error, message: " + e);
             }
-            // Make sure image isn't showing (src for <img> and style for background images)
-            $(file.previewElement).find(".image-container").attr({
-              src: "",
-              style: ""
-            });
-            // Show error using dropzone's default behaviour
-            this.defaultOptions.error(file, message)
           },
 
           init: function() {
-            this.on("addedfile", function(file){
-              // Make sure only the most recently added image is shown in the upload zone
-              view.limitFileInput();
-              // Required for parent views to use listenTo() on dropzone events
-              view.trigger("addedfile");
-            });
-            // Hide the remove buttons and text when an image is removed
-            this.on("removedfile", function(file){
-              view.previewImageRemove();
-              // Required for parent views to use listenTo() on dropzone events
-              view.trigger("removedfile");
-            });
-            this.on("success", function(){
-              view.trigger("successSaving", view.model);
-            });
-          },
+            try {
+              this.on("addedfile", function(file){
+                // Make sure only the most recently added image is shown in the upload zone
+                view.limitFileInput();
+                // Required for parent views to use listenTo() on dropzone events
+                view.trigger("addedfile");
+              });
+              // Hide the remove buttons and text when an image is removed
+              this.on("removedfile", function(file){
+                view.previewImageRemove();
+                // Required for parent views to use listenTo() on dropzone events
+                view.trigger("removedfile");
+              });
+              this.on("success", function(){
+                view.trigger("successSaving", view.model);
+              });
+            } catch (e) {
+              console.log("Issue initializing dropzone, error message: " + e);
+            }
+          }
+          
         });
 
         // Save the dropzone element for other functions to access later
-        this.imageDropzone = $dropZone[0].dropzone;
+        view.imageDropzone = $dropZone[0].dropzone;
 
         // Fetch the image if a URL was provided and show thumbnail
-        if(this.url){
-          this.showSavedImage();
+        if(view.url){
+          view.showSavedImage();
         }
       }
       catch(error){
         console.log("ImageUploaderView could not be rendered, error message: ", error);
       }
-
     },
 
     /**
@@ -450,6 +477,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
 
       } catch(error) {
         console.log(error);
+        this.showError($(file.previewElement));
       }
 
     },
@@ -483,8 +511,26 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template){
       }
       catch(error){
         console.log("image could not be displayed, error message: " + error);
+        // When the preview image fails to render, show some explanatory text
+        this.showError($(this.imageDropzone.element));
+        
       }
 
+    },
+    
+    /**
+     * showError - Indicates to the user that the image uploader may not work
+     * due to browser issues.
+     * @param {jQuery} dropzoneEl - The dropzone element to show the error for.
+     */
+    showError: function(dropzoneEl){
+      dropzoneEl.addClass("error");
+      dropzoneEl.find(".dz-error-message span").text("Error previewing image");
+      dropzoneEl.tooltip({
+        placement: "bottom",
+        trigger: "hover",
+        title: "Image previews cannot be shown. Your browser may be out-of-date."
+      });
     },
 
     /**
