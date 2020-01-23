@@ -77,6 +77,8 @@ require.config({
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
 	// drop zone creates drag and drop areas
 	Dropzone: MetacatUI.root + '/components/dropzone-amd-module',
+	// Polyfill required for using dropzone with older browsers 
+	corejs: MetacatUI.root + '/components/core-js',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],

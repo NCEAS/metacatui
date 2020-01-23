@@ -1,12 +1,4 @@
 
-/* Import font families */
-@import url(https://fonts.googleapis.com/css?family=Oswald:400,300,700);
-/* Oswald weights:
-Light 300
-Normal 400
-Bold 700
-*/
-
 /* Body CSS
 -------------------------------------------------- */
     html {
@@ -59,14 +51,6 @@ Bold 700
 	}
 
 	p:empty{ display: none; }
-
-    /*.bold-header{
-    	background-color: #333;
-    	color: #DDD;
-    	font: 400 20px/30px "Oswald", Arial, sans-serif;
-    	text-transform: uppercase;
-    	text-shadow: none;
-    }*/
 
     .pointer{
     	cursor: pointer;
@@ -519,7 +503,8 @@ select{
   	margin-left: 10px;
 }
 #downloadPackage .dropdown-toggle {
-	font: 400 20px/20px "Oswald", Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
 }
 .btn-group.open .btn.dropdown-toggle{
   	color: #166194;
@@ -527,7 +512,7 @@ select{
 }
 .dropdown-menu > li > a.btn{
   	background-color: #FFFFFF;
-  	font: 300 18px/18px "Oswald", Arial, sans-serif;
+    font-size: 18px;
 }
 
 
@@ -633,7 +618,6 @@ select{
       color: #FFFFFF; /*IE fallback */
       color: rgba(255, 255, 255, 0.8);
       text-shadow: none;
-      font: normal normal 400 25px/20px "Oswald", Arial, sans-serif;
       text-transform: uppercase;
     }
 
@@ -1046,31 +1030,6 @@ select{
  	aside > div{
  		margin-bottom: 10px;
  	}
-
-    .subset-choice{
-    background-color: #190000;
-    background-color: rgba(23, 97, 146, 0.46);
-	color: white;
-	font-size: 20px;
-	font-family: "Oswald";
-	padding: 2px 0px 0px 30%;
-	position: relative;
-	border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	}
-
-	.subset-choice:hover,
-	.subset-choice:hover > i{
-		color: #166194;
-	}
-
-	.subset-choice > i{
-		position:absolute;
-		right: 0;
-		margin-right: 10px;
-		top: 20%;
-	}
 
  /***Filters ***/
 #sidebar{
@@ -2017,10 +1976,10 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #mainContent h1{
-	font: 400 60px/60px "Oswald", Arial, sans-serif;
+	font-size: 48px;
 	color: #375796;
 	text-transform: uppercase;
-	width: 300px;
+	width: 365px;
 	margin-bottom: 20px;
 }
 
@@ -2091,7 +2050,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #metacatDocs > .banner > .title{
-	font: 400 18px/18px "Oswald", Arial, sans-serif;
+	font-size: 18px;
 	color: #FFFFFF;
 	float: left;
 	margin: 38px 10px;
@@ -2117,7 +2076,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .related > ul > li.right > a{
 	color: #FFFFFF;
-	font: 400 30px/30px "Oswald", sans-serif;
+	font-size: 30px;
 	text-decoration: none;
 	text-transform: uppercase;
 }
@@ -2144,7 +2103,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 0 4px 4px 0;
 	-moz-border-radius: 0 4px 4px 0;
 	border-left: 1px solid #CCCCCC;
-	font: 300 16px/16px "Oswald", sans-serif;
+	font-size: 16px;
 }
 
 #metacatDocs .related > ul input[type="submit"]:hover{	/*"Go" button on navigation search bar */
@@ -2172,7 +2131,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .related .breadcrumb,
 #metacatDocs .related .breadcrumb > a{
-	font: 300 16px/16px "Oswald", Arial, sans-serif;
+	font-size: 16px;
 	color: #FFFFFF;
 }
 
@@ -2228,7 +2187,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #metacatDocs .sidebar .sidebar-title{
-	font: 300 24px/24px "Oswald", Arial, sans-serif;
+	font-size: 24px;
 	margin-top: 0;
 }
 
@@ -2390,7 +2349,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  }
 
  #metacatDocs .topic-title{
- 	font: 300 24px/24px "Oswald", sans-serif;
+ 	font-size: 24px;
 	margin-top: 0;
  }
 
@@ -2404,7 +2363,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  }
 
     dt{
-   		font: 300 18px/24px "Oswald", sans-serif;
+   		font-size: 18px;
    }
 
    #metacatDocs input {
@@ -2425,11 +2384,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	}
 
 	#metacatDocs h2{
-		font: 400 27.5px/40px "Oswald", sans-serif;
+		font-size: 27.5;
 	}
 
 	#metacatDocs h1{
-		font: 400 32px/40px "Oswald", sans-serif;
+		font-size: 32px;
 	}
 
 	#metacatDocs h1 > a,

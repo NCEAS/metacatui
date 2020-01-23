@@ -37,14 +37,6 @@
 		font-weight: 600;
 	}
 
-    /*.bold-header{
-    	background-color: #333;
-    	color: #DDD;
-    	font: 400 20px/30px "Oswald", Arial, sans-serif;
-    	text-transform: uppercase;
-    	text-shadow: none;
-    }*/
-
     .pointer{
     	cursor: pointer;
     }
@@ -1066,30 +1058,6 @@ color: #1C6E84;
 
   /* SIDEBAR CSS
   -------------------------------------------------- */
-
-    .subset-choice{
-    background-color: rgba(23, 97, 146, 0.46);
-	color: white;
-	font-size: 20px;
-	font-family: "Oswald";
-	padding: 2px 0px 0px 30%;
-	position: relative;
-	border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	}
-
-	.subset-choice:hover,
-	.subset-choice:hover > i{
-		color: #1C6E84;
-	}
-
-	.subset-choice > i{
-		position:absolute;
-		right: 0;
-		margin-right: 10px;
-		top: 20%;
-	}
 
     /***Filters ***/
 

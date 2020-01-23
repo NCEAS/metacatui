@@ -530,16 +530,17 @@ define(['underscore',
 
             }
 
-          if( MetacatUI.rootDataPackage )
-          // If the Data Package failed saving, display an error message
-          this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
+          if( MetacatUI.rootDataPackage && DataPackage.prototype.isPrototypeOf(MetacatUI.rootDataPackage) ){
+            // If the Data Package failed saving, display an error message
+            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
 
-          // Listen for when the package has been successfully saved
-          this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
+            // Listen for when the package has been successfully saved
+            this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
 
-          //When the Data Package cancels saving, hide the saving styling
-          this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.hideSaving);
-          this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.handleSaveCancel);
+            //When the Data Package cancels saving, hide the saving styling
+            this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.hideSaving);
+            this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.handleSaveCancel);
+          }
 
           //When the model is invalid, show the required fields
           this.listenTo(this.model, "invalid", this.showValidation);
