@@ -2902,11 +2902,10 @@ img[src*="googleapis.com/"].georegion-map{
   color: #960303;
 }
 
-#section-type-header{
-	margin: 35px 0 25px 0;
-}
-
 /* Portal editor sections */
+.port-editor-section{
+  padding: 20px 40px;
+}
 .port-editor-section.port-editor-md{
   padding: 0px;
 }
@@ -2927,7 +2926,6 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 .logo-editor-container {
-    margin-left: 20px;
     margin-right: 20px;
 }
 .logo-editor-container .dropzone .dz-message{
@@ -2943,9 +2941,8 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 .portal-editor .title-container {
-	width: calc(100% - 150px);
+	width: calc(100% - 120px);
 	min-width: 300px;
-	max-width: 1000px;
 }
 
 .portal-editor textarea.portal-title{
@@ -3057,14 +3054,19 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-settings .description-container textarea{
   width: 100%;
 }
-.port-editor-section  > h3{
-  margin-top: 20px;
-  margin-left: 40px;
+.port-editor-section.port-editor-data{
+  padding: 20px 40px;
 }
-.port-editor-section .edit-collection > h3,
-.port-editor-section .edit-collection > p{
-  margin-top: 20px;
-  margin-left: 10px;
+.port-editor-section.port-editor-data #sidebar > *{
+  padding-left: 0px;
+  padding-right: 0px;
+  box-sizing: border-box;
+  width: 100%;
+}
+.port-editor-section.port-editor-data .result-header{
+  padding-right: 0px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* Portal Editor markdown section
@@ -3115,6 +3117,7 @@ img[src*="googleapis.com/"].georegion-map{
 	box-sizing: border-box;
 	left: 0;
 	margin: 60px 0px 0px 3px;
+  padding: 20px 40px;
   z-index: 10; /* so it's above all the dropzone stuff */
 }
 
@@ -3164,8 +3167,8 @@ img[src*="googleapis.com/"].georegion-map{
 
 /* the markdown editor textarea field */
 .port-editor-md textarea.markdown{
-	margin: 20px;
-	width: calc(100% - 40px);
+	margin: 20px 0px;
+	width: 100%;
 	line-height: 1.6em;
 	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
 	padding: 0.5rem;
@@ -3238,11 +3241,6 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 /* Portal editor metrics page */
-
-
-.editor-view.portal-editor div#Metrics p {
-  margin: 20px 40px;
-}
 
 .editor-view.portal-editor div#Metrics svg{
 	width: 100%;
@@ -3346,6 +3344,8 @@ img[src*="googleapis.com/"].georegion-map{
 
 .portal-editor #editor-header{
   border-bottom: 0px;
+  padding: 20px 40px;
+  box-sizing: border-box;
 }
 
 /* Top level app navigation in the PortalView and EditorView */
@@ -3708,8 +3708,6 @@ i.toc-sub-item{
 .portal-editor #portal-section-tabs{
   display: block;
 	border-bottom: 1px solid #333;
-	padding-left: 3px;
-	padding-right: 3px;
 	max-width: 100%;
 	box-sizing: border-box;
 }
@@ -3754,7 +3752,6 @@ i.toc-sub-item{
   border-style: solid;
   border-top-right-radius: 3px;
   border-top-left-radius: 3px;
-	margin-right: -1px;
 	height: 36px;
 }
 .portal-editor #portal-section-tabs .section-link-container.hidden-section{
@@ -5860,7 +5857,7 @@ ul.side-nav-items {
   width: 100%;
   box-sizing: border-box;
   bottom: 0px;
-  padding: 20px;
+  padding: 20px 40px;
   z-index: 13;
 	height: 74px;
 	box-sizing: border-box;
