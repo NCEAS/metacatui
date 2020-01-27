@@ -19,7 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             this.metricCount  = options.metricCount   || "0";     // for now, use individual arrays
             this.metricMonths = options.metricMonths  || "0";
             this.id           = options.id            || "metrics-chart";
-            this.viewType     = options.type          || "dataset"
+            this.viewType     = options.type          || "dataset";
             this.width        = options.width         || 600;
             this.height       = options.height        || 370;
             this.metricName   = options.metricName;
@@ -149,7 +149,20 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         // change dates to milliseconds, to enable calculating the `d3.extent`
         var metricMonths_parsed = [];
         this.metricMonths.forEach(function(part, index, theArray) {
-          metricMonths_parsed[index] = input_date_format.parse(part).getTime();
+            
+            try {
+                metricMonths_parsed[index] = input_date_format.parse(part).getTime();
+            }
+            catch {
+                // replace null with current month
+                var today = new Date();
+                var yyyy = today.getFullYear();
+                var mm = today.getMonth() + 1;
+                var updatedPart = yyyy.toString() + "-" + (mm.toString()).padStart(2, '0');
+
+                metricMonths_parsed[index] = input_date_format.parse(updatedPart).getTime();
+            }
+            
         });
 
         // input data from model doesn't list months where there were 0 counts for all metrics (views/downloads/citations)
