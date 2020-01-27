@@ -1,6 +1,11 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'collections/Citations', 'models/MetricsModel', 'models/Stats', 'views/MetricsChartView', 'text!templates/metricModalTemplate.html', 'views/CitationListView', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'], 				
-	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel, StatsModel, MetricsChart, MetricModalTemplate, CitationList, profileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge',
+'collections/Citations', 'models/MetricsModel', 'models/Stats', 'MetricsChart', 'views/CitationListView',
+'text!templates/metricModalTemplate.html',  'text!templates/profile.html',
+'text!templates/alert.html', 'text!templates/loading.html'], 				
+	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel,
+    StatsModel, MetricsChart, CitationList, MetricModalTemplate, profileTemplate, AlertTemplate,
+    LoadingTemplate) {
 	'use strict';
 
 	var StatsView = Backbone.View.extend(
@@ -237,14 +242,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
             var metricMonths        = this.metricsModel.get("months");
             var metricCount 		= this.metricsModel.get(metricNameLemma);
             var width               = document.getElementById('user-'+metricNameLemma+'-chart' ).offsetWidth;
-            var viewType                = this.userType;
+            var viewType            = this.userType;
 
             if (width == null || width < 0) {
                 width = 600;
 			}
 
 
-            //Draw a metric chart
+            // Draw a metric chart
             var modalMetricChart = new MetricsChart({
                             id: metricNameLemma + "-chart",
                             metricCount: metricCount,
@@ -252,7 +257,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
                             type: viewType,
                             metricName: metricName,
                             width: width
-                        });
+			            });
 
             return modalMetricChart.render().el;
         },
