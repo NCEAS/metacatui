@@ -44,6 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 			// {mdq_composite_d: {"min":0.25,"max":1.0,"count":11,"missing":0,"sum":6.682560903149138,"sumOfSquares":4.8545478685001076,"mean":0.6075055366499217,"stddev":0.2819317507548068}}
 			mdqStats: {},
 			mdqStatsTotal: {},
+      mdqScoresImage: null,
 
       //HTTP GET requests are typically limited to 2,083 characters. So query lengths
       // should have this maximum before switching over to HTTP POST
@@ -1334,7 +1335,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
     },
-    
+
     imgLoad: function(url) {
         // Create new promise with the Promise() constructor;
         // This has as its argument a function with two parameters, resolve and reject
@@ -1344,7 +1345,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
             var request = new XMLHttpRequest();
             request.open('GET', url);
             request.responseType = 'blob';
-            
+
             // When the request loads, check whether it was successful
             request.onload = function () {
                 if (request.status === 200) {
@@ -1356,39 +1357,59 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
                     model.set('mdqScoresError', request.statusText);
                 }
             };
-          
+
             request.onerror = function () {
                 console.log("onerror");
                 // Also deal with the case when the entire request fails to begin with
                 // This is probably a network error, so reject the promise with an appropriate message
                 reject(new Error('There was a network error.'));
             };
-          
+
             // Send the request
             request.send();
         });
     },
 
     getMdqScores: function(){
+      try{
         var myImage = new Image();
         var model = this;
         myImage.crossOrigin = ""; // or "anonymous"
         if(MetacatUI.appView.currentView === null) return;
+
         // Call the function with the URL we want to load, but then chain the
         // promise then() method on to the end of it. This contains two callbacks
         var serviceUrl = MetacatUI.appModel.get('mdqScoresServiceUrl');
-        var suite = MetacatUI.appModel.get('mdqAggregatedSuiteIds')[0];
-        var id = MetacatUI.appView.currentView.model.get("id");
-        var url = serviceUrl + "?collection=" + id + "&suite=" + suite;
-        this.imgLoad(url).then(function (response) {
-            // The first runs when the promise resolves, with the request.reponse specified within the resolve() method.
-            var imageURL = window.URL.createObjectURL(response);
-            myImage.src = imageURL;
-            model.set('mdqScoresImage', myImage);
-            // The second runs when the promise is rejected, and logs the Error specified with the reject() method.
-        }, function (Error) {
-            console.log(Error);
-        });
+
+        if( !serviceUrl ){
+          this.set("mdqScoresImage", this.defaults.mdqScoresImage);
+          this.trigger("change:mdqScoresImage");
+          return;
+        }
+
+        if( Array.isArray(MetacatUI.appModel.get('mdqAggregatedSuiteIds')) && MetacatUI.appModel.get('mdqAggregatedSuiteIds').length ){
+          var suite = MetacatUI.appModel.get('mdqAggregatedSuiteIds')[0];
+          var id = MetacatUI.appView.currentView.model.get("id");
+          var url = serviceUrl + "?collection=" + id + "&suite=" + suite;
+          this.imgLoad(url).then(function (response) {
+              // The first runs when the promise resolves, with the request.reponse specified within the resolve() method.
+              var imageURL = window.URL.createObjectURL(response);
+              myImage.src = imageURL;
+              model.set('mdqScoresImage', myImage);
+              // The second runs when the promise is rejected, and logs the Error specified with the reject() method.
+          }, function (Error) {
+              console.error(Error);
+          });
+        }
+        else{
+          this.set("mdqScoresImage", this.defaults.mdqScoresImage);
+        }
+      }
+      catch(e){
+        this.set("mdqScoresImage", this.defaults.mdqScoresImage);
+        this.trigger("change:mdqScoresImage");
+        console.error("Cannot get the Metadata Quality scores: ", e);
+      }
     },
 
     setRequestType: function(){

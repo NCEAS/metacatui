@@ -2,7 +2,7 @@
 define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge',
 'collections/Citations', 'models/MetricsModel', 'models/Stats', 'MetricsChart', 'views/CitationListView',
 'text!templates/metricModalTemplate.html',  'text!templates/profile.html',
-'text!templates/alert.html', 'text!templates/loading.html'], 				
+'text!templates/alert.html', 'text!templates/loading.html'],
 	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel,
     StatsModel, MetricsChart, CitationList, MetricModalTemplate, profileTemplate, AlertTemplate,
     LoadingTemplate) {
@@ -16,24 +16,24 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		model: null,
 
 		hideUpdatesChart: false,
-		
-		/**    
+
+		/**
 		 * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
 		 * @type {boolean}
-		 */     
+		 */
 		hideMetadataAssessment: false,
 
 		template: _.template(profileTemplate),
 
 		metricTemplate: _.template(MetricModalTemplate),
-		
+
 		alertTemplate: _.template(AlertTemplate),
 
 		loadingTemplate: _.template(LoadingTemplate),
 
 		initialize: function(options){
 			if(!options) options = {};
-			
+
 
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
 			this.description = (typeof options.description === "undefined") ?
@@ -117,13 +117,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
       if(!this.hideMetadataAssessment){
         this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
         this.listenTo(this.model, "change:mdqScoresError", function () {
-                this.$el.find(".stripe.metadata-assessment").remove();
-                var msg = this.model.get("mdqScoresError");
-                MetacatUI.appView.showAlert("Metadata Assessment Metrics are not available for this collection: " + msg, 
-                    "alert-error", this.$("#metadata-assesment-graphic"), 4000, {remove: true});
+                this.$("#metadata-assessment-loading").remove();
+                MetacatUI.appView.showAlert("Metadata assessment scores are not available for this collection. " + this.model.get("mdqScoresError"),
+                    "alert-warning", this.$("#metadata-assessment-graphic"));
             });
       }
-      
+
 			//Insert the loading template into the space where the charts will go
 			if(d3){
 				this.$(".chart").html(this.loadingTemplate);
@@ -145,24 +144,40 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			return this;
 	},
-    
-        /**    
-         * drawMetadataAssessment - Insert the metadata assessment image into the view
-         */     
-        drawMetadataAssessment: function(){
-          try {
-            var scoresImage = this.model.get("mdqScoresImage");
-              // Hide the spinner
-              this.$("#metadata-assessment-loading").remove();
-              // Show the figure
-              this.$("#metadata-assessment-graphic").append(scoresImage);
-          } catch (e) {
-            // If there's an error inserting the image, remove the entire section
-            // that contains the image.
-            console.log("Error displaying the metadata assessment figure. Error message: " + e);
-            this.$el.find(".stripe.metadata-assessment").remove();
-          }
-        },
+
+    /**
+     * drawMetadataAssessment - Insert the metadata assessment image into the view
+     */
+    drawMetadataAssessment: function(){
+      try {
+        var scoresImage = this.model.get("mdqScoresImage");
+        // Hide the spinner
+        this.$("#metadata-assessment-loading").remove();
+
+        if( scoresImage ){
+          // Show the figure
+          this.$("#metadata-assessment-graphic").append(scoresImage);
+        }
+        //If there was no image received from the MDQ scores service, then show a warning message
+        else{
+          MetacatUI.appView.showAlert(
+            "Something went wrong while getting the metadata assessment scores. If changes were recently made " +
+              " to these dataset(s), the scores may still be calculating.",
+            "alert-warning",
+            this.$("#metadata-assessment-graphic")
+          );
+        }
+      } catch (e) {
+        // If there's an error inserting the image, remove the entire section
+        // that contains the image.
+        console.error("Error displaying the metadata assessment figure. Error message: " + e);
+        MetacatUI.appView.showAlert(
+          "Something went wrong while getting the metadata assessment scores.",
+          "alert-error",
+          this.$("#metadata-assessment-graphic")
+        );
+      }
+    },
 
 		renderMetrics: function(){
 			this.renderCitationMetric();
@@ -261,7 +276,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
             return modalMetricChart.render().el;
         },
-		
+
 		drawDataCountChart: function(){
 			var dataCount = this.model.get('dataCount');
 			var data = this.model.get('dataFormatIDs');
@@ -998,7 +1013,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.$(iconEl).removeClass('icon-large');
 				this.$(iconEl).removeClass('loading');
 			}
-            
+
 		}
 
 	});
