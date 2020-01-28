@@ -837,17 +837,17 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			//Show notifications after the identity map request is a success or failure
 			var viewRef = this,
 				success = function(){
-					var message = "A username map request has been sent to <a href=" + MetacatUI.root + "'/profile/" + equivalentIdentity + "'>" + equivalentIdentity + "</a>"
-					  "<h4>Next step:</h4><p>Login with this other account and approve this request.</p>"
+					var message = "An account map request has been sent to <a href=" + MetacatUI.root + "'/profile/" + equivalentIdentity + "'>" + equivalentIdentity + "</a>" +
+					  "<h4>Next step:</h4><p>Sign In with this other account and approve this request.</p>"
 					viewRef.showAlert(message, null, "#request-alert-container");
 				},
 				error = function(xhr){
 					var errorMessage = xhr.responseText;
 
 					if( xhr.responseText.indexOf("Request already issued") > -1 ){
-							viewRef.showAlert("You have already sent a request to map this account to " + equivalentIdentity +
-							". The next step is to sign into your " + equivalentIdentity + " account and approve the request.",
-							'alert-warning', "#request-alert-container");
+							viewRef.showAlert("<p>You have already sent a request to map this account to " + equivalentIdentity +
+							".</p> <h4>Next Step:</h4><p> Sign In with your " + equivalentIdentity + " account and approve the request.</p>",
+							'alert-info', "#request-alert-container");
 					}
 					else{
 
