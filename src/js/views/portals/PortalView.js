@@ -599,6 +599,7 @@ define(["jquery",
                         "alert-warning",
                         view.$el
                       );
+                      view.$(".loading").remove();
                     }
                     else{
                       //If the size of the queue is 0, then show the not-found message
