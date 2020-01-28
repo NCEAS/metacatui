@@ -425,7 +425,71 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 
 			//Send the query
 			$.ajax(requestSettings);
-		}
+		},
+
+    /**
+    * Calls the monitor/status DataONE MN API and gets the size of the index queue.
+    * @param {function} [onSuccess]
+    * @param {function} [onError]
+    */
+    getSizeOfIndexQueue: function(onSuccess, onError){
+
+      try{
+
+        if( !MetacatUI.appModel.get("monitorStatusUrl") ){
+          if( typeof onSuccess == "function" ){
+            onSuccess();
+          }
+          else{
+            //Trigger a custom event for the size of the index queue.
+            this.trigger("sizeOfQueue", -1);
+          }
+
+          return false;
+        }
+
+        var model = this;
+
+        //Check if there is an indexing queue, because this model may still be indexing
+        var requestSettings = {
+          url: MetacatUI.appModel.get("monitorStatusUrl"),
+          type: "GET",
+          error: function(){
+            if( typeof onError == "function" ){
+              onError();
+            }
+          },
+          success: function(data){
+
+            var sizeOfQueue = parseInt($(data).find("status > index > sizeOfQueue").text());
+
+            if(sizeOfQueue > 0 || sizeOfQueue == 0){
+              //Trigger a custom event for the size of the index queue.
+              model.trigger("sizeOfQueue", sizeOfQueue);
+
+              if( typeof onSuccess == "function" ){
+                onSuccess(sizeOfQueue);
+              }
+            }
+            else{
+              if( typeof onError == "function" ){
+                onError();
+              }
+            }
+          }
+        }
+
+        $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+      }
+      catch(e){
+        console.error(e);
+
+        if( typeof onError == "function" ){
+          onError();
+        }
+
+      }
+    }
 
 	});
 	return LookupModel;

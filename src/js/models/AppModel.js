@@ -103,6 +103,21 @@ define(['jquery', 'underscore', 'backbone'],
       reserveServiceUrl: null,
 
       /**
+      * If false, the /monitor/status (the service that returns the status of various DataONE services) will not be used.
+      * @type {boolean}
+      */
+      enableMonitorStatus: true,
+
+      /**
+      * The URL for the service that returns the status of various DataONE services.
+      * The only supported status so far is the search index queue -- the number of
+      *   objects that are waiting to be indexed in the Solr search index
+      * @type {string}
+      * @readonly
+      */
+      monitorStatusUrl: "",
+
+      /**
       * If set to false, some parts of the app will send POST HTTP requests to the
       * Solr search index via the `/query/solr` DataONE API.
       * Set this configuration to true if using Metacat 2.10.2 or earlier
@@ -393,6 +408,10 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
       this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
       this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
+
+      if( this.get("enableMonitorStatus") ){
+        this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
+      }
 
       if(typeof this.get("grantsUrl") !== "undefined")
         this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");

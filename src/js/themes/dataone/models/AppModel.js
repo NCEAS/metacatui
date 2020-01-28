@@ -54,6 +54,21 @@ define(['jquery', 'underscore', 'backbone'],
       queryServiceUrl: null,
       reserveServiceUrl: null,
 
+      /**
+      * If false, the /monitor/status (the service that returns the status of various DataONE services) will not be used.
+      * @type {boolean}
+      */
+      enableMonitorStatus: false,
+
+      /**
+      * The URL for the service that returns the status of various DataONE services.
+      * The only supported status so far is the search index queue -- the number of
+      *   objects that are waiting to be indexed in the Solr search index
+      * @type {string}
+      * @readonly
+      */
+      monitorStatusUrl: "",
+
       //If set to false, some parts of the app will send POST HTTP requests to the
       // Solr search index via the `/query/solr` DataONE API.
       // Set this configuration to true if using Metacat 2.10.2 or earlier
@@ -210,6 +225,11 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('resolveServiceUrl', this.get('d1CNBaseUrl')  + this.get('d1Service') + '/resolve/');
       this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
       this.set("reserveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/reserve");
+
+      //This URL construction needs to be changed since, if enabled, because it is a MN API
+      if( this.get("enableMonitorStatus") ){
+        this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
+      }
 
             // Metadata quality report services
             this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");

@@ -576,22 +576,45 @@ define(["jquery",
             */
             handleNotFound: function(){
 
-              //If the user is NOT logged in
-              if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ){
-                //Display a not found message
-                this.showNotFound();
+              //If the user is NOT logged in OR
+              // if the suer is logged in, and the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
+              if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ||
+                  (MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") && this.model.get("fetchedWithAuth")) ){
+
+                var view = this;
+
+                //Check if there is an indexing queue, because this model may still be indexing
+                var onError = function(){
+                    //If the request to the monitor/status API fails, then show the not-found message
+                    view.showNotFound.call(view);
+                  },
+                  onSuccess = function(sizeOfQueue){
+
+                    if( sizeOfQueue > 0 ){
+                      //Show a warning message about the index queue
+                      MetacatUI.appView.showAlert(
+                        "<p>We couldn't find a data portal named \"" + (view.label || view.portalId) +
+                          "\".</p><p><i class='icon icon-exclamation-sign'></i> If this portal was created in the last few minutes, it may still be processing, since there are currently <b>" + sizeOfQueue +
+                          "</b> submissions in the queue.</p>",
+                        "alert-warning",
+                        view.$el
+                      );
+                    }
+                    else{
+                      //If the size of the queue is 0, then show the not-found message
+                      view.showNotFound.call(view);
+                    }
+
+                  }
+
+                //Get the size of the index queue
+                MetacatUI.appLookupModel.getSizeOfIndexQueue(onSuccess, onError);
+
               }
-              //If the user IS logged in
+              //If the user IS logged in and we haven't fetched the model with user authentication yet
               else if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
-                //If the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
-                if( this.model.get("fetchedWithAuth") ){
-                  //Show the "not found" message
-                  this.showNotFound();
-                }
-                //If user credentials were not sent with the last fetch, then fetch again now that the user is logged in
-                else{
-                  this.model.fetch();
-                }
+                //Fetch again now that the user is logged in
+                this.model.fetch();
               }
               //If the user login status is unknown, because authentication is still pending
               else if( !MetacatUI.appUserModel.get("checked") ){
@@ -606,7 +629,7 @@ define(["jquery",
              */
             showNotFound: function(){
 
-              var notFoundMessage = "The portal \"" + (this.label || this.portalId) +
+              var notFoundMessage = "The data portal \"" + (this.label || this.portalId) +
                                     "\" doesn't exist.",
                   notification = this.alertTemplate({
                     classes: "alert-error",
