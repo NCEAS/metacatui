@@ -253,16 +253,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		// Currently only being used for portals
         drawMetricsChart: function(metricName){
 
-            var metricNameLemma     = metricName.toLowerCase()
-            var metricMonths        = this.metricsModel.get("months");
-            var metricCount 		= this.metricsModel.get(metricNameLemma);
-            var width               = document.getElementById('user-'+metricNameLemma+'-chart' ).offsetWidth;
-            var viewType            = this.userType;
-
-            if (width == null || width < 0) {
-                width = 600;
-			}
-
+            var metricNameLemma = metricName.toLowerCase()
+            var metricMonths    = this.metricsModel.get("months");
+            var metricCount     = this.metricsModel.get(metricNameLemma);
+            var chartEl         = document.getElementById('user-'+metricNameLemma+'-chart' );
+            var width           = chartEl? chartEl.offsetWidth : 600;
+            var viewType        = this.userType;
 
             // Draw a metric chart
             var modalMetricChart = new MetricsChart({
