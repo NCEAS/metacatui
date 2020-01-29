@@ -240,6 +240,21 @@
   background-color: #0377DD;
   color: #FFF;
 }
+.Portal.Editor #Navbar .nav .minimal-nav,
+.PortalView #Navbar .nav .minimal-nav{
+  margin-right: 20px;
+}
+.Portal.Editor #Navbar .nav .minimal-nav > a,
+.PortalView #Navbar .nav .minimal-nav > a{
+  color: #888;
+  font-weight: normal;
+}
+.PortalView #Navbar .nav .minimal-nav > .btn{
+  padding: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  line-height: .9em;
+}
 
 /* Portal editor
 -------------------------------------------------- */

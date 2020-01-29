@@ -7,6 +7,10 @@
 	    overflow: hidden;
 	    opacity: 0.8;
   	}
+    #Navbar #inner-header{
+      display: flex;
+      justify-content: space-between;
+    }
 
   	.mapMode #Header{
   		opacity: 1;
@@ -32,7 +36,7 @@
   	.header nav{
   		float: right;
   		width: auto;
-  		display: block;
+  		display: flex;
 	  }
   	.header .nav > li{
   		width: auto;

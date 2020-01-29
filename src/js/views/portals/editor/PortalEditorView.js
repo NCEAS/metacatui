@@ -79,6 +79,12 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     portEditLogoContainer: ".logo-editor-container",
 
     /**
+    * A jQuery selector for links to view this portal
+    * @type {string}
+    */
+    viewPortalLinks: ".view-portal-link",
+
+    /**
     * A temporary name to use for portals when they are first created but don't have a label yet.
     * This name should only be used in views, and never set on the model so it doesn't risk getting
     * serialized and saved.
@@ -307,6 +313,17 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       // show again when the user scrolls up.
       MetacatUI.appView.prevScrollpos = window.pageYOffset;
       $(window).on("scroll", "", undefined, this.handleScroll);
+
+      //Show a link to view the portal, if it is not a new portal
+      if( !this.model.isNew() ){
+        var viewURL = MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier;
+        //Update the view URL in any other portal view links
+        this.$(this.viewPortalLinks).attr("href", viewURL).show();
+      }
+      else{
+        //Remove the href attribute and hide the link
+        this.$(this.viewPortalLinks).attr("href", "").hide();
+      }
 
     },
 
@@ -542,15 +559,19 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
      */
     saveSuccess: function(savedObject){
 
-      var identifier = this.model.get("label") || this.model.get("seriesId") || this.model.get("id");
+      var identifier = this.model.get("label") || this.model.get("seriesId") || this.model.get("id"),
+          viewURL    = MetacatUI.root + "/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + identifier;
 
       var message = this.editorSubmitMessageTemplate({
             messageText: "Your changes have been submitted.",
-            viewURL: MetacatUI.root + "/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + identifier,
+            viewURL: viewURL,
             buttonText: "View your " + MetacatUI.appModel.get("portalTermSingular")
         });
 
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
+
+      //Update the view URL in any other portal view links
+      this.$(this.viewPortalLinks).attr("href", viewURL).show();
 
       this.hideSaving();
 

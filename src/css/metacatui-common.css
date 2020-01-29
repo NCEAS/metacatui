@@ -3346,6 +3346,7 @@ img[src*="googleapis.com/"].georegion-map{
   border-bottom: 0px;
   padding: 20px 40px;
   box-sizing: border-box;
+  positionL relative;
 }
 
 /* Top level app navigation in the PortalView and EditorView */
@@ -3366,7 +3367,10 @@ img[src*="googleapis.com/"].georegion-map{
 .PortalView .navbar-inner{
   background-image: none;
   box-shadow: none;
-  background-color: #FFF;
+  background-color: #f2f2f2;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  min-height: 0px;
 }
 
 .Portal.Editor .navbar .nav > li > a.brand,
@@ -3385,7 +3389,7 @@ img[src*="googleapis.com/"].georegion-map{
 
 .Portal.Editor #Navbar a.brand,
 .Portal.Editor #Navbar a.brand {
-	margin-left: 10px;
+	margin-left: 20px;
 }
 
 .Portal.Editor #Navbar .minimal-nav > a,
@@ -3406,17 +3410,20 @@ img[src*="googleapis.com/"].georegion-map{
 .PortalView #Navbar .nav .minimal-nav {
     display: block;
 }
-
+.Portal.Editor #Navbar .nav .minimal-nav:not(:last-child),
+.PortalView #Navbar .nav .minimal-nav:not(:last-child) {
+  margin-right: 20px;
+}
 .Portal.Editor #Navbar .nav .minimal-nav a,
 .PortalView #Navbar .nav .minimal-nav a {
-    font-size: 1em;
+    font-size: .9em;
     text-transform: none;
-    font-weight: 300;
     text-shadow: none;
 }
-.Portal.Editor #Navbar .nav .minimal-nav a:not(.btn),
-.PortalView #Navbar .nav .minimal-nav a:not(.btn){
-  padding-bottom: 0px;
+.Portal.Editor #Navbar .nav .minimal-nav > a:not(.btn),
+.PortalView #Navbar .nav .minimal-nav > a:not(.btn) {
+  margin-bottom: 0px;
+  padding: 0px;
 }
 .Portal.Editor #Navbar .nav .minimal-nav.subtle a,
 .PortalView #Navbar .nav .minimal-nav.subtle a {
@@ -3425,15 +3432,17 @@ img[src*="googleapis.com/"].georegion-map{
 
 .Portal.Editor #Navbar .nav,
 .PortalView #Navbar .nav {
-    float: right;
     margin-top: 0px;
 		display: flex;
 		flex-direction: row;
-		min-width: 300px;
 		justify-content: space-between;
 		align-items: center;
 }
-
+.PortalView #Navbar #editPortal{
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 7px;
+}
 /* markdown section table of contents (portal and portal editor) */
 .Editor.Portal .toc-view.affix,
 .portal-section-content .toc-view.affix{
@@ -3521,16 +3530,6 @@ i.toc-sub-item{
 /******************************************
 * Portals
 ********************************************/
-
-/* edit portal button */
-#editPortal:hover {
-  border: 0px;
-}
-#editPortal {
-	border: 0px;
-  width: 110px;
-	margin: 10px 0;
-}
 
 .portal-view{
   width: calc(100% + 80px);
@@ -5866,6 +5865,11 @@ ul.side-nav-items {
     display: none;
     left: 0px;
 }
+#editor-footer a:not(.btn){
+    color: #FFF;
+    font-weight: bold;
+    line-height: 40px;
+}
 #cancel-metadata-prov{
     margin-left: 30px;
 }
@@ -6083,8 +6087,10 @@ ul.side-nav-items {
 	cursor:ns-resize;
 }
 
-.editor-controls .btn{
+.editor-controls{
 	float: right;
+}
+.editor-controls > a{
 	margin-left: 10px;
 	color: #FFF;
     height: 1.5em;

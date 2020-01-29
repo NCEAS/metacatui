@@ -48,7 +48,6 @@
 
     a:hover{
     	text-decoration:none;
-    	color: #660000;
     }
 
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -214,7 +213,6 @@
 .Portal.Editor #Navbar .nav .minimal-nav a:hover,
 .PortalView #Navbar .nav .minimal-nav a:hover {
     background-color: transparent;
-    color: #660000;
 }
 
 .PortalView #Navbar .nav .minimal-nav .btn-primary{
@@ -224,7 +222,9 @@
   background-color: #0093DD;
   color: #FFF;
 }
-
+.PortalView #Navbar #editPortal{
+  padding: 5px;
+}
 /* Portal editor
 -------------------------------------------------- */
 
