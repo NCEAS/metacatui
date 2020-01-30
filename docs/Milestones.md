@@ -6,10 +6,10 @@
 
 ## 2.10.0 - January 2020
 - Portal View in the DataONE theme (Lauren)
-- Improve deployment efficiency and reliability by moving app configuration to a JSON file (Lauren)
+- Permissions view in the portal editor (Lauren)
 
 ## 2.11.0 - February 2020
-- Permissions view in the portal editor (Lauren)
+- Improve deployment efficiency and reliability by moving app configuration to a JSON file (Lauren)
 
 ## 2.12.0 - March 2020
 - Permissions view in the EML editor
