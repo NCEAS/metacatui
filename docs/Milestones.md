@@ -4,20 +4,20 @@
 - Aggregated usage metrics in portals (Rushiraj)
 - Aggregated quality scores in portals (Peter)
 
-## 2.10.0 - January 2020
+## 2.10.0 - February 2020
 - Portal View in the DataONE theme (Lauren)
 - Permissions view in the portal editor (Lauren)
 
-## 2.11.0 - February 2020
+## 2.11.0 - March 2020
 - Improve deployment efficiency and reliability by moving app configuration to a JSON file (Lauren)
 
-## 2.12.0 - March 2020
+## 2.12.0 - Spring 2020
 - Permissions view in the EML editor
 
 ## 2.13.0 - Spring 2020
 - Save a draft of the EML locally, for manual retrieval after an error (Lauren, Chris)
 
-## 2.14.0 - late Spring 2020
+## 2.14.0 - Summer 2020
 - Ability to view and edit the local EML drafts in the editor
 - Serialize all EML documents from the editor as 2.2.0
 
