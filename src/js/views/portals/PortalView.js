@@ -138,6 +138,9 @@ define(["jquery",
              */
             render: function() {
 
+                //Make sure the subviews array is reset
+                this.subviews = new Array();
+
                 // Add the overall class immediately so the navbar is styled correctly right away
                 $("body").addClass("PortalView");
 
@@ -706,6 +709,8 @@ define(["jquery",
                 $("body").removeClass("PortalView");
 
                 $("#editPortal").remove();
+
+                this.undelegateEvents();
             }
         });
 
