@@ -47,6 +47,9 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     render: function(){
       //Style the body as an Editor
       $("body").addClass("Editor rendering");
+
+      //Render the editor controls
+      this.renderEditorControls();
     },
 
     /**
@@ -114,6 +117,23 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     handleSaveCancel: function(){
       if(this.model.get("uploadStatus") == "e"){
         this.saveError("Your submission was cancelled due to an error.");
+      }
+    },
+
+    /**
+    * Adds top-level control elements to this editor. For example, a Share button for editing the access policy
+    */
+    renderEditorControls: function(){
+      //Check if the Share button is already on the page
+      if( !this.$(".access-policy-control").length ){
+        //If it isn't, then add it to the page.
+        //Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
+        this.$(".editor-controls").prepend( $(document.createElement("a"))
+                                              .attr("href", "#")
+                                              .addClass("access-policy-control btn")
+                                              .append(
+                                                $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
+                                                "Share") );
       }
     },
 

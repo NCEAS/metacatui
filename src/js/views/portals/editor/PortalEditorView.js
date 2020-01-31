@@ -256,6 +256,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         accentColorTransparent: this.model.get("accentColorTransparent")
       }));
 
+      //Render the editor controls
+      this.renderEditorControls();
+
       //Remove the rendering class from the body element
       $("body").removeClass("rendering");
 

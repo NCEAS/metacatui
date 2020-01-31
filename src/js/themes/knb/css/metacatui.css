@@ -238,7 +238,7 @@
 }
 .port-editor-section svg .theme-accent-fill{
 	fill: #b90004
-},
+}
 
 /* Editor
 -------------------------------------------------- */
@@ -500,6 +500,9 @@
       font-weight: 400;
       background-image: none;
       background-repeat: none;
+      text-shadow: none;
+      box-shadow: none;
+      border-color: #CCC;
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
@@ -509,6 +512,7 @@
 
     .btn-primary {
        background-color: #007DBB;
+      border-color: #0070a8;
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;

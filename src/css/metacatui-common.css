@@ -2939,24 +2939,29 @@ img[src*="googleapis.com/"].georegion-map{
     padding-top: 5px;
     font-size: 0.9em;
 }
-
-.portal-editor .title-container {
-	width: calc(100% - 120px);
-	min-width: 300px;
+.logo-editor-container p.notification.error:empty{
+  display: none;
 }
-
+.portal-editor .logo-editor-container > h5,
+.portal-editor .title-container > h5{
+  margin-top: 0px;
+}
+.portal-editor .title-container {
+  flex-grow: 2;
+}
 .portal-editor textarea.portal-title{
 	width: 100%;
   padding: 0px;
   background: transparent;
   border: none;
   border-radius: 0;
-  border-bottom: 1.5px solid #999;
+  border-bottom: 1px solid #ccc;
   box-shadow: none;
 	align-self: center;
 	font-size: 28px;
 	line-height: 40px;
 	min-height: 40px;
+  margin-top: 20px;
 }
 
 .portal-editor textarea.portal-title:focus{
@@ -2965,7 +2970,6 @@ img[src*="googleapis.com/"].georegion-map{
   -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(82,168,236,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
 }
-
 /* Portal Editor settings */
 
 /* The width of each input element next to the remove button */
@@ -3346,7 +3350,9 @@ img[src*="googleapis.com/"].georegion-map{
   border-bottom: 0px;
   padding: 20px 40px;
   box-sizing: border-box;
-  positionL relative;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
 }
 
 /* Top level app navigation in the PortalView and EditorView */
@@ -5798,6 +5804,18 @@ Editor View
     font-size: 1.1em;
     line-height: 1.6em;
 }
+#editor-header .editor-controls{
+  min-height: 130px;
+  align-items: center;
+  display: flex;
+  margin-left: 40px;
+  height: 100%;
+}
+#editor-header .editor-controls .btn{
+  align-self: center;
+  margin-top: 14px;
+}
+
 .side-nav-item a {
     width: 100%;
     display: block;
@@ -6087,17 +6105,20 @@ ul.side-nav-items {
 	cursor:ns-resize;
 }
 
-.editor-controls{
+.editor-save-controls{
 	float: right;
 }
-.editor-controls > a{
+.editor-save-controls > a{
 	margin-left: 10px;
-	color: #FFF;
     height: 1.5em;
     line-height: 1.5em;
     font-size: 1.1em;
     font-weight: bold;
 }
+.editor-save-controls > a:not(.btn){
+  color: #FFF;
+}
+.editor-save-controls
 .metadata-container textarea{
 	width: 100%;
 	margin-bottom: 20px;
@@ -6178,6 +6199,7 @@ textarea.medium{
 	box-sizing: border-box;
 	font-size: 1em;
   border-radius: 3px;
+  width: 100%;
 }
 .Editor .checkbox{
 	clear: both;
