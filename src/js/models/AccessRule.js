@@ -11,7 +11,8 @@ define(['jquery', 'underscore', 'backbone'],
 			subject: null,
 			read: null,
 			write: null,
-			changePermission: null
+			changePermission: null,
+      dataONEObject: null
 		},
 
 		initialize: function(){

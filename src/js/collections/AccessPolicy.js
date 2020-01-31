@@ -215,6 +215,16 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
             else
               return false;
 
+          },
+
+          /**
+          * Get the DataONEObject or DataPackage that this AccessPolicy is for, and returns it
+          * @returns {DataONEObject|DataPackage}
+          */
+          getDataONEObject: function(){
+
+            return this.models.length? this.models[0].get("dataONEObject") : false;
+
           }
 
       });
