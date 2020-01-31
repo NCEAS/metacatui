@@ -1,15 +1,21 @@
-<div class="public-toggle-container"></div>
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+  <h3><i class="icon icon-group icon-on-left"></i>Sharing Options</h3>
+</div>
+<div class="modal-body">
+  <div class="public-toggle-container">Public/private toggle will go here</div>
 
-<h5>User permissions</h5>
-<p>description of permissions here</p>
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>ORCID</th>
-      <th>Access</th>
-    </tr>
-  </thead>
-  <tbody class="access-rules-container">
-  </tbody>
-</table>
+  <h5>Permissions</h5>
+  <p>Give others access to view, edit, and share this <%=(resourceType || "resource")%></p>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>ORCID</th>
+        <th>Access</th>
+      </tr>
+    </thead>
+    <tbody class="access-rules-container">
+    </tbody>
+  </table>
+</div>

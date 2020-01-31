@@ -34,11 +34,18 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     submitButtonText: "Save",
 
     /**
+    * The text to use in the editor submit button
+    * @type {string}
+    */
+    accessPolicyModalID: "editor-access-policy-modal",
+
+    /**
     * The events this view will listen to and the associated function to call
     * @type {Object}
     */
     events: {
-      "click #save-editor" : "save"
+      "click #save-editor" : "save",
+      "click .access-policy-control" : "showAccessPolicy"
     },
 
     /**
@@ -134,6 +141,71 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
                                               .append(
                                                 $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
                                                 "Share") );
+      }
+
+      //Check if the AccessPolicyView container is already on the page
+      if( !this.$(".access-policy-view-container").length ){
+        //If not, create one and add it to the page. It will be a modal window.
+        this.$(".editor-controls").append( $(document.createElement("div"))
+                                             .addClass("access-policy-view-container modal")
+                                             .attr("id", "editor-access-policy-modal") );
+
+        //Add attributes to the access policy control button that will make it open a modal window
+        this.$(".access-policy-control").attr("href", "#" + this.accessPolicyModalID);
+      }
+    },
+
+    /**
+    * Shows the AccessPolicyView for the object being edited.
+    * @param {Event} e - The event that triggered this function as a callback
+    */
+    showAccessPolicy: function(e){
+
+      try{
+
+        //If the AccessPolicyView hasn't been rendered yet, then render it now
+        if( !this.$(".access-policy-view").length ){
+          this.renderAccessPolicy();
+        }
+
+        //Show the element containing the AccessPolicyView
+        if( this.$(".access-policy-view-container").attr("id") == this.accessPolicyModalID ){
+          //If it's in a modal window, then activate and show the modal
+          this.$(".access-policy-view-container").modal().modal("show");
+        }
+        else{
+          //Unhide the element, in case it's hidden
+          this.$(".access-policy-view-container").show();
+        }
+
+      }
+      catch(e){
+        console.error("Error trying to show the AccessPolicyView: ", e);
+      }
+    },
+
+    /**
+    * Renders the AccessPolicyView
+    * @param {Event} e - The event that triggered this function as a callback
+    */
+    renderAccessPolicy: function(){
+      try{
+        var thisView = this;
+        require(['views/AccessPolicyView'], function(AccessPolicyView){
+
+            //If not, create a new AccessPolicyView using the AccessPolicy collection
+            var accessPolicyView = new AccessPolicyView();
+            accessPolicyView.collection = thisView.model.get("accessPolicy");
+
+            //Add the view to the page
+            thisView.$(".access-policy-view-container").html(accessPolicyView.el);
+
+            //Render the AccessPolicyView
+            accessPolicyView.render();
+        });
+      }
+      catch(e){
+        console.error("Error trying to render the AccessPolicyView: ", e);
       }
     },
 

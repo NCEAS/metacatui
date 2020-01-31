@@ -23,10 +23,17 @@ function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
     type: "AccessPolicy",
 
     /**
+    * The type of object/resource that this AccessPolicy is for.
+    * @example "dataset", "portal", "data file"
+    * @type {string}
+    */
+    resourceType: "resource",
+
+    /**
     * The HTML classes to use for this view's element
     * @type {string}
     */
-    className: "access-policy",
+    className: "access-policy-view",
 
     /**
     * The AccessPolicy collection that is displayed in this View
@@ -63,8 +70,38 @@ function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
     */
     render: function(){
 
+      var dataONEObject = this.collection.getDataONEObject();
+
+      if(dataONEObject && dataONEObject.type){
+        switch( dataONEObject.type ){
+          case "Portal":
+            this.resourceType = MetacatUI.appModel.get("portalTermSingular");
+            break;
+          case "DataPackage":
+            this.resourceType = "dataset";
+            break;
+          case ("EML" || "ScienceMetadata"):
+            this.resourceType = "science metadata";
+            break;
+          case "DataONEObject":
+            this.resourceType = "data file";
+            break;
+          case "Collection":
+            this.resourceType = "collection";
+            break;
+          default:
+            this.resourceType = "resource";
+            break;
+        }
+      }
+      else{
+        this.resourceType = "resource";
+      }
+
       //Insert the template into this view
-      this.$el.html(this.template());
+      this.$el.html(this.template({
+        resourceType: this.resourceType
+      }));
 
       //TODO: Iterate over each AccessRule in the AccessPolicy and render a AccessRuleView
 
