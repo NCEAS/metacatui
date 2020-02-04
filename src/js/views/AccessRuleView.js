@@ -51,6 +51,100 @@ function(_, $, Backbone, AccessRule){
     */
     render: function(){
 
+      try{
+
+        //If there's no model, exit now since there's nothing to render
+        if( !this.model ){
+          return;
+        }
+
+        try{
+          //Create elements for the 'Name' column of this table row
+          var subject = this.model.get("subject"),
+              icon;
+
+          //If the subject is public, don't display an icon
+          if( subject == "public" ){
+            icon = "";
+          }
+          //If this is a group subject, display the group icon
+          else if( subject.match(/CN=\S+,DC=dataone,DC=org/) && subject.match(/CN=\S+,DC=dataone,DC=org/).length ){
+            icon = $(document.createElement("i")).addClass("icon icon-on-left icon-group");
+          }
+          //If this is a username, display the user icon
+          else{
+            icon = $(document.createElement("i")).addClass("icon icon-on-left icon-user");
+          }
+
+          //Create an element for the name - or subject, as a backup
+          var name = $(document.createElement("span")).text( this.model.get("name") || this.model.get("subject") );
+          this.$el.append($(document.createElement("td")).addClass("name").append(icon, name) );
+        }
+        catch(e){
+          console.error("Couldn't render the name column of the AccessRuleView: ", e);
+        }
+
+        try{
+          //If this subject is an ORCID, display the ORCID and ORCID icon
+          if( subject.indexOf("orcid") >= 0 ){
+            //Create the "subject/orcid" column
+            var orcidImg = $(document.createElement("img")).attr("src", MetacatUI.root + "/img/orcid_64x64.png").addClass("orcid icon icon-on-left"),
+                orcid = $(document.createElement("span")).text( this.model.get("subject") );
+
+            this.$el.append($(document.createElement("td")).addClass("subject").append(orcidImg, orcid) );
+          }
+          else{
+            //For other subject types, don't display anything
+            this.$el.append($(document.createElement("td")).addClass("subject"));
+          }
+        }
+        catch(e){
+          console.error("Couldn't render the subject column of the AccessRuleView: ", e);
+        }
+
+        try{
+          //Create the access/permission options select dropdown
+          var accessOptions = $(document.createElement("select"));
+
+          _.mapObject(MetacatUI.appModel.get("accessRuleOptions"), function(isEnabled, optionType){
+            if( isEnabled ){
+              var option = $(document.createElement("option")).attr("value", optionType).text( MetacatUI.appModel.get("accessRuleOptionNames")[optionType] );
+              accessOptions.append(option);
+            }
+          });
+
+          this.$el.append($(document.createElement("td")).addClass("access").append(accessOptions) );
+        }
+        catch(e){
+          console.error("Couldn't render the access column of the AccessRuleView: ", e);
+        }
+
+        //If there is no name set on this model, listen to when it may be set, and update the view
+        if( !this.model.get("name") ){
+          this.listenTo(this.model, "change:name", this.updateName);
+        }
+
+      }
+      catch(e){
+        console.error(e);
+
+        //Don't display a message to the user since this view is pretty small. Just remove it from the page.
+        this.$el.remove();
+      }
+
+    },
+
+    /**
+    * Update the name in this view with the name from the model
+    */
+    updateName: function(){
+      //If there is no name set on the model, exit now, so that we don't show an empty string or falsey value
+      if( !this.model.get("name") ){
+        return;
+      }
+
+      //Find the name element and update the text content
+      this.$(".name span").text( this.model.get("name") );
     }
 
   });

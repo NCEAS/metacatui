@@ -70,40 +70,71 @@ function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
     */
     render: function(){
 
-      var dataONEObject = this.collection.getDataONEObject();
+      try{
 
-      if(dataONEObject && dataONEObject.type){
-        switch( dataONEObject.type ){
-          case "Portal":
-            this.resourceType = MetacatUI.appModel.get("portalTermSingular");
-            break;
-          case "DataPackage":
-            this.resourceType = "dataset";
-            break;
-          case ("EML" || "ScienceMetadata"):
-            this.resourceType = "science metadata";
-            break;
-          case "DataONEObject":
-            this.resourceType = "data file";
-            break;
-          case "Collection":
-            this.resourceType = "collection";
-            break;
-          default:
-            this.resourceType = "resource";
-            break;
+        //If there is no AccessPolicy collection, then exit now
+        if( !this.collection ){
+          return;
         }
-      }
-      else{
-        this.resourceType = "resource";
-      }
 
-      //Insert the template into this view
-      this.$el.html(this.template({
-        resourceType: this.resourceType
-      }));
+        var dataONEObject = this.collection.getDataONEObject();
 
-      //TODO: Iterate over each AccessRule in the AccessPolicy and render a AccessRuleView
+        if(dataONEObject && dataONEObject.type){
+          switch( dataONEObject.type ){
+            case "Portal":
+              this.resourceType = MetacatUI.appModel.get("portalTermSingular");
+              break;
+            case "DataPackage":
+              this.resourceType = "dataset";
+              break;
+            case ("EML" || "ScienceMetadata"):
+              this.resourceType = "science metadata";
+              break;
+            case "DataONEObject":
+              this.resourceType = "data file";
+              break;
+            case "Collection":
+              this.resourceType = "collection";
+              break;
+            default:
+              this.resourceType = "resource";
+              break;
+          }
+        }
+        else{
+          this.resourceType = "resource";
+        }
+
+        //Insert the template into this view
+        this.$el.html(this.template({
+          resourceType: this.resourceType
+        }));
+
+        //Iterate over each AccessRule in the AccessPolicy and render a AccessRuleView
+        this.collection.each(function(accessRule){
+
+          //Create an AccessRuleView
+          var accessRuleView = new AccessRuleView();
+          accessRuleView.model = accessRule;
+
+          //Add the AccessRuleView to this view
+          this.$(".access-rules-container").append(accessRuleView.el);
+
+          //Render the view
+          accessRuleView.render();
+
+        }, this);
+
+        //Get the subject info for each subject in the AccessPolicy, so we can display names
+        this.collection.getSubjectInfo();
+
+      }
+      catch(e){
+        MetacatUI.appView.showAlert("Something went wrong while trying to display the sharing options. <p>Technical details: " + e.message + "</p>",
+                                    "alert-error",
+                                    this.$el,
+                                    null);
+      }
 
     },
 

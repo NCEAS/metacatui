@@ -12,6 +12,7 @@ define(['jquery', 'underscore', 'backbone'],
 			read: null,
 			write: null,
 			changePermission: null,
+      name: null,
       dataONEObject: null
 		},
 
@@ -115,7 +116,83 @@ define(['jquery', 'underscore', 'backbone'],
 
 			return xml;
 
-		}
+		},
+
+    /**
+    * Gets and sets the subject info for the subjects in this access policy.
+    */
+    getSubjectInfo: function(){
+
+      //If there is no subject, exit now since there is nothing to retrieve
+      if( !this.get("subject") ){
+        return;
+      }
+
+      //If the subject is "public", there is no subject info to retrieve
+      if( this.get("subject") == "public" ){
+        this.set("name", "Anyone");
+        return;
+      }
+
+      var model = this;
+
+      var ajaxOptions = {
+        url: MetacatUI.appModel.get("accountsUrl") + encodeURIComponent(this.get("subject")),
+        type: "GET",
+        dataType: "text",
+        processData: false,
+        parse: false,
+        success: function(response) {
+
+          //If there was no response, exit now
+          if(!response){
+            return;
+          }
+
+          var xmlDoc;
+
+          try{
+            xmlDoc = $.parseXML(response);
+          }
+          catch(e){
+            //If the parsing XML failed, exit now
+            console.error("The accounts service did not return valid XML.", e);
+            return;
+          }
+
+          //If the XML string was not parsed correctly, exit now
+          if( !XMLDocument.prototype.isPrototypeOf(xmlDoc) ){
+            return;
+          }
+
+          //Find the subject XML node for this person, by matching the text content with the subject
+          var subjectNode = $(xmlDoc).find("person subject:contains(" + model.get("subject") + ")");
+          //If no subject XML node was found, exit now
+          if( !subjectNode || !subjectNode.length ){
+            return;
+          }
+
+          //If more than one subject was found (should be very unlikely), then find the one with the exact matching subject
+          if( subjectNode.length > 1 ){
+            _.each(subjectNode, function(subjNode){
+              if( $(subjNode).text() == model.get("subject") ){
+                subjectNode = $(subjNode);
+              }
+            });
+          }
+
+          //Get the first and last name for this person
+          var name = $(subjectNode).siblings("givenName").text() + " " + $(subjectNode).siblings("familyName").text();
+
+          //Set the name on the model
+          model.set("name", name);
+
+        }
+      }
+
+      //Send the XHR
+      $.ajax(ajaxOptions);
+    }
 
 	});
 

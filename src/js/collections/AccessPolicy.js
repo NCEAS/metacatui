@@ -225,6 +225,22 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
             return this.models.length? this.models[0].get("dataONEObject") : false;
 
+          },
+
+          /**
+          * Gets the subject info for all of the subjects in this access policy.
+          * Sets the subject info on each corresponding model.
+          */
+          getSubjectInfo: function(){
+
+            //If there are more than 5 subjects in the access policy, then get the entire list of subjects in the DataONE/CN system
+            if( this.length > 5 ){
+              //TODO: Get everything from the /accounts endpoint
+            }
+
+            //If there are less than 5, then send individual requests to get the subject info
+            this.invoke("getSubjectInfo");
+
           }
 
       });
