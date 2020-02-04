@@ -153,7 +153,9 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
       try{
 
         //Create a new AccessRule model and add to the collection
-        var accessRule = new AccessRule();
+        var accessRule = new AccessRule({
+          read: true
+        });
         this.collection.add(accessRule);
 
         //Create a new AccessRuleView

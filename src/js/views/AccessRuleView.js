@@ -42,6 +42,7 @@ function(_, $, Backbone, AccessRule){
     * @type {Object}
     */
     events: {
+      "change .access select" : "updateAccess"
     },
 
     /**
@@ -70,10 +71,12 @@ function(_, $, Backbone, AccessRule){
 
           //Create a text input for adding a subject or name
           var label = $(document.createElement("label"))
+                        .attr("for", "search")
                         .text("Search by name, ORCID, or group name")
                         .addClass("subtle"),
               input = $(document.createElement("input"))
                         .attr("type", "text")
+                        .attr("name", "search")
                         .attr("placeholder", "e.g. Lauren Walker");
 
           this.$el.append($(document.createElement("td"))
@@ -101,7 +104,7 @@ function(_, $, Backbone, AccessRule){
             }
 
             //Create an element for the name - or subject, as a backup
-            var name = $(document.createElement("span")).text( this.model.get("name") || this.model.get("subject") );
+            var name = $(document.createElement("span")).text( this.model.get("name") || subject );
             this.$el.append($(document.createElement("td")).addClass("name").append(icon, name) );
           }
           catch(e){
@@ -153,7 +156,7 @@ function(_, $, Backbone, AccessRule){
 
         //If there is no name set on this model, listen to when it may be set, and update the view
         if( !this.model.get("name") ){
-          this.listenToOnce(this.model, "change:name", this.updateName);
+          this.listenToOnce(this.model, "change:name", this.updateNameDisplay);
         }
 
       }
@@ -169,7 +172,7 @@ function(_, $, Backbone, AccessRule){
     /**
     * Update the name in this view with the name from the model
     */
-    updateName: function(){
+    updateNameDisplay: function(){
       //If there is no name set on the model, exit now, so that we don't show an empty string or falsey value
       if( !this.model.get("name") ){
         return;
@@ -178,6 +181,42 @@ function(_, $, Backbone, AccessRule){
       //Find the name element and update the text content
       this.$(".name span").text( this.model.get("name") );
 
+    },
+
+    /**
+    * Update the AccessRule model with the selected access option
+    */
+    updateAccess: function(){
+      try{
+        //Get the value of the dropdown
+        var selection = this.$(".access select").val();
+
+        //If nothing was selected for some reason, exit now
+        if( !selection ){
+          return;
+        }
+
+        if( selection == "read" ){
+          this.model.set("read", true);
+          this.model.set("write", false);
+          this.model.set("changePermission", false);
+        }
+        else if( selection == "write" ){
+          this.model.set("read", true);
+          this.model.set("write", true);
+          this.model.set("changePermission", false);
+        }
+        else if( selection == "changePermission" ){
+          this.model.set("read", true);
+          this.model.set("write", true);
+          this.model.set("changePermission", true);
+        }
+
+        console.log(this.model.attributes);
+      }
+      catch(e){
+
+      }
     }
 
   });
