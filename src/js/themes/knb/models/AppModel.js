@@ -241,7 +241,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {boolean} accessRuleOptionNames.changePermission - The user-facing name of the "changePermission" access in Access Rules
       */
       accessRuleOptionNames: {
-        read: "Can read",
+        read: "Can view",
         write: "Can edit",
         changePermission: "Is owner"
       },
