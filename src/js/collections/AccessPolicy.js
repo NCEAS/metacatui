@@ -14,10 +14,17 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           model: AccessRule,
 
-          /*
+          initialize: function(){
+
+            //When a model triggers the event "removeMe", remove it from this collection
+            this.on("removeMe", this.removeAccessRule);
+
+          },
+
+          /**
           * Parses the given access policy XML and creates AccessRule models for
           * each rule in the access policy XML. Adds these models to this collection.
-          * @param {DOM Element} The <accessPolicy> XML DOM that contains a set of
+          * @param {Element} The <accessPolicy> XML DOM that contains a set of
           *   access rules.
           */
           parse: function(accessPolicyXML){
@@ -33,7 +40,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           },
 
-          /*
+          /**
           * Creates AccessRule member models from the `defaultAccessPolicy`
           * setting in the AppModel.
           */
@@ -48,7 +55,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           },
 
-          /*
+          /**
           * Creates an access policy XML from the values set on the member
           * AccessRule models.
           * @return {string} A string of the access policy XML
@@ -73,7 +80,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           },
 
-          /*
+          /**
           * Removes access rules that grant public access and sets an access rule
           * that denies public read.
           */
@@ -115,7 +122,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           },
 
-          /*
+          /**
           * Removes any AccessRule that denies public read and adds an AccessRule
           * that allows public read
           */
@@ -155,7 +162,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           },
 
-          /*
+          /**
           * Returns true if this access policy specifies that it is accessible to
           * the public in any way
           * @return {boolean}
@@ -177,7 +184,7 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           },
 
-          /*
+          /**
           * Checks if the current user is authorized to perform the given action
           * based on the current access rules in this collection
           *
@@ -242,6 +249,17 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
             //If there are less than 5, then send individual requests to get the subject info
             this.invoke("getSubjectInfo");
+
+          },
+
+          /**
+          * Remove the given AccessRule from this AccessPolicy
+          * @param {AccessRule} accessRule - The AccessRule model to remove
+          */
+          removeAccessRule: function(accessRule){
+
+            this.remove(accessRule);
+            console.log(this.models)
 
           }
 

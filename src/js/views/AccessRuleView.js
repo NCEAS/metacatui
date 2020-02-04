@@ -42,7 +42,8 @@ function(_, $, Backbone, AccessRule){
     * @type {Object}
     */
     events: {
-      "change .access select" : "updateAccess"
+      "change .access select" : "updateAccess",
+      "click .remove" : "handleRemove"
     },
 
     /**
@@ -154,6 +155,28 @@ function(_, $, Backbone, AccessRule){
           console.error("Couldn't render the access column of the AccessRuleView: ", e);
         }
 
+        //Render the Remove column of the table
+        try{
+
+          if( this.isNew ){
+            //Create an empty table cell for "new" blank rows
+            this.$el.append($(document.createElement("td")).addClass("remove-rule") );
+          }
+          else{
+            //Create a remove icon
+            var userType   = this.model.isGroup()? "group" : "person",
+                removeIcon = $(document.createElement("i"))
+                               .addClass("remove icon icon-remove")
+                               .attr("title", "Remove access for this " + userType);
+
+            //Create a table cell and append the remove icon
+            this.$el.append($(document.createElement("td")).addClass("remove-rule").append(removeIcon) );
+          }
+        }
+        catch(e){
+          console.error("Couldn't render a remove button for an access rule: ", e);
+        }
+
         //If there is no name set on this model, listen to when it may be set, and update the view
         if( !this.model.get("name") ){
           this.listenToOnce(this.model, "change:name", this.updateNameDisplay);
@@ -217,6 +240,20 @@ function(_, $, Backbone, AccessRule){
       catch(e){
 
       }
+    },
+
+    /**
+    * Remove this AccessRule from the AccessPolicy
+    */
+    handleRemove: function(){
+
+      //Trigger the custom "removeMe" event so the AccessRule associated with this view
+      // will be removed from it's corresponding AccessPolicy
+      this.model.trigger("removeMe", this.model);
+
+      //Remove this view from the page
+      this.remove();
+
     }
 
   });

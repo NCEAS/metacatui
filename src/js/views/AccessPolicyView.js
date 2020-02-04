@@ -54,8 +54,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
     */
     events: {
       "click .public"  : "makePublic",
-      "click .private" : "makePrivate",
-      "click .remove"  : "removeRule"
+      "click .private" : "makePrivate"
     },
 
     /**
@@ -156,7 +155,6 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
         var accessRule = new AccessRule({
           read: true
         });
-        this.collection.add(accessRule);
 
         //Create a new AccessRuleView
         var accessRuleView = new AccessRuleView();
@@ -172,20 +170,6 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
       catch(e){
         console.error("Something went wrong while adding the empty access policy row ", e);
       }
-
-    },
-
-    /**
-    * Removes an AccessRule from the AccessPolicy and removes the AccessRuleView
-    * @param {Event} e - The click event on the remove button in the AccessRuleView
-    */
-    removeRule: function(e){
-
-      //TODO: Get the view and model associated with the remove button that was clicked
-
-      //TODO: Remove the AccessRule model from the AccessPolicy collection
-
-      //TODO: Remove the AccessRuleView from this view
 
     },
 
