@@ -2829,9 +2829,23 @@ img[src*="googleapis.com/"].georegion-map{
   margin-left: 0px;
   display: none;
 }
+.access-rule td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
 .access-rule select{
   width: 100%;
   margin-bottom: 0px;
+}
+.access-rule.new input{
+  width: calc(100% - 16px);
+  margin-bottom: 0px;
+}
+.access-rule.new label{
+  font-size: .9em;
+}
+.access-rule.new select{
+  margin-top: 25px;
 }
 /******************************************
 * Portal Editor

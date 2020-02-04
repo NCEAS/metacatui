@@ -1,10 +1,11 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "models/AccessRule",
         "collections/AccessPolicy",
         "views/AccessRuleView",
         "text!templates/accessPolicy.html"],
-function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
+function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
 
   /**
   * @class AccessPolicyView
@@ -128,12 +129,18 @@ function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
         //Get the subject info for each subject in the AccessPolicy, so we can display names
         this.collection.getSubjectInfo();
 
+        //Show a blank row at the bottom of the table for adding a new Access Rule.
+        this.addEmptyRow();
+
       }
       catch(e){
-        MetacatUI.appView.showAlert("Something went wrong while trying to display the sharing options. <p>Technical details: " + e.message + "</p>",
+        MetacatUI.appView.showAlert("Something went wrong while trying to display the " +
+                                      MetacatUI.appModel.get("accessPolicyName") +
+                                      ". <p>Technical details: " + e.message + "</p>",
                                     "alert-error",
                                     this.$el,
                                     null);
+        console.error(e);
       }
 
     },
@@ -143,9 +150,26 @@ function(_, $, Backbone, AccessPolicy, AccessRuleView, Template){
     */
     addEmptyRow: function(){
 
-      //TODO: Create a new AccessRule model and add to the collection
+      try{
 
-      //TODO: Create a new AccessRuleView and append to the table
+        //Create a new AccessRule model and add to the collection
+        var accessRule = new AccessRule();
+        this.collection.add(accessRule);
+
+        //Create a new AccessRuleView
+        var accessRuleView = new AccessRuleView();
+        accessRuleView.model = accessRule;
+        accessRuleView.isNew = true;
+
+        //Add the new row to the table
+        this.$(".access-rules-container").append(accessRuleView.el);
+
+        //Render the AccessRuleView
+        accessRuleView.render();
+      }
+      catch(e){
+        console.error("Something went wrong while adding the empty access policy row ", e);
+      }
 
     },
 

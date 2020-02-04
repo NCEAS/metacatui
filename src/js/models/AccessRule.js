@@ -169,8 +169,17 @@ define(['jquery', 'underscore', 'backbone'],
             return;
           }
 
-          //Find the subject XML node for this person, by matching the text content with the subject
-          var subjectNode = $(xmlDoc).find("person subject:contains(" + model.get("subject") + ")");
+          var subjectNode;
+
+          if( model.isGroup() ){
+            //Find the subject XML node for this person, by matching the text content with the subject
+            subjectNode = $(xmlDoc).find("group subject:contains(" + model.get("subject") + ")");
+          }
+          else{
+            //Find the subject XML node for this person, by matching the text content with the subject
+            subjectNode = $(xmlDoc).find("person subject:contains(" + model.get("subject") + ")");
+          }
+
           //If no subject XML node was found, exit now
           if( !subjectNode || !subjectNode.length ){
             return;
@@ -185,8 +194,20 @@ define(['jquery', 'underscore', 'backbone'],
             });
           }
 
-          //Get the first and last name for this person
-          var name = $(subjectNode).siblings("givenName").text() + " " + $(subjectNode).siblings("familyName").text();
+          var name;
+          if( model.isGroup() ){
+            //Get the group name
+            name = $(subjectNode).siblings("groupName").text();
+
+            //If there is no group name, then just use the name parsed from the subject
+            if( !name ){
+              name = model.get("subject").substring(3, model.get("subject").indexOf(",DC=dataone") );
+            }
+          }
+          else{
+            //Get the first and last name for this person
+            name = $(subjectNode).siblings("givenName").text() + " " + $(subjectNode).siblings("familyName").text();
+          }
 
           //Set the name on the model
           model.set("name", name);
@@ -196,6 +217,24 @@ define(['jquery', 'underscore', 'backbone'],
 
       //Send the XHR
       $.ajax(ajaxOptions);
+    },
+
+    /**
+    * Returns true if the subbject set on this AccessRule is for a group of people.
+    * @returns {boolean}
+    */
+    isGroup: function(){
+
+      try{
+        //Check if the subject is a group subject
+        var matches = this.get("subject").match(/CN=.+,DC=dataone,DC=org/);
+        return (Array.isArray(matches) && matches.length);
+      }
+      catch(e){
+        console.error("Couldn't determine if the subject in this AccessRule is a group: ", e);
+        return false;
+      }
+
     }
 
 	});
