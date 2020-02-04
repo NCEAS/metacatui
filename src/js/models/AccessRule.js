@@ -3,9 +3,13 @@ define(['jquery', 'underscore', 'backbone'],
 	function($, _, Backbone) {
 	'use strict';
 
-	// Access Rule Model
-	// ------------------
-	var AccessRule = Backbone.Model.extend({
+  /**
+   * @class AccessRule
+   * @classdesc A model that specifies a single permission set on a DataONEObject
+   */
+	var AccessRule = Backbone.Model.extend(
+    /** @lends AccessRule */
+    {
 
 		defaults: {
 			subject: null,
@@ -20,9 +24,9 @@ define(['jquery', 'underscore', 'backbone'],
 
 		},
 
-		/*
+		/**
 		* Translates the access rule XML DOM into a JSON object to be set on the model.
-		* @param {DOM Element} Either an <allow> or <deny> DOM element that contains a single access rule
+		* @param {Element} Either an <allow> or <deny> DOM element that contains a single access rule
 		* @return {JSON} The Access Rule values to be set on this model
 		*/
 		parse: function( accessRuleXML ){
@@ -47,7 +51,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 		},
 
-		/*
+		/**
 		* Takes the values set on this model's attributes and creates an XML string
 		* to be inserted into a DataONEObject's system metadata access policy.
 		* @return {string} The access rule XML string

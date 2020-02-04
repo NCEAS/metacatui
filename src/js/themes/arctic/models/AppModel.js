@@ -67,16 +67,6 @@ define(['jquery', 'underscore', 'backbone'],
         "our support team, who will contact " +
         "you via email as soon as possible about getting your data package submitted. ",
 
-      defaultAccessPolicy: [{
-
-        subject: "CN=arctic-data-admins,DC=dataone,DC=org",
-        read: true,
-        write: true,
-        changePermission: true
-      }],
-
-      allowAccessPolicyChanges: false,
-
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
@@ -199,6 +189,56 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {boolean}
       */
       showAnnotationIndicator: false,
+
+      /**
+      * If true, users can change the AccessPolicy for their objects.
+      * @type {boolean}
+      */
+      allowAccessPolicyChanges: false,
+
+      /**
+      * The default Access Policy set on new objects uploaded to the repository.
+      * Each literal object here gets set directly on an AccessRule model.
+      * See the AccessRule model list of default attributes for options on what to set here.
+      * @see {@link AccessRule}
+      * @type {object}
+      */
+      defaultAccessPolicy: [{
+        subject: "CN=arctic-data-admins,DC=dataone,DC=org",
+        read: true,
+        write: true,
+        changePermission: true
+      }],
+
+      /**
+      * The user-facing name for editing the Access Policy. This is displayed as the header of the AccessPolicyView, for example
+      * @type {string}
+      */
+      accessPolicyName: "Sharing options",
+
+      /**
+      * @type {object}
+      * @property {boolean} accessRuleOptions.read  - If true, users will be able to give others read access to their DataONE objects
+      * @property {boolean} accessRuleOptions.write - If true, users will be able to give others write access to their DataONE objects
+      * @property {boolean} accessRuleOptions.changePermission - If true, users will be able to give others changePermission access to their DataONE objects
+      */
+      accessRuleOptions: {
+        read: true,
+        write: true,
+        changePermission: true
+      },
+
+      /**
+      * @type {object}
+      * @property {boolean} accessRuleOptionNames.read  - The user-facing name of the "read" access in Access Rules
+      * @property {boolean} accessRuleOptionNames.write - The user-facing name of the "write" access in Access Rules
+      * @property {boolean} accessRuleOptionNames.changePermission - The user-facing name of the "changePermission" access in Access Rules
+      */
+      accessRuleOptionNames: {
+        read: "Can read",
+        write: "Can edit",
+        changePermission: "Is owner"
+      },
 
       // A lookup map of portal names to portal seriesIds
       portalsMap: {
@@ -398,7 +438,7 @@ define(['jquery', 'underscore', 'backbone'],
       if( this.get("enableMonitorStatus") ){
         this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
       }
-      
+
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
