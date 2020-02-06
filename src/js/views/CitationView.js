@@ -365,8 +365,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
         this.$el.append(linkEl);
 
+        // Only append the citation link when we have non-zero datasets
         // Append the cited dataset text to the link element
-        if ( datasetLinkEl !== "undefined" ) {
+        if ( datasetLinkEl !== "undefined" && citationMetadataCounter > 0) {
           this.$el.append(datasetLinkEl);
         }
       }
