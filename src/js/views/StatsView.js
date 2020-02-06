@@ -9,7 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 	'use strict';
 
 	var StatsView = Backbone.View.extend(
-  /** @lends StatsView.prototype */{
+  	/** @lends StatsView.prototype */{
 
 		el: '#Content',
 
@@ -38,7 +38,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
 			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
-			this.metricsModel = options.metricsModel;
+			this.metricsModel = (typeof options.metricsModel === undefined) ? undefined : options.metricsModel;
 			this.userType = options.userType;
 			if(typeof options.el === "undefined")
 				this.el = options.el;
@@ -52,7 +52,32 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.model = options.model || null;
 		},
 
-		render: function () {
+		render: function (options) {
+      
+			if ( !options )
+				options = {};
+
+			var nodeId = (typeof options.nodeId === "undefined") ? "undefined" : options.nodeId;
+				
+			if ( typeof this.metricsModel === "undefined" ) {
+
+				if( nodeId !== "undefined" ) {
+
+					// Create a list with the repository ID
+					var pid_list = new Array();
+					pid_list.push(nodeId);
+
+					// Create a new object of the metrics model
+					var metricsModel = new MetricsModel({
+						pid_list: pid_list,
+						type: this.userType
+					});
+					metricsModel.fetch();
+					this.metricsModel = metricsModel;
+
+				}
+
+			}
 
 			if( !this.model ){
 				this.model = new StatsModel();
@@ -61,8 +86,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Clear the page
 			this.$el.html("");
 
-			if (this.userType == "portal") {
-				if(this.metricsModel.get("totalViews") !== null) {
+			if (this.userType == "portal" || this.userType === "repository") {
+				if (this.metricsModel.get("totalViews") !== null) {
 					this.renderMetrics();
 				}
 				else{
@@ -113,36 +138,36 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				hideMetadataAssessment: this.hideMetadataAssessment
 			}));
 
-      // Insert the metadata assessment chart
-      if(!this.hideMetadataAssessment){
-        this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
-        this.listenTo(this.model, "change:mdqScoresError", function () {
-                this.$("#metadata-assessment-loading").remove();
-                MetacatUI.appView.showAlert("Metadata assessment scores are not available for this collection. " + this.model.get("mdqScoresError"),
-                    "alert-warning", this.$("#metadata-assessment-graphic"));
-            });
-      }
+		// Insert the metadata assessment chart
+		if(!this.hideMetadataAssessment){
+			this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
+			this.listenTo(this.model, "change:mdqScoresError", function () {
+					this.$("#metadata-assessment-loading").remove();
+					MetacatUI.appView.showAlert("Metadata assessment scores are not available for this collection. " + this.model.get("mdqScoresError"),
+						"alert-warning", this.$("#metadata-assessment-graphic"));
+				});
+		}
 
-			//Insert the loading template into the space where the charts will go
-			if(d3){
-				this.$(".chart").html(this.loadingTemplate);
-				this.$(".show-loading").html(this.loadingTemplate);
-			}
-			//If SVG isn't supported, insert an info warning
-			else{
-				this.$el.prepend(this.alertTemplate({
-					classes: "alert-info",
-					msg: "Please upgrade your browser or use a different browser to view graphs of these statistics.",
-					email: false
-				}));
-			}
+		//Insert the loading template into the space where the charts will go
+		if(d3){
+			this.$(".chart").html(this.loadingTemplate);
+			this.$(".show-loading").html(this.loadingTemplate);
+		}
+		//If SVG isn't supported, insert an info warning
+		else{
+			this.$el.prepend(this.alertTemplate({
+				classes: "alert-info",
+				msg: "Please upgrade your browser or use a different browser to view graphs of these statistics.",
+				email: false
+			}));
+		}
 
-      this.$el.data("view", this);
+      	this.$el.data("view", this);
 
-			//Start retrieving data from Solr
-			this.model.getAll();
+		//Start retrieving data from Solr
+		this.model.getAll();
 
-			return this;
+		return this;
 	},
 
     /**
@@ -203,7 +228,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var resultDetails = this.metricsModel.get("resultDetails");
 
 			// Creating a new collection object
-			// Parsing result-details with updated format
+			// Parsing result-details with citation dictionary format
 			var resultDetailsCitationCollection = new Array();
 			for (var key in resultDetails["citations"]) {
 				resultDetailsCitationCollection.push(resultDetails["citations"][key]);
