@@ -7083,3 +7083,9 @@ CSS library fixes
 	left: 5%;
 	margin: 0 auto;
 }
+
+#user-citations > .citations-metrics-list > .alert-container {
+	width: 90%;
+	left: 5%;
+	margin: 0 auto;
+}

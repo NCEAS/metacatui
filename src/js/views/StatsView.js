@@ -1024,16 +1024,37 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			var metricsEls = new Array();
 
-			metricsEls.push(this.$('.citations-metrics-list').find('.loading'));
-			metricsEls.push(this.$('#user-downloads-chart').find('.loading'));
-			metricsEls.push(this.$('#user-views-chart').find('.loading'));
+			metricsEls.push('.citations-metrics-list');
+			metricsEls.push('#user-downloads-chart');
+			metricsEls.push('#user-views-chart');
 
-			for (var iconEl in metricsEls) {
-				this.$(iconEl).removeClass('icon-spinner');
-				this.$(iconEl).removeClass('icon-spin');
-				this.$(iconEl).removeClass('icon-large');
-				this.$(iconEl).removeClass('loading');
-			}
+			// for each of the usage metrics section
+			metricsEls.forEach(function(iconEl) {
+				var errorMessage = "";
+
+				if(iconEl === ".citations-metrics-list") {
+					errorMessage = "Something went wrong while getting the citation metrics.";
+				}
+				else if(iconEl === '#user-downloads-chart') {
+					errorMessage = "Something went wrong while getting the download metrics.";
+				}
+				else if(iconEl === "#user-views-chart") {
+					errorMessage = "Something went wrong while getting the view metrics.";
+				}
+				else {
+					errorMessage = "Something went wrong while getting the usage metrics.";
+				}
+
+				// remove the loading icon
+				$(iconEl).find('.metric-chart-loading').css("display", "none");
+
+				// display the error message
+				MetacatUI.appView.showAlert(
+					errorMessage,
+					"alert-error",
+					$(iconEl)
+				);
+			});
 
 		}
 
