@@ -54,7 +54,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
     */
     events: {
       "click .public"   : "makePublic",
-      "click .private"  : "makePrivate"
+      "click .private"  : "makePrivate",
+      "click .save"     : "save"
     },
 
     /**
@@ -77,7 +78,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
           return;
         }
 
-        var dataONEObject = this.collection.getDataONEObject();
+        var dataONEObject = this.collection.dataONEObject;
 
         if(dataONEObject && dataONEObject.type){
           switch( dataONEObject.type ){
@@ -220,6 +221,54 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
 
       //TODO: Update this view to indicate it is private
 
+    },
+
+    /**
+    * Saves the AccessPolicy associated with this view
+    */
+    save: function(){
+
+
+      //Get the DataONE Object that this Access Policy is for
+      var dataONEObject = this.collection.dataONEObject;
+
+      if( !dataONEObject ){
+        return;
+      }
+
+      //Show the save progress as it is in progress, complete, in error, etc.
+      this.listenTo(dataONEObject, "change:uploadStatus", this.showSaveProgress);
+
+      //Update the SystemMetadata for this object
+      dataONEObject.updateSysMeta();
+
+    },
+
+    showSaveProgress: function(dataONEObject){
+      if( !dataONEObject ){
+        return;
+      }
+
+      var status = dataONEObject.get("uploadStatus");
+
+      if( status == "p" ){
+        //Disable the Save button and change the text to say, "Saving..."
+        this.$(".save.btn").text("Saving...").attr("disabled", "disabled");
+      }
+      else if( status == "c" ){
+        //Create a checkmark icon
+        var icon = $(document.createElement("i")).addClass("icon icon-ok icon-on-left"),
+            saveBtn = this.$(".save.btn");
+
+        //Disable the Save button and change the text to say, "Saving..."
+        saveBtn.text("Saved").prepend(icon).removeAttr("disabled");
+
+        setTimeout(function(){ saveBtn.empty().text("Save") }, 2000);
+
+        //Remove the listener for this function
+        this.stopListening(dataONEObject, "change:uploadStatus", this.showSaveProgress);
+
+      }
     }
 
   });

@@ -305,8 +305,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Save the identifier as the id attribute
               sysMetaValues.id = sysMetaValues.identifier;
 
-              //Create a new AccessPolicy collection
-              sysMetaValues.accessPolicy = this.createAccessPolicy($(systemMetadata).find("accesspolicy"));
+              //Parse the Access Policy
+              if( this.get("accessPolicy") && AccessPolicy.prototype.isPrototypeOf(this.get("accessPolicy")) ){
+                this.get("accessPolicy").parse($(systemMetadata).find("accesspolicy"));
+                sysMetaValues.accessPolicy = this.get("accessPolicy");
+              }
+              else{
+                //Create a new AccessPolicy collection, if there isn't one already.
+                sysMetaValues.accessPolicy = this.createAccessPolicy($(systemMetadata).find("accesspolicy"));
+              }
 
               return sysMetaValues;
 

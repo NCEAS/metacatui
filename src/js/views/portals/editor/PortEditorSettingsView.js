@@ -4,10 +4,8 @@ define(['underscore',
         'models/portals/PortalSectionModel',
         "views/portals/editor/PortEditorSectionView",
         "views/portals/editor/PortEditorLogosView",
-        "views/AccessPolicyView",
         "text!templates/portals/editor/portEditorSettings.html"],
 function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosView,
-  AccessPolicyView,
   Template){
 
   /**
@@ -103,12 +101,6 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
           portalTermPlural: MetacatUI.appModel.get("portalTermPlural"),
           portalTermSingular: MetacatUI.appModel.get("portalTermSingular")
         }));
-
-        //Render the AccessPolicyView
-        //TODO: Get the AccessPolicy collection for this PortalModel and send it to the view
-        var accessPolicyView = new AccessPolicyView();
-        accessPolicyView.render();
-        this.$(".permissions-container").html(accessPolicyView.el);
 
         //Render the PortEditorLogosView
         var logosView = new PortEditorLogosView({

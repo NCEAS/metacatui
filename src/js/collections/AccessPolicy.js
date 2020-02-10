@@ -30,11 +30,23 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           parse: function(accessPolicyXML){
 
             //Parse each "allow" access rule
-      			_.each( $(accessPolicyXML).children(), function(accessRuleXML){
+      			_.each( $(accessPolicyXML).children(), function(accessRuleXML, i){
 
-              var accessRuleModel = new AccessRule();
+              var accessRuleModel;
+
+              //Update the AccessRule models that already exist in the collection, first.
+              // This is important to keep listeners thoughout the app intact.
+              if( AccessRule.prototype.isPrototypeOf(this.models[i]) ){
+                accessRuleModel = this.models[i];
+              }
+              //Create new AccessRules for all others
+              else{
+                accessRuleModel = new AccessRule();
+                this.add( accessRuleModel );
+              }
+
+              //Parse the AccessRule model and update the model attributes
               accessRuleModel.set( accessRuleModel.parse(accessRuleXML) );
-              this.add( accessRuleModel );
 
       			}, this);
 
@@ -227,16 +239,6 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           },
 
           /**
-          * Get the DataONEObject or DataPackage that this AccessPolicy is for, and returns it
-          * @returns {DataONEObject|DataPackage}
-          */
-          getDataONEObject: function(){
-
-            return this.models.length? this.models[0].get("dataONEObject") : false;
-
-          },
-
-          /**
           * Gets the subject info for all of the subjects in this access policy.
           * Sets the subject info on each corresponding model.
           */
@@ -259,7 +261,6 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           removeAccessRule: function(accessRule){
 
             this.remove(accessRule);
-            console.log(this.models)
 
           }
 
