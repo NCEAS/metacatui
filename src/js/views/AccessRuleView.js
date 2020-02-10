@@ -61,6 +61,8 @@ function(_, $, Backbone, AccessRule){
 
       try{
 
+        this.$el.empty();
+
         //If there's no model, exit now since there's nothing to render
         if( !this.model ){
           return;
@@ -78,15 +80,58 @@ function(_, $, Backbone, AccessRule){
               input = $(document.createElement("input"))
                         .attr("type", "text")
                         .attr("name", "search")
-                        .attr("placeholder", "e.g. Lauren Walker");
+                        .attr("placeholder", "e.g. Lauren Walker"),
+              hiddenInput = $(document.createElement("input"))
+                              .attr("type", "hidden")
+                              .attr("name", "subject")
+                              .addClass("hidden"),
+              searchCell = $(document.createElement("td"))
+                             .addClass("search")
+                             .attr("colspan", "2")
+                             .append(label, input, hiddenInput),
+              view  = this;
 
-          this.$el.append($(document.createElement("td"))
-                            .addClass("search")
-                            .attr("colspan", "2")
-                            .append(label, input) );
+          //Setup the autocomplete widget for the input so users can search for people and groups
+          input.autocomplete({
+            source: function(request, response){
+              var beforeRequest = function(){
+                //loadingSpinner.show();
+              }
+
+              var afterRequest = function(){
+                //loadingSpinner.hide();
+              }
+
+              return MetacatUI.appLookupModel.getAccountsAutocomplete(request, response, beforeRequest, afterRequest)
+            },
+            select: function(e, ui) {
+              e.preventDefault();
+
+              var value = ui.item.value;
+              hiddenInput.val(value);
+              input.val(value);
+
+              view.updateSubject();
+
+            },
+            position: {
+              my: "left top",
+              at: "left bottom",
+              of: input
+            },
+            appendTo: searchCell,
+            minLength: 2
+          });
+
+          this.$el.append( searchCell );
         }
         else{
           try{
+
+            if( this.$el.is(".new") ){
+              this.$el.removeClass("new");
+            }
+
             //Create elements for the 'Name' column of this table row
             var subject = this.model.get("subject"),
                 icon;
@@ -240,6 +285,21 @@ function(_, $, Backbone, AccessRule){
       catch(e){
 
       }
+    },
+
+    /**
+    * Update the subject of the AccessRule
+    */
+    updateSubject: function(){
+      //Get the subject from the hidden text input
+      var subject = this.$(".search input.hidden").val();
+
+      //Set the subject on the model
+      this.model.set("subject", subject);
+
+      this.isNew = false;
+
+      this.render();
     },
 
     /**

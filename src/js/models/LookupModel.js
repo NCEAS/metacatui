@@ -427,6 +427,77 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 			$.ajax(requestSettings);
 		},
 
+    getAccountsAutocomplete: function(request, response){
+      var searchTerm = $.ui.autocomplete.escapeRegex(request.term);
+
+      //Only search after 2 characters or more
+      if(searchTerm.length < 2)
+        return;
+
+      var url = MetacatUI.appModel.get("accountsUrl") + "?query=" + searchTerm;
+
+      // Send the AJAX request as a JSONP data type since it will be cross-origin
+      var requestSettings = {
+        url: url,
+        success: function(data, textStatus, xhr) {
+
+          if(!data)
+            return [];
+
+          //If an XML doc was not returned from the server, then try to parse the response as XML
+          if( !XMLDocument.prototype.isPrototypeOf(data) ){
+            try{
+              data = $.parseXML(data);
+            }
+            catch(e){
+              //If the parsing XML failed, exit now
+              console.error("The accounts service did not return valid XML.", e);
+              return;
+            }
+          }
+
+          var list = [];
+
+          _.each($(data).children(/.+subjectInfo/).children(), function(accountNode, i){
+
+            var name = "";
+
+            if( $(accountNode).children("givenName").length ){
+              name = $(accountNode).children("givenName").text() + " " + $(accountNode).children("familyName").text()
+            }
+            else{
+              name = $(accountNode).children("groupName").text();
+            }
+
+            if( !name ){
+              name = $(accountNode).children("subject").text();
+            }
+
+            list.push({
+              value: $(accountNode).children("subject").text(),
+              label: name + "  (" + $(accountNode).children("subject").text() + ")"
+            });
+          });
+
+          var term = $.ui.autocomplete.escapeRegex(request.term)
+            , startsWithMatcher = new RegExp("^" + term, "i")
+            , startsWith = $.grep(list, function(value) {
+                return startsWithMatcher.test(value.label || value.value || value);
+            })
+            , containsMatcher = new RegExp(term, "i")
+            , contains = $.grep(list, function (value) {
+                return $.inArray(value, startsWith) < 0 &&
+                    containsMatcher.test(value.label || value.value || value);
+            });
+
+          response(startsWith.concat(contains));
+        }
+      }
+
+      //Send the query
+      $.ajax(requestSettings);
+    },
+
     /**
     * Calls the monitor/status DataONE MN API and gets the size of the index queue.
     * @param {function} [onSuccess]

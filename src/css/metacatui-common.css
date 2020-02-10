@@ -2854,6 +2854,10 @@ img[src*="googleapis.com/"].georegion-map{
 .access-rule .remove-rule{
   width: 2em;
 }
+.access-rule .ui-autocomplete .ui-menu-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
 /******************************************
 * Portal Editor
 ********************************************/
@@ -5852,6 +5856,7 @@ Editor View
 #editor-header .editor-controls .btn{
   align-self: center;
   margin-top: 14px;
+  padding: 10px 15px;
 }
 
 .side-nav-item a {
@@ -6446,9 +6451,9 @@ textarea.medium{
 }
 .Editor .funding-row .ui-autocomplete{
 	position: absolute !important;
-    font-size: 1.2em;
+  font-size: 1.2em;
 }
-.Editor .ui-autocomplete .ui-menu-item {
+.Editor .funding-container .ui-autocomplete .ui-menu-item {
     font-size: .7em;
 }
 .Editor .funding-container .ui-helper-hidden-accessible{

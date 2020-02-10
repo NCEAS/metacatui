@@ -116,6 +116,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
           //Create an AccessRuleView
           var accessRuleView = new AccessRuleView();
           accessRuleView.model = accessRule;
+          accessRuleView.accessPolicyView = this;
 
           //Add the AccessRuleView to this view
           this.$(".access-rules-container").append(accessRuleView.el);
@@ -161,6 +162,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
         accessRuleView.model = accessRule;
         accessRuleView.isNew = true;
 
+        this.listenTo(accessRule, "change:subject", this.addAccessRule);
+
         //Add the new row to the table
         this.$(".access-rules-container").append(accessRuleView.el);
 
@@ -170,6 +173,25 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
       catch(e){
         console.error("Something went wrong while adding the empty access policy row ", e);
       }
+
+    },
+
+    /**
+    * Adds the given AccessRule model to the AccessPolicy collection associated with this view
+    * @param {AccessRule} accessRule - The AccessRule to add
+    */
+    addAccessRule: function(accessRule){
+
+      //If this AccessPolicy already contains this AccessRule, then exit
+      if( this.collection.contains(accessRule) ){
+        return;
+      }
+
+      //Add the AccessRule to the AccessPolicy
+      this.collection.push(accessRule);
+
+      //Render a new empty row
+      this.addEmptyRow();
 
     },
 
