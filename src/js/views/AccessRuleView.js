@@ -42,8 +42,10 @@ function(_, $, Backbone, AccessRule){
     * @type {Object}
     */
     events: {
-      "change .access select" : "updateAccess",
-      "click .remove" : "handleRemove"
+      "click    .remove"              : "handleRemove",
+      "keypress .search input"        : "listenForEnter",
+      "click    .add.icon"            : "updateModel",
+      "change   .access select"       : "updateModel"
     },
 
     /**
@@ -204,8 +206,11 @@ function(_, $, Backbone, AccessRule){
         try{
 
           if( this.isNew ){
+            var addIcon = $(document.createElement("i"))
+                            .addClass("add icon icon-plus")
+                            .attr("title", "Add this access");
             //Create an empty table cell for "new" blank rows
-            this.$el.append($(document.createElement("td")).addClass("remove-rule") );
+            this.$el.append($(document.createElement("td")).addClass("add-rule").append(addIcon));
           }
           else{
             //Create a remove icon
@@ -280,10 +285,9 @@ function(_, $, Backbone, AccessRule){
           this.model.set("changePermission", true);
         }
 
-        console.log(this.model.attributes);
       }
       catch(e){
-
+        console.error(e);
       }
     },
 
@@ -291,8 +295,19 @@ function(_, $, Backbone, AccessRule){
     * Update the subject of the AccessRule
     */
     updateSubject: function(){
-      //Get the subject from the hidden text input
+      //Get the subject from the hidden text input, which is populated from the
+      // jQueryUI autocomplete widget
       var subject = this.$(".search input.hidden").val();
+
+      //If the hidden input doesn't have a value, get the value from the visible input
+      if( !subject ){
+        subject = this.$(".search input:not(.hidden)").val();
+      }
+
+      //If there is no subject typed in, exit
+      if( !subject ){
+        return;
+      }
 
       //Set the subject on the model
       this.model.set("subject", subject);
@@ -300,6 +315,17 @@ function(_, $, Backbone, AccessRule){
       this.isNew = false;
 
       this.render();
+    },
+
+    /**
+    * Updates the model associated with this view
+    */
+    updateModel: function(){
+
+      //Update the access and the subject
+      this.updateAccess();
+      this.updateSubject();
+
     },
 
     /**
@@ -313,6 +339,31 @@ function(_, $, Backbone, AccessRule){
 
       //Remove this view from the page
       this.remove();
+
+    },
+
+    /**
+    * Handles when the user has typed at least one character in the name search input
+    * @param {Event} e - The keypress event
+    */
+    listenForEnter: function(e){
+
+      try{
+
+        if( !e ){
+          return;
+        }
+
+        //If Enter was pressed,
+        if( e.keyCode == 13 ){
+          //Update the subject on this model
+          this.updateSubject();
+        }
+      }
+      catch(e){
+        MetacatUI.appView.showAlert("This group or person could not be added.", "alert-error", this.$el, 3000);
+        console.error("Error while listening to the Enter key in AccessRuleView: ", e);
+      }
 
     }
 

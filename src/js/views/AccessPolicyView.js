@@ -53,8 +53,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
     * @type {Object}
     */
     events: {
-      "click .public"  : "makePublic",
-      "click .private" : "makePrivate"
+      "click .public"   : "makePublic",
+      "click .private"  : "makePrivate"
     },
 
     /**
@@ -162,7 +162,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
         accessRuleView.model = accessRule;
         accessRuleView.isNew = true;
 
-        this.listenTo(accessRule, "change:subject", this.addAccessRule);
+        this.listenTo(accessRule, "change", this.addAccessRule);
 
         //Add the new row to the table
         this.$(".access-rules-container").append(accessRuleView.el);
@@ -184,6 +184,11 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
 
       //If this AccessPolicy already contains this AccessRule, then exit
       if( this.collection.contains(accessRule) ){
+        return;
+      }
+
+      //If there is no subject set on this AccessRule, exit
+      if( !accessRule.get("subject") ){
         return;
       }
 

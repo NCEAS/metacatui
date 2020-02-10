@@ -2854,6 +2854,15 @@ img[src*="googleapis.com/"].georegion-map{
 .access-rule .remove-rule{
   width: 2em;
 }
+.access-rule .add.icon{
+  margin-top: 25px;
+  display: block;
+  font-size: 2em;
+  cursor: pointer;
+}
+.access-rule .add.icon:hover{
+  color: #006699;
+}
 .access-rule .ui-autocomplete .ui-menu-item {
   padding-top: 5px;
   padding-bottom: 5px;
