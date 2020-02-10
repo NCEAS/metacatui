@@ -29,6 +29,9 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           */
           parse: function(accessPolicyXML){
 
+            var originalLength = this.length,
+                newLength      = 0;
+
             //Parse each "allow" access rule
       			_.each( $(accessPolicyXML).children(), function(accessRuleXML, i){
 
@@ -45,10 +48,20 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
                 this.add( accessRuleModel );
               }
 
+              newLength++;
+              
               //Parse the AccessRule model and update the model attributes
               accessRuleModel.set( accessRuleModel.parse(accessRuleXML) );
 
       			}, this);
+
+            //If there are more AccessRules in this collection than were in the
+            // system metadata XML, then remove the extras
+            if( originalLength > newLength ){
+              for(var i=0; i < (originalLength - newLength); i++){
+                this.pop();
+              }
+            }
 
           },
 
