@@ -380,6 +380,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
     */
     save: function(){
 
+      //Remove any alerts that are currently displayed
+      this.$(".alert-container").remove();
 
       //Get the DataONE Object that this Access Policy is for
       var dataONEObject = this.collection.dataONEObject;
@@ -403,10 +405,14 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
 
       var status = dataONEObject.get("uploadStatus");
 
+      //When the status is "in progress"
       if( status == "p" ){
         //Disable the Save button and change the text to say, "Saving..."
         this.$(".save.btn").text("Saving...").attr("disabled", "disabled");
+
+        return;
       }
+      //When the status is "complete"
       else if( status == "c" ){
         //Create a checkmark icon
         var icon = $(document.createElement("i")).addClass("icon icon-ok icon-on-left"),
@@ -417,10 +423,24 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
 
         setTimeout(function(){ saveBtn.empty().text("Save") }, 2000);
 
-        //Remove the listener for this function
-        this.stopListening(dataONEObject, "change:uploadStatus", this.showSaveProgress);
-
       }
+      //When the status is "error"
+      else if( status == "e" ){
+        var msgContainer = this.$(".modal-body").length? this.$(".modal-body") : this.$el;
+
+        MetacatUI.appView.showAlert(
+          "Your changes could not be saved.",
+          "alert-error",
+          msgContainer,
+          0,
+          { remove: true });
+
+        //Reset the save button
+        this.$(".save.btn").text("Save").removeAttr("disabled");
+      }
+
+      //Remove the listener for this function
+      this.stopListening(dataONEObject, "change:uploadStatus", this.showSaveProgress);
     }
 
   });

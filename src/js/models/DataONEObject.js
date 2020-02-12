@@ -690,22 +690,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 //Trigger a custom event that the sys meta was updated
                 model.trigger("sysMetaUpdated");
               },
-              error: function (model, response, xhr) {
+              error: function (xhr, status, statusCode) {
 
-                  model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
-                  var numSaveAttempts = model.get("numSaveAttempts");
+                model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                var numSaveAttempts = model.get("numSaveAttempts");
 
-                  if (numSaveAttempts < 3 && (response.status == 408 || response.status == 0)) {
+                if (numSaveAttempts < 3 && (statusCode == 408 || statusCode == 0)) {
 
-                      //Try saving again in 10, 40, and 90 seconds
-                      setTimeout(function () {
-                              model.updateSysMeta.call(model);
-                          },
-                          (numSaveAttempts * numSaveAttempts) * 10000);
-                  } else {
+                    //Try saving again in 10, 40, and 90 seconds
+                    setTimeout(function () {
+                            model.updateSysMeta.call(model);
+                        },
+                        (numSaveAttempts * numSaveAttempts) * 10000);
+                } else {
                       model.set("numSaveAttempts", 0);
 
-                      var parsedResponse = $(response.responseText).not("style, title").text();
+                      var parsedResponse = $(xhr.responseText).not("style, title").text();
 
                       //When there is no network connection (status == 0), there will be no response text
                       if (!parsedResponse)
