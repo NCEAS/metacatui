@@ -140,6 +140,14 @@ define(['jquery', 'underscore', 'backbone'],
         return;
       }
 
+      //If this is the current user, we can use the name we already have in the app.
+      if( this.get("subject") == MetacatUI.appUserModel.get("username") ){
+        if( MetacatUI.appUserModel.get("fullName") ){
+          this.set("name", MetacatUI.appUserModel.get("fullName"));
+          return;
+        }
+      }
+
       var model = this;
 
       var ajaxOptions = {
