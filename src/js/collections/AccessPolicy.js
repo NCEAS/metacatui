@@ -260,10 +260,10 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
           getSubjectInfo: function(){
 
             //If there are more than 5 subjects in the access policy, then get the entire list of subjects in the DataONE/CN system
-            if( this.length > 5 ){
+          /*  if( this.length > 5 ){
               //TODO: Get everything from the /accounts endpoint
             }
-
+            */
             //If there are less than 5, then send individual requests to get the subject info
             this.invoke("getSubjectInfo");
 
