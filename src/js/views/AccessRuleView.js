@@ -38,6 +38,13 @@ function(_, $, Backbone, AccessRule){
     isNew: false,
 
     /**
+    * If true, the user can change the AccessRule via this view.
+    * If false, the AccessRule will just be displayed.
+    * @type {boolean}
+    */
+    allowChanges: true,
+
+    /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
@@ -71,6 +78,12 @@ function(_, $, Backbone, AccessRule){
         }
 
         if( this.isNew ){
+
+          //If we aren't allowing changes to this AccessRule, then don't display
+          // anything for new AcccessRule rows
+          if( !this.allowChanges ){
+            return;
+          }
 
           this.$el.addClass("new");
 
@@ -179,23 +192,40 @@ function(_, $, Backbone, AccessRule){
         }
 
         try{
-          //Create the access/permission options select dropdown
-          var accessOptions = $(document.createElement("select"));
 
-          //Create option elements for each access rule type that is enabled in the app
-          _.mapObject(MetacatUI.appModel.get("accessRuleOptions"), function(isEnabled, optionType){
-            if( isEnabled ){
-              var option = $(document.createElement("option")).attr("value", optionType).text( MetacatUI.appModel.get("accessRuleOptionNames")[optionType] );
+          if( this.allowChanges ){
+            //Create the access/permission options select dropdown
+            var accessOptions = $(document.createElement("select"));
 
+            //Create option elements for each access rule type that is enabled in the app
+            _.mapObject(MetacatUI.appModel.get("accessRuleOptions"), function(isEnabled, optionType){
+              if( isEnabled ){
+                var option = $(document.createElement("option")).attr("value", optionType).text( MetacatUI.appModel.get("accessRuleOptionNames")[optionType] );
+
+                //If this is the access type enabled in this AccessRule, then select this option
+                if( this.model.get(optionType) ){
+                  option.prop("selected", "selected");
+                }
+
+                accessOptions.append(option);
+              }
+            }, this);
+          }
+          else{
+            //Create an element to display the access type
+            var accessOptions = $(document.createElement("span"));
+
+            //Create option elements for each access rule type that is enabled in the app
+            _.mapObject(MetacatUI.appModel.get("accessRuleOptions"), function(isEnabled, optionType){
               //If this is the access type enabled in this AccessRule, then select this option
               if( this.model.get(optionType) ){
-                option.prop("selected", "selected");
+                accessOptions.text( MetacatUI.appModel.get("accessRuleOptionNames")[optionType] )
+                             .attr("title", "This cannot be changed.");
               }
+            }, this);
+          }
 
-              accessOptions.append(option);
-            }
-          }, this);
-
+          //Create the table cell and add the access options element
           this.$el.append($(document.createElement("td")).addClass("access").append(accessOptions) );
         }
         catch(e){
@@ -213,14 +243,21 @@ function(_, $, Backbone, AccessRule){
             this.$el.append($(document.createElement("td")).addClass("add-rule").append(addIcon));
           }
           else{
-            //Create a remove icon
-            var userType   = this.model.isGroup()? "group" : "person",
-                removeIcon = $(document.createElement("i"))
-                               .addClass("remove icon icon-remove")
-                               .attr("title", "Remove access for this " + userType);
+            //Only display a remove icon if we are allowing changes to this AccessRule
+            if( this.allowChanges ){
+              //Create a remove icon
+              var userType   = this.model.isGroup()? "group" : "person",
+                  removeIcon = $(document.createElement("i"))
+                                 .addClass("remove icon icon-remove")
+                                 .attr("title", "Remove access for this " + userType);
 
-            //Create a table cell and append the remove icon
-            this.$el.append($(document.createElement("td")).addClass("remove-rule").append(removeIcon) );
+              //Create a table cell and append the remove icon
+              this.$el.append($(document.createElement("td")).addClass("remove-rule").append(removeIcon) );
+            }
+            else{
+              //Add an empty table cell so the other rows don't look weird, if they have remove icons
+              this.$el.append($(document.createElement("td")));
+            }
           }
         }
         catch(e){
@@ -231,6 +268,9 @@ function(_, $, Backbone, AccessRule){
         if( !this.model.get("name") ){
           this.listenToOnce(this.model, "change:name", this.updateNameDisplay);
         }
+
+        //Listen to changes on the access options and update the view if they are changed
+        this.listenTo(this.model, "change:read change:write change:changePermission", this.updateAccessDisplay);
 
       }
       catch(e){
@@ -271,13 +311,13 @@ function(_, $, Backbone, AccessRule){
 
         if( selection == "read" ){
           this.model.set("read", true);
-          this.model.set("write", false);
-          this.model.set("changePermission", false);
+          this.model.set("write", null);
+          this.model.set("changePermission", null);
         }
         else if( selection == "write" ){
           this.model.set("read", true);
           this.model.set("write", true);
-          this.model.set("changePermission", false);
+          this.model.set("changePermission", null);
         }
         else if( selection == "changePermission" ){
           this.model.set("read", true);
@@ -289,6 +329,27 @@ function(_, $, Backbone, AccessRule){
       catch(e){
         console.error(e);
       }
+    },
+
+    /**
+    * Update the access in this view with the access from the model
+    */
+    updateAccessDisplay: function(){
+
+      //Get the select dropdown menu from this view
+      var select = this.$(".access select");
+
+      //Update the select dropdown menu with the value from the model
+      if( this.model.get("changePermission") ){
+        select.val("changePermission");
+      }
+      else if( this.model.get("write") ){
+        select.val("write");
+      }
+      else{
+        select.val("read");
+      }
+
     },
 
     /**

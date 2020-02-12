@@ -11,13 +11,15 @@ define(['jquery', 'underscore', 'backbone'],
     /** @lends AccessRule */
     {
 
-		defaults: {
-			subject: null,
-			read: null,
-			write: null,
-			changePermission: null,
-      name: null,
-      dataONEObject: null
+		defaults: function(){
+      return{
+  			subject: null,
+  			read: null,
+  			write: null,
+  			changePermission: null,
+        name: null,
+        dataONEObject: null
+      }
 		},
 
 		initialize: function(){

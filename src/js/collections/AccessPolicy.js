@@ -49,7 +49,9 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
               }
 
               newLength++;
-              
+
+              //Reset all the values first
+              accessRuleModel.set( accessRuleModel.defaults() );
               //Parse the AccessRule model and update the model attributes
               accessRuleModel.set( accessRuleModel.parse(accessRuleXML) );
 
@@ -275,6 +277,34 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
             this.remove(accessRule);
 
+          },
+
+          /**
+          * Checks if there is at least one AccessRule with changePermission permission
+          * in this AccessPolicy.
+          * @returns {boolean}
+          */
+          hasOwner: function(){
+            try{
+              var owners = this.where({ changePermission: true });
+
+              //Check if there are any other subjects with ownership levels
+              if( !owners || owners.length == 0 ){
+
+                //If there is a rightsHolder, that counts as an owner
+              /*  if( this.dataONEObject && this.dataONEObject.get("rightsHolder") ){
+                  return true;
+                }
+                */
+                return false;
+              }
+              else{
+                return true;
+              }
+            }
+            catch(e){
+              console.error("Error getting the owners of this AccessPolicy: ", e);
+            }
           }
 
       });

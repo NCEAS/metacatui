@@ -238,6 +238,18 @@ define(['jquery', 'underscore', 'backbone'],
         changePermission: "Is owner"
       },
 
+      /**
+      * If false, the rightsHolder of a resource will not be displayed in the AccessPolicyView.
+      * @type {boolean}
+      */
+      displayRightsHolderInAccessPolicy: true,
+
+      /**
+      * If false, users will not be able to change the rightsHolder of a resource in the AccessPolicyView
+      * @type {boolean}
+      */
+      allowChangeRightsHolder: true,
+
       // A lookup map of portal names to portal seriesIds
       portalsMap: {},
       /**
