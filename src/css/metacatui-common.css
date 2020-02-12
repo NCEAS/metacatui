@@ -5862,6 +5862,9 @@ Editor View
   margin-left: 40px;
   height: 100%;
 }
+#editor-header .editor-controls:empty{
+  display: none;
+}
 #editor-header .editor-controls .btn{
   align-self: center;
   margin-top: 14px;

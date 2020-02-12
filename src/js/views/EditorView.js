@@ -131,27 +131,31 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     * Adds top-level control elements to this editor. For example, a Share button for editing the access policy
     */
     renderEditorControls: function(){
-      //Check if the Share button is already on the page
-      if( !this.$(".access-policy-control").length ){
-        //If it isn't, then add it to the page.
-        //Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
-        this.$(".editor-controls").prepend( $(document.createElement("a"))
-                                              .attr("href", "#")
-                                              .addClass("access-policy-control btn")
-                                              .append(
-                                                $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
-                                                "Share") );
-      }
+      //If the AccessPolicy editor is enabled, add a button for opening it
+      if( MetacatUI.appModel.get("allowAccessPolicyChanges")){
 
-      //Check if the AccessPolicyView container is already on the page
-      if( !this.$(".access-policy-view-container").length ){
-        //If not, create one and add it to the page. It will be a modal window.
-        this.$(".editor-controls").append( $(document.createElement("div"))
-                                             .addClass("access-policy-view-container modal")
-                                             .attr("id", "editor-access-policy-modal") );
+        //Check if the Share button is already on the page
+        if( !this.$(".access-policy-control").length ){
+          //If it isn't, then add it to the page.
+          //Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
+          this.$(".editor-controls").prepend( $(document.createElement("a"))
+                                                .attr("href", "#")
+                                                .addClass("access-policy-control btn")
+                                                .append(
+                                                  $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
+                                                  "Share") );
+        }
 
-        //Add attributes to the access policy control button that will make it open a modal window
-        this.$(".access-policy-control").attr("href", "#" + this.accessPolicyModalID);
+        //Check if the AccessPolicyView container is already on the page
+        if( !this.$(".access-policy-view-container").length ){
+          //If not, create one and add it to the page. It will be a modal window.
+          this.$(".editor-controls").append( $(document.createElement("div"))
+                                               .addClass("access-policy-view-container modal")
+                                               .attr("id", "editor-access-policy-modal") );
+
+          //Add attributes to the access policy control button that will make it open a modal window
+          this.$(".access-policy-control").attr("href", "#" + this.accessPolicyModalID);
+        }
       }
     },
 
@@ -162,6 +166,11 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     showAccessPolicy: function(e){
 
       try{
+
+        //If the AccessPolicy editor is disabled in this app, then exit now
+        if( !MetacatUI.appModel.get("allowAccessPolicyChanges")){
+          return;
+        }
 
         //If the AccessPolicyView hasn't been rendered yet, then render it now
         if( !this.$(".access-policy-view").length ){
@@ -190,6 +199,12 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     */
     renderAccessPolicy: function(){
       try{
+
+        //If the AccessPolicy editor is disabled in this app, then exit now
+        if( !MetacatUI.appModel.get("allowAccessPolicyChanges")){
+          return;
+        }
+
         var thisView = this;
         require(['views/AccessPolicyView'], function(AccessPolicyView){
 
