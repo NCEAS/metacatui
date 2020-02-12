@@ -208,6 +208,9 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
       //Add the AccessRule to the AccessPolicy
       this.collection.push(accessRule);
 
+      //Get the name for this new person or group
+      accessRule.getSubjectInfo();
+
       //Render a new empty row
       this.addEmptyRow();
 
