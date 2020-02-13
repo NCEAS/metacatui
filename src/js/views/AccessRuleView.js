@@ -184,9 +184,18 @@ function(_, $, Backbone, AccessRule){
               icon = $(document.createElement("i")).addClass("icon icon-on-left icon-user");
             }
 
-            //Create an element for the name - or subject, as a backup
-            var name = $(document.createElement("span")).text( this.model.get("name") || subject );
-            this.$el.append($(document.createElement("td")).addClass("name").append(icon, name) );
+            //Get the user or group's name - or use the subject, as a backup
+            var name = this.model.get("name") || subject;
+
+            //Display "You" next to the user's own name, for extra helpfulness
+            if( subject == MetacatUI.appUserModel.get("username") ){
+              name += " (You)";
+            }
+
+            //Create an element for the name
+            var nameEl = $(document.createElement("span")).text(name);
+
+            this.$el.append($(document.createElement("td")).addClass("name").append(icon, nameEl) );
           }
           catch(e){
             console.error("Couldn't render the name column of the AccessRuleView: ", e);
@@ -311,8 +320,15 @@ function(_, $, Backbone, AccessRule){
         return;
       }
 
+      var name = this.model.get("name");
+
+      //Display "You" next to the user's own name, for extra helpfulness
+      if( this.model.get("subject") == MetacatUI.appUserModel.get("username") ){
+        name += " (You)";
+      }
+
       //Find the name element and update the text content
-      this.$(".name span").text( this.model.get("name") );
+      this.$(".name span").text(name);
 
     },
 
