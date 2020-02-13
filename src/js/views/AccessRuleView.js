@@ -77,6 +77,25 @@ function(_, $, Backbone, AccessRule){
           return;
         }
 
+        //Get the subjects that should be hidden
+        var hiddenSubjects = MetacatUI.appModel.get("hiddenSubjectsInAccessPolicy");
+        //If this AccessRule is for a subject that should be hidden,
+        if( Array.isArray(hiddenSubjects) &&
+            _.contains(hiddenSubjects, this.model.get("subject") ) ){
+
+          var usersGroups = _.pluck(MetacatUI.appUserModel.get("isMemberOf"), "groupId");
+
+          //If the current user is not part of this hidden group or is not the hidden user
+          if( !_.contains(hiddenSubjects, MetacatUI.appUserModel.get("username")) &&
+              !_.intersection(hiddenSubjects, usersGroups).length){
+            //Remove this view
+            this.remove();
+            //Exit
+            return;
+          }
+
+        }
+
         if( this.isNew ){
 
           //If we aren't allowing changes to this AccessRule, then don't display

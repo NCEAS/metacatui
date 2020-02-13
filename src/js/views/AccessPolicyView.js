@@ -56,7 +56,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     */
     events: {
       "change .public-toggle-container input" : "togglePrivacy",
-      "click .save"     : "save"
+      "click .save" : "save"
     },
 
     /**

@@ -250,6 +250,14 @@ define(['jquery', 'underscore', 'backbone'],
       */
       allowChangeRightsHolder: true,
 
+      /**
+      * A list of group subjects that will be hidden in the AccessPolicy view to
+      * everyone except those in the group. This is useful for preventing users from
+      * removing repository administrative groups from access policies.
+      * @type {string[]}
+      */
+      hiddenSubjectsInAccessPolicy: [],
+
       // A lookup map of portal names to portal seriesIds
       portalsMap: {},
       /**

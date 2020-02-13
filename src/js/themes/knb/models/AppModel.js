@@ -258,6 +258,14 @@ define(['jquery', 'underscore', 'backbone'],
       */
       allowChangeRightsHolder: true,
 
+      /**
+      * A list of group subjects that will be hidden in the AccessPolicy view to
+      * everyone except those in the group. This is useful for preventing users from
+      * removing repository administrative groups from access policies.
+      * @type {string[]}
+      */
+      hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+
       // A lookup map of portal names to portal seriesIds
       portalsMap: {
         "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",

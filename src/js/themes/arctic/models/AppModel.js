@@ -252,6 +252,14 @@ define(['jquery', 'underscore', 'backbone'],
       */
       allowChangeRightsHolder: true,
 
+      /**
+      * A list of group subjects that will be hidden in the AccessPolicy view to
+      * everyone except those in the group. This is useful for preventing users from
+      * removing repository administrative groups from access policies.
+      * @type {string[]}
+      */
+      hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+
       // A lookup map of portal names to portal seriesIds
       portalsMap: {
           "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb"
