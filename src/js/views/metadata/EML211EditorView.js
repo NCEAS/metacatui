@@ -967,6 +967,8 @@ define(['underscore',
 
           this.subviews = [];
 
+          this.undelegateEvents();
+
         },
 
         /*
