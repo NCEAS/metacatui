@@ -151,7 +151,8 @@ function(_, $, Backbone, AccessRule){
             position: {
               my: "left top",
               at: "left bottom",
-              of: input
+              of: input,
+              collision: "flip"
             },
             appendTo: searchCell,
             minLength: 2
