@@ -3,9 +3,11 @@
   <h3><i class="icon icon-group icon-on-left"></i><%=MetacatUI.appModel.get("accessPolicyName")%></h3>
 </div>
 <div class="modal-body">
-  <div class="public-toggle-container">Public/private toggle will go here</div>
+  <p class="subtle">Give others access to view, edit, and share this <%=(resourceType || "resource")%></p>
 
-  <p>Give others access to view, edit, and share this <%=(resourceType || "resource")%></p>
+  <h4>Public view</h4>
+  <div class="public-toggle-container"></div>
+
   <table class="table table-striped">
     <thead>
       <tr>

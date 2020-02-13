@@ -194,7 +194,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, users can change the AccessPolicy for their objects.
       * @type {boolean}
       */
-      allowAccessPolicyChanges: false,
+      allowAccessPolicyChanges: true,
 
       /**
       * The default Access Policy set on new objects uploaded to the repository.

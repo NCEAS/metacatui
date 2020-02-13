@@ -4,8 +4,9 @@ define(['underscore',
         "models/AccessRule",
         "collections/AccessPolicy",
         "views/AccessRuleView",
-        "text!templates/accessPolicy.html"],
-function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
+        "text!templates/accessPolicy.html",
+        "text!templates/filters/toggleFilter.html"],
+function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, ToggleTemplate){
 
   /**
   * @class AccessPolicyView
@@ -47,14 +48,14 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
     * @type {Underscore.Template}
     */
     template: _.template(Template),
+    toggleTemplate: _.template(ToggleTemplate),
 
     /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
     events: {
-      "click .public"   : "makePublic",
-      "click .private"  : "makePrivate",
+      "change .public-toggle-container input" : "togglePrivacy",
       "click .save"     : "save"
     },
 
@@ -117,6 +118,11 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
         //Iterate over each AccessRule in the AccessPolicy and render a AccessRuleView
         this.collection.each(function(accessRule){
 
+          //Don't display access rules for the public since these are controlled via the public/private toggle
+          if( accessRule.get("subject") == "public" ){
+            return;
+          }
+
           //If this AccessRule is a duplicate of the rightsHolder, remove it from the policy and don't display it
           if( accessRule.get("subject") == dataONEObject.get("rightsHolder") ){
             this.collection.remove(accessRule);
@@ -144,6 +150,19 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
 
         //Show a blank row at the bottom of the table for adding a new Access Rule.
         this.addEmptyRow();
+
+        //Render the private/public toggle
+        this.$(".public-toggle-container").html(
+          this.toggleTemplate({
+            label: "",
+            id: this.collection.id,
+            trueLabel: "Public",
+            falseLabel: "Private"
+          })
+        );
+
+        //If the dataset is public, check the checkbox
+        this.$(".public-toggle-container input").prop("checked", this.collection.isPublic());
 
       }
       catch(e){
@@ -354,24 +373,20 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template){
     },
 
     /**
-    * Makes the AccessPolicy public
+    * Toggles the public-read AccessRule for this resource
     */
-    makePublic: function(){
+    togglePrivacy: function(){
 
-      this.collection.makePublic();
+      //If this AccessPolicy is public already, make it private
+      if( this.collection.isPublic() ){
+        this.collection.makePrivate();
+      }
+      //Otherwise, make it public
+      else{
+        this.collection.makePublic();
+      }
 
-      //TODO: Update this view to indicate it is public
-
-    },
-
-    /**
-    * Makes the AccessPolicy private
-    */
-    makePrivate: function(){
-
-      this.collection.makePrivate();
-
-      //TODO: Update this view to indicate it is private
+      console.log(this.collection.dataONEObject.serializeSysMeta())
 
     },
 
