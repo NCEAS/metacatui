@@ -54,9 +54,6 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     render: function(){
       //Style the body as an Editor
       $("body").addClass("Editor rendering");
-
-      //Render the editor controls
-      this.renderEditorControls();
     },
 
     /**
@@ -128,11 +125,21 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     },
 
     /**
-    * Adds top-level control elements to this editor. For example, a Share button for editing the access policy
+    * Adds top-level control elements to this editor.
     */
     renderEditorControls: function(){
       //If the AccessPolicy editor is enabled, add a button for opening it
       if( MetacatUI.appModel.get("allowAccessPolicyChanges")){
+        this.renderAccessPolicyControl();
+      }
+    },
+
+    /**
+    * Adds a Share button for editing the access policy
+    */
+    renderAccessPolicyControl: function(){
+      //If the AccessPolicy editor is enabled, add a button for opening it
+      if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){
 
         //Check if the Share button is already on the page
         if( !this.$(".access-policy-control").length ){
@@ -155,6 +162,22 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
           //Add attributes to the access policy control button that will make it open a modal window
           this.$(".access-policy-control").attr("href", "#" + this.accessPolicyModalID);
+
+          //Check that this user is authorized to change permissions on this object
+          var  view = this,
+               checkAuthorityOptions = {
+                 onSuccess: function(){
+                   return;
+                 },
+                 onError: function(){
+                   //Disable the button for the AccessPolicyView if the user is not authorized
+                   view.$(".access-policy-control").attr("disabled", "disabled")
+                                                   .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
+                                                   .addClass("disabled");
+                 }
+          }
+          //Check the user's authority to change permissions on this object
+          this.model.checkAuthority("changePermission", checkAuthorityOptions);
         }
       }
     },
@@ -168,7 +191,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       try{
 
         //If the AccessPolicy editor is disabled in this app, then exit now
-        if( !MetacatUI.appModel.get("allowAccessPolicyChanges")){
+        if( !MetacatUI.appModel.get("allowAccessPolicyChanges") || this.$(".access-policy-control").attr("disabled") == "disabled" ){
           return;
         }
 

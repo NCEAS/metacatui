@@ -740,11 +740,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
          * if the current user has authorization to perform. This function doesn't return
          * the result of the check, but it sends an XHR, updates this model, and triggers a change event.
          */
-        checkAuthority: function(action){
+        checkAuthority: function(action, options){
 
           // return false - if neither PID nor SID is present to check the authority
           if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
             return false;
+          }
+
+          if( typeof options == "undefined" ){
+            var options = {};
           }
 
           // If PID is not present - check authority with seriesId
@@ -759,24 +763,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           if(!authServiceUrl)
             return false;
 
+          var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+                model.set("isAuthorized", true);
+                model.trigger("change:isAuthorized");
+              },
+              onError = options.onError || function(xhr, textStatus, errorThrown){
+                if(errorThrown == 404){
+                  model.set("notFound", true);
+                  model.trigger("notFound");
+                }
+                else{
+                  model.set("isAuthorized", false);
+                }
+              };
+
           var model = this;
           var requestSettings = {
             url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
-
             type: "GET",
-            success: function(data, textStatus, xhr) {
-              model.set("isAuthorized", true);
-              model.trigger("change:isAuthorized");
-            },
-            error: function(xhr, textStatus, errorThrown) {
-              if(errorThrown == 404){
-                model.set("notFound", true);
-                model.trigger("notFound");
-              }
-              else{
-                model.set("isAuthorized", false);
-              }
-            }
+            success: onSuccess,
+            error: onError
           }
           $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 

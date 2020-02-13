@@ -2829,6 +2829,9 @@ img[src*="googleapis.com/"].georegion-map{
   margin-left: 0px;
   display: none;
 }
+.access-policy-control.disabled{
+  cursor: not-allowed;
+}
 .access-policy-view h4{
   font-size: 1em;
   font-weight: bold;
@@ -2897,6 +2900,10 @@ img[src*="googleapis.com/"].georegion-map{
 /* Editor navigation (tabs) */
 .section-links-container{
   margin-bottom: 0px;
+}
+.section-links-toggle-container{
+  padding-left: 40px;
+  padding-right: 40px;
 }
 .port-editor-sections .section-link-container{
   border-right: 1px solid #CCC;
@@ -3817,10 +3824,10 @@ i.toc-sub-item{
 
 .portal-editor #portal-section-tabs .section-link-container{
   border-width: 1px 1px 0px 1px;
-  border-color: #333;
+  border-color: #FFF;
   border-style: solid;
-  border-top-right-radius: 3px;
-  border-top-left-radius: 3px;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
 	height: 36px;
 }
 .portal-editor #portal-section-tabs .section-link-container.hidden-section{
@@ -3833,6 +3840,7 @@ i.toc-sub-item{
 
 .portal-editor #portal-section-tabs .section-link-container.active{
   background-color: #FFF;
+  border-color: #CCC;
 }
 .portal-view #portal-section-tabs .section-link-container.active{
   background-color: #2c7e90; /* Back-up color for IE */
