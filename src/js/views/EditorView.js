@@ -161,7 +161,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
                                                .attr("id", "editor-access-policy-modal") );
 
           //Add attributes to the access policy control button that will make it open a modal window
-          this.$(".access-policy-control").attr("href", "#" + this.accessPolicyModalID);
+          this.$(".access-policy-control").attr("href", "#");
 
           //Check that this user is authorized to change permissions on this object
           var  view = this,
@@ -202,8 +202,10 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
         //Show the element containing the AccessPolicyView
         if( this.$(".access-policy-view-container").attr("id") == this.accessPolicyModalID ){
+
           //If it's in a modal window, then activate and show the modal
           this.$(".access-policy-view-container").modal().modal("show");
+
         }
         else{
           //Unhide the element, in case it's hidden
