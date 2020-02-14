@@ -54,6 +54,8 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
               accessRuleModel.set( accessRuleModel.defaults() );
               //Parse the AccessRule model and update the model attributes
               accessRuleModel.set( accessRuleModel.parse(accessRuleXML) );
+              //Save a reference to the DataONEObbject
+              accessRuleModel.set("dataONEObject", this.dataONEObject);
 
       			}, this);
 
@@ -76,7 +78,9 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
             //For each access policy in the AppModel, create an AccessRule model
             _.each(MetacatUI.appModel.get("defaultAccessPolicy"), function(accessRule){
 
-               this.add( new AccessRule(accessRule) );
+              accessRule.dataONEObject = this.dataONEObject;
+
+              this.add( new AccessRule(accessRule) );
 
             }, this);
 
@@ -141,7 +145,8 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
               //Create an access rule that denies public read
               var publicDeny = new AccessRule({
                 subject: "public",
-                read: false
+                read: false,
+                dataONEObject: this.dataONEObject
               });
               //Add this access rule
               this.add(publicDeny);
@@ -181,7 +186,8 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
               //Create an access rule that allows public read
               var publicAllow = new AccessRule({
                 subject: "public",
-                read: true
+                read: true,
+                dataONEObject: this.dataONEObject
               });
               //Add this access rule
               this.add(publicAllow);
@@ -305,6 +311,21 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
             catch(e){
               console.error("Error getting the owners of this AccessPolicy: ", e);
             }
+          },
+
+          replaceRightsHolder: function(){
+            var owner = this.findWhere({ changePermission: true });
+
+            //Make sure the owner model was found
+            if( !owner ){
+              return;
+            }
+
+            //Set this other owner as the rightsHolder
+            this.dataONEObject.set("rightsHolder", owner.get("subject"));
+
+            //Remove them as an AccessRule in the AccessPolicy
+            this.remove(owner);
           }
 
       });

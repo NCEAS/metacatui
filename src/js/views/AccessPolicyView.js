@@ -56,7 +56,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     */
     events: {
       "change .public-toggle-container input" : "togglePrivacy",
-      "click .save" : "save"
+      "click .save" : "save",
+      "click .access-rule .remove" : "handleRemove"
     },
 
     /**
@@ -186,7 +187,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
         //Create a new AccessRule model and add to the collection
         var accessRule = new AccessRule({
-          read: true
+          read: true,
+          dataONEObject: this.collection.dataONEObject
         });
 
         //Create a new AccessRuleView
@@ -291,6 +293,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
     /**
     * Checks that there is at least one owner of this resource, and displays a warning message if not.
+    * @param {AccessRule} accessRuleModel
     */
     checkForOwners: function(accessRuleModel){
 
@@ -318,7 +321,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
           if( !this.collection.hasOwner() ){
 
             //If there is no rightsHolder either, then make this person the rightsHolder
-            // or ff this is the rightsHolder, keep them the rightsHolder
+            // or if this is the rightsHolder, keep them the rightsHolder
             if( !rightsHolder || rightsHolder == accessRuleModel.get("subject")){
 
               //Change this access rule back to an ownership level, since there needs to be at least one owner per object
@@ -328,13 +331,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
                 "changePermission" : true
               });
 
-              //Show warning message
-              var msgContainer = this.$(".modal-body").length? this.$(".modal-body") : this.$el;
-              MetacatUI.appView.showAlert("At least one person or group needs to be an owner of this " + this.resourceType + ".",
-                                          "alert-warning",
-                                          msgContainer,
-                                          2000,
-                                          { remove: true });
+              this.showOwnerWarning();
 
               if( !rightsHolder ){
                 this.collection.dataONEObject.set("rightsHolder", accessRuleModel.get("subject"));
@@ -350,18 +347,12 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
           // demote that subject as the rightsHolder, and replace with another subject
           else if( rightsHolder == accessRuleModel.get("subject") ){
 
-            var otherOwner = this.collection.findWhere({ changePermission: true });
+            //Replace the rightsHolder with a different subject with ownership permissions
+            this.collection.replaceRightsHolder();
 
-            //Make sure another owner model was found
-            if( !otherOwner ){
-              return;
-            }
-
-            //Set this other owner as the rightsHolder
-            this.collection.dataONEObject.set("rightsHolder", otherOwner.get("subject"));
-            //Remove them as an AccessRule in the AccessPolicy
-            this.collection.remove(otherOwner);
+            //Add the old rightsHolder AccessRule to the AccessPolicy
             this.collection.add(accessRuleModel);
+
           }
         }
 
@@ -370,6 +361,67 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         console.error("Could not check that there are owners in this access policy: ", e);
       }
 
+    },
+
+    /**
+    * Checks that there is at least one owner of this resource, and displays a warning message if not.
+    * @param {Event} e
+    */
+    handleRemove: function(e){
+
+      var accessRuleModel = $(e.target).parents(".access-rule").data("model");
+
+      //Get the rightsHolder for this resource
+      var rightsHolder;
+      if( this.collection.dataONEObject && this.collection.dataONEObject.get("rightsHolder") ){
+        rightsHolder = this.collection.dataONEObject.get("rightsHolder");
+      }
+
+      //If the rightsHolder was just removed,
+      if( rightsHolder == accessRuleModel.get("subject") ){
+
+        //If changing the rightsHolder is disabled, we don't need to check for owners,
+        // since the rightsHolder will always be the owner.
+        if( !MetacatUI.appModel.get("allowChangeRightsHolder") || !MetacatUI.appModel.get("displayRightsHolderInAccessPolicy") ){
+          return;
+        }
+
+        //If there is another owner of this resource
+        if( this.collection.hasOwner() ){
+
+          //Replace the rightsHolder with a different subject with ownership permissions
+          this.collection.replaceRightsHolder();
+
+          var accessRuleView = $(e.target).parents(".access-rule").data("view");
+          if( accessRuleView ){
+            accessRuleView.remove();
+          }
+
+        }
+        //If there are no other owners of this dataset, keep this person as the rightsHolder
+        else{
+          this.showOwnerWarning();
+        }
+
+      }
+      else{
+        //Remove the AccessRule from the AccessPolicy
+        this.collection.remove(accessRuleModel);
+      }
+
+    },
+
+    /**
+    * Displays a warning message in this view that the object needs at least one owner.
+    */
+    showOwnerWarning: function(){
+      //Show warning message
+      var msgContainer = this.$(".modal-body").length? this.$(".modal-body") : this.$el;
+      MetacatUI.appView.showAlert("At least one person or group needs to be an owner of this " + this.resourceType + ".",
+                                  "alert-warning",
+                                  msgContainer,
+                                  2000,
+                                  { remove: true });
     },
 
     /**
@@ -385,8 +437,6 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
       else{
         this.collection.makePublic();
       }
-
-      console.log(this.collection.dataONEObject.serializeSysMeta())
 
     },
 
@@ -413,6 +463,10 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
     },
 
+    /**
+    * Show visual cues in this view to show the user the status of the system metadata update.
+    * @param {DataONEObject} dataONEObject - The object being updated
+    */
     showSaveProgress: function(dataONEObject){
       if( !dataONEObject ){
         return;

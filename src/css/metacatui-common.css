@@ -5622,6 +5622,7 @@ a.disabled {
   white-space: nowrap;
   text-overflow: ellipsis;
   padding: 0px 5px;
+  width: 100%;
 }
 .ui-autocomplete .ui-menu-item:hover{
   background-color: #DDD;

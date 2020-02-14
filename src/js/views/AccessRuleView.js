@@ -49,7 +49,6 @@ function(_, $, Backbone, AccessRule){
     * @type {Object}
     */
     events: {
-      "click    .remove"              : "handleRemove",
       "keypress .search input"        : "listenForEnter",
       "click    .add.icon"            : "updateModel",
       "change   .access select"       : "updateModel"
@@ -301,6 +300,13 @@ function(_, $, Backbone, AccessRule){
         //Listen to changes on the access options and update the view if they are changed
         this.listenTo(this.model, "change:read change:write change:changePermission", this.updateAccessDisplay);
 
+        //When the model is removed from the collection, remove this view
+        this.listenTo(this.model, "remove", this.onRemove);
+
+        //Attach the AccessRule model to the view element
+        this.$el.data("model", this.model);
+        this.$el.data("view", this);
+
       }
       catch(e){
         console.error(e);
@@ -428,11 +434,12 @@ function(_, $, Backbone, AccessRule){
     /**
     * Remove this AccessRule from the AccessPolicy
     */
-    handleRemove: function(){
+    onRemove: function(){
 
-      //Trigger the custom "removeMe" event so the AccessRule associated with this view
-      // will be removed from it's corresponding AccessPolicy
-      this.model.trigger("removeMe", this.model);
+      //If it is the rightsHolder of the object, don't remove the view
+      if(this.model.get("dataONEObject") && this.model.get("dataONEObject").get("rightsHolder") == this.model.get("subject")){
+        return;
+      }
 
       //Remove this view from the page
       this.remove();
