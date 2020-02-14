@@ -36,9 +36,20 @@ define(['jquery', 'underscore', 'backbone'],
       // set this variable to true, if the content being published is moderated by the data team.
       contentIsModerated: false,
 
-      // Flag which, when true shows Whole Tale features in the UI
+      /**
+       * Flag which, when true shows Whole Tale features in the UI
+       * @type {Boolean}
+       */
       showWholeTaleFeatures: false,
+      /**
+       * The environments that are exposed to DataONE users
+       * @type {Array}
+       */
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
+      /**
+      * The Whole Tale endpoint that handles users
+      * @type {String}
+      */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
