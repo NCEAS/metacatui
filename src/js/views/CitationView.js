@@ -33,6 +33,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
         this.isCollection = this.metadata.getType() == "collection" || this.metadata.getType() == "portal";
       }
 
+      if( !this.metadata ){
+        this.metadata = this.model;
+      }
+
     },
 
     tagName : "cite",
