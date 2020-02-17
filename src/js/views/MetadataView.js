@@ -1137,9 +1137,10 @@ define(['jquery',
     let self=this;
     MetacatUI.appModel.get('taleEnvironments').forEach(function(environment){
       var queryParams=
-      '?uri='+ self.model.id +
+      '?uri='+ window.location.href+
       '&title='+encodeURIComponent(self.model.get("title"))+
-      '&environment='+environment;
+      '&environment='+environment+
+      '&api='+MetacatUI.appModel.get("d1CNBaseUrl")+MetacatUI.appModel.get("d1CNService");
       var composeUrl = MetacatUI.appModel.get('dashboardUrl')+queryParams;
       var anchor = $('<a>');
       anchor.attr('href',composeUrl).append(
