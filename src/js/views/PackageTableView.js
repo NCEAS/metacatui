@@ -470,7 +470,55 @@ define(['jquery', 'underscore', 'backbone',
 			this.$(".collapse-control").fadeOut(function(){
 				view.$(".expand-control").fadeIn();
 			});
-		}
+		},
+
+    checkForPrivateMembers: function(){
+      try{
+        var packageModel      = this.model,
+            packageCollection = this.dataPackageCollection;
+
+        if( !packageModel || !packageCollection ){
+          return;
+        }
+
+        //Get the number of package members found in Solr and parsed from the RDF XML
+        var numMembersFromSolr = packageModel.get("members").length,
+            numMembersFromRDF  = packageCollection.length;
+
+        //If there are more package members in the RDF XML tthan found in SOlr, we
+        // can assume that those objects are private.
+        if( numMembersFromRDF > numMembersFromSolr ){
+          var downloadButtons = this.$(".btn.download");
+
+          for( var i=0; i<downloadButtons.length; i++){
+
+            var btn = downloadButtons[i];
+
+            //Find the Download All button for the package
+            var downloadURL = $(btn).attr("href");
+            if( downloadURL.indexOf(packageModel.get("id")) > -1 ||
+                downloadURL.indexOf( encodeURIComponent(packageModel.get("id"))) > -1 ){
+
+              //Disable this download button
+              $(btn).attr("disabled", "disabled")
+                    .addClass("disabled")
+                    .attr("href", "")
+                    .tooltip({
+                      trigger: "hover",
+                      placement: "top",
+                      delay: 500,
+                      title: "This dataset may contain private data, so each data file should be downloaded individually."
+                    });
+
+              i = downloadButtons.length;
+            }
+          }
+        }
+      }
+      catch(e){
+        console.error(e);
+      }
+    }
 
 		/*showDownloadProgress: function(e){
 			e.preventDefault();

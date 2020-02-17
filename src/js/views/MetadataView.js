@@ -166,6 +166,12 @@ define(['jquery',
         // parseProv triggers "queryComplete"
         this.dataPackage.parseProv();
         this.checkForProv();
+
+        var packageTableView = _.findWhere(this.subviews, { type: "PackageTable"});
+        if( packageTableView ){
+          packageTableView.dataPackageCollection = this.dataPackage;
+          packageTableView.checkForPrivateMembers();
+        }
       });
     },
     /*

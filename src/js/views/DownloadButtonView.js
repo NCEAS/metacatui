@@ -63,6 +63,16 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
 		download: function(e){
 
+      // Checking if the Download All button is disabled because the package is too large
+      var isDownloadDisabled = (this.$el.attr("disabled") === "disabled" || this.$el.is(".disabled")) ? true : false;
+
+      // Do nothing if the `disabled` attribute is set!.
+      // If the download is already in progress, don't try to download again
+      if(isDownloadDisabled || this.$el.is(".in-progress")) {
+        e.preventDefault();
+        return;
+      }
+
       //If the user isn't logged in, let the browser handle the download normally
       if( MetacatUI.appUserModel.get("tokenChecked") && !MetacatUI.appUserModel.get("loggedIn") ){
         return;
@@ -96,18 +106,6 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       }
 
       e.preventDefault();
-
-      // Checking if the Download All button is disabled because the package is too large
-      var isDownloadDisabled = (this.$el.attr("disabled") === "disabled") ? true : false;
-
-      // Do nothing if the `disabled` attribute is set!.
-      if(isDownloadDisabled) {
-        return;
-      }
-
-      // If the download is already in progress, don't try to download again
-      if(this.$el.is(".in-progress"))
-        return true;
 
       //Show that the download has started
       this.$el.addClass("in-progress");
