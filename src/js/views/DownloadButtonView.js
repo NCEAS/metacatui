@@ -21,7 +21,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		render: function(){
 			//Add the href and id attributes
 			this.$el.attr("href", this.model.get("url"))
-					.attr("data-id", this.model.get("id"));
+					.attr("data-id", this.model.get("id"))
+          .attr("download", this.model.get("fileName") || "");
+
+      //Check for CORS downloads. For CORS, the 'download' attribute may not work,
+      // so open in a new tab.
+      if( this.model.get("url").indexOf(window.location.origin) == -1 ){
+        this.$el.attr("target", "_blank");
+      }
 
 			//For packages
 			if(this.model.type == "Package"){
@@ -55,59 +62,91 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		},
 
 		download: function(e){
-			e.preventDefault();
 
-			// Checking if the Download All button is disabled because the package is too large
-			var isDownloadDisabled = (this.$el.attr("disabled") === "disabled") ? true : false;
+      //If the user isn't logged in, let the browser handle the download normally
+      if( MetacatUI.appUserModel.get("tokenChecked") && !MetacatUI.appUserModel.get("loggedIn") ){
+        return;
+      }
+      //If the authentication hasn't been checked yet, wait for it
+      else if( !MetacatUI.appUserModel.get("tokenChecked") ){
+        var view = this;
+        this.listenTo(MetacatUI.appUserModel, "change:tokenChecked", function(){
+          view.download(e);
+        });
+        return;
+      }
+      //If the user is logged in but the object is public, download normally
+      else if( this.model.get("isPublic") ){
 
-			// Do nothing if the `disabled` attribute is set!.
-			if(isDownloadDisabled) {
-				return;
-			}
+        //If this is a "Download All" button for a package, and at least object is private, then
+        // we need to download via XHR with credentials
+        if( this.model.type == "Package" ){
+          //If we found a private object, download the package via XHR so we can send the auth token.
+          var privateObject = _.find(this.model.get("members"), function(m){ return m.get("isPublic") !== true; });
+          //If no private object is found, download normally.
+          // This may still fail when there is a private object that the logged-in user doesn't have access to.
+          if( !privateObject ){
+            return;
+          }
+        }
+        //All other object types (data and metadata objects) can be downloaded normally
+        else{
+          return;
+        }
+      }
 
+      e.preventDefault();
 
-			// Perform the download procedure otherwise
-			if(this.$el.is(".in-progress"))
-				return true;
+      // Checking if the Download All button is disabled because the package is too large
+      var isDownloadDisabled = (this.$el.attr("disabled") === "disabled") ? true : false;
 
-			//Show that the download has started
-			this.$el.addClass("in-progress");
-			var buttonHTML = this.$el.html();
-			this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
+      // Do nothing if the `disabled` attribute is set!.
+      if(isDownloadDisabled) {
+        return;
+      }
 
-			//If we found a model, fire the download event
-			this.model.downloadWithCredentials();
+      // If the download is already in progress, don't try to download again
+      if(this.$el.is(".in-progress"))
+        return true;
 
-			this.listenToOnce(this.model, "downloadComplete", function(){
+      //Show that the download has started
+      this.$el.addClass("in-progress");
+      var buttonHTML = this.$el.html();
+      this.$el.html("Downloading... <i class='icon icon-on-right icon-spinner icon-spin'></i>");
 
-				//Show that the download is complete
-				this.$el.html("Complete <i class='icon icon-on-right icon-ok'></i>")
-						.addClass("complete")
-						.removeClass("in-progress error");
+      //Fire the download event via the SolrResult model
+      this.model.downloadWithCredentials();
 
-				var view = this;
+      this.listenToOnce(this.model, "downloadComplete", function(){
 
-				//Put the download button back to normal
-				setTimeout(function(){
+        //Show that the download is complete
+        this.$el.html("Complete <i class='icon icon-on-right icon-ok'></i>")
+            .addClass("complete")
+            .removeClass("in-progress error");
 
-					//After one second, change the background color with an animation
-					view.$el.removeClass("complete")
-						.html(buttonHTML);
-				}, 2000);
+        var view = this;
 
-			});
+        //Put the download button back to normal
+        setTimeout(function(){
+
+          //After one second, change the background color with an animation
+          view.$el.removeClass("complete")
+            .html(buttonHTML);
+        }, 2000);
+
+      });
 
       this.listenToOnce(this.model, "downloadError", function(){
-				//Show that the download failed to compelete.
-				this.$el.html("Error <i class='icon icon-on-right icon-warning-sign'></i>")
-						.addClass("error")
-						.removeClass("in-progress")
-            .tooltip({
-              trigger: "hover",
-              placement: "top",
-              title: "Something went wrong while trying to download. Click to try again."
-            });
-			});
+          //Show that the download failed to compelete.
+          this.$el.html("Error <i class='icon icon-on-right icon-warning-sign'></i>")
+              .addClass("error")
+              .removeClass("in-progress")
+              .tooltip({
+                trigger: "hover",
+                placement: "top",
+                title: "Something went wrong while trying to download. Click to try again."
+              });
+        });
 		}
 	});
 
