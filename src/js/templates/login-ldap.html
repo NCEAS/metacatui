@@ -5,7 +5,7 @@ method="post"
 
     <h5>Sign in with an existing account</h5>
   <div class="control-group">
-    <input type="text" class="input" name="usernameVisible" placeholder="Username" required />
+    <input type="text" class="input" name="usernameVisible" placeholder="Username" required autocomplete="username" />
     <input type="hidden" class="input" name="username" />
   </div>
   <div class="control-group">
@@ -27,7 +27,7 @@ method="post"
     </select>
   </div>
   <div class="control-group">
-    <input type="password" class="input" name="password" placeholder="Password" required />
+    <input type="password" class="input" name="password" placeholder="Password" required autocomplete="current-password" />
   </div>
   <div class="control-group">
     <input type="submit" class="btn btn-primary submit ldap" value="Sign In" id="loginLdap" />

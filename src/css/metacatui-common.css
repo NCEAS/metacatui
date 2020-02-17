@@ -5069,13 +5069,6 @@ body.mapMode{
 	background-color:#e6e6e6;
 	color: #333;
 }
-.btn.download[disabled], .btn-primary.download[disabled]:hover{
-	min-width: 105px;
-}
-
-a.disabled {
-	pointer-events: none;
-}
 
 /********* Filter Views ***********/
 .portal-view .filter-group{
