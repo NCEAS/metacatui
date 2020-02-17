@@ -34,6 +34,20 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 			if(this.model.type == "Package"){
 				this.$el.text("Download All")
 						.addClass("btn-primary");
+
+        //if the Package Model has no Solr index document associated with it, then we
+        // can assume the resource map object is private. So disable the download button.
+        if( !this.model.get("indexDoc") ){
+          this.$el.attr("disabled", "disabled")
+                  .addClass("disabled")
+                  .attr("href", "")
+                  .tooltip({
+                    trigger: "hover",
+                    placement: "top",
+                    delay: 500,
+                    title: "This dataset may contain private data, so each data file should be downloaded individually."
+                  });
+        }
 			}
 			//For individual DataONEObjects
 			else{
