@@ -82,7 +82,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					});
 					metricsModel.fetch();
 					this.metricsModel = metricsModel;
-
 				}
 
 			}
@@ -93,22 +92,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			//Clear the page
 			this.$el.html("");
-
-			var view  = this;
-
-			if (this.userType == "portal" || this.userType === "repository") {
-				if (this.metricsModel.get("totalViews") !== null) {
-					this.renderMetrics();
-				}
-				else{
-
-					// render metrics on fetch success.
-					this.listenTo(view.metricsModel, "sync" , this.renderMetrics);
-
-					// in case when there is an error for the fetch call.
-					this.listenTo(view.metricsModel, "error", this.renderUsageMetricsError);
-				}
-			}
 
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
@@ -174,7 +157,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}));
 		}
 
-      	this.$el.data("view", this);
+		this.$el.data("view", this);
+
+			var view  = this;
+
+			if (this.userType == "portal" || this.userType === "repository") {
+				if (this.metricsModel.get("totalViews") !== null) {
+					this.renderMetrics();
+				}
+				else{
+					// render metrics on fetch success.
+					this.listenTo(view.metricsModel, "sync" , this.renderMetrics);
+
+					// in case when there is an error for the fetch call.
+					this.listenTo(view.metricsModel, "error", this.renderUsageMetricsError);
+				}
+			}
 
 		//Start retrieving data from Solr
 		this.model.getAll();
@@ -287,28 +285,28 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			viewEl.html(this.drawMetricsChart(metricName));
 		},
 
-		// Currently only being used for portals
-        drawMetricsChart: function(metricName){
-
-            var metricNameLemma = metricName.toLowerCase()
-            var metricMonths    = this.metricsModel.get("months");
-            var metricCount     = this.metricsModel.get(metricNameLemma);
-            var chartEl         = document.getElementById('user-'+metricNameLemma+'-chart' );
             var width           = chartEl? chartEl.offsetWidth : 600;
-            var viewType        = this.userType;
+		// Currently only being used for portals and profile views
+		drawMetricsChart: function(metricName){
+			var metricNameLemma = metricName.toLowerCase()
+			var metricMonths    = this.metricsModel.get("months");
+			var metricCount     = this.metricsModel.get(metricNameLemma);
+			var chartEl         = document.getElementById('user-'+metricNameLemma+'-chart' );
+			var width           = chartEl? chartEl.offsetWidth : 600;
+			var viewType        = this.userType;
 
-            // Draw a metric chart
-            var modalMetricChart = new MetricsChart({
-                            id: metricNameLemma + "-chart",
-                            metricCount: metricCount,
-                            metricMonths: metricMonths,
-                            type: viewType,
-                            metricName: metricName,
-                            width: width
-			            });
+			// Draw a metric chart
+			var modalMetricChart = new MetricsChart({
+														id: metricNameLemma + "-chart",
+														metricCount: metricCount,
+														metricMonths: metricMonths,
+														type: viewType,
+														metricName: metricName,
+														width: width
+			});
 
-            return modalMetricChart.render().el;
-        },
+			return modalMetricChart.render().el;
+		},
 
 		drawDataCountChart: function(){
 			var dataCount = this.model.get('dataCount');
