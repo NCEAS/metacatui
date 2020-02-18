@@ -285,7 +285,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			viewEl.html(this.drawMetricsChart(metricName));
 		},
 
-            var width           = chartEl? chartEl.offsetWidth : 600;
 		// Currently only being used for portals and profile views
 		drawMetricsChart: function(metricName){
 			var metricNameLemma = metricName.toLowerCase()
