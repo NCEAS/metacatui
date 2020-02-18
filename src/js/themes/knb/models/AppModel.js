@@ -132,7 +132,13 @@ define(['jquery', 'underscore', 'backbone'],
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
 
       // Metrics endpoint url
-      metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/test/metrics',
+      metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
+
+      // Metrics Falgs for the /profile view (summary view)
+      hideSummaryCitationsChart: false,
+      hideSummaryDownloadsChart: false,
+      hideSummaryMetadataAssessment: true,
+      hideSummaryViewsChart: false,
 
       // Metrics flags for the Dataset Landing Page
       // Enable these flags to enable metrics display

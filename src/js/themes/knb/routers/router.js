@@ -44,18 +44,15 @@ function($, _, Backbone, BaseRouter) {
     
           if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
             this.routeHistory.push("summary");
-    
-            var viewOptions = { nodeId: "urn:node:KNB" };
+
+            // flag indicating /profile view
+            var viewOptions = { nodeSummaryView: true };
     
             if(!MetacatUI.appView.statsView){
     
               require(['views/StatsView'], function(StatsView){
                 MetacatUI.appView.statsView = new StatsView({
-                  userType: "repository",
-                  hideMetadataAssessment: true,
-                  hideCitationsChart: false,
-                  hideDownloadsChart: false,
-                  hideViewsChart: false
+                  userType: "repository"
                 });
     
                 MetacatUI.appView.showView(MetacatUI.appView.statsView, viewOptions);

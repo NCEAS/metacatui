@@ -57,7 +57,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if ( !options )
 				options = {};
 
-			var nodeId = (typeof options.nodeId === "undefined") ? "undefined" : options.nodeId;
+			if ( options.nodeSummaryView ) {
+				var nodeId = MetacatUI.appModel.get("nodeId");
+
+				// Overwrite the metrics display flags as set in the AppModel
+				this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
+				this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
+				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
+				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
+			}
 				
 			if ( typeof this.metricsModel === "undefined" ) {
 
@@ -86,15 +94,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Clear the page
 			this.$el.html("");
 
+			var view  = this;
+
 			if (this.userType == "portal" || this.userType === "repository") {
 				if (this.metricsModel.get("totalViews") !== null) {
 					this.renderMetrics();
 				}
 				else{
-					this.listenTo(this.metricsModel, "sync" , this.renderMetrics);
+
+					// render metrics on fetch success.
+					this.listenTo(view.metricsModel, "sync" , this.renderMetrics);
 
 					// in case when there is an error for the fetch call.
-					this.listenTo(this.metricsModel, "error", this.renderUsageMetricsError);
+					this.listenTo(view.metricsModel, "error", this.renderUsageMetricsError);
 				}
 			}
 
