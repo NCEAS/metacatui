@@ -53,7 +53,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		render: function (options) {
-      
+
 			if ( !options )
 				options = {};
 
@@ -66,7 +66,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
 				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
 			}
-				
+
 			if ( typeof this.metricsModel === "undefined" ) {
 
 				if( nodeId !== "undefined" ) {
@@ -285,7 +285,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			viewEl.html(this.drawMetricsChart(metricName));
 		},
 
-            var width           = chartEl? chartEl.offsetWidth : 600;
 		// Currently only being used for portals and profile views
 		drawMetricsChart: function(metricName){
 			var metricNameLemma = metricName.toLowerCase()
