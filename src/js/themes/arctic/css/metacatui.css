@@ -1193,7 +1193,6 @@ svg .domain{
 }
 .line-chart-label.bg{
 	stroke-width: 2px;
-	fill: #FFF;
 	stroke: #FFF;
 	opacity: 0.8;
 }
