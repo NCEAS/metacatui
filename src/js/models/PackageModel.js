@@ -172,7 +172,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 					//Separate the resource maps from the data/metadata objects
 					_.each(data.response.docs, function(doc){
 						if(doc.id == model.get("id")){
-							model.indexDoc = doc;
+							model.set("indexDoc", doc);
 							model.set(doc);
 							if(model.get("resourceMap") && (options && options.getParentMetadata))
 								model.getParentMetadata();
