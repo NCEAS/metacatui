@@ -44,11 +44,19 @@ define(['jquery', 'underscore', 'backbone'],
       maxDownloadSize: 3000000000,
 
       /**
-      * Flag which, when true shows Whole Tale features in the UI
-      * @type {boolean}
-      */
+       * Flag which, when true shows Whole Tale features in the UI
+       * @type {Boolean}
+       */
       showWholeTaleFeatures: false,
+      /**
+       * The environments that are exposed to DataONE users
+       * @type {Array}
+       */
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
+      /**
+      * The Whole Tale endpoint that handles users
+      * @type {String}
+      */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
 			/**
