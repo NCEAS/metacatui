@@ -834,6 +834,63 @@
 /* Smartphones (portrait) ----------- */
 @media only screen
 and (max-width : 420px) {
+
+  .modal,
+  .access-policy-view-container.modal{
+    top: 5%;
+    width: 90%;
+    left: 5%;
+  }
+  .access-policy-view thead{
+    display: none;
+  }
+  .access-policy-view table,
+  .access-policy-view tbody,
+  .access-policy-view tr,
+  .access-policy-view td{
+    display: block;
+  }
+  .access-policy-view td{
+    border-top-width: 0px;
+  }
+  .access-policy-view .subject{
+    font-size: .8em;
+    color: #999;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    line-height: 1.5em;
+  }
+  .access-policy-view .access{
+    width: 80%;
+    display: inline-block;
+    box-sizing: border-box;
+    padding-top: 0px;
+  }
+  .access-policy-view .remove-rule{
+    width: 20%;
+    display: inline-block;
+    box-sizing: border-box;
+    padding-top: 0px;
+  }
+  .access-policy-view .access-rule{
+    border-bottom: 1px solid #CCC;
+  }
+  .access-policy-view .access-rule.new .access{
+    width: 80%;
+    display: inline-block;
+    box-sizing: border-box;
+  }
+  .access-policy-view .access-rule.new .access select,
+  .access-policy-view .access-rule.new .add-rule .add{
+    margin-top: 0px;
+  }
+  .access-policy-view .access-rule.new .add-rule{
+    width: 20%;
+    display: inline-block;
+    box-sizing: border-box;
+    padding-top: 0px;
+  }
+
 }
 
 /* iPads (portrait and landscape) ----------- */
@@ -875,7 +932,10 @@ and (min-width : 1824px) {
 @media only screen
 and (min-width : 320px)
 and (max-width : 568px) {
-/* STYLES GO HERE */
+  .access-policy-view-container.modal .modal-body,
+  .modal .modal-body{
+    max-height: 350px;
+  }
 }
 
 /* iPhone 5 (landscape)----------- */
