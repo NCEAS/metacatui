@@ -116,6 +116,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         //Show the rightsHolder as an AccessRuleView
         this.showRightsholder();
 
+        var modelsToRemove = [];
+
         //Iterate over each AccessRule in the AccessPolicy and render a AccessRuleView
         this.collection.each(function(accessRule){
 
@@ -126,7 +128,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
           //If this AccessRule is a duplicate of the rightsHolder, remove it from the policy and don't display it
           if( accessRule.get("subject") == dataONEObject.get("rightsHolder") ){
-            this.collection.remove(accessRule);
+            modelsToRemove.push(accessRule);
             return;
           }
 
@@ -145,6 +147,11 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
           this.listenTo(accessRule, "change:read change:write change:changePermission", this.checkForOwners);
 
         }, this);
+
+        //Remove each AccessRule from the AccessPolicy that should be removed.
+        // We don't remove these during the collection.each() function because it
+        // messes up the .each() iteration.
+        this.collection.remove(modelsToRemove);
 
         //Get the subject info for each subject in the AccessPolicy, so we can display names
         this.collection.getSubjectInfo();
