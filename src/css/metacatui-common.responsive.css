@@ -728,6 +728,11 @@
 		width: 100%;
 	}
 
+  /************ Access Policy View *************/
+  .access-policy-view .public-toggle-container .can-toggle{
+    margin: auto;
+  }
+
 
 }
 @media only screen and (max-width : 1300px){

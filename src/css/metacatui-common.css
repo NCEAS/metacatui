@@ -2823,9 +2823,9 @@ img[src*="googleapis.com/"].georegion-map{
   min-height: 30px;
 }
 .access-policy-view-container.modal{
-  width: 50%;
-  min-width: 800px;
-  left: 25%;
+  width: 80%;
+  max-width: 1000px;
+  left: 10%;
   margin-left: 0px;
   display: none;
 }
@@ -2842,6 +2842,7 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .access-rule select{
   width: 100%;
+  min-width: 100px;
   margin-bottom: 0px;
 }
 .access-rule.new input{
