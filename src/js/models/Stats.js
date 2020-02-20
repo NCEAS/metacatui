@@ -42,6 +42,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
 			// complex objects like this
 			// {mdq_composite_d: {"min":0.25,"max":1.0,"count":11,"missing":0,"sum":6.682560903149138,"sumOfSquares":4.8545478685001076,"mean":0.6075055366499217,"stddev":0.2819317507548068}}
+			hideMetadataAssessment: false,
 			mdqStats: {},
 			mdqStatsTotal: {},
       mdqScoresImage: null,
@@ -105,7 +106,13 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 		},
 
 		//This function serves as a shorthand way to get all of the statistics stored in the model
-		getAll: function(){
+		getAll: function(options){
+			if (typeof options === "undefined")
+				var options = {}
+
+			// Utilizing the StatsView flag
+			this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
+
 			//Listen for our responses back from the server before we send requests that require info from the response
 			this.listenToOnce(this, 'change:firstBeginDate', this.getLastEndDate);
 			this.listenToOnce(this, 'change:lastEndDate', this.getCollectionYearFacets);
@@ -120,7 +127,11 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 			this.getFormatTypes();
 
 			this.getDownloadDates();
-            this.getMdqScores();
+
+			// Only get the Mdq scores if the hideMetadataAssessment is set to false
+			if (!this.hideMetadataAssessment)
+				this.getMdqScores();
+
 			//this.getMdqStatsTotal();
 			//this.getDataDownloadDates();
 			//this.getMetadataDownloadDates();

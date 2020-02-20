@@ -175,7 +175,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 
 		//Start retrieving data from Solr
-		this.model.getAll();
+		this.model.getAll({hideMetadataAssessment: this.hideMetadataAssessment});
 
 		return this;
 	},
