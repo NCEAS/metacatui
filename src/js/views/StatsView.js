@@ -65,12 +65,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
 				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
 				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
+
+				// Disable the metrics of the nodeId is not available
+				if (nodeId === "undefined" || nodeId === null) {
+					this.hideCitationsChart = true;
+					this.hideDownloadsChart = true;
+					this.hideViewsChart = true;
+				}
 			}
 
-			if ( typeof this.metricsModel === "undefined" ) {
 
-				if( nodeId !== "undefined" ) {
+			if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
 
+				if ( typeof this.metricsModel === "undefined" ) {
 					// Create a list with the repository ID
 					var pid_list = new Array();
 					pid_list.push(nodeId);
@@ -162,15 +169,17 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var view  = this;
 
 			if (this.userType == "portal" || this.userType === "repository") {
-				if (this.metricsModel.get("totalViews") !== null) {
-					this.renderMetrics();
-				}
-				else{
-					// render metrics on fetch success.
-					this.listenTo(view.metricsModel, "sync" , this.renderMetrics);
+				if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
+					if (this.metricsModel.get("totalViews") !== null) {
+						this.renderMetrics();
+					}
+					else{
+						// render metrics on fetch success.
+						this.listenTo(view.metricsModel, "sync" , this.renderMetrics);
 
-					// in case when there is an error for the fetch call.
-					this.listenTo(view.metricsModel, "error", this.renderUsageMetricsError);
+						// in case when there is an error for the fetch call.
+						this.listenTo(view.metricsModel, "error", this.renderUsageMetricsError);
+					}
 				}
 			}
 
@@ -215,14 +224,23 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
     },
 
 		renderMetrics: function(){
-			this.renderCitationMetric();
-			this.renderDownloadMetric();
-			this.renderViewMetric();
+			if(!this.hideCitationsChart)
+				this.renderCitationMetric();
+
+			if(!this.hideDownloadsChart)
+				this.renderDownloadMetric();
+
+			if(!this.hideViewsChart)
+				this.renderViewMetric();
 
 			var self = this;
 			$(window).on("resize", function(){
-				self.renderDownloadMetric();
-				self.renderViewMetric();
+
+				if(!self.hideDownloadsChart)
+					self.renderDownloadMetric();
+
+				if(!self.hideViewsChart)
+					self.renderViewMetric();
 			});
 		},
 
