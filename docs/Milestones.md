@@ -1,12 +1,12 @@
 # Milestones from MetacatUI prioritization: - ~6 month plan
 
-## 2.9.0 - January 2020
+## 2.9.0 - March 2020
 - Aggregated usage metrics in portals (Rushiraj)
 - Aggregated quality scores in portals (Peter)
-
-## 2.10.0 - February 2020
-- Portal View in the DataONE theme (Lauren)
 - Permissions view in the portal editor (Lauren)
+
+## 2.10.0 - March 2020
+- Portal View in the DataONE theme (Lauren)
 
 ## 2.11.0 - March 2020
 - Improve deployment efficiency and reliability by moving app configuration to a JSON file (Lauren)
