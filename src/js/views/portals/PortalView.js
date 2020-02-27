@@ -126,6 +126,8 @@ define(["jquery",
             initialize: function(options) {
                 // Set the current PortalView properties
                 this.portalId = options.portalId ? options.portalId : undefined;
+                this.model = options.model ? options.model : undefined;
+                this.nodeView = options.nodeView ? options.nodeView : undefined;
                 this.label = options.label ? options.label : undefined;
                 this.activeSection = options.activeSection ? options.activeSection : undefined;
                 this.activeSectionLabel = options.activeSectionLabel ? options.activeSectionLabel : undefined;
@@ -146,24 +148,33 @@ define(["jquery",
                 }));
 
                 // Create a new Portal model
-                this.model = new Portal({
+                if (this.model === undefined || this.model === null) {
+                  this.model = new Portal({
                     seriesId: this.portalId,
                     label: this.label
-                });
+                  });
+                }
+                
+                // If this is a nodeView then directly render portal
+                // do not wait for fetch()
+                if (this.nodeView) {
+                  this.renderPortal();
+                }
+                else {
+                  // When the model has been synced, render the results
+                  this.stopListening();
+                  this.listenToOnce(this.model, "sync", this.renderPortal);
 
-                // When the model has been synced, render the results
-                this.stopListening();
-                this.listenToOnce(this.model, "sync", this.renderPortal);
+                  //If the portal isn't found, display a 404 message
+                  this.listenTo(this.model, "notFound", this.handleNotFound);
 
-                //If the portal isn't found, display a 404 message
-                this.listenTo(this.model, "notFound", this.handleNotFound);
+                  //Listen to errors that might occur during fetch()
+                  this.listenToOnce(this.model, "error", this.showError);
 
-                //Listen to errors that might occur during fetch()
-                this.listenToOnce(this.model, "error", this.showError);
-
-                //Fetch the model
-                this.model.fetch({ objectOnly: true });
-
+                  //Fetch the model
+                  this.model.fetch({ objectOnly: true });
+                }
+                
                 return this;
             },
 
@@ -172,9 +183,11 @@ define(["jquery",
              */
             renderPortal: function() {
 
-
-              // Add edit button if user is authorized
-              this.insertOwnerControls();
+              // only displaying the edit button for non-repository profiles
+              if (!this.nodeView){
+                // Add edit button if user is authorized
+                this.insertOwnerControls();
+              }
 
               // Getting the correct portal label and seriesID
               this.label = this.model.get("label");
@@ -189,7 +202,8 @@ define(["jquery",
 
                 // Render the header view
                 this.headerView = new PortalHeaderView({
-                    model: this.model
+                    model: this.model,
+                    nodeView: this.nodeView
                 });
                 this.headerView.render();
                 this.subviews.push(this.headerView);
@@ -203,8 +217,9 @@ define(["jquery",
                 if( this.model.get("hideData") !== true ) {
                     this.sectionDataView = new PortalDataView({
                         model: this.model,
+                        sectionName: "Data",
                         id: "Data",
-                        sectionName: "Data"
+                        nodeView: this.nodeView
                     });
                     this.subviews.push(this.sectionDataView);
 
@@ -223,7 +238,8 @@ define(["jquery",
                   this.metricsView = new PortalMetricsView({
                     model: this.model,
                     id: this.model.get("metricsLabel"),
-                    uniqueSectionName: this.model.get("metricsLabel")
+                    uniqueSectionName: this.model.get("metricsLabel"),
+                    nodeView: this.nodeView
                   });
 
                   this.subviews.push(this.metricsView);
@@ -443,8 +459,11 @@ define(["jquery",
                 sectionView.postRender();
               }
 
-              //Update the location path with the new section name
-              this.updatePath(showSectionLabelInURL);
+              if (!this.nodeView) {
+                //Update the location path with the new section name
+                this.updatePath(showSectionLabelInURL);
+              }
+
 
             },
 

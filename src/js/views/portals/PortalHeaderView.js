@@ -16,21 +16,38 @@ define(["jquery",
         /* Renders the compiled template into HTML */
         template: _.template(PortalHeaderTemplate),
 
+        initialize: function(options) {
+          this.model = options.model ? options.model : undefined;
+          this.nodeView = options.nodeView ? options.nodeView : undefined;
+        },
 
         /* Render the view */
         render: function() {
+
           var templateInfo = {
             label: this.model.get("label"),
             description: this.model.get("description"),
             name: this.model.get("name")
           }
 
-          if( this.model.get("logo") ){
-            templateInfo.imageURL = this.model.get("logo").get("imageURL");
+          if ( this.nodeView ) {
+            templateInfo.imageURL = this.model.get("logo");
+
+            // Custom remove CSS
+            $(".PortalView .border-image").css("display","block");
+            $(".PortalView #Navbar #logo").css("display","none");
+            $(".PortalView #Navbar .nav").css("display", "block");
+
           }
-          else{
-            templateInfo.imageURL = "";
+          else {
+            if( this.model.get("logo") ){
+              templateInfo.imageURL = this.model.get("logo").get("imageURL");
+            }
+            else{
+              templateInfo.imageURL = "";
+            }
           }
+
 
           this.$el.append(this.template(templateInfo));
 

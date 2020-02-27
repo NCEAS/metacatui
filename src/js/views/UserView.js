@@ -1,15 +1,17 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'clipboard',
         'collections/UserGroup',
-        'models/UserModel',
+		'models/UserModel',
+		'models/portals/PortalModel',
         'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
-        'views/GroupListView', 'views/portals/PortalListView',
+        'views/GroupListView', 'views/portals/PortalView', 'views/portals/PortalListView',
         'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
         'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
 	function($, _, Backbone, Clipboard,
     UserGroup,
-    UserModel,
-    SignInView, StatsView, DataCatalogView, GroupListView, PortalListView,
+	UserModel,
+	Portal,
+    SignInView, StatsView, DataCatalogView, GroupListView, PortalView, PortalListView,
     userProfileTemplate, AlertTemplate, LoadingTemplate,
     ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
@@ -60,16 +62,19 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
 		render: function (options) {
-      //Don't render anything if the user profiles are turned off
-      if( MetacatUI.appModel.get("enableUserProfiles") === false ){
-        return;
-      }
+			//Don't render anything if the user profiles are turned off
+			if( MetacatUI.appModel.get("enableUserProfiles") === false ){
+				return;
+			}
 
 			this.stopListening();
 			if(this.model) this.model.stopListening();
 
 			this.activeSection = (options && options.section)? options.section : "profile";
 			this.activeSubSection = (options && options.subsection)? options.subsection : "";
+			this.nodeSummaryView = (options && options.nodeSummaryView)? options.nodeSummaryView : undefined;
+			this.nodeId = (options && options.nodeId)? options.nodeId : undefined;
+			this.username = (options && options.username)? options.username : undefined;
 
 			//Add the container element for our profile sections
 			this.sectionHolder = $(document.createElement("section")).addClass("user-view-section");
@@ -91,10 +96,64 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			return this;
 		},
 
+		// Create a customized Portal View to render as repository view
+		// Certain functionalities are disabled from the portal view
+		renderNodeProfile: function(username) {
+			var view = this;
+			var memberNodeID = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier));
+
+			// Creating  new portal model
+			this.portalModel = new Portal({
+				seriesId: this.model.get("nodeInfo").identifier,
+				label: username
+			});
+
+			// remove the members section directly from the model
+			this.portalModel.removeSection("members");
+
+			if (this.nodeSummaryView) {
+				// remove the members section directly from the model
+				this.portalModel.removeSection("data");
+			}
+			
+			this.portalModel.initalizePortalNodeView(view.model.get("nodeInfo"));
+
+			if (this.nodeSummaryView) {
+				// Create and render a portal view
+				this.portalView = new PortalView({
+					portalId: this.model.get("nodeInfo").identifier,
+					label: username,
+					model: this.portalModel,
+					nodeView: true,
+					activeSectionLabel: "metrics"
+				});
+			}
+			else {
+				// Create and render a portal view
+				this.portalView = new PortalView({
+					portalId: this.model.get("nodeInfo").identifier,
+					label: username,
+					model: this.portalModel,
+					nodeView: true
+				});
+			}
+
+			$(this.sectionHolder).append(this.portalView.render());
+			return;
+		},
+
 		renderUser: function(){
+			if ( this.nodeSummaryView ) {
+				var view = this;
+				//Create a UserModel with the username given
+				this.model = new UserModel({
+					username: view.username
+				});
+			}
+
 			this.model = MetacatUI.appUserModel;
 
-			var username = MetacatUI.appModel.get("profileUsername"),
+			var username = MetacatUI.appModel.get("profileUsername") || view.username,
 				currentUser = MetacatUI.appUserModel.get("username") || "";
 
 			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
@@ -121,8 +180,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				if(MetacatUI.nodeModel.get("checked") && this.model.isNode()){
 					this.model.saveAsNode();
 					this.model.set("nodeInfo", _.findWhere(MetacatUI.nodeModel.get("members"), { identifier: "urn:node:" + username }));
-					this.renderProfile();
-					this.resetSections();
+					this.renderNodeProfile(username);
 					return;
 				}
 				//If the node model hasn't been checked yet
@@ -212,30 +270,30 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 		},
 
 		renderSettings: function(){
-      //Don't render anything if the user profile settings are turned off
-      if( MetacatUI.appModel.get("enableUserProfileSettings") === false ){
-        return;
-      }
+		//Don't render anything if the user profile settings are turned off
+		if( MetacatUI.appModel.get("enableUserProfileSettings") === false ){
+			return;
+		}
 
-			//Insert the template first
-			this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
-			this.$settings = this.$("[data-section='settings']");
+		//Insert the template first
+		this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
+		this.$settings = this.$("[data-section='settings']");
 
-			//Draw the group list
-			this.insertCreateGroupForm();
-			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
-			this.getGroups();
+		//Draw the group list
+		this.insertCreateGroupForm();
+		this.listenTo(this.model, "change:isMemberOf", this.getGroups);
+		this.getGroups();
 
-			//Listen for the identity list
-			this.listenTo(this.model, "change:identities", this.insertIdentityList);
-			this.insertIdentityList();
+		//Listen for the identity list
+		this.listenTo(this.model, "change:identities", this.insertIdentityList);
+		this.insertIdentityList();
 
-			//Listen for the pending list
-			this.listenTo(this.model, "change:pending", this.insertPendingList);
-			this.model.getPendingIdentities();
+		//Listen for the pending list
+		this.listenTo(this.model, "change:pending", this.insertPendingList);
+		this.model.getPendingIdentities();
 
-      //Render the portals subsection
-      this.renderMyPortals();
+		//Render the portals subsection
+		this.renderMyPortals();
 
 			//Listen for updates to person details
 			this.listenTo(this.model, "change:lastName change:firstName change:email change:registered", this.updateModForm);

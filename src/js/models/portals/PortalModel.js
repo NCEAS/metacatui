@@ -9,6 +9,7 @@ define(["jquery",
         "uuid",
         "collections/Filters",
         "collections/SolrResults",
+        "models/filters/Filter",
         "models/portals/PortalSectionModel",
         "models/portals/PortalImage",
         "models/metadata/eml211/EMLParty",
@@ -18,7 +19,7 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map"
     ],
-    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, PortalSectionModel, PortalImage,
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
          * A PortalModel is a specialized collection that represents a portal,
@@ -1567,6 +1568,42 @@ define(["jquery",
             */
             createViewURL: function(){
               return MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + (this.get("label") || this.get("seriesId") || this.get("id"));
+            },
+
+            /**
+            * Sets up a portal model for repository profiles
+            * @return {string}
+            */
+            initalizePortalNodeView: function(nodeInfoObject) {
+              var nodePortalModel = {};
+
+              if (nodeInfoObject === undefined) {
+                nodeInfoObject = {}
+              }
+
+              //to do - check for undefined for each of the nodeInfo properties
+
+              // Setting basic properties from the node info object
+              this.set("name", nodeInfoObject.name);
+              this.set("logo", nodeInfoObject.logo);
+              this.set("description", nodeInfoObject.description);
+
+              // Creating repo specific Filters
+              var nodeFilterModel = new FilterModel({
+                fields: ["datasource"],
+                values: [nodeInfoObject.identifier],
+                label: "Dataset for a repository",
+                matchSubstring: false,
+                operator: "OR"
+              });
+        
+
+              // adding the filter in the node model
+              this.get("definitionFilters").add(nodeFilterModel);
+
+              // Set up the search model
+              (this.get("searchModel")).get("filters").add(nodeFilterModel);
+              
             }
 
         });

@@ -128,17 +128,38 @@ define(["jquery",
               supportDownloads: false
             });
 
+            if (this.nodeView) {
+              statsModel = MetacatUI.statsModel;
+            }
+
             
             var label_list = [];
             label_list.push(this.model.get("label"));
-            var metricsModel = new MetricsModel({pid_list: label_list, type: "portal"});
-            metricsModel.fetch();
+
+            var metricsModel = new MetricsModel();
+            this.metricsModel = metricsModel;
+
+            // Create a different Metric model object for repository profiles
+            if ( this.nodeView ) {
+              // create a node query
+              var pid_list = new Array();
+              pid_list.push(this.model.get("seriesId"));
+              this.metricsModel.set("pid_list", pid_list);
+              this.metricsModel.set("filterType", "repository");
+            }
+            else {
+              // create a portal query
+              this.metricsModel.set("pid_list", label_list);
+              this.metricsModel.set("filterType", "portal");
+            }
+            
+            this.metricsModel.fetch();
 
             // Add a stats view
             this.statsView = new StatsView({
                 title: "Statistics and Figures",
                 description: description,
-                metricsModel: metricsModel,
+                metricsModel: this.metricsModel,
                 el: document.createElement("div"),
                 model: statsModel,
                 userType: "portal",
@@ -148,6 +169,12 @@ define(["jquery",
                 hideDownloadsChart: false,
                 hideViewsChart: false
             });
+
+            // disable the metadata view from the statsview
+            // TODO - add a flag within themes to be specific
+            if (this.nodeView) {
+              this.statsView.hideMetadataAssessment = true;
+            }
 
             //Insert the StatsView into this view
             this.$el.html(this.statsView.el);
