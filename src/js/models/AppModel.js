@@ -154,7 +154,12 @@ define(['jquery', 'underscore', 'backbone'],
       accountsMapsUrl: null,
       groupsUrl: null,
       portalUrl: null,
-      mdqUrl: null,
+      
+      mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
+      // suidIds and suiteLables must be specified as a list, even if only one suite is available.
+      suiteIds: ["FAIR.suite.1"],
+      suiteLabels: ["FAIR Suite v1.0"],
+      mdqFormatIds:["eml*", "https://eml*", "*isotc211*"],
 
       /**
       * Metrics endpoint url
@@ -489,6 +494,12 @@ define(['jquery', 'underscore', 'backbone'],
       if( this.get("enableMonitorStatus") ){
         this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
       }
+      
+      // Metadata quality report services
+      this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
+      this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
+      this.set('mdqSuiteIds', this.get("suiteIds"));
+      this.set('mdqSuiteLabels', this.get("suiteLabels"));
 
       if(typeof this.get("grantsUrl") !== "undefined")
         this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");

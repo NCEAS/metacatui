@@ -52,7 +52,8 @@ define(['jquery', 'underscore', 'backbone'],
       */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
-      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      //baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      baseUrl: "https://cn.dataone.org",
       // the most likely item to change is the Metacat deployment context
       context: '',
       d1Service: "/cn/v2",
@@ -106,11 +107,11 @@ define(['jquery', 'underscore', 'backbone'],
       signInUrlOrcid: null,
       //signInUrlLdap: null,
       tokenUrl: null,
-      //mdqBaseUrl: "https://docker-ucsb-1.dataone.org:30443/quality",
-      mdqBaseUrl: "",
+      mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
-      suiteIds: ["dataone.suite.1"],
-      suiteLabels: ["DataONE Metadata Completeness Suite v1.0"],
+      suiteIds: ["FAIR.suite.1"],
+      suiteLabels: ["FAIR Suite v1.0"],
+      mdqFormatIds:["eml*", "https://eml*", "*isotc211*"],
       // Metrics endpoint url
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 
@@ -292,11 +293,11 @@ define(['jquery', 'underscore', 'backbone'],
         this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
       }
 
-            // Metadata quality report services
-            this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
-            this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
-            this.set('mdqSuiteIds', this.get("suiteIds"));
-            this.set('mdqSuiteLabels', this.get("suiteLabels"));
+      // Metadata quality report services
+     this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
+     this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
+     this.set('mdqSuiteIds', this.get("suiteIds"));
+     this.set('mdqSuiteLabels', this.get("suiteLabels"));
 
       //The logs index
       if(typeof this.get("d1LogServiceUrl") !== "undefined"){

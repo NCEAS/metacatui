@@ -1057,11 +1057,37 @@ define(['jquery',
      */
     insertControls: function(){
 
+      // Convert the support mdq formatId list to a version
+      // that JS regex likes (with special characters double 
+      // escaped.
+      RegExp.escape = function(s) {
+       return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\\\$&');
+      };
+      var mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds");
+      
+      // Check of the current formatId is supported by the current
+      // metadata quality suite. If not, the 'Quality Report' button
+      // will not be displacyed in the metadata controls panel.
+      var thisFormatId = this.model.get("formatId");
+      var mdqFormatSupported = false;
+      var formatFound = false;
+      if(mdqFormatIds !== null) {
+          for (var ifmt = 0; ifmt < mdqFormatIds.length; ++ifmt) {
+              var currentFormatId = RegExp.escape(mdqFormatIds[ifmt]);
+              var re = new RegExp(currentFormatId);
+              formatFound = re.test(thisFormatId);
+              if(formatFound) {
+                  console.log("format ", currentFormatId, " found")
+                  break;
+              }
+          }
+      }
+
       //Get template
       var controlsContainer = this.controlsTemplate({
           citation: $(this.citationContainer).text(),
           url: window.location,
-          mdqUrl: MetacatUI.appModel.get("mdqBaseUrl"),
+          displayQualtyReport: MetacatUI.appModel.get("mdqBaseUrl") && formatFound && MetacatUI.appModel.get("displayDatasetQualityMetric"),
           showWholetale: MetacatUI.appModel.get("showWholeTaleFeatures"),
           model: this.model.toJSON()
         });

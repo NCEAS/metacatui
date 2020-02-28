@@ -140,6 +140,7 @@ define(['jquery', 'underscore', 'backbone'],
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
       suiteIds: ["arctic.data.center.suite.1"],
       suiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
+      mdqFormatIds:["eml*", "https://eml*"],
 
       // Metrics endpoint url
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
@@ -155,7 +156,7 @@ define(['jquery', 'underscore', 'backbone'],
       displayDatasetDownloadMetric: true,
       displayDatasetViewMetric: true,
       displayDatasetEditButton: true,
-      displayDatasetQualityMetric: false,
+      displayDatasetQualityMetric: true,
       displayDatasetAnalyzeButton: false,
       displayMetricModals: true,
       displayDatasetControls: true,
