@@ -212,7 +212,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       //Construct a query
-      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + (new Date()).toISOString() + "] AND -obsoletedBy:*",
+      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + (new Date()).toISOString() + "] AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get("query") + specialQueryParams,
           //Get one row only
           rows = "1",
@@ -278,7 +278,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       //Get the latest temporal data coverage year
       var specialQueryParams = " AND endDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "]" + //Use date filter to weed out badly formatted data
-            " AND -obsoletedBy:*",
+            " AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           rows = 1,
           fl   = "endDate",
@@ -358,7 +358,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       var model = this;
 
       //Build the query to get the format types
-      var specialQueryParams = " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*",
+      var specialQueryParams = " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           rows  = "2",
           group = true,
@@ -479,7 +479,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
         return;
       }
 
-      var specialQueryParams = " AND formatType:DATA AND -obsoletedBy:*",
+      var specialQueryParams = " AND formatType:DATA AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           facet = "true",
           facetField = "formatId",
@@ -547,7 +547,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
 			var model = this;
 
-      var specialQueryParams = " AND formatType:METADATA AND -obsoletedBy:*",
+      var specialQueryParams = " AND formatType:METADATA AND -obsoletedBy:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get("query") + specialQueryParams,
           facet = "true",
           facetField = "formatId",
@@ -617,7 +617,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       var now = new Date();
 
-      var metadataQueryParams = "AND -obsoletedBy:* AND formatType:METADATA";
+      var metadataQueryParams = "AND -obsoletedBy:* AND formatType:METADATA  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*";
       var metadataQuery = this.get('query') + metadataQueryParams;
 
       var firstPossibleUpdate = MetacatUI.nodeModel.isCN(MetacatUI.nodeModel.get("currentMemberNode"))?
@@ -814,7 +814,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       //Get the earliest upload date
       var specialQueryParams = " AND formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
                   " AND dateUploaded:[" + firstPossibleUpload + " TO " + now.toISOString() + "]" + //Weeds out badly formatted dates
-                  " AND -obsoletes:*",    //Only count one version of a revision chain
+                  " AND -obsoletes:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",    //Only count one version of a revision chain
           query = this.get('query') + specialQueryParams,
           fl   = "dateUploaded",
           rows = "1",
@@ -989,7 +989,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       var now = new Date();
 
       //The full query
-      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "] AND -obsoletedBy:*",
+      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "] AND -obsoletedBy:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           rows = "0",
           facet = "true",
