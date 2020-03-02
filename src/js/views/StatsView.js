@@ -57,6 +57,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if ( !options )
 				options = {};
 
+			var view = this;
+
 			if ( options.nodeSummaryView ) {
 				var nodeId = MetacatUI.appModel.get("nodeId");
 
@@ -166,8 +168,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 		this.$el.data("view", this);
 
-			var view  = this;
-
 			if (this.userType == "portal" || this.userType === "repository") {
 				if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
 					if (this.metricsModel.get("totalViews") !== null) {
@@ -183,8 +183,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				}
 			}
 
+		// Set the qualit engine flag appropriately
+		this.model.set("hideMetadataAssessment", view.hideMetadataAssessment);
+
 		//Start retrieving data from Solr
-		this.model.getAll({hideMetadataAssessment: this.hideMetadataAssessment});
+		this.model.getAll();
 
 		return this;
 	},

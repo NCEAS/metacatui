@@ -108,10 +108,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 		//This function serves as a shorthand way to get all of the statistics stored in the model
 		getAll: function(options){
 			if (typeof options === "undefined")
-				var options = {}
-
-			// Utilizing the StatsView flag
-			this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
+				var options = {};
 
 			//Listen for our responses back from the server before we send requests that require info from the response
 			this.listenToOnce(this, 'change:firstBeginDate', this.getLastEndDate);
@@ -129,7 +126,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 			this.getDownloadDates();
 
 			// Only get the Mdq scores if the hideMetadataAssessment is set to false
-			if (!this.hideMetadataAssessment)
+			if (!this.get("hideMetadataAssessment"))
 				this.getMdqScores();
 
 			//this.getMdqStatsTotal();
