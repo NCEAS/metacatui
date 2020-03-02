@@ -52,8 +52,7 @@ define(['jquery', 'underscore', 'backbone'],
       */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
-      //baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
-      baseUrl: "https://cn.dataone.org",
+      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
       // the most likely item to change is the Metacat deployment context
       context: '',
       d1Service: "/cn/v2",

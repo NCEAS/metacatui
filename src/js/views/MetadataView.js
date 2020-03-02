@@ -1058,13 +1058,13 @@ define(['jquery',
     insertControls: function(){
 
       // Convert the support mdq formatId list to a version
-      // that JS regex likes (with special characters double 
+      // that JS regex likes (with special characters double
       // escaped.
       RegExp.escape = function(s) {
        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\\\$&');
       };
       var mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds");
-      
+
       // Check of the current formatId is supported by the current
       // metadata quality suite. If not, the 'Quality Report' button
       // will not be displacyed in the metadata controls panel.
@@ -1077,7 +1077,6 @@ define(['jquery',
               var re = new RegExp(currentFormatId);
               formatFound = re.test(thisFormatId);
               if(formatFound) {
-                  console.log("format ", currentFormatId, " found")
                   break;
               }
           }
