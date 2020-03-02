@@ -312,7 +312,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var metricMonths    = this.metricsModel.get("months");
 			var metricCount     = this.metricsModel.get(metricNameLemma);
 			var chartEl         = document.getElementById('user-'+metricNameLemma+'-chart' );
-			var width           = chartEl? chartEl.offsetWidth : 600;
+			var width           = (chartEl && chartEl.offsetWidth)? chartEl.offsetWidth : 1080;
 			var viewType        = this.userType;
 
 			// Draw a metric chart
