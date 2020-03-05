@@ -159,18 +159,24 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         //Show a blank row at the bottom of the table for adding a new Access Rule.
         this.addEmptyRow();
 
-        //Render the private/public toggle
-        this.$(".public-toggle-container").html(
-          this.toggleTemplate({
-            label: "",
-            id: this.collection.id,
-            trueLabel: "Public",
-            falseLabel: "Private"
-          })
-        );
+        //Render the public/private toggle, if it's enabled in the app config
+        if( MetacatUI.appModel.get("showPortalPublicToggle") !== false ){
+          var enabledSubjects = MetacatUI.appModel.get("showPortalPublicToggleForSubjects");
 
-        //If the dataset is public, check the checkbox
-        this.$(".public-toggle-container input").prop("checked", this.collection.isPublic());
+          if( Array.isArray(enabledSubjects) && enabledSubjects.length ){
+
+            var usersGroups = _.pluck(MetacatUI.appUserModel.get("isMemberOf"), "groupId");
+            if( _.contains(enabledSubjects, MetacatUI.appUserModel.get("username")) ||
+                _.intersection(enabledSubjects, usersGroups).length){
+                this.renderPublicToggle();
+            }
+
+          }
+          else{
+            this.renderPublicToggle();
+          }
+
+        }
 
       }
       catch(e){
@@ -183,6 +189,24 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         console.error(e);
       }
 
+    },
+
+    /**
+    * Renders a public/private toggle that toggles the public readability of the given resource.
+    */
+    renderPublicToggle: function(){
+      //Render the private/public toggle
+      this.$(".public-toggle-container").html(
+        this.toggleTemplate({
+          label: "",
+          id: this.collection.id,
+          trueLabel: "Public",
+          falseLabel: "Private"
+        })
+      );
+
+      //If the dataset is public, check the checkbox
+      this.$(".public-toggle-container input").prop("checked", this.collection.isPublic());
     },
 
     /**

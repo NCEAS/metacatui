@@ -271,6 +271,26 @@ define(['jquery', 'underscore', 'backbone'],
       */
       hiddenSubjectsInAccessPolicy: [],
 
+      /**
+      * If true, the public/private toggle will be displayed in the Sharing Options for portals.
+      * @type {boolean}
+      */
+      showPortalPublicToggle: true,
+
+      /**
+      * The public/private toggle will be displayed in the Sharing Options for portals for only
+      * the given users or groups. To display the public/private toggle for everyone,
+      * set `showPortalPublicToggle` to true and keep this array empty.
+      * @type {string[]}
+      */
+      showPortalPublicToggleForSubjects: [],
+
+      /**
+      * If true, the public/private toggle will be displayed in the Sharing Options for datasets.
+      * @type {boolean}
+      */
+      showDatasetPublicToggle: true,
+
       // A lookup map of portal names to portal seriesIds
       portalsMap: {},
       /**
