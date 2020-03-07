@@ -1,7 +1,7 @@
 <div class="can-toggle can-toggle-small">
   <input id="toggle-filter-view-<%=id%>" type="checkbox" />
   <span>
-    <% if(icon){
+    <% if(typeof icon == "string"){
          print('<i class="icon icon-on-left icon-' + icon + '"></i>');
        } %>
        <%=label%>

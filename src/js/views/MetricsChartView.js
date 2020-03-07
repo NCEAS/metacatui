@@ -489,50 +489,57 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         // show UI elements only once user is able to interact with them.
         setTimeout(function(){
 
-        	// add behaviours
-        	pane.call(zoom)
-        		.call(change_focus_zoom);
-        	zoom.x(x);
+          	// add behaviours
+          	pane.call(zoom)
+          		.call(change_focus_zoom);
+          	zoom.x(x);
 
-        	vis.selectAll(".scale_button")
-        		.style("cursor", "pointer")
-        		.on("click", zoom_to_interval);
+          	vis.selectAll(".scale_button")
+          		.style("cursor", "pointer")
+          		.on("click", zoom_to_interval);
 
-        	// fade in buttons
-        	vis.selectAll(".scale_button,.zoomto_text")
-        		.transition()
-        		.duration(100)
-        		.ease("cubic")
-        		.style("opacity","1");
+          	// fade in buttons
+          	vis.selectAll(".scale_button,.zoomto_text")
+          		.transition()
+          		.duration(100)
+          		.ease("cubic")
+          		.style("opacity","1");
 
-        	// fade in brush elements
-        	brushg.selectAll(".extent")
-        		.transition()
-        		.duration(100)
-        		.ease("cubic")
-        		.style("opacity" , "1");
+          	// fade in brush elements
+          	brushg.selectAll(".extent")
+          		.transition()
+          		.duration(100)
+          		.ease("cubic")
+          		.style("opacity" , "1");
 
-        	brushg.selectAll(".handle-mini")
-        		.transition()
-        		.duration(170)
-        		.ease("linear")
-        		.attr("height", (height_context/2))
-        		.style("opacity" , "1");
+          	brushg.selectAll(".handle-mini")
+          		.transition()
+          		.duration(170)
+          		.ease("linear")
+          		.attr("height", (height_context/2))
+          		.style("opacity" , "1");
 
-        	brushg.selectAll(".handle")
-        		.transition()
-        		.duration(170)
-        		.ease("linear")
-        		.attr("height", height_context + 6)
-        		.style("opacity" , "1");
+          	brushg.selectAll(".handle")
+          		.transition()
+          		.duration(170)
+          		.ease("linear")
+          		.attr("height", height_context + 6)
+          		.style("opacity" , "1");
 
-            // tooltip div must be created after timeout so that parent div
-            // has time to load (otherwise can't select .metric-chart div)
-            d3.select(".metric-chart")
-                .append("div")
-                    .attr("class", "metric_tooltip")
-                    .style("opacity", 0)
-                    .style("width", tooltip_width + "px");
+            if (self.viewType === "dataset") {
+              d3.select(".metric-chart")
+                  .append("div")
+                      .attr("class", "metric_tooltip")
+                      .style("opacity", 0)
+                      .style("width", tooltip_width + "px");
+            }
+            else {
+              d3.select("#user-" + self.id)
+                  .append("div")
+                      .attr("class", "metric_tooltip")
+                      .style("opacity", 0)
+                      .style("width", tooltip_width + "px");
+            }
         	},
         900);
 
@@ -611,7 +618,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         				highlight_label("#label_" + floor_month);
         				show_tooltip(d);
         			})
-        	        .on("mouseout", function(tick) {
+        	    .on("mouseout", function(tick) {
         				var floor_month = d3.time.month.floor(tick).getTime();
         				unhighlight_bar("#bar_" + floor_month);
         				unhighlight_label("#label_" + floor_month);
@@ -624,30 +631,49 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
             var bar_width_px = bar_width * get_zoom_scale();
 
-            // get the width of the modal. Need for tooltip x-position.
-            var modal_width = d3.select("#" + self.id)
-                .style('width')
-                .slice(0, -2);
-            var modal_width = Math.round(Number(modal_width));
+            if (self.viewType === "dataset") {
+              // get the width of the modal. Need for tooltip x-position.
+              var modal_width = d3.select("#metric-modal")
+                  .style('width')
+                  .slice(0, -2);
+              var modal_width = Math.round(Number(modal_width));
 
-            d3.select(".metric_tooltip")
-                .html("<b>" + display_date_format(d.month) + "</b><br/>"  + d.count + " " + convert_metric_name(d.count))
-                .style("left", (x(d.month) + (modal_width-(width + margin.left + margin.right)) + (bar_width_px/2) - (tooltip_width/2) + "px"))//) + 300 + ((width/dataset.length) * 0.5 * get_zoom_scale())) + "px")
-                .style("top", (y(d.count) + 19) + "px");
+              d3.select("metric_tooltip")
+                  .html("<b>" + display_date_format(d.month) + "</b><br/>"  + d.count + " " + convert_metric_name(d.count))
+                  .style("left", (x(d.month) + (modal_width-(width + margin.left + margin.right)) + (bar_width_px/2) - (tooltip_width/2) + "px"))//) + 300 + ((width/dataset.length) * 0.5 * get_zoom_scale())) + "px")
+                  .style("top", (y(d.count) + 19) + "px");
 
-            d3.select(".metric_tooltip")
-                .transition()
-        		.duration(60)
-                .style("opacity", 0.98);
+              d3.select("metric_tooltip")
+                  .transition()
+                  .duration(60)
+                  .style("opacity", 0.98);
+            }
+            else {
+              d3.select("#user-" + self.id + " > .metric_tooltip")
+                  .html("<b>" + display_date_format(d.month) + "</b><br/>"  + d.count + " " + convert_metric_name(d.count))
+                  .style("left", d3.event.pageX - 150 + "px")
+                  .style("top", y(d.count) - y(0) - 150 + "px");
 
+              d3.select("#user-" + self.id + " > .metric_tooltip")
+                  .transition()
+                  .duration(60)
+                  .style("opacity", 0.98);
+            }
         };
 
         function hide_tooltip(d) {
-
-            d3.select(".metric_tooltip")
+          if (self.viewType === "dataset") {
+            d3.select("metric_tooltip")
                 .transition()
                 .duration(60)
                 .style("opacity", 0);
+          }
+          else {
+            d3.select("#user-" + self.id + " > .metric_tooltip")
+                .transition()
+                .duration(60)
+                .style("opacity", 0);
+          }
         };
 
 

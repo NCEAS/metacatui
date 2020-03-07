@@ -14,11 +14,15 @@
       </h5>
       <textarea type="text" data-category="name" class="basic-text portal-title auto-resize" placeholder="Choose a title"><%=name%></textarea>
     </div>
-
+    <!-- Share button will be inserted into the editor-controls by the PortalView -->
+    <div class="editor-controls"></div>
   </header>
   <section id="editor-body" class="port-editor-sections-container"></section>
-  <section id="editor-footer" class="editor-controls">
+  <section id="editor-footer">
+    <div class="editor-save-controls">
+      <a class="view-portal-link hidden" href="" target="_blank">View last saved version <i class="icon icon-external-link icon-on-right"></i></a>
       <a class="btn btn-primary save" id="save-editor"><%=submitButtonText%></a>
+    </div>
   </section>
 
 </article>

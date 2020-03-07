@@ -271,7 +271,7 @@ function(Bootstrap, AppView, AppModel) {
 			root: historyRoot
 		});
 
-		$(document).on("click", "a:not([data-toggle])", function(evt) {
+		$(document).on("click", "a:not([data-toggle],[target])", function(evt) {
 			// Don't hijack the event if the user had Control or Command held down
 			if (evt.ctrlKey || evt.metaKey) {
 				return;

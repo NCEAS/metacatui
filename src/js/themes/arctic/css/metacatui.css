@@ -223,7 +223,7 @@
 
 
 .header #inner-header{
-	margin-left: 40px;
+	margin-left: 20px;
 	margin-right: 40px;
 }
 .header nav{
@@ -542,6 +542,7 @@ footer .logos a:hover, a:focus{
 .portal-view .portal-title{
   font-weight: 100;
 }
+.Portal.Editor .border-image,
 .PortalView .border-image{
   display: none;
 }
@@ -549,15 +550,19 @@ footer .logos a:hover, a:focus{
 /* Portal & Editor (minimal header common to both views)
 -------------------------------------------------- */
 
+.Portal.Editor #Navbar,
+.PortalView #Navbar{
+  background-color: #f2f2f2;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
 .Portal.Editor #Navbar #logo,
 .PortalView #Navbar #logo{
   background: url(/js/themes/arctic/img/logo-small-no-title.png);
-  height: 25px;
-  width: 25px;
+  height: 20px;
+  width: 20px;
   background-size: contain;
-  margin-top: 12px;
 }
-
 .Portal.Editor #Navbar #logo::after,
 .PortalView #Navbar #logo::after{
   content: "Hosted by the Arctic Data Center";
@@ -565,9 +570,10 @@ footer .logos a:hover, a:focus{
   margin-left: 29px;
   display: block;
   margin-top: 2px;
-  color: #999;
-  font-size: 14px;
+  color: #888;
+  font-size: .8em;
   white-space: nowrap;
+  line-height: 1.3em;
 }
 
 .Portal.Editor #Navbar .#main-nav nav,
@@ -579,6 +585,15 @@ footer .logos a:hover, a:focus{
 .PortalView #Navbar .minimal-nav .logo{
   max-height: 1em;
   margin-left: 3px;
+}
+.Portal.Editor #Navbar .nav,
+.PortalView #Navbar .nav{
+  margin-bottom: 0px;
+  align-items: center;
+}
+.Portal.Editor #Navbar #editPortal,
+.PortalView #Navbar #editPortal{
+  font-family: inherit;
 }
 
 /* Portal editor
@@ -1178,7 +1193,6 @@ svg .domain{
 }
 .line-chart-label.bg{
 	stroke-width: 2px;
-	fill: #FFF;
 	stroke: #FFF;
 	opacity: 0.8;
 }
