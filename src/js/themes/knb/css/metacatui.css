@@ -64,11 +64,6 @@
     	padding-top: 115px;
     }
 
-    h4{
-    	font-size: 20px;
-    	font-weight: 400;
-    }
-
     h1{
     	font-weight: normal;
     }
@@ -1242,6 +1237,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 .member-list .group {
     min-width: 100px;
+}
+.profile .static-img-container h4{
+  text-align: center;
 }
 
   /* The universal color for data */
