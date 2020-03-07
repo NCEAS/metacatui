@@ -2836,6 +2836,12 @@ img[src*="googleapis.com/"].georegion-map{
   font-size: 1em;
   font-weight: bold;
 }
+.access-policy-view .popover li h5 {
+  display: inline;
+}
+.access-policy-view .popover{
+  min-width: 50%;
+}
 .access-rule td {
   padding-top: 12px;
   padding-bottom: 12px;
@@ -2877,6 +2883,8 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .access-policy-view .public-toggle-container{
   margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
 }
 .access-policy-view .can-toggle{
   width: 200px;
