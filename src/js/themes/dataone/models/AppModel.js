@@ -36,9 +36,20 @@ define(['jquery', 'underscore', 'backbone'],
       // set this variable to true, if the content being published is moderated by the data team.
       contentIsModerated: false,
 
-      // Flag which, when true shows Whole Tale features in the UI
+      /**
+       * Flag which, when true shows Whole Tale features in the UI
+       * @type {Boolean}
+       */
       showWholeTaleFeatures: false,
+      /**
+       * The environments that are exposed to DataONE users
+       * @type {Array}
+       */
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
+      /**
+      * The Whole Tale endpoint that handles users
+      * @type {String}
+      */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
@@ -53,6 +64,21 @@ define(['jquery', 'underscore', 'backbone'],
       authServiceUrl: null,
       queryServiceUrl: null,
       reserveServiceUrl: null,
+
+      /**
+      * If false, the /monitor/status (the service that returns the status of various DataONE services) will not be used.
+      * @type {boolean}
+      */
+      enableMonitorStatus: false,
+
+      /**
+      * The URL for the service that returns the status of various DataONE services.
+      * The only supported status so far is the search index queue -- the number of
+      *   objects that are waiting to be indexed in the Solr search index
+      * @type {string}
+      * @readonly
+      */
+      monitorStatusUrl: "",
 
       //If set to false, some parts of the app will send POST HTTP requests to the
       // Solr search index via the `/query/solr` DataONE API.
@@ -88,6 +114,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Quality suites for aggregated quality scores (i.e. metrics tab) 
       mdqAggregatedSuiteIds: ["FAIR.suite.1"],
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
+      mdqFormatIds:["eml*", "https://eml*", "*isotc211*"],
 
       // Metrics endpoint url
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
@@ -162,6 +189,56 @@ define(['jquery', 'underscore', 'backbone'],
       showAnnotationIndicator: false,
 
       /**
+      * If true, users can change the AccessPolicy for their objects.
+      * @type {boolean}
+      */
+      allowAccessPolicyChanges: false,
+
+      /**
+      * The default Access Policy set on new objects uploaded to the repository.
+      * Each literal object here gets set directly on an AccessRule model.
+      * See the AccessRule model list of default attributes for options on what to set here.
+      * @see {@link AccessRule}
+      * @type {object}
+      */
+      defaultAccessPolicy: [{
+        subject: "CN=arctic-data-admins,DC=dataone,DC=org",
+        read: true,
+        write: true,
+        changePermission: true
+      }],
+
+      /**
+      * The user-facing name for editing the Access Policy. This is displayed as the header of the AccessPolicyView, for example
+      * @type {string}
+      */
+      accessPolicyName: "Sharing options",
+
+      /**
+      * @type {object}
+      * @property {boolean} accessRuleOptions.read  - If true, users will be able to give others read access to their DataONE objects
+      * @property {boolean} accessRuleOptions.write - If true, users will be able to give others write access to their DataONE objects
+      * @property {boolean} accessRuleOptions.changePermission - If true, users will be able to give others changePermission access to their DataONE objects
+      */
+      accessRuleOptions: {
+        read: true,
+        write: true,
+        changePermission: true
+      },
+
+      /**
+      * @type {object}
+      * @property {boolean} accessRuleOptionNames.read  - The user-facing name of the "read" access in Access Rules
+      * @property {boolean} accessRuleOptionNames.write - The user-facing name of the "write" access in Access Rules
+      * @property {boolean} accessRuleOptionNames.changePermission - The user-facing name of the "changePermission" access in Access Rules
+      */
+      accessRuleOptionNames: {
+        read: "Can view",
+        write: "Can edit",
+        changePermission: "Is owner"
+      },
+
+      /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}
       */
@@ -222,10 +299,15 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('nodeServiceUrl',    this.get('baseUrl')  + this.get('d1Service') + '/node');
       this.set("reserveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/reserve");
 
+      //This URL construction needs to be changed since, if enabled, because it is a MN API
+      if( this.get("enableMonitorStatus") ){
+        this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
+      }
+
       // Metadata quality report services
-      this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
-      this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
-      this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
+     this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
+     this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
+     this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
 
       //The logs index
       if(typeof this.get("d1LogServiceUrl") !== "undefined"){

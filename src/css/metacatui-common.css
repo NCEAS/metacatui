@@ -2950,7 +2950,75 @@ img[src*="googleapis.com/"].georegion-map{
   display: block;
   font-size: 1.5em;
 }
-
+/******************************************
+** AccessPolicy editor view ***
+******************************************/
+.access-rule .subject{
+  display: flex;
+  min-height: 30px;
+}
+.access-policy-view-container.modal{
+  width: 80%;
+  max-width: 1000px;
+  left: 10%;
+  margin-left: 0px;
+  display: none;
+}
+.access-policy-control.disabled{
+  cursor: not-allowed;
+}
+.access-policy-view h4{
+  font-size: 1em;
+  font-weight: bold;
+}
+.access-rule td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.access-rule select{
+  width: 100%;
+  min-width: 100px;
+  margin-bottom: 0px;
+}
+.access-rule.new input{
+  width: calc(100% - 16px);
+  margin-bottom: 0px;
+}
+.access-rule.new label{
+  font-size: .9em;
+}
+.access-rule.new select{
+  margin-top: 25px;
+}
+.access-rule .remove.icon{
+  font-size: 2em;
+  color: #CCC;
+}
+.access-rule .remove-rule{
+  width: 2em;
+}
+.access-rule .add.icon{
+  margin-top: 25px;
+  display: block;
+  font-size: 2em;
+  cursor: pointer;
+}
+.access-rule .add.icon:hover{
+  color: #006699;
+}
+.access-rule .ui-autocomplete .ui-menu-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.access-policy-view .public-toggle-container{
+  margin-bottom: 20px;
+}
+.access-policy-view .can-toggle{
+  width: 200px;
+}
+.access-policy-view p{
+  margin-bottom: 20px;
+}
 /******************************************
 * Portal Editor
 ********************************************/
@@ -2968,6 +3036,10 @@ img[src*="googleapis.com/"].georegion-map{
 /* Editor navigation (tabs) */
 .section-links-container{
   margin-bottom: 0px;
+}
+.section-links-toggle-container{
+  padding-left: 40px;
+  padding-right: 40px;
 }
 .port-editor-sections .section-link-container{
   border-right: 1px solid #CCC;
@@ -3037,11 +3109,10 @@ img[src*="googleapis.com/"].georegion-map{
   color: #960303;
 }
 
-#section-type-header{
-	margin: 35px 0 25px 0;
-}
-
 /* Portal editor sections */
+.port-editor-section{
+  padding: 20px 40px;
+}
 .port-editor-section.port-editor-md{
   padding: 0px;
 }
@@ -3062,7 +3133,6 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 .logo-editor-container {
-    margin-left: 20px;
     margin-right: 20px;
 }
 .logo-editor-container .dropzone .dz-message{
@@ -3076,25 +3146,29 @@ img[src*="googleapis.com/"].georegion-map{
     padding-top: 5px;
     font-size: 0.9em;
 }
-
-.portal-editor .title-container {
-	width: calc(100% - 150px);
-	min-width: 300px;
-	max-width: 1000px;
+.logo-editor-container p.notification.error:empty{
+  display: none;
 }
-
+.portal-editor .logo-editor-container > h5,
+.portal-editor .title-container > h5{
+  margin-top: 0px;
+}
+.portal-editor .title-container {
+  flex-grow: 2;
+}
 .portal-editor textarea.portal-title{
 	width: 100%;
   padding: 0px;
   background: transparent;
   border: none;
   border-radius: 0;
-  border-bottom: 1.5px solid #999;
+  border-bottom: 1px solid #ccc;
   box-shadow: none;
 	align-self: center;
 	font-size: 28px;
 	line-height: 40px;
 	min-height: 40px;
+  margin-top: 20px;
 }
 
 .portal-editor textarea.portal-title:focus{
@@ -3103,7 +3177,6 @@ img[src*="googleapis.com/"].georegion-map{
   -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(82,168,236,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
 }
-
 /* Portal Editor settings */
 
 /* The width of each input element next to the remove button */
@@ -3192,14 +3265,19 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-settings .description-container textarea{
   width: 100%;
 }
-.port-editor-section  > h3{
-  margin-top: 20px;
-  margin-left: 40px;
+.port-editor-section.port-editor-data{
+  padding: 20px 40px;
 }
-.port-editor-section .edit-collection > h3,
-.port-editor-section .edit-collection > p{
-  margin-top: 20px;
-  margin-left: 10px;
+.port-editor-section.port-editor-data #sidebar > *{
+  padding-left: 0px;
+  padding-right: 0px;
+  box-sizing: border-box;
+  width: 100%;
+}
+.port-editor-section.port-editor-data .result-header{
+  padding-right: 0px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* Portal Editor markdown section
@@ -3250,6 +3328,7 @@ img[src*="googleapis.com/"].georegion-map{
 	box-sizing: border-box;
 	left: 0;
 	margin: 60px 0px 0px 3px;
+  padding: 20px 40px;
   z-index: 10; /* so it's above all the dropzone stuff */
 }
 
@@ -3299,8 +3378,8 @@ img[src*="googleapis.com/"].georegion-map{
 
 /* the markdown editor textarea field */
 .port-editor-md textarea.markdown{
-	margin: 20px;
-	width: calc(100% - 40px);
+	margin: 20px 0px;
+	width: 100%;
 	line-height: 1.6em;
 	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
 	padding: 0.5rem;
@@ -3373,11 +3452,6 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 /* Portal editor metrics page */
-
-
-.editor-view.portal-editor div#Metrics p {
-  margin: 20px 40px;
-}
 
 .editor-view.portal-editor div#Metrics svg{
 	width: 100%;
@@ -3481,6 +3555,11 @@ img[src*="googleapis.com/"].georegion-map{
 
 .portal-editor #editor-header{
   border-bottom: 0px;
+  padding: 20px 40px;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
 }
 
 /* Top level app navigation in the PortalView and EditorView */
@@ -3501,7 +3580,10 @@ img[src*="googleapis.com/"].georegion-map{
 .PortalView .navbar-inner{
   background-image: none;
   box-shadow: none;
-  background-color: #FFF;
+  background-color: #f2f2f2;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  min-height: 0px;
 }
 
 .Portal.Editor .navbar .nav > li > a.brand,
@@ -3520,7 +3602,7 @@ img[src*="googleapis.com/"].georegion-map{
 
 .Portal.Editor #Navbar a.brand,
 .Portal.Editor #Navbar a.brand {
-	margin-left: 10px;
+	margin-left: 20px;
 }
 
 .Portal.Editor #Navbar .minimal-nav > a,
@@ -3541,17 +3623,20 @@ img[src*="googleapis.com/"].georegion-map{
 .PortalView #Navbar .nav .minimal-nav {
     display: block;
 }
-
+.Portal.Editor #Navbar .nav .minimal-nav:not(:last-child),
+.PortalView #Navbar .nav .minimal-nav:not(:last-child) {
+  margin-right: 20px;
+}
 .Portal.Editor #Navbar .nav .minimal-nav a,
 .PortalView #Navbar .nav .minimal-nav a {
-    font-size: 1em;
+    font-size: .9em;
     text-transform: none;
-    font-weight: 300;
     text-shadow: none;
 }
-.Portal.Editor #Navbar .nav .minimal-nav a:not(.btn),
-.PortalView #Navbar .nav .minimal-nav a:not(.btn){
-  padding-bottom: 0px;
+.Portal.Editor #Navbar .nav .minimal-nav > a:not(.btn),
+.PortalView #Navbar .nav .minimal-nav > a:not(.btn) {
+  margin-bottom: 0px;
+  padding: 0px;
 }
 .Portal.Editor #Navbar .nav .minimal-nav.subtle a,
 .PortalView #Navbar .nav .minimal-nav.subtle a {
@@ -3560,15 +3645,17 @@ img[src*="googleapis.com/"].georegion-map{
 
 .Portal.Editor #Navbar .nav,
 .PortalView #Navbar .nav {
-    float: right;
     margin-top: 0px;
 		display: flex;
 		flex-direction: row;
-		min-width: 300px;
 		justify-content: space-between;
 		align-items: center;
 }
-
+.PortalView #Navbar #editPortal{
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 7px;
+}
 /* markdown section table of contents (portal and portal editor) */
 .Editor.Portal .toc-view.affix,
 .portal-section-content .toc-view.affix{
@@ -3656,16 +3743,6 @@ i.toc-sub-item{
 /******************************************
 * Portals
 ********************************************/
-
-/* edit portal button */
-#editPortal:hover {
-  border: 0px;
-}
-#editPortal {
-	border: 0px;
-  width: 110px;
-	margin: 10px 0;
-}
 
 .portal-view{
   width: calc(100% + 80px);
@@ -3843,8 +3920,6 @@ i.toc-sub-item{
 .portal-editor #portal-section-tabs{
   display: block;
 	border-bottom: 1px solid #333;
-	padding-left: 3px;
-	padding-right: 3px;
 	max-width: 100%;
 	box-sizing: border-box;
 }
@@ -3885,11 +3960,10 @@ i.toc-sub-item{
 
 .portal-editor #portal-section-tabs .section-link-container{
   border-width: 1px 1px 0px 1px;
-  border-color: #333;
+  border-color: #FFF;
   border-style: solid;
-  border-top-right-radius: 3px;
-  border-top-left-radius: 3px;
-	margin-right: -1px;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
 	height: 36px;
 }
 .portal-editor #portal-section-tabs .section-link-container.hidden-section{
@@ -3902,6 +3976,7 @@ i.toc-sub-item{
 
 .portal-editor #portal-section-tabs .section-link-container.active{
   background-color: #FFF;
+  border-color: #CCC;
 }
 .portal-view #portal-section-tabs .section-link-container.active{
   background-color: #2c7e90; /* Back-up color for IE */
@@ -5549,6 +5624,8 @@ body.mapMode{
   z-index: 5;
   text-align: center;
   background: white;
+  -webkit-border-radius: 4px;
+          border-radius: 4px;
   -webkit-transform: translate3d(0, 0, 0);
           transform: translate3d(0, 0, 0);
 }
@@ -5641,8 +5718,8 @@ body.mapMode{
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
 }
 .can-toggle.can-toggle-small input[type="checkbox"]:checked ~ label .can-toggle-switch:after {
-  -webkit-transform: translate3d(44px, 0, 0);
-          transform: translate3d(44px, 0, 0);
+  -webkit-transform: translate3d(98px, 0, 0);
+          transform: translate3d(98px, 0, 0);
 }
 .can-toggle.can-toggle-small input[type="checkbox"]:checked:focus ~ label .can-toggle-switch:after, .can-toggle.can-toggle-small input[type="checkbox"]:checked:hover ~ label .can-toggle-switch:after {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
@@ -5651,24 +5728,25 @@ body.mapMode{
   font-size: 1em;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch {
-  height: 2em;
-  -webkit-flex: 0 0 90px;
-      -ms-flex: 0 0 90px;
-          flex: 0 0 90px;
-  border-radius: 2px;
+  height: 2.5em;
+  -webkit-flex: 0 0 200px;
+      -ms-flex: 0 0 200px;
+          flex: 0 0 200px;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch:before {
-  left: 45px;
-  line-height: 2em;
-  width: 45px;
+  left: 100px;
+  line-height: 2.5em;
+  width: 100px;
   padding: 0 12px;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch:after {
   top: 1px;
   left: 1px;
-  border-radius: 1px;
-  width: 44px;
-  line-height: calc(2em - 2px);;
+  border-radius: 4px;
+  width: 100px;
+  line-height: calc(2.5em - 2px);
 }
 .can-toggle.can-toggle-small label .can-toggle-switch:hover:after {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
@@ -5691,6 +5769,7 @@ body.mapMode{
   white-space: nowrap;
   text-overflow: ellipsis;
   padding: 0px 5px;
+  width: 100%;
 }
 .ui-autocomplete .ui-menu-item:hover{
   background-color: #DDD;
@@ -5948,6 +6027,22 @@ Editor View
     font-size: 1.1em;
     line-height: 1.6em;
 }
+#editor-header .editor-controls{
+  min-height: 130px;
+  align-items: center;
+  display: flex;
+  margin-left: 40px;
+  height: 100%;
+}
+#editor-header .editor-controls:empty{
+  display: none;
+}
+#editor-header .editor-controls .btn{
+  align-self: center;
+  margin-top: 14px;
+  padding: 10px 15px;
+}
+
 .side-nav-item a {
     width: 100%;
     display: block;
@@ -6006,7 +6101,7 @@ ul.side-nav-items {
   width: 100%;
   box-sizing: border-box;
   bottom: 0px;
-  padding: 20px;
+  padding: 20px 40px;
   z-index: 13;
 	height: 74px;
 	box-sizing: border-box;
@@ -6014,6 +6109,11 @@ ul.side-nav-items {
 .metadata-view #editor-footer{
     display: none;
     left: 0px;
+}
+#editor-footer a:not(.btn){
+    color: #FFF;
+    font-weight: bold;
+    line-height: 40px;
 }
 #cancel-metadata-prov{
     margin-left: 30px;
@@ -6232,15 +6332,20 @@ ul.side-nav-items {
 	cursor:ns-resize;
 }
 
-.editor-controls .btn{
+.editor-save-controls{
 	float: right;
+}
+.editor-save-controls > a{
 	margin-left: 10px;
-	color: #FFF;
     height: 1.5em;
     line-height: 1.5em;
     font-size: 1.1em;
     font-weight: bold;
 }
+.editor-save-controls > a:not(.btn){
+  color: #FFF;
+}
+.editor-save-controls
 .metadata-container textarea{
 	width: 100%;
 	margin-bottom: 20px;
@@ -6321,6 +6426,7 @@ textarea.medium{
 	box-sizing: border-box;
 	font-size: 1em;
   border-radius: 3px;
+  width: 100%;
 }
 .Editor .checkbox{
 	clear: both;
@@ -6529,9 +6635,9 @@ textarea.medium{
 }
 .Editor .funding-row .ui-autocomplete{
 	position: absolute !important;
-    font-size: 1.2em;
+  font-size: 1.2em;
 }
-.Editor .ui-autocomplete .ui-menu-item {
+.Editor .funding-container .ui-autocomplete .ui-menu-item {
     font-size: .7em;
 }
 .Editor .funding-container .ui-helper-hidden-accessible{

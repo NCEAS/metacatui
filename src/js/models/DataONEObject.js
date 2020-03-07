@@ -305,8 +305,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               //Save the identifier as the id attribute
               sysMetaValues.id = sysMetaValues.identifier;
 
-              //Create a new AccessPolicy collection
-              sysMetaValues.accessPolicy = this.createAccessPolicy($(systemMetadata).find("accesspolicy"));
+              //Parse the Access Policy
+              if( this.get("accessPolicy") && AccessPolicy.prototype.isPrototypeOf(this.get("accessPolicy")) ){
+                this.get("accessPolicy").parse($(systemMetadata).find("accesspolicy"));
+                sysMetaValues.accessPolicy = this.get("accessPolicy");
+              }
+              else{
+                //Create a new AccessPolicy collection, if there isn't one already.
+                sysMetaValues.accessPolicy = this.createAccessPolicy($(systemMetadata).find("accesspolicy"));
+              }
 
               return sysMetaValues;
 
@@ -683,22 +690,22 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 //Trigger a custom event that the sys meta was updated
                 model.trigger("sysMetaUpdated");
               },
-              error: function (model, response, xhr) {
+              error: function (xhr, status, statusCode) {
 
-                  model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
-                  var numSaveAttempts = model.get("numSaveAttempts");
+                model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                var numSaveAttempts = model.get("numSaveAttempts");
 
-                  if (numSaveAttempts < 3 && (response.status == 408 || response.status == 0)) {
+                if (numSaveAttempts < 3 && (statusCode == 408 || statusCode == 0)) {
 
-                      //Try saving again in 10, 40, and 90 seconds
-                      setTimeout(function () {
-                              model.updateSysMeta.call(model);
-                          },
-                          (numSaveAttempts * numSaveAttempts) * 10000);
-                  } else {
+                    //Try saving again in 10, 40, and 90 seconds
+                    setTimeout(function () {
+                            model.updateSysMeta.call(model);
+                        },
+                        (numSaveAttempts * numSaveAttempts) * 10000);
+                } else {
                       model.set("numSaveAttempts", 0);
 
-                      var parsedResponse = $(response.responseText).not("style, title").text();
+                      var parsedResponse = $(xhr.responseText).not("style, title").text();
 
                       //When there is no network connection (status == 0), there will be no response text
                       if (!parsedResponse)
@@ -733,11 +740,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
          * if the current user has authorization to perform. This function doesn't return
          * the result of the check, but it sends an XHR, updates this model, and triggers a change event.
          */
-        checkAuthority: function(action){
+        checkAuthority: function(action, options){
 
           // return false - if neither PID nor SID is present to check the authority
           if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
             return false;
+          }
+
+          if( typeof options == "undefined" ){
+            var options = {};
           }
 
           // If PID is not present - check authority with seriesId
@@ -752,24 +763,26 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           if(!authServiceUrl)
             return false;
 
+          var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+                model.set("isAuthorized", true);
+                model.trigger("change:isAuthorized");
+              },
+              onError = options.onError || function(xhr, textStatus, errorThrown){
+                if(errorThrown == 404){
+                  model.set("notFound", true);
+                  model.trigger("notFound");
+                }
+                else{
+                  model.set("isAuthorized", false);
+                }
+              };
+
           var model = this;
           var requestSettings = {
             url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
-
             type: "GET",
-            success: function(data, textStatus, xhr) {
-              model.set("isAuthorized", true);
-              model.trigger("change:isAuthorized");
-            },
-            error: function(xhr, textStatus, errorThrown) {
-              if(errorThrown == 404){
-                model.set("notFound", true);
-                model.trigger("notFound");
-              }
-              else{
-                model.set("isAuthorized", false);
-              }
-            }
+            success: onSuccess,
+            error: onError
           }
           $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 

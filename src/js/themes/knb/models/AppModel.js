@@ -33,9 +33,20 @@ define(['jquery', 'underscore', 'backbone'],
 
       maxDownloadSize: 3000000000,
 
-      // Flag which, when true shows Whole Tale features in the UI
+      /**
+       * Flag which, when true shows Whole Tale features in the UI
+       * @type {Boolean}
+       */
       showWholeTaleFeatures: false,
+      /**
+       * The environments that are exposed to DataONE users
+       * @type {Array}
+       */
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
+      /**
+      * The Whole Tale endpoint that handles users
+      * @type {String}
+      */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
       /*
@@ -64,20 +75,6 @@ define(['jquery', 'underscore', 'backbone'],
       editorSaveErrorMsg: "Not all of your changes could be submitted.",
       editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted. ",
 
-      defaultAccessPolicy: [{
-
-        subject: "CN=knb-data-admins,DC=dataone,DC=org",
-        read: true,
-        write: true,
-        changePermission: true
-      },
-      {
-        subject: "public",
-        read: true
-      }],
-
-      allowAccessPolicyChanges: true,
-
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
@@ -92,6 +89,21 @@ define(['jquery', 'underscore', 'backbone'],
       authServiceUrl: null,
       queryServiceUrl: null,
       reserveServiceUrl: null,
+
+      /**
+      * If false, the /monitor/status (the service that returns the status of various DataONE services) will not be used.
+      * @type {boolean}
+      */
+      enableMonitorStatus: true,
+
+      /**
+      * The URL for the service that returns the status of various DataONE services.
+      * The only supported status so far is the search index queue -- the number of
+      *   objects that are waiting to be indexed in the Solr search index
+      * @type {string}
+      * @readonly
+      */
+      monitorStatusUrl: "",
 
       //If set to false, some parts of the app will send POST HTTP requests to the
       // Solr search index via the `/query/solr` DataONE API.
@@ -130,6 +142,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Quality suites for aggregated quality scores (i.e. metrics tab) 
       mdqAggregatedSuiteIds: ["FAIR.suite.1"],
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
+      mdqFormatIds:["eml*", "https://eml*"],
 
       // Metrics endpoint url
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
@@ -200,6 +213,101 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {boolean}
       */
       showAnnotationIndicator: false,
+
+      /**
+      * If true, users can change the AccessPolicy for their objects.
+      * @type {boolean}
+      */
+      allowAccessPolicyChanges: true,
+
+      /**
+      * The default Access Policy set on new objects uploaded to the repository.
+      * Each literal object here gets set directly on an AccessRule model.
+      * See the AccessRule model list of default attributes for options on what to set here.
+      * @see {@link AccessRule}
+      * @type {object}
+      */
+      defaultAccessPolicy: [{
+
+        subject: "CN=knb-data-admins,DC=dataone,DC=org",
+        read: true,
+        write: true,
+        changePermission: true
+      },
+      {
+        subject: "public",
+        read: true
+      }],
+
+      /**
+      * The user-facing name for editing the Access Policy. This is displayed as the header of the AccessPolicyView, for example
+      * @type {string}
+      */
+      accessPolicyName: "Sharing options",
+
+      /**
+      * @type {object}
+      * @property {boolean} accessRuleOptions.read  - If true, users will be able to give others read access to their DataONE objects
+      * @property {boolean} accessRuleOptions.write - If true, users will be able to give others write access to their DataONE objects
+      * @property {boolean} accessRuleOptions.changePermission - If true, users will be able to give others changePermission access to their DataONE objects
+      */
+      accessRuleOptions: {
+        read: true,
+        write: true,
+        changePermission: true
+      },
+
+      /**
+      * @type {object}
+      * @property {boolean} accessRuleOptionNames.read  - The user-facing name of the "read" access in Access Rules
+      * @property {boolean} accessRuleOptionNames.write - The user-facing name of the "write" access in Access Rules
+      * @property {boolean} accessRuleOptionNames.changePermission - The user-facing name of the "changePermission" access in Access Rules
+      */
+      accessRuleOptionNames: {
+        read: "Can view",
+        write: "Can edit",
+        changePermission: "Is owner"
+      },
+
+      /**
+      * If false, the rightsHolder of a resource will not be displayed in the AccessPolicyView.
+      * @type {boolean}
+      */
+      displayRightsHolderInAccessPolicy: true,
+
+      /**
+      * If false, users will not be able to change the rightsHolder of a resource in the AccessPolicyView
+      * @type {boolean}
+      */
+      allowChangeRightsHolder: true,
+
+      /**
+      * A list of group subjects that will be hidden in the AccessPolicy view to
+      * everyone except those in the group. This is useful for preventing users from
+      * removing repository administrative groups from access policies.
+      * @type {string[]}
+      */
+      hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+
+      /**
+      * If true, the public/private toggle will be displayed in the Sharing Options for portals.
+      * @type {boolean}
+      */
+      showPortalPublicToggle: true,
+
+      /**
+      * The public/private toggle will be displayed in the Sharing Options for portals for only
+      * the given users or groups. To display the public/private toggle for everyone,
+      * set `showPortalPublicToggle` to true and keep this array empty.
+      * @type {string[]}
+      */
+      showPortalPublicToggleForSubjects: [],
+
+      /**
+      * If true, the public/private toggle will be displayed in the Sharing Options for datasets.
+      * @type {boolean}
+      */
+      showDatasetPublicToggle: true,
 
       // A lookup map of portal names to portal seriesIds
       portalsMap: {
@@ -395,6 +503,10 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
       //The package service
       this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+
+      if( this.get("enableMonitorStatus") ){
+        this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
+      }
 
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
