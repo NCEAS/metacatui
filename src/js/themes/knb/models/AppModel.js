@@ -276,7 +276,7 @@ define(['jquery', 'underscore', 'backbone'],
       * removing repository administrative groups from access policies.
       * @type {string[]}
       */
-      hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+      hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
 
       /**
       * If true, the public/private toggle will be displayed in the Sharing Options for portals.
