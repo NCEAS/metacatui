@@ -16,14 +16,14 @@
 		<div class="metrics-title">
 			<h3><i class='icon icon-signal'></i></h3>
 			<h3> <%= summaryTerm %> </h3>
-		</div>	
+		</div>
 		<section class="charts row-fluid">
 			<div class="span6 packages badge-container">
 				<div id="total-datasets" class="span6 show-loading"></div>
 				<div class="span6">
 					<p>
-						The total number of publicly-available metadata records. 
-						Only the latest version of each metadata record is counted. 
+						The total number of publicly-available metadata records.
+						Only the latest version of each metadata record is counted.
 						A "dataset" here is defined by a single metadata record which
 						may be packaged with one or more data files.
 					</p>
@@ -34,7 +34,7 @@
 				<div class="span6">
 					<p>
 						The volume of all publicly-available metadata and data files
-						in this <%= userTerm %>. Only the latest version of each file is 
+						in this <%= userTerm %>. Only the latest version of each file is
 						included.
 					</p>
 				</div>
@@ -48,6 +48,7 @@
 			<p>This graph shows the assessment score for all metadata in this <%= userTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
 			<div class = "static-img-container">
 				<div id="metadata-assessment-loading" class="show-loading"></div>
+        <h4>FAIR Assessment</h4>
 				<div id="metadata-assessment-graphic">
 			</div>
 		</section>
@@ -128,10 +129,10 @@
 		</section>
 	</section>
 	<% } %>
-	
+
 	<section class="stripe format-charts-container">
 		<section class="charts">
-			<section class="chart-title">	
+			<section class="chart-title">
 				<div id="formats-title"></div>
 				<h3>File formats</h3>
 				<p>We breakdown the types of metadata and data files uploaded. Only the most recent version of each file is included.</p>
@@ -142,7 +143,7 @@
 			</div>
 		</section>
 	</section>
-	
+
 	<section id="user-data-range" class="stripe metrics">
 		<div class="metrics-title">
 			<div id="coverage-title"></div>
@@ -157,7 +158,7 @@
 
 	<!-- <section class="stripe" id="quality-chart">
 		<section class="charts">
-			<section>	
+			<section>
 				<h2>Metadata quality metrics</h2>
 				<p>A summary of the MDQ scores are included below</p>
 			</section>
