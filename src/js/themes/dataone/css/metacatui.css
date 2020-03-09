@@ -2498,3 +2498,44 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   color: #1C6E84;
 }
 
+/*
+* Repository Portal Object specific headers
+*/
+.PortalView #Navbar .RepositoryPortalView {
+	position: fixed;
+	width: 100%;
+	left: 0px;
+	margin: 0px;
+}
+
+.PortalView #Navbar.RepositoryPortalView .nav {
+	display: block;
+}
+.PortalView #Navbar.RepositoryPortalView .nav > li {
+	display: block;
+}
+.PortalView #Navbar.RepositoryPortalView .nav > li a {
+	font-size: 1em;
+	font-weight: normal;
+}
+
+.PortalView #Navbar.RepositoryPortalView  .nav .input > form > label {
+	font-size: 14px;
+}
+
+.PortalView #Navbar.RepositoryPortalView .navbar-inner {
+	background-color: #660033;
+	background-image: none;
+	padding-top: 0px;
+	padding-bottom: 0px;
+	min-height: auto;
+}
+
+.PortalView #Navbar.RepositoryPortalView .navbar-lower {
+	background-color: #3F001F;
+	background-image: none;
+	width: calc(100% - 40px);
+	padding-top: 0px;
+	padding-bottom: 0px;
+	min-height: auto;
+}

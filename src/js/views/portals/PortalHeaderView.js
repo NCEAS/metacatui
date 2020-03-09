@@ -33,11 +33,8 @@ define(["jquery",
           if ( this.nodeView ) {
             templateInfo.imageURL = this.model.get("logo");
 
-            // Custom remove CSS
-            $(".PortalView .border-image").css("display","block");
-            $(".PortalView #Navbar #logo").css("display","none");
-            $(".PortalView #Navbar .nav").css("display", "block");
-
+            // Re-inserting the default header
+            $(".PortalView #Navbar").addClass("RepositoryPortalView");
           }
           else {
             if( this.model.get("logo") ){
