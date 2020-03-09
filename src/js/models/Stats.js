@@ -617,7 +617,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       var now = new Date();
 
-      var metadataQueryParams = "AND -obsoletedBy:* AND formatType:METADATA  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*";
+      var metadataQueryParams = " AND -obsoletedBy:* AND formatType:METADATA  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*";
       var metadataQuery = this.get('query') + metadataQueryParams;
 
       var firstPossibleUpdate = MetacatUI.nodeModel.isCN(MetacatUI.nodeModel.get("currentMemberNode"))?
