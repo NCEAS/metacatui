@@ -664,7 +664,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         function hide_tooltip(d) {
           if (self.viewType === "dataset") {
-            d3.select("metric_tooltip")
+            d3.select(".metric_tooltip")
                 .transition()
                 .duration(60)
                 .style("opacity", 0);
