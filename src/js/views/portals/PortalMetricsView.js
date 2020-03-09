@@ -174,6 +174,7 @@ define(["jquery",
             // TODO - add a flag within themes to be specific
             if (this.nodeView) {
               this.statsView.hideMetadataAssessment = true;
+              this.statsView.userType = "repository"
             }
 
             //Insert the StatsView into this view

@@ -72,8 +72,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 			this.activeSection = (options && options.section)? options.section : "profile";
 			this.activeSubSection = (options && options.subsection)? options.subsection : "";
-			this.nodeSummaryView = (options && options.nodeSummaryView)? options.nodeSummaryView : undefined;
-			this.nodeId = (options && options.nodeId)? options.nodeId : undefined;
 			this.username = (options && options.username)? options.username : undefined;
 
 			//Add the container element for our profile sections
@@ -110,46 +108,29 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 			// remove the members section directly from the model
 			this.portalModel.removeSection("members");
-
-			if (this.nodeSummaryView) {
-				// remove the members section directly from the model
-				this.portalModel.removeSection("data");
-			}
 			
 			this.portalModel.initalizePortalNodeView(view.model.get("nodeInfo"));
 
-			if (this.nodeSummaryView) {
-				// Create and render a portal view
-				this.portalView = new PortalView({
-					portalId: this.model.get("nodeInfo").identifier,
-					label: username,
-					model: this.portalModel,
-					nodeView: true,
-					activeSectionLabel: "metrics"
-				});
-			}
-			else {
-				// Create and render a portal view
-				this.portalView = new PortalView({
-					portalId: this.model.get("nodeInfo").identifier,
-					label: username,
-					model: this.portalModel,
-					nodeView: true
-				});
-			}
+			//Setting the repo specific statsModel
+			var statsSearchModel = this.model.get("searchModel").clone();
+			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
+			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+			MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+			// Create and render a portal view
+			this.portalView = new PortalView({
+				portalId: this.model.get("nodeInfo").identifier,
+				label: username,
+				model: this.portalModel,
+				nodeView: true
+			});
 
 			$(this.sectionHolder).append(this.portalView.render());
 			return;
 		},
 
 		renderUser: function(){
-			if ( this.nodeSummaryView ) {
-				var view = this;
-				//Create a UserModel with the username given
-				this.model = new UserModel({
-					username: view.username
-				});
-			}
+
 
 			this.model = MetacatUI.appUserModel;
 
