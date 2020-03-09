@@ -125,6 +125,15 @@ define(['jquery', 'underscore', 'backbone'],
       hideSummaryMetadataAssessment: true,
       hideSummaryViewsChart: false,
 
+      // Controls for Repository Portal Objects 
+      // this serves the /profile/{nodeId} end point
+      // This is a temporary configuration. To be replaced with book keeper logic
+      // Note: the following controls only enable/disable metrics for dataonePlusMembers
+      dataonePlusMembers: ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB"],
+      hideRepositoryMetadataAssessments: true,
+      hideRepositoryCitationsChart: false,
+      hideRepositoryDownloadsChart: false,
+      hideRepositoryViewsChart: false,
 
       // Metrics flags for the Dataset Landing Page
       // Enable these flags to enable metrics display

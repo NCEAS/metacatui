@@ -40,6 +40,33 @@ define(["jquery",
         model: undefined,
 
         /**
+        * Aggregated Quality Metrics flag
+        * @type {boolean}
+        */
+        hideMetadataAssessment: false,
+
+
+        /**
+        * Aggregated Citation Metrics flag
+        * @type {boolean}
+        */
+        hideCitationsChart: false,
+
+
+        /**
+        * Aggregated Download Metrics flag
+        * @type {boolean}
+        */
+        hideDownloadsChart: false,
+
+
+        /**
+        * Aggregated View Metrics flag
+        * @type {boolean}
+        */
+        hideViewsChart: false,
+
+        /**
         A template for displaying a loading message
         * @type {Underscore.Template}
         */
@@ -128,27 +155,46 @@ define(["jquery",
               supportDownloads: false
             });
 
-            if (this.nodeView) {
-              statsModel = MetacatUI.statsModel;
-            }
-
-            
             var label_list = [];
             label_list.push(this.model.get("label"));
 
             var metricsModel = new MetricsModel();
             this.metricsModel = metricsModel;
 
-            // Create a different Metric model object for repository profiles
-            if ( this.nodeView ) {
-              // create a node query
-              var pid_list = new Array();
-              pid_list.push(this.model.get("seriesId"));
-              this.metricsModel.set("pid_list", pid_list);
-              this.metricsModel.set("filterType", "repository");
+            if (this.nodeView) {
+
+              // TODO: replace the following logic with dataone bookkeeper service
+              // check if the repository is a dataone member
+              if (MetacatUI.appModel.get("dataonePlusMembers").includes(this.model.get("seriesId"))) {
+                this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideRepositoryMetadataAssessments");
+                this.hideCitationsChart = false || MetacatUI.appModel.get("hideRepositoryCitationsChart");
+                this.hideDownloadsChart = false || MetacatUI.appModel.get("hideRepositoryDownloadsChart");
+                this.hideViewsChart = false || MetacatUI.appModel.get("hideRepositoryViewsChart");
+              }
+              else{
+                this.hideMetadataAssessment = true;
+                this.hideCitationsChart = true;
+                this.hideDownloadsChart = true;
+                this.hideViewsChart = true;
+              }
+
+              // set the statsModel
+              statsModel = MetacatUI.statsModel;
+
+              if (!this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart) {
+                // create a metrics query for repository object
+                var pid_list = new Array();
+                pid_list.push(this.model.get("seriesId"));
+                this.metricsModel.set("pid_list", pid_list);
+                this.metricsModel.set("filterType", "repository");
+              }
+              else{
+                this.metricsModel.set("pid_list", []);
+                this.metricsModel.set("filterType", "");
+              }
             }
             else {
-              // create a portal query
+              // create a metrics query for portal object
               this.metricsModel.set("pid_list", label_list);
               this.metricsModel.set("filterType", "portal");
             }
@@ -163,19 +209,12 @@ define(["jquery",
                 el: document.createElement("div"),
                 model: statsModel,
                 userType: "portal",
-                hideMetadataAssessment: false,
+                hideMetadataAssessment: this.hideMetadataAssessment,
                 // Rendering metrics on the portal
-                hideCitationsChart: false,
-                hideDownloadsChart: false,
-                hideViewsChart: false
+                hideCitationsChart: this.hideCitationsChart,
+                hideDownloadsChart: this.hideDownloadsChart,
+                hideViewsChart: this.hideViewsChart,
             });
-
-            // disable the metadata view from the statsview
-            // TODO - add a flag within themes to be specific
-            if (this.nodeView) {
-              this.statsView.hideMetadataAssessment = true;
-              this.statsView.userType = "repository"
-            }
 
             //Insert the StatsView into this view
             this.$el.html(this.statsView.el);
