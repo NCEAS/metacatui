@@ -14,16 +14,18 @@
       <strong>ID:</strong>
       <code><%= draft.value.id || "No ID" %></code>
     </div>
+    <% if (typeof draft.value.title === "string") { %>
     <div>
       <strong>Title:</strong>
       <span><%= draft.value.title || "No title" %></span>
     </div>
+    <% } %>
     <div>
       <strong>Date Created:</strong>
       <span><%= draft.value.datetime || "No timestamp" %></span>
     </div>
     <div>
-      <p><strong>Draft XML:</strong></p>
+      <p><strong>Draft:</strong></p>
       <p><a class="btn btn-small copy-to-clipboard"><i class="icon icon-copy"></i> Copy Draft to Clipboard</a></p>
 
       <textarea id="draft-<%= i %>" class="span8" rows="6" cols="80"><%= draft.value.draft %></textarea>

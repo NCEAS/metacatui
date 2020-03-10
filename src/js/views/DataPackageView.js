@@ -3,13 +3,14 @@ define([
     'jquery',
     'underscore',
     'backbone',
+    'localforage',
     'collections/DataPackage',
     'models/DataONEObject',
     'models/metadata/ScienceMetadata',
     'models/metadata/eml211/EML211', 'views/DataItemView',
     'text!templates/dataPackage.html',
-    'text!templates/dataPackageStart.html'], 
-    function($, _, Backbone, DataPackage, DataONEObject, ScienceMetadata, EML211, DataItemView, 
+    'text!templates/dataPackageStart.html'],
+    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, DataItemView,
     		DataPackageTemplate, DataPackageStartTemplate) {
         'use strict';
         
@@ -72,6 +73,7 @@ define([
                 // Listen for  add events because models are being merged
                 this.listenTo(this.dataPackage, 'add', this.addOne);
                 this.listenTo(this.dataPackage, "fileAdded", this.addOne);
+                this.listenTo(this.dataPackage, "change", this.saveDraft);
 
                 // Render the current set of models in the DataPackage
                 this.addAll();
@@ -298,9 +300,25 @@ define([
                 event.stopPropagation();
                 event.preventDefault();
             },
-            
-            
-            
+
+            /**
+             * Save a draft of the DataPackage
+             */
+            saveDraft: function() {
+            	try {
+                    var id = this.dataPackage.packageModel.get("id");
+
+            		LocalForage.setItem(id,
+            		{
+            			id: id,
+            			datetime: (new Date()).toISOString(),
+            			draft: this.dataPackage.serialize()
+            		});
+            	} catch (ex) {
+            		console.log("Error saving draft:", ex);
+            	}
+            },
+
         });
         return DataPackageView;
 });
