@@ -1,11 +1,11 @@
 /* global define */
-define(['underscore', 'jquery', 'backbone',
+define(['underscore', 'jquery', 'backbone', 'localforage',
         'models/DataONEObject', 'models/metadata/eml211/EMLAttribute', 'models/metadata/eml211/EMLEntity',
         'views/DataPreviewView',
         'views/metadata/EMLAttributeView',
         'text!templates/metadata/eml-entity.html',
         'text!templates/metadata/eml-attribute-menu-item.html'],
-    function(_, $, Backbone, DataONEObject, EMLAttribute, EMLEntity,
+    function(_, $, Backbone, LocalForage, DataONEObject, EMLAttribute, EMLEntity,
     		DataPreviewView,
     		EMLAttributeView,
     		EMLEntityTemplate,
@@ -28,6 +28,7 @@ define(['underscore', 'jquery', 'backbone',
 
             /* Events this view listens to */
             events: {
+            	"change" : "saveDraft",
             	"change input" : "updateModel",
             	"change textarea" : "updateModel",
             	"click .nav-tabs a" : "showTab",
@@ -497,7 +498,27 @@ define(['underscore', 'jquery', 'backbone',
              */
             hide: function(){
             	this.$el.modal('hide');
-            }
+            },
+
+            /**
+             * Save a draft of the parent EML model
+             */
+            saveDraft: function() {
+            	try {
+            		var model = this.model.getParentEML();
+            		var title = model.get("title") || "No title";
+
+            		LocalForage.setItem(model.get("id"),
+            		{
+            			id: model.get("id"),
+            			datetime: (new Date()).toISOString(),
+            			title: Array.isArray(title) ? title[0] : title,
+            			draft: model.serialize()
+            		});
+            	} catch (ex) {
+            		console.log("Error saving draft:", ex);
+            	}
+            },
         });
 
         return EMLEntityView;

@@ -1,0 +1,38 @@
+<h2>Your Locally-Saved Drafts</h2>
+
+<p class="lead">Support staff may instruct you to visit this page in order to retrieve drafts of your failed submissions.</p>
+
+<h3>Drafts</h3>
+
+<% if (drafts.length == 0) { %>
+  <p>No drafts to show. Drafts will automatically appear here when you use the editor and refesh this page.</p>
+<% } %>
+
+<% _.each(drafts, function(draft, i) { %>
+  <div class="">
+    <div>
+      <strong>ID:</strong>
+      <code><%= draft.value.id || "No ID" %></code>
+    </div>
+    <div>
+      <strong>Title:</strong>
+      <span><%= draft.value.title || "No title" %></span>
+    </div>
+    <div>
+      <strong>Date Created:</strong>
+      <span><%= draft.value.datetime || "No timestamp" %></span>
+    </div>
+    <div>
+      <p><strong>Draft XML:</strong></p>
+      <p><a class="btn btn-small copy-to-clipboard"><i class="icon icon-copy"></i> Copy Draft to Clipboard</a></p>
+
+      <textarea id="draft-<%= i %>" class="span8" rows="6" cols="80"><%= draft.value.draft %></textarea>
+      <p>
+        <span class="label label-info">Note</span>
+        Copy the text inside this box when sending a draft to support staff or click the 'Copy Draft to Clipboard' button.
+      </p>
+    </div>
+  </div>
+
+  <hr />
+<% })%>
