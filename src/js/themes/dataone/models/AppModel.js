@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone'],
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
 
-      emailContact: "",
+      emailContact: "support@dataone.org",
 
       googleAnalyticsKey: null,
 
