@@ -301,10 +301,6 @@ define(['jquery', 'underscore', 'backbone'],
       */
       showDatasetPublicToggle: true,
 
-      // A lookup map of portal names to portal seriesIds
-      portalsMap: {
-          "DBO": "urn:uuid:3fa6665d-a89f-4cc3-b688-28e0489a45cb"
-      },
       /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}

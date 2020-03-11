@@ -360,83 +360,23 @@ function ($, _, Backbone) {
      * Render the portal view based on the given name, id, or section
      */
      renderPortal: function(portalId, portalSection) {
-        var label;
-        var portalsMap = MetacatUI.appModel.get("portalsMap");
+       // Add the overall class immediately so the navbar is styled correctly right away
+ 			 $("body").addClass("PortalView");
+       // Look up the portal document seriesId by its registered name if given
+       if ( portalSection ) {
+         this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label + "/" + portalSection);
+       }
+       else{
+         this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label);
+       }
 
-        // Look up the portal document seriesId by its registered name if given
-        if ( portalId ) {
-            if ( portalsMap ) {
-                // Do a forward lookup by key
-                if ( typeof (portalsMap[portalId] ) !== "undefined" ) {
-                    label = portalId;
-                    portalId = portalsMap[portalId];
-                    // Then set the history
-                    if ( portalSection ) {
-                        this.routeHistory.push("portals/" + label + "/" + portalSection);
-                    } else {
-                        this.routeHistory.push("portals/" + label);
-                    }
-                } else {
-                    // Try a reverse lookup of the portal name by values
-                    label = _.findKey(portalsMap, function(value){
-                      return( value ==  portalId );
-                    });
-
-                    if ( typeof label !== "undefined" ) {
-                        if ( portalSection ) {
-                            this.routeHistory.push("portals/" + label + "/" + portalSection);
-                        } else {
-                            this.routeHistory.push("portals/" + label);
-                        }
-                    } else {
-
-                      //Try looking up the portal name with case-insensitive matching
-                      label = _.findKey(portalsMap, function(value, key){
-                        return( key.toLowerCase() == portalId.toLowerCase() );
-                      });
-
-                      //If a matching portal name was found, route to it
-                      if( label ){
-
-                        //Get the portal ID from the map
-                        portalId = portalsMap[label];
-
-                        // Then set the history
-                        if ( portalSection ) {
-                          this.navigate("portals/" + label + "/" + portalSection, { trigger: false, replace: true });
-                          this.routeHistory.push("portals/" + label + "/" + portalSection);
-                        } else {
-                          this.navigate("portals/" + label, { trigger: false, replace: true });
-                          this.routeHistory.push("portals/" + label);
-                        }
-                      }
-                      else{
-                        // Fall back to routing to the portal by id, not name
-                        this.routeHistory.push("portals/" + portalId);
-                      }
-                    }
-                }
-            }
-        } else {
-            // TODO: Show a PortalsView here of the Portals collection (no portalId given)
-            return;
-        }
-
-        if ( !MetacatUI.appView.portalView ) {
-          require(['views/portals/PortalView'], function(PortalView){
-            MetacatUI.appView.portalView = new PortalView({
-                          portalId: portalId,
-                          label: label,
-                          activeSectionLabel: portalSection
-                      });
-            MetacatUI.appView.showView(MetacatUI.appView.portalView);
-          });
-        } else {
-                  MetacatUI.appView.portalView.label = label;
-                  MetacatUI.appView.portalView.portalId = portalId;
-                  MetacatUI.appView.portalView.activeSectionLabel = portalSection;
-          MetacatUI.appView.showView(MetacatUI.appView.portalView);
-        }
+       require(['views/portals/PortalView'], function(PortalView){
+         MetacatUI.appView.portalView = new PortalView({
+             label: label,
+             activeSectionLabel: portalSection
+         });
+         MetacatUI.appView.showView(MetacatUI.appView.portalView);
+       });
       },
 
 		/*

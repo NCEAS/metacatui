@@ -309,13 +309,6 @@ define(['jquery', 'underscore', 'backbone'],
       */
       showDatasetPublicToggle: true,
 
-      // A lookup map of portal names to portal seriesIds
-      portalsMap: {
-        "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",
-        "markdownTest": "urn:uuid:21580913-c23a-4677-af71-45cf0415a57e",
-        "example": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854d1234"
-      },
-
       /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}

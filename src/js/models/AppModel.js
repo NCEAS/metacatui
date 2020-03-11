@@ -301,8 +301,6 @@ define(['jquery', 'underscore', 'backbone'],
       */
       showDatasetPublicToggle: true,
 
-      // A lookup map of portal names to portal seriesIds
-      portalsMap: {},
       /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}
