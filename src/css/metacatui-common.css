@@ -2829,12 +2829,26 @@ img[src*="googleapis.com/"].georegion-map{
   margin-left: 0px;
   display: none;
 }
+.access-policy-view:not(.modal) .modal-header{
+  border-bottom-width: 0px;
+  padding: 0px;
+}
+.access-policy-view:not(.modal) .modal-body{
+  padding: 0px;
+  max-height: none;
+}
+.access-policy-view:not(.modal) .modal-header .close{
+  display: none;
+}
 .access-policy-control.disabled{
   cursor: not-allowed;
 }
-.access-policy-view h4{
+.access-policy-view.modal h4{
   font-size: 1em;
   font-weight: bold;
+}
+.access-policy-view:not(.modal) h4 .icon{
+  display: none;
 }
 .access-policy-view .popover li h5 {
   display: inline;
@@ -2891,6 +2905,9 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .access-policy-view p{
   margin-bottom: 20px;
+}
+.access-policy-view:not(.modal) .modal-footer{
+  display: none;
 }
 /******************************************
 * Portal Editor
