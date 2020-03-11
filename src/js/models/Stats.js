@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
-	function($, _, Backbone, LogsSearch) {
+define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
+	function($, _, Backbone, LogsSearch, Promise) {
 	'use strict';
 
 	// Statistics Model
@@ -39,6 +39,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			firstBeginDate: 0,
 			temporalCoverage: 0,
 			coverageYears: 0,
+
+			hideMetadataAssessment: false,
+      mdqScoresImage: null,
 
       //HTTP GET requests are typically limited to 2,083 characters. So query lengths
       // should have this maximum before switching over to HTTP POST
@@ -99,7 +102,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 		},
 
 		//This function serves as a shorthand way to get all of the statistics stored in the model
-		getAll: function(){
+		getAll: function(options){
+			if (typeof options === "undefined")
+				var options = {};
+
 			//Listen for our responses back from the server before we send requests that require info from the response
 			this.listenToOnce(this, 'change:firstBeginDate', this.getLastEndDate);
 			this.listenToOnce(this, 'change:lastEndDate', this.getCollectionYearFacets);
@@ -115,8 +121,10 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			this.getDownloadDates();
 
-			//this.getDataDownloadDates();
-			//this.getMetadataDownloadDates();
+			// Only get the Mdq scores if the hideMetadataAssessment is set to false
+			if (!this.get("hideMetadataAssessment"))
+				this.getMdqScores();
+
 		},
 
     // Send a Solr query to get the earliest beginDate, latest endDate, and facets of data collection years
@@ -197,7 +205,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       }
 
       //Construct a query
-      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + (new Date()).toISOString() + "] AND -obsoletedBy:*",
+      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + (new Date()).toISOString() + "] AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get("query") + specialQueryParams,
           //Get one row only
           rows = "1",
@@ -263,7 +271,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
       //Get the latest temporal data coverage year
       var specialQueryParams = " AND endDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "]" + //Use date filter to weed out badly formatted data
-            " AND -obsoletedBy:*",
+            " AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           rows = 1,
           fl   = "endDate",
@@ -343,7 +351,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       var model = this;
 
       //Build the query to get the format types
-      var specialQueryParams = " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*",
+      var specialQueryParams = " AND (formatType:METADATA OR formatType:DATA) AND -obsoletedBy:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           rows  = "2",
           group = true,
@@ -464,7 +472,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
         return;
       }
 
-      var specialQueryParams = " AND formatType:DATA AND -obsoletedBy:*",
+      var specialQueryParams = " AND formatType:DATA AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           facet = "true",
           facetField = "formatId",
@@ -532,7 +540,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			var model = this;
 
-      var specialQueryParams = " AND formatType:METADATA AND -obsoletedBy:*",
+      var specialQueryParams = " AND formatType:METADATA AND -obsoletedBy:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get("query") + specialQueryParams,
           facet = "true",
           facetField = "formatId",
@@ -602,7 +610,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
       var now = new Date();
 
-      var metadataQueryParams = "AND -obsoletedBy:* AND formatType:METADATA";
+      var metadataQueryParams = "AND -obsoletedBy:* AND formatType:METADATA  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*";
       var metadataQuery = this.get('query') + metadataQueryParams;
 
       var firstPossibleUpdate = MetacatUI.nodeModel.isCN(MetacatUI.nodeModel.get("currentMemberNode"))?
@@ -799,7 +807,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       //Get the earliest upload date
       var specialQueryParams = " AND formatType:(METADATA OR DATA)" + //Weeds out resource maps and annotations
                   " AND dateUploaded:[" + firstPossibleUpload + " TO " + now.toISOString() + "]" + //Weeds out badly formatted dates
-                  " AND -obsoletes:*",    //Only count one version of a revision chain
+                  " AND -obsoletes:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",    //Only count one version of a revision chain
           query = this.get('query') + specialQueryParams,
           fl   = "dateUploaded",
           rows = "1",
@@ -974,7 +982,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
       var now = new Date();
 
       //The full query
-      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "] AND -obsoletedBy:*",
+      var specialQueryParams = " AND beginDate:[" + this.firstPossibleDate + " TO " + now.toISOString() + "] AND -obsoletedBy:*  AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
           query = this.get('query') + specialQueryParams,
           rows = "0",
           facet = "true",
@@ -1188,6 +1196,82 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			if(this.get("downloads") == 0) this.trigger("change:downloads");
 		},
+
+    imgLoad: function(url) {
+        // Create new promise with the Promise() constructor;
+        // This has as its argument a function with two parameters, resolve and reject
+        var model = this;
+        return new Promise(function (resolve, reject) {
+            // Standard XHR to load an image
+            var request = new XMLHttpRequest();
+            request.open('GET', url);
+            request.responseType = 'blob';
+
+            // When the request loads, check whether it was successful
+            request.onload = function () {
+                if (request.status === 200) {
+                    // If successful, resolve the promise by passing back the request response
+                    resolve(request.response);
+                } else {
+                    // If it fails, reject the promise with a error message
+                    reject(new Error('Image didn\'t load successfully; error code:' + request.statusText));
+                    model.set('mdqScoresError', request.statusText);
+                }
+            };
+
+            request.onerror = function () {
+                console.log("onerror");
+                // Also deal with the case when the entire request fails to begin with
+                // This is probably a network error, so reject the promise with an appropriate message
+                reject(new Error('There was a network error.'));
+            };
+
+            // Send the request
+            request.send();
+        });
+    },
+
+    getMdqScores: function(){
+      try{
+        var myImage = new Image();
+        var model = this;
+        myImage.crossOrigin = ""; // or "anonymous"
+        if(MetacatUI.appView.currentView === null) return;
+
+        // Call the function with the URL we want to load, but then chain the
+        // promise then() method on to the end of it. This contains two callbacks
+        var serviceUrl = MetacatUI.appModel.get('mdqScoresServiceUrl');
+
+        if( !serviceUrl ){
+          this.set("mdqScoresImage", this.defaults.mdqScoresImage);
+          this.trigger("change:mdqScoresImage");
+          return;
+        }
+
+        if( Array.isArray(MetacatUI.appModel.get('mdqAggregatedSuiteIds')) && MetacatUI.appModel.get('mdqAggregatedSuiteIds').length ){
+          var suite = MetacatUI.appModel.get('mdqAggregatedSuiteIds')[0];
+          var id = MetacatUI.appView.currentView.model.get("id");
+          var url = serviceUrl + "?collection=" + id + "&suite=" + suite;
+          this.imgLoad(url).then(function (response) {
+              // The first runs when the promise resolves, with the request.reponse specified within the resolve() method.
+              var imageURL = window.URL.createObjectURL(response);
+              myImage.src = imageURL;
+              model.set('mdqScoresImage', myImage);
+              // The second runs when the promise is rejected, and logs the Error specified with the reject() method.
+          }, function (Error) {
+              console.error(Error);
+          });
+        }
+        else{
+          this.set("mdqScoresImage", this.defaults.mdqScoresImage);
+        }
+      }
+      catch(e){
+        this.set("mdqScoresImage", this.defaults.mdqScoresImage);
+        this.trigger("change:mdqScoresImage");
+        console.error("Cannot get the Metadata Quality scores: ", e);
+      }
+    },
 
     setRequestType: function(){
       if( MetacatUI.appModel.get("disableQueryPOSTs") ){

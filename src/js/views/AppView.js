@@ -157,7 +157,6 @@ define(['jquery',
 						oldView.onClose();
 
 					// render the new view
-					view.$el.hide();
 					view.render(viewOptions);
 					view.$el.fadeIn('slow', function() {
 

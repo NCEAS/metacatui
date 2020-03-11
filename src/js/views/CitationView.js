@@ -73,7 +73,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
           title = this.model.get("title"),
           journal =this.model.get("publisher"),
           volume =this.model.get("volume"),
-          page =this.model.get("page");
+          page =this.model.get("page"),
+          citationMetadata =this.model.get("citationMetadata");
+
 
         // Format the Author textarea        else if (this.model.type == "CitationModel") {
         if (authorText.length > 0) {
@@ -99,6 +101,21 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
               if (authors.length > 1) authorText += " ";
             }
 
+            // Checking for incorrectly escaped characters
+            if (/&amp;[A-Za-z0-9]/.test(author)) {
+
+              // initializing the DOM parser
+              var parser = new DOMParser();
+
+              // parsing the incorrectly escaped `&amp;`
+              var unescapeAmpersand = parser.parseFromString(author, 'text/html');
+
+              // unescaping the & and retrieving the actual character
+              var unescapedString =  parser.parseFromString(unescapeAmpersand.body.textContent, 'text/html');
+
+              // saving the correct author text before displaying
+              author = unescapedString.body.textContent;
+            }
             authorText += author;
 
             if (count == authors.length) authorText += ". ";
@@ -311,6 +328,29 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
           }
           var pageEl = $(document.createElement("span")).addClass("publisher").text(pageText);
 
+          var datasetLinkEl = $(document.createElement("span"))
+                              .text("Cites Data: ");
+
+          // Generate links for the cited datasets
+          var citationMetadataCounter = 0;
+          for (var key in citationMetadata) {
+            citationMetadataCounter += 1;
+
+            var commaSeperator = (citationMetadataCounter < Object.keys(citationMetadata).length) ? "," : ".";
+
+            var additionalAuthors = citationMetadata[key]["origin"].length > 1 ? " et al." : "";
+
+            var targetLinkEl = $(document.createElement("a"))
+                        .addClass("metrics-route-to-metadata")
+                        .attr("data-id", key)
+                        .attr("href", MetacatUI.root + "/view/" + (key))
+                        .attr("target", "_blank")
+                        .text("(" + citationMetadata[key]["origin"][0].split(" ")[0] + additionalAuthors + " "  + (citationMetadata[key]["datePublished"]).slice(0,4) + ")" + commaSeperator + " " );
+
+            datasetLinkEl.append(targetLinkEl);
+
+          }
+
           var linkEl = $(document.createElement("a"))
                   .addClass("metrics-route-to-metadata")
                   .attr("data-id", id)
@@ -328,6 +368,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
         }
 
         this.$el.append(linkEl);
+
+        // Only append the citation link when we have non-zero datasets
+        // Append the cited dataset text to the link element
+        if ( datasetLinkEl !== "undefined" && citationMetadataCounter > 0) {
+          this.$el.append(datasetLinkEl);
+        }
       }
       else if(this.createTitleLink){
 

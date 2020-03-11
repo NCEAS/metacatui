@@ -75,7 +75,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
         // Handling the Click function
         // Displaying the metric modal on Click
         showMetricModal: function(e) {
-            if (MetacatUI.appModel.get("displayMetricModals")) {
+            if (MetacatUI.appModel.get("displayMetricModals") && ((this.model.get("totalCitations")+this.model.get("totalDownloads")+this.model.get("totalViews") != 0))) {
                 var modalView = new MetricModalView({metricName: this.metricName, metricsModel: this.model});
                 modalView.render();
                 modalView.show();
@@ -88,47 +88,20 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
         },
 
         renderResults: function() {
-            var metric = this.metricName
-            var results = this.model.get(metric.toLowerCase());
-            // Check if the metric object exists in results obtained from the service
+            var total = this.model.get("total"+this.metricName);
+            // Check if the metric object exists in results obtained from the service 
             // If it does, get its total value else set the total count to 0
 
-            if (typeof results !== 'undefined') {
-                var total = 0
-                if (results.length > 0) {
-
-                    if(metric == 'Citations') {
-                        total = results.reduce(function(acc, val) { return acc + val; });
-                        this.model.set('totalCitations', total);
-                    }
-                    if(metric == 'Views') {
-                        total = results.reduce(function(acc, val) { return acc + val; });
-                        this.model.set('totalViews', total);
-                    }
-                    if(metric == 'Downloads') {
-                        total = results.reduce(function(acc, val) { return acc + val; });
-                        this.model.set('totalDownloads', total);
-                    }
-                }
-
-            } else {
-                if(metric == 'Citations') {
-                    total = 0;
-                    this.model.set('totalCitations', total);
-                }
-                if(metric == 'Views') {
-                    total = 0;
-                    this.model.set('totalViews', total);
-                }
-                if(metric == 'Downloads') {
-                    total = 0;
-                    this.model.set('totalDownloads', total);
-                }
-            };
-
             // Replacing the metric total count with the spinning icon.
-            this.$('.metric-value').addClass("badge");
+            
             this.$('.metric-value').text(MetacatUI.appView.numberAbbreviator(total, 1));
+            this.$('.metric-value').addClass("badge");
+
+            if((this.model.get("totalCitations") == 0) && (this.model.get("totalDownloads") == 0) && (this.model.get("totalViews") == 0)) {
+                this.$el.removeClass("metrics");
+                this.$el.addClass("metrics-button-disabled");
+                this.$el.click(function(){return false;});
+            }
         },
 
         renderError: function() {

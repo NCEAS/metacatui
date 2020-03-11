@@ -988,7 +988,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	margin-right: auto;
   	clear: both;
   	padding: 20px;
-  	    max-width: 960px;
+	/* max-width: 960px; */
   }
 
   .profile .stripe{
@@ -3023,11 +3023,19 @@ a {
 
 
 #metric-modal .metric-chart .scale_button:hover rect,
+.views-metrics .metric-chart .scale_button:hover rect,
+.downloads-metrics .metric-chart .scale_button:hover rect,
 #metric-modal .metric-chart .bar,
-#metric-modal .metric-chart .bar_context {
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar,
+#metric-modal .metric-chart .bar_context,
+.views-metrics .metric-chart .bar_context,
+.downloads-metrics .metric-chart .bar_context {
    fill: #146660;
 }
 
-#metric-modal .metric-chart .bar {
+#metric-modal .metric-chart .bar,
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar {
    stroke: #146660;
 }

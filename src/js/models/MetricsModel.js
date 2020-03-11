@@ -72,10 +72,11 @@ define(['jquery', 'underscore', 'backbone'],
 
         // Initializing the Model objects pid and the metricName variables.
         initialize: function(options) {
-            if(!(options.pid == 'undefined')) {
-                this.pid_list = options.pid_list;
-                this.filterType = options.type;
+            if((options) && options.pid_list !== 'undefined') {
+                this.set("pid_list", options.pid_list);
+                this.set("filterType", options.type);
             }
+            this.set("startDate", "01/01/2012");
             // url for the model that is used to for the fetch() call
             this.url = MetacatUI.appModel.get("metricsUrl");
         },
@@ -83,13 +84,13 @@ define(['jquery', 'underscore', 'backbone'],
         // Overriding the Model's fetch function.
         fetch: function(){
           var fetchOptions = {};
-          this.metricRequest.filterBy[0].filterType = this.filterType;
-          this.metricRequest.filterBy[0].values = this.pid_list;
+          this.metricRequest.filterBy[0].filterType = this.get("filterType");
+          this.metricRequest.filterBy[0].values = this.get("pid_list");
 
           // TODO: Set the startDate and endDate based on the datePublished and current date
           // respctively.
           this.metricRequest.filterBy[1].values = [];
-          this.metricRequest.filterBy[1].values.push("01/01/2000");
+          this.metricRequest.filterBy[1].values.push(this.get("startDate"));
           this.metricRequest.filterBy[1].values.push(this.getCurrentDate());
 
           // HTTP GET
@@ -119,8 +120,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         // Parsing the response for setting the Model's member variables.
         parse: function(response){
-
-            return {
+            var metricsObject = {
                 "metricRequest": response.metricsRequest,
                 "citations": response.results.citations,
                 "views": response.results.views,
@@ -130,7 +130,64 @@ define(['jquery', 'underscore', 'backbone'],
                 "resultDetails": response.resultDetails,
                 "datasets": response.results.datasets
             }
-        }
+            
+            if (response.results.citations != null) {
+                metricsObject["totalCitations"] =  response.results.citations.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalCitations"] =  0
+            }
+            
+            if (response.results.downloads != null) {
+                metricsObject["totalDownloads"] =  response.results.downloads.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalDownloads"] =  0
+            }
+            
+            if (response.results.views != null) {
+                metricsObject["totalViews"] =  response.results.views.reduce(function(acc, val) { return acc + val; }, 0)
+            }
+            else {
+                metricsObject["totalViews"] =  0
+            }
+
+            //trim off the leading zeros and their corresponding months
+            if (response.results.months != null) {
+                
+                // iterate all the metrics objects and remove the entry if the counts are 0
+                for (var i = 0 ; i < metricsObject["months"].length; i++) {
+
+                    if ( metricsObject["citations"] != null &&
+                        metricsObject["views"]     != null &&
+                        metricsObject["downloads"] != null ) {
+                            
+                        if (( metricsObject["citations"][i] == 0 ) &&
+                            ( metricsObject["views"][i]     == 0 ) &&
+                            ( metricsObject["downloads"][i] == 0 )) {
+                        
+                            metricsObject["months"].splice(i,1);
+                            metricsObject["citations"].splice(i,1);
+                            metricsObject["views"].splice(i,1);
+                            metricsObject["downloads"].splice(i,1);
+                            
+                            // if country facet was part of the request; update object;
+                            if ( metricsObject["country"] != null) {
+                                metricsObject["country"].splice(i,1)
+                            }
+                            
+                            // modified array size; decrement the counter;
+                            i--;
+                        }
+                        else {
+                            break;
+                        }	
+                    }
+                }
+            }
+            
+            return metricsObject;
+        },
 
     });
     return Metrics;

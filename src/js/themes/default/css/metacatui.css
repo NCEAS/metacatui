@@ -1610,8 +1610,6 @@ li.ui-menu-item > a:hover,
   -------------------------------------------------- */
 
   #Profile{
-  	max-width: 1200px;
-  	margin: auto;
   	background-color: transparent;
   }
 #user-profile #data-list {
@@ -1644,7 +1642,6 @@ section.user-view-section > .section.active {
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	width: 900px;
   	clear: both;
 }
 .stripe{

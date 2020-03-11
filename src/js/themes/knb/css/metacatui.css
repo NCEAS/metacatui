@@ -64,11 +64,6 @@
     	padding-top: 115px;
     }
 
-    h4{
-    	font-size: 20px;
-    	font-weight: 400;
-    }
-
     h1{
     	font-weight: normal;
     }
@@ -1242,6 +1237,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 .member-list .group {
     min-width: 100px;
+}
+.profile .static-img-container h4{
+  text-align: center;
 }
 
   /* The universal color for data */
@@ -3098,11 +3096,19 @@ a {
 ********************************************/
 
 #metric-modal .metric-chart .scale_button:hover rect,
+.views-metrics .metric-chart .scale_button:hover rect,
+.downloads-metrics .metric-chart .scale_button:hover rect,
 #metric-modal .metric-chart .bar,
-#metric-modal .metric-chart .bar_context {
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar,
+#metric-modal .metric-chart .bar_context,
+.views-metrics .metric-chart .bar_context,
+.downloads-metrics .metric-chart .bar_context {
 	fill: #006699;
 }
 
-#metric-modal .metric-chart .bar {
+#metric-modal .metric-chart .bar,
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar {
 	stroke: #006699;
 }

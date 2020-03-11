@@ -61,6 +61,7 @@ require.config({
     x2js: MetacatUI.root + '/components/xml2json',
     he: MetacatUI.root + '/components/he',
     citation: MetacatUI.root + '/components/citation.min',
+    promise: MetacatUI.root + '/components/es6-promise.min',
 	// showdown + extensions (used in the markdownView to convert markdown to html)
 	showdown: MetacatUI.root + '/components/showdown/showdown.min',
 	showdownHighlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/showdown-highlight',
@@ -125,6 +126,9 @@ require.config({
 	},
 	citation: {
 		exports: 'citationRequire'
+	},
+	promise: {
+	 	exports: 'Promise'
 	}
   }
 });

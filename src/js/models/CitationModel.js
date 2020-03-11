@@ -25,6 +25,7 @@ define(["jquery", "underscore", "backbone"], function($, _, Backbone) {
                 journal: null,
                 volume: null,
                 page: null,
+                citationMetadata: null
             };
         },
 

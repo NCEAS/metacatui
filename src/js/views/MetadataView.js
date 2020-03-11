@@ -1059,7 +1059,6 @@ define(['jquery',
 
       // Convert the support mdq formatId list to a version
       // that JS regex likes (with special characters double
-      // escaped.
       RegExp.escape = function(s) {
        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\\\$&');
       };

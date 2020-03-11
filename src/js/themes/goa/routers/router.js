@@ -227,15 +227,20 @@ function ($, _, Backbone) {
 			if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
 				this.routeHistory.push("summary");
 
-				if(!MetacatUI.appView.statsView){
-					require(["views/StatsView"], function(StatsView){
-						MetacatUI.appView.statsView = new StatsView();
+				var viewOptions = { nodeSummaryView: true };
 
-						MetacatUI.appView.showView(MetacatUI.appView.statsView);
+				if(!MetacatUI.appView.statsView){
+
+					require(['views/StatsView'], function(StatsView){
+						MetacatUI.appView.statsView = new StatsView({
+							userType: "repository"
+						});
+
+						MetacatUI.appView.showView(MetacatUI.appView.statsView, viewOptions);
 					});
 				}
 				else
-					MetacatUI.appView.showView(MetacatUI.appView.statsView);
+					MetacatUI.appView.showView(MetacatUI.appView.statsView, viewOptions);
 			}
 			else{
 				this.routeHistory.push("profile");

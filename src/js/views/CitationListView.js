@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         className: 'table',
         citationsCollection: null,
         emptyCitations: null,
+        citationsForDataCatalogView: null,
 
         events: {
 
@@ -18,10 +19,23 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
             if((typeof options == "undefined")){
                 var options = {};
                 this.emptyCitations = true;
+                this.citationsForDataCatalogView = false;
             }
 
+            if(typeof options.citations === "undefined") {
+                this.emptyCitations = true;
+            }
+
+            if( options.citationsForDataCatalogView !== "undefined" ) {
+                this.citationsForDataCatalogView = options.citationsForDataCatalogView;
+            }
+            else {
+                this.citationsForDataCatalogView = false;
+            }
+            
             // Initializing the Citation collection
             this.citationsCollection = options.citations;
+            
         },
 
 
@@ -41,9 +55,27 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                 var $emptyList = $(document.createElement("div"))
                                             .addClass("empty-citation-list");
 
+                if ( self.citationsForDataCatalogView ) {
+                    var emptyString = "We couldn't find any citations for this dataset. " +
+                        "To report a citation of this dataset, " +
+                        "send the citation information to our support team at " ;
+                }
+                else {
+                    var emptyString = "We couldn't find any citations for these datasets. " +
+                        "To report a citation of one of these datasets, " +
+                        "send the citation information to our support team at " ;
+                }
+                
                 var $emptyDataElement = $(document.createElement("p"))
-                                            .text("This data hasn't been cited yet.")
-                                            .addClass("empty-citation-list-text");
+                                        .text(emptyString)
+                                        .addClass("empty-citation-list-text");
+
+                // Adding Email link 
+                var $emailLink = $('<a>', {
+                    href: 'mailto:' + MetacatUI.appModel.get("emailContact"),
+                    text: MetacatUI.appModel.get("emailContact")
+                });
+                $emptyDataElement.append($emailLink);
 
                 $emptyList.append($emptyDataElement);
                 this.$el.append($emptyList);

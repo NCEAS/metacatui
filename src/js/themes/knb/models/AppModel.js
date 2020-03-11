@@ -133,14 +133,25 @@ define(['jquery', 'underscore', 'backbone'],
       groupsUrl: null,
       portalUrl: null,
 
+      // Metadata quality report services
       mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
+      // Quality Suites for the dataset quality chart
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
-      suiteIds: ["knb.suite.1"],
-      suiteLabels: ["KNB Metadata Completeness Suite v1.0"],
+      mdqSuiteIds: ["knb.suite.1"],
+      mdqSuiteLabels: ["KNB Metadata Completeness Suite v1.0"],
+      // Quality suites for aggregated quality scores (i.e. metrics tab) 
+      mdqAggregatedSuiteIds: ["FAIR.suite.1"],
+      mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
       mdqFormatIds:["eml*", "https://eml*"],
 
       // Metrics endpoint url
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
+
+      // Metrics Falgs for the /profile view (summary view)
+      hideSummaryCitationsChart: false,
+      hideSummaryDownloadsChart: false,
+      hideSummaryMetadataAssessment: true,
+      hideSummaryViewsChart: false,
 
       // Metrics flags for the Dataset Landing Page
       // Enable these flags to enable metrics display
@@ -500,8 +511,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
-      this.set('mdqSuiteIds', this.get("suiteIds"));
-      this.set('mdqSuiteLabels', this.get("suiteLabels"));
+      this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
 
       if(typeof this.get("grantsUrl") !== "undefined")
         this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");

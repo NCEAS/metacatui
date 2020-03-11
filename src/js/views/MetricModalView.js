@@ -77,10 +77,10 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
                 // Checking if there are any citations available for the List display.
                 if(this.metricsModel.get("totalCitations") == 0) {
-                    var citationList = new CitationList();
+                    var citationList = new CitationList({citationsForDataCatalogView: true});
                 }
                 else {
-                    var citationList = new CitationList({citations: this.citationCollection});
+                    var citationList = new CitationList({citations: this.citationCollection, citationsForDataCatalogView: true});
                 }
 
                 this.citationList = citationList;
@@ -117,10 +117,10 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
                 // Checking if there are any citations available for the List display.
                 if(this.metricsModel.get("totalCitations") == 0) {
-                    var citationList = new CitationList();
+                    var citationList = new CitationList({citationsForDataCatalogView: true});
                 }
                 else {
-                    var citationList = new CitationList({citations: this.citationCollection});
+                    var citationList = new CitationList({citations: this.citationCollection, citationsForDataCatalogView: true});
                 }
                 
                 this.citationList = citationList;
@@ -153,10 +153,10 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
                 // Checking if there are any citations available for the List display.
                 if(this.metricsModel.get("totalCitations") == 0) {
-                    var citationList = new CitationList();
+                    var citationList = new CitationList({citationsForDataCatalogView: true});
                 }
                 else {
-                    var citationList = new CitationList({citations: this.citationCollection});
+                    var citationList = new CitationList({citations: this.citationCollection, citationsForDataCatalogView: true});
                 }
                 
                 this.citationList = citationList;

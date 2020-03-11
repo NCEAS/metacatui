@@ -2466,17 +2466,25 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	display: none;
 }
 
-/******************************************
-* Metric Modal Chart (Views, Downloads, Citations)
-********************************************/
+/****************************************************************
+* Metric Charts  (Views, Downloads, Citations) - Modal + Profile
+*****************************************************************/
 
 #metric-modal .metric-chart .scale_button:hover rect,
 #metric-modal .metric-chart .bar,
-#metric-modal .metric-chart .bar_context {
+#metric-modal .metric-chart .bar_context,
+.views-metrics .metric-chart .scale_button:hover rect,
+.views-metrics .metric-chart .bar,
+.views-metrics .metric-chart .bar_context,
+.downloads-metrics .metric-chart .scale_button:hover rect,
+.downloads-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar_context {
 	fill: #1C6E84;
 }
 
-#metric-modal .metric-chart .bar {
+#metric-modal .metric-chart .bar,
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar {
 	stroke: #1C6E84;
 }
 
@@ -2489,3 +2497,4 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   background-color: #FFFFFF;
   color: #1C6E84;
 }
+
