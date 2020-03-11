@@ -2266,7 +2266,7 @@ section#user-citations {
 .citations-metrics-list {
     overflow-y: auto;
     max-height: 300px;
-    content: " "; 
+    content: " ";
     display: block;
     clear: both;
 }
@@ -3017,7 +3017,7 @@ img[src*="googleapis.com/"].georegion-map{
 .access-rule .remove-rule{
   width: 2em;
 }
-.access-rule .add.icon{
+.access-policy-view .access-rule .add.icon{
   margin-top: 25px;
   display: block;
   font-size: 2em;
@@ -3213,6 +3213,8 @@ img[src*="googleapis.com/"].georegion-map{
 	display: flex;
 	width: 100%;
 	overflow-x: auto;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 .edit-image .toggle-remove-preview{
   display: none;
@@ -3255,6 +3257,7 @@ img[src*="googleapis.com/"].georegion-map{
   padding: 10px;
   border-radius: 4px;
   position: relative;
+  background-color: #fafafa;
 }
 .port-editor-logos .edit-image .dropzone{
   height: 150px;
