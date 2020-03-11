@@ -40,11 +40,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 			temporalCoverage: 0,
 			coverageYears: 0,
 
-			// complex objects like this
-			// {mdq_composite_d: {"min":0.25,"max":1.0,"count":11,"missing":0,"sum":6.682560903149138,"sumOfSquares":4.8545478685001076,"mean":0.6075055366499217,"stddev":0.2819317507548068}}
-			mdqStats: {},
-			mdqStatsTotal: {},
-
       //HTTP GET requests are typically limited to 2,083 characters. So query lengths
       // should have this maximum before switching over to HTTP POST
       maxQueryLength: 1958,
@@ -120,7 +115,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			this.getDownloadDates();
 
-			//this.getMdqStatsTotal();
 			//this.getDataDownloadDates();
 			//this.getMetadataDownloadDates();
 		},
@@ -1194,146 +1188,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch'],
 
 			if(this.get("downloads") == 0) this.trigger("change:downloads");
 		},
-
-		/**
-		** getMdqStats will query SOLR for MDQ stats and will update the model accordingly
-		**/
-		getMdqStats: function(){
-			var model = this;
-
-			//Build the query to get the MDQ stats
-			var query = decodeURIComponent(this.get('query'));
-      if( query.length ){
-        query += " AND ";
-      }
-
-      query += "formatId:\"https:%2F%2Fnceas.ucsb.edu%2Fmdqe%2Fv1%23run\" AND -obsoletedBy:*";
-
-      var rows = "0",
-          stats = "true",
-          statsField = ["mdq_composite_d", "mdq_discovery_d", "mdq_interpretation_d", "mdq_identification_d"],
-          statsFacet = ["mdq_metadata_formatId_s", "mdq_metadata_rightsHolder_s", "mdq_metadata_datasource_s", "mdq_suiteId_s"],
-          wt = "json";
-
-      var successCallback = function(data, textStatus, xhr) {
-
-        // Set the pertinent information in the model
-        model.set('mdqStats', data.stats.stats_fields);
-
-      }
-
-      if( this.get("usePOST") ){
-
-        var queryData = new FormData();
-        queryData.append("q", query);
-        queryData.append("rows", rows);
-        queryData.append("stats", stats);
-        _.each(statsField, function(statsFieldValue){
-          queryData.append("stats.field", statsFieldValue);
-        });
-        _.each(statsFacet, function(statsFacetValue){
-          queryData.append("stats.facet", statsFacetValue);
-        });
-        queryData.append("wt", wt);
-
-        var requestSettings = {
-          url: MetacatUI.appModel.get('queryServiceUrl'),
-          type: "POST",
-          contentType: false,
-          processData: false,
-          data: queryData,
-          dataType: "json",
-          success: successCallback
-        }
-
-      }
-      else{
-
-        //Run the query for stats
-        var requestSettings = {
-          url: MetacatUI.appModel.get('queryServiceUrl') +
-              "q=" + query +
-              "&rows=" + rows +
-              "&stats=" + stats +
-              "&stats.field=" + statsField.join("&stats.field=") +
-              "&stats.facet=" + statsFacet.join("&stats.facet=") +
-              "&wt=" + wt,
-          type: "GET",
-          dataType: "json",
-          success: successCallback
-        }
-
-      }
-
-      $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-    },
-
-    /**
-    ** getMdqStatsTotal will query SOLR for ALL MDQ stats and will update the model accordingly
-    **/
-    getMdqStatsTotal: function(){
-      var model = this;
-
-      //Build the query to get ALL MDQ stats - not filtered!
-      var query =  "formatId:\"https:%2F%2Fnceas.ucsb.edu%2Fmdqe%2Fv1%23run\" AND -obsoletedBy:*",
-          rows  = "0",
-          stats = "true",
-          statsField = ["mdq_identification_d", "mdq_composite_d", "mdq_discovery_d", "mdq_interpretation_d"],
-          wt = "json";
-
-      var successCallback = function(data, textStatus, xhr) {
-
-        var mdqStatsTotal = data.stats.stats_fields;
-
-        // Set total in the model
-        model.set('mdqStatsTotal', mdqStatsTotal);
-
-        // get the specific stats which will trigger rendering
-        model.getMdqStats();
-
-      }
-
-      if( this.get("usePOST") ){
-
-        var queryData = new FormData();
-        queryData.append("q", query);
-        queryData.append("rows", rows);
-        queryData.append("stats", stats);
-        _.each(statsField, function(statsFieldValue){
-          queryData.append("stats.field", statsFieldValue);
-        });
-        queryData.append("wt", wt);
-
-        var requestSettings = {
-          url: MetacatUI.appModel.get('queryServiceUrl'),
-          type: "POST",
-          contentType: false,
-          processData: false,
-          data: queryData,
-          dataType: "json",
-          success: successCallback
-        }
-
-      }
-      else{
-
-        //Run the query for stats
-        var requestSettings = {
-          url: MetacatUI.appModel.get('queryServiceUrl') +
-               "q=" + query +
-               "&rows=" + rows +
-               "&stats=" + stats +
-               "&stats.field=" + statsField.join("&stats.field=") +
-               "&wt=" + wt,
-          type: "GET",
-          dataType: "json",
-          success: successCallback
-        }
-      }
-
-
-      $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-    },
 
     setRequestType: function(){
       if( MetacatUI.appModel.get("disableQueryPOSTs") ){
