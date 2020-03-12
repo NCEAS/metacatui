@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: models/filters/DateFilter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/filters/DateFilter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global define */
+define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
+    function($, _, Backbone, Filter) {
+
+  /**
+  * @class DateFilter
+  * @classdesc A search filter whose search term is an exact date or date range
+  * @constructs DateFilter
+  * @extends Filter
+  */
+	var DateFilter = Filter.extend(
+    /** @lends DateFilter.prototype */{
+
+    type: "DateFilter",
+
+    /**
+    * The Backbone Model attributes set on this DateFilter
+    * @type {object}
+    * @extends Filter#defaultts
+    * @property {Date} min - The minimum Date to use in the query for this filter
+    * @property {Date} max - The maximum Date to use in the query for this filter
+    * @property {Date} rangeMin - The earliest possible Date that 'min' can be
+    * @property {Date} rangeMax - The latest possible Date that 'max' can be
+    * @property {Boolean} matchSubstring - Will always be stet to false, since Dates don't have substrings
+    * @property {string} nodeName - The XML node name to use when serializing this model into XML
+    */
+    defaults: function(){
+      return _.extend(Filter.prototype.defaults(), {
+        min: 0,
+        max: (new Date()).getUTCFullYear(),
+        rangeMin: 0,
+        rangeMax: (new Date()).getUTCFullYear(),
+        matchSubstring: false,
+        nodeName: "dateFilter"
+      });
+    },
+
+    /**
+    * Parses the dateFilter XML node into JSON
+    *
+    * @param {Element} xml - The XML Element that contains all the DateFilter elements
+    * @return {JSON} - The JSON object literal to be set on the model
+    */
+    parse: function(xml){
+
+      try{
+        var modelJSON = Filter.prototype.parse.call(this, xml);
+
+        //Get the rangeMin and rangeMax nodes
+        var rangeMinNode = $(xml).find("rangeMin"),
+            rangeMaxNode = $(xml).find("rangeMax");
+
+        //Parse the range min
+        if( rangeMinNode.length ){
+          modelJSON.rangeMin = new Date(rangeMinNode[0].textContent).getUTCFullYear();
+        }
+        //Parse the range max
+        if( rangeMaxNode.length ){
+          modelJSON.rangeMax = new Date(rangeMaxNode[0].textContent).getUTCFullYear();
+        }
+
+        //If this Filter is in a filter group, don't parse the values
+        if( !this.get("inFilterGroup") ){
+          //Get the min, max, and value nodes
+          var minNode = $(xml).find("min"),
+              maxNode = $(xml).find("max"),
+              valueNode = $(xml).find("value");
+
+          //Parse the min value
+          if( minNode.length ){
+            modelJSON.min = new Date(minNode[0].textContent).getUTCFullYear();
+          }
+          //Parse the max value
+          if( maxNode.length ){
+            modelJSON.max = new Date(maxNode[0].textContent).getUTCFullYear();
+          }
+          //Parse the value
+          if( valueNode.length ){
+            modelJSON.values = [new Date(valueNode[0].textContent).getUTCFullYear()];
+          }
+        }
+
+        //If a range min and max was given, or if a min and max value was given,
+        // then this DateFilter should be presented as a date range (rather than
+       // an exact date value).
+        if( rangeMinNode.length || rangeMinNode.length || minNode || maxNode ){
+          //Set the range attribute on the JSON
+          modelJSON.range = true;
+        }
+        else{
+          //Set the range attribute on the JSON
+          modelJSON.range = false;
+        }
+      }
+      catch(e){
+        //If an error occured while parsing the XML, return a blank JS object
+        //(i.e. this model will just have the default values).
+        return {};
+      }
+
+      return modelJSON;
+
+    },
+
+    /**
+     * Builds a query string that represents this filter.
+     *
+     * @return {string} The query string to send to Solr
+     */
+    getQuery: function(){
+
+      //Start the query string
+      var queryString = "";
+
+      //Only construct the query if the min or max is different than the default
+      if( ((this.get("min") != this.defaults().min) &amp;&amp; (this.get("min") != this.get("rangeMin"))) ||
+           ((this.get("max") != this.defaults().max)) &amp;&amp; (this.get("max") != this.get("rangeMax")) ){
+
+        //Iterate over each filter field and add to the query string
+        _.each(this.get("fields"), function(field, i, allFields){
+
+          //Add the date range for this field to the query string
+          queryString += field + ":" + this.getRangeQuery().replace(/ /g, "%20");
+
+          //If there is another field, add an operator
+          if( allFields[i+1] ){
+            queryString += "%20" + this.get("operator") + "%20";
+          }
+
+        }, this);
+
+        //If there is more than one field, wrap the query in paranthesis
+        if( this.get("fields").length > 1 ){
+          queryString = "(" + queryString + ")";
+        }
+
+      }
+
+      return queryString;
+
+    },
+
+    /**
+    * Constructs a subquery string from the minimum and maximum dates.
+    * @return {string} - THe subquery string
+    */
+    getRangeQuery: function(){
+      //Get the minimum and maximum values
+      var max = this.get("max"),
+          min = this.get("min");
+
+      //If no min or max was set, but there is a value, construct an exact value match query
+      if( !min &amp;&amp; min !== 0 &amp;&amp; !max &amp;&amp; max !== 0 &amp;&amp;
+               (this.get("values")[0] || this.get("values")[0] === 0) ){
+        return this.get("values")[0];
+      }
+      //If there is no min or max or value, set an empty query string
+      else if( !min &amp;&amp; min !== 0 &amp;&amp; !max &amp;&amp; max !== 0 &amp;&amp;
+               ( !this.get("values")[0] &amp;&amp; this.get("values")[0] !== 0) ){
+         return "";
+      }
+      //If there is at least a min or max
+      else{
+        //If there's a min but no max, set the max to a wildcard (unbounded)
+        if( (min || min === 0) &amp;&amp; !max ){
+          max = "*";
+        }
+        //If there's a max but no min, set the min to a wildcard (unbounded)
+        else if ( !min &amp;&amp; min !== 0 &amp;&amp; max ){
+          min = "*";
+        }
+        //If the max is higher than the min, set the max to a wildcard (unbounded)
+        else if( (max || max === 0) &amp;&amp; (min || min === 0) &amp;&amp; (max &lt; min) ){
+          max = "*";
+        }
+
+        if(min != "*"){
+          min = min + "-01-01T00:00:00Z";
+        }
+        if(max != "*"){
+          max = max + "-12-31T23:59:59Z";
+        }
+
+        //Add the range for this field to the query string
+        return "[" + min + "%20TO%20" + max + "]";
+      }
+
+    },
+
+    /**
+     * Updates the XML DOM with the new values from the model
+     *
+     *  @inheritdoc
+    */
+    updateDOM: function(options){
+
+      var objectDOM = Filter.prototype.updateDOM.call(this, options);
+
+      //Date Filters don't use matchSubstring nodes, and the value node will be recreated later
+      $(objectDOM).children("matchSubstring, value").remove();
+
+      //Get a clone of the original DOM
+      var originalDOM;
+      if( this.get("objectDOM") ){
+        originalDOM = this.get("objectDOM").cloneNode(true);
+      }
+
+      if( typeof options == "undefined" ){
+        var options = {};
+      }
+
+      // Get min and max dates
+      var dateData = {
+        min: this.get("min"),
+        max: this.get("max")
+      };
+
+      var isRange = false;
+
+      // Make subnodes &lt;min> and &lt;max> and append to DOM
+      _.map(dateData, function(value, nodeName){
+
+        if( nodeName == "min" ){
+          var dateTime = "-01-01T00:00:00Z";
+        }
+        else{
+          var dateTime = "-12-31T23:59:59Z";
+        }
+
+        //If this value is the same as the default value, but it wasn't previously serialized,
+        if( (value == this.defaults()[nodeName]) &amp;&amp;
+            ( !$(originalDOM).children(nodeName).length ||
+              ($(originalDOM).children(nodeName).text() != value + dateTime) )){
+            return;
+        }
+
+        //Create an XML node
+        var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+
+        //Add the date string to the XML node
+        $(nodeSerialized).text( value + dateTime );
+
+        $(objectDOM).append(nodeSerialized);
+
+        //If either a min or max was serialized, then mark this as a range
+        isRange = true;
+
+      }, this);
+
+      //If a value is set on this model,
+      if( !isRange &amp;&amp; this.get("values").length ){
+
+        //Create a value XML node
+        var valueNode = $(objectDOM.ownerDocument.createElement("value"));
+        //Get a Date object for this value
+        var date = new Date();
+        date.setUTCFullYear(this.get("values")[0] + "-12-31T23:59:59Z");
+        //Set the text of the XML node to the date string
+        valueNode.text( date.toISOString() );
+        $(objectDOM).append( valueNode );
+
+      }
+
+
+      if( !options.forCollection ){
+
+        // Get new date data
+        var dateData = {
+          rangeMin: this.get("rangeMin"),
+          rangeMax: this.get("rangeMax")
+        };
+
+        // Make subnodes &lt;min> and &lt;max> and append to DOM
+        _.map(dateData, function(value, nodeName){
+
+          if( nodeName == "rangeMin" ){
+            var dateTime = "-01-01T00:00:00Z";
+          }
+          else{
+            var dateTime = "-12-31T23:59:59Z";
+          }
+
+          //If this value is the same as the default value, but it wasn't previously serialized,
+          if( (value == this.defaults()[nodeName]) &amp;&amp;
+              ( !$(originalDOM).children(nodeName).length ||
+                ($(originalDOM).children(nodeName).text() != value + dateTime) )){
+              return;
+          }
+
+          //Create an XML node
+          var nodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+
+          //Add the date string to the XML node
+          $(nodeSerialized).text( value + dateTime );
+
+          //Remove existing nodes and add the new one
+          $(objectDOM).children(nodeName).remove();
+          $(objectDOM).append(nodeSerialized);
+
+        }, this);
+
+        //Move the filterOptions node to the end of the filter node
+        var filterOptionsNode = $(objectDOM).find("filterOptions");
+        filterOptionsNode.detach();
+        $(objectDOM).append(filterOptionsNode);
+      }
+      //Remove filterOptions for Date filters in collection definitions
+      else{
+        $(objectDOM).find("filterOptions").remove();
+      }
+
+      return objectDOM;
+    },
+
+    /**
+    * Creates a human-readable string that represents the value set on this model
+    * @return {string}
+    */
+    getReadableValue: function(){
+
+      var readableValue = "";
+
+      var min = this.get("min"),
+          max = this.get("max"),
+          value = this.get("values")[0];
+
+      if( !value &amp;&amp; value !== 0 ){
+        //If there is a min and max
+        if( (min || min === 0) &amp;&amp; (max || max === 0) ){
+          readableValue = min + " to " + max;
+        }
+        //If there is only a max
+        else if(max || max === 0){
+          readableValue = "Before " + max;
+        }
+        else{
+          readableValue = "After " + min;
+        }
+      }
+      else{
+        readableValue = value;
+      }
+
+      return readableValue;
+
+    },
+
+    /**
+    * @inheritdoc
+    */
+    hasChangedValues: function(){
+
+      return ((this.get("min") > this.get("rangeMin") &amp;&amp; this.get("min") !== this.defaults().min) ||
+              (this.get("max") &lt; this.get("rangeMax") &amp;&amp; this.get("max") !== this.defaults().max))
+
+    },
+
+    /**
+    * Checks if the values set on this model are valid and expected
+    * @return {object} - Returns a literal object with the invalid attributes and their corresponding error message
+    */
+    validate: function(){
+
+      //Validate most of the DateFilter attributes using the parent validate function
+      var errors = Filter.prototype.validate.call(this);
+
+      //Delete error messages for the attributes that are going to be validated specially for the DateFilter
+      delete errors.values;
+      delete errors.min;
+      delete errors.max;
+
+      //If everything is valid so far, then we have to create a new object to store errors
+      if( typeof errors != "object" ){
+        errors = {};
+      }
+
+      //Check that there aren't any negative numbers
+      if( this.get("min") &lt; 0 ){
+        errors.min = "The minimum year cannot be a negative number."
+      }
+      if( this.get("max") &lt; 0 ){
+        errors.max = "The maximum year cannot be a negative number."
+      }
+      if( this.get("rangeMin") &lt; 0 ){
+        errors.min = "The range minimum year cannot be a negative number."
+      }
+      if( this.get("rangeMax") &lt; 0 ){
+        errors.min = "The range maximum year cannot be a negative number."
+      }
+
+      //Check that the min and max values are in order, if the minimum is not the default value of 0
+      if( this.get("min") > this.get("max") &amp;&amp; this.get("min") != 0 ){
+        errors.min = "The minimum year is after the maximum year. The minimum year must be a year before the maximum year of " + this.get("max");
+      }
+
+      //Check that all the values are numbers
+      if( !errors.min &amp;&amp; typeof this.get("min") != "number" ){
+        errors.min = "The minimum year must be a number.";
+      }
+      if( !errors.max &amp;&amp; typeof this.get("max") != "number" ){
+        errors.max = "The maximum year must be a number.";
+      }
+      if( !errors.rangeMax &amp;&amp; typeof this.get("rangeMax") != "number" ){
+        errors.rangeMax = "The maximum year in the date slider must be a number.";
+      }
+      if( !errors.rangeMin &amp;&amp; typeof this.get("rangeMin") != "number" ){
+        errors.rangeMin = "The minimum year in the date slider must be a number.";
+      }
+
+    }
+
+  });
+
+  return DateFilter;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 14:11:45 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: themes/ess-dive/models/metadata/eml211/EML211.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: themes/ess-dive/models/metadata/eml211/EML211.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global define */
+define(['jquery', 'underscore', 'backbone', 'uuid',
+        'collections/Units',
+        'models/metadata/ScienceMetadata',
+        'models/DataONEObject',
+        'models/metadata/eml211/EMLGeoCoverage', 
+        'models/metadata/eml211/EMLKeywordSet', 
+        'models/metadata/eml211/EMLTaxonCoverage', 
+        'models/metadata/eml211/EMLTemporalCoverage', 
+        'models/metadata/eml211/EMLDistribution', 
+        'models/metadata/eml211/EMLEntity',
+        'models/metadata/eml211/EMLDataTable',
+        'models/metadata/eml211/EMLOtherEntity',
+        'models/metadata/eml211/EMLParty', 
+        'models/metadata/eml211/EMLProject',
+        'models/metadata/eml211/EMLText',
+		'models/metadata/eml211/EMLMethods',
+        'models/metadata/eml211/BaseEML211'
+],
+    function($, _, Backbone, uuid, Units, ScienceMetadata, DataONEObject,
+    		EMLGeoCoverage, EMLKeywordSet, EMLTaxonCoverage, EMLTemporalCoverage, 
+    		EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty, 
+            EMLProject, EMLText, EMLMethods, BaseEML211) {
+
+        /**
+         * Overrides BaseEML211.createXML() to set 'system' to 'ess-dive'
+         *
+         * An EML211 object represents an Ecological Metadata Language
+         * document, version 2.1.1
+         * @type {void|*}
+         */
+        var EML211 = BaseEML211.extend({
+            /**
+             * Override defaults
+             * @returns {*}
+             */
+            defaults: function(){
+        		return _.extend(BaseEML211.prototype.defaults(), {
+                    id: DataONEObject.generateEssDiveId(),
+                    intellectualRights:"This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/."
+        		});
+            
+            },
+            createXML: function(){
+
+                // Generate the xml string from the base class
+                var xml = BaseEML211.prototype.createXML.apply(this);
+
+                // Create the EML html object
+                var eml = $($.parseHTML(xml));
+
+                // Override the system value
+                eml.attr("system","ess-dive")
+
+                // Generate the new EML string
+                var emlString = $(document.createElement("div")).append(eml.clone()).html();
+                return emlString;
+
+
+            },
+
+            /*
+            * Cleans up the given text so that it is XML-valid by escaping reserved characters, trimming white space, etc.
+            *
+            * @param {string} textString - The string to clean up
+            * @return {string} - The cleaned up string
+            */
+            cleanXMLText: function(textString){
+
+              if( typeof textString != "string" )
+                return;
+
+              textString = textString.trim();
+
+              return textString;
+
+            },
+
+            /**
+             * Extend save function to add default publication year
+             * 
+             * Saves the EML document to the server using the DataONE API
+             * 
+             * @param attributes
+             * @param options
+             * @returns {boolean}
+             */
+            save: function(attributes, options){
+
+                // Set missing publication Date before saving
+                if ( ! this.get("pubDate") ) {
+                    this.set("pubDate",(new Date()).getFullYear().toString())
+                }
+
+                // Make sure there is only one additionaInfo/Reference Papers section
+                if ( this.get("additionalInfo") &amp;&amp;
+                    _.isArray(this.get("additionalInfo")) &amp;&amp; this.get("additionalInfo").length >= 1)
+                {
+                    var additionalInfo = this.get("additionalInfo");
+                    if (_.isArray(this.get("additionalInfo")) &amp;&amp; this.get("additionalInfo").length >= 1){
+                        additionalInfo = this.get("additionalInfo")[0]
+                    }
+
+                    if (additionalInfo.get("section") &amp;&amp; _.isArray(additionalInfo.get("section")) &amp;&amp;
+                        additionalInfo.get("section").length >0)
+                    {
+                        this.set("additionalInfo", new EMLText({
+                            text:[],
+                            section: new EMLText({
+                                type: "section",
+                                title: "Related References",
+                                text: additionalInfo.get("section")[0].text
+                            })
+                        }));
+                    }
+
+                }
+
+                return BaseEML211.prototype.save.apply(this, [attributes, options]);
+            },
+            /**
+             * Overrides base class to add Funding Organization Validation
+             * Checks if this EML model has all the required values necessary to save to the server
+             * 
+             * @returns {*|{formatString}|{name}|string}
+             */
+            validate: function() {
+
+                var errors = BaseEML211.prototype.validate.apply(this);
+                if (!errors){
+                    errors={};
+                }
+
+                // get the target from the EML Model
+                var keywordSet = _.find(this.get("keywordSets"),
+                        function(keywordSet){
+                            return keywordSet.get("thesaurus").indexOf("CATEGORICAL") >=0
+                        });
+
+                if (typeof keywordSet == "undefined")
+                {
+                    errors.keywordCategoricalSets = "Provide at least one keyword or variable.";
+                }
+
+                //Validate the Funding Organizations models
+            	var fundingOrganizations = _.filter(this.get("associatedParty"),
+                        function(party){ return party.get("role") == "fundingOrganization" });
+
+                if(!fundingOrganizations.length){
+            		errors.fundingOrganization = "At least one funding organization is required.";
+            	}
+
+                //Validate the Project
+            	if(!this.get("project") || !this.get("project").get("title")){
+            		errors.project = "Please enter a project title.";
+            	}
+                
+                if( Object.keys(errors).length )
+                {
+            		return errors;
+                }
+            	else{
+            		return;
+            	}
+            }
+        });
+
+        return EML211;
+    }
+);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addAllowWriteAccess">addAllowWriteAccess</a></li><li><a href="global.html#capitalize">capitalize</a></li><li><a href="global.html#checkPermAndEmailProvided">checkPermAndEmailProvided</a></li><li><a href="global.html#createModel">createModel</a></li><li><a href="global.html#defaults">defaults</a></li><li><a href="global.html#events">events</a></li><li><a href="global.html#fetchModel">fetchModel</a></li><li><a href="global.html#generateJSONLD">generateJSONLD</a></li><li><a href="global.html#getCitationInfo">getCitationInfo</a></li><li><a href="global.html#getDOEContractNumbers">getDOEContractNumbers</a></li><li><a href="global.html#getDOEContractsJSON">getDOEContractsJSON</a></li><li><a href="global.html#getDOEProjects">getDOEProjects</a></li><li><a href="global.html#getFundingOrganizationNames">getFundingOrganizationNames</a></li><li><a href="global.html#getFundingOrganizationsJSON">getFundingOrganizationsJSON</a></li><li><a href="global.html#getInfo">getInfo</a></li><li><a href="global.html#getJSON">getJSON</a></li><li><a href="global.html#getKeywords">getKeywords</a></li><li><a href="global.html#getModels">getModels</a></li><li><a href="global.html#getProject">getProject</a></li><li><a href="global.html#getResults">getResults</a></li><li><a href="global.html#getSelectedKeywords">getSelectedKeywords</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#handleAdd">handleAdd</a></li><li><a href="global.html#handleAlreadyRequested">handleAlreadyRequested</a></li><li><a href="global.html#handlePersonTyping">handlePersonTyping</a></li><li><a href="global.html#handleRemove">handleRemove</a></li><li><a href="global.html#handleSaveMetadata">handleSaveMetadata</a></li><li><a href="global.html#handleUpdate">handleUpdate</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#insertJSONLD">insertJSONLD</a></li><li><a href="global.html#insertMembership">insertMembership</a></li><li><a href="global.html#load">load</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#publish">publish</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderAllSections">renderAllSections</a></li><li><a href="global.html#renderOverview">renderOverview</a></li><li><a href="global.html#renderPeople">renderPeople</a></li><li><a href="global.html#renderPerson">renderPerson</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#showDropdown">showDropdown</a></li><li><a href="global.html#showValidation">showValidation</a></li><li><a href="global.html#updateID">updateID</a></li><li><a href="global.html#validate">validate</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 13:37:41 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
