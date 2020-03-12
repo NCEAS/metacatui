@@ -1,25 +1,24 @@
-<h2>Your Locally-Saved Drafts</h2>
+<h2>Drafts</h2>
 
-<p class="lead">Support staff may instruct you to visit this page in order to retrieve drafts of your submissions.</p>
-
-<h3>Drafts</h3>
+<h3>Your Locally-Saved Drafts</h3>
+<p class="lead">Support staff may instruct you to visit this page in order to retrieve drafts of your submissions. Only your ten most recently-created drafts are saved and listed here.</p>
 
 <% if (drafts.length == 0) { %>
   <p>No drafts to show. Drafts will automatically appear here when you use the editor and refesh this page.</p>
 <% } %>
 
 <% _.each(drafts, function(draft, i) { %>
-  <div class="">
-    <div>
-      <strong>ID:</strong>
-      <code><%= draft.value.id || "No ID" %></code>
-    </div>
+  <div>
     <% if (typeof draft.value.title === "string") { %>
     <div>
       <strong>Title:</strong>
       <span><%= draft.value.title || "No title" %></span>
     </div>
     <% } %>
+    <div>
+      <strong>ID:</strong>
+      <code><%= draft.value.id || "No ID" %></code>
+    </div>
     <div>
       <strong>Date Created:</strong>
       <span><%= draft.value.datetime || "No timestamp" %></span>
