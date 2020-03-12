@@ -1031,6 +1031,8 @@ define(['underscore',
            * Save a draft of the parent EML model
            */
           saveDraft: function() {
+            var view = this;
+
             try {
               var title = this.model.get("title") || "No title";
 
@@ -1040,13 +1042,45 @@ define(['underscore',
                 datetime: (new Date()).toISOString(),
                 title: Array.isArray(title) ? title[0] : title,
                 draft: this.model.serialize()
+              }).then(function() {
+                view.clearOldDrafts();
               });
             } catch (ex) {
               console.log("Error saving draft:", ex);
             }
-
           },
 
+          /**
+           * Clear older drafts by iterating over the sorted list of drafts
+           * stored by LocalForage and removing any beyond a hardcoded limit.
+           */
+          clearOldDrafts: function() {
+            var drafts = [];
+
+            try {
+              LocalForage.iterate(function(value, key, iterationNumber) {
+                // Extract each draft
+                drafts.push({
+                    key: key,
+                    value: value
+                  });
+                }).then(function(){
+                  // Sort by datetime
+                  drafts = _.sortBy(drafts, function(draft) {
+                    return draft.value.datetime.toString();
+                  }).reverse();
+                }).then(function() {
+                  _.each(drafts.slice(3), function(draft) {
+                    LocalForage.removeItem(draft.key).then(function() {
+                      // Item should be removed
+                    });
+                  })
+                });
+            }
+            catch (ex) {
+              console.log("Failed to clear old drafts: ", ex);
+            }
+          }
     });
     return EML211EditorView;
 });
