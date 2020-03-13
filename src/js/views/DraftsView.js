@@ -48,11 +48,12 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
         return this;
       },
 
-      // Attach a click handler for download buttons that triggers the draft
-      // to be downloaded
+      // Attach a click handler for download buttons that triggers a draft
+      // or all drafts to be downloaded
       insertDownloadables: function() {
         var view = this;
 
+        // Build handlers for single downloaders
         _.each(this.$el.find(".draft-download"), function(el) {
           var a = $(el).find("a.download");
 
@@ -61,6 +62,9 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
 
           $(a).on("click", view.createDownloader(text, fileName));
         });
+
+        // Build handler for Download All button
+        this.$el.find(".download-all").on("click", this.createDownloadAll());
       },
 
       // Creates a function for use as an event handler in insertDownloadables
@@ -75,6 +79,34 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
           a.style = "display: none;";
           a.href = url;
           a.download = fileName;
+          a.click();
+          a.remove();
+        }
+      },
+
+      createDownloadAll: function() {
+        var drafts = [];
+
+        _.each(this.$el.find("textarea"), function(textarea) {
+          drafts.push(textarea.value);
+        });
+
+        var doc = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<drafts>\n" +
+          _.map(drafts, function(draft) {
+            return "\t<draft>\n\t\t" +
+              draft +
+              "\n\t</draft>\n"
+          }).join("") +
+        "</drafts>";
+
+        return function() {
+          var blob = new Blob([doc], { type: "application/xml" })
+          var url = window.URL.createObjectURL(blob);
+
+          var a = document.createElement("a");
+          a.style = "display: none;";
+          a.href = url;
+          a.download = "drafts.xml";
           a.click();
           a.remove();
         }
