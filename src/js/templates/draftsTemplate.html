@@ -25,7 +25,7 @@
 
       <td><%= draft.value.title || "No title" %></td>
       <td><code><%= draft.value.id || "No ID" %></code></td>
-      <td><%= draft.value.datetime || "No datetime" %></td>
+      <td><%= draft.friendlyTimeDiff || "No datetime" %></td>
       <td class="draft-download">
         <a class="btn btn-primary download" data-filename="<%= draft.value.title.substr(0, 50).replace(/[^a-zA-Z0-9-]/, '_') %>.xml">Download</a>
         <a class="btn copy-to-clipboard"><i class="icon icon-copy"></i> Copy to Clipboard</a>

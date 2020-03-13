@@ -20,7 +20,8 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
             key: key,
             value: value,
             fileName: (typeof value.title === "string") ?
-              value.title.substr(0, 50).replace(/[^a-zA-Z0-9_]/, "_") : "draft"
+              value.title.substr(0, 50).replace(/[^a-zA-Z0-9_]/, "_") : "draft",
+            friendlyTimeDiff: view.friendlyTimeDiff(value.datetime)
           });
         }).then(function(){
           // Sort by datetime
@@ -103,6 +104,62 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
             }, 500)
           });
         });
+      },
+
+      /**
+       * Formats a time difference, in milliseconds, in a human-friendly way
+       * @param {string} datetime: A datetime as a string which needs to be
+       * parsed before working with
+       */
+      friendlyTimeDiff: function(datetime) {
+        var friendly,
+             now = new Date(),
+             then = new Date(datetime),
+             diff = now - then;
+
+        // Fall through from largest to smallest, finding the largest unit
+        // that describes the difference with a unit value of one or greater
+        if (diff > 2678400000) {
+          friendly = {
+            value: Math.round(diff / 2678400000) ,
+            unit: "month"
+          }
+        } else if (diff > 604800000) {
+          friendly = {
+            value: Math.round(diff / 604800000),
+            unit: "week"
+          }
+        } else if (diff > 86400000) {
+          friendly = {
+            value: Math.round(diff / 86400000),
+            unit: "day"
+          }
+        } else if (diff > 3600000) {
+          friendly = {
+            value: Math.round(diff / 3600000),
+            unit: "hour"
+          }
+        } else if (diff > 60000) {
+          friendly = {
+            value: Math.round(diff / 60000),
+            unit: "minute"
+          }
+        } else if (diff > 1000) {
+          friendly = {
+            value: Math.round(diff / 1000),
+            unit: "second"
+          }
+        } else {
+          // Shortcircuit if really small and return...
+          return "just now";
+        }
+
+        // Pluralize
+        if (friendly.value !== 1) {
+          friendly.unit = friendly.unit + "s"
+        }
+
+        return friendly.value + " " + friendly.unit + " ago";
       }
     })
 
