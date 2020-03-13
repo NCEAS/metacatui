@@ -1,38 +1,37 @@
 <h2>Drafts</h2>
 
-<h3>Your Locally-Saved Drafts</h3>
-<p class="lead">Support staff may instruct you to visit this page in order to retrieve drafts of your submissions. Only your ten most recently-created drafts are saved and listed here.</p>
+<p class="lead">Support staff may instruct you to visit this page in order to retrieve drafts of your submissions.</p>
+
+<% if (MetacatUI.appModel.get("emailContact")) { %>
+  <p>Find your draft below, download or copy it to your clipboard, and send an email to <a href="maito:<%= MetacatUI.appModel.get('emailContact') %>"><%= MetacatUI.appModel.get('emailContact') %></a> with the draft as an attachment or in the body of the email.</p>
+<% } %>
 
 <% if (drafts.length == 0) { %>
   <p>No drafts to show. Drafts will automatically appear here when you use the editor and refesh this page.</p>
 <% } %>
 
-<% _.each(drafts, function(draft, i) { %>
-  <div>
-    <% if (typeof draft.value.title === "string") { %>
-    <div>
-      <strong>Title:</strong>
-      <span><%= draft.value.title || "No title" %></span>
-    </div>
-    <% } %>
-    <div>
-      <strong>ID:</strong>
-      <code><%= draft.value.id || "No ID" %></code>
-    </div>
-    <div>
-      <strong>Date Created:</strong>
-      <span><%= draft.value.datetime || "No timestamp" %></span>
-    </div>
-    <div>
-      <p><a class="btn btn-small copy-to-clipboard"><i class="icon icon-copy"></i> Copy Draft to Clipboard</a></p>
+<table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>ID</th>
+      <th>Date Created</th>
+      <th>Download or Copy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% _.each(drafts, function(draft, i) { %>
+    <tr>
 
-      <textarea id="draft-<%= i %>" class="span8" rows="6" cols="80"><%= draft.value.draft %></textarea>
-      <p>
-        <span class="label label-info">Note</span>
-        Copy the text inside this box when sending a draft to support staff or click the 'Copy Draft to Clipboard' button.
-      </p>
-    </div>
-  </div>
-
-  <hr />
-<% })%>
+      <td><%= draft.value.title || "No title" %></td>
+      <td><code><%= draft.value.id || "No ID" %></code></td>
+      <td><%= draft.value.datetime || "No datetime" %></td>
+      <td class="draft-download">
+        <a class="btn btn-primary download" data-filename="<%= draft.value.title.substr(0, 50).replace(/[^a-zA-Z0-9-]/, '_') %>.xml">Download</a>
+        <a class="btn copy-to-clipboard"><i class="icon icon-copy"></i> Copy to Clipboard</a>
+        <textarea id="draft-<%= i %>" style="display: none;" rows="6" cols="80"><%= draft.value.draft %></textarea>
+      </td>
+    </tr>
+  <% })%>
+  </tbody>
+</table>

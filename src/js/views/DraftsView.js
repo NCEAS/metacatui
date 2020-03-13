@@ -18,7 +18,9 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
           // Extract each draft
           drafts.push({
             key: key,
-            value: value
+            value: value,
+            fileName: (typeof value.title === "string") ?
+              value.title.substr(0, 50).replace(/[^a-zA-Z0-9_]/, "_") : "draft"
           });
         }).then(function(){
           // Sort by datetime
@@ -33,6 +35,8 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
             })
           );
 
+          // Insert downloadables
+          view.insertDownloadables();
           // Insert copiables
           view.insertCopiables();
         }).catch(function(err) {
@@ -41,6 +45,38 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
         });
 
         return this;
+      },
+
+      // Attach a click handler for download buttons that triggers the draft
+      // to be downloaded
+      insertDownloadables: function() {
+        var view = this;
+
+        _.each(this.$el.find(".draft-download"), function(el) {
+          var a = $(el).find("a.download");
+
+          var text = $(el).find("textarea")[0].value;
+          var fileName = a.data("filename") || "draft.xml";
+
+          $(a).on("click", view.createDownloader(text, fileName));
+        });
+      },
+
+      // Creates a function for use as an event handler in insertDownloadables
+      // that creates a closure around the content (text) and filename and
+      // causes the browser to download the draft when clicked
+      createDownloader: function(text, fileName) {
+        return function() {
+          var blob = new Blob([text], { type: "application/xml" })
+          var url = window.URL.createObjectURL(blob);
+
+          var a = document.createElement("a");
+          a.style = "display: none;";
+          a.href = url;
+          a.download = fileName;
+          a.click();
+          a.remove();
+        }
       },
 
       insertCopiables: function() {
@@ -63,7 +99,7 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
             // it didn't look flexible enough to allow me update innerHTML in
             // a chain
             setTimeout(function() {
-              $(el).html('<i class="icon icon-copy"></i> Copy Draft to Clipboard');
+              $(el).html('<i class="icon icon-copy"></i> Copy to Clipboard');
             }, 500)
           });
         });
