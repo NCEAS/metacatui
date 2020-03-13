@@ -1036,8 +1036,7 @@ define(['underscore',
             try {
               var title = this.model.get("title") || "No title";
 
-              LocalForage.setItem(this.model.get("id"),
-              {
+              LocalForage.setItem(this.model.get("id"), {
                 id: this.model.get("id"),
                 datetime: (new Date()).toISOString(),
                 title: Array.isArray(title) ? title[0] : title,
@@ -1070,7 +1069,18 @@ define(['underscore',
                     return draft.value.datetime.toString();
                   }).reverse();
                 }).then(function() {
-                  _.each(drafts.slice(3), function(draft) {
+                  _.each(drafts, function(draft, i) {
+                    var age = (new Date()) - new Date(draft.value.datetime);
+                    var isOld = (age / 2678400000) > 1; // ~31days
+
+                    // Delete this draft is not in the most recent 100 or
+                    // if older than 31 days
+                    var shouldDelete = i > 100 || isOld;
+
+                    if (!shouldDelete) {
+                      return;
+                    }
+
                     LocalForage.removeItem(draft.key).then(function() {
                       // Item should be removed
                     });
