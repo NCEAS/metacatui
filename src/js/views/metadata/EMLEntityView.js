@@ -504,6 +504,8 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
              * Save a draft of the parent EML model
              */
             saveDraft: function() {
+            	var view = this;
+
             	try {
             		var model = this.model.getParentEML();
             		var title = model.get("title") || "No title";
@@ -514,12 +516,55 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
             			datetime: (new Date()).toISOString(),
             			title: Array.isArray(title) ? title[0] : title,
             			draft: model.serialize()
+            		}).then(function() {
+            			view.clearOldDrafts();
             		});
             	} catch (ex) {
             		console.log("Error saving draft:", ex);
             	}
             },
-        });
+
+            /**
+           	* Clear older drafts by iterating over the sorted list of drafts
+           	* stored by LocalForage and removing any beyond a hardcoded limit.
+           	*/
+           	clearOldDrafts: function() {
+           		var drafts = [];
+
+          		try {
+          			LocalForage.iterate(function(value, key, iterationNumber) {
+          			// Extract each draft
+          			drafts.push({
+          					key: key,
+          					value: value
+          				});
+          			}).then(function(){
+          				// Sort by datetime
+          				drafts = _.sortBy(drafts, function(draft) {
+          					return draft.value.datetime.toString();
+          				}).reverse();
+          			}).then(function() {
+          				_.each(drafts, function(draft, i) {
+          					var age = (new Date()) - new Date(draft.value.datetime);
+          					var isOld = (age / 2678400000) > 1; // ~31days
+          					// Delete this draft is not in the most recent 100 or
+          					// if older than 31 days
+          					var shouldDelete = i > 100 || isOld;
+											if (!shouldDelete) {
+												return;
+											}
+
+											LocalForage.removeItem(draft.key).then(function() {
+												// Item should be removed
+											});
+										})
+									});
+							}
+							catch (ex) {
+								console.log("Failed to clear old drafts: ", ex);
+							}
+						}
+	        });
 
         return EMLEntityView;
 });
