@@ -44,6 +44,7 @@ require.config({
     jqueryform: MetacatUI.root + '/components/jquery.form',
     underscore: MetacatUI.root + '/components/underscore-min',
     backbone: MetacatUI.root + '/components/backbone-min',
+    localforage: MetacatUI.root + '/components/localforage.min',
     bootstrap: MetacatUI.root + '/components/bootstrap.min',
     text: MetacatUI.root + '/components/require-text',
     jws: MetacatUI.root + '/components/jws-3.2.min',
