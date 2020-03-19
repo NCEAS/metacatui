@@ -40,7 +40,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 			temporalCoverage: 0,
 			coverageYears: 0,
 
-			hideMetadataAssessment: false,
       mdqScoresImage: null,
 
       //HTTP GET requests are typically limited to 2,083 characters. So query lengths
@@ -121,8 +120,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
 			this.getDownloadDates();
 
-			// Only get the Mdq scores if the hideMetadataAssessment is set to false
-			if (!this.get("hideMetadataAssessment"))
+			// Only get the MetaDIG scores if MetacatUI is configured to display metadata assesments.
+			if (!MetacatUI.appModel.get("hideSummaryMetadataAssessment"))
 				this.getMdqScores();
 
 		},

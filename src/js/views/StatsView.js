@@ -63,7 +63,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var nodeId = MetacatUI.appModel.get("nodeId");
 
 				// Overwrite the metrics display flags as set in the AppModel
-				this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
 				this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
 				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
 				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
@@ -75,7 +74,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					this.hideViewsChart = true;
 				}
 			}
-
+            
+            this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
 
 			if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
 
