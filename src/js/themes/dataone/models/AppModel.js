@@ -122,7 +122,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Metrics Falgs for the /profile view (summary view)
       hideSummaryCitationsChart: false,
       hideSummaryDownloadsChart: false,
-      hideSummaryMetadataAssessment: true,
+      hideSummaryMetadataAssessment: false,
       hideSummaryViewsChart: false,
 
 
