@@ -63,6 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var nodeId = MetacatUI.appModel.get("nodeId");
 
 				// Overwrite the metrics display flags as set in the AppModel
+        this.hideMetadataAssessment = false;
 				this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
 				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
 				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
@@ -74,8 +75,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					this.hideViewsChart = true;
 				}
 			}
-            
-            this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
+
+          //If the metadata summery charts are turned off in the entire app, then they should be turned off here too
+          if( MetacatUI.appModel.get("hideSummaryMetadataAssessment") === true ){
+            this.hideMetadataAssessment = true;
+          }
 
 			if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
 
@@ -96,7 +100,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 
 			if( !this.model ){
-				this.model = new StatsModel();
+				this.model = new StatsModel({
+          hideMetadataAssessment: this.hideMetadataAssessment
+        });
 			}
 
 			//Clear the page
@@ -139,7 +145,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}));
 
 		// Insert the metadata assessment chart
-		if(!this.hideMetadataAssessment){
+		if( this.hideMetadataAssessment !== true ){
 			this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
 			this.listenTo(this.model, "change:mdqScoresError", function () {
 					this.$("#metadata-assessment-loading").remove();
@@ -178,9 +184,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					}
 				}
 			}
-
-		// Set the qualit engine flag appropriately
-		this.model.set("hideMetadataAssessment", view.hideMetadataAssessment);
 
 		//Start retrieving data from Solr
 		this.model.getAll();
