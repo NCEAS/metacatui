@@ -70,6 +70,8 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     render: function(){
       //Style the body as an Editor
       $("body").addClass("Editor rendering");
+
+      this.delegateEvents();
     },
 
     /**
