@@ -463,9 +463,9 @@ define(['underscore', 'jquery', 'backbone',
 
 	    		//Find the party type or role based on the type given
           if(partyType){
-            if(emlParty.get("roleOptions").some(r=> partyType.indexOf(r) >= 0)){
+            if( _.includes(emlParty.get("roleOptions"), partyType) ){
               emlParty.get("roles").push(partyType);
-            } else if (emlParty.get("typeOptions").some(r=> partyType.indexOf(r) >= 0)) {
+            } else if ( _.includes(emlParty.get("typeOptions"), partyType) ){
               emlParty.set("type", partyType);
             }
           }
@@ -592,7 +592,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(newPartyContainer).before(partyMenu);
 
 	    	//Update the model
-        if(partyModel.get("roleOptions").some(r=> partyType.indexOf(r) >= 0)){
+        if( _.includes(partyModel.get("roleOptions"), partyType) ){
           partyModel.get("roles").push(partyType);
         } else {
           partyModel.set("type", partyType);
