@@ -1091,18 +1091,28 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             var metadataModels   = this.where({ type: "Metadata" });
             var dataModels       = _.difference(this.models, metadataModels);
             var sortedModels     = _.union(metadataModels, dataModels);
-            var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
+            var modelsInProgress = _.filter(sortedModels, function(m){
+              return (m.get("uploadStatus") == "p" || m.get("sysMetaUploadStatus") == "p");
+            });
             var modelsToBeSaved  = _.filter(sortedModels, function(m){
               //Models should be saved if they are in the save queue, had an error saving earlier,
               //or they are Science Metadata model that is NOT already in progress
-              return (m.get("uploadStatus") == "q" ||
-                  //m.get("uploadStatus") == "e" ||
+              return (
+                  (m.get("type") == "Metadata" && m.get("uploadStatus") == "q") ||
+                  (m.get("type") == "Data" && m.get("hasContentChanges")) ||
                   (m.get("type") == "Metadata" &&
                       m.get("uploadStatus") != "p" &&
                       m.get("uploadStatus") != "c" &&
                       m.get("uploadStatus") != "e" &&
                       m.get("uploadStatus") !== null))
               });
+            //Get an array of data objects whose system metaata should be updated.
+            var sysMetaToUpdate = _.reject(dataModels, function(m){
+              //Find models that don't have any content changes to save,
+              // and whose system metadata is not already saving
+              return (m.get("hasContentChanges") || m.get("sysMetaUploadStatus") == "p" ||
+                      m.get("sysMetaUploadStatus") == "c" || m.get("sysMetaUploadStatus") == "e");
+            });
 
             //First quickly validate all the models before attempting to save any
             var allValid = _.every(modelsToBeSaved, function(m) {
@@ -1144,18 +1154,22 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             this.stopListening(model, "cancelSave", this.save);
             this.listenToOnce(model,  "cancelSave", this.save);
 
-            //If this is a Data model and it has no content changes, we only want to save the system metadata
-            if( model.get("type") == "Data" && !model.get("hasContentChanges") ){
-              model.updateSysMeta();
-            }
-            else{
-              //Save the model and watch for fails
-              model.save();
-            }
+            //Save the model and watch for fails
+            model.save();
 
             //Add it to the list of models in progress
             modelsInProgress.push(model);
 
+          }, this);
+
+          //Save the system metadata of all the Data objects
+          _.each(sysMetaToUpdate, function(dataModel){
+            //When the sytem metadata has been saved, save this resource map
+            this.listenTo(dataModel, "sysMetaUpdated", this.save);
+            //Update the system metadata
+            dataModel.updateSysMeta();
+            //Add it to the list of models in progress
+            modelsInProgress.push(dataModel);
           }, this);
 
           //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
@@ -1164,8 +1178,8 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           //Do we need to update this resource map?
           if(!this.needsUpdate()) return;
 
+          //Determine the HTTP request type
           var requestType;
-
           //Set a new id and keep our old id
           if(this.packageModel.isNew()){
             requestType = "POST";
@@ -1256,6 +1270,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 collection.trigger("successSaving", collection);
 
                 collection.packageModel.fetch({merge: true});
+
+                _.each(sysMetaToUpdate, function(dataModel){
+                  dataModel.set("sysMetaUploadStatus", "c");
+                });
 
               },
               error: function(data){
