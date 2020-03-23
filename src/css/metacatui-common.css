@@ -2254,7 +2254,7 @@ a.btn.metrics-button-disabled {
 * Repository + User Profile Metrics
 ********************************************/
 section#user-citations {
-    min-height: 360px;
+    min-height: 300px;
 }
 .metrics-title > h3 {
 	display: inline-block;
@@ -2286,7 +2286,8 @@ section#user-citations {
     margin: 0 auto;
 }
 .citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
-    padding: 5px 15px 5px 85px;
+	padding: 5px 15px 5px 85px;
+	background-color: #f9f9f9;
 }
 .citations-metrics-list > .metric-table.table.table-striped.table-condensed td > .citation {
     margin-left: -70px;
