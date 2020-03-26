@@ -389,6 +389,15 @@ header .citation {
     max-width: 90%;
     margin-left: 5%;
 }
+body > .alert-container.important-app-message{
+  bottom: 0px;
+  top: auto;
+  width: 100%;
+}
+body > .alert-container.important-app-message > .alert{
+  margin-bottom: 0px;
+  display: grid;
+}
 /******************************************
 ** Icons ***
 ******************************************/

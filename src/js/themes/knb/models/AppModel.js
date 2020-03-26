@@ -456,7 +456,14 @@ define(['jquery', 'underscore', 'backbone'],
             }
           ]
         }
-      ]
+      ],
+
+      /**
+      * A list of unsupported User-Agent regular expressions for browsers that will not work well with MetacatUI.
+      * A warning message will display on the page for anyone using one of these browsers.
+      * @type {RegExp[]}
+      */
+      unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users

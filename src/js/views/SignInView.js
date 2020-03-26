@@ -45,7 +45,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 			if(!MetacatUI.appModel.get("signInUrl") && !MetacatUI.appModel.get("signInUrlOrcid"))
 				return this;
 
-      var safari13Match = navigator.userAgent.match(/.*Version\/13\.[1-9].*/);
+      //Check if this browser is incompatible with third-party cookies, which are required for Sign In
+      var safari13Match = navigator.userAgent.match(/.*Version\/13\.[1-9].* Safari/);
       var isIncompatileBrowser = safari13Match && safari13Match.length > 0;
 
 			var view = this;
