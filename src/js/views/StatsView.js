@@ -407,12 +407,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							height: 300,
               width: 380,
 							formatLabel: function(name){
-								if((name !== undefined) && (name.indexOf("//ecoinformatics.org") > -1)){
+								if((name !== undefined) && ((name.indexOf("//ecoinformatics.org") > -1) || (name.indexOf("//eml.ecoinformatics.org") > -1))){
 									//EML - extract the version only
-									if(name.substring(0,4) == "eml:") name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
+									if((name.substring(0,4) == "eml:") || (name.substring(0,6) == "https:")) name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 
 									//EML modules
-									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
+									if((name.indexOf("-//ecoinformatics.org//eml-") > -1) || (name.indexOf("-//eml.ecoinformatics.org//eml-") > -1)) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
 
 								}
 								//Dryad - shorten it
