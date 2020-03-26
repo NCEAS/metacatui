@@ -7194,3 +7194,9 @@ CSS library fixes
 	left: 5%;
 	margin: 0 auto;
 }
+
+/* Center Justify Metadata Assessment charts */
+#metadata-assessment-graphic {
+	display: flex;
+	justify-content: center;
+}
