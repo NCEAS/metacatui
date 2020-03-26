@@ -489,9 +489,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         // show UI elements only once user is able to interact with them.
         setTimeout(function(){
 
-          	// add behaviours
+            // disable the zoom behavior on wheel zoom event
+            // add behaviours
           	pane.call(zoom)
-          		.call(change_focus_zoom);
+                .call(change_focus_zoom)
+                .on("wheel.zoom", null);
           	zoom.x(x);
 
           	vis.selectAll(".scale_button")
