@@ -44,8 +44,11 @@
 	<% if(!hideMetadataAssessment){ %>
 	<section class="stripe metadata-assessment">
 		<section class="charts">
-			<h3>Metadata Assessment</h3>
-			<p>This graph shows the assessment score for all metadata in this <%= userTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
+			<div class="metrics-title">
+				<h3><i class='icon icon-dashboard'></i></h3>
+				<h3>Metadata Assessment</h3>
+				<p>This graph shows the assessment score for all metadata in this <%= userTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
+			</div>
 			<div class = "static-img-container">
 				<div id="metadata-assessment-loading" class="show-loading"></div>
         <h4>FAIR Assessment</h4>
@@ -121,10 +124,11 @@
 	<% if(!hideUpdatesChart){ %>
 	<section class="stripe updates">
 		<section class="charts">
-			<section class="updates">
+			<div class="metrics-title">
+				<h3><i class='icon icon-refresh'></i></h3>
 				<h3>Latest Updates</h3>
 				<p>When datasets were last updated, separated by content type (science metadata or data).</p>
-			</section>
+			</div>
 			<section class="row-fluid">
 				<div class="metadata-updates-chart show-loading span6"></div>
 				<div class="data-updates-chart show-loading span6"></div>
@@ -135,11 +139,11 @@
 
 	<section class="stripe format-charts-container">
 		<section class="charts">
-			<section class="chart-title">
-				<div id="formats-title"></div>
+			<div class="metrics-title">
+				<h3><i class='icon icon-file'></i></h3>
 				<h3>File formats</h3>
 				<p>We breakdown the types of metadata and data files uploaded. Only the most recent version of each file is included.</p>
-			</section>
+			</div>
 			<div class="format-charts">
 				<div class="format-charts-metadata chart"></div>
 				<div class="format-charts-data chart"></div>
