@@ -28,51 +28,58 @@ A metadata view, as configured for the Arctic Data Center:
 To run MetacatUI, you will need to first install a web server such as [Apache](https://httpd.apache.org/). The following instructions are for Mac OS X. Apache comes pre-installed on Mac OS X.
 
 #### Step 1. Set up Apache
-- Choose a location from which to serve *all* your Apache website files. A good location is `/Users/{username}/Sites`
-- Make a subdirectory in `~/Sites` specifically for MetacatUI. The default directory name for MetacatUI is `metacatui`.
+
+##### Choosing a location for MetacatUI
+Choose a location from which to serve *all* your Apache website files. A good location is `/Users/{username}/Sites`
+
+Make a subdirectory in `~/Sites` specifically for MetacatUI. The default directory name for MetacatUI is `metacatui`.
 
   ```
   mkdir ~/Sites/metacatui
   ```
+##### Pointing Apache to MetacatUI
+Configure Apache to serve files from your `Sites` directory by creating a new site configuration file in `/etc/apache2/sites-available`.  Its name should be your domain, with `.conf` appended to the end.
 
-- Configure Apache to serve files from your `Sites` directory by opening `/etc/apache2/httpd.conf` and changing the `DocumentRoot` pathname. Example:
+Example:
+```
+metacatui.local.conf
 
-    ```
-    DocumentRoot "/Users/walker/Sites"
-    <Directory "/Users/walker/Sites/metacatui">
-    ```
+some.website.url.conf
+```
+The template below can be modified with your `DocumentRoot`, `ServerName`, and custom log locations. Note that you don't need quotes on the `DocumentRoot` and `ServerName` fields but do for the `Directory` attribute.
 
-#### Step 2. Configure a VirtualHost in Apache for MetacatUI
-- First, create a backup of the default httpd-vhosts.conf file:
+```
+NameVirtualHost *:80
+<VirtualHost *:80>
+  DocumentRoot <Location of MetacatUI>
+  ServerName <Name of your server>
+  AllowEncodedSlashes On
+  AcceptPathInfo      On
+  ErrorLog "/private/var/log/apache2/metacatui-error_log"
+  CustomLog "/private/var/log/apache2/metacatui-access_log" common
+  
+  <Directory "<Location of MetacatUI>"
+    FallbackResource <Location of index.html>
+  </Directory>
+  
+</VirtualHost>
+```
+If you've been following the guide, your values should be
+```
+DocumentRoot "/Users/{username}/Sites"
+ServerName metacatui.localhost
+<Directory /Users/{username}/Sites/metacatui>
+FallbackResource /metacatui/index.html
 
-  ```
-  sudo cp /etc/apache2/extra/httpd-vhosts.conf /etc/apache2/extra/httpd-vhosts.conf.bak
-  ```
+```
+The `FallbackResource` configuration is how MetacatUI is able to use real path names like `/data/page/2` for a single-page application.
 
-- Clear out the example VirtualHost configuration if it is there, and add a VirtualHost for the `~/Sites/metacatui` directory (make sure `walker` is replaced with your username):
 
-  ```
-    <VirtualHost *:80>
-      DocumentRoot "/Users/walker/Sites"
-      ServerName metacatui.localhost
-      ErrorLog "/private/var/log/apache2/metacatui-error_log"
-      CustomLog "/private/var/log/apache2/metacatui-access_log" common
-
-      # Allow encoded slashes in URLs so encoded identifiers can be sent in MetacatUI URLs
-      AllowEncodedSlashes On
-
-     <Directory "/Users/walker/Sites/metacatui">
-      FallbackResource /metacatui/index.html
-    </Directory>
-  </VirtualHost>
-  ```
-
-The FallbackResource configuration is how MetacatUI is able to use real pathnames like `/data/page/2` for a single-page application.
-
+##### Pre Apache 2.2.16
 The FallbackResource directive requires your Apache version to be `2.2.16` and above. If you're using the earlier versions of Apache, you'll require `mod_rewrite` in your configuration. Example:
 
   ```
-    <Directory "/Users/walker/Sites/metacatui">
+    <Directory "/Users/{username}/Sites/metacatui">
     ...
     ...
 
@@ -86,6 +93,17 @@ The FallbackResource directive requires your Apache version to be `2.2.16` and a
     </IfModule>
     </Directory>
   ```
+
+##### Enabling the new site configuration
+To enable you site, run the following command
+
+`sudo a2ensite <your-site-.conf>`
+
+For example, 
+
+`sudo a2ensite metacat.local.conf`
+
+##### Forwarding metacat.localhost
 
 - Create a host name for `metacatui.locahost`. First, open `/etc/hosts`:
 
@@ -106,7 +124,7 @@ The FallbackResource directive requires your Apache version to be `2.2.16` and a
   sudo apachectl start
   ```
 
-#### Step 3. Configure MetacatUI
+#### Step 2. Configure MetacatUI
 - Download the [latest MetacatUI release .zip file](https://github.com/NCEAS/metacatui/releases) and unzip it
 - Open `src/index.html` in a text editor and change the following values:
     - Set the `data-theme` to your chosen theme name, e.g. `default`, `knb`, `arctic`.
@@ -118,7 +136,7 @@ The FallbackResource directive requires your Apache version to be `2.2.16` and a
 
 - *Note: If you installed MetacatUI somewhere other than the location in step 2 above:* you will need to change the `loader.js` pathname in `index.html` and the `MetacatUI.root` pathname in `loader.js` to the custom location where MetacatUI is located. For example, if you installed MetacatUI at root instead of in a `metacatui` subdirectory, your `loader.js` pathname in `index.html` would be `/loader.js` and `MetacatUI.root` would be `/`.
 
-#### Step 4. Move MetacatUI files to Apache
+#### Step 3. Move MetacatUI files to Apache
 - Move the MetacatUI application code to the directory we chose in Step 2.
 
     ```
