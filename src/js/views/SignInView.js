@@ -206,8 +206,10 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 						this.$el.append(this.buttonsTemplate());
 
             if( isIncompatileBrowser ){
-              console.log("incompatible")
-              this.$("a.login").attr("href", "signin")
+              var signInLink = this.$("a.login").attr("href", "signin");
+              if( signInLink.attr("data-toggle") == "modal" ){
+                signInLink.removeAttr("data-toggle");
+              }
             }
 					}
 
@@ -237,6 +239,11 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 					this.setUpPopup();
 				}
+        else{
+          if( (this.el == MetacatUI.appView.el || this.fullPage) && (!isIncompatileBrowser) ){
+            $("#signinPopup").modal("show");
+          }
+        }
 
 				//If there is an error message in the URL, it means authentication has failed
 				if(this.ldapError){
