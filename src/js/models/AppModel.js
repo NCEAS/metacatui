@@ -95,6 +95,18 @@ define(['jquery', 'underscore', 'backbone'],
         "has been saved which can be accessed by our support team. Please contact us.",
 
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      /**
+      * A list of keyword thesauri options for the user to choose from in the EML Editor.
+      * A "None" option will also always display.
+      * @type {object[]}
+      * @property {string} emlKeywordThesauri.label - A readable and short label for the keyword thesaurus that is displayed in the UI
+      * @property {string} emlKeywordThesauri.thesaurus - The exact keyword thesaurus name that will be saved in the EML
+      * @readonly
+      */
+      emlKeywordThesauri: [{
+        label: "GCMD",
+        thesaurus: "NASA Global Change Master Directory (GCMD)"
+      }],
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
@@ -224,7 +236,7 @@ define(['jquery', 'underscore', 'backbone'],
       * Each literal object here gets set directly on an AccessRule model.
       * See the AccessRule model list of default attributes for options on what to set here.
       * @see {@link AccessRule}
-      * @type {object}
+      * @type {object[]}
       */
       defaultAccessPolicy: [{
         subject: "public",

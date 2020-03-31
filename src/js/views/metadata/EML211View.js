@@ -1094,17 +1094,45 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Create the keyword row HTML
 	    	var	row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").attr("placeholder", "Add one new keyword"),
-    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
-			    				$(document.createElement("option")).val("None").text("None")).append(
-			    				$(document.createElement("option")).val("GCMD").text("GCMD")),
-				removeButton;
+    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2"),
+          thesOptionExists = false,
+				  removeButton;
 
-			// Piece together the inputs
-			row.append(keywordInput, thesInput);
+        // Piece together the inputs
+        row.append(keywordInput, thesInput);
 
-			//Select GCMD in the select menu
-    		if(thesaurus && thesaurus.indexOf("GCMD") > -1)
-        		thesInput.val("GCMD");
+        //Create the thesaurus options dropdown menu
+        _.each(MetacatUI.appModel.get("emlKeywordThesauri"), function(option){
+
+          var optionEl = $(document.createElement("option")).val(option.thesaurus).text(option.label);
+          thesInput.append( optionEl );
+
+          if( option.thesaurus == thesaurus ){
+            optionEl.prop("selected", true);
+            thesOptionExists = true;
+          }
+        });
+
+        //Add a "None" option, which is always in the dropdown
+        thesInput.prepend( $(document.createElement("option")).val("None").text("None") );
+
+        if( thesaurus == "None" || !thesaurus ){
+          thesInput.val("None");
+        }
+        //If this keyword is from a custom thesaurus that is NOT configured in this App, AND
+        // there is an option with the same label, then remove the option so it doesn't look like a duplicate.
+        else if( !thesOptionExists && _.findWhere(MetacatUI.appModel.get("emlKeywordThesauri"), { label: thesaurus }) ){
+          var duplicateOptions = thesInput.find("option:contains(" + thesaurus + ")");
+          duplicateOptions.each(function(i, option){
+            if( $(option).text() == thesaurus && !$(option).prop("selected") ){
+              $(option).remove();
+            }
+          });
+        }
+        //If this keyword is from a custom thesaurus that is NOT configured in this App, then show it as a custom option
+        else if( !thesOptionExists ){
+          thesInput.append( $(document.createElement("option")).val(thesaurus).text(thesaurus).prop("selected", true) );
+        }
 
 	    	if(!keyword)
 				row.addClass("new");
@@ -1130,11 +1158,17 @@ define(['underscore', 'jquery', 'backbone',
 
 			var row          = $(document.createElement("div")).addClass("row-fluid keyword-row new").data({ model: new EMLKeywordSet() }),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
-    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
-			    				$(document.createElement("option")).val("None").text("None")).append(
-			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
+    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2");
 
 			row.append(keywordInput, thesInput);
+
+      //Create the thesaurus options dropdown menu
+      _.each(MetacatUI.appModel.get("emlKeywordThesauri"), function(option){
+        thesInput.append( $(document.createElement("option")).val(option.thesaurus).text(option.label) );
+      });
+
+      //Add a "None" option, which is always in the dropdown
+      thesInput.prepend( $(document.createElement("option")).val("None").text("None").prop("selected", true) );
 
 			this.$(".keywords").append(row);
 		},

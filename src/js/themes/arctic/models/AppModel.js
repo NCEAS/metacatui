@@ -79,6 +79,18 @@ define(['jquery', 'underscore', 'backbone'],
         "you via email as soon as possible about getting your data package submitted. ",
 
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      /**
+      * A list of keyword thesauri options for the user to choose from in the EML Editor.
+      * A "None" option will also always display.
+      * @type {object[]}
+      * @property {string} emlKeywordThesauri.label - A readable and short label for the keyword thesaurus that is displayed in the UI
+      * @property {string} emlKeywordThesauri.thesaurus - The exact keyword thesaurus name that will be saved in the EML
+      * @readonly
+      */
+      emlKeywordThesauri: [{
+        label: "GCMD",
+        thesaurus: "NASA Global Change Master Directory (GCMD)"
+      }],
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
