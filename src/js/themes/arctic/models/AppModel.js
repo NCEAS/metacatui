@@ -78,7 +78,6 @@ define(['jquery', 'underscore', 'backbone'],
         "our support team, who will contact " +
         "you via email as soon as possible about getting your data package submitted. ",
 
-      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
       /**
       * A list of keyword thesauri options for the user to choose from in the EML Editor.
       * A "None" option will also always display.
@@ -91,6 +90,9 @@ define(['jquery', 'underscore', 'backbone'],
         label: "GCMD",
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
+
+      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
@@ -152,11 +154,11 @@ define(['jquery', 'underscore', 'backbone'],
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
       mdqSuiteIds: ["arctic.data.center.suite.1"],
       mdqSuiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
-      // Quality suites for aggregated quality scores (i.e. metrics tab) 
+      // Quality suites for aggregated quality scores (i.e. metrics tab)
       mdqAggregatedSuiteIds: ["FAIR.suite.1"],
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
       mdqFormatIds:["eml*", "https://eml*"],
-      
+
       // Metrics endpoint url
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 

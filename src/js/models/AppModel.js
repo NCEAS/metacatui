@@ -94,7 +94,6 @@ define(['jquery', 'underscore', 'backbone'],
       editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted, but a draft " +
         "has been saved which can be accessed by our support team. Please contact us.",
 
-      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
       /**
       * A list of keyword thesauri options for the user to choose from in the EML Editor.
       * A "None" option will also always display.
@@ -107,6 +106,9 @@ define(['jquery', 'underscore', 'backbone'],
         label: "GCMD",
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
+
+      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
@@ -172,7 +174,7 @@ define(['jquery', 'underscore', 'backbone'],
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
       mdqSuiteIds: ["FAIR.suite.1"],
       mdqSuiteLabels: ["FAIR Suite v1.0"],
-      // Quality suites for aggregated quality scores (i.e. metrics tab) 
+      // Quality suites for aggregated quality scores (i.e. metrics tab)
       mdqAggregatedSuiteIds: ["FAIR.suite.1"],
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
       mdqFormatIds:["eml*", "https://eml*", "*isotc211*"],
@@ -541,7 +543,7 @@ define(['jquery', 'underscore', 'backbone'],
       if( this.get("enableMonitorStatus") ){
         this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
       }
-      
+
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
@@ -616,7 +618,7 @@ define(['jquery', 'underscore', 'backbone'],
 
       //The package service for v2 DataONE API
       this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
-      
+
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
