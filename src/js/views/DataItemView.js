@@ -33,10 +33,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
                 "click .addFiles"      : "handleAddFiles",    // Edit dropdown, open file picker dialog
                 "change .file-upload"  : "addFiles",          // Adds the files into the collection
+                "change .file-replace" : "replaceFile",       // Replace a file in the collection
                 "dragover"             : "showDropzone",      // Drag & drop, show the dropzone for this row
                 "dragend"              : "hideDropzone",      // Drag & drop, hide the dropzone for this row
                 "dragleave"            : "hideDropzone",      // Drag & drop, hide the dropzone for this row
                 "drop"                 : "addFiles",          // Drag & drop, adds the files into the collection
+                "click .replaceFile"   : "handleReplace",     // Replace dropdown, data in collection
                 "click .removeFiles"   : "handleRemove",      // Edit dropdown, remove sci{data,meta} from collection
                 "click .cancel"        : "handleCancel",      // Cancel a file load
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
@@ -519,6 +521,108 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 if ( this.model.get("type") !== "Metadata" ) return;
                 this.$el.removeClass("droppable");
 
+            },
+
+            /**
+             * Handle the user's click of the Replace item in the DataItemView
+             * dropdown. Triggers replaceFile after some basic validation.
+             *
+             * Called indirectly via the "click" event on elements with the
+             * class .replaceFile. See this View's events map.
+             *
+             * @param {MouseEvent} event: Browser Click event
+             */
+            handleReplace: function(event) {
+                event.stopPropagation();
+
+                var fileReplaceElement = $(event.target)
+                    .parents(".dropdown-menu")
+                    .children(".file-replace")
+
+                if (!fileReplaceElement) {
+                    console.log("Unable to find Replace file picker.");
+
+                    return;
+                }
+
+                fileReplaceElement.val("");
+                fileReplaceElement.trigger("click");
+
+                event.preventDefault();
+            },
+
+            /**
+             * Replace a file (DataONEObject) in the collection with another one
+             * from a file picker. Maintains attributes on the original
+             * DataONEObject and maintains the entity information in the parent
+             * collection's metadata record (i.e., keeps your attributes, etc.).
+             *
+             * Called indirectly via the "change" event on elements with the
+             * class .file-upload. See this View's events map.
+             *
+             * @param {Event}
+             */
+            replaceFile: function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+
+                var fileList = event.target.files;
+
+                // Pre-check fileList value to make sure we can work with it
+                if (fileList.length != 1) {
+                    // TODO: Show error, find out how to do this
+                    return;
+                }
+
+                if (typeof event.delegateTarget.dataset.id === "undefined") {
+                    // TODO: Show error, find out how to do this
+                    return;
+                }
+
+                var file = fileList[0],
+                    uploadStatus = "q",
+                    errorMessage = "";
+
+                if (file.size == 0 ) {
+                    uploadStatus = "e";
+                    errorMessage = "This is an empty file. It won't be included in the dataset.";
+                }
+
+				if (!this.model) {
+                    console.log("Couldn't find model we're supposed to be replacing. Stopping.");
+
+					return;
+				}
+
+                this.model.set({
+                    synced: false,
+                    fileName: file.name,
+                    size: file.size,
+                    mediaType: file.type,
+                    uploadFile: file,
+                    hasContentChanges: true,
+                    checksum: null,
+                    uploadStatus: uploadStatus,
+                    sysMetaUploadStatus: "c", // I set this so DataPackage::save
+                    // wouldn't try to update the sysmeta after the update
+                    errorMessage: errorMessage
+                });
+
+                // Re-render the view
+                this.render();
+
+                if (this.model.get("uploadFile") && !this.model.get("checksum")) {
+
+                    try {
+                        this.model.calculateChecksum();
+                    } catch (exception) {
+                        // TODO: Fail gracefully here for the user
+                    }
+                }
+
+                MetacatUI.rootDataPackage.packageModel.set("changed", true);
+
+                return;
             },
 
             /* Handle remove events for this row in the data package table */
