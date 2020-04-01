@@ -179,10 +179,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }
             else {
                 if ( this.hasUpdates() ) {
-                    if ( this.hasContentChanges ) {
+                    if ( this.get("hasContentChanges") ) {
                         // Exists on the server, use MN.update()
                     return MetacatUI.appModel.get("objectServiceUrl") +
-                        (encodeURIComponent(this.get("id")));
+                        (encodeURIComponent(this.get("oldPid")));
 
                     } else {
                         // Exists on the server, use MN.updateSystemMetadata()
