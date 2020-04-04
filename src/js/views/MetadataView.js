@@ -136,6 +136,7 @@ define(['jquery',
       this.once("metadataLoaded", function(){
         this.createAnnotationViews();
         this.insertMarkdownViews();
+        this.scrollToFragment();
       });
 
       this.getModel();
@@ -2342,10 +2343,40 @@ define(['jquery',
       else
         return false;
 
-      //If we are on the Metadata view, then let's scroll to the anchor
+      // If we are on the Metadata view, update the  URL and scroll to the
+      // anchor
+      window.location.href = window.location.hash = id;
       MetacatUI.appView.scrollTo( this.findEntityDetailsContainer(id) );
 
       return true;
+    },
+
+    /**
+     * Try to scroll to the section on a page describing the identifier in the
+     * fragment/hash portion of the current page.
+     *
+     * This function depends on there being an `id` dataset attribute on an
+     * element on the page set to an XML-safe version of the value in the
+     * fragment/hash. Used to provide direct links to sub-resources on a page.
+     */
+    scrollToFragment: function() {
+      var hash = window.location.hash;
+
+      if (!hash) {
+          return;
+      }
+
+      var fragment = hash.substring(1),
+          sanitized = DataONEObject.prototype.getXMLSafeID(fragment);
+
+      // Try to find an anchor tag with the right data-id value
+      var targets = $('*[data-id="' + sanitized + '"]');
+
+      if (targets.length <= 0) {
+          return;
+      }
+
+      MetacatUI.appView.scrollTo(targets.first());
     },
 
     closePopovers: function(e){
