@@ -258,6 +258,7 @@
   text-align: center;
   min-width: 180px;
   border-bottom: 1px solid #495082;
+  white-space: pre-wrap;
 }
 
 .header .nav > li >  a:hover{
