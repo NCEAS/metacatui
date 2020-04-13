@@ -608,6 +608,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     errorMessage: errorMessage
                 });
 
+                // Attempt the formatId. Defaults to app/octet-stream
+                this.model.set("formatId", this.model.getFormatId());
+
                 // Re-render the view
                 this.render();
 
