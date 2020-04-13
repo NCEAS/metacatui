@@ -1,4 +1,4 @@
-﻿﻿/* global define */
+/* global define */
 define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
         'models/metadata/eml211/EML211', 'models/metadata/eml211/EMLOtherEntity',
         'text!templates/dataItem.html'],
@@ -624,6 +624,27 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
 
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
+
+                // Last, provided a visual indication the replace was completed
+                var describeButton = this.$el
+                    .children(".controls")
+                    .children(".btn-group")
+                    .children("button.edit")
+                    .first();
+
+                if (describeButton.length != 1) {
+                    return;
+                }
+
+                var oldText = describeButton.html();
+
+                describeButton.html('<i class="icon icon-ok icon-large success" /> Ok!');
+                describeButton.removeClass("warning");
+
+                window.setTimeout(function() {
+                    describeButton.html(oldText);
+                    describeButton.addClass("warning");
+                }, 3000);
 
                 return;
             },
