@@ -446,6 +446,9 @@ footer .logos a:hover, a:focus{
 	width: 65px;
 	background-position: 100% 0px;
 }
+#Footer .core-trust-logo{
+  height: 60px;
+}
 
  /* BUTTONS CSS
 -------------------------------------------------- */
