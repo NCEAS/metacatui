@@ -638,12 +638,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 var oldText = describeButton.html();
 
-                describeButton.html('<i class="icon icon-ok icon-large success" /> Ok!');
-                describeButton.removeClass("warning");
+                describeButton.html('<i class="icon icon-ok success" /> Replaced');
+
+                var previousBtnClasses = describeButton.attr("class");
+                describeButton.removeClass("warning error").addClass("message");
 
                 window.setTimeout(function() {
                     describeButton.html(oldText);
-                    describeButton.addClass("warning");
+                    describeButton.addClass(previousBtnClasses).removeClass("message");
                 }, 3000);
 
                 return;

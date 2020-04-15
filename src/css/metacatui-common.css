@@ -6426,6 +6426,13 @@ ul.side-nav-items {
 	opacity: .6;
 }
 
+.data-package-item .controls .btn.message{
+  font-size: 12px;
+}
+.data-package-item .controls .btn.message .icon{
+  margin-left: -5px;
+  margin-right: 5px;
+}
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     border-radius: 4px;
