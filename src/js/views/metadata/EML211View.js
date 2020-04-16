@@ -809,17 +809,42 @@ define(['underscore', 'jquery', 'backbone',
 
 			},
 
+      /**
+       * Attempt to move the current person (Party) one index backward (up).
+       *
+       * @param {EventHandler} e: The click event handler
+       */
 			movePersonUp: function(e){
 	    	e.preventDefault();
 
-				// TODO
+	    	// Get the party view el, view, and model
+	    	var partyEl = $(e.target).parents(".eml-party"),
+            model = partyEl.data("model"),
+            next = $(partyEl).prev().not(".new");
 
+        if (next.length === 0) {
+          return;
+        }
+
+				// Remove current view, create and insert a new one for the model
+        $(partyEl).remove();
+
+        var newView = new EMLPartyView({
+          model: model,
+          edit: this.edit
+        });
+
+        $(next).before(newView.render().el);
+
+        // Move the party down within the model too
+				this.model.movePartyUp(model);
+				this.model.trickleUpChange();
 			},
 
       /**
        * Attempt to move the current person (Party) one index forward (down).
        *
-       * @param {EventHandler} e: The click event handle
+       * @param {EventHandler} e: The click event handler
        */
 	    movePersonDown: function(e){
 				e.preventDefault();
@@ -830,8 +855,6 @@ define(['underscore', 'jquery', 'backbone',
             next = $(partyEl).next().not(".new");
 
         if (next.length === 0) {
-          console.log("Not moving down because we're last.");
-
           return;
         }
 
@@ -847,8 +870,8 @@ define(['underscore', 'jquery', 'backbone',
 
         // Move the party down within the model too
 	    	this.model.movePartyDown(model);
+				this.model.trickleUpChange();
 	    },
-
 
 	    /*
          * Renders the Dates section of the page

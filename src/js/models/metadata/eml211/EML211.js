@@ -1782,6 +1782,44 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
        *
        * @param {EMLParty} partyModel: The EMLParty model we're moving
        */
+      movePartyUp: function(partyModel) {
+        var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+
+        // Iterate over each possible attribute
+        _.each(possibleAttr, function(attr){
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          var models = _.clone(this.get(attr));
+
+          // Find the index of the model we're moving
+          var index = _.findIndex(models, function(m) {
+            return m === partyModel;
+          });
+
+          if (index === 0) {
+            // Already first
+            return;
+          }
+
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
+
+          // Do the move using splice and update the model
+          models.splice(index - 1, 0, models.splice(index, 1)[0])
+          this.set(attr, models);
+          this.trigger("change:" + attr);
+        }, this);
+      },
+
+      /**
+       * Attempt to move a party one index forward within its sibling models
+       *
+       * @param {EMLParty} partyModel: The EMLParty model we're moving
+       */
       movePartyDown: function(partyModel) {
         var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
 
@@ -1811,6 +1849,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           // Do the move using splice and update the model
           models.splice(newIndex, 0, models.splice(index, 1)[0])
           this.set(attr, models);
+          this.trigger("change:" + attr);
         }, this);
       },
 
