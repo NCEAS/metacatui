@@ -77,6 +77,8 @@ define(['underscore', 'jquery', 'backbone',
         	"click .eml-party .copy"   : "showCopyPersonMenu",
         	"click #copy-party-save"   : "copyPerson",
         	"click .eml-party .remove" : "removePerson",
+        	"click .eml-party .move-up" : "movePersonUp",
+        	"click .eml-party .move-down" : "movePersonDown",
 
 			    "click  .remove" : "handleRemove"
         },
@@ -805,7 +807,48 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Let the EMLPartyView remove itself
 	    	partyView.remove();
 
+			},
+
+			movePersonUp: function(e){
+	    	e.preventDefault();
+
+				// TODO
+
+			},
+
+      /**
+       * Attempt to move the current person (Party) one index forward (down).
+       *
+       * @param {EventHandler} e: The click event handle
+       */
+	    movePersonDown: function(e){
+				e.preventDefault();
+
+	    	// Get the party view el, view, and model
+	    	var partyEl = $(e.target).parents(".eml-party"),
+            model = partyEl.data("model"),
+            next = $(partyEl).next().not(".new");
+
+        if (next.length === 0) {
+          console.log("Not moving down because we're last.");
+
+          return;
+        }
+
+				// Remove current view, create and insert a new one for the model
+        $(partyEl).remove();
+
+        var newView = new EMLPartyView({
+          model: model,
+          edit: this.edit
+        });
+
+        $(next).after(newView.render().el);
+
+        // Move the party down within the model too
+	    	this.model.movePartyDown(model);
 	    },
+
 
 	    /*
          * Renders the Dates section of the page
