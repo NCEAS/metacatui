@@ -3,7 +3,7 @@
 ## 2.11.0 - April 2020
 - "Replace file" feature in the editor
 - Use encoded identifiers in MetacatUI routes
-- Move MN and User profiles to the PortalView (obsolete the old profile style)
+- Move MN and User profiles to the PortalView (obsolete the old profile style) - Rushi
 
 ## 2.12.0 - April 2020
 - Moving app configuration to a JSON file (Lauren)
