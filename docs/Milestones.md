@@ -21,6 +21,7 @@
 
 ## 2.16.0 - June 2020
 - Redesign the portal editor EditCollectionView (mockups completed already)
+- Support more complex collection queries (e.g. allowing OR operators between filters) - https://github.com/DataONEorg/collections-portals-schemas/issues/70
 
 ## Other priorities that were not added to this 6-month plan
 - Portal Editor improvements
