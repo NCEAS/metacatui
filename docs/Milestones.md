@@ -8,7 +8,7 @@
 
 ## 2.12.0 - April 2020
 - Moving app configuration to a JSON file (Lauren)
-- Portal View in the DataONE theme (Lauren)
+- Portal View in the DataONE theme 
 
 ## 2.13.0 - May 2020
 - Serialize all EML documents from the editor as 2.2.0
