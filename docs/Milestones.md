@@ -1,9 +1,10 @@
 # Milestones from MetacatUI prioritization: - ~6 month plan
 
 ## 2.11.0 - April 2020
-- "Replace file" feature in the editor
+- "Replace file" feature in the editor (Bryce)
 - Use encoded identifiers in MetacatUI routes
 - Move MN and User profiles to the PortalView (obsolete the old profile style) - Rushi
+- Ability to reorder EML parties in the editor (Bryce)
 
 ## 2.12.0 - April 2020
 - Moving app configuration to a JSON file (Lauren)
@@ -16,10 +17,7 @@
 ## 2.14.0 - May 2020
 - Ability to view and edit the local EML drafts in the editor
 
-## 2.15.0 - May/June 2020
-- Ability to reorder EML parties in the editor
-
-## 2.16.0 - June 2020
+## 2.15.0 - June 2020
 - Redesign the portal editor EditCollectionView (mockups completed already)
 - Support more complex collection queries (e.g. allowing OR operators between filters) - https://github.com/DataONEorg/collections-portals-schemas/issues/70
 
