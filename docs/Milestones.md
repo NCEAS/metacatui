@@ -2,6 +2,7 @@
 
 ## 2.11.0 - April 2020
 - "Replace file" feature in the editor
+- Use encoded identifiers in MetacatUI routes
 
 ## 2.12.0 - April 2020
 - Moving app configuration to a JSON file (Lauren)
