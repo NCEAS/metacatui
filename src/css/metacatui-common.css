@@ -1594,6 +1594,7 @@ body > .alert-container {
   padding-bottom: 25px;
 }
 .attributeList > .row-fluid > .span2 {
+  max-width: 300px;
   max-height: 700px;
   overflow: scroll;
   width: 25%;
@@ -2319,7 +2320,7 @@ section#user-citations {
     	margin-left: 0px;
     	padding: 20px;
     	width: 85%;
-    	width: calc(100% - 180px);
+			width: calc(100% - 180px);
 }
 .entitydetails tr,
 .entitydetails table,
