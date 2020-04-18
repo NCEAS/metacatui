@@ -1188,7 +1188,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				clipboard.on("success", function(e){
 				$(".copy-success").show().delay(3000).fadeOut();
 				});
-			
+
 				clipboard.on("error", function(e){
 					var textarea = $(e.trigger).parent().children("textarea.token");
 					textarea.trigger("focus");
@@ -1199,7 +1199,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 					textarea.tooltip("show");
 
 				});
-			});
 		},
 
 		setUpAutocomplete: function() {
