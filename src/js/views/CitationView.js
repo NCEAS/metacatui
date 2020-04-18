@@ -494,7 +494,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
         return;
 
-      MetacatUI.uiRouter.navigate('view/'+id, {trigger: true});
+      MetacatUI.uiRouter.navigate('view/' + encodeURIComponent(id), {trigger: true});
     }
   });
 

@@ -599,14 +599,14 @@ define(['underscore',
           if(savedObject.type != "DataPackage") return;
 
           //Change the URL to the new id
-          MetacatUI.uiRouter.navigate("submit/" + this.model.get("id"), { trigger: false, replace: true });
+          MetacatUI.uiRouter.navigate("submit/" + encodeURIComponent(this.model.get("id")), { trigger: false, replace: true });
 
           this.toggleControls();
 
           // Construct the save message
           var message = this.editorSubmitMessageTemplate({
             messageText: "Your changes have been submitted.",
-            viewURL: MetacatUI.root + "/view/" + this.model.get("id"),
+            viewURL: MetacatUI.root + "/view/" + encodeURIComponent(this.model.get("id")),
             buttonText: "View your dataset"
           });
 
