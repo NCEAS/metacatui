@@ -836,7 +836,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			if(!metadata) return false;
 
 			//Load the rendered metadata from the view service
-			var viewService = MetacatUI.appModel.get("viewServiceUrl") + metadata.get("id");
+			var viewService = MetacatUI.appModel.get("viewServiceUrl") + encodeURIComponent(metadata.get("id"));
 			var requestSettings = {
 					url: viewService,
 					success: function(data, response, xhr){

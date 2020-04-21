@@ -483,7 +483,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Get the system metadata for this object
 		 */
 		getSysMeta: function(){
-			var url = MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+			var url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
 				model = this;
 
 			var requestSettings = {

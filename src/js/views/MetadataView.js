@@ -755,7 +755,7 @@ define(['jquery',
       _.each(parentPackageMetadata, function(m, i){
         var title = m.get("title"),
           icon = $(document.createElement("i")).addClass("icon icon-on-left icon-level-up"),
-          link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + m.get("id"))
+          link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + encodeURIComponent(m.get("id")))
                              .addClass("parent-link")
                              .text("Parent dataset: " + title)
                              .prepend(icon);

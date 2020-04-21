@@ -723,7 +723,7 @@ define(['underscore',
               view.model = null;
 
               //Update the URL
-              MetacatUI.uiRouter.navigate("submit/" + view.pid, { trigger: false, replace: true });
+              MetacatUI.uiRouter.navigate("submit/" + encodeURIComponent(view.pid), { trigger: false, replace: true });
 
               //Render the new model
               view.render();
