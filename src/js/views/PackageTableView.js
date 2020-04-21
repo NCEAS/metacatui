@@ -324,7 +324,7 @@ define(['jquery', 'underscore', 'backbone',
 			}
 			else{
 				var moreInfo = $(document.createElement("a"))
-								.attr("href", "<%= MetacatUI.root %>/view/" + id)
+								.attr("href", "<%= MetacatUI.root %>/view/" + encodeURIComponent(id))
 								.addClass("preview")
 								.attr("data-id", id)
 								.text("More info");

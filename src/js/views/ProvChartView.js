@@ -538,8 +538,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//Display images in the prov chart node popover 
 			if(provEntity.getType() == "image"){
-                var img = $(document.createElement("img")).attr("src", view.serviceUrl + provEntity.get("id")).addClass("thumbnail");
-                
+                var img = $(document.createElement("img")).attr("src", view.serviceUrl + encodeURIComponent(provEntity.get("id"))).addClass("thumbnail");
+
 				$(citationEl).after(img);
 			}
 
