@@ -63,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var nodeId = MetacatUI.appModel.get("nodeId");
 
 				// Overwrite the metrics display flags as set in the AppModel
-				this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
+        this.hideMetadataAssessment = false;
 				this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
 				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
 				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
@@ -76,6 +76,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				}
 			}
 
+          //If the metadata summery charts are turned off in the entire app, then they should be turned off here too
+          if( MetacatUI.appModel.get("hideSummaryMetadataAssessment") === true ){
+            this.hideMetadataAssessment = true;
+          }
 
 			if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
 
@@ -96,7 +100,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 
 			if( !this.model ){
-				this.model = new StatsModel();
+				this.model = new StatsModel({
+          hideMetadataAssessment: this.hideMetadataAssessment
+        });
 			}
 
 			//Clear the page
@@ -120,10 +126,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			this.listenTo(this.model, 'change:downloads', 	  this.drawDownloadTitle);
 			this.listenTo(this.model, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
-
-			// mdq
-			this.listenTo(this.model, 'change:mdqStats',	  	  this.drawMdqStats);
-
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
 
 			// set the header type
@@ -143,7 +145,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}));
 
 		// Insert the metadata assessment chart
-		if(!this.hideMetadataAssessment){
+		if( this.hideMetadataAssessment !== true ){
 			this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
 			this.listenTo(this.model, "change:mdqScoresError", function () {
 					this.$("#metadata-assessment-loading").remove();
@@ -182,9 +184,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					}
 				}
 			}
-
-		// Set the qualit engine flag appropriately
-		this.model.set("hideMetadataAssessment", view.hideMetadataAssessment);
 
 		//Start retrieving data from Solr
 		this.model.getAll();
@@ -407,18 +406,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							height: 300,
               width: 380,
 							formatLabel: function(name){
-								if((name !== undefined) && (name.indexOf("//ecoinformatics.org") > -1)){
+								if((name !== undefined) && ((name.indexOf("//ecoinformatics.org") > -1) || (name.indexOf("//eml.ecoinformatics.org") > -1))){
 									//EML - extract the version only
-									if(name.substring(0,4) == "eml:") name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
+									if((name.substring(0,4) == "eml:") || (name.substring(0,6) == "https:")) name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 
 									//EML modules
-									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
+									if((name.indexOf("-//ecoinformatics.org//eml-") > -1) || (name.indexOf("-//eml.ecoinformatics.org//eml-") > -1)) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
 
 								}
 								//Dryad - shorten it
 								else if((name !== undefined) && (name == "http://datadryad.org/profile/v3.1")) name = "Dryad 3.1";
 								//FGDC - just display "FGDC {year}"
 								else if((name !== undefined) && (name.indexOf("FGDC") > -1)) name = "FGDC " + name.substring(name.length-4);
+
+								//Onedcx v1.0
+								else if((name !== undefined) && (name == "http://ns.dataone.org/metadata/schema/onedcx/v1.0")) name = "Onedcx v1.0";
+
+								//GMD-NOAA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-noaa")) name = "GMD-NOAA";
+
+								//GMD-PANGAEA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-pangaea")) name = "GMD-PANGAEA";
 
 								if(name === undefined) name = "";
 								return name;
@@ -880,118 +888,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			//Find the year range element
 			this.$('#data-coverage-year-range').text(yearRange);
-		},
-
-		drawMdqStats: function() {
-			if (!this.model.get("mdqStats")) {
-				return;
-			}
-			if (!this.model.get("mdqStatsTotal")) {
-				return;
-			}
-			var mdqCompositeStats= this.model.get("mdqStats").mdq_composite_d;
-
-			var mdqTotalStats = this.model.get("mdqStatsTotal").mdq_composite_d;
-
-			if (mdqTotalStats && mdqTotalStats.mean && mdqCompositeStats && mdqCompositeStats.mean) {
-				var diff = mdqCompositeStats.mean - mdqTotalStats.mean;
-				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
-
-				if (diff < 0) {
-					$("#mdq-percentile-container").text("Below repository average");
-					$("#mdq-percentile-icon").addClass("icon-thumbs-down");
-				}
-				if (diff > 0) {
-					$("#mdq-percentile-container").text("Above repository average");
-					$("#mdq-percentile-icon").addClass("icon-thumbs-up");
-				}
-				if (diff == 0) {
-					$("#mdq-percentile-container").text("At repository average");
-					$("#mdq-percentile-icon").addClass("icon-star");
-				}
-
-				// for the box plot
-				// top arrow for this view
-				$("#mdq-score-num").text((mdqCompositeStats.mean*100).toFixed(0) + "%");
-				$("#mdq-score").css(
-				{
-					  "margin-left": (mdqCompositeStats.mean*100).toFixed(0) + "%"
-				});
-				// the range
-				$("#mdq-box").css(
-				{
-					"width": ((mdqCompositeStats.max - mdqCompositeStats.min) * 100).toFixed(0) + "%",
-					"margin-left": (mdqCompositeStats.min*100).toFixed(0) + "%"
-				});
-				$("#mdq-box").attr("data-content", mdqCompositeStats.count + " scores range from " + (mdqCompositeStats.min*100).toFixed(0) + "%" + " to " + (mdqCompositeStats.max*100).toFixed(0) + "%");
-				// the bottom arrow for repo
-				$("#mdq-repo-score-num").text((mdqTotalStats.mean*100).toFixed(0) + "%");
-				$("#mdq-repo-score").css(
-				{
-					  "margin-left": (mdqTotalStats.mean*100).toFixed(0) + "%"
-				});
-
-			}
-
-			// now draw the chart
-			this.drawMdqFacets();
-
-		},
-
-		drawMdqFacets: function() {
-
-			var mdqCompositeStats= this.model.get("mdqStats").mdq_composite_d;
-
-			if (mdqCompositeStats) {
-				// keys are the facet values, values are the stats (min, max, mean, etc...)
-				var datasourceFacets = mdqCompositeStats.facets.mdq_metadata_datasource_s || {};
-				var formatIdFacets = mdqCompositeStats.facets.mdq_metadata_formatId_s || {};
-				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s || {};
-				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s || {};
-				var funderFacets = mdqCompositeStats.facets.mdq_metadata_funder_sm || {};
-				var groupFacets = mdqCompositeStats.facets.mdq_metadata_group_sm || {};
-
-				if(!Object.keys(datasourceFacets).length &&
-						!Object.keys(formatIdFacets).length &&
-						!Object.keys(rightsHolderFacets).length &&
-						!Object.keys(suiteIdFacets).length &&
-						!Object.keys(funderFacets).length &&
-						!Object.keys(groupFacets).length)
-					return;
-
-				//this.drawMdqChart(datasourceFacets);
-				//this.drawMdqChart(rightsHolderFacets);
-				this.drawMdqChart(_.extend(formatIdFacets, datasourceFacets, suiteIdFacets, funderFacets, groupFacets));
-
-				//Unhide the quality chart
-				$("#quality-chart").show();
-			}
-		},
-
-		//Draw a bar chart for the slice
-		drawMdqChart: function(data){
-
-			//Get the width of the chart by using the parent container width
-			var parentEl = this.$('.mdq-chart');
-			var width = parentEl.width() || null;
-
-			var options = {
-					data: data,
-					formatFromSolrFacets: true,
-					solrFacetField: "mean",
-					id: "mdq-slice-chart",
-					yLabel: "mean score",
-					yFormat: d3.format(",%"),
-					barClass: "packages",
-					roundedRect: true,
-					roundedRadius: 3,
-					barLabelClass: "packages",
-					width: width
-				};
-
-			var barChart = new BarChart(options);
-			parentEl.html(barChart.render().el);
-
 		},
 
 		/*

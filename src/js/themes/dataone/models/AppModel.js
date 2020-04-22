@@ -11,7 +11,7 @@ define(['jquery', 'underscore', 'backbone'],
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
 
-      emailContact: "",
+      emailContact: "support@dataone.org",
 
       googleAnalyticsKey: null,
 
@@ -273,7 +273,14 @@ define(['jquery', 'underscore', 'backbone'],
       * Limits only the following people or groups to create new portals.
       * @type {string[]}
       */
-      limitPortalsToSubjects: []
+      limitPortalsToSubjects: [],
+
+      /**
+      * A list of unsupported User-Agent regular expressions for browsers that will not work well with MetacatUI.
+      * A warning message will display on the page for anyone using one of these browsers.
+      * @type {RegExp[]}
+      */
+      unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users

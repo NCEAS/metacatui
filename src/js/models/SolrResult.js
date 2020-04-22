@@ -386,6 +386,13 @@ define(['jquery', 'underscore', 'backbone'],
 				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				type: "GET",
 				success: function(data, response, xhr){
+          //If the Solr response was not as expected, trigger and error and exit
+          if( !data || typeof data.response == "undefined" ){
+            model.set("indexed", false);
+            model.trigger("getInfoError");
+            return;
+          }
+
 					var docs = data.response.docs;
 
 					if(docs.length == 1){

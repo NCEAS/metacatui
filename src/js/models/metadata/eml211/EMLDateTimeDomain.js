@@ -35,10 +35,16 @@ define(["jquery", "underscore", "backbone",
              * Use this until we can figure out issues with $.parseXML().
              */
             nodeNameMap: {
+              "alternativetimescale" : "alternativeTimeScale",
                 "datetime": "dateTime",
                 "formatstring": "formatString",
                 "datetimeprecision": "dateTimePrecision",
-                "datetimedomain": "dateTimeDomain"
+                "datetimedomain": "dateTimeDomain",
+                "timescalename" : "timeScaleName",
+                "timescaleageestimate" : "timeScaleAgeEstimate",
+                "timescaleageuncertainty" : "timeScaleAgeUncertainty",
+                "timescaleageexplanation" : "timeScaleAgeExplanation",
+                "timescalecitation" : "timeScaleCitation"
             },
 
             /* Initialize an EMLDateTimeDomain object */

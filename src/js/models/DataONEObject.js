@@ -65,6 +65,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     synced: false, // True if the full model has been synced
                     uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     uploadProgress: null,
+                    sysMetaUploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     errorMessage: null,
@@ -653,6 +654,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           //Update the upload status to "p" for "in progress"
           this.set("uploadStatus", "p");
+          //Update the system metadata upload status to "p" as well, so the app
+          // knows that the system metadata, specifically, is being updated.
+          this.set("sysMetaUploadStatus", "p");
 
           var formData = new FormData();
 
@@ -686,6 +690,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                 //Update the upload status to "c" for "complete"
                 model.set("uploadStatus", "c");
+                model.set("sysMetaUploadStatus", "c");
 
                 //Trigger a custom event that the sys meta was updated
                 model.trigger("sysMetaUpdated");
@@ -714,6 +719,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                       model.set("errorMessage", parsedResponse);
                       model.set("uploadStatus", "e");
+                      model.set("sysMetaUploadStatus", "e");
 
                       //Send this exception to Google Analytics
                       if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {

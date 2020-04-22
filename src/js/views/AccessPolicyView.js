@@ -159,6 +159,9 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
         //Show a blank row at the bottom of the table for adding a new Access Rule.
         this.addEmptyRow();
 
+        //Render various help text for this view
+        this.renderHelpText();
+
         //Render the public/private toggle, if it's enabled in the app config
         if( MetacatUI.appModel.get("showPortalPublicToggle") !== false ){
           var enabledSubjects = MetacatUI.appModel.get("showPortalPublicToggleForSubjects");
@@ -195,6 +198,9 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     * Renders a public/private toggle that toggles the public readability of the given resource.
     */
     renderPublicToggle: function(){
+
+      var view = this;
+
       //Render the private/public toggle
       this.$(".public-toggle-container").html(
         this.toggleTemplate({
@@ -203,7 +209,22 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
           trueLabel: "Public",
           falseLabel: "Private"
         })
-      );
+      ).tooltip({
+        placement: "top",
+        trigger: "hover",
+        title: function(){
+          if( view.collection.isPublic() ){
+            return "Your " + view.resourceType + " is public. Anyone can see this content."
+          }
+          else{
+            return "Your " + view.resourceType + " is private. Only people you approve can see this content."
+          }
+        },
+        container: this.$(".public-toggle-container"),
+        delay: {
+          show: 800
+        }
+      });
 
       //If the dataset is public, check the checkbox
       this.$(".public-toggle-container input").prop("checked", this.collection.isPublic());
@@ -453,6 +474,73 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
                                   msgContainer,
                                   2000,
                                   { remove: true });
+    },
+
+    /**
+    * Renders help text for the form in this view
+    */
+    renderHelpText: function(){
+
+      try{
+        //Create HTML that shows the access policy help text
+        var accessExplanationEl = $(document.createElement("div")),
+            listEl              = $(document.createElement("ul")).addClass("unstyled");
+
+        accessExplanationEl.append(listEl);
+
+        //Get the AccessRule options names
+        var accessRuleOptionNames = MetacatUI.appModel.get("accessRuleOptionNames");
+        if( typeof accessRuleOptionNames !== "object" || !Object.keys(accessRuleOptionNames).length ){
+          accessRuleOptionNames = {};
+        }
+
+        //Create HTML that shows an explanation of each enabled access rule option
+        _.mapObject(MetacatUI.appModel.get("accessRuleOptions"), function(isEnabled, accessType){
+
+          //If this access type is disabled, exit
+          if( !isEnabled ){
+            return;
+          }
+
+          var accessTypeExplanation = "",
+              accessTypeName = accessRuleOptionNames[accessType];
+
+          //Get explanation text for the given access type
+          switch( accessType ){
+            case "read":
+              accessTypeExplanation = " - can view this content, even when it's private.";
+              break;
+            case "write":
+              accessTypeExplanation = " - can view and edit this content, even when it's private.";
+              break;
+            case "changePermission":
+              accessTypeExplanation = " - can view and edit this content, even when it's private. In addition, can add and remove other people from these " + MetacatUI.appModel.get("accessPolicyName") + ".";
+              break;
+          }
+
+          //Add this to the list
+          listEl.append($(document.createElement("li")).append(
+                          $(document.createElement("h5")).text(accessTypeName),
+                          $(document.createElement("span")).text(accessTypeExplanation)));
+
+        });
+
+        //Add a popover to the Access column header to give more help text about the access types
+        this.$(".access-icon.popover-this").popover({
+          title: "What does \"Access\" mean?",
+          delay: {
+            show: 800
+          },
+          placement: "top",
+          trigger: "hover focus click",
+          container: this.$el,
+          html: true,
+          content: accessExplanationEl
+        });
+      }
+      catch(e){
+        console.error("Could not render help text", e);
+      }
     },
 
     /**

@@ -107,12 +107,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               EMLTemporalCoverage.prototype.nodeNameMap(),
               EMLMethods.prototype.nodeNameMap(),
               {
+                "accuracyreport" : "accuracyReport",
+                "actionlist" : "actionList",
                 "additionalclassifications" : "additionalClassifications",
                 "additionalinfo" : "additionalInfo",
                 "additionallinks" : "additionalLinks",
                 "additionalmetadata" : "additionalMetadata",
                 "allowfirst" : "allowFirst",
                 "alternateidentifier" : "alternateIdentifier",
+                "altitudedatumname" : "altitudeDatumName",
+                "altitudedistanceunits" : "altitudeDistanceUnits",
+                "altituderesolution" : "altitudeResolution",
+                "altitudeencodingmethod" : "altitudeEncodingMethod",
+                "altitudesysdef" : "altitudeSysDef",
                 "asneeded" : "asNeeded",
                 "associatedparty" : "associatedParty",
                 "attributeaccuracyexplanation" : "attributeAccuracyExplanation",
@@ -123,27 +130,70 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "attributelist" : "attributeList",
                 "attributename" : "attributeName",
                 "attributeorientation" : "attributeOrientation",
+                "attributereference" : "attributeReference",
+                "audiovisual" : "audioVisual",
+                "authsystem" : "authSystem",
+                "banddescription" : "bandDescription",
+                "bilinearfit" : "bilinearFit",
+                "binaryrasterformat" : "binaryRasterFormat",
                 "blockedmembernode" : "blockedMemberNode",
+                "booktitle" : "bookTitle",
+                "cameracalibrationinformationavailability" : "cameraCalibrationInformationAvailability",
                 "casesensitive" : "caseSensitive",
+                "cellgeometry" : "cellGeometry",
+                "cellsizexdirection" : "cellSizeXDirection",
+                "cellsizeydirection" : "cellSizeYDirection",
                 "changehistory" : "changeHistory",
                 "changedate" : "changeDate",
                 "changescope" : "changeScope",
+                "chapternumber" : "chapterNumber",
                 "characterencoding" : "characterEncoding",
+                "checkcondition" : "checkCondition",
+                "checkconstraint" : "checkConstraint",
+                "childoccurences" : "childOccurences",
+                "citableclassificationsystem" : "citableClassificationSystem",
+                "cloudcoverpercentage" : "cloudCoverPercentage",
                 "codedefinition" : "codeDefinition",
                 "codeexplanation" : "codeExplanation",
                 "codesetname" : "codesetName",
                 "codeseturl" : "codesetURL",
                 "collapsedelimiters" : "collapseDelimiters",
+                "communicationtype" : "communicationType",
+                "compressiongenerationquality" : "compressionGenerationQuality",
+                "compressionmethod" : "compressionMethod",
+                "conferencedate" : "conferenceDate",
+                "conferencelocation" : "conferenceLocation",
+                "conferencename" : "conferenceName",
+                "conferenceproceedings" : "conferenceProceedings",
+                "constraintdescription" : "constraintDescription",
+                "constraintname" : "constraintName",
                 "constanttosi" : "constantToSI",
+                "controlpoint" : "controlPoint",
+                "cornerpoint" : "cornerPoint",
                 "customunit" : "customUnit",
                 "dataformat" : "dataFormat",
+                "datasetgpolygon" : "datasetGPolygon",
+                "datasetgpolygonoutergring" : "datasetGPolygonOuterGRing",
+                "datasetgpolygonexclusiongring" : "datasetGPolygonExclusionGRing",
                 "datatable" : "dataTable",
                 "datatype" : "dataType",
                 "datetime" : "dateTime",
                 "datetimedomain" : "dateTimeDomain",
                 "datetimeprecision" : "dateTimePrecision",
+                "defaultvalue" : "defaultValue",
                 "definitionattributereference" : "definitionAttributeReference",
+                "denomflatratio" : "denomFlatRatio",
+                "depthsysdef" : "depthSysDef",
+                "depthdatumname" : "depthDatumName",
+                "depthdistanceunits" : "depthDistanceUnits",
+                "depthencodingmethod" : "depthEncodingMethod",
+                "depthresolution" : "depthResolution",
+                "descriptorvalue" : "descriptorValue",
                 "dictref" : "dictRef",
+                "diskusage" : "diskUsage",
+                "domainDescription" : "domainDescription",
+                "editedbook" : "editedBook",
+                "encodingmethod" : "encodingMethod",
                 "endcondition" : "endCondition",
                 "entitycodelist" : "entityCodeList",
                 "entitydescription" : "entityDescription",
@@ -156,12 +206,46 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "externalcodeset" : "externalCodeSet",
                 "externallydefinedformat" : "externallyDefinedFormat",
                 "fielddelimiter" : "fieldDelimiter",
+                "fieldstartcolumn" : "fieldStartColumn",
+                "fieldwidth" : "fieldWidth",
+                "filmdistortioninformationavailability" : "filmDistortionInformationAvailability",
+                "foreignkey" : "foreignKey",
                 "formatname" : "formatName",
                 "formatstring" : "formatString",
+                "formatversion" : "formatVersion",
                 "fractiondigits" : "fractionDigits",
+                "gring" : "gRing",
+                "gringpoint" : "gRingPoint",
+                "gringlatitude" : "gRingLatitude",
+                "gringlongitude" : "gRingLongitude",
+                "geogcoordsys" : "geogCoordSys",
+                "geometricobjectcount" : "geometricObjectCount",
+                "georeferenceinfo" : "georeferenceInfo",
+                "highwavelength" : "highWavelength",
+                "horizontalaccuracy" : "horizontalAccuracy",
+                "horizcoordsysdef" : "horizCoordSysDef",
+                "horizcoordsysname" : "horizCoordSysName",
+                "identifiername" : "identifierName",
+                "illuminationazimuthangle" : "illuminationAzimuthAngle",
+                "illuminationelevationangle" : "illuminationElevationAngle",
+                "imagingcondition" : "imagingCondition",
+                "imagequalitycode" : "imageQualityCode",
+                "imageorientationangle" : "imageOrientationAngle",
                 "intellectualrights" : "intellectualRights",
+                "imagedescription" : "imageDescription",
+                "isbn" : "ISBN",
+                "issn" : "ISSN",
+                "joincondition" : "joinCondition",
+                "keywordtype" : "keywordType",
+                "languagevalue" : "LanguageValue",
+                "languagecodestandard" : "LanguageCodeStandard",
+                "lensdistortioninformationavailability" : "lensDistortionInformationAvailability",
+                "licenseurl" : "licenseURL",
+                "linenumber" : "lineNumber",
                 "literalcharacter" : "literalCharacter",
                 "literallayout" : "literalLayout",
+                "lowwavelength" : "lowWaveLength",
+                "machineprocessor" : "machineProcessor",
                 "maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
                 "matrixtype" : "matrixType",
                 "maxexclusive" : "maxExclusive",
@@ -170,54 +254,123 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "maxrecordlength" : "maxRecordLength",
                 "maxvalues" : "maxValues",
                 "measurementscale" : "measurementScale",
+                "metadatalist" : "metadataList",
                 "methodstep" : "methodStep",
                 "minexclusive" : "minExclusive",
                 "mininclusive" : "minInclusive",
                 "minlength" : "minLength",
                 "minvalues" : "minValues",
                 "missingvaluecode" : "missingValueCode",
+                "moduledocs" : "moduleDocs",
+                "modulename" : "moduleName",
+                "moduledescription" : "moduleDescription",
+                "multiband" : "multiBand",
                 "multipliertosi" : "multiplierToSI",
                 "nonnumericdomain" : "nonNumericDomain",
+                "notnullconstraint" : "notNullConstraint",
                 "notplanned" : "notPlanned",
+                "numberofbands" : "numberOfBands",
                 "numbertype" : "numberType",
                 "numericdomain" : "numericDomain",
                 "numfooterlines" : "numFooterLines",
                 "numheaderlines" : "numHeaderLines",
                 "numberofrecords" : "numberOfRecords",
+                "numberofvolumes" : "numberOfVolumes",
                 "numphysicallinesperrecord" : "numPhysicalLinesPerRecord",
                 "objectname" : "objectName",
                 "oldvalue" : "oldValue",
+                "operatingsystem" : "operatingSystem",
                 "orderattributereference" : "orderAttributeReference",
+                "originalpublication" : "originalPublication",
                 "otherentity" : "otherEntity",
                 "othermaintenanceperiod" : "otherMaintenancePeriod",
+                "parameterdefinition" : "parameterDefinition",
                 "packageid" : "packageId",
+                "pagerange" : "pageRange",
+                "parentoccurences" : "parentOccurences",
                 "parentsi" : "parentSI",
+                "peakresponse" : "peakResponse",
+                "personalcommunication" : "personalCommunication",
                 "physicallinedelimiter" : "physicalLineDelimiter",
+                "pointinpixel" : "pointInPixel",
                 "preferredmembernode" : "preferredMemberNode",
+                "preprocessingtypecode" : "preProcessingTypeCode",
+                "primarykey" : "primaryKey",
+                "primemeridian" : "primeMeridian",
+                "proceduralstep" : "proceduralStep",
+                "programminglanguage" : "programmingLanguage",
+                "projcoordsys" : "projCoordSys",
+                "projectionlist" : "projectionList",
+                "propertyuri" : "propertyURI",
                 "pubdate" : "pubDate",
                 "pubplace" : "pubPlace",
+                "publicationplace" : "publicationPlace",
+                "quantitativeaccuracyreport" : "quantitativeAccuracyReport",
+                "quantitativeaccuracyvalue" : "quantitativeAccuracyValue",
+                "quantitativeaccuracymethod" : "quantitativeAccuracyMethod",
                 "quantitativeattributeaccuracyassessment" : "quantitativeAttributeAccuracyAssessment",
+                "querystatement" : "queryStatement",
                 "quotecharacter" : "quoteCharacter",
+                "radiometricdataavailability" : "radiometricDataAvailability",
+                "rasterorigin" : "rasterOrigin",
                 "recommendedunits" : "recommendedUnits",
+                "recommendedusage" : "recommendedUsage",
+                "referencedkey" : "referencedKey",
+                "referencetype" : "referenceType",
+                "relatedentry" : "relatedEntry",
+                "relationshiptype" : "relationshipType",
+                "reportnumber" : "reportNumber",
+                "reprintedition" : "reprintEdition",
+                "researchproject" : "researchProject",
                 "researchtopic" : "researchTopic",
                 "recorddelimiter" : "recordDelimiter",
+                "revieweditem" : "reviewedItem",
+                "rowcolumnorientation" : "rowColumnOrientation",
+                "runtimememoryusage" : "runtimeMemoryUsage",
                 "samplingdescription" : "samplingDescription",
+                "scalefactor" : "scaleFactor",
+                "sequenceidentifier" : "sequenceIdentifier",
+                "semiaxismajor" : "semiAxisMajor",
                 "shortname" : "shortName",
                 "simpledelimited" : "simpleDelimited",
+                "spatialraster" : "spatialRaster",
+                "spatialreference" : "spatialReference",
+                "spatialvector" : "spatialVector",
+                "standalone" : "standAlone",
                 "standardunit" : "standardUnit",
                 "startcondition" : "startCondition",
+                "studyareadescription" : "studyAreaDescription",
                 "storagetype" : "storageType",
                 "studyextent" : "studyExtent",
                 "studytype" : "studyType",
+                "textdelimited" : "textDelimited",
                 "textdomain" : "textDomain",
+                "textfixed" : "textFixed",
                 "textformat" : "textFormat",
+                "topologylevel" : "topologyLevel",
+                "tonegradation" : "toneGradation",
                 "totaldigits" : "totalDigits",
+                "totalfigures" : "totalFigures",
+                "totalpages" : "totalPages",
+                "totaltables" : "totalTables",
+                "triangulationindicator" : "triangulationIndicator",
                 "typesystem" : "typeSystem",
+                "uniquekey" : "uniqueKey",
                 "unittype" : "unitType",
                 "unitlist" : "unitList",
                 "valueattributereference" : "valueAttributeReference",
+                "verticalaccuracy" : "verticalAccuracy",
+                "vertcoordsys" : "vertCoordSys",
+                "virtualmachine" : "virtualMachine",
+                "wavelengthunits" : "waveLengthUnits",
                 "whitespace" : "whiteSpace",
-                "xsi:schemalocation" : "xsi:schemaLocation"
+                "xintercept" : "xIntercept",
+                "xcoordinate" : "xCoordinate",
+                "xsi:schemalocation" : "xsi:schemaLocation",
+                "xslope" : "xSlope",
+                "ycoordinate" : "yCoordinate",
+                "yintercept" : "yIntercept",
+                "yslope" : "ySlope"
               }
           );
         },
@@ -1621,6 +1774,82 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
             this.set( attr, _.without(this.get(attr), partyModel) );
           }
 
+        }, this);
+      },
+
+      /**
+       * Attempt to move a party one index forward within its sibling models
+       *
+       * @param {EMLParty} partyModel: The EMLParty model we're moving
+       */
+      movePartyUp: function(partyModel) {
+        var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+
+        // Iterate over each possible attribute
+        _.each(possibleAttr, function(attr){
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          var models = _.clone(this.get(attr));
+
+          // Find the index of the model we're moving
+          var index = _.findIndex(models, function(m) {
+            return m === partyModel;
+          });
+
+          if (index === 0) {
+            // Already first
+            return;
+          }
+
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
+
+          // Do the move using splice and update the model
+          models.splice(index - 1, 0, models.splice(index, 1)[0])
+          this.set(attr, models);
+          this.trigger("change:" + attr);
+        }, this);
+      },
+
+      /**
+       * Attempt to move a party one index forward within its sibling models
+       *
+       * @param {EMLParty} partyModel: The EMLParty model we're moving
+       */
+      movePartyDown: function(partyModel) {
+        var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+
+        // Iterate over each possible attribute
+        _.each(possibleAttr, function(attr){
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          var models = _.clone(this.get(attr));
+
+          // Find the index of the model we're moving
+          var index = _.findIndex(models, function(m) {
+            return m === partyModel;
+          });
+
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
+
+          // Figure out where to put the new model
+          //   Leave it in the same place if the next index doesn't exist
+          //   Move one forward if it does
+          var newIndex = (models.length <= index + 1) ? index : index + 1;
+
+          // Do the move using splice and update the model
+          models.splice(newIndex, 0, models.splice(index, 1)[0])
+          this.set(attr, models);
+          this.trigger("change:" + attr);
         }, this);
       },
 

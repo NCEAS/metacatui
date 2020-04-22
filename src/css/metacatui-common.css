@@ -116,7 +116,8 @@ article.container {
 	width: 96%;
 }
 #Content{
-    padding: 40px 40px 40px 40px;
+  padding: 40px 40px 40px 40px;
+  min-height: 200px;
 }
 .DataCatalog #Content{
 	box-sizing: border-box;
@@ -253,14 +254,18 @@ header .citation {
 	margin-bottom: 0px;
 }
 #Content > .login{
-	max-width: 400px;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 100px;
+	max-width: 300px;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  display: grid;
+  align-self: center;
 }
-#Content > .login > * {
-    font-size: 2em;
-    margin-right: 10px;
+#Content > .login .btn{
+  font-size: 1.5em;
+}
+.login > span {
+  top: -.2em;
+  position: relative;
 }
 #Content > .login > .alert-container{
 	font-size: inherit;
@@ -384,6 +389,15 @@ header .citation {
 #Content > .alert-container {
     max-width: 90%;
     margin-left: 5%;
+}
+body > .alert-container.important-app-message{
+  bottom: 0px;
+  top: auto;
+  width: 100%;
+}
+body > .alert-container.important-app-message > .alert{
+  margin-bottom: 0px;
+  display: grid;
 }
 /******************************************
 ** Icons ***
@@ -1580,6 +1594,7 @@ body > .alert-container {
   padding-bottom: 25px;
 }
 .attributeList > .row-fluid > .span2 {
+  max-width: 300px;
   max-height: 700px;
   overflow: scroll;
   width: 25%;
@@ -2254,7 +2269,7 @@ a.btn.metrics-button-disabled {
 * Repository + User Profile Metrics
 ********************************************/
 section#user-citations {
-    min-height: 360px;
+    min-height: 300px;
 }
 .metrics-title > h3 {
 	display: inline-block;
@@ -2266,7 +2281,7 @@ section#user-citations {
 .citations-metrics-list {
     overflow-y: auto;
     max-height: 300px;
-    content: " "; 
+    content: " ";
     display: block;
     clear: both;
 }
@@ -2286,7 +2301,8 @@ section#user-citations {
     margin: 0 auto;
 }
 .citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
-    padding: 5px 15px 5px 85px;
+	padding: 5px 15px 5px 85px;
+	background-color: #f9f9f9;
 }
 .citations-metrics-list > .metric-table.table.table-striped.table-condensed td > .citation {
     margin-left: -70px;
@@ -2305,7 +2321,7 @@ section#user-citations {
     	margin-left: 0px;
     	padding: 20px;
     	width: 85%;
-    	width: calc(100% - 180px);
+			width: calc(100% - 180px);
 }
 .entitydetails tr,
 .entitydetails table,
@@ -2964,12 +2980,32 @@ img[src*="googleapis.com/"].georegion-map{
   margin-left: 0px;
   display: none;
 }
+.access-policy-view:not(.modal) .modal-header{
+  border-bottom-width: 0px;
+  padding: 0px;
+}
+.access-policy-view:not(.modal) .modal-body{
+  padding: 0px;
+  max-height: none;
+}
+.access-policy-view:not(.modal) .modal-header .close{
+  display: none;
+}
 .access-policy-control.disabled{
   cursor: not-allowed;
 }
-.access-policy-view h4{
+.access-policy-view.modal h4{
   font-size: 1em;
   font-weight: bold;
+}
+.access-policy-view:not(.modal) h4 .icon{
+  display: none;
+}
+.access-policy-view .popover li h5 {
+  display: inline;
+}
+.access-policy-view .popover{
+  min-width: 50%;
 }
 .access-rule td {
   padding-top: 12px;
@@ -2997,7 +3033,7 @@ img[src*="googleapis.com/"].georegion-map{
 .access-rule .remove-rule{
   width: 2em;
 }
-.access-rule .add.icon{
+.access-policy-view .access-rule .add.icon{
   margin-top: 25px;
   display: block;
   font-size: 2em;
@@ -3012,12 +3048,17 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .access-policy-view .public-toggle-container{
   margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
 }
 .access-policy-view .can-toggle{
   width: 200px;
 }
 .access-policy-view p{
   margin-bottom: 20px;
+}
+.access-policy-view:not(.modal) .modal-footer{
+  display: none;
 }
 /******************************************
 * Portal Editor
@@ -3188,6 +3229,8 @@ img[src*="googleapis.com/"].georegion-map{
 	display: flex;
 	width: 100%;
 	overflow-x: auto;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 .edit-image .toggle-remove-preview{
   display: none;
@@ -3230,6 +3273,7 @@ img[src*="googleapis.com/"].georegion-map{
   padding: 10px;
   border-radius: 4px;
   position: relative;
+  background-color: #fafafa;
 }
 .port-editor-logos .edit-image .dropzone{
   height: 150px;
@@ -7192,4 +7236,10 @@ CSS library fixes
 	width: 90%;
 	left: 5%;
 	margin: 0 auto;
+}
+
+/* Center Justify Metadata Assessment charts */
+#metadata-assessment-graphic {
+	display: flex;
+	justify-content: center;
 }

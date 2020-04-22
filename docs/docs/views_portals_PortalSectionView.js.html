@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: views/portals/PortalSectionView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: views/portals/PortalSectionView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(["jquery",
+    "underscore",
+    "backbone",
+    'models/portals/PortalSectionModel',
+    "views/MarkdownView",
+    "views/TOCView",
+    "text!templates/portals/portalSection.html"],
+    function($, _, Backbone, PortalSectionModel, MarkdownView, TOCView, Template){
+
+    /**
+     * @class PortalSectionView
+     * @classdesc The PortalSectionView is a generic view to render
+     * portal sections, with a default rendering of a
+     * MarkdownView
+     * @module views/PortalSectionView
+     * @name PortalSectionView
+     * @extends Backbone.View
+     * @constructor
+     */
+     var PortalSectionView = Backbone.View.extend(
+       /** @lends PortalSectionView.prototype */{
+
+       /**
+       * The type of View this is
+       * @type {string}
+       * @readonly
+       */
+        type: "PortalSection",
+
+        /**
+        * The display name for this Section
+        * @type {string}
+        */
+        sectionName: "",
+
+        /**
+        * The unique label for this Section. It most likely matches the label on the model, but
+        * may include a number after if more than one section has the same name.
+        * @type {string}
+        */
+        uniqueSectionLabel: "",
+
+        /**
+        * The HTML tag name for this view's element
+        * @type {string}
+        */
+        tagName: "div",
+
+        /**
+        * The HTML classes to use for this view's element
+        * @type {string}
+        */
+        className: "tab-pane portal-section-view",
+
+        /**
+        * Specifies if this section is active or not
+        * @type {boolean}
+        */
+        active: false,
+
+        /**
+        * The PortalSectionModel that is being edited
+        * @type {PortalSection}
+        */
+        model: undefined,
+
+        /**
+        * @type {UnderscoreTemplate}
+        */
+        template: _.template(Template),
+
+        /**
+        * @param {Object} options - A literal object with options to pass to the view
+        * @property {PortalSection} options.model - The PortalSection rendered in this view
+        * @property {string} options.sectionName - The name of the portal section
+        */
+        initialize: function(options){
+
+          // Get all the options and apply them to this view
+          if( typeof options == "object" ) {
+              var optionKeys = Object.keys(options);
+              _.each(optionKeys, function(key, i) {
+                  this[key] = options[key];
+              }, this);
+          }
+
+        },
+
+        /**
+         Renders the view
+        */
+        render: function() {
+
+          //Add the active class to the element
+          if( this.active ){
+            this.$el.addClass("active");
+          }
+
+          //Add an id to this element so links work
+          this.$el.attr("id", this.getName({ linkFriendly: true }));
+
+          this.$el.html(this.template({
+            imageURL: this.model.get("image")? this.model.get("image").get("imageURL") : "",
+            title: this.model.get("title"),
+            introduction: this.model.get("introduction")
+          }));
+
+          this.$el.data("view", this);
+
+          //If there is Markdown, render it
+          if( this.model.get("content").get("markdown") ){
+            //Create a MarkdownView
+            var sectionMarkdownView = new MarkdownView({
+              markdown: this.model.get("content").get("markdown"),
+              citations: this.model.get("literatureCited")
+            });
+
+            //Listen to the markdown view and when it is rendered, format the rendered markdown
+            this.listenTo(sectionMarkdownView, "mdRendered", this.postMarkdownRender);
+
+            //Render the view
+            sectionMarkdownView.render();
+
+            //Add the markdown view element to this view
+            this.$(".portal-section-content").html(sectionMarkdownView.el);
+
+            this.markdownView = sectionMarkdownView;
+
+            //Set TOC to render after the Markdown section, so it
+            // can get the rendered header tags
+            this.listenToOnce(sectionMarkdownView, "mdRendered", this.renderTOC);
+          }
+
+        },
+
+        /**
+        * Renders a table of contents (a TOCView) that links to different sections of the MarkdownView
+        */
+        renderTOC: function(){
+
+          //Create a table of contents view
+          var tocView = new TOCView({
+            contentEl: this.markdownView.el,
+            className: "toc toc-view scrollspy-TOC"
+          });
+
+          this.tocView = tocView;
+
+          tocView.render();
+
+          //If more than one link was created in the TOCView, add it to this view
+          if( tocView.$el.find("li").length > 1){
+            this.$(".portal-section-content").prepend(tocView.el);
+
+            //Make a two-column layout
+            tocView.$el.addClass("span3");
+            this.markdownView.$el.addClass("span9");
+          }
+
+        },
+
+        /**
+        * This funciton is called after this view has fully rendered and is
+        * visible on the webpage
+        */
+        postRender: function(){
+
+          _.each(this.subviews, function(subview){
+              if(subview.postRender){
+                subview.postRender();
+              }
+          });
+
+          // When TOC is added...
+          // Affix the TOC to the top of the window when scrolling past it &amp;
+          // add scrollSpy
+          if( !this.tocView &amp;&amp; this.markdownView ){
+            this.listenToOnce(this.markdownView, "mdRendered", function(){
+              this.tocView.$el.affix({
+                offset: this.tocView.$el.offset().top
+              });
+              this.tocView.addScrollspy(".portal-section-view.active .scrollspy-TOC");
+            });
+          }
+          else if( this.tocView ){
+            this.tocView.$el.affix({
+              offset: this.tocView.$el.offset().top
+            });
+            this.tocView.addScrollspy(".portal-section-view.active .scrollspy-TOC");
+          }
+
+        },
+
+        /**
+        * When the portal section markdown is rendered in a MarkdownView, format the
+        * resulting HTML as needed for this view
+        */
+        postMarkdownRender: function(){
+
+          this.$(".markdown img").addClass("thumbnail").after("&lt;div class='clear'>&lt;/div>");
+
+          //If the window location has a hash, scroll to it
+          if( window.location.hash &amp;&amp; this.$(window.location.hash).length ){
+
+            var view = this;
+
+            //Wait 0.5 seconds to allow images time to load before we scroll down the page
+            setTimeout(function(){
+              //Scroll to the element specified in the hash
+              MetacatUI.appView.scrollTo( view.$(window.location.hash) );
+            }, 500);
+          }
+
+        },
+
+        /**
+        * Gets the name of this section and returns it
+        * @param {Object} [options] - Optional options for the name that is returned
+        * @property {Boolean} options.linkFriendly - If true, the name will be stripped of special characters
+        * @return {string} The name for this section
+        */
+        getName: function(options){
+
+          var name = "";
+
+          //If a section name is set on the view, use that
+          if( this.sectionName ){
+            name = this.sectionName;
+          }
+          //If the model is a PortalSectionModel, use the label from the model
+          else if( PortalSectionModel.prototype.isPrototypeOf(this.model) ){
+            name = this.model.get("label");
+          }
+          else{
+            name = "Untitled";
+          }
+
+          if( typeof options == "object" ){
+            if( options.linkFriendly ){
+              name = name.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-");
+            }
+          }
+
+          return name;
+
+        }
+     });
+
+     return PortalSectionView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 14:11:45 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

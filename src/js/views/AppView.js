@@ -94,6 +94,8 @@ define(['jquery',
 			this.listenForTimeout();
 
 			this.initializeWidgets();
+
+      this.checkIncompatibility();
 		},
 
 		//Changes the web document's title
@@ -265,6 +267,16 @@ define(['jquery',
 			});
 		},
 
+    /**
+    * Displays the given message to the user in a Bootstrap "alert" style.
+    * @param {string|Element} msg
+    * @param {string} [classes]
+    * @param {string|Element} [container]
+    * @param {boolean} [delay]
+    * @param {object} [options]
+    * @param {string} [options.emailBody]
+    * @param {boolean} [options.remove]
+    */
 		showAlert: function(msg, classes, container, delay, options) {
 			if(!classes)
 				var classes = 'alert-success';
@@ -304,8 +316,10 @@ define(['jquery',
 				$(container).prepend(alert);
 		},
 
-		// Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
-		// When a user checks back, we want to check for log-in status
+		/**
+    * Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
+		* When a user checks back, we want to check for log-in status
+    */
 		listenForActivity: function(){
 			MetacatUI.appUserModel.on("change:loggedIn", function(){
 				if(!MetacatUI.appUserModel.get("loggedIn")) return;
@@ -324,7 +338,7 @@ define(['jquery',
 			});
 		},
 
-		/*
+		/**
 		* Will determine the length of time until the user's current token expires,
 		* and will set a window timeout for that length of time. When the timeout
 		* is triggered, the sign in modal window will be displayed so that the user
@@ -376,7 +390,7 @@ define(['jquery',
 			}
 		},
 
-		/*
+		/**
 		* If the user's auth token has expired, a new SignInView model window is
 		* displayed so the user can sign back in. A listener is set on the appUserModel
 		* so that when they do successfully sign back in, we set another timeout listener
@@ -453,6 +467,30 @@ define(['jquery',
  		        }
  		    });
 		},
+
+    /**
+    * Checks if the user's browser is an outdated version that won't work with
+    * MetacatUI well, and displays a warning message to the user..
+    * The user agent is checked against the `unsupportedBrowsers` list in the AppModel.
+    */
+    checkIncompatibility: function(){
+      //Check if this browser is incompatible with this app. i.e. It is an old browser version
+      var isUnsupportedBrowser = _.some( MetacatUI.appModel.get("unsupportedBrowsers"), function(browserRegEx){
+        var matches = navigator.userAgent.match(browserRegEx);
+        return (matches && matches.length > 0);
+      });
+
+      if( !isUnsupportedBrowser ){
+        return;
+      }
+      else{
+        //Show a warning message to the user about their browser.
+        this.showAlert("Your web browser is out of date. Update your browser for more security, " +
+                       "speed and the best experience on this site.", "alert-warning", this.$el,
+                       false, { remove: true });
+        this.$el.children(".alert-container").addClass("important-app-message");
+      }
+    },
 
 		/********************** Utilities ********************************/
 		// Various utility functions to use across the app //

@@ -24,7 +24,7 @@ MetacatUI.root = "/metacatui"
 MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
 
 //This version of Metacat UI - used for cache busting
-MetacatUI.metacatUIVersion = "2.8.5";
+MetacatUI.metacatUIVersion = "2.10.0";
 
 MetacatUI.loadTheme = function(theme) {
     var script = document.createElement("script");

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: themes/ess-dive/views/metadata/EMLReferencePaperSubView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: themes/ess-dive/views/metadata/EMLReferencePaperSubView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLText',
+        'text!themes/ess-dive/templates/metadata/referencePaper.html'],
+    function (_, $, Backbone, EMLText, Template) {
+
+        /***
+         * SubView for managing Funding Organizations
+         *
+         * @type {void|*}
+         */
+        var EMLReferencePaperSubView = Backbone.View.extend({
+            tagName: "div",
+
+            attributes: {
+                "data-category":"referencePaper"
+            },
+
+            events: {
+                "change"   : "handleUpdate",
+        		"click .remove" : "handleRemove",
+        		"mouseover .remove" : "previewRemove",
+        		"mouseout .remove"  : "previewRemove"
+            },
+
+
+        	className: "row-fluid eml-additional-info",
+
+            template: _.template(Template),
+
+            /**
+             * Initialize the Sub View
+             * @param options
+             */
+            initialize: function(options){
+
+
+                this.papers =[];
+                this.parentModel = options.parentModel;
+
+                // Restrict Additional Information to a single element. Otherwise
+                // we will not know where the reference papers are.
+                this.additionalInfo = this.parentModel.get("additionalInfo");
+                if(Array.isArray(this.additionalInfo) &amp;&amp; this.additionalInfo.length !=0){
+                    this.additionalInfo = this.additionalInfo[0]
+                }
+                if (!this.additionalInfo || this.additionalInfo.length == 0 || !this.additionalInfo.get("section")){
+                    this.additionalInfo =  new EMLText({
+                            text:[],
+                            section: new EMLText({
+                                type: "section",
+                                title: "Related References",
+                                text:[]
+                            })
+                        });
+                }
+
+                if (_.isArray(this.additionalInfo.get("section"))) {
+                    var section = this.additionalInfo.get("section")[0];
+                    this.papers = section.text;
+                }
+                else
+                    this.papers = this.additionalInfo.get("section").text;
+
+        	},
+
+            /**
+             * Render the template with the data
+             *
+             * @returns {EMLReferencePaperSubView}
+             */
+            render: function () {
+                // Render the template with the selected funding organizations
+                this.$el.html(this.template({
+                        "referencePapers": this.papers
+                    }
+                ));
+
+                // This is a Subview
+                this.delegateEvents();
+
+                return this;
+            },
+
+            /**
+             * Update reference paper
+             *
+             * @param e
+             * @returns {boolean}
+             */
+            handleUpdate: function(e){
+                if(!e) return false;
+
+                // Get the DOM position so we know which one to update
+                var position = this.$(".reference-paper-item").index($(e.target));
+
+                // Stop if, for some odd reason, the target isn't found
+                if (position === -1) {
+                    return;
+                }
+
+                // Create an EML Text
+                this.papers[position] =$(e.target).val();
+
+                //Add this model to the parent EML model when it is valid
+                this.parentModel.set("additionalInfo", new EMLText({
+                            text:[],
+                            section: new EMLText({
+                                type: "section",
+                                title: "Related References",
+                                text: this.papers
+                            })
+                        }));
+
+				//Show the remove button
+				$(e.target).parents(".reference-paper-container").find(".remove").show();
+
+				this.render()
+
+            },
+
+            /***
+             * Remove this reference paper
+             *
+             * @param e
+             */
+        	handleRemove: function(e){
+        		//Get the index of this step
+        		var stepEl = $(e.target).parent(".reference-paper-container").find(".reference-paper-item"),
+        			index  = this.$(".reference-paper-item").index(stepEl),
+        			view   = this;
+        		
+        		//Remove this step from the model
+				this.papers = _.without(this.papers, this.papers[index]);
+
+                //Add this model to the parent EML model when it is valid
+                this.parentModel.set("additionalInfo", new EMLText({
+                            text:[],
+                            section: new EMLText({
+                                type: "section",
+                                title: "Related References",
+                                text:this.papers
+                            })
+                        }));
+
+        		this.render();
+
+        	},
+            previewRemove: function(e){
+        		$(e.target).parents(".reference-paper-container").toggleClass("remove-preview");
+        	}
+        });
+
+        return EMLReferencePaperSubView;
+
+    }
+);</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addAllowWriteAccess">addAllowWriteAccess</a></li><li><a href="global.html#capitalize">capitalize</a></li><li><a href="global.html#checkPermAndEmailProvided">checkPermAndEmailProvided</a></li><li><a href="global.html#createModel">createModel</a></li><li><a href="global.html#defaults">defaults</a></li><li><a href="global.html#events">events</a></li><li><a href="global.html#fetchModel">fetchModel</a></li><li><a href="global.html#generateJSONLD">generateJSONLD</a></li><li><a href="global.html#getCitationInfo">getCitationInfo</a></li><li><a href="global.html#getDOEContractNumbers">getDOEContractNumbers</a></li><li><a href="global.html#getDOEContractsJSON">getDOEContractsJSON</a></li><li><a href="global.html#getDOEProjects">getDOEProjects</a></li><li><a href="global.html#getFundingOrganizationNames">getFundingOrganizationNames</a></li><li><a href="global.html#getFundingOrganizationsJSON">getFundingOrganizationsJSON</a></li><li><a href="global.html#getInfo">getInfo</a></li><li><a href="global.html#getJSON">getJSON</a></li><li><a href="global.html#getKeywords">getKeywords</a></li><li><a href="global.html#getModels">getModels</a></li><li><a href="global.html#getProject">getProject</a></li><li><a href="global.html#getResults">getResults</a></li><li><a href="global.html#getSelectedKeywords">getSelectedKeywords</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#handleAdd">handleAdd</a></li><li><a href="global.html#handleAlreadyRequested">handleAlreadyRequested</a></li><li><a href="global.html#handlePersonTyping">handlePersonTyping</a></li><li><a href="global.html#handleRemove">handleRemove</a></li><li><a href="global.html#handleSaveMetadata">handleSaveMetadata</a></li><li><a href="global.html#handleUpdate">handleUpdate</a></li><li><a href="global.html#initialize">initialize</a></li><li><a href="global.html#insertJSONLD">insertJSONLD</a></li><li><a href="global.html#insertMembership">insertMembership</a></li><li><a href="global.html#load">load</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#publish">publish</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#renderAllSections">renderAllSections</a></li><li><a href="global.html#renderOverview">renderOverview</a></li><li><a href="global.html#renderPeople">renderPeople</a></li><li><a href="global.html#renderPerson">renderPerson</a></li><li><a href="global.html#save">save</a></li><li><a href="global.html#showDropdown">showDropdown</a></li><li><a href="global.html#showValidation">showValidation</a></li><li><a href="global.html#updateID">updateID</a></li><li><a href="global.html#validate">validate</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 13:37:41 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

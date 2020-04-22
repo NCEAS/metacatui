@@ -258,6 +258,7 @@
   text-align: center;
   min-width: 180px;
   border-bottom: 1px solid #495082;
+  white-space: pre-wrap;
 }
 
 .header .nav > li >  a:hover{
@@ -289,14 +290,6 @@
 	position: relative;
 	top: -2px;
 	box-shadow: none;
-}
-.header .login.btn img{
-	position: relative;
-	top: 2px;
-}
-.login.btn span{
-	top: -.3em;
-    position: relative;
 }
 .header .border-image{
 	background-image: url('../img/border-image.jpg');
@@ -452,6 +445,9 @@ footer .logos a:hover, a:focus{
 .nsf-logo{
 	width: 65px;
 	background-position: 100% 0px;
+}
+#Footer .core-trust-logo{
+  height: 60px;
 }
 
  /* BUTTONS CSS

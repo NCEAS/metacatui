@@ -735,19 +735,6 @@
 
 
 }
-@media only screen and (max-width : 1300px){
-  /*The attribute list in the MetadataView gets difficult to read at 1300px */
-  .attributeList > .row-fluid > .span2{
-    min-width: 130px;
-  }
-  .attributeList > .row-fluid > .span10{
-  	width: 76%;
-  	width: calc(97% - 165px);
-  }
-  .attributeList .tab-pane > .control-group{
-    min-width: 400px;
-  }
-}
 
 @media only screen and (max-width : 1000px){
 	/* Editor styles */

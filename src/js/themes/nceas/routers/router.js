@@ -15,7 +15,8 @@ function ($, _, Backbone) {
 			"signinldaperror"			: "renderLdapSignInError",
 			'external(/*url)'           : 'renderExternal', // renders the content of the given url in our UI
 			'share(/*pid)'       		: 'renderEditor',  // metadata Editor
-			'submit(/*pid)'       		: 'renderEditor'  // metadata Editor
+			'submit(/*pid)'       		: 'renderEditor',  // metadata Editor
+			'drafts' : 'renderDrafts'
 		},
 
 		initialize: function(){
@@ -157,6 +158,13 @@ function ($, _, Backbone) {
 
 			}
 		},
+
+		renderDrafts: function() {
+			require(['views/DraftsView'], function(DraftsView){
+				MetacatUI.appView.draftsView = new DraftsView();
+				MetacatUI.appView.showView(MetacatUI.appView.draftsView);
+			});
+		 },
 
 		renderLdapSignInError: function(){
 			this.routeHistory.push("signinldaperror");

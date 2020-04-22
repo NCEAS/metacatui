@@ -77,6 +77,8 @@ define(['underscore', 'jquery', 'backbone',
         	"click .eml-party .copy"   : "showCopyPersonMenu",
         	"click #copy-party-save"   : "copyPerson",
         	"click .eml-party .remove" : "removePerson",
+        	"click .eml-party .move-up" : "movePersonUp",
+        	"click .eml-party .move-down" : "movePersonDown",
 
 			    "click  .remove" : "handleRemove"
         },
@@ -463,9 +465,9 @@ define(['underscore', 'jquery', 'backbone',
 
 	    		//Find the party type or role based on the type given
           if(partyType){
-            if(emlParty.get("roleOptions").some(r=> partyType.indexOf(r) >= 0)){
+            if( _.includes(emlParty.get("roleOptions"), partyType) ){
               emlParty.get("roles").push(partyType);
-            } else if (emlParty.get("typeOptions").some(r=> partyType.indexOf(r) >= 0)) {
+            } else if ( _.includes(emlParty.get("typeOptions"), partyType) ){
               emlParty.set("type", partyType);
             }
           }
@@ -592,7 +594,7 @@ define(['underscore', 'jquery', 'backbone',
 	    	$(newPartyContainer).before(partyMenu);
 
 	    	//Update the model
-        if(partyModel.get("roleOptions").some(r=> partyType.indexOf(r) >= 0)){
+        if( _.includes(partyModel.get("roleOptions"), partyType) ){
           partyModel.get("roles").push(partyType);
         } else {
           partyModel.set("type", partyType);
@@ -805,6 +807,70 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Let the EMLPartyView remove itself
 	    	partyView.remove();
 
+			},
+
+      /**
+       * Attempt to move the current person (Party) one index backward (up).
+       *
+       * @param {EventHandler} e: The click event handler
+       */
+			movePersonUp: function(e){
+	    	e.preventDefault();
+
+	    	// Get the party view el, view, and model
+	    	var partyEl = $(e.target).parents(".eml-party"),
+            model = partyEl.data("model"),
+            next = $(partyEl).prev().not(".new");
+
+        if (next.length === 0) {
+          return;
+        }
+
+				// Remove current view, create and insert a new one for the model
+        $(partyEl).remove();
+
+        var newView = new EMLPartyView({
+          model: model,
+          edit: this.edit
+        });
+
+        $(next).before(newView.render().el);
+
+        // Move the party down within the model too
+				this.model.movePartyUp(model);
+				this.model.trickleUpChange();
+			},
+
+      /**
+       * Attempt to move the current person (Party) one index forward (down).
+       *
+       * @param {EventHandler} e: The click event handler
+       */
+	    movePersonDown: function(e){
+				e.preventDefault();
+
+	    	// Get the party view el, view, and model
+	    	var partyEl = $(e.target).parents(".eml-party"),
+            model = partyEl.data("model"),
+            next = $(partyEl).next().not(".new");
+
+        if (next.length === 0) {
+          return;
+        }
+
+				// Remove current view, create and insert a new one for the model
+        $(partyEl).remove();
+
+        var newView = new EMLPartyView({
+          model: model,
+          edit: this.edit
+        });
+
+        $(next).after(newView.render().el);
+
+        // Move the party down within the model too
+	    	this.model.movePartyDown(model);
+				this.model.trickleUpChange();
 	    },
 
 	    /*
@@ -1094,17 +1160,45 @@ define(['underscore', 'jquery', 'backbone',
 	    	//Create the keyword row HTML
 	    	var	row          = $(document.createElement("div")).addClass("row-fluid keyword-row"),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10").attr("placeholder", "Add one new keyword"),
-    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
-			    				$(document.createElement("option")).val("None").text("None")).append(
-			    				$(document.createElement("option")).val("GCMD").text("GCMD")),
-				removeButton;
+    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2"),
+          thesOptionExists = false,
+				  removeButton;
 
-			// Piece together the inputs
-			row.append(keywordInput, thesInput);
+        // Piece together the inputs
+        row.append(keywordInput, thesInput);
 
-			//Select GCMD in the select menu
-    		if(thesaurus && thesaurus.indexOf("GCMD") > -1)
-        		thesInput.val("GCMD");
+        //Create the thesaurus options dropdown menu
+        _.each(MetacatUI.appModel.get("emlKeywordThesauri"), function(option){
+
+          var optionEl = $(document.createElement("option")).val(option.thesaurus).text(option.label);
+          thesInput.append( optionEl );
+
+          if( option.thesaurus == thesaurus ){
+            optionEl.prop("selected", true);
+            thesOptionExists = true;
+          }
+        });
+
+        //Add a "None" option, which is always in the dropdown
+        thesInput.prepend( $(document.createElement("option")).val("None").text("None") );
+
+        if( thesaurus == "None" || !thesaurus ){
+          thesInput.val("None");
+        }
+        //If this keyword is from a custom thesaurus that is NOT configured in this App, AND
+        // there is an option with the same label, then remove the option so it doesn't look like a duplicate.
+        else if( !thesOptionExists && _.findWhere(MetacatUI.appModel.get("emlKeywordThesauri"), { label: thesaurus }) ){
+          var duplicateOptions = thesInput.find("option:contains(" + thesaurus + ")");
+          duplicateOptions.each(function(i, option){
+            if( $(option).text() == thesaurus && !$(option).prop("selected") ){
+              $(option).remove();
+            }
+          });
+        }
+        //If this keyword is from a custom thesaurus that is NOT configured in this App, then show it as a custom option
+        else if( !thesOptionExists ){
+          thesInput.append( $(document.createElement("option")).val(thesaurus).text(thesaurus).prop("selected", true) );
+        }
 
 	    	if(!keyword)
 				row.addClass("new");
@@ -1130,11 +1224,17 @@ define(['underscore', 'jquery', 'backbone',
 
 			var row          = $(document.createElement("div")).addClass("row-fluid keyword-row new").data({ model: new EMLKeywordSet() }),
 	    		keywordInput = $(document.createElement("input")).attr("type", "text").addClass("keyword span10"),
-    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2").append(
-			    				$(document.createElement("option")).val("None").text("None")).append(
-			    				$(document.createElement("option")).val("GCMD").text("GCMD"));
+    			thesInput    = $(document.createElement("select")).addClass("thesaurus span2");
 
 			row.append(keywordInput, thesInput);
+
+      //Create the thesaurus options dropdown menu
+      _.each(MetacatUI.appModel.get("emlKeywordThesauri"), function(option){
+        thesInput.append( $(document.createElement("option")).val(option.thesaurus).text(option.label) );
+      });
+
+      //Add a "None" option, which is always in the dropdown
+      thesInput.prepend( $(document.createElement("option")).val("None").text("None").prop("selected", true) );
 
 			this.$(".keywords").append(row);
 		},
