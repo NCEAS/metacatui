@@ -513,9 +513,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
               });
 
 			if(_.contains(packageIds, provEntity.get("id"))) {
-				var linkEl = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + encodeURIComponent(provEntity.get("id"))).addClass("btn preview").attr("data-id", provEntity.get("id")).text("View").append(arrowIcon);
+				var linkEl = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + encodeURIComponent(provEntity.get("id"))).addClass("btn preview").attr("data-id", provEntity.get("id")).text("View").append(arrowIcon);
             } else {
-				var linkEl = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + encodeURIComponent(provEntity.get("id"))).addClass("btn").text("View").append(arrowIcon);
+				var linkEl = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + encodeURIComponent(provEntity.get("id"))).addClass("btn").text("View").append(arrowIcon);
             }
             
 			//The provenance statements
