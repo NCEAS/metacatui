@@ -343,7 +343,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
             var targetLinkEl = $(document.createElement("a"))
                         .addClass("metrics-route-to-metadata")
                         .attr("data-id", key)
-                        .attr("href", MetacatUI.root + "/view/" + (key))
+                        .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(key))
                         .attr("target", "_blank")
                         .text("(" + citationMetadata[key]["origin"][0].split(" ")[0] + additionalAuthors + " "  + (citationMetadata[key]["datePublished"]).slice(0,4) + ")" + commaSeperator + " " );
 

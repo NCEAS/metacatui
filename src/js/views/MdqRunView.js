@@ -216,12 +216,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
     					    				  .text("Search")))
     	    				  .append($(document.createElement("li"))
     					                      .append($(document.createElement("a"))
-    					    				  .attr("href", MetacatUI.root + "/view/" + this.pid)
+    					    				  .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(this.pid))
     					    				  .addClass("inactive")
     					    				  .text("Metadata")))
                               .append($(document.createElement("li"))
                                     .append($(document.createElement("a"))
-                                    .attr("href", MetacatUI.root + "/quality/" + this.pid)
+                                    .attr("href", MetacatUI.root + "/quality/" + encodeURIComponent(this.pid))
                                     .addClass("inactive")
                                     .text("Quality Report")));
                                     
