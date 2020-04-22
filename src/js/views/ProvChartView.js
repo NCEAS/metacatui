@@ -873,6 +873,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		 */
 		previewData: function(e){
 			//Don't go anywhere yet...
+			e.stopPropagation();
 			e.preventDefault();
 			
 			//If this prov chart has a parent view with a previewData function, then execute that
