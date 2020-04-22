@@ -420,6 +420,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 								//FGDC - just display "FGDC {year}"
 								else if((name !== undefined) && (name.indexOf("FGDC") > -1)) name = "FGDC " + name.substring(name.length-4);
 
+								//Onedcx v1.0
+								else if((name !== undefined) && (name == "http://ns.dataone.org/metadata/schema/onedcx/v1.0")) name = "Onedcx v1.0";
+
+								//GMD-NOAA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-noaa")) name = "GMD-NOAA";
+
+								//GMD-PANGAEA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-pangaea")) name = "GMD-PANGAEA";
+
 								if(name === undefined) name = "";
 								return name;
 							}
