@@ -1183,12 +1183,12 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			$(".token-tab").tab();
 
 			//Create clickable "Copy" buttons to copy text (e.g. token) to the user's clipboard
-			_.each([copyButton[0], copyRButton[0], copyMatlabButton[0]], function(btn){
-				//Create a copy citation button
-				var clipboard = new Clipboard(btn);
+			var clipboard = new Clipboard(".copy");
+
 				clipboard.on("success", function(e){
-					copySuccess.show().delay(3000).fadeOut();
+				$(".copy-success").show().delay(3000).fadeOut();
 				});
+
 				clipboard.on("error", function(e){
 					var textarea = $(e.trigger).parent().children("textarea.token");
 					textarea.trigger("focus");
@@ -1199,7 +1199,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 					textarea.tooltip("show");
 
 				});
-			});
 		},
 
 		setUpAutocomplete: function() {

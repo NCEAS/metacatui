@@ -75,7 +75,21 @@ define(['jquery', 'underscore', 'backbone'],
       editorSaveErrorMsg: "Not all of your changes could be submitted.",
       editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted. ",
 
+      /**
+      * A list of keyword thesauri options for the user to choose from in the EML Editor.
+      * A "None" option will also always display.
+      * @type {object[]}
+      * @property {string} emlKeywordThesauri.label - A readable and short label for the keyword thesaurus that is displayed in the UI
+      * @property {string} emlKeywordThesauri.thesaurus - The exact keyword thesaurus name that will be saved in the EML
+      * @readonly
+      */
+      emlKeywordThesauri: [{
+        label: "GCMD",
+        thesaurus: "NASA Global Change Master Directory (GCMD)"
+      }],
+      
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
@@ -139,7 +153,7 @@ define(['jquery', 'underscore', 'backbone'],
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
       mdqSuiteIds: ["knb.suite.1"],
       mdqSuiteLabels: ["KNB Metadata Completeness Suite v1.0"],
-      // Quality suites for aggregated quality scores (i.e. metrics tab) 
+      // Quality suites for aggregated quality scores (i.e. metrics tab)
       mdqAggregatedSuiteIds: ["FAIR.suite.1"],
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
       mdqFormatIds:["eml*", "https://eml*"],
@@ -150,7 +164,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Metrics Falgs for the /profile view (summary view)
       hideSummaryCitationsChart: false,
       hideSummaryDownloadsChart: false,
-      hideSummaryMetadataAssessment: true,
+      hideSummaryMetadataAssessment: false,
       hideSummaryViewsChart: false,
 
       // Metrics flags for the Dataset Landing Page
@@ -287,7 +301,7 @@ define(['jquery', 'underscore', 'backbone'],
       * removing repository administrative groups from access policies.
       * @type {string[]}
       */
-      hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+      hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
 
       /**
       * If true, the public/private toggle will be displayed in the Sharing Options for portals.
@@ -308,13 +322,6 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {boolean}
       */
       showDatasetPublicToggle: true,
-
-      // A lookup map of portal names to portal seriesIds
-      portalsMap: {
-        "SASAP": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854df6d",
-        "markdownTest": "urn:uuid:21580913-c23a-4677-af71-45cf0415a57e",
-        "example": "urn:uuid:db68e045-fe37-4190-aa2f-d79fd854d1234"
-      },
 
       /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
@@ -463,7 +470,14 @@ define(['jquery', 'underscore', 'backbone'],
             }
           ]
         }
-      ]
+      ],
+
+      /**
+      * A list of unsupported User-Agent regular expressions for browsers that will not work well with MetacatUI.
+      * A warning message will display on the page for anyone using one of these browsers.
+      * @type {RegExp[]}
+      */
+      unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users

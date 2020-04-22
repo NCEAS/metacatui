@@ -2,6 +2,7 @@
 define(['underscore',
         'jquery',
         'backbone',
+        'localforage',
         'collections/DataPackage',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLOtherEntity',
@@ -15,7 +16,7 @@ define(['underscore',
         'text!templates/editor.html',
         'collections/ObjectFormats',
         'text!templates/editorSubmitMessage.html'],
-        function(_, $, Backbone,
+        function(_, $, Backbone, LocalForage,
             DataPackage, EML, EMLOtherEntity, ScienceMetadata,
             EditorView, CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
             EditorTemplate, ObjectFormats, EditorSubmitMessageTemplate){
@@ -48,6 +49,7 @@ define(['underscore',
         * @type {Object}
         */
         events:  _.extend(EditorView.prototype.events, {
+          "change" : "saveDraft",
           "click .data-package-item .edit" : "showEntity"
         }),
 
@@ -514,6 +516,9 @@ define(['underscore',
 
             // Register a listener for any attribute change
             this.model.on("change", this.model.handleChange, this.model);
+
+            // Register a listener to save drafts on change
+            this.model.on("change", this.model.saveDraft, this.model);
 
             // If any attributes have changed (including nested objects), show the controls
             if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
@@ -1021,8 +1026,71 @@ define(['underscore',
                       "The file has not been added.";
               }
               MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
-          }
+          },
+          /**
+           * Save a draft of the parent EML model
+           */
+          saveDraft: function() {
+            var view = this;
 
+            try {
+              var title = this.model.get("title") || "No title";
+
+              LocalForage.setItem(this.model.get("id"), {
+                id: this.model.get("id"),
+                datetime: (new Date()).toISOString(),
+                title: Array.isArray(title) ? title[0] : title,
+                draft: this.model.serialize()
+              }).then(function() {
+                view.clearOldDrafts();
+              });
+            } catch (ex) {
+              console.log("Error saving draft:", ex);
+            }
+          },
+
+          /**
+           * Clear older drafts by iterating over the sorted list of drafts
+           * stored by LocalForage and removing any beyond a hardcoded limit.
+           */
+          clearOldDrafts: function() {
+            var drafts = [];
+
+            try {
+              LocalForage.iterate(function(value, key, iterationNumber) {
+                // Extract each draft
+                drafts.push({
+                    key: key,
+                    value: value
+                  });
+                }).then(function(){
+                  // Sort by datetime
+                  drafts = _.sortBy(drafts, function(draft) {
+                    return draft.value.datetime.toString();
+                  }).reverse();
+                }).then(function() {
+                  _.each(drafts, function(draft, i) {
+                    var age = (new Date()) - new Date(draft.value.datetime);
+                    var isOld = (age / 2678400000) > 1; // ~31days
+
+                    // Delete this draft is not in the most recent 100 or
+                    // if older than 31 days
+                    var shouldDelete = i > 100 || isOld;
+
+                    if (!shouldDelete) {
+                      return;
+                    }
+
+                    LocalForage.removeItem(draft.key).then(function() {
+                      // Item should be removed
+                    });
+                  })
+                });
+            }
+            catch (ex) {
+              console.log("Failed to clear old drafts: ", ex);
+            }
+          }
     });
     return EML211EditorView;
 });

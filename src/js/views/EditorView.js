@@ -40,12 +40,28 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     accessPolicyModalID: "editor-access-policy-modal",
 
     /**
+    * The selector for the HTML element that will contain a button/link/control for
+    * opening the AccessPolicyView modal window. If this element doesn't exist on the page,
+    * then the AccessPolicyView will be inserted into the `accessPolicyViewContainer` directly, rather than a modal window.
+    * @type {string}
+    */
+    accessPolicyControlContainer: ".access-policy-control-container",
+
+    /**
+    * The selector for the HTML element that will contain the AccessPolicyView.
+    * If this element doesn't exist on the page, then the AccessPolicyView will not be inserted into the page.
+    * If a `accessPolicyControlContainer` element is on the page, then this element will
+    * contain the modal window element.
+    * @type {string}
+    */
+    accessPolicyViewContainer: ".access-policy-view-container",
+    /**
     * The events this view will listen to and the associated function to call
     * @type {Object}
     */
     events: {
       "click #save-editor" : "save",
-      "click .access-policy-control" : "showAccessPolicy"
+      "click .access-policy-control" : "showAccessPolicyModal"
     },
 
     /**
@@ -54,6 +70,8 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     render: function(){
       //Style the body as an Editor
       $("body").addClass("Editor rendering");
+
+      this.delegateEvents();
     },
 
     /**
@@ -141,44 +159,37 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       //If the AccessPolicy editor is enabled, add a button for opening it
       if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){
 
-        //Check if the Share button is already on the page
-        if( !this.$(".access-policy-control").length ){
+        //Render the AccessPolicy control, if the container element is on the page
+        if( this.$(this.accessPolicyControlContainer).length ){
           //If it isn't, then add it to the page.
           //Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
-          this.$(".editor-controls").prepend( $(document.createElement("a"))
-                                                .attr("href", "#")
-                                                .addClass("access-policy-control btn")
-                                                .append(
-                                                  $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
-                                                  "Share") );
+          this.$(this.accessPolicyControlContainer).prepend( $(document.createElement("a"))
+                                                    .attr("href", "#")
+                                                    .addClass("access-policy-control btn")
+                                                    .append(
+                                                      $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
+                                                      "Share") );
+        }
+        else{
+          this.renderAccessPolicy();
         }
 
-        //Check if the AccessPolicyView container is already on the page
-        if( !this.$(".access-policy-view-container").length ){
-          //If not, create one and add it to the page. It will be a modal window.
-          this.$(".editor-controls").append( $(document.createElement("div"))
-                                               .addClass("access-policy-view-container modal")
-                                               .attr("id", "editor-access-policy-modal") );
-
-          //Add attributes to the access policy control button that will make it open a modal window
-          this.$(".access-policy-control").attr("href", "#");
-
-          //Check that this user is authorized to change permissions on this object
-          var  view = this,
-               checkAuthorityOptions = {
-                 onSuccess: function(){
-                   return;
-                 },
-                 onError: function(){
-                   //Disable the button for the AccessPolicyView if the user is not authorized
-                   view.$(".access-policy-control").attr("disabled", "disabled")
-                                                   .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
-                                                   .addClass("disabled");
-                 }
-          }
-          //Check the user's authority to change permissions on this object
-          this.model.checkAuthority("changePermission", checkAuthorityOptions);
+        //Check that this user is authorized to change permissions on this object
+        var view = this,
+            checkAuthorityOptions = {
+              onSuccess: function(){
+                return;
+              },
+              onError: function(){
+                //Disable the button for the AccessPolicyView if the user is not authorized
+                view.$(".access-policy-control").attr("disabled", "disabled")
+                                                .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
+                                                .addClass("disabled");
+              }
         }
+
+        //Check the user's authority to change permissions on this object
+        this.model.checkAuthority("changePermission", checkAuthorityOptions);
       }
     },
 
@@ -186,7 +197,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     * Shows the AccessPolicyView for the object being edited.
     * @param {Event} e - The event that triggered this function as a callback
     */
-    showAccessPolicy: function(e){
+    showAccessPolicyModal: function(e){
 
       try{
 
@@ -195,22 +206,21 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
           return;
         }
 
-        //If the AccessPolicyView hasn't been rendered yet, then render it now
-        if( !this.$(".access-policy-view").length ){
-          this.renderAccessPolicy();
-        }
+       //If the AccessPolicyView hasn't been rendered yet, then render it now
+       if( !this.$(".access-policy-view").length ){
+         this.renderAccessPolicy();
 
-        //Show the element containing the AccessPolicyView
-        if( this.$(".access-policy-view-container").attr("id") == this.accessPolicyModalID ){
-
-          //If it's in a modal window, then activate and show the modal
-          this.$(".access-policy-view-container").modal().modal("show");
-
-        }
-        else{
-          //Unhide the element, in case it's hidden
-          this.$(".access-policy-view-container").show();
-        }
+         this.on("accessPolicyViewRendered", function(){
+           //Add modal classes to the access policy view
+           this.$(".access-policy-view").addClass("access-policy-view-modal modal")
+                                        .modal()
+                                        .modal("show");
+         });
+       }
+       else{
+         //Open the modal window
+         this.$("access-policy-view-modal").modal("show");
+       }
 
       }
       catch(e){
@@ -238,10 +248,12 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
             accessPolicyView.collection = thisView.model.get("accessPolicy");
 
             //Add the view to the page
-            thisView.$(".access-policy-view-container").html(accessPolicyView.el);
+            thisView.$(thisView.accessPolicyViewContainer).html(accessPolicyView.el);
 
             //Render the AccessPolicyView
             accessPolicyView.render();
+
+            thisView.trigger("accessPolicyViewRendered");
         });
       }
       catch(e){

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: views/metadata/EMLGeoCoverageView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: views/metadata/EMLGeoCoverageView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global define */
+define(['underscore', 'jquery', 'backbone',
+    'models/metadata/eml211/EMLGeoCoverage',
+    'text!templates/metadata/EMLGeoCoverage.html'],
+    function (_, $, Backbone, EMLGeoCoverage, EMLGeoCoverageTemplate) {
+
+        /**
+        * @class EMlGeoCoverageView
+        * @classdesc  The EMLGeoCoverage renders the content of an EMLGeoCoverage model
+        */
+        var EMLGeoCoverageView = Backbone.View.extend(
+            /** @lends EMLGeoCoverageView.prototype */{
+
+            type: "EMLGeoCoverageView",
+
+            tagName: "div",
+
+            className: "row-fluid eml-geocoverage",
+
+            attributes: {
+                "data-category": "geoCoverage"
+            },
+
+            editTemplate: _.template(EMLGeoCoverageTemplate),
+
+            initialize: function (options) {
+                if (!options)
+                    var options = {};
+
+                this.isNew = options.isNew || (options.model ? false : true);
+                this.model = options.model || new EMLGeoCoverage();
+                this.edit = options.edit || false;
+            },
+
+            events: {
+                "change": "updateModel",
+                "mouseover .remove": "toggleRemoveClass",
+                "mouseout  .remove": "toggleRemoveClass"
+            },
+
+            render: function (e) {
+                //Save the view and model on the element
+                this.$el.data({
+                    model: this.model,
+                    view: this
+                });
+
+                this.$el.html(this.editTemplate({
+                    edit: this.edit,
+                    model: this.model.toJSON()
+                }));
+
+                if (this.isNew) {
+                    this.$el.addClass("new");
+                }
+
+                return this;
+            },
+
+            /**
+             * Updates the model.
+             * If this is called from the user switching between latitude and longitude boxes,
+             * we check to see if the input was valid and display any errors if we need to.
+             *
+             * @param e The event
+             */
+            updateModel: function (e) {
+                if (!e) return false;
+
+                e.preventDefault();
+
+                //Get the attribute and value
+                var element = $(e.target),
+                    value = element.val(),
+                    attribute = element.attr("data-attribute");
+
+                //Get the attribute that was changed
+                if (!attribute) return false;
+
+                var emlModel = this.model.getParentEML();
+                if(emlModel){
+                  value = emlModel.cleanXMLText(value);
+                }
+
+                //Are the NW and SE points the same? i.e. is this a single point and not a box?
+                var isSinglePoint = (this.model.get("north") != null &amp;&amp; this.model.get("north") == this.model.get("south")) &amp;&amp;
+                    (this.model.get("west") != null &amp;&amp; this.model.get("west") == this.model.get("east")),
+                    hasEmptyInputs = this.$("[data-attribute='north']").val() == "" ||
+                        this.$("[data-attribute='south']").val() == "" ||
+                        this.$("[data-attribute='west']").val() == "" ||
+                        this.$("[data-attribute='east']").val() == "";
+
+                //Update the model
+                if (value == "")
+                    this.model.set(attribute, null);
+                else
+                    this.model.set(attribute, value);
+
+                //If the NW and SE points are the same point...
+                if (isSinglePoint &amp;&amp; hasEmptyInputs) {
+                    /* If the user updates one of the empty number inputs, then we can assume they do not
+                    *   want a single point and are attempting to enter a second point. So we should empty the
+                    *   value from the model for the corresponding coordinate
+                    *   For example, if the UI shows a lat,long pair of NW: [10] [30] SE: [ ] [ ] then the model
+                    *     values would be N: 10, W: 30, S: 10, E: 30
+                    *     if the user updates that to:   NW: [10] [30] SE: [5] [ ]
+                    *     then we want to remove the "east" value of "30", so the model would be: N: 10, W: 30, S: 5, E: null
+                    */
+                    if (attribute == "north" &amp;&amp; this.$("[data-attribute='west']").val() == "")
+                        this.model.set("west", null);
+                    else if (attribute == "south" &amp;&amp; this.$("[data-attribute='east']").val() == "")
+                        this.model.set("east", null);
+                    else if (attribute == "east" &amp;&amp; this.$("[data-attribute='south']").val() == "")
+                        this.model.set("south", null);
+                    else if (attribute == "west" &amp;&amp; this.$("[data-attribute='north']").val() == "")
+                        this.model.set("north", null);
+
+                    /*
+                     * If the user removes one of the latitude or longitude values, reset the opposite point
+                     */
+                    else if (((attribute == "north" &amp;&amp; this.model.get("north") == null) ||
+                        (attribute == "west" &amp;&amp; this.model.get("west") == null)) &amp;&amp;
+                        (this.$("[data-attribute='south']").val() == "" &amp;&amp;
+                            this.$("[data-attribute='east']").val() == "")) {
+                        this.model.set("south", null);
+                        this.model.set("east", null);
+                    } else if (((attribute == "south" &amp;&amp; this.model.get("south") == null) ||
+                        (attribute == "east" &amp;&amp; this.model.get("east") == null)) &amp;&amp;
+                        (this.$("[data-attribute='north']").val() == "" &amp;&amp; this.$("[data-attribute='west']").val() == "")) {
+                        this.model.set("north", null);
+                        this.model.set("west", null);
+                    }
+	        		/* Otherwise, if the non-empty number inputs are updated,
+	        		 *  we simply update the corresponding value in the other point
+	        		 */
+                    else if (attribute == "north" &amp;&amp; this.model.get("north") != null)
+                        this.model.set("south", value);
+                    else if (attribute == "south" &amp;&amp; this.model.get("south") != null)
+                        this.model.set("north", value);
+                    else if (attribute == "west" &amp;&amp; this.model.get("west") != null)
+                        this.model.set("east", value);
+                    else if (attribute == "east" &amp;&amp; this.model.get("east") != null)
+                        this.model.set("west", value);
+                }
+                else {
+
+                    //Find out if we are missing a complete NW or SE point
+                    var isMissingNWPoint = (this.model.get("north") == null &amp;&amp; this.model.get("west") == null),
+                        isMissingSEPoint = (this.model.get("south") == null &amp;&amp; this.model.get("east") == null);
+
+                    // If there is a full NW point but no SE point, we can assume the user wants a single point and
+                    //  so we will copy the NW values to the SE
+                    if (this.model.get("north") != null &amp;&amp; this.model.get("west") != null &amp;&amp; isMissingSEPoint) {
+                        this.model.set("south", this.model.get("north"));
+                        this.model.set("east", this.model.get("west"));
+                    }
+                    // Same for when there is a SE point but no NW point
+                    else if (this.model.get("south") != null &amp;&amp; this.model.get("east") != null &amp;&amp; isMissingNWPoint) {
+                        this.model.set("north", this.model.get("south"));
+                        this.model.set("west", this.model.get("east"));
+                    }
+                }
+
+
+                // Validate the coordinate boxes
+                //this.validateCoordinates(e);
+
+                //If this model is part of the EML inside the root data package, mark the package as changed
+                if (this.model.get("parentModel")) {
+                    if (this.model.get("parentModel").type == "EML" &amp;&amp; _.contains(MetacatUI.rootDataPackage.models, this.model.get("parentModel"))) {
+                        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+                    }
+                }
+
+                this.validate();
+            },
+
+            /**
+             * Checks to see if any error messages need to be removed. If not, then it performs validation
+             * across the row and displays any errors. This id called when the user clicks out of an edit box
+             * on to the page.
+             *
+             * @param e The event
+             * @param options
+             */
+            validate: function (e, options) {
+
+            	//Query for the EMlGeoCoverageView element that the user is actively interacting with
+                var activeGeoCovEl = $(document.activeElement).parents(".eml-geocoverage");
+
+                //If the user is not actively in this view, then exit
+                if (activeGeoCovEl.length &amp;&amp; activeGeoCovEl[0] == this.el)
+                    return;
+
+                //If the model is valid, then remove error styling and exit
+                if( this.model.isValid() ) {
+                	this.$(".error").removeClass("error");
+                	this.$el.removeClass("error");
+                	this.$(".notification").empty();
+                	this.model.trigger("valid");
+
+                    return;
+                }
+                else{
+
+                	this.showValidation();
+
+                }
+
+            },
+
+            /*
+             * Resets the error messaging and displays the current error messages for this model
+             * This function is used by the EML211EditorView during the package validation process
+             */
+            showValidation: function(){
+            	this.$(".error").removeClass("error");
+            	this.$el.removeClass("error");
+            	this.$(".notification").empty();
+
+            	var errorMessages = "";
+
+            	for( field in this.model.validationError ){
+            		this.$("[data-attribute='" + field + "']").addClass("error");
+
+            		errorMessages += this.model.validationError[field] + " ";
+            	}
+
+        		this.$(".notification").text(errorMessages).addClass("error");
+            },
+
+            /**
+             * Highlight what will be removed when the remove icon is hovered over
+             *
+             */
+            toggleRemoveClass: function () {
+                this.$el.toggleClass("remove-preview");
+            },
+
+            /**
+             * Unmarks this view as new
+             *
+             */
+            notNew: function () {
+                this.$el.removeClass("new");
+                this.isNew = false;
+            }
+        });
+
+        return EMLGeoCoverageView;
+    });
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 14:11:45 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

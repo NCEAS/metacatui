@@ -1,11 +1,15 @@
 <div class="modal-header">
   <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-  <h3><i class="icon icon-group icon-on-left"></i><%=MetacatUI.appModel.get("accessPolicyName")%></h3>
+  <h4><i class="icon icon-group icon-on-left"></i><%=MetacatUI.appModel.get("accessPolicyName")%></h4>
 </div>
 <div class="modal-body">
   <p class="subtle">Give others access to view, edit, and share this <%=(resourceType || "resource")%></p>
 
-  <h4>Public view</h4>
+  <h5>Public view</h5>
+  <p class="subtle">
+    When your <%=(resourceType || "resource")%> is private, only people you
+    approve can see this content.
+  </p>
   <div class="public-toggle-container"></div>
 
   <table class="table table-striped">
@@ -13,7 +17,7 @@
       <tr>
         <th>Name</th>
         <th>ORCID</th>
-        <th>Access</th>
+        <th>Access <i class="icon icon-on-right icon-info-sign popover-this access-icon"></i></th>
         <th></th>
       </tr>
     </thead>
@@ -22,6 +26,6 @@
   </table>
 </div>
 <div class="modal-footer">
-  <a class="btn cancel" href="#" data-dismiss="modal">Cancel</a>
-  <a class="btn btn-primary save" href="#">Save</a>
+  <a class="btn cancel" href="#" data-dismiss="modal" title="Your changes will be ignored and reset">Cancel</a>
+  <a class="btn btn-primary save" href="#" title="Save these changes">Save</a>
 </div>

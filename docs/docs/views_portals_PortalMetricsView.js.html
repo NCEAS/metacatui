@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: views/portals/PortalMetricsView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: views/portals/PortalMetricsView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(["jquery",
+    "underscore",
+    "backbone",
+    "models/Search",
+    "models/MetricsModel",
+    "models/Stats",
+    "views/portals/PortalSectionView",
+    "views/StatsView",
+    "text!templates/loading.html"],
+    function($, _, Backbone, SearchModel, MetricsModel, StatsModel, PortalSectionView, StatsView,
+      LoadingTemplate){
+
+    /**
+     * @class PortalMetricsView
+     * @classdec The PortalMetricsView is a view to render the
+     * portal metrics tab (within PortalSectionView)
+     * @extends PortalSectionView
+     * @constructor
+     */
+     var PortalMetricsView = PortalSectionView.extend(
+       /** @lends PortalMetricsView.prototype */{
+        type: "PortalMetrics",
+
+        /**
+        * A unique name for this Section
+        * @type {string}
+        */
+        uniqueSectionLabel: "Metrics",
+
+        /**
+        * The display name for this Section
+        * @type {string}
+        */
+        sectionName: "Metrics",
+
+        /**
+        * The Portal Model this Metrics section is part of
+        * @type {Portal}
+        */
+        model: undefined,
+
+        /**
+        A template for displaying a loading message
+        * @type {Underscore.Template}
+        */
+        loadingTemplate: _.template(LoadingTemplate),
+
+        /* Render the view */
+        render: function() {
+
+            if( this.model &amp;&amp; this.model.get("metricsLabel") ){
+              this.uniqueSectionLabel = this.model.get("metricsLabel");
+              this.sectionName = this.model.get("metricsLabel");
+            }
+
+            this.$el.data("view", this);
+
+            //Add a loading message to the metrics tab since it can take a while for the metrics query to be sent
+            this.$el.html(this.loadingTemplate({
+              msg: "Getting " + this.model.get("metricsLabel").toLowerCase() + "..."
+            }));
+
+        },
+
+        /**
+         * Render the metrics inside this view
+         */
+        renderMetrics: function() {
+
+          try{
+
+            if( this.model.get("hideMetrics") == true ) {
+              return;
+            }
+
+            // If the search results haven't been fetched yet, wait.
+            if( !this.model.get("searchResults").header ){
+              this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetrics );
+              return;
+            }
+
+            // If there are no datasets in the portal collection
+            if(this.model.get("searchResults").header.get("numFound") == 0 ){
+                  // The description for when there is no data in the collection
+              var description = "There are no datasets in " + this.model.get("label") + " yet.",
+                  // use a dummy-ID to create a 'no-activity' metrics view
+                  allIDs = "0";
+            }
+            // For portals with data in the collection
+            else {
+                  // The description to use for a portal with data
+              var description = "A summary of all datasets from " + this.model.get("label"),
+                  // Get all the facet counts from the search results collection
+                  facetCounts = this.model.get("allSearchResults").facetCounts,
+                  //Get the id facet counts
+                  idFacets = facetCounts? facetCounts.id : [],
+                  //Get the documents facet counts
+                  documentsFacets = facetCounts? facetCounts.documents : [],
+                  //Start an array to hold all the ids
+                  allIDs = [];
+
+              //If there are resource map facet counts, get all the ids
+              if( idFacets &amp;&amp; idFacets.length ){
+
+                //Merge the id and documents arrays
+                var allFacets = idFacets.concat(documentsFacets);
+
+                //Get all the ids, which should be every other element in the
+                // facets array
+                for( var i=0; i &lt; allFacets.length; i+=2 ){
+                  allIDs.push( allFacets[i] );
+                }
+              }
+
+            }
+
+            // Create a search model that filters by all the data object Ids
+            var statsSearchModel = new SearchModel({
+              idOnly: allIDs,
+              formatType: [],
+              exclude: []
+            });
+
+            // Create a StatsModel
+            var statsModel = new StatsModel({
+              query: statsSearchModel.getQuery(),
+              searchModel: statsSearchModel,
+              supportDownloads: false
+            });
+
+            
+            var label_list = [];
+            label_list.push(this.model.get("label"));
+            var metricsModel = new MetricsModel({pid_list: label_list, type: "portal"});
+            metricsModel.fetch();
+
+            // Add a stats view
+            this.statsView = new StatsView({
+                title: "Statistics and Figures",
+                description: description,
+                metricsModel: metricsModel,
+                el: document.createElement("div"),
+                model: statsModel,
+                userType: "portal",
+                hideMetadataAssessment: false,
+                // Rendering metrics on the portal
+                hideCitationsChart: false,
+                hideDownloadsChart: false,
+                hideViewsChart: false
+            });
+
+            //Insert the StatsView into this view
+            this.$el.html(this.statsView.el);
+
+            //Render the StatsView
+            this.statsView.render();
+
+          }
+          catch(e){
+            console.log("Failed to render the metrics view. Error message: " + e);
+          }
+
+        },
+
+        /**
+         * Functionality to execute after the view has been created and rendered initially
+         */
+        postRender: function(){
+          //If there is no StatsView rendered yet, then render it
+          if( !this.statsView ){
+            this.renderMetrics();
+          }
+        }
+
+     });
+
+     return PortalMetricsView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 14:11:45 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

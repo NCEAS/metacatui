@@ -609,6 +609,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			var requestSettings = {
 					type: "GET",
 					url: url,
+          headers: {
+			      "Cache-Control": "no-cache"
+				  },
 					success: function(data, textStatus, xhr){
 						if(data){
 							// the response should have the token

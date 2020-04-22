@@ -27,7 +27,8 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'           : 'renderAPI',       // API page
 			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
-      "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor"
+			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
+			'drafts' : 'renderDrafts'
 		},
 
 		helpPages: {
@@ -319,6 +320,18 @@ function ($, _, Backbone) {
 
 			}
 		},
+
+		/**
+		 * Renders the Drafts view which is a simple view backed by LocalForage that
+		 * lists drafts created in the Editor so users can recover any failed
+		 * submissions.
+		 */
+		renderDrafts: function() {
+			require(['views/DraftsView'], function(DraftsView){
+				MetacatUI.appView.draftsView = new DraftsView();
+				MetacatUI.appView.showView(MetacatUI.appView.draftsView);
+			});
+		 },
 
     /**
     * Renders the PortalEditorView
