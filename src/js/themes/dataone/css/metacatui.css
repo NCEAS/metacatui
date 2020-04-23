@@ -2539,3 +2539,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	padding-bottom: 0px;
 	min-height: auto;
 }
+
+
+/*
+	Repository profiles specific styling for temporal coverage
+*/
+.repository-portal-view .packages,
+.repository-portal-view .chart-title .packages,
+.repository-portal-view svg .packages,
+.repository-portal-view .chart-title .packages{
+	color: #FF6633;
+	fill: #FF6633;
+	stroke: #FF6633;
+}

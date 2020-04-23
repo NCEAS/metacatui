@@ -155,6 +155,8 @@ define(["jquery",
               supportDownloads: false
             });
 
+            var userType = "portal";
+
             var label_list = [];
             label_list.push(this.model.get("label"));
 
@@ -162,6 +164,8 @@ define(["jquery",
             this.metricsModel = metricsModel;
 
             if (this.nodeView) {
+
+              userType = "repository";
 
               // TODO: replace the following logic with dataone bookkeeper service
               // check if the repository is a dataone member
@@ -208,7 +212,7 @@ define(["jquery",
                 metricsModel: this.metricsModel,
                 el: document.createElement("div"),
                 model: statsModel,
-                userType: "portal",
+                userType: userType,
                 hideMetadataAssessment: this.hideMetadataAssessment,
                 // Rendering metrics on the portal
                 hideCitationsChart: this.hideCitationsChart,

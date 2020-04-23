@@ -852,6 +852,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			//Get the width of the chart by using the parent container width
 			var parentEl = this.$('.temporal-coverage-chart');
+
+			if (this.userType == "repository") {
+				parentEl.addClass("repository-portal-view");
+			}
 			var width = parentEl.width() || null;
 
 			// If results were found but none have temporal coverage, draw a default chart
