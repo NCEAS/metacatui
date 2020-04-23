@@ -3902,8 +3902,13 @@ i.toc-sub-item{
   display: inline-block;
 }
 .portal-view .portal-description{
-	padding-top: 20px;
-	padding-right: 20px;
+	margin-left: -20px;
+	margin-top: 10px;
+	margin-right: 20px;
+}
+.portal-view .portal-member-since {
+	margin-left: -20px;
+	margin-top: 10px;
 }
 .portal-logos-view{
   border-top: 1px solid #ededed;
