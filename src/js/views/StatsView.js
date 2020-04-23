@@ -39,7 +39,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
 			this.metricsModel = (typeof options.metricsModel === undefined) ? undefined : options.metricsModel;
-			this.userType = options.userType;
+			this.userType = (typeof options.userType === undefined) ? undefined : options.userType;
+			this.userId = (typeof options.userId === undefined) ? undefined : options.userId;
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 
@@ -117,6 +118,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.listenTo(this.model, 'change:downloadDates',     this.drawDownloadsChart);
 				this.listenTo(this.model, "change:dataUpdateDates",       this.drawUpdatesChart);
 				this.listenTo(this.model, "change:totalSize",             this.drawTotalSize);
+				this.listenTo(this.model, "change:totalReplicas",         this.drawTotalReplicas);
 				this.listenTo(this.model, 'change:metadataCount', 	    this.drawTotalCount);
 				this.listenTo(this.model, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 				this.listenTo(this.model, 'change:metadataFormatIDs', this.drawMetadataCountChart);
@@ -187,6 +189,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 		//Start retrieving data from Solr
 		this.model.getAll();
+
+		if (this.userType === "repository" && this.userId !== "undefined") {
+			var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent("urn:node:" + this.userId));
+			this.model.getTotalReplicas(identifier);
+		}
 
 		return this;
 	},
@@ -626,7 +633,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				title: "datasets",
 				titlePlacement: "inside",
 				useGlobalR: true,
-				globalR: 100,
+				globalR: 60,
 				height: 220
 			});
 
@@ -660,7 +667,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				title: "of content",
 				titlePlacement: "inside",
 				useGlobalR: true,
-				globalR: 100,
+				globalR: 60,
 				height: 220
 			});
 
@@ -986,6 +993,42 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				);
 			});
 
+		},
+
+		/*
+		 * getReplicas gets the number of replicas in this member node
+		 */
+		drawTotalReplicas: function(){
+
+			var view = this;
+			var className = "";
+
+			if( this.model.get("totalReplicas") > 0 ){
+				var chartData = [{
+					count: view.model.get("totalReplicas"),
+					className: "packages" + className
+				}];
+
+			}
+			else{
+				var chartData = [{
+					count: 0,
+					className: "packages no-activity" 
+				}];
+			}
+
+			var countBadge = new CircleBadge({
+				id: "total-replica",
+				data: chartData,
+				title: "replicas",
+				titlePlacement: "inside",
+				useGlobalR: true,
+				globalR: 60,
+				height: 220
+			});
+
+			this.$('#total-replicas').html(countBadge.render().el);
+			
 		}
 
 	});

@@ -213,6 +213,7 @@ define(["jquery",
                 el: document.createElement("div"),
                 model: statsModel,
                 userType: userType,
+                userId: this.model.get("label"),
                 hideMetadataAssessment: this.hideMetadataAssessment,
                 // Rendering metrics on the portal
                 hideCitationsChart: this.hideCitationsChart,

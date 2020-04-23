@@ -457,8 +457,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			if(this.model.noActivity)
 				this.statsView.$el.addClass("no-activity");
 
-			if(this.model.isNode())
-				this.insertReplicas();
 		},
 
 		/*
@@ -597,34 +595,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.$("#first-upload-year-container").text(time);
 		},
 
-		/*
-		 * getReplicas gets the number of replicas in this member node
-		 */
-		insertReplicas: function(statsModel){
-
-			var view = this,
-					memberNodeID = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier));
-
-			var requestSettings = {
-					url: MetacatUI.appModel.get("queryServiceUrl") +
-						"q=replicaMN:" + memberNodeID +
-						 " -datasource:" + memberNodeID +
-						"&wt=json&rows=0",
-					type: "GET",
-					dataType: "json",
-					success: function(data, textStatus, xhr){
-						if( data.response.numFound > 0 ){
-							view.$("#total-replicas-container").html(MetacatUI.appView.commaSeparateNumber(data.response.numFound));
-							view.$("#total-replicas-wrapper").show();
-						}
-						else{
-							view.$("#total-replicas-wrapper").hide();
-						}
-					}
-			}
-
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
 
 		/*
 		 * Insert a list of this user's content

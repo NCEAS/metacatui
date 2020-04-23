@@ -4767,7 +4767,7 @@ address.email-container:before{
 }
 .profile .quick-stats,
 .profile .quick-stats .badge-container{
-	height: 330px;
+	height: 220px;
 }s
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
@@ -4799,10 +4799,10 @@ address.email-container:before{
 	fill: transparent;
 }
 .profile .quick-stats .circle-badge .count{
-	font-size: 27px;
+	font-size: 24px;
 }
 .profile .quick-stats .circle-badge .title{
-	font-size: 18px;
+	font-size: 16px;
 }
 
 /**** Bar Charts ******/

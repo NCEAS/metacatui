@@ -19,7 +19,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 			dataFormatIDs: [], //Uses same structure as Solr facet counts: ["text/csv", 5]
 
 			firstUpload: 0,
-			totalUploads: 0, //total data and metadata objects uploaded, including now obsoleted objects
+      totalUploads: 0, //total data and metadata objects uploaded, including now obsoleted objects
+      totalReplicas: null, // total number of replicas for member nodes
 			metadataUploads: null,
 			dataUploads: null,
 			metadataUploadDates: null,
@@ -115,8 +116,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
 
 			this.getFirstBeginDate();
-			this.getFirstUpload();
-
+      this.getFirstUpload();
+      
 			this.getFormatTypes();
 
 			this.getDownloadDates();
@@ -532,7 +533,30 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
+    },
+    
+    // Getting total number of replicas for repository profiles
+    getTotalReplicas: function(memberNodeID) {
+
+			var model = this;
+
+      var requestSettings = {
+          url: MetacatUI.appModel.get("queryServiceUrl") +
+            "q=replicaMN:" + memberNodeID +
+            " -datasource:" + memberNodeID +
+            " &wt=json&rows=0",
+          type: "GET",
+          dataType: "json",
+          success: function(data, textStatus, xhr){
+            model.set("totalReplicas", data.response.numFound );
+          },
+          error: function(data, textStatus, xhr){
+            model.set("totalReplicas", 0 );
+          }
+      }
+
+      $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+    },
 
     getMetadataFormatIDs: function(){
 
