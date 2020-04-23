@@ -27,11 +27,14 @@ define(["jquery",
           var templateInfo = {
             label: this.model.get("label"),
             description: this.model.get("description"),
-            name: this.model.get("name")
+            name: this.model.get("name"),
+            viewType: "portalView",
           }
 
           if ( this.nodeView ) {
             templateInfo.imageURL = this.model.get("logo");
+
+            templateInfo.viewType = "nodeView"
 
             // Re-inserting the default header
             $(".PortalView #Navbar").addClass("RepositoryPortalView");

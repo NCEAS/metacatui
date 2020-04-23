@@ -6,3 +6,10 @@
       <%=name%>
   </h1>
 </div>
+<div class="portal-description">
+  <% if( viewType == "nodeView" && description ){ %>
+    <p>
+      <%=description%>
+    </p>
+  <% } %>
+</div>
