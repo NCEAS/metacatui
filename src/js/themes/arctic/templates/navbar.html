@@ -47,6 +47,12 @@
 					</li>
 			    <li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
 
+          <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+            <li>
+              <a href="<%= MetacatUI.root %>/edit/<%= MetacatUI.appModel.get('portalTermPlural')%>">Create Portal<span class="new-icon"><i class="icon icon-star icon-on-right"></i>NEW</span></a>
+            </li>
+          <% } %>
+
 					<% if (loggedIn) { %>
         		<li class="dropdown minimal-nav">
 							<a href="#" class="dropdown-toggle user" data-toggle="dropdown"><i class="icon icon-user"></i><span class="user-name"><%=formattedName%></span><b class="caret"></b></a>
