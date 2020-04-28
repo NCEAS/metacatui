@@ -3891,6 +3891,8 @@ i.toc-sub-item{
 .portal-view .data-catalog #map-container,
 .portal-view .data-catalog #map-canvas{
   min-height: 700px;
+  padding: 0px 10px 0px 10px;
+  width: calc(100% - 20px);
 }
 .portal-view .data-catalog #clear-all{
 	display: none;
