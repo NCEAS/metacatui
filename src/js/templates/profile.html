@@ -39,14 +39,16 @@
 					</p>
 				</div>
 			</div>
-			<div class="span4 packages badge-container" id="replicas-container">
-				<div id="total-replicas" class="span4 show-loading"></div>
-				<div class="span6">
-					<p>
-						The total number of data replicas hosted in this <%= userTerm %>.
-					</p>
+			<% if(userTerm == "repository"){ %>
+				<div class="span4 packages badge-container" id="replicas-container">
+					<div id="total-replicas" class="span4 show-loading"></div>
+					<div class="span6">
+						<p>
+							The total number of data replicas hosted in this <%= userTerm %>.
+						</p>
+					</div>
 				</div>
-			</div>
+			<% } %>
 		</section>
 	</section>
 	<% if(!hideMetadataAssessment){ %>
