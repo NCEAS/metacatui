@@ -86,7 +86,7 @@ define(["jquery",
             d = firstUpload.getUTCDate();
 
           //For Member Nodes, start all dates at July 2012, the beginning of DataONE
-          this.$("#first-upload-container").text("DataONE Member Node since " + y);
+          this.$("#first-upload-container").text("DataONE Member Repository since " + y);
         }
 
      });
