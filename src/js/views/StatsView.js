@@ -17,6 +17,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 		hideUpdatesChart: false,
 
+		/*
+		* Flag to indicate whether the statsview is a node summary view
+		* @type {boolean}
+		*/
+		nodeSummaryView: false,
+
 		/**
 		 * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
 		 * @type {boolean}
@@ -61,6 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var view = this;
 
 			if ( options.nodeSummaryView ) {
+				this.nodeSummaryView = true;
 				var nodeId = MetacatUI.appModel.get("nodeId");
 
 				// Overwrite the metrics display flags as set in the AppModel
@@ -190,9 +197,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		//Start retrieving data from Solr
 		this.model.getAll();
 
-		if (this.userType === "repository" && this.userId !== "undefined") {
-			var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent("urn:node:" + this.userId));
-			this.model.getTotalReplicas(identifier);
+		// Only gather replication stats if the view is a repository view
+		if (this.userType === "repository") {
+			if (this.userId !== undefined)
+			{
+				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent("urn:node:" + this.userId));
+				this.model.getTotalReplicas(identifier);
+			}
+			else if (this.nodeSummaryView) {
+				var nodeId = MetacatUI.appModel.get("nodeId");
+				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(nodeId));
+				this.model.getTotalReplicas(identifier);
+			}
+			
 		}
 
 		return this;
