@@ -366,7 +366,12 @@ function ($, _, Backbone) {
         this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);
       }
       else{
-        this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        if( !portalIdentifier ){
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural"));
+        }
+        else{
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        }
       }
 
       require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
