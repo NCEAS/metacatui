@@ -201,6 +201,23 @@ define(['jquery', 'underscore', 'backbone'],
       isJSONLDEnabled: true,
 
       /**
+      * If true, users can see a "Publish" button in the MetadataView, which makes the metadata
+      * document public and gives it a DOI identifier.
+      * If false, the button will be hidden completely.
+      * @type {boolean}
+      */
+      enablePublishDOI: false,
+
+      /**
+      * A list of users or groups who exclusively will be able to see and use the "Publish" button,
+      * which makes the metadata document public and gives it a DOI identifier.
+      * Anyone not in this list will not be able to see the Publish button.
+      * `enablePublishDOI` must be set to `true` for this to take effect.
+      * @type {string[]}
+      */
+      enablePublishDOIForSubjects: [],
+
+      /**
       * Semantic annotation configuration
       * Include your Bioportal api key to show ontology information for metadata annotations
       * see: http://bioportal.bioontology.org/account

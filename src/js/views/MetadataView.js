@@ -953,8 +953,6 @@ define(['jquery',
      * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
      */
     insertOwnerControls: function(){
-      if( !MetacatUI.appModel.get("publishServiceUrl") )
-        return false;
 
       //Do not show user controls for older versions of data sets
       if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
@@ -968,7 +966,8 @@ define(['jquery',
         viewRef = this;
 
       this.listenToOnce(this.model, "change:isAuthorized", function(){
-        if(!model.get("isAuthorized") || model.get("archived")) return false;
+        if(!model.get("isAuthorized") || model.get("archived"))
+          return false;
 
         //Insert an Edit button
         if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
@@ -984,19 +983,46 @@ define(['jquery',
           }));
         }
 
-        //Insert a Publish button if its not already published with a DOI
-        if(!model.isDOI()){
-          //Insert the template
-          container.append(
-            viewRef.doiTemplate({
-              isAuthorized: true,
-              identifier: pid
-            }));
+        try{
+          //Determine if this metadata can be published.
+          // The Publish feature has to be enabled in the app.
+          // The model cannot already have a DOI
+          var canBePublished = MetacatUI.appModel.get("enablePublishDOI") && !model.isDOI();
+
+          //If publishing is enabled, check if only certain users and groups can publish metadata
+          if( canBePublished ){
+            //Get the list of authorized publishers from the AppModel
+            var authorizedPublishers = MetacatUI.appModel.get("enablePublishDOIForSubjects");
+            //If the logged-in user is one of the subjects in the list or is in a group that is
+            // in the list, then this metadata can be published. Otherwise, it cannot.
+            if( Array.isArray(authorizedPublishers) && authorizedPublishers.length ){
+              if( MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers) ){
+                canBePublished = true;
+              }
+              else{
+                canBePublished = false;
+              }
+            }
+          }
+
+          //If this metadata can be published, then insert the Publish button template
+          if( canBePublished ){
+            //Insert a Publish button template
+            container.append(
+              viewRef.doiTemplate({
+                isAuthorized: true,
+                identifier: pid
+              }));
+          }
+        }
+        catch(e){
+          console.error("Cannot display the publish button: ", e);
         }
 
         //Check the authority on the package models
         //If there is no package, then exit now
-        if(!viewRef.packageModels || !viewRef.packageModels.length) return;
+        if(!viewRef.packageModels || !viewRef.packageModels.length)
+          return;
 
         //Check for authorization on the resource map
         var packageModel = this.packageModels[0];
@@ -1004,14 +1030,12 @@ define(['jquery',
         //if there is no package, then exit now
         if(!packageModel.get("id")) return;
 
-        //Listen for changes to the authorization flag
-        //packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-        //packageModel.once("sync", viewRef.createProvEditor, viewRef);
-
         //Now get the RDF XML and check for the user's authority on this resource map
         packageModel.fetch();
         packageModel.checkAuthority();
       });
+
+      //Check if the current user has authority to `changePermission` on this metadata
       this.model.checkAuthority();
     },
 

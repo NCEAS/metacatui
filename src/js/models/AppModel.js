@@ -228,6 +228,23 @@ define(['jquery', 'underscore', 'backbone'],
       isJSONLDEnabled: true,
 
       /**
+      * If true, users can see a "Publish" button in the MetadataView, which makes the metadata
+      * document public and gives it a DOI identifier.
+      * If false, the button will be hidden completely.
+      * @type {boolean}
+      */
+      enablePublishDOI: true,
+
+      /**
+      * A list of users or groups who exclusively will be able to see and use the "Publish" button,
+      * which makes the metadata document public and gives it a DOI identifier.
+      * Anyone not in this list will not be able to see the Publish button.
+      * `enablePublishDOI` must be set to `true` for this to take effect.
+      * @type {string[]}
+      */
+      enablePublishDOIForSubjects: [],
+
+      /**
       * If true, users can change the AccessPolicy for their objects.
       * @type {boolean}
       */

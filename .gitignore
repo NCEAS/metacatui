@@ -1,5 +1,7 @@
 *.DS_Store
 /.project
 src/js/themes/ess-dive
+src/js/themes/opc
+src/js/themes/dangermondpreserve
 node_modules
 package-lock.json
