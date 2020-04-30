@@ -16,7 +16,7 @@
 						<span>Sign in with ORCID</span>
 					</a>
 				</div>
-		<% } if(signInUrlLdap) { %>
+		<% } if(MetacatUI.appModel.get("enableLdapSignIn")) { %>
 
 			<div class="accordion" id="advanced-login">
 				<div class="accordion-heading center">

@@ -160,7 +160,16 @@ define(['jquery', 'underscore', 'backbone'],
       //signInUrl: null,
       signOutUrl: null,
       signInUrlOrcid: null,
+
+      /**
+      * Enable DataONE LDAP authentication. If true, users can sign in from an LDAP account that is in the DataONE CN LDAP directory.
+      * This is not recommended, as DataONE is moving towards supporting only ORCID logins for users.
+      * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
+      * @type {boolean}
+      */
+      enableLdapSignIn: false,
       signInUrlLdap: null,
+
       tokenUrl: null,
       checkTokenUrl: null,
       accountsUrl: null,
@@ -604,8 +613,11 @@ define(['jquery', 'underscore', 'backbone'],
             this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
           if(typeof this.get("signInUrlOrcid") !== "undefined")
             this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
-          if(typeof this.get("signInUrlLdap") !== "undefined")
+
+          if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
             this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+          }
+
           if(this.get('orcidBaseUrl'))
             this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 

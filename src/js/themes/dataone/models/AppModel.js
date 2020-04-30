@@ -104,14 +104,21 @@ define(['jquery', 'underscore', 'backbone'],
       signInUrl: null,
       signOutUrl: null,
       signInUrlOrcid: null,
-      //signInUrlLdap: null,
+      /**
+      * Enable DataONE LDAP authentication. If true, users can sign in from an LDAP account that is in the DataONE CN LDAP directory.
+      * This is not recommended, as DataONE is moving towards supporting only ORCID logins for users.
+      * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
+      * @type {boolean}
+      */
+      enableLdapSignIn: false,
+      signInUrlLdap: null,
       tokenUrl: null,
       // Metadata quality report services
       mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
       // suidIds and suiteLables must be specified as a list, even if only one suite is available.
       mdqSuiteIds: ["FAIR.suite.1"],
       mdqSuiteLabels: ["FAIR Suite v1.0"],
-      // Quality suites for aggregated quality scores (i.e. metrics tab) 
+      // Quality suites for aggregated quality scores (i.e. metrics tab)
       mdqAggregatedSuiteIds: ["FAIR.suite.1"],
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
       mdqFormatIds:["eml*", "https://eml*", "*isotc211*"],
@@ -365,8 +372,11 @@ define(['jquery', 'underscore', 'backbone'],
       }
       if(typeof this.get("signInUrlOrcid") !== "undefined")
         this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
-      if(typeof this.get("signInUrlLdap") !== "undefined")
+
+      if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
         this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+      }
+      
       if(this.get('orcidBaseUrl'))
         this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
