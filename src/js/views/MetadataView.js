@@ -194,9 +194,81 @@ define(['jquery',
           this.renderMetadata();
         }
         else if(this.model.get("formatType") == "DATA"){
-          if(this.model.get("isDocumentedBy")){
-            this.pid = _.first(this.model.get("isDocumentedBy"));
+
+          //Get the metadata pids that document this data object
+          var isDocBy = this.model.get("isDocumentedBy");
+
+          //If there is only one metadata pid that documents this data object, then
+          // get that metadata model for this view.
+          if(isDocBy && isDocBy.length == 1){
+            this.pid = _.first(isDocBy);
             this.getModel(this.pid);
+            return;
+          }
+          //If more than one metadata doc documents this data object, it is most likely
+          // multiple versions of the same metadata. So we need to find the latest version.
+          else if( isDocBy && isDocBy.length > 1 ){
+
+            var view = this;
+
+            require(["collections/Filters", "collections/SolrResults"], function(Filters, SolrResults){
+              //Create a search for the metadata docs that document this data object
+              var searchFilters = new Filters([{
+                    values: isDocBy,
+                    fields: ["id", "seriesId"],
+                    operator: "OR",
+                    matchSubstring: false
+                  }]),
+                  //Create a list of search results
+                  searchResults = new SolrResults([], {
+                    rows: isDocBy.length,
+                    query: searchFilters.getQuery(),
+                    fields: "obsoletes,obsoletedBy,id"
+                  });
+
+              //When the search results are returned, process those results
+              view.listenToOnce(searchResults, "sync", function(searchResults){
+
+                //Keep track of the latest version of the metadata doc(s)
+                var latestVersions = [];
+
+                //Iterate over each search result and find the latest version of each metadata version chain
+                searchResults.each( function(searchResult){
+
+                  //If this metadata isn't obsoleted by another object, it is the latest version
+                  if( !searchResult.get("obsoletedBy") ){
+                    latestVersions.push( searchResult.get("id") );
+                  }
+                  //If it is obsoleted by another object but that newer object does not document this data, then this is the latest version
+                  else if( !_.contains(isDocBy, searchResult.get("obsoletedBy")) ){
+                    latestVersions.push( searchResult.get("id") );
+                  }
+
+                }, view);
+
+                //If at least one latest version was found (should always be the case),
+                if( latestVersions.length ){
+                  //Set that metadata pid as this view's pid and get that metadata model.
+                  // TODO: Support navigation to multiple metadata docs. This should be a rare occurence, but
+                  // it is possible that more than one metadata version chain documents a data object, and we need
+                  // to show the user that the data is involved in multiple datasets.
+                  view.pid = latestVersions[0];
+                  view.getModel(latestVersions[0]);
+                }
+                //If a latest version wasn't found, which should never happen, but just in case, default to the
+                // last metadata pid in the isDocumentedBy field (most liekly to be the most recent since it was indexed last).
+                else{
+                  var fallbackPid =  _.last(isDocBy);
+                  view.pid = fallbackPid;
+                  view.getModel(fallbackPid);
+                }
+
+              });
+
+              //Send the query to the Solr search service
+              searchResults.query();
+            });
+
             return;
           }
           else{
@@ -222,6 +294,7 @@ define(['jquery',
           packageModel.getMembers();
           return;
         }
+
         //Get the package information
         this.getPackageDetails(model.get("resourceMap"));
 
