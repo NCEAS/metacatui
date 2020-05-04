@@ -109,11 +109,6 @@ as well as various classes of corrupt or bad data.  All tests should pass before
 a `dev` branch is merged to master, and all tests should pass before the `master`
 branch is merged to `releases` and tagged for a release.
 
-**Continuous integration**. MetacatUI is built upon every commit through the Jenkins
-system for [continuous integration at DataONE](https://purl.dataone.org/integration).  
-Both the `releases` and `master` branch are built and tested, and the current
-development branch is built as well.
-
 ## Code style
 
 Code should be written to professional standards to enable clean, well-documented,
@@ -121,18 +116,18 @@ readable, and maintainable software.  While there has been significant variablil
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.  Some of the guidelines we follow include:
 
-**Java**. For Java code, follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html), with the single exception that indentation is performed with 4 spaces rather than 2.  When working on a class that
-does not follow the conventions, strive to reformat that code module in a single
-isolated code commit before starting other code changes.
+**JSDoc**. 
+All JavaScript code should be fully documented with JSDoc comments.  Special
+attention should be paid to documentation of Model attributes and functions, and View functions.  
 
-**Javadoc**. All Java code should be fully documented with JavaDoc comments.  Special
-attention should be paid to documentation of the public API for classes.  Documentation
+Documentation
 should explain both what the code does, but also why it does it in a particular
-way when appropriate.  Class and method documentation should be written to provide
+way when appropriate.  Model and function documentation should be written to provide
 sufficient context for people that are not intimately familiar with the rest of the code.
-Class-level documentation often is strengthened through explaining the role of the
-class in the architecture.  Avoid using tautological definitions that reuse the name of
-a class or method in its definition.  And please be complete.
+
+Model-level documentation often is strengthened through explaining the role of the
+model in the architecture.  Avoid using tautological definitions that reuse the name of
+a model or function in its definition.  And please be complete.
 
 ## Contributor license agreement
 
