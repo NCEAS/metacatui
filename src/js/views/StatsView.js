@@ -1,6 +1,6 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge',
-'collections/Citations', 'models/MetricsModel', 'models/Stats', 'MetricsChart', 'views/CitationListView',
+'collections/Citations', 'models/MetricsModel', 'models/StatsNew', 'MetricsChart', 'views/CitationListView',
 'text!templates/metricModalTemplate.html',  'text!templates/profile.html',
 'text!templates/alert.html', 'text!templates/loading.html'],
 	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel,
@@ -110,18 +110,28 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
-				//this.listenTo(this.model, 'change:dataUploadDates',       this.drawUploadChart);
-				this.listenTo(this.model, 'change:temporalCoverage',      this.drawCoverageChart);
-				this.listenTo(this.model, "change:dataUpdateDates",       this.drawUpdatesChart);
-				this.listenTo(this.model, "change:totalSize",             this.drawTotalSize);
-				this.listenTo(this.model, 'change:metadataCount', 	    this.drawTotalCount);
-				this.listenTo(this.model, 'change:dataFormatIDs', 	  this.drawDataCountChart);
-				this.listenTo(this.model, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+        //Draw a chart that shows the temporal coverage of all datasets in this collection
+				this.listenTo(this.model, 'change:temporalCoverage', this.drawCoverageChart);
 
-				//this.listenTo(this.model, 'change:dataUploads', 	  this.drawUploadTitle);
+        //Draw charts that plot the latest updates of metadata and data files
+				this.listenTo(this.model, "change:dataUpdateDates",     this.drawDataUpdatesChart);
+        this.listenTo(this.model, "change:metadataUpdateDates", this.drawMetadataUpdatesChart);
+
+        //Render the total file size of all contents in this collection
+				this.listenTo(this.model, "change:totalSize", this.drawTotalSize);
+
+        //Render the total number of datasets in this collection
+				this.listenTo(this.model, 'change:metadataCount', this.drawTotalCount);
+
+        //Draw charts that show the breakdown of format IDs for metadata and data files
+				this.listenTo(this.model, 'change:dataFormatIDs',     this.drawDataCountChart);
+				this.listenTo(this.model, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			}
 
-			this.listenTo(this.model, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
+      //When the last coverage endDate is found, draw a title for the temporal coverage chart
+			this.listenTo(this.model, 'change:lastEndDate', this.drawCoverageChartTitle);
+
+      //When the total count is updated, check if there if the count is 0, so we can show there is no "activity" for this collection
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
 
 			// set the header type
@@ -663,87 +673,93 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.$('#total-size').html(sizeBadge.render().el);
 		},
 
-		/*
-		 * drawUpdatesChart - draws a line chart representing the latest updates over time
-		 */
-		drawUpdatesChart: function(){
+    /**
+     * Draws both the metadata and data update date charts.
+     * Note that this function may be deprecated in the future.
+     *  Views should directly call drawMetadataUpdatesChart() or drawDataUpdatesChart() directly,
+     *  since metadata and data dates are fetched via separate AJAX calls.
+     */
+    drawUpdatesChart: function(){
 
-			//If there was no first upload, draw a blank chart and exit
-			if(!this.model.get('firstUpdate')){
+      //Draw the metadata and data updates charts
+      this.drawMetadataUpdatesChart();
+      this.drawDataUpdatesChart();
 
-				var lineChartView = new LineChart(
-						{	  id: "updates-chart",
-						 	yLabel: "files updated",
-						 frequency: 0,
-						 cumulative: false,
-						 	 width: this.$('.metadata-updates-chart').width()
-						});
+    },
 
-				this.$('.metadata-updates-chart').html(lineChartView.render().el);
+    /**
+     * Draws a line chart representing the latest metadata updates over time
+     */
+    drawMetadataUpdatesChart: function(){
 
-				return;
-			}
+      //Set some configurations for the LineChart
+      var chartClasses = "data",
+          data;
 
-			//Set the frequency of our points
-			var frequency = 12;
+      //If the number of metadata objects in this data collection is 0, then set the data for the LineChart to null.
+      // And add a "no-activity" class to the chart.
+      if( !this.model.get("metadataUpdateDates") || !this.model.get("metadataUpdateDates").length ){
+        data = null;
+        chartClasses += " no-activity";
+      }
+      else{
+        //Use the metadata update dates for the LineChart
+        data = this.model.get('metadataUpdateDates');
+      }
 
-			//If there isn't a lot of points to graph, draw points more frequently on the line
-			if(this.model.get("metadataUpdateDates").length < 40) frequency = 1;
+      //Create the line chart for metadata updates
+      var metadataLineChart = new LineChart({
+        data: data,
+        formatFromSolrFacets: true,
+        cumulative: false,
+        id: "updates-chart",
+        className: chartClasses,
+        yLabel: "metadata files updated",
+        radius: 2,
+        width: this.$('.metadata-updates-chart').width(),
+        labelDate: "M-y"
+      });
 
-			//Create the line chart for metadata updates
-			var metadataLineChart = new LineChart(
-					{	  data: this.model.get('metadataUpdateDates'),
-		  formatFromSolrFacets: true,
-					cumulative: false,
-							id: "updates-chart",
-					 className: "metadata",
-					 	yLabel: "metadata files updated",
-					// frequency: frequency,
-						radius: 2,
-						width: this.$('.metadata-updates-chart').width(),
-					    labelDate: "M-y"
-					});
+      //Render the LineChart and insert it into the container element
+      this.$('.metadata-updates-chart').html(metadataLineChart.render().el);
+    },
 
-			this.$('.metadata-updates-chart').html(metadataLineChart.render().el);
+    /**
+    * Draws a line chart representing the latest metadata updates over time
+    */
+    drawDataUpdatesChart: function(){
+      //Set some configurations for the LineChart
+      var chartClasses = "data",
+          data;
 
-			//Only draw the data updates chart if there was at least one uploaded
-			if(this.model.get("dataCount")){
-				//Create the line chart for data updates
-				var dataLineChart = new LineChart(
-						{	  data: this.model.get('dataUpdateDates'),
-			  formatFromSolrFacets: true,
-						cumulative: false,
-								id: "updates-chart",
-						 className: "data",
-						 	yLabel: "data files updated",
-						// frequency: frequency,
-							radius: 2,
-							width: this.$('.data-updates-chart').width(),
-						    labelDate: "M-y"
-						});
+      //Use the data update dates for the LineChart
+      if(this.model.get("dataCount")){
+        data = this.model.get('dataUpdateDates');
+      }
+      else{
+        //If the number of data objects in this data collection is 0, then set the data for the LineChart to null.
+        // And add a "no-activity" class to the chart.
+        data = null;
+        chartClasses += " no-activity";
+      }
 
-				this.$('.data-updates-chart').html(dataLineChart.render().el);
+      //Create the line chart for data updates
+      var dataLineChart = new LineChart({
+        data: data,
+        formatFromSolrFacets: true,
+        cumulative: false,
+        id: "updates-chart",
+        className: chartClasses,
+        yLabel: "data files updated",
+        radius: 2,
+        width: this.$('.data-updates-chart').width(),
+        labelDate: "M-y"
+      });
 
-			}
-			else{
-				//Create the line chart for data updates
-				var dataLineChart = new LineChart(
-						{	  data: null,
-			  formatFromSolrFacets: true,
-						cumulative: false,
-								id: "updates-chart",
-						 className: "data no-activity",
-						 	yLabel: "data files updated",
-						// frequency: frequency,
-							radius: 2,
-							width: this.$('.data-updates-chart').width(),
-						    labelDate: "M-y"
-						});
+      //Render the LineChart and insert it into the container element
+      this.$('.data-updates-chart').html(dataLineChart.render().el);
 
-				this.$('.data-updates-chart').html(dataLineChart.render().el);
-			}
-
-		},
+    },
 
 		//Draw a bar chart for the temporal coverage
 		drawCoverageChart: function(e, data){
@@ -792,9 +808,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 * Shows that this person/group/node has no activity
 		 */
 		showNoActivity: function(){
-			this.$(".show-loading .loading").remove();
 
-			this.$el.addClass("no-activity");
+      if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
+  			this.$(".show-loading .loading").remove();
+
+  			this.$el.addClass("no-activity");
+      }
 		},
 
 				/**

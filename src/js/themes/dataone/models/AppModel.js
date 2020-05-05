@@ -80,10 +80,23 @@ define(['jquery', 'underscore', 'backbone'],
       */
       monitorStatusUrl: "",
 
-      //If set to false, some parts of the app will send POST HTTP requests to the
-      // Solr search index via the `/query/solr` DataONE API.
-      // Set this configuration to true if using Metacat 2.10.2 or earlier
+      /** If set to false, some parts of the app will send POST HTTP requests to the
+      * Solr search index via the `/query/solr` DataONE API.
+      * Set this configuration to true if using Metacat 2.10.2 or earlier
+      */
       disableQueryPOSTs: true,
+
+      /** If set to true, some parts of the app will use the Solr Join Query syntax
+      * when sending queries to the `/query/solr` DataONE API.
+      * If this is not enabled, then some parts of the UI may not work if a query has too
+      * many characters or has too many boolean clauses. This impacts the "Metrics" tabs of portals/collections,
+      * at least.
+      * The Solr Join Query Parser as added in Solr 4.0.0-ALPHA (I believe!): https://archive.apache.org/dist/lucene/solr/4.0.0/changes/Changes.html#4.0.0-alpha.new_features
+      * About the Solr Join Query Parser: https://lucene.apache.org/solr/guide/8_5/other-parsers.html#join-query-parser
+      * WARNING: At some point, MetacatUI will deprecate this configuration and will REQUIRE Solr Join Queries
+      * @type {boolean}
+      */
+      enableSolrJoins: true,
 
       defaultSearchFilters: ["all", "attribute", "annotation", "documents", "creator", "dataYear", "pubYear",
                              "id", "taxon", "spatial", "dataSource"],
@@ -376,7 +389,7 @@ define(['jquery', 'underscore', 'backbone'],
       if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
         this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
       }
-      
+
       if(this.get('orcidBaseUrl'))
         this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 

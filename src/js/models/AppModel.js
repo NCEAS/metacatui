@@ -107,12 +107,12 @@ define(['jquery', 'underscore', 'backbone'],
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
 
-      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
+      baseUrl: "https://dev.nceas.ucsb.edu",//window.location.origin || (window.location.protocol + "//" + window.location.host),
 
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
-      d1CNBaseUrl: "https://cn.dataone.org/",
+      d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
       d1CNService: "cn/v2",
       d1LogServiceUrl: null,
       nodeServiceUrl: null,
@@ -145,6 +145,18 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {boolean}
       */
       disableQueryPOSTs: false,
+
+      /** If set to true, some parts of the app will use the Solr Join Query syntax
+      * when sending queries to the `/query/solr` DataONE API.
+      * If this is not enabled, then some parts of the UI may not work if a query has too
+      * many characters or has too many boolean clauses. This impacts the "Metrics" tabs of portals/collections,
+      * at least.
+      * The Solr Join Query Parser as added in Solr 4.0.0-ALPHA (I believe!): https://archive.apache.org/dist/lucene/solr/4.0.0/changes/Changes.html#4.0.0-alpha.new_features
+      * About the Solr Join Query Parser: https://lucene.apache.org/solr/guide/8_5/other-parsers.html#join-query-parser
+      * WARNING: At some point, MetacatUI will deprecate this configuration and will REQUIRE Solr Join Queries
+      * @type {boolean}
+      */
+      enableSolrJoins: false,
 
       defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
