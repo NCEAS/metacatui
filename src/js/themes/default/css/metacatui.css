@@ -337,18 +337,6 @@ select{
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */
-  /*.notification {
-    position: relative;
-    top: 95px;
-    margin: 50px auto;
-    font-size: 40px;
-  }*/
-
-  .notification i{
-  	font-size: 40px;
-  	margin-left: 43%;
-  }
-
   .notification i.loading{
   	font-size: 2em;
   	color: #FFFFFF;
