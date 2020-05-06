@@ -195,10 +195,10 @@ define(['jquery', 'underscore', 'backbone'],
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 
       // Metrics Falgs for the /profile view (summary view)
-      hideSummaryCitationsChart: false,
-      hideSummaryDownloadsChart: false,
+      hideSummaryCitationsChart: true,
+      hideSummaryDownloadsChart: true,
       hideSummaryMetadataAssessment: true,
-      hideSummaryViewsChart: false,
+      hideSummaryViewsChart: true,
 
       /**
       * Metrics flag for the Dataset Landing Page
