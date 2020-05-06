@@ -1162,7 +1162,7 @@ define(['jquery',
       var mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds");
 
       // Check of the current formatId is supported by the current
-      // metadata quality suite. If not, the 'Quality Report' button
+      // metadata quality suite. If not, the 'Assessment Report' button
       // will not be displacyed in the metadata controls panel.
       var thisFormatId = this.model.get("formatId");
       var mdqFormatSupported = false;

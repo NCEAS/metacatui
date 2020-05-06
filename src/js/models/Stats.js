@@ -1102,7 +1102,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       catch(e){
         this.set("mdqScoresImage", this.defaults.mdqScoresImage);
         this.trigger("change:mdqScoresImage");
-        console.error("Cannot get the Metadata Quality scores: ", e);
+        console.error("Cannot get the Metadata Assessment scores: ", e);
       }
     },
 
