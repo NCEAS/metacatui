@@ -1,6 +1,6 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge',
-'collections/Citations', 'models/MetricsModel', 'models/StatsNew', 'MetricsChart', 'views/CitationListView',
+'collections/Citations', 'models/MetricsModel', 'models/Stats', 'MetricsChart', 'views/CitationListView',
 'text!templates/metricModalTemplate.html',  'text!templates/profile.html',
 'text!templates/alert.html', 'text!templates/loading.html'],
 	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel,
@@ -442,41 +442,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.$('.format-charts-metadata').html(donut.render().el);
 		},
 
-		drawFirstUpload: function(){
-
-			var className = "";
-
-			if( !this.model.get("firstUpload") ){
-				var chartData = [{
-				              	  count: "N/A",
-				              	  className: "packages no-activity"
-	                			}];
-			}
-			else{
-				var firstUpload = new Date(this.model.get("firstUpload")),
-					readableDate = firstUpload.toDateString();
-
-				readableDate = readableDate.substring(readableDate.indexOf(" ") + 1);
-
-				var chartData = [{
-				              	  count: readableDate,
-				              	  className: "packages"
-	                			}];
-			}
-
-			//Create the circle badge
-			var dateBadge = new CircleBadge({
-				id: "first-upload-badge",
-				data: chartData,
-				title: "first upload",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 100
-			});
-
-			this.$("#first-upload").html(dateBadge.render().el);
-		},
-
 		//drawUploadChart will get the upload stats from the stats model and draw a time series cumulative chart
 		drawUploadChart: function(){
 			//Get the width of the chart by using the parent container width
@@ -484,7 +449,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var width = parentEl.width() || null;
 
 			//If there was no first upload, draw a blank chart and exit
-			if(!this.model.get('firstUpload')){
+			if( (!this.model.get("metadataUploads") || !this.model.get("metadataUploads").length) && (!this.model.get("dataUploads") || !this.model.get("dataUploads").length) ){
 
 				var lineChartView = new LineChart(
 						{	  id: "upload-chart",
@@ -564,7 +529,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('#uploads-title').html("<h2 class='packages fallback'>" + MetacatUI.appView.commaSeparateNumber(this.model.get('totalUploads')) + "</h2>");
+				this.$('#uploads-title').html("<h2 class='packages fallback'>" + MetacatUI.appView.commaSeparateNumber(this.model.get('totalCount')) + "</h2>");
 
 				return;
 			}

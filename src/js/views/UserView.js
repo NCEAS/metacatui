@@ -172,8 +172,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.$profile = $(profileEl);
 
 			//If this user hasn't uploaded anything yet, display so
-			this.listenTo(MetacatUI.statsModel, "change:totalUploads", function(){
-				if(!MetacatUI.statsModel.get("totalUploads"))
+			this.listenTo(MetacatUI.statsModel, "change:totalCount", function(){
+				if(!MetacatUI.statsModel.get("totalCount"))
 					this.noActivity();
 			});
 
@@ -370,8 +370,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			//Insert a couple stats into the profile
 			this.listenToOnce(MetacatUI.statsModel, "change:firstUpload", this.insertFirstUpload);
 
-			this.listenToOnce(MetacatUI.statsModel, "change:totalUploads", function(){
-				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalUploads")));
+			this.listenToOnce(MetacatUI.statsModel, "change:totalCount", function(){
+				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalCount")));
 			});
 
 			//Create a base query for the statistics
