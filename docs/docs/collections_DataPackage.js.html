@@ -1089,8 +1089,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             return DataONEObject.parseSysMeta.call(this, arguments[0]);
           },
 
-          /*
+          /**
            * Overwrite the Backbone.Collection.sync() function to set custom options
+           * @param {Object} [options] - Options for this DataPackage save
+           * @param {Boolean} [options.sysMetaOnly] - If true, only the system metadata of this Package will be saved.
+           * @param {Boolean} [options.resourceMapOnly] - If true, only the Resource Map/Package object will be saved. Metadata and Data objects aggregated by the package will be skipped.
            */
           save: function(options){
 
@@ -1116,215 +1119,234 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               return;
             }
 
-            //Sort the models in the collection so the metadata is saved first
-            var metadataModels   = this.where({ type: "Metadata" });
-            var dataModels       = _.difference(this.models, metadataModels);
-            var sortedModels     = _.union(metadataModels, dataModels);
-            var modelsInProgress = _.filter(sortedModels, function(m){ return m.get("uploadStatus") == "p" });
-            var modelsToBeSaved  = _.filter(sortedModels, function(m){
-              //Models should be saved if they are in the save queue, had an error saving earlier,
-              //or they are Science Metadata model that is NOT already in progress
-              return (m.get("uploadStatus") == "q" ||
-                  //m.get("uploadStatus") == "e" ||
-                  (m.get("type") == "Metadata" &amp;&amp;
-                      m.get("uploadStatus") != "p" &amp;&amp;
-                      m.get("uploadStatus") != "c" &amp;&amp;
-                      m.get("uploadStatus") != "e" &amp;&amp;
-                      m.get("uploadStatus") !== null))
+            if( options.resourceMapOnly !== true ){
+
+              //Sort the models in the collection so the metadata is saved first
+              var metadataModels   = this.where({ type: "Metadata" });
+              var dataModels       = _.difference(this.models, metadataModels);
+              var sortedModels     = _.union(metadataModels, dataModels);
+              var modelsInProgress = _.filter(sortedModels, function(m){
+                return (m.get("uploadStatus") == "p" || m.get("sysMetaUploadStatus") == "p");
+              });
+              var modelsToBeSaved  = _.filter(sortedModels, function(m){
+                //Models should be saved if they are in the save queue, had an error saving earlier,
+                //or they are Science Metadata model that is NOT already in progress
+                return (
+                    (m.get("type") == "Metadata" &amp;&amp; m.get("uploadStatus") == "q") ||
+                    (m.get("type") == "Data" &amp;&amp; m.get("hasContentChanges")) ||
+                    (m.get("type") == "Metadata" &amp;&amp;
+                        m.get("uploadStatus") != "p" &amp;&amp;
+                        m.get("uploadStatus") != "c" &amp;&amp;
+                        m.get("uploadStatus") != "e" &amp;&amp;
+                        m.get("uploadStatus") !== null))
+                });
+              //Get an array of data objects whose system metaata should be updated.
+              var sysMetaToUpdate = _.reject(dataModels, function(m){
+                //Find models that don't have any content changes to save,
+                // and whose system metadata is not already saving
+                return (m.get("hasContentChanges") || m.get("sysMetaUploadStatus") == "p" ||
+                        m.get("sysMetaUploadStatus") == "c" || m.get("sysMetaUploadStatus") == "e");
               });
 
-            //First quickly validate all the models before attempting to save any
-            var allValid = _.every(modelsToBeSaved, function(m) {
-
-            if( m.isValid() ){
-              m.trigger("valid");
-              return true;
-            }
-            else{
-              return false;
-            }
-
-          });
-
-          // If at least once model to be saved is invalid,
-          // or the metadata failed to save, cancel the save.
-          if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
-                return model.get("uploadStatus");
-              } ), "e") ) {
-
-            this.packageModel.set("changed", false);
-            this.packageModel.set("uploadStatus", "q");
-            this.trigger("cancelSave");
-            return;
-
-          }
-
-          //First save all the models of the collection, if needed
-          _.each(modelsToBeSaved, function(model){
-            //If the model is saved successfully, start this save function again
-            this.stopListening(model, "successSaving", this.save);
-            this.listenToOnce(model, "successSaving", this.save);
-
-            //If the model fails to save, start this save function
-            this.stopListening(model, "errorSaving", this.save);
-            this.listenToOnce(model, "errorSaving", this.save);
-
-            //If the model fails to save, start this save function
-            this.stopListening(model, "cancelSave", this.save);
-            this.listenToOnce(model,  "cancelSave", this.save);
-
-            //If this is a Data model and it has no content changes, we only want to save the system metadata
-            if( model.get("type") == "Data" &amp;&amp; !model.get("hasContentChanges") ){
-              model.updateSysMeta();
-            }
-            else{
-              //Save the model and watch for fails
-              model.save();
-            }
-
-            //Add it to the list of models in progress
-            modelsInProgress.push(model);
-
-          }, this);
-
-          //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
-          if(modelsInProgress.length) return;
-
-          //Do we need to update this resource map?
-          if(!this.needsUpdate()) return;
-
-          var requestType;
-
-          //Set a new id and keep our old id
-          if(this.packageModel.isNew()){
-            requestType = "POST";
-          }
-          else{
-            //Update the identifier for this object
-            this.packageModel.updateID();
-            requestType = "PUT";
-          }
-
-          //Create a FormData object to send data with the XHR
-          var formData = new FormData();
-
-          //Add the identifier to the XHR data
-          if(this.packageModel.isNew()){
-            formData.append("pid", this.packageModel.get("id"));
-          }
-          else{
-            //Add the ids to the form data
-            formData.append("newPid", this.packageModel.get("id"));
-            formData.append("pid", this.packageModel.get("oldPid"));
-          }
-
-          try {
-            //Create the resource map XML
-            var mapXML = this.serialize();
-          }
-          catch (serializationException) {
-
-            //If serialization failed, revert back to our old id
-            this.packageModel.resetID();
-
-            this.trigger("errorSaving");
-
-            return;
-          }
-
-          var mapBlob = new Blob([mapXML], {type : 'application/xml'});
-
-          //Get the size of the new resource map
-          this.packageModel.set("size", mapBlob.size);
-
-          //Get the new checksum of the resource map
-          var checksum = md5(mapXML);
-          this.packageModel.set("checksum", checksum);
-          this.packageModel.set("checksumAlgorithm", "MD5");
-
-          //Set the file name based on the id
-          this.packageModel.set("fileName", this.packageModel.get("id").replace(/[^a-zA-Z0-9]/g, "_") +
-            ".rdf.xml");
-
-          //Create the system metadata
-          var sysMetaXML = this.packageModel.serializeSysMeta();
-
-          //Send the system metadata
-          var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
-
-          //Add the object XML and System Metadata XML to the form data
-          //Append the system metadata first, so we can take advantage of Metacat's streaming multipart handler
-          formData.append("sysmeta", xmlBlob, "sysmeta");
-          formData.append("object", mapBlob);
-
-          var collection = this;
-          var requestSettings = {
-              url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
-              type: requestType,
-              cache: false,
-              contentType: false,
-              processData: false,
-              data: formData,
-              success: function(response){
-
-                //Update the object XML
-                collection.objectXML = mapXML;
-                collection.packageModel.set("sysMetaXML", collection.packageModel.serializeSysMeta());
-
-                //Reset the upload status for all members
-                _.each(collection.where({ uploadStatus: "c" }), function(m){
-                  m.set("uploadStatus", m.defaults().uploadStatus);
-                });
-
-                //Reset the upload status for the package
-                collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
-
-                // Reset the content changes status
-                collection.packageModel.set("hasContentChanges", false);
-
-                collection.trigger("successSaving", collection);
-
-                collection.packageModel.fetch({merge: true});
-
-              },
-              error: function(data){
-
-                //Reset the id back to its original state
-                collection.packageModel.resetID();
-
-                //Reset the upload status for all members
-                _.each(collection.where({ uploadStatus: "c" }), function(m){
-                  m.set("uploadStatus", m.defaults().uploadStatus);
-                });
-
-                //Send this exception to Google Analytics
-                if(MetacatUI.appModel.get("googleAnalyticsKey") &amp;&amp; (typeof ga !== "undefined")){
-                  ga("send", "exception", {
-                    "exDescription": "DataPackage save error: " + errorMsg +
-                      " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-                    "exFatal": true
-                  });
+              //First quickly validate all the models before attempting to save any
+              var allValid = _.every(modelsToBeSaved, function(m) {
+                if( m.isValid() ){
+                  m.trigger("valid");
+                  return true;
                 }
-
-                //When there is no network connection (status == 0), there will be no response text
-                if( data.status == 408 || data.status == 0 ){
-                  var parsedResponse = "There was a network issue that prevented this file from uploading. " +
-                           "Make sure you are connected to a reliable internet connection.";
+                else{
+                  return false;
                 }
-                else {
-                  var parsedResponse = $(data.responseText).not("style, title").text();
-                }
+              });
 
-                //Save the error message in the model
-                collection.packageModel.set("errorMessage", parsedResponse);
+              // If at least once model to be saved is invalid,
+              // or the metadata failed to save, cancel the save.
+              if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
+                    return model.get("uploadStatus");
+                  } ), "e") ) {
 
-                //Reset the upload status for the package
-                collection.packageModel.set("uploadStatus", "e");
+                this.packageModel.set("changed", false);
+                this.packageModel.set("uploadStatus", "q");
+                this.trigger("cancelSave");
+                return;
 
-                collection.trigger("errorSaving", parsedResponse);
               }
-          }
-          $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
+              //First save all the models of the collection, if needed
+              _.each(modelsToBeSaved, function(model){
+                //If the model is saved successfully, start this save function again
+                this.stopListening(model, "successSaving", this.save);
+                this.listenToOnce(model, "successSaving", this.save);
+
+                //If the model fails to save, start this save function
+                this.stopListening(model, "errorSaving", this.save);
+                this.listenToOnce(model, "errorSaving", this.save);
+
+                //If the model fails to save, start this save function
+                this.stopListening(model, "cancelSave", this.save);
+                this.listenToOnce(model,  "cancelSave", this.save);
+
+                //Save the model and watch for fails
+                model.save();
+
+                //Add it to the list of models in progress
+                modelsInProgress.push(model);
+
+              }, this);
+
+              //Save the system metadata of all the Data objects
+              _.each(sysMetaToUpdate, function(dataModel){
+                //When the sytem metadata has been saved, save this resource map
+                this.listenTo(dataModel, "sysMetaUpdated", this.save);
+                //Update the system metadata
+                dataModel.updateSysMeta();
+                //Add it to the list of models in progress
+                modelsInProgress.push(dataModel);
+              }, this);
+
+              //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
+              if(modelsInProgress.length) return;
+            }
+
+            //Do we need to update this resource map?
+            if(!this.needsUpdate()) return;
+
+            //Determine the HTTP request type
+            var requestType;
+            //Set a new id and keep our old id
+            if(this.packageModel.isNew()){
+              requestType = "POST";
+            }
+            else{
+              //Update the identifier for this object
+              this.packageModel.updateID();
+              requestType = "PUT";
+            }
+
+            //Create a FormData object to send data with the XHR
+            var formData = new FormData();
+
+            //Add the identifier to the XHR data
+            if(this.packageModel.isNew()){
+              formData.append("pid", this.packageModel.get("id"));
+            }
+            else{
+              //Add the ids to the form data
+              formData.append("newPid", this.packageModel.get("id"));
+              formData.append("pid", this.packageModel.get("oldPid"));
+            }
+
+            try {
+              //Create the resource map XML
+              var mapXML = this.serialize();
+            }
+            catch (serializationException) {
+
+              //If serialization failed, revert back to our old id
+              this.packageModel.resetID();
+
+              this.trigger("errorSaving");
+
+              return;
+            }
+
+            var mapBlob = new Blob([mapXML], {type : 'application/xml'});
+
+            //Get the size of the new resource map
+            this.packageModel.set("size", mapBlob.size);
+
+            //Get the new checksum of the resource map
+            var checksum = md5(mapXML);
+            this.packageModel.set("checksum", checksum);
+            this.packageModel.set("checksumAlgorithm", "MD5");
+
+            //Set the file name based on the id
+            this.packageModel.set("fileName", this.packageModel.get("id").replace(/[^a-zA-Z0-9]/g, "_") +
+              ".rdf.xml");
+
+            //Create the system metadata
+            var sysMetaXML = this.packageModel.serializeSysMeta();
+
+            //Send the system metadata
+            var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
+
+            //Add the object XML and System Metadata XML to the form data
+            //Append the system metadata first, so we can take advantage of Metacat's streaming multipart handler
+            formData.append("sysmeta", xmlBlob, "sysmeta");
+            formData.append("object", mapBlob);
+
+            var collection = this;
+            var requestSettings = {
+                url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
+                type: requestType,
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: formData,
+                success: function(response){
+
+                  //Update the object XML
+                  collection.objectXML = mapXML;
+                  collection.packageModel.set("sysMetaXML", collection.packageModel.serializeSysMeta());
+
+                  //Reset the upload status for all members
+                  _.each(collection.where({ uploadStatus: "c" }), function(m){
+                    m.set("uploadStatus", m.defaults().uploadStatus);
+                  });
+
+                  //Reset the upload status for the package
+                  collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
+
+                  // Reset the content changes status
+                  collection.packageModel.set("hasContentChanges", false);
+
+                  collection.trigger("successSaving", collection);
+
+                  collection.packageModel.fetch({merge: true});
+
+                  _.each(sysMetaToUpdate, function(dataModel){
+                    dataModel.set("sysMetaUploadStatus", "c");
+                  });
+
+                },
+                error: function(data){
+
+                  //Reset the id back to its original state
+                  collection.packageModel.resetID();
+
+                  //Reset the upload status for all members
+                  _.each(collection.where({ uploadStatus: "c" }), function(m){
+                    m.set("uploadStatus", m.defaults().uploadStatus);
+                  });
+
+                  //Send this exception to Google Analytics
+                  if(MetacatUI.appModel.get("googleAnalyticsKey") &amp;&amp; (typeof ga !== "undefined")){
+                    ga("send", "exception", {
+                      "exDescription": "DataPackage save error: " + errorMsg +
+                        " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                      "exFatal": true
+                    });
+                  }
+
+                  //When there is no network connection (status == 0), there will be no response text
+                  if( data.status == 408 || data.status == 0 ){
+                    var parsedResponse = "There was a network issue that prevented this file from uploading. " +
+                             "Make sure you are connected to a reliable internet connection.";
+                  }
+                  else {
+                    var parsedResponse = $(data.responseText).not("style, title").text();
+                  }
+
+                  //Save the error message in the model
+                  collection.packageModel.set("errorMessage", parsedResponse);
+
+                  //Reset the upload status for the package
+                  collection.packageModel.set("uploadStatus", "e");
+
+                  collection.trigger("errorSaving", parsedResponse);
+                }
+            }
+            $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
         },
 
         /*
@@ -1855,16 +1877,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               }
             }, this);
 
-            // Since the provenance editor is run from the MetadataView, only
-            // the resource map will have to be updated (with the new prov rels),
-            // as no other editing is possible. Therefor we have to manually set
-            // the resource maps' new id so that the serialize() function will treat
-            // this as an update, not a new resource map.
-            //var oldId = this.dataPackage.packageModel.get("id");
-            //var newId = "resource_map_" + "urn:uuid:" + uuid.v4();
-            //this.dataPackage.packageModel.set("oldPid", oldId);
-            //this.dataPackage.packageModel.set("id", newId);
-            this.save();
+            // When saving provenance only, we only have to save the Resource Map/Package object.
+            //  So we will send the resourceMapOnly flag with the save function.
+            this.save({
+              resourceMapOnly: true
+            });
 
           },
 
@@ -2921,13 +2938,13 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addKeyword">addKeyword</a></li><li><a href="global.html#addNewKeyword">addNewKeyword</a></li><li><a href="global.html#checkIncompatibility">checkIncompatibility</a></li><li><a href="global.html#clearOldDrafts">clearOldDrafts</a></li><li><a href="global.html#friendlyTimeDiff">friendlyTimeDiff</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#listenForActivity">listenForActivity</a></li><li><a href="global.html#listenForTimeout">listenForTimeout</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li><li><a href="global.html#movePartyDown">movePartyDown</a></li><li><a href="global.html#movePartyUp">movePartyUp</a></li><li><a href="global.html#movePersonDown">movePersonDown</a></li><li><a href="global.html#movePersonUp">movePersonUp</a></li><li><a href="global.html#renderSupport">renderSupport</a></li><li><a href="global.html#saveDraft">saveDraft</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showTimeoutSignIn">showTimeoutSignIn</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Mar 12 2020 14:11:45 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu May 07 2020 15:41:56 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
