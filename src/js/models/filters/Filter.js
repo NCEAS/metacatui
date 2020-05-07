@@ -340,12 +340,15 @@ define(['jquery', 'underscore', 'backbone'],
         //Escape special characters
         value = this.escapeSpecialChar(value);
 
-        //Add the value to the query string. Wrap in wildcards, if specified
-        if( value.indexOf(" ") > -1 ){
-          value = "\"" + value + "\"";
-        }
 
-        if( this.get("matchSubstring") ){
+        var dateRangeRegEx = /^\[((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d*Z)|\*)( |%20)TO( |%20)((\d{4}-[01]\d-[0-3]\dT[0-2]\d(:|\\:)[0-5]\d(:|\\:)[0-5]\d\.\d*Z)|\*)\]/,
+            isDateRange = dateRangeRegEx.test(value);
+
+        //If the value is a search phrase (more than one word), and not a date range string, wrap in quotes
+        if( value.indexOf(" ") > -1 && !isDateRange ){
+          valuesQueryString = "\"" + value + "\"";
+        }
+        else if( this.get("matchSubstring") && !isDateRange ){
 
           //Look for existing wildcard characters at the end of the value string
           if( value.match( /^\*|\*$/ ) ){
