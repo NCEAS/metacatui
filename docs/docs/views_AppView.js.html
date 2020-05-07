@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: views/AppView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: views/AppView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>﻿﻿/*global define */
+define(['jquery',
+		'underscore',
+		'backbone',
+		'views/AltHeaderView',
+		'views/NavbarView',
+		'views/FooterView',
+		'views/SignInView',
+		'text!templates/alert.html',
+		'text!templates/appHead.html',
+    'text!templates/jsonld.txt',
+		'text!templates/app.html',
+		'text!templates/loading.html'
+	    ],
+	function($, _, Backbone, AltHeaderView, NavbarView, FooterView, SignInView,
+    AlertTemplate, AppHeadTemplate, JsonLDTemplate, AppTemplate, LoadingTemplate) {
+	'use strict';
+
+	var app = app || {};
+
+	var theme = document.getElementById("loader").getAttribute("data-theme");
+
+	// Our overall **AppView** is the top-level piece of UI.
+	var AppView = Backbone.View.extend({
+
+		// Instead of generating a new element, bind to the existing skeleton of
+		// the App already present in the HTML.
+		el: '#metacatui-app',
+
+		//Templates
+		template: _.template(AppTemplate),
+		alertTemplate: _.template(AlertTemplate),
+		appHeadTemplate: _.template(AppHeadTemplate),
+    jsonLDTemplate: _.template(JsonLDTemplate),
+		loadingTemplate: _.template(LoadingTemplate),
+
+		events: {
+											 "click" : "closePopovers",
+	 		              'click .btn.direct-search' : 'routeToMetadata',
+		 	          'keypress input.direct-search' : 'routeToMetadataOnEnter',
+		 	                 "click .toggle-slide"   : "toggleSlide",
+				 		 	      "click input.copy" : "higlightInput",
+					 		 	  "focus input.copy" : "higlightInput",
+					 		   "click textarea.copy" : "higlightInput",
+					 		   "focus textarea.copy" : "higlightInput",
+					 		 	  "click .open-chat" : "openChatWithMessage",
+					 		 "click .login.redirect" : "sendToLogin",
+					 	   "focus .jump-width-input" : "widenInput",
+					 	"focusout .jump-width-input" : "narrowInput"
+		},
+
+		initialize: function () {
+
+			//Check for the LDAP sign in error message
+			if(window.location.search.indexOf("error=Unable%20to%20authenticate%20LDAP%20user") > -1){
+				window.location = window.location.origin + window.location.pathname + "#signinldaperror";
+			}
+
+			//Is there a logged-in user?
+			MetacatUI.appUserModel.checkStatus();
+
+			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
+			$("head").prepend(this.appHeadTemplate({
+				theme: MetacatUI.theme,
+				themeTitle: MetacatUI.themeTitle,
+				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
+      }))
+      //Add the JSON-LD to the head element
+      .append($(document.createElement("script")).attr("type", "application/ld+json")
+                                                 .attr("id", "jsonld")
+                                                 .html(this.jsonLDTemplate()));
+
+			// set up the body
+			this.$el.append(this.template());
+
+			// render the nav
+			MetacatUI.navbarView = new NavbarView();
+			MetacatUI.navbarView.setElement($('#Navbar')).render();
+
+			MetacatUI.altHeaderView = new AltHeaderView();
+			MetacatUI.altHeaderView.setElement($('#HeaderContainer')).render();
+
+			MetacatUI.footerView = new FooterView();
+			MetacatUI.footerView.setElement($('#Footer')).render();
+
+			//Load the Slaask chat widget if it is enabled in this theme
+			if(MetacatUI.appModel.get("slaaskKey") &amp;&amp; window._slaask)
+		    	_slaask.init(MetacatUI.appModel.get("slaaskKey"));
+
+			//Change the document title when the app changes the MetacatUI.appModel title at any time
+			this.listenTo(MetacatUI.appModel, "change:title", this.changeTitle);
+
+			this.listenForActivity();
+			this.listenForTimeout();
+
+			this.initializeWidgets();
+
+      this.checkIncompatibility();
+		},
+
+		//Changes the web document's title
+		changeTitle: function(){
+			document.title = MetacatUI.appModel.get("title");
+		},
+
+		// Render the main view and/or re-render subviews. Don't call .html() here
+		// so we don't lose state, rather use .setElement(). Delegate rendering
+		// and event handling to sub views
+		render: function () {
+
+			return this;
+		},
+
+		// the currently rendered view
+		currentView: null,
+
+		// Our view switcher for the whole app
+		showView: function(view, viewOptions) {
+
+			//reference to appView
+			var thisAppViewRef = this;
+
+			// Change the background image if there is one
+			MetacatUI.navbarView.changeBackground();
+
+			// close the current view
+			if (this.currentView){
+
+        //If the current view has a function to confirm closing of the view, call it
+				if( typeof this.currentView.canClose == "function" ){
+
+          //If the user or view confirmed that the view shouldn't be closed, then don't navigate to the next route
+          if( !this.currentView.canClose() ){
+
+            //Get a confirmation message from the view, or use a default one
+            if( typeof this.currentView.getConfirmCloseMessage == "function" ){
+              var confirmMessage = this.currentView.getConfirmCloseMessage();
+            }
+            else{
+              var confirmMessage = "Leave this page?";
+            }
+
+            //Show a confirm alert to the user and wait for their response
+            var leave = confirm(confirmMessage);
+            //If they clicked Cancel, then don't navigate to the next route
+            if(!leave){
+              MetacatUI.uiRouter.undoLastRoute();
+              return;
+            }
+          }
+				}
+
+				// need reference to the old/current view for the callback method
+				var oldView = this.currentView;
+
+				this.currentView.$el.fadeOut('slow', function() {
+					// clean up old view
+					if (oldView.onClose)
+						oldView.onClose();
+
+					// render the new view
+					view.render(viewOptions);
+					view.$el.fadeIn('slow', function() {
+
+						// after fade in, do postRender()
+						if (view.postRender)
+							view.postRender();
+						// force scroll to top if no custom scrolling is implemented
+						else
+							thisAppViewRef.scrollToTop();
+					});
+				});
+			} else {
+
+				// just show the view without transition
+				view.render(viewOptions);
+
+				if (view.postRender)
+					view.postRender();
+				// force scroll to top if no custom scrolling is implemented
+				else
+					thisAppViewRef.scrollToTop();
+			}
+
+
+			// track the current view
+			this.currentView = view;
+			this.sendAnalytics();
+
+			this.trigger("appRenderComplete");
+		},
+
+		sendAnalytics: function(){
+			if(!MetacatUI.appModel.get("googleAnalyticsKey") || (typeof ga === "undefined")) return;
+
+			var page = window.location.pathname || "/";
+			page = page.replace("#", ""); //remove the leading pound sign
+
+			ga('send', 'pageview', {'page':  page});
+		},
+
+		routeToMetadata: function(e){
+			e.preventDefault();
+
+			//Get the value from the input element
+			var form = $(e.target).attr("form") || null,
+				val = this.$("#" + form).find("input[type=text]").val();
+
+			//Remove the text from the input
+			this.$("#" + form).find("input[type=text]").val("");
+
+			if(!val) return false;
+
+			MetacatUI.uiRouter.navigate('view/'+ val, {trigger: true});
+		},
+
+		routeToMetadataOnEnter: function(e){
+			//If the user pressed a key inside a text input, we only want to proceed if it was the Enter key
+			if((e.type == "keypress") &amp;&amp; (e.keycode != 13))
+				return;
+			else
+				this.routeToMetadata(e);
+		},
+
+		sendToLogin: function(e){
+			if(e) e.preventDefault();
+
+			var url = $(e.target).attr("href");
+			url = url.substring(0, url.indexOf("target=")+7);
+			url += window.location.href;
+
+			window.location.href = url;
+		},
+
+		resetSearch: function(){
+			// Clear the search and map model to start a fresh search
+			MetacatUI.appSearchModel.clear();
+			MetacatUI.appSearchModel.set(MetacatUI.appSearchModel.defaults);
+			MetacatUI.mapModel.clear();
+			MetacatUI.mapModel.set(MetacatUI.mapModel.defaults);
+
+			//Clear the search history
+			MetacatUI.appModel.set("searchHistory", new Array());
+
+			MetacatUI.uiRouter.navigate('data', {trigger: true});
+		},
+
+		closePopovers: function(e){
+			if(this.currentView &amp;&amp; this.currentView.closePopovers)
+				this.currentView.closePopovers(e);
+		},
+
+		toggleSlide: function(e){
+			if(e) e.preventDefault();
+			else return false;
+
+			var clickedOn   = $(e.target),
+				toggleElId  = clickedOn.attr("data-slide-el") || clickedOn.parents("[data-slide-el]").attr("data-slide-el"),
+				toggleEl    = $("#" + toggleElId);
+
+			toggleEl.slideToggle("fast", function(){
+				//Toggle the display of the link if it has the right class
+				if(clickedOn.is(".toggle-display-on-slide")){
+					clickedOn.siblings(".toggle-display-on-slide").toggle();
+					clickedOn.toggle();
+				}
+			});
+		},
+
+    /**
+    * Displays the given message to the user in a Bootstrap "alert" style.
+    * @param {string|Element} msg
+    * @param {string} [classes]
+    * @param {string|Element} [container]
+    * @param {boolean} [delay]
+    * @param {object} [options]
+    * @param {string} [options.emailBody]
+    * @param {boolean} [options.remove]
+    */
+		showAlert: function(msg, classes, container, delay, options) {
+			if(!classes)
+				var classes = 'alert-success';
+			if(!container || !$(container).length)
+				var container = this.$el;
+
+			//Remove any alerts that are already in this container
+			if($(container).children(".alert-container").length > 0)
+				$(container).children(".alert-container").remove();
+
+			//Allow messages to be HTML or strings
+			if(typeof msg != "string")
+				msg = $(document.createElement("div")).append($(msg)).html();
+
+			var emailOptions = "";
+
+			//Check for more options
+			if(typeof options != "undefined" &amp;&amp; options.emailBody)
+				emailOptions += "?body=" + options.emailBody;
+
+			//Allow error messages to be removed
+			var remove = options? options.remove : false;
+
+			var alert = $.parseHTML(this.alertTemplate({
+				msg: msg,
+				classes: classes,
+				emailOptions: emailOptions,
+				remove: remove
+			}).trim());
+
+			if(delay){
+				$(alert).hide();
+				$(container).prepend(alert);
+				$(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
+			}
+			else
+				$(container).prepend(alert);
+		},
+
+		/**
+    * Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
+		* When a user checks back, we want to check for log-in status
+    */
+		listenForActivity: function(){
+			MetacatUI.appUserModel.on("change:loggedIn", function(){
+				if(!MetacatUI.appUserModel.get("loggedIn")) return;
+
+				//When the user re-focuses back on the window
+				$(window).focus(function(){
+					//If the user has logged out in the meantime, then exit
+					if(!MetacatUI.appUserModel.get("loggedIn")) return;
+
+						//If the expiration date of the token has passed, then allow the user to sign back in
+						if( MetacatUI.appUserModel.get("expires") &lt;= new Date() ){
+							MetacatUI.appView.showTimeoutSignIn();
+						}
+
+				});
+			});
+		},
+
+		/**
+		* Will determine the length of time until the user's current token expires,
+		* and will set a window timeout for that length of time. When the timeout
+		* is triggered, the sign in modal window will be displayed so that the user
+		* can sign in again (which happens in AppView.showTimeoutSignIn())
+		*/
+		listenForTimeout: function(){
+
+			//Only proceed if the user is logged in
+			if( !MetacatUI.appUserModel.get("checked") ){
+
+				//When the user logged back in, listen again for the next timeout
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+					//If the user is logged in, then listen call this function again
+					if(MetacatUI.appUserModel.get("checked") &amp;&amp; MetacatUI.appUserModel.get("loggedIn"))
+						this.listenForTimeout();
+				});
+
+				return;
+			}
+			else if( !MetacatUI.appUserModel.get("loggedIn") ){
+
+				//When the user logged back in, listen again for the next timeout
+				this.listenToOnce(MetacatUI.appUserModel, "change:loggedIn", function(){
+					//If the user is logged in, then listen call this function again
+					if(MetacatUI.appUserModel.get("checked") &amp;&amp; MetacatUI.appUserModel.get("loggedIn"))
+						this.listenForTimeout();
+				});
+
+				return;
+
+			}
+
+			var view = this,
+					expires = MetacatUI.appUserModel.get("expires"),
+					timeLeft = expires - new Date();
+
+			//If there is no time left until expiration, then show the sign in view now
+			if( timeLeft &lt; 0 ){
+				this.showTimeoutSignIn();
+			}
+			//Otherwise, set a timeout for a expiration time, then show the Sign In View
+			else{
+				var timeoutId = setTimeout(function(){
+													view.showTimeoutSignIn.call(view);
+												}, timeLeft);
+
+				//Save the timeout id in case we want to destroy the timeout later
+				MetacatUI.appUserModel.set("timeoutId", timeoutId);
+			}
+		},
+
+		/**
+		* If the user's auth token has expired, a new SignInView model window is
+		* displayed so the user can sign back in. A listener is set on the appUserModel
+		* so that when they do successfully sign back in, we set another timeout listener
+		* via AppView.listenForTimeout()
+		*/
+		showTimeoutSignIn: function(){
+			if(MetacatUI.appUserModel.get("expires") &lt;= new Date()){
+				MetacatUI.appUserModel.set("loggedIn", false);
+
+				 var signInView = new SignInView({
+						 inPlace: true,
+						 closeButtons: false,
+						 topMessage: "Your session has timed out. Click Sign In to open a " +
+						 						 "new window to sign in again. Make sure your browser settings allow pop-ups."
+				 })
+				 var signInForm = signInView.render().el;
+
+				 if(this.subviews &amp;&amp; Array.isArray(this.subviews))
+					 this.subviews.push(signInView);
+				 else
+					 this.subviews = [signInView];
+
+				$("body").append(signInForm);
+				$(signInForm).modal();
+
+				//When the user logged back in, listen again for the next timeout
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+					if(MetacatUI.appUserModel.get("checked") &amp;&amp; MetacatUI.appUserModel.get("loggedIn"))
+						this.listenForTimeout();
+				});
+			}
+		},
+
+
+		openChatWithMessage: function(){
+			if(!_slaask) return;
+
+	    	$("#slaask-input").val(MetacatUI.appModel.get("defaultSupportMessage"));
+	    	$("#slaask-button").trigger("click");
+
+		},
+
+		initializeWidgets: function(){
+			 // Autocomplete widget extension to provide description tooltips.
+ 		    $.widget( "app.hoverAutocomplete", $.ui.autocomplete, {
+
+ 		        // Set the content attribute as the "item.desc" value.
+ 		        // This becomes the tooltip content.
+ 		        _renderItem: function( ul, item ) {
+ 		        	// if we have a label, use it for the title
+ 		        	var title = item.value;
+ 		        	if (item.label) {
+ 		        		title = item.label;
+ 		        	}
+ 		        	// if we have a description, use it for the content
+ 		        	var content = item.value;
+ 		        	if (item.desc) {
+ 		        		content = item.desc;
+ 		        		if (item.desc != item.value) {
+ 			        		content += " (" + item.value + ")";
+ 		        		}
+ 		        	}
+ 		        	var element = this._super( ul, item )
+ 	                .attr( "data-title", title )
+ 	                .attr( "data-content", content );
+ 		        	element.popover(
+ 		        			{
+ 		        				placement: "right",
+ 		        				trigger: "hover",
+ 		        				container: 'body'
+
+ 		        			});
+ 		            return element;
+ 		        }
+ 		    });
+		},
+
+    /**
+    * Checks if the user's browser is an outdated version that won't work with
+    * MetacatUI well, and displays a warning message to the user..
+    * The user agent is checked against the `unsupportedBrowsers` list in the AppModel.
+    */
+    checkIncompatibility: function(){
+      //Check if this browser is incompatible with this app. i.e. It is an old browser version
+      var isUnsupportedBrowser = _.some( MetacatUI.appModel.get("unsupportedBrowsers"), function(browserRegEx){
+        var matches = navigator.userAgent.match(browserRegEx);
+        return (matches &amp;&amp; matches.length > 0);
+      });
+
+      if( !isUnsupportedBrowser ){
+        return;
+      }
+      else{
+        //Show a warning message to the user about their browser.
+        this.showAlert("Your web browser is out of date. Update your browser for more security, " +
+                       "speed and the best experience on this site.", "alert-warning", this.$el,
+                       false, { remove: true });
+        this.$el.children(".alert-container").addClass("important-app-message");
+      }
+    },
+
+		/********************** Utilities ********************************/
+		// Various utility functions to use across the app //
+		/************ Function to add commas to large numbers ************/
+		commaSeparateNumber: function(val){
+			if(!val) return 0;
+
+			if(val &lt; 1) return  Math.round(val * 100) / 100;
+
+		    while (/(\d+)(\d{3})/.test(val.toString())){
+		      val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2');
+		    }
+		    return val;
+		 },
+		 numberAbbreviator: function(number, decimalPlaces) {
+		 	if(number === 0){
+		 		return 0;
+		 	}
+            decimalPlaces = Math.pow(10,decimalPlaces);
+            var abbreviations = [ "K", "M", "B", "T" ];
+
+            // Go through the array backwards, so we do the largest first
+            for (var i=abbreviations.length-1; i>=0; i--) {
+
+                // Convert array index to "1000", "1000000", etc
+                var size = Math.pow(10,(i+1)*3);
+
+                // If the number is bigger or equal do the abbreviation
+                if(size &lt;= number) {
+
+                    // Here, we multiply by decimalPlaces, round, and then divide by decimalPlaces.
+                    // This gives us nice rounding to a particular decimal place.
+                    number = Math.round(number*decimalPlaces/size)/decimalPlaces;
+
+                    // Handle special case where we round up to the next abbreviation
+                    if((number == 1000) &amp;&amp; (i &lt; abbreviations.length - 1)) {
+                        number = 1;
+                        i++;
+                    }
+
+                    // Add the letter for the abbreviation
+                    number += abbreviations[i];
+                    break;
+                }
+            }
+            return number;
+        },
+		higlightInput: function(e){
+			if(!e) return;
+
+			e.preventDefault();
+			e.target.setSelectionRange(0, 9999);
+		},
+
+		widenInput: function(e){
+			$(e.target).css("width", "200px");
+		},
+
+		narrowInput: function(e){
+			$(e.target).delay(500).animate({"width": "60px"});
+		},
+
+		// scroll to top of page
+		scrollToTop: function() {
+			$("body,html").stop(true,true) //stop first for it to work in FF
+						  .animate({ scrollTop: 0 }, "slow");
+			return false;
+		},
+
+		scrollTo: function(pageElement, offsetTop){
+			//Find the header height if it is a fixed element
+			var headerOffset = (this.$("#Header").css("position") == "fixed") ? this.$("#Header").outerHeight() : 0;
+			var navOffset    = (this.$("#Navbar").css("position") == "fixed") ? this.$("#Navbar").outerHeight() : 0;
+			var totalOffset = headerOffset + navOffset;
+
+			$("body,html").stop(true,true) //stop first for it to work in FF
+						  .animate({ scrollTop: $(pageElement).offset().top - 40 - totalOffset}, 1000);
+			return false;
+		}
+
+	});
+	return AppView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addKeyword">addKeyword</a></li><li><a href="global.html#addNewKeyword">addNewKeyword</a></li><li><a href="global.html#checkIncompatibility">checkIncompatibility</a></li><li><a href="global.html#clearOldDrafts">clearOldDrafts</a></li><li><a href="global.html#friendlyTimeDiff">friendlyTimeDiff</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#listenForActivity">listenForActivity</a></li><li><a href="global.html#listenForTimeout">listenForTimeout</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li><li><a href="global.html#movePartyDown">movePartyDown</a></li><li><a href="global.html#movePartyUp">movePartyUp</a></li><li><a href="global.html#movePersonDown">movePersonDown</a></li><li><a href="global.html#movePersonUp">movePersonUp</a></li><li><a href="global.html#renderSupport">renderSupport</a></li><li><a href="global.html#saveDraft">saveDraft</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showTimeoutSignIn">showTimeoutSignIn</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu May 07 2020 18:49:13 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

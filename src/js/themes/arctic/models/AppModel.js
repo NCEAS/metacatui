@@ -365,7 +365,7 @@ define(['jquery', 'underscore', 'backbone'],
       * Limits only the following people or groups to create new portals.
       * @type {string[]}
       */
-      limitPortalsToSubjects: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+      limitPortalsToSubjects: [],
 
       /**
       * This message will display when a user tries to create a new Portal in the PortalEditor
