@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>MetacatUI Dev Docs: Source: models/filters/BooleanFilter.js</title>
+    <title>MetacatUI Dev Docs: Source: themes/opc/routers/router.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: models/filters/BooleanFilter.js</h1>
+    <h1 class="page-title">Source: themes/opc/routers/router.js</h1>
 
     
 
@@ -27,110 +27,35 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/* global define */
-define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
-    function($, _, Backbone, Filter) {
+            <pre class="prettyprint source linenums"><code>/*global Backbone */
+'use strict';
 
-  /**
-  * @class BooleanFilter
-  * @classdesc A search filter that only has `true` or `false` as a search term
-  * @name BooleanFilter
-  * @extends Filter
-  * @constructs
-  */
-	var BooleanFilter = Filter.extend(
-    /** @lends BooleanFilter.prototype */
-    {
+define(['jquery', 'underscore', 'backbone', 'routers/BaseRouter'],
+function ($, _, Backbone, BaseRouter) {
 
-    /** @inheritdoc */
-    type: "BooleanFilter",
+    // MetacatUI Router
+    // ----------------
+    var UIRouter = BaseRouter.extend({
+        routes: _.extend(BaseRouter.prototype.routes, {
+            "support(/:anchorId)(/)": "renderSupport",
+        }),
+        
+        /**
+         * Render the support page
+         * @return {object} the rendered support page
+         */
+        renderSupport: function(anchorId) {
+            this.routeHistory.push("support");
+            MetacatUI.appModel.set('anchorId', anchorId);
+            var options = {
+                    pageName: "support",
+                    anchorId: anchorId
+                }
 
-    /** @inheritdoc */
-    defaults: function(){
-      return _.extend(Filter.prototype.defaults(), {
-        //Boolean filters can't match substrings
-        matchSubstring: false
-      });
-    },
-
-    /**
-    * Parses the booleanFilter XML node into JSON
-    *
-    * @param {Element} xml - The XML Element that contains all the BooleanFilter elements
-    * @return {JSON} - The JSON object literal to be set on the model
-    */
-    parse: function(xml){
-
-      var modelJSON = Filter.prototype.parse.call(this, xml);
-
-      //If this Filter is in a filter group, don't parse the value
-      if( !this.get("inFilterGroup") ){
-
-        //Parse the boolean value
-        modelJSON.values = this.parseTextNode(xml, "value");
-
-        if(modelJSON.values === "true"){
-          modelJSON.values = [true];
+            this.renderText(options);
         }
-        else if(modelJSON.values === "false"){
-          modelJSON.values = [false];
-        }
-
-      }
-
-      return modelJSON;
-    },
-
-    /**
-     * Updates the XML DOM with the new values from the model
-     *  @inheritdoc
-     *  @return {Element} An updated booleanFilter XML element from a portal document
-    */
-    updateDOM: function(options) {
-
-      if( typeof options == "undefined" ){
-        var options = {};
-      }
-
-      //Update the DOM using the parent Filter model
-      var objectDOM = Filter.prototype.updateDOM.call(this);
-
-      //Boolean Filters don't use matchSubstring and operator nodes
-      $(objectDOM).children("matchSubstring, operator").remove();
-
-      // Get the new boolean value
-      var value = this.get("value");
-
-      // Make a &lt;value> node with the new boolean value and append it to DOM
-      if( value || value === false){
-        var valueSerialized = objectDOM.ownerDocument.createElement("value");
-        $(valueSerialized).text(value);
-        $(objectDOM).append(valueSerialized);
-      }
-
-      if( !options.forCollection ){
-        //Make sure the filterOptions are listed last
-        //Get the filterOptions element
-        var filterOptions = $(objectDOM).children("filterOptions");
-        //If the filterOptions exist
-        if( filterOptions.length ){
-          //Detach from their current position and append to the end
-          filterOptions.detach();
-          $(objectDOM).append(filterOptions);
-        }
-      }
-      //Remove filter options if this is for a collection definition
-      else{
-        $(objectDOM).children("filterOptions").remove();
-      }
-
-      return objectDOM
-
-    }
-
-  });
-
-  return BooleanFilter;
+    });
+    return UIRouter;
 });
 </code></pre>
         </article>
