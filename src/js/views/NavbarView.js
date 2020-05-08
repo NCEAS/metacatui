@@ -143,7 +143,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 		},
 
 		showNav: function(){
-			this.$("nav").slideToggle();
+			this.$("#main-nav").slideToggle();
 			this.$("#nav-trigger .icon").toggle();
 		},
 

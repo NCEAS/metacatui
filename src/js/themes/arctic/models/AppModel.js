@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone'],
     defaults: {
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
+      repositoryName: "Arctic Data Center",
 
       emailContact: "support@arcticdata.io",
 

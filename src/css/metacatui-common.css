@@ -210,6 +210,28 @@ footer{
 .nav .right .dropdown-menu {
   left: -50%;
 }
+#nav-trigger{
+  color: white;
+    float: right;
+    margin-top: 15px;
+    font-size: 2em;
+    display: none;
+}
+#nav-trigger:hover{
+  text-decoration: none;
+}
+#Navbar .home{
+  display: inline-block;
+  line-height: 4em;
+}
+#Navbar a .title{
+  color: #FFF;
+  vertical-align: middle;
+}
+#Navbar .logo{
+  max-height: 50px;
+  margin-right: 10px;
+}
 /******************************************
 ** Titles ***
 ******************************************/
@@ -1452,6 +1474,64 @@ img.icon{
 .orcid-btn:hover > span{
 	color: #FFF;
 	text-decoration: none;
+}
+/* MAIN CONTENT
+--------------------------------- */
+#mainContent{
+	height: 0px;
+	padding: 0px;
+	margin-top: 50px;
+}
+
+#mainContent h1{
+	font-size: 2em;
+  text-align: center;
+  display: inline-block;
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+#mainContent input{
+	height: 2em;
+    border-radius: 8px 0px 0px 8px;
+    -moz-border-radius: 20px 0px 0px 20px;
+    font-size: 2em;
+    border: 2px solid #cacde2;
+    padding-left: 20px;
+    margin-right: 20px;
+    float: left;
+    width: calc( 88% - 50px );
+}
+
+#mainContent input::-webkit-input-placeholder{
+	padding-top: 7px;
+}
+#mainContent input:-moz-placeholder{ /* Firefox 18- */
+	padding-top: 7px;
+}
+#mainContent input::-moz-placeholder{ /* Firefox 19+ */
+	padding-top: 7px;
+}
+#mainContent input:-ms-input-placeholder{
+	padding-top: 7px;
+}
+
+#search_btn_main{
+  height: calc( 4em + 10px);
+  	margin-left: -20px;
+  	-webkit-border-radius: 0 8px 8px 0;
+  	-moz-border-radius: 0 15px 15px 0;
+  	border-left: 0px;
+  	-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+  	padding: 0px;
+  	width: 64px;
+  	background-image: none;
+}
+
+#search_btn_main > i{
+  color: #FFF;
+  font-size: 1em;
+	line-height: 4em;
 }
 /******************************************
 ** The Metadata and MetadataIndex View **

@@ -50,6 +50,11 @@
 		font-weight: 600;
 	}
 
+  #search_btn_main{
+    background-color: #166194;
+    border-color: #166194;
+  }
+
 	p:empty{ display: none; }
 
     .pointer{
@@ -580,6 +585,14 @@ select{
 
 
     /* Depending on the headerType, these classes apply */
+
+    #Navbar a .title{
+      color: #FFF;
+      vertical-align: middle;
+    }
+    #Navbar .logo{
+      max-height: 50px;
+    }
 
     .navbar {
       position: relative;
@@ -1965,65 +1978,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	padding:0px;
 	background: none;
 	background-color: transparent;
-}
-
-/* MAIN CONTENT
---------------------------------- */
-#mainContent{
-	height: 0px;
-	padding: 0px;
-	margin-top: 50px;
-}
-
-#mainContent h1{
-	font-size: 48px;
-	color: #375796;
-	text-transform: uppercase;
-	width: 365px;
-	margin-bottom: 20px;
-}
-
-#mainContent input{
-	height: 90px;
-    border-radius: 8px 0px 0px 8px;
-    -moz-border-radius: 20px 0px 0px 20px;
-    font-size: 30px;
-    border: 2px solid #cacde2;
-    padding-left: 20px;
-    margin-right: 20px;
-    float: left;
-}
-
-#mainContent input::-webkit-input-placeholder{
-	padding-top: 7px;
-}
-#mainContent input:-moz-placeholder{ /* Firefox 18- */
-	padding-top: 7px;
-}
-#mainContent input::-moz-placeholder{ /* Firefox 19+ */
-	padding-top: 7px;
-}
-#mainContent input:-ms-input-placeholder{
-	padding-top: 7px;
-}
-
-#search_btn_main{
-	height: 100px;
-    margin-left: -20px;
-    -webkit-border-radius: 0 8px 8px 0;
-    -moz-border-radius: 0 15px 15px 0;
-    border-left: 0px;
-    background-color: #375796;
-    -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-    padding: 0px;
-    width: 100px;
-    background-image: none;
-}
-
-#search_btn_main > i{
-	color: #FFF;
-	font-size: 2em;
-    line-height: 3.1em;
 }
 
 /*-------------- DOCUMENTATION CSS -----------------------------*/
