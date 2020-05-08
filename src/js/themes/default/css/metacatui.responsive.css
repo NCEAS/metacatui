@@ -6,8 +6,14 @@ and (max-width : 480px) {
 	#Navbar{
 		background-color: #166194;
 	}
-	
+
 	#Navbar .navbar li{
 		border-bottom: 1px solid #1D8EDC;
 	}
+}
+@media only screen and (min-width : 900px) {
+  /* At large widths, always show the non-mobile nav menu, especially if it was previously hidden via the mobile nav-trigger */
+  #main-nav{
+    display: block !important;
+  }
 }

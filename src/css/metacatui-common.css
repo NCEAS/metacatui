@@ -220,6 +220,18 @@ footer{
 #nav-trigger:hover{
   text-decoration: none;
 }
+#Navbar .home{
+  display: inline-block;
+  line-height: 4em;
+}
+#Navbar a .title{
+  color: #FFF;
+  vertical-align: middle;
+}
+#Navbar .logo{
+  max-height: 50px;
+  margin-right: 10px;
+}
 /******************************************
 ** Titles ***
 ******************************************/

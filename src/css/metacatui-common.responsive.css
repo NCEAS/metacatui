@@ -71,9 +71,6 @@
 		flex-direction: column;
     display: flex;
 	}
-	.navbar .home > a:after{
-		content: " Home";
-	}
 	.navbar li{
 		width: 100%;
 		text-align: center;
@@ -889,6 +886,7 @@ and (max-width : 420px) {
     display: inline-block;
     max-width: 140px;
     font-size: 1.1em;
+    line-height: 1em;
   }
   /* Make the nav links a bit smaller */
   .navbar .nav > li > a{
@@ -934,12 +932,6 @@ and (max-width : 420px) {
     #main-nav form{
       height: 40px;
     }
-}
-@media only screen and (min-width : 900px) {
-  /* At large widths, always show the non-mobile nav menu, especially if it was previously hidden via the mobile nav-trigger */
-  #main-nav{
-    display: block !important;
-  }
 }
 
 /* iPads (portrait and landscape) ----------- */
