@@ -346,7 +346,7 @@ define(['jquery', 'underscore', 'backbone'],
 
         //If the value is a search phrase (more than one word), and not a date range string, wrap in quotes
         if( value.indexOf(" ") > -1 && !isDateRange ){
-          valuesQueryString = "\"" + value + "\"";
+          valuesQueryString += "\"" + value + "\"";
         }
         else if( this.get("matchSubstring") && !isDateRange ){
 
