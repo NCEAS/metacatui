@@ -20,6 +20,7 @@ define(['jquery', 'underscore', 'backbone'],
     defaults: {
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
+      repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
 
       emailContact: "knb-help@nceas.ucsb.edu",
 
