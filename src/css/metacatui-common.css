@@ -210,6 +210,16 @@ footer{
 .nav .right .dropdown-menu {
   left: -50%;
 }
+#nav-trigger{
+  color: white;
+    float: right;
+    margin-top: 15px;
+    font-size: 2em;
+    display: none;
+}
+#nav-trigger:hover{
+  text-decoration: none;
+}
 /******************************************
 ** Titles ***
 ******************************************/

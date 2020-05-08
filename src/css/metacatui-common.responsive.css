@@ -880,6 +880,68 @@ and (max-width : 420px) {
 
 }
 
+/**********
+* These styles control the mobile navigation
+**********/
+@media only screen and (min-width : 900px) and (max-width : 1050px) {
+  /* Collapse the repo title into multiple lines, once we get to a certain window width */
+  .navbar .title{
+    display: inline-block;
+    max-width: 140px;
+    font-size: 1.1em;
+  }
+  /* Make the nav links a bit smaller */
+  .navbar .nav > li > a{
+    font-size: 1.1em;
+  }
+}
+@media only screen and (max-width : 900px) {
+
+    /* At this window width, show the mobile nav hamburger menu and hide the non-mobile nav links */
+    #nav-trigger{
+      display: block;
+    }
+    #main-nav{
+      display: none;
+    }
+    /* Dropdown menus in mobile nav should change from popover-style dropdowns to listed links */
+    #main-nav .dropdown-menu {
+      display: block;
+      position: relative;
+      background-color: transparent;
+      border: 0px;
+      box-shadow: none;
+      margin-left: -5%;
+      width: auto;
+    }
+    /* Hide dropdown headers, dividers, borders, and the caret icon */
+    #main-nav .dropdown-header,
+    #main-nav .divider{
+      display: none;
+    }
+    #Navbar .dropdown-menu:before, #Navbar .dropdown-menu:after{
+      content: none;
+    }
+    #main-nav .dropdown-menu > li{
+      border-bottom: 0px;
+    }
+    /* Dropdown menu links should be white */
+    #main-nav .dropdown-menu > li > a{
+      color: #FFF;
+      text-align: left;
+    }
+    /* Set a height on input forms in the nav*/
+    #main-nav form{
+      height: 40px;
+    }
+}
+@media only screen and (min-width : 900px) {
+  /* At large widths, always show the non-mobile nav menu, especially if it was previously hidden via the mobile nav-trigger */
+  #main-nav{
+    display: block !important;
+  }
+}
+
 /* iPads (portrait and landscape) ----------- */
 @media only screen
 and (min-width : 768px)

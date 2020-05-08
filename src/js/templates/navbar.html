@@ -1,7 +1,11 @@
 <div class="navbar" id="bg_image" data-image-count="9">
   <div class="navbar-inner">
-      <ul class="nav">
-       <li class="logo home"> <a href="<%= MetacatUI.root || "/" %>"><img alt="Metacat" src="<%= MetacatUI.root %>/img/metacat_logo.png?v=<%=MetacatUI.metacatUIVersion%>"></a></li>
+      <a href="<%= MetacatUI.root || "/" %>" class="home">
+        <img alt="Metacat" src="<%= MetacatUI.root %>/img/metacat_logo.png?v=<%=MetacatUI.metacatUIVersion%>" class="logo">
+        <span class="title"><%= MetacatUI.appModel.get("title")%></span>
+      </a>
+      <a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
+      <ul class="nav" id="main-nav">
        <li class="dropdown">
         	<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
         	<ul class="dropdown-menu">
