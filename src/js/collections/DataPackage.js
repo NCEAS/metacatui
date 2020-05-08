@@ -1216,7 +1216,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               //If serialization failed, revert back to our old id
               this.packageModel.resetID();
 
-              this.trigger("errorSaving");
+              this.trigger("errorSaving", "There was a Javascript error during the serialization process: " + serializationException);
 
               return;
             }
