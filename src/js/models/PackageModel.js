@@ -724,7 +724,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			var query = "fl=title,id,obsoletedBy,resourceMap" +
 						"&wt=json" +
 						"&group=true&group.field=formatType&group.limit=-1" +
-						"&q=((formatType:METADATA+" + rMapQuery + ") OR " + idQuery + ")";
+						"&q=((formatType:METADATA AND " + rMapQuery + ") OR " + idQuery + ")";
 
 			var model = this;
 			var requestSettings = {
