@@ -123,7 +123,7 @@ define(["jquery",
 
       var model = this,
         fetchOptions = _.extend({
-          url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id")) || encodeURIComponent(this.get("seriesId"))),
+          url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id") || this.get("seriesId")),
           dataType: "text",
           success: function(response){
             model.set(DataONEObject.prototype.parse.call(model, response));
