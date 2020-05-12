@@ -77,6 +77,12 @@ define(["jquery",
       //Create a Filters collection to store the definition filters
       this.set("definitionFilters", new Filters());
 
+      // Update the blacklist with the node/repository labels
+      var nodeBlackList = MetacatUI.appModel.get("portalLabelBlacklist");
+      if (nodeBlackList !== undefined) {
+        this.set("labelBlacklist", this.get("labelBlacklist").concat(nodeBlackList));
+      }
+
       //When this Collection has been saved, re-save the collection definition
       this.on("successSaving", function(){
         this.get("definitionFilters").reset(this.getAllDefinitionFilters());
