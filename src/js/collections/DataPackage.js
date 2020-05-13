@@ -1930,6 +1930,57 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           }
         },
 
+        /**
+         * Remove orphaned blank nodes from the model's current graph
+         *
+         * This was put in to support replacing package members who are
+         * referenced by provenance statements, specifically members typed as
+         * Programs. rdflib.js will throw an error when serializing if any
+         * statements in the graph have objects that are blank nodes when no
+         * other statements in the graph have subjects for the same blank node.
+         * i.e., blank nodes references that aren't defined.
+         *
+         * Should be called during a call to serialize() and mutates
+         * this.dataPackageGraph directly as a side-effect.
+         */
+        removeOrphanedBlankNodes: function() {
+          if (!this.dataPackageGraph || !this.dataPackageGraph.statements) {
+            return;
+          }
+
+          // Collect an array of statements to be removed
+          var toRemove = [];
+
+          _.each(this.dataPackageGraph.statements, function(statement) {
+            if (statement.object.termType !== "BlankNode") {
+              return;
+            }
+
+            // For this statement, look for other statments about it
+            var matches = 0;
+
+            _.each(this.dataPackageGraph.statements, function(other) {
+              if (
+                other.subject.termType === "BlankNode" &&
+                other.subject.id === statement.object.id
+              ) {
+                matches += 1;
+              }
+            });
+
+            // If none are found, add it to our list
+            if (matches === 0) {
+              toRemove.push(statement);
+            }
+
+          }, this);
+
+          // Remove collected statements
+          _.each(toRemove, function(statement) {
+            this.dataPackageGraph.removeStatement(statement);
+          }, this);
+        },
+
         /* Get the execution identifier that is associated with a program id.
            This will either be in the 'prov_wasExecutedByExecution' of the package member
            for the program script, or available by tracing backward in the RDF graph from
@@ -2383,6 +2434,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     this.addToAggregation(id);
                 }, this);
               }
+
+              // Remove any references to blank nodes not already cleaned up.
+              // rdflib.js will fail to serialize an IndexedFormula (graph) with
+              // statements whose object is a blank node when the blank node
+              // is not the subject of any other statements.
+              this.removeOrphanedBlankNodes();
 
               var xmlString = serializer.statementsToXML(this.dataPackageGraph.statements);
 
