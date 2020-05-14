@@ -2345,7 +2345,7 @@ define(['jquery',
 
       // If we are on the Metadata view, update the  URL and scroll to the
       // anchor
-      window.location.href = window.location.hash = id;
+      window.location.hash = encodeURIComponent(id);
       MetacatUI.appView.scrollTo( this.findEntityDetailsContainer(id) );
 
       return true;
@@ -2362,11 +2362,11 @@ define(['jquery',
     scrollToFragment: function() {
       var hash = window.location.hash;
 
-      if (!hash) {
+      if (!hash || hash.length <= 1) {
           return;
       }
 
-      var fragment = hash.substring(1),
+      var fragment = decodeURIComponent(hash.substring(1)),
           sanitized = DataONEObject.prototype.getXMLSafeID(fragment);
 
       // Try to find an anchor tag with the right data-id value
