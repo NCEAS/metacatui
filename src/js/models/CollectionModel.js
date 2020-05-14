@@ -79,7 +79,7 @@ define(["jquery",
 
       // Update the blacklist with the node/repository labels
       var nodeBlackList = MetacatUI.appModel.get("portalLabelBlacklist");
-      if (nodeBlackList !== undefined) {
+      if (nodeBlackList !== undefined && Array.isArray(nodeBlackList)) {
         this.set("labelBlacklist", this.get("labelBlacklist").concat(nodeBlackList));
       }
 
