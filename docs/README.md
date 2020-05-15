@@ -1,6 +1,7 @@
 # MetacatUI Github Pages website
 This folder of the MetacatUI repository houses the files for a simple website about MetacatUI. This website contains:
 - Basic information about MetacatUI
+- Installation instructions
 - Developer documentation for the MetacatUI application
 
 ## Building Developer documentation
@@ -11,3 +12,7 @@ The MetacatUI git repository already contains these generated HTML pages in the 
 To build a fresh version of the MetacatUI developer docs, simply run the `docs/build.sh` script. This script must be run from the root directory of MetacatUI (`datadepot`) or from the first `docs` directory (`datadepot/docs`)
 
 To view the JSDoc documentation, you can navigate to the file in your browser. E.g. file:///Users/walker/git/datadepot/docs/docs/index.html
+
+## Adding to this site
+Feel free to add webpages to the MetacatUI website by adding markdown files to this `docs` directory. Use subdirectories
+as much as possible to keep things organized.
