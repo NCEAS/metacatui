@@ -3,9 +3,8 @@
 - **Author**: Matthew B. Jones, Chris Jones, Ben Leinfelder, Lauren Walker, Bryce Mecum, Peter Slaughter, Rushiraj Nenuji, Robyn Thiessen-Bock ([NCEAS](https://www.nceas.ucsb.edu))
 - **License**: [Apache 2](http://opensource.org/licenses/Apache-2.0)
 - [Package source code on Github](https://github.com/NCEAS/metacatui)
-- [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues)
-- [Task Board](https://waffle.io/NCEAS/metacatui)
-- Discussion list: metacat-dev@ecoinformatics.org
+- [**Submit Bugs and feature requests**](https://github.com/NCEAS/metacatui/issues/new/choose)
+- Contact us: metacat-dev@ecoinformatics.org
 
 MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.  Currently, it is used as the basis for the [KNB Data Repository](http://knb.ecoinformatics.org), the [NSF Arctic Data Center](https://arcticdata.io/catalog/), the [DataONE federation](https://search.dataone.org), and other repositories.
 
