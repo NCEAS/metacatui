@@ -21,7 +21,10 @@ If you want to use MetacatUI to query and browse the contents of a remote DataON
 
 ### For developers
 - [MetacatUI Javascript documentation for developers](/metacatui/docs/index.html)
-- Want to contribute to MetacatUI?
+
+- [How to create a custom theme](configuration/index.html)
+
+#### Want to contribute to MetacatUI?
   - Join us on [Slack](https://slack.dataone.org/)
   - Email us at metacat-dev@ecoinformatics.org
   - [Create a MetacatUI Github issue](https://github.com/NCEAS/metacatui/issues/new/choose)
