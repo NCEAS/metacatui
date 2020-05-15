@@ -1273,6 +1273,7 @@ define(["jquery",
 
             /**
             * Queries the Solr discovery index for other Portal objects with this same label.
+            * Also, checks for the existing black list for repository labels
             * If at least one other Portal has the same label, then it is not available.
             * @param {string} label - The label to query for
             */
@@ -1290,6 +1291,17 @@ define(["jquery",
               }
 
               var model = this;
+
+              // Convert the black list to lower case for case insensitive match
+              var lowerCaseBlackList = this.get("labelBlacklist").map(function(value) {
+                return value.toLowerCase();
+              });
+
+              // Check the existing blacklist before making a Solr call
+              if (lowerCaseBlackList.indexOf(label.toLowerCase()) > -1) {
+                model.trigger("labelTaken");
+                return
+              }
 
               // Query solr to see if other portals already use this label
               var requestSettings = {
