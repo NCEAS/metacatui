@@ -34,6 +34,12 @@ define(['jquery', 'underscore', 'backbone'],
 
       maxDownloadSize: 3000000000,
 
+      temporaryMessage: null,
+      temporaryMessageStartTime: null,
+      temporaryMessageEndTime: null,
+      temporaryMessageClasses: "warning",
+      temporaryMessageContainer: "#Navbar",
+
       /**
        * Flag which, when true shows Whole Tale features in the UI
        * @type {Boolean}

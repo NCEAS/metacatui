@@ -46,6 +46,12 @@
 	#nav-trigger {
 		margin-bottom: 14px;
 	}
+  /*
+  * Temp Message
+  */
+  .has-temporary-message nav#Navbar {
+      margin-top: 0px;
+  }
 
 }
 
@@ -114,4 +120,14 @@
   #main-nav .dropdown-menu > li > a{
     color: #333;
   }
+}
+
+@media only screen and (max-width : 1100px) {
+  /*
+  * Temp Message
+  */
+  .has-temporary-message nav#Navbar {
+      margin-top: 72px;
+  }
+
 }

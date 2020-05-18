@@ -71,6 +71,13 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
 			});
 
 			this.changeBackground();
+
+      //Check if the temporary message is in this view
+      if( MetacatUI.appModel.get("temporaryMessageContainer") == "#Navbar"){
+        if( typeof MetacatUI.appView.showTemporaryMessage == "function") {
+           MetacatUI.appView.showTemporaryMessage();
+         }
+      }
 		},
 
 		changeBackground: function(){

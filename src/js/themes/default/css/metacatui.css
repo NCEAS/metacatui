@@ -235,7 +235,6 @@
 	.expand-collapse.expanded .teaser{
 		color: #597F99;
 	}
-
   /* Portal Views
   -------------------------------------------------- */
 .PortalView #Navbar .nav .minimal-nav .btn-primary{
@@ -315,7 +314,7 @@ select{
  /* EDITOR
 -------------------------------------------------- */
 .Editor #Content{
-	padding-top: 45px;
+	padding-top: 57px;
 }
 .data-package-item.message-row button {
     height: 50px;
@@ -1387,7 +1386,7 @@ li.ui-menu-item > a:hover,
 -------------------------------------------------- */
 	.mapMode #Content{
 		max-width: 100%;
-		padding-top: 44px;
+		padding-top: 57px;
 		padding-left: 0px;
 	}
 
@@ -2401,4 +2400,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metric-modal .metric-chart .bar {
 	stroke: #0E69A1;
+}
+/** Temporary Message */
+.has-temporary-message #Content {
+    padding-top: 114px;
 }

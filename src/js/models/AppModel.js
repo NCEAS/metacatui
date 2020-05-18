@@ -45,6 +45,42 @@ define(['jquery', 'underscore', 'backbone'],
       maxDownloadSize: 3000000000,
 
       /**
+      * Add a message that will display during a certain time period. This is useful when
+      * displaying a warning message about planned outages/maintenance, or alert users to other
+      * important information.
+      * If this attribute is left blank, no message will display, even if there is a start and end time specified.
+      * If there are is no start or end time specified, this message will display until you remove it here.
+      * @type {string}
+      */
+      temporaryMessage: null,
+
+      /**
+      * If there is a temporaryMessage specified, it will display after this start time.
+      * Remember that Dates are in GMT time!
+      * @type {Date}
+      */
+      temporaryMessageStartTime: null,
+
+      /**
+      * If there is a temporaryMessage specified, it will display before this end time.
+      * Remember that Dates are in GMT time!
+      * @type {Date}
+      */
+      temporaryMessageEndTime: null,
+
+      /**
+      * Additional HTML classes to give the temporary message element. Use these to style the message.
+      * @type {string}
+      */
+      temporaryMessageClasses: "warning",
+
+      /**
+      * A jQuery selector for the element that the temporary message will be displayed in.
+      * @type {string}
+      */
+      temporaryMessageContainer: "#Navbar",
+
+      /**
        * Flag which, when true shows Whole Tale features in the UI
        * @type {Boolean}
        */

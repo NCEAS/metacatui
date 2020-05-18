@@ -17,3 +17,16 @@ and (max-width : 480px) {
     display: block !important;
   }
 }
+
+@media only screen and (max-width : 900px) {
+  /* At smaller widths, give more height for the temporary message */
+  .has-temporary-message #Content {
+      padding-top: 135px;
+  }
+}
+@media only screen and (max-width : 500px) {
+  /* At smaller widths, give more height for the temporary message */
+  .has-temporary-message #Content {
+      padding-top: 175px;
+  }
+}

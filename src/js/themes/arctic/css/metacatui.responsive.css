@@ -179,6 +179,12 @@
     margin-left: 25%;
   }
 
+  /** Temporary Message */
+  .has-temporary-message #Content {
+      padding-top: 0px;
+  }
+
+
 }
 
 /* Smartphones (portrait and landscape) ----------- */
