@@ -34,6 +34,12 @@ define(['jquery', 'underscore', 'backbone'],
 
       maxDownloadSize: 3000000000,
 
+      temporaryMessage: null,
+      temporaryMessageStartTime: null,
+      temporaryMessageEndTime: null,
+      temporaryMessageClasses: "warning",
+      temporaryMessageContainer: "#Navbar",
+
       // set this variable to true, if the content being published is moderated by the data team.
       contentIsModerated: false,
 

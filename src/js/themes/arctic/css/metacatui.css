@@ -3038,3 +3038,7 @@ a {
 .downloads-metrics .metric-chart .bar {
    stroke: #146660;
 }
+/** Temporary Message */
+.has-temporary-message #Content {
+    padding-top: 185px;
+}

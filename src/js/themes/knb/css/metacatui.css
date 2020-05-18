@@ -163,6 +163,13 @@
     }
 
 /*
+* Temp Message
+*/
+.has-temporary-message nav#Navbar {
+    margin-top: 72px;
+}
+
+/*
 * Portal View
 */
 .portal-view .toc-ul a{
