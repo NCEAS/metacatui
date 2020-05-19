@@ -1136,7 +1136,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
               // If at least once model to be saved is invalid,
               // or the metadata failed to save, cancel the save.
-              if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
+              if ( !allValid || _.contains(_.map(metadataModels, function(model) {
                     return model.get("uploadStatus");
                   } ), "e") ) {
 
@@ -1145,6 +1145,31 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 this.trigger("cancelSave");
                 return;
 
+              }
+
+              //If we are saving at least one model in this package, then serialize the Resource Map RDF XML
+              if( modelsToBeSaved.length ){
+                try {
+                  //Set a new id and keep our old id
+                  if( !this.packageModel.isNew() ){
+                    //Update the identifier for this object
+                    this.packageModel.updateID();
+                  }
+
+                  //Create the resource map XML
+                  var mapXML = this.serialize();
+                }
+                catch (serializationException) {
+
+                  //If serialization failed, revert back to our old id
+                  this.packageModel.resetID();
+
+                  //Cancel the save and show an error message
+                  this.packageModel.set("changed", false);
+                  this.packageModel.set("uploadStatus", "q");
+                  this.trigger("errorSaving", "There was a Javascript error during the serialization process: " + serializationException);
+                  return;
+                }
               }
 
               //First save all the models of the collection, if needed
@@ -1182,19 +1207,41 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
               if(modelsInProgress.length) return;
             }
+            //If we are saving the resource map object only, and there are changes to save, serialize the RDF XML
+            else if( this.needsUpdate() ){
+              try {
+                //Set a new id and keep our old id
+                if( !this.packageModel.isNew() ){
+                  //Update the identifier for this object
+                  this.packageModel.updateID();
+                }
 
-            //Do we need to update this resource map?
-            if(!this.needsUpdate()) return;
+                //Create the resource map XML
+                var mapXML = this.serialize();
+              }
+              catch (serializationException) {
+
+                //If serialization failed, revert back to our old id
+                this.packageModel.resetID();
+
+                //Cancel the save and show an error message
+                this.packageModel.set("changed", false);
+                this.packageModel.set("uploadStatus", "q");
+                this.trigger("errorSaving", "There was a Javascript error during the serialization process: " + serializationException);
+                return;
+              }
+            }
+            //If we are saving the resource map object only, and there are no changes to save, exit the function
+            else if(!this.needsUpdate()){
+              return;
+            }
 
             //Determine the HTTP request type
             var requestType;
-            //Set a new id and keep our old id
             if(this.packageModel.isNew()){
               requestType = "POST";
             }
             else{
-              //Update the identifier for this object
-              this.packageModel.updateID();
               requestType = "PUT";
             }
 
@@ -1211,20 +1258,20 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               formData.append("pid", this.packageModel.get("oldPid"));
             }
 
-            try {
-              //Create the resource map XML
+            //Do a fresh re-serialization of the RDF XML, in case any pids in the package have changed.
+            //The hope is that any errors during the serialization process have already been caught during the first serialization above
+            try{
               var mapXML = this.serialize();
             }
-            catch (serializationException) {
-
-              //If serialization failed, revert back to our old id
-              this.packageModel.resetID();
-
+            catch(serializationException){
+              //Cancel the save and show an error message
+              this.packageModel.set("changed", false);
+              this.packageModel.set("uploadStatus", "q");
               this.trigger("errorSaving", "There was a Javascript error during the serialization process: " + serializationException);
-
               return;
             }
 
+            //Make a Blob object from the serialized RDF XML
             var mapBlob = new Blob([mapXML], {type : 'application/xml'});
 
             //Get the size of the new resource map

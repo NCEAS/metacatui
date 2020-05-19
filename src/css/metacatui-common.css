@@ -421,6 +421,11 @@ body > .alert-container.important-app-message > .alert{
   margin-bottom: 0px;
   display: grid;
 }
+.temporary-message{
+  margin-bottom: 0px;
+  position: relative;
+}
+
 /******************************************
 ** Icons ***
 ******************************************/

@@ -249,14 +249,14 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
           }
         });
 
-        // Check label availability
-        this.model.checkLabelAvailability(value);
-
         // Show 'checking URL' message
         messageEl.html(
           "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
           "Checking if URL is available"
         );
+
+        // Check label availability
+        this.model.checkLabelAvailability(value);
       }
       catch(error){
         console.log("Error validating the label, error message: " + error);
