@@ -86,7 +86,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 // because render will get called a few times during page load
                 // as the app updates what it knows about the object
                 this.canReplace = this.model.get("accessPolicy") &&
-                    this.model.get("accessPolicy").isAuthorized("changePermission");
+                    this.model.get("accessPolicy").isAuthorized("write");
                 attributes.canReplace = this.canReplace; // Copy to template
 
                 //Get the number of attributes for this item
