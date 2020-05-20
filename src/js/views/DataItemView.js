@@ -53,7 +53,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
-
+                this.canReplace = false; // Default. Updated in render()
             },
 
             /* Render the template into the DOM */
@@ -79,6 +79,15 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 attributes.numAttributes = 0;
                 attributes.entityIsValid = true;
                 attributes.hasInvalidAttribute = false;
+
+                // Restrict item replacement depending on access
+                //
+                // Note: .canReplace is set here (at render) instead of at init
+                // because render will get called a few times during page load
+                // as the app updates what it knows about the object
+                this.canReplace = this.model.get("accessPolicy") &&
+                    this.model.get("accessPolicy").isAuthorized("changePermission");
+                attributes.canReplace = this.canReplace; // Copy to template
 
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
@@ -217,6 +226,15 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                   }
 
                 }
+
+                // Add tooltip to a disabled Replace link
+                $(this.$el).find(".replace.disabled").tooltip({
+                    title: "You don't have sufficient privileges to replace this item.",
+                    placement: "left",
+                    trigger: "hover",
+                    delay: { show: 400 },
+                    container: "body"
+                  });
 
                 //Check if the data package is in progress of being uploaded
                 this.toggleSaving();
@@ -535,6 +553,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             handleReplace: function(event) {
                 event.stopPropagation();
 
+                // Stop immediately if we know the user doesn't have privs
+                if (!this.canReplace) {
+                    event.preventDefault();
+                    return;
+                }
+
                 var fileReplaceElement = $(event.target)
                     .parents(".dropdown-menu")
                     .children(".file-replace")
@@ -565,6 +589,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             replaceFile: function(event) {
                 event.stopPropagation();
                 event.preventDefault();
+
+                if (!this.canReplace) {
+                    return;
+                }
 
                 var fileList = event.target.files;
 

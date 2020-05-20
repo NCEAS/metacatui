@@ -3076,7 +3076,8 @@ img[src*="googleapis.com/"].georegion-map{
 .access-policy-view:not(.modal) .modal-header .close{
   display: none;
 }
-.access-policy-control.disabled{
+.access-policy-control.disabled,
+.replace.disabled {
   cursor: not-allowed;
 }
 .access-policy-view.modal h4{
@@ -6356,6 +6357,9 @@ ul.side-nav-items {
     border-width: 1px;
     border-style: solid;
     margin-top: 6px;
+}
+.data-package-item .dropdown-menu .muted {
+    color: #CCC;
 }
 .data-package-item.error-saving .disable-layer{
 	width: 100%;
