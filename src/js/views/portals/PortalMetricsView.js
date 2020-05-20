@@ -124,11 +124,10 @@ define(["jquery",
             // Create a StatsModel
             var statsModel = new StatsModel({
               query: statsSearchModel.getQuery(),
-              searchModel: statsSearchModel,
-              supportDownloads: false
+              searchModel: statsSearchModel
             });
 
-            
+
             var label_list = [];
             label_list.push(this.model.get("label"));
             var metricsModel = new MetricsModel({pid_list: label_list, type: "portal"});

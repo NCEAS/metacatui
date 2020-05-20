@@ -51,6 +51,12 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     activeSectionLabel: "",
 
     /**
+    * When a new portal is being created, this is the label of the section that will be active when the editor first renders
+    * @type {string}
+    */
+    newPortalDefaultSectionLabel: "Settings",
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -58,6 +64,18 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     // Over-ride the default editor submit message template (which is currently
     // used by the metadata editor) with the portal editor version
     editorSubmitMessageTemplate: _.template(portalEditorSubmitMessageTemplate),
+
+    /**
+    * An array of Backbone Views that are contained in this view.
+    * @type {Backbone.View[]}
+    */
+    subviews: [],
+
+    /**
+    * A reference to the PortEditorSectionsView for this instance of the PortEditorView
+    * @type {PortEditorSectionsView}
+    */
+    sectionsView: null,
 
     /**
     * The text to use in the editor submit button
@@ -108,11 +126,16 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     initialize: function(options){
 
+      //Reset arrays and objects set on this View, otherwise they will be shared across intances, causing errors
+      this.subviews = new Array();
+      this.sectionsView = null;
+      
       if(typeof options == "object"){
         // initializing the PortalEditorView properties
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
         this.activeSectionLabel = options.activeSectionLabel || "";
       }
+
     },
 
     /**
@@ -188,7 +211,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
             if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") ){
               // Start new portals on the settings tab
-              this.activeSectionLabel = "Settings";
+              this.activeSectionLabel = this.newPortalDefaultSectionLabel;
 
               // Render the default model if the portal is new
               this.renderPortalEditor();
@@ -288,6 +311,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         activeSectionLabel: this.activeSectionLabel,
         newPortalTempName: this.newPortalTempName
       });
+
+      //Save the PortEditorSectionsView as a subview
+      this.subviews.push(this.sectionsView);
 
       //Attach a reference to this view
       this.sectionsView.editorView = this;
@@ -734,6 +760,15 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       //Remove the scroll listener
       $(window).off("scroll", "", this.handleScroll);
+
+      //Close and remove all of the subviews
+      _.invoke(this.subviews, "onClose");
+      _.invoke(this.subviews, "remove");
+      //Reset the subviews array
+      this.subviews = new Array();
+
+      //Reset the sectionsView reference
+      this.sectionsView = null;
     },
 
   });

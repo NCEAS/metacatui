@@ -112,9 +112,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(d3){
 				//this.listenTo(this.model, 'change:dataUploadDates',       this.drawUploadChart);
 				this.listenTo(this.model, 'change:temporalCoverage',      this.drawCoverageChart);
-				this.listenTo(this.model, 'change:metadataDownloadDates', this.drawDownloadsChart);
-				this.listenTo(this.model, 'change:dataDownloadDates',     this.drawDownloadsChart);
-				this.listenTo(this.model, 'change:downloadDates',     this.drawDownloadsChart);
 				this.listenTo(this.model, "change:dataUpdateDates",       this.drawUpdatesChart);
 				this.listenTo(this.model, "change:totalSize",             this.drawTotalSize);
 				this.listenTo(this.model, 'change:metadataCount', 	    this.drawTotalCount);
@@ -124,7 +121,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				//this.listenTo(this.model, 'change:dataUploads', 	  this.drawUploadTitle);
 			}
 
-			this.listenTo(this.model, 'change:downloads', 	  this.drawDownloadTitle);
 			this.listenTo(this.model, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
 
@@ -406,18 +402,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 							height: 300,
               width: 380,
 							formatLabel: function(name){
-								if((name !== undefined) && (name.indexOf("//ecoinformatics.org") > -1)){
+								if((name !== undefined) && ((name.indexOf("//ecoinformatics.org") > -1) || (name.indexOf("//eml.ecoinformatics.org") > -1))){
 									//EML - extract the version only
-									if(name.substring(0,4) == "eml:") name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
+									if((name.substring(0,4) == "eml:") || (name.substring(0,6) == "https:")) name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 
 									//EML modules
-									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
+									if((name.indexOf("-//ecoinformatics.org//eml-") > -1) || (name.indexOf("-//eml.ecoinformatics.org//eml-") > -1)) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
 
 								}
 								//Dryad - shorten it
 								else if((name !== undefined) && (name == "http://datadryad.org/profile/v3.1")) name = "Dryad 3.1";
 								//FGDC - just display "FGDC {year}"
 								else if((name !== undefined) && (name.indexOf("FGDC") > -1)) name = "FGDC " + name.substring(name.length-4);
+
+								//Onedcx v1.0
+								else if((name !== undefined) && (name == "http://ns.dataone.org/metadata/schema/onedcx/v1.0")) name = "Onedcx v1.0";
+
+								//GMD-NOAA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-noaa")) name = "GMD-NOAA";
+
+								//GMD-PANGAEA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-pangaea")) name = "GMD-PANGAEA";
 
 								if(name === undefined) name = "";
 								return name;
@@ -738,104 +743,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.$('.data-updates-chart').html(dataLineChart.render().el);
 			}
 
-		},
-
-		/*
-		 * drawDownloadsChart - draws a line chart representing the downloads over time
-		 */
-		drawDownloadsChart: function(){
-			//Only draw the chart once both metadata and data dates have been retrieved
-			//if(!this.model.get("metadataDownloadDates") || !this.model.get("dataDownloadDates")) return;
-
-			if(!this.model.get("downloadDates")) return;
-
-			//Get the width of the chart by using the parent container width
-			var parentEl = this.$('.download-chart');
-			var width = parentEl.width() || null;
-
-			//If there are no download stats, show a message and exit
-			if(!this.model.get('downloads')){
-
-				var msg = "No one has downloaded any of this data or download statistics are not being reported";
-				parentEl.html("<p class='subtle center'>" + msg + ".</p>");
-
-				return;
-			}
-
-			//Set the frequency of our points
-			var frequency = 6;
-
-			//Check which line we should draw first since the scale will be based off the first line
-
-			var options = {
-					data: this.model.get('downloadDates'),
-					formatFromSolrFacetRanges: true,
-					id: "download-chart",
-					yLabel: "all downloads",
-					barClass: "packages",
-					roundedRect: true,
-					roundedRadius: 3,
-					barLabelClass: "packages",
-					width: width
-				};
-
-			var barChart = new BarChart(options);
-			parentEl.html(barChart.render().el);
-
-		},
-
-		//drawDownloadTitle will draw a circle badge title for the downloads time series chart
-		drawDownloadTitle: function(){
-
-			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
-			if(!d3){
-				this.$('#downloads-title').html("<h2 class='packages fallback'>" + MetacatUI.appView.commaSeparateNumber(this.model.get('downloads')) + "</h2>");
-
-				return;
-			}
-
-			//If there are 0 downloads, draw a default/blank chart title
-			if(!this.model.get('downloads')){
-				var downloadChartTitle = new CircleBadge({
-					id: "download-chart-title",
-					className: this.model.get("totalUploads") ? "default" : "no-activity",
-					globalR: 60,
-					data: [{ count: 0, label: "downloads" }]
-				});
-
-				this.$('#downloads-title').html(downloadChartTitle.render().el);
-
-				this.listenToOnce(this.model, "change:totalUploads", this.drawDownloadTitle);
-
-				return;
-			}
-
-			//Get information for our download chart title
-			var titleChartData = [],
-				metadataDownloads = this.model.get("metadataDownloads"),
-				dataDownloads = this.model.get("dataDownloads"),
-				metadataClass = "metadata",
-				dataClass = "data";
-
-			if(metadataDownloads == 0) metadataClass = "default";
-			if(dataDownloads == 0) dataClass = "default";
-
-
-			var titleChartData = [
-			                      {count: this.model.get("metadataDownloads"), label: "metadata", className: metadataClass},
-							      {count: this.model.get("dataDownloads"), 	   label: "data", 	  className: dataClass}
-								 ];
-
-			//Draw the download chart title
-			var downloadChartTitle = new CircleBadge({
-				id: "download-chart-title",
-				data: titleChartData,
-				className: "chart-title",
-				useGlobalR: true,
-				globalR: 60
-			});
-
-			this.$('#downloads-title').html(downloadChartTitle.render().el);
 		},
 
 		//Draw a bar chart for the temporal coverage

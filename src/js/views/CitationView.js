@@ -16,8 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       this.model     = options.model    || null;
       this.metadata   = options.metadata   || null;
       this.title      = options.title      || null;
-      this.createLink = (options.createLink == false) ? false : true;
-      this.createTitleLink = (options.createLink == false) ? false : true;
+      this.createLink = (options.createLink === false) ? false : true;
+      this.createTitleLink = (options.createTitleLink === false) ? false : true;
 
       //If a metadata doc was passed but no data or package model, then save the metadata as our model, too
       if(!this.model && this.metadata) this.model = this.metadata;
@@ -271,8 +271,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       }
 
       if(this.model.type == "CitationModel") {
-        var idEl = $(document.createElement("span")).addClass("id");
-        idEl.append(sourceUrl, $(document.createElement("span")).text(". "));
+        // displaying decoded source url
+        var idEl = $(document.createElement("span")).addClass("publisher-id");
+        idEl.append(decodeURIComponent(sourceUrl), $(document.createElement("span")).text(". "));
       }
       else {
         //The ID
@@ -290,10 +291,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
           title = title.trim() + " ";
 
         if(this.model.type == "CitationModel") {
-          var titleEl = $(document.createElement("span"))
-                        .addClass("title")
-                        .attr("data-id", sourceId)
-                        .text(title);
+          // Appending the title as a link
+          var titleEl = $(document.createElement("a"))
+                        .addClass("metrics-route-to-metadata")
+                        .attr("data-id", id)
+                        .attr("href", sourceUrl)
+                        .attr("target", "_blank")
+                        .append(title);
         }
         else {
           var titleEl = $(document.createElement("span"))
@@ -351,12 +355,10 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
           }
 
-          var linkEl = $(document.createElement("a"))
-                  .addClass("metrics-route-to-metadata")
-                  .attr("data-id", id)
-                  .attr("href", sourceUrl)
-                  .attr("target", "_blank")
+          // creating citation display string
+          var linkEl = $(document.createElement("span"))
                   .append(authorEl, pubDateEl, titleEl, publisherEl, volumeEl, pageEl, idEl);
+                            
         }
         else {
 
@@ -372,6 +374,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
         // Only append the citation link when we have non-zero datasets
         // Append the cited dataset text to the link element
         if ( datasetLinkEl !== "undefined" && citationMetadataCounter > 0) {
+          // Displaying the cites data on the new line
+          this.$el.append("<br>");
           this.$el.append(datasetLinkEl);
         }
       }
