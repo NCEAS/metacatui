@@ -98,7 +98,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 		// Certain functionalities are disabled from the portal view
 		renderNodeProfile: function(username) {
 			var view = this;
-			var memberNodeID = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier));
+			var memberNodeID = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(view.model.get("nodeInfo").identifier));
 
 			// Creating  new portal model
 			this.portalModel = new Portal({
@@ -160,7 +160,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				//Is this a member node?
 				if(MetacatUI.nodeModel.get("checked") && this.model.isNode()){
 					this.model.saveAsNode();
-					this.model.set("nodeInfo", _.findWhere(MetacatUI.nodeModel.get("members"), { identifier: "urn:node:" + username }));
+					this.model.set("nodeInfo", _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+						return nodeModel.identifier.toLowerCase() == "urn:node:" + username.toLowerCase();
+					  }));
 					this.renderNodeProfile(username);
 					return;
 				}

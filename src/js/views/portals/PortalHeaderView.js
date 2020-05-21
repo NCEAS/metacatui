@@ -66,7 +66,10 @@ define(["jquery",
         insertMemberSinceStat: function(){
 
           //Get the member node object
-          var node = _.findWhere(MetacatUI.nodeModel.get("members"), {identifier: "urn:node:" + this.model.get("label") });
+          var view = this;
+          var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+						return nodeModel.identifier.toLowerCase() == "urn:node:" + (view.model.get("label")).toLowerCase();
+            });
 
           //If there is no memberSince date, then hide this statistic and exit
           if( !node.memberSince ){
