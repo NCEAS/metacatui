@@ -4751,6 +4751,8 @@ address.email-container:before{
 }
 .profile .charts{
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 .profile .chart{
 	float: left;

@@ -1189,7 +1189,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	margin-left: auto;
   	margin-right: auto;
   	clear: both;
-  	padding: 20px;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
   }
 
   .profile .stripe{

@@ -1642,7 +1642,9 @@ section.user-view-section > .section.active {
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	clear: both;
+	clear: both;
+	display: flex;
+	justify-content: center;
 }
 .stripe{
 	min-height: 350px;
