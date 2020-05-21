@@ -413,7 +413,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     }
                 } else {
                     this.model.set("fileName", enteredText);
-                    this.model.set("hasContentChanges");
+
+                    // Reset sysMetaUploadStatus only if this item doesn't
+                    // have content changes. This is here because replaceFile
+                    // sets sysMetaUploadStatus to "c" to prevent the editor
+                    // from updating sysmeta after the update call
+                    if (!this.model.get("hasContentChanges")) {
+                        this.model.set("sysMetaUploadStatus", null);
+                    }
                 }
             },
 
