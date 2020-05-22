@@ -1972,6 +1972,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         });
 
+        //Remove Unicode characters that are not valid XML characters
+        //Create a regular expression that matches any character that is not a valid XML character
+        // (see https://www.w3.org/TR/xml/#charsets)
+        var invalidCharsRegEx = /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/g;
+        textString = textString.replace(invalidCharsRegEx, "");
+
         return textString;
 
       },
