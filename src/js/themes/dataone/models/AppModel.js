@@ -273,7 +273,7 @@ define(['jquery', 'underscore', 'backbone'],
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}
       */
-      showMyPortals: false,
+      showMyPortals: true,
       /**
       * The user-facing term for portals in lower-case and in singular form.
       * e.g. "portal"

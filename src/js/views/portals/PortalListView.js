@@ -193,7 +193,7 @@ define(["jquery",
               var logo = "";
               if( searchResult.get("logo") ){
                 if( !searchResult.get("logo").startsWith("http") ){
-                  searchResult.set("logo", MetacatUI.appModel.get("objectServiceUrl") + searchResult.get("logo"));
+                  searchResult.set("logo", MetacatUI.appModel.get("resolveServiceUrl") + searchResult.get("logo"));
                 }
                 logo = $(document.createElement("img")).attr("src", searchResult.get("logo"));
               }
