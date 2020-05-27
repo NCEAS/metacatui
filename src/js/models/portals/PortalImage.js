@@ -51,7 +51,7 @@ define(["jquery",
           modelJSON.identifier = $objectDOM.children("identifier").text();
           if( modelJSON.identifier ){
             if( modelJSON.identifier.substring(0, 4) !== "http" ){
-              modelJSON.imageURL = MetacatUI.appModel.get("objectServiceUrl") + modelJSON.identifier;
+              modelJSON.imageURL = MetacatUI.appModel.get("resolveServiceUrl") + modelJSON.identifier;
             }
             else{
               modelJSON.imageURL = modelJSON.identifier;
