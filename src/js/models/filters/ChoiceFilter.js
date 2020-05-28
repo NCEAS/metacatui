@@ -35,7 +35,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       });
     },
 
-    /*
+    /**
     * Parses the choiceFilter XML node into JSON
     *
     * @param {Element} xml - The XML Element that contains all the ChoiceFilter elements

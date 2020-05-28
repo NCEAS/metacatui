@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone'],
     defaults: {
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
+      repositoryName: "Arctic Data Center",
 
       emailContact: "support@arcticdata.io",
 
@@ -32,6 +33,12 @@ define(['jquery', 'underscore', 'backbone'],
       profileUsername: null,
 
       maxDownloadSize: 3000000000,
+
+      temporaryMessage: null,
+      temporaryMessageStartTime: null,
+      temporaryMessageEndTime: null,
+      temporaryMessageClasses: "warning",
+      temporaryMessageContainer: "#Navbar",
 
       /**
        * Flag which, when true shows Whole Tale features in the UI
@@ -147,7 +154,14 @@ define(['jquery', 'underscore', 'backbone'],
       //signInUrl: null,
       signOutUrl: null,
       signInUrlOrcid: null,
-      //signInUrlLdap: null,
+      /**
+      * Enable DataONE LDAP authentication. If true, users can sign in from an LDAP account that is in the DataONE CN LDAP directory.
+      * This is not recommended, as DataONE is moving towards supporting only ORCID logins for users.
+      * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
+      * @type {boolean}
+      */
+      enableLdapSignIn: false,
+      signInUrlLdap: null,
       tokenUrl: null,
 
       mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
@@ -165,7 +179,7 @@ define(['jquery', 'underscore', 'backbone'],
       // Metrics Falgs for the /profile view (summary view)
       hideSummaryCitationsChart: false,
       hideSummaryDownloadsChart: false,
-      hideSummaryMetadataAssessment: false,
+      hideSummaryMetadataAssessment: true,
       hideSummaryViewsChart: false,
 
       // Metrics flags for the Dataset Landing Page
@@ -199,6 +213,23 @@ define(['jquery', 'underscore', 'backbone'],
       hideMetricsWhen: null,
 
       isJSONLDEnabled: true,
+
+      /**
+      * If true, users can see a "Publish" button in the MetadataView, which makes the metadata
+      * document public and gives it a DOI identifier.
+      * If false, the button will be hidden completely.
+      * @type {boolean}
+      */
+      enablePublishDOI: false,
+
+      /**
+      * A list of users or groups who exclusively will be able to see and use the "Publish" button,
+      * which makes the metadata document public and gives it a DOI identifier.
+      * Anyone not in this list will not be able to see the Publish button.
+      * `enablePublishDOI` must be set to `true` for this to take effect.
+      * @type {string[]}
+      */
+      enablePublishDOIForSubjects: [],
 
       /**
       * Semantic annotation configuration
@@ -341,7 +372,71 @@ define(['jquery', 'underscore', 'backbone'],
       * Limits only the following people or groups to create new portals.
       * @type {string[]}
       */
-      limitPortalsToSubjects: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+      limitPortalsToSubjects: [],
+
+      /**
+      * The list of labels that should be blacklisted while 
+      * @type {string[]}
+      */
+      portalLabelBlacklist: [
+        'urn:node:CN', 'CN', 'cn',
+        'urn:node:CNUNM1', 'CNUNM1', 'cn-unm-1',
+        'urn:node:CNUCSB1', 'CNUCSB1', 'cn-ucsb-1',
+        'urn:node:CNORC1', 'CNORC1', 'cn-orc-1',
+        'urn:node:KNB', 'KNB', 'KNB Data Repository',
+        'urn:node:ESA', 'ESA', 'ESA Data Registry',
+        'urn:node:SANPARKS', 'SANPARKS', 'SANParks Data Repository',
+        'urn:node:ORNLDAAC', 'ORNLDAAC', 'ORNL DAAC',
+        'urn:node:LTER', 'LTER', 'U.S. LTER Network',
+        'urn:node:CDL', 'CDL', 'UC3 Merritt',
+        'urn:node:PISCO', 'PISCO', 'PISCO MN',
+        'urn:node:ONEShare', 'ONEShare', 'ONEShare DataONE Member Node',
+        'urn:node:mnORC1', 'mnORC1', 'DataONE ORC Dedicated Replica Server',
+        'urn:node:mnUNM1', 'mnUNM1', 'DataONE UNM Dedicated Replica Server',
+        'urn:node:mnUCSB1', 'mnUCSB1', 'DataONE UCSB Dedicated Replica Server',
+        'urn:node:TFRI', 'TFRI', 'TFRI Data Catalog',
+        'urn:node:USANPN', 'USANPN', 'USA National Phenology Network',
+        'urn:node:SEAD', 'SEAD', 'SEAD Virtual Archive',
+        'urn:node:GOA', 'GOA', 'Gulf of Alaska Data Portal',
+        'urn:node:KUBI', 'KUBI', 'University of Kansas - Biodiversity Institute',
+        'urn:node:LTER_EUROPE', 'LTER_EUROPE', 'LTER Europe Member Node',
+        'urn:node:DRYAD', 'DRYAD', 'Dryad Digital Repository',
+        'urn:node:CLOEBIRD', 'CLOEBIRD', 'Cornell Lab of Ornithology - eBird',
+        'urn:node:EDACGSTORE', 'EDACGSTORE', 'EDAC Gstore Repository',
+        'urn:node:IOE', 'IOE', 'Montana IoE Data Repository',
+        'urn:node:US_MPC', 'US_MPC', 'Minnesota Population Center',
+        'urn:node:EDORA', 'EDORA', 'Environmental Data for the Oak Ridge Area (EDORA)',
+        'urn:node:RGD', 'RGD', 'Regional and Global biogeochemical dynamics Data (RGD)',
+        'urn:node:GLEON', 'GLEON', 'GLEON Data Repository',
+        'urn:node:IARC', 'IARC', 'IARC Data Archive',
+        'urn:node:NMEPSCOR', 'NMEPSCOR', 'NM EPSCoR Tier 4 Node',
+        'urn:node:TERN', 'TERN', 'TERN Australia',
+        'urn:node:NKN', 'NKN', 'Northwest Knowledge Network',
+        'urn:node:USGS_SDC', 'USGS_SDC', 'USGS Science Data Catalog',
+        'urn:node:NRDC', 'NRDC', 'NRDC DataONE member node',
+        'urn:node:NCEI', 'NCEI', 'NOAA NCEI Environmental Data Archive',
+        'urn:node:PPBIO', 'PPBIO', 'PPBio',
+        'urn:node:NEON', 'NEON', 'NEON Member Node',
+        'urn:node:TDAR', 'TDAR', 'The Digital Archaeological Record',
+        'urn:node:ARCTIC', 'ARCTIC', 'Arctic Data Center',
+        'urn:node:BCODMO', 'BCODMO', 'Biological and Chemical Oceanography Data Management Office (BCO-DMO) ',
+        'urn:node:GRIIDC', 'GRIIDC', 'Gulf of Mexico Research Initiative Information and Data Cooperative (GRIIDC)',
+        'urn:node:R2R', 'R2R', 'Rolling Deck to Repository (R2R)',
+        'urn:node:EDI', 'EDI', 'Environmental Data Initiative',
+        'urn:node:UIC', 'UIC', 'A Member Node for University of Illinois at Chicago.',
+        'urn:node:RW', 'RW', 'Research Workspace',
+        'urn:node:FEMC', 'FEMC', 'Forest Ecosystem Monitoring Cooperative Member Node',
+        'urn:node:OTS_NDC', 'OTS_NDC', 'Organization for Tropical Studies - Neotropical Data Center',
+        'urn:node:PANGAEA', 'PANGAEA', 'PANGAEA',
+        'urn:node:ESS_DIVE', 'ESS_DIVE', 'ESS-DIVE: Deep Insight for Earth Science Data',
+        'urn:node:CAS_CERN', 'CAS_CERN', 'Chinese Ecosystem Research Network (CERN)',
+        'urn:node:FIGSHARE_CARY', 'FIGSHARE_CARY', 'Cary Institute of Ecosystem Studies (powered by Figshare)',
+        'urn:node:IEDA_EARTHCHEM', 'IEDA_EARTHCHEM', 'IEDA EARTHCHEM',
+        'urn:node:IEDA_USAP', 'IEDA_USAP', 'IEDA USAP',
+        'urn:node:IEDA_MGDL', 'IEDA_MGDL', 'IEDA MGDL',
+        'urn:node:METAGRIL', 'METAGRIL', 'metaGRIL',
+        'urn:node:ARM', 'ARM', 'ARM - Atmospheric Radiation Measurement Research Facility'
+      ],
 
       /**
       * This message will display when a user tries to create a new Portal in the PortalEditor
@@ -570,8 +665,11 @@ define(['jquery', 'underscore', 'backbone'],
         }
         if(typeof this.get("signInUrlOrcid") !== "undefined")
           this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
-        if(typeof this.get("signInUrlLdap") !== "undefined")
+
+        if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
           this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+        }
+
         if(this.get('orcidBaseUrl'))
           this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
         if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))

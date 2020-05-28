@@ -22,9 +22,9 @@
 		    <span class="sr-only">Under review</span>
 		  </div>
 		</div>
-		
-		<a class="btn btn-primary btn-large center" href="<%= MetacatUI.root %>/view/<%=id%>">View your data set</a>	
-	
+
+		<a class="btn btn-primary btn-large center" href="<%= MetacatUI.root %>/view/<%= encodeURIComponent(id) %>">View your data set</a>
+
 	<% } else if(status == "error"){ %>
 	
 		<h1>Thank you for your submission</h1>

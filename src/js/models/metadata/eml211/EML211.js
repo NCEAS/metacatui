@@ -1508,7 +1508,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         var model = this,
           fetchOptions = _.extend({
-            url: MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+            url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
             dataType: "text",
             success: function(response){
               model.set(DataONEObject.prototype.parse.call(model, response));
@@ -1777,6 +1777,82 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }, this);
       },
 
+      /**
+       * Attempt to move a party one index forward within its sibling models
+       *
+       * @param {EMLParty} partyModel: The EMLParty model we're moving
+       */
+      movePartyUp: function(partyModel) {
+        var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+
+        // Iterate over each possible attribute
+        _.each(possibleAttr, function(attr){
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          var models = _.clone(this.get(attr));
+
+          // Find the index of the model we're moving
+          var index = _.findIndex(models, function(m) {
+            return m === partyModel;
+          });
+
+          if (index === 0) {
+            // Already first
+            return;
+          }
+
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
+
+          // Do the move using splice and update the model
+          models.splice(index - 1, 0, models.splice(index, 1)[0])
+          this.set(attr, models);
+          this.trigger("change:" + attr);
+        }, this);
+      },
+
+      /**
+       * Attempt to move a party one index forward within its sibling models
+       *
+       * @param {EMLParty} partyModel: The EMLParty model we're moving
+       */
+      movePartyDown: function(partyModel) {
+        var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+
+        // Iterate over each possible attribute
+        _.each(possibleAttr, function(attr){
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          var models = _.clone(this.get(attr));
+
+          // Find the index of the model we're moving
+          var index = _.findIndex(models, function(m) {
+            return m === partyModel;
+          });
+
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
+
+          // Figure out where to put the new model
+          //   Leave it in the same place if the next index doesn't exist
+          //   Move one forward if it does
+          var newIndex = (models.length <= index + 1) ? index : index + 1;
+
+          // Do the move using splice and update the model
+          models.splice(newIndex, 0, models.splice(index, 1)[0])
+          this.set(attr, models);
+          this.trigger("change:" + attr);
+        }, this);
+      },
+
       /*
       * Adds the given EMLParty model to this EML211 model in the
       * appropriate role array in the given position
@@ -1895,6 +1971,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           textString = textString.replace(xmlNode, tagName);
 
         });
+
+        //Remove Unicode characters that are not valid XML characters
+        //Create a regular expression that matches any character that is not a valid XML character
+        // (see https://www.w3.org/TR/xml/#charsets)
+        var invalidCharsRegEx = /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/g;
+        textString = textString.replace(invalidCharsRegEx, "");
 
         return textString;
 

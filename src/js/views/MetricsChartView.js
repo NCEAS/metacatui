@@ -489,9 +489,11 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         // show UI elements only once user is able to interact with them.
         setTimeout(function(){
 
-          	// add behaviours
+            // disable the zoom behavior on wheel zoom event
+            // add behaviours
           	pane.call(zoom)
-          		.call(change_focus_zoom);
+                .call(change_focus_zoom)
+                .on("wheel.zoom", null);
           	zoom.x(x);
 
           	vis.selectAll(".scale_button")
@@ -629,21 +631,22 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         function show_tooltip(d) {
 
-            var bar_width_px = bar_width * get_zoom_scale();
-
             if (self.viewType === "dataset") {
+
+              var bar_width_px = bar_width * get_zoom_scale();
+
               // get the width of the modal. Need for tooltip x-position.
               var modal_width = d3.select("#metric-modal")
                   .style('width')
                   .slice(0, -2);
               var modal_width = Math.round(Number(modal_width));
 
-              d3.select("metric_tooltip")
+              d3.select(".metric_tooltip")
                   .html("<b>" + display_date_format(d.month) + "</b><br/>"  + d.count + " " + convert_metric_name(d.count))
                   .style("left", (x(d.month) + (modal_width-(width + margin.left + margin.right)) + (bar_width_px/2) - (tooltip_width/2) + "px"))//) + 300 + ((width/dataset.length) * 0.5 * get_zoom_scale())) + "px")
                   .style("top", (y(d.count) + 19) + "px");
 
-              d3.select("metric_tooltip")
+              d3.select(".metric_tooltip")
                   .transition()
                   .duration(60)
                   .style("opacity", 0.98);
@@ -663,7 +666,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         function hide_tooltip(d) {
           if (self.viewType === "dataset") {
-            d3.select("metric_tooltip")
+            d3.select(".metric_tooltip")
                 .transition()
                 .duration(60)
                 .style("opacity", 0);

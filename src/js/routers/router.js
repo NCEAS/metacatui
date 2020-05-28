@@ -366,7 +366,12 @@ function ($, _, Backbone) {
         this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);
       }
       else{
-        this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        if( !portalIdentifier ){
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural"));
+        }
+        else{
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        }
       }
 
       require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
@@ -379,6 +384,8 @@ function ($, _, Backbone) {
     },
 
 		renderMetadata: function (pid) {
+			pid = decodeURIComponent(pid);
+
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
 

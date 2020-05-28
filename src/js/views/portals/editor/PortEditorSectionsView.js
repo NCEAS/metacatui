@@ -157,6 +157,10 @@ function(_, $, Backbone, Portal, PortalSection,
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
+      //Reset arrays and objects set on this View, otherwise they will be shared across intances, causing errors
+      this.subviews = new Array();
+      this.editorView = null;
+
       // Get all the options and apply them to this view
       if (options) {
           var optionKeys = Object.keys(options);
@@ -566,28 +570,43 @@ function(_, $, Backbone, Portal, PortalSection,
 
     /**
      * Update the window location path with the active section name
-     * @param {boolean} [showSectionLabel] - If true, the section label will be added to the path
+     * @param {boolean} [showSectionLabel] - If true, the editor section label will be added to the path
     */
     updatePath: function(showSectionLabel){
 
-      var label         = this.model.get("label") || this.newPortalTempName,
-          originalLabel = this.model.get("originalLabel") || this.newPortalTempName,
+      //Get the current portal label
+      var label         = this.model.get("label") || "",
+      //Get the last-saved portal label
+          originalLabel = this.model.get("originalLabel") || "",
+      //Get the current path from the window location
           pathName      = decodeURIComponent(window.location.pathname)
                           .substring(MetacatUI.root.length)
                           // remove trailing forward slash if one exists in path
                           .replace(/\/$/, "");
 
-      // Add or replace the label and section part of the path with updated values.
+      // Add or replace the label part of the path with the new label.
       // pathRE matches "/label/section", where the "/section" part is optional
       var pathRE = new RegExp("\\/(" + label + "|" + originalLabel + ")(\\/[^\\/]*)?$", "i");
-      newPathName = pathName.replace(pathRE, "") + "/" + label;
+      newPathName = pathName.replace(pathRE, "");
 
+      //If there is a label, add it to the new path.
+      // (there will always be a label unless this is a new portal)
+      if( label ){
+        newPathName += "/" + label;
+      }
+
+      //If there is an active section, and the showSectionLabel parameter is true, add the section label to the path.
       if( showSectionLabel && this.activeSection ){
         newPathName += "/" + this.activeSection.uniqueSectionLabel;
       }
 
-      // Update the window location
-      MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
+      //If the path has changed, navigate to the new path, which creates a record in the browser history
+      if( pathName != newPathName ){
+        // Update the window location
+        MetacatUI.uiRouter.navigate( newPathName, {
+          trigger: false
+        });
+      }
 
     },
 
@@ -712,7 +731,9 @@ function(_, $, Backbone, Portal, PortalSection,
         };
       });
 
-      //Update the location path with the new section name
+      //Never show the section label in the URL, since it messes with the back/forward browser navigation. See #1364
+      showSectionLabelInURL = false;
+      //Update the location path
       this.updatePath(showSectionLabelInURL);
 
     },
@@ -1310,8 +1331,12 @@ function(_, $, Backbone, Portal, PortalSection,
 
         //If this section is an object of PortalSection model, update the label.
         if( section && PortalSection.prototype.isPrototypeOf(section) ){
+
+          //Clean up the typed in name so it's valid for XML
+          var label = this.model.cleanXMLText(targetLink.text().trim());
+
           // update the label on the model
-          section.set("label", targetLink.text().trim());
+          section.set("label", label);
         }
         else {
           // TODO: handle the case for non-markdown sections
@@ -1374,6 +1399,9 @@ function(_, $, Backbone, Portal, PortalSection,
         _.invoke(this.subviews, "remove");
 
         this.subviews = new Array();
+
+        //Remove the reference to the EditorView
+        this.editorView = null;
     }
 
   });

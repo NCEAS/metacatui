@@ -189,7 +189,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         var container = this.$(".label-container"),
             input = container.find('input'),
             messageEl = container.find('.notification'),
-            value = input.val(),
+            value = this.model.cleanXMLText(input.val()),
             model = this.model;
 
         //If the label is unchanged, remove the validation messaging and exit
@@ -249,14 +249,14 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
           }
         });
 
-        // Check label availability
-        this.model.checkLabelAvailability(value);
-
         // Show 'checking URL' message
         messageEl.html(
           "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
           "Checking if URL is available"
         );
+
+        // Check label availability
+        this.model.checkLabelAvailability(value);
       }
       catch(error){
         console.log("Error validating the label, error message: " + error);

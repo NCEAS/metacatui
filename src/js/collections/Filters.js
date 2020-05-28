@@ -142,6 +142,10 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               if( completeQuery.length && idFilterQuery.length ){
                 completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
               }
+              //If the query is ONLY made of id filters, then the id filter query is the complete query
+              else if( !completeQuery.length && idFilterQuery.length ){
+                completeQuery = idFilterQuery;
+              }
 
               //Return the completed query
               return completeQuery;

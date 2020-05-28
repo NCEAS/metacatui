@@ -756,8 +756,10 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				return;
 
 			}
-			//The EMLParty must have either an organization name, position name, or surname. It must ALSO have a type or role.
-			else if ( !this.get("organizationName") && !this.get("positionName") &&
+
+			//The EMLParty must have either an organization name, position name, or surname.
+      // It must ALSO have a type or role.
+			if ( !this.get("organizationName") && !this.get("positionName") &&
 					(!this.get("individualName") || !surName ) ){
 
 				return {
@@ -768,7 +770,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
 			}
 			//If there is a first name and no last name, then this is not a valid individualName
-			else if( givenName.length && !surName ){
+			else if( (givenName.length && !surName) && this.get("organizationName") && this.get("positionName") ){
 
 				return { surName: "Provide a last name." }
 

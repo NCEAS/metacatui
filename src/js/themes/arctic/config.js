@@ -11,7 +11,6 @@ MetacatUI.themeMap =
 		'templates/altHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/altHeader.html',
 		'templates/defaultHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
 		'templates/userProfileMenu.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/userProfileMenu.html',
-		'templates/publishDOI.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/publishDOI.html',
 		'templates/resultsItem.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/resultsItem.html',
 		'templates/noResults.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/noResults.html',
 		'templates/loginButtons.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/loginButtons.html',

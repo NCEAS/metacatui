@@ -1060,8 +1060,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
             return DataONEObject.parseSysMeta.call(this, arguments[0]);
           },
 
-          /*
+          /**
            * Overwrite the Backbone.Collection.sync() function to set custom options
+           * @param {Object} [options] - Options for this DataPackage save
+           * @param {Boolean} [options.sysMetaOnly] - If true, only the system metadata of this Package will be saved.
+           * @param {Boolean} [options.resourceMapOnly] - If true, only the Resource Map/Package object will be saved. Metadata and Data objects aggregated by the package will be skipped.
            */
           save: function(options){
 
@@ -1087,233 +1090,281 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               return;
             }
 
-            //Sort the models in the collection so the metadata is saved first
-            var metadataModels   = this.where({ type: "Metadata" });
-            var dataModels       = _.difference(this.models, metadataModels);
-            var sortedModels     = _.union(metadataModels, dataModels);
-            var modelsInProgress = _.filter(sortedModels, function(m){
-              return (m.get("uploadStatus") == "p" || m.get("sysMetaUploadStatus") == "p");
-            });
-            var modelsToBeSaved  = _.filter(sortedModels, function(m){
-              //Models should be saved if they are in the save queue, had an error saving earlier,
-              //or they are Science Metadata model that is NOT already in progress
-              return (
-                  (m.get("type") == "Metadata" && m.get("uploadStatus") == "q") ||
-                  (m.get("type") == "Data" && m.get("hasContentChanges")) ||
-                  (m.get("type") == "Metadata" &&
-                      m.get("uploadStatus") != "p" &&
-                      m.get("uploadStatus") != "c" &&
-                      m.get("uploadStatus") != "e" &&
-                      m.get("uploadStatus") !== null))
+            if( options.resourceMapOnly !== true ){
+
+              //Sort the models in the collection so the metadata is saved first
+              var metadataModels   = this.where({ type: "Metadata" });
+              var dataModels       = _.difference(this.models, metadataModels);
+              var sortedModels     = _.union(metadataModels, dataModels);
+              var modelsInProgress = _.filter(sortedModels, function(m){
+                return (m.get("uploadStatus") == "p" || m.get("sysMetaUploadStatus") == "p");
               });
-            //Get an array of data objects whose system metaata should be updated.
-            var sysMetaToUpdate = _.reject(dataModels, function(m){
-              //Find models that don't have any content changes to save,
-              // and whose system metadata is not already saving
-              return (m.get("hasContentChanges") || m.get("sysMetaUploadStatus") == "p" ||
-                      m.get("sysMetaUploadStatus") == "c" || m.get("sysMetaUploadStatus") == "e");
-            });
+              var modelsToBeSaved  = _.filter(sortedModels, function(m){
+                //Models should be saved if they are in the save queue, had an error saving earlier,
+                //or they are Science Metadata model that is NOT already in progress
+                return (
+                    (m.get("type") == "Metadata" && m.get("uploadStatus") == "q") ||
+                    (m.get("type") == "Data" && m.get("hasContentChanges")) ||
+                    (m.get("type") == "Metadata" &&
+                        m.get("uploadStatus") != "p" &&
+                        m.get("uploadStatus") != "c" &&
+                        m.get("uploadStatus") != "e" &&
+                        m.get("uploadStatus") !== null))
+                });
+              //Get an array of data objects whose system metaata should be updated.
+              var sysMetaToUpdate = _.reject(dataModels, function(m){
+                //Find models that don't have any content changes to save,
+                // and whose system metadata is not already saving
+                return (m.get("hasContentChanges") || m.get("sysMetaUploadStatus") == "p" ||
+                        m.get("sysMetaUploadStatus") == "c" || m.get("sysMetaUploadStatus") == "e");
+              });
 
-            //First quickly validate all the models before attempting to save any
-            var allValid = _.every(modelsToBeSaved, function(m) {
+              //First quickly validate all the models before attempting to save any
+              var allValid = _.every(modelsToBeSaved, function(m) {
+                if( m.isValid() ){
+                  m.trigger("valid");
+                  return true;
+                }
+                else{
+                  return false;
+                }
+              });
 
-            if( m.isValid() ){
-              m.trigger("valid");
-              return true;
+              // If at least once model to be saved is invalid,
+              // or the metadata failed to save, cancel the save.
+              if ( !allValid || _.contains(_.map(metadataModels, function(model) {
+                    return model.get("uploadStatus");
+                  } ), "e") ) {
+
+                this.packageModel.set("changed", false);
+                this.packageModel.set("uploadStatus", "q");
+                this.trigger("cancelSave");
+                return;
+
+              }
+
+              //If we are saving at least one model in this package, then serialize the Resource Map RDF XML
+              if( modelsToBeSaved.length ){
+                try {
+                  //Set a new id and keep our old id
+                  if( !this.packageModel.isNew() ){
+                    //Update the identifier for this object
+                    this.packageModel.updateID();
+                  }
+
+                  //Create the resource map XML
+                  var mapXML = this.serialize();
+                }
+                catch (serializationException) {
+
+                  //If serialization failed, revert back to our old id
+                  this.packageModel.resetID();
+
+                  //Cancel the save and show an error message
+                  this.packageModel.set("changed", false);
+                  this.packageModel.set("uploadStatus", "q");
+                  this.trigger("errorSaving", "There was a Javascript error during the serialization process: " + serializationException);
+                  return;
+                }
+              }
+
+              //First save all the models of the collection, if needed
+              _.each(modelsToBeSaved, function(model){
+                //If the model is saved successfully, start this save function again
+                this.stopListening(model, "successSaving", this.save);
+                this.listenToOnce(model, "successSaving", this.save);
+
+                //If the model fails to save, start this save function
+                this.stopListening(model, "errorSaving", this.save);
+                this.listenToOnce(model, "errorSaving", this.save);
+
+                //If the model fails to save, start this save function
+                this.stopListening(model, "cancelSave", this.save);
+                this.listenToOnce(model,  "cancelSave", this.save);
+
+                //Save the model and watch for fails
+                model.save();
+
+                //Add it to the list of models in progress
+                modelsInProgress.push(model);
+
+              }, this);
+
+              //Save the system metadata of all the Data objects
+              _.each(sysMetaToUpdate, function(dataModel){
+                //When the sytem metadata has been saved, save this resource map
+                this.listenTo(dataModel, "sysMetaUpdated", this.save);
+                //Update the system metadata
+                dataModel.updateSysMeta();
+                //Add it to the list of models in progress
+                modelsInProgress.push(dataModel);
+              }, this);
+
+              //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
+              if(modelsInProgress.length) return;
+            }
+            //If we are saving the resource map object only, and there are changes to save, serialize the RDF XML
+            else if( this.needsUpdate() ){
+              try {
+                //Set a new id and keep our old id
+                if( !this.packageModel.isNew() ){
+                  //Update the identifier for this object
+                  this.packageModel.updateID();
+                }
+
+                //Create the resource map XML
+                var mapXML = this.serialize();
+              }
+              catch (serializationException) {
+
+                //If serialization failed, revert back to our old id
+                this.packageModel.resetID();
+
+                //Cancel the save and show an error message
+                this.packageModel.set("changed", false);
+                this.packageModel.set("uploadStatus", "q");
+                this.trigger("errorSaving", "There was a Javascript error during the serialization process: " + serializationException);
+                return;
+              }
+            }
+            //If we are saving the resource map object only, and there are no changes to save, exit the function
+            else if(!this.needsUpdate()){
+              return;
+            }
+
+            //Determine the HTTP request type
+            var requestType;
+            if(this.packageModel.isNew()){
+              requestType = "POST";
             }
             else{
-              return false;
+              requestType = "PUT";
             }
 
-          });
+            //Create a FormData object to send data with the XHR
+            var formData = new FormData();
 
-          // If at least once model to be saved is invalid,
-          // or the metadata failed to save, cancel the save.
-          if ( ! allValid || _.contains(_.map(metadataModels, function(model) {
-                return model.get("uploadStatus");
-              } ), "e") ) {
+            //Add the identifier to the XHR data
+            if(this.packageModel.isNew()){
+              formData.append("pid", this.packageModel.get("id"));
+            }
+            else{
+              //Add the ids to the form data
+              formData.append("newPid", this.packageModel.get("id"));
+              formData.append("pid", this.packageModel.get("oldPid"));
+            }
 
-            this.packageModel.set("changed", false);
-            this.packageModel.set("uploadStatus", "q");
-            this.trigger("cancelSave");
-            return;
+            //Do a fresh re-serialization of the RDF XML, in case any pids in the package have changed.
+            //The hope is that any errors during the serialization process have already been caught during the first serialization above
+            try{
+              var mapXML = this.serialize();
+            }
+            catch(serializationException){
+              //Cancel the save and show an error message
+              this.packageModel.set("changed", false);
+              this.packageModel.set("uploadStatus", "q");
+              this.trigger("errorSaving", "There was a Javascript error during the serialization process: " + serializationException);
+              return;
+            }
 
-          }
+            //Make a Blob object from the serialized RDF XML
+            var mapBlob = new Blob([mapXML], {type : 'application/xml'});
 
-          //First save all the models of the collection, if needed
-          _.each(modelsToBeSaved, function(model){
-            //If the model is saved successfully, start this save function again
-            this.stopListening(model, "successSaving", this.save);
-            this.listenToOnce(model, "successSaving", this.save);
+            //Get the size of the new resource map
+            this.packageModel.set("size", mapBlob.size);
 
-            //If the model fails to save, start this save function
-            this.stopListening(model, "errorSaving", this.save);
-            this.listenToOnce(model, "errorSaving", this.save);
+            //Get the new checksum of the resource map
+            var checksum = md5(mapXML);
+            this.packageModel.set("checksum", checksum);
+            this.packageModel.set("checksumAlgorithm", "MD5");
 
-            //If the model fails to save, start this save function
-            this.stopListening(model, "cancelSave", this.save);
-            this.listenToOnce(model,  "cancelSave", this.save);
+            //Set the file name based on the id
+            this.packageModel.set("fileName", this.packageModel.get("id").replace(/[^a-zA-Z0-9]/g, "_") +
+              ".rdf.xml");
 
-            //Save the model and watch for fails
-            model.save();
+            //Create the system metadata
+            var sysMetaXML = this.packageModel.serializeSysMeta();
 
-            //Add it to the list of models in progress
-            modelsInProgress.push(model);
+            //Send the system metadata
+            var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
 
-          }, this);
+            //Add the object XML and System Metadata XML to the form data
+            //Append the system metadata first, so we can take advantage of Metacat's streaming multipart handler
+            formData.append("sysmeta", xmlBlob, "sysmeta");
+            formData.append("object", mapBlob);
 
-          //Save the system metadata of all the Data objects
-          _.each(sysMetaToUpdate, function(dataModel){
-            //When the sytem metadata has been saved, save this resource map
-            this.listenTo(dataModel, "sysMetaUpdated", this.save);
-            //Update the system metadata
-            dataModel.updateSysMeta();
-            //Add it to the list of models in progress
-            modelsInProgress.push(dataModel);
-          }, this);
+            var collection = this;
+            var requestSettings = {
+                url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
+                type: requestType,
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: formData,
+                success: function(response){
 
-          //If there are still models in progress of uploading, then exit. (We will return when they are synced to upload the resource map)
-          if(modelsInProgress.length) return;
+                  //Update the object XML
+                  collection.objectXML = mapXML;
+                  collection.packageModel.set("sysMetaXML", collection.packageModel.serializeSysMeta());
 
-          //Do we need to update this resource map?
-          if(!this.needsUpdate()) return;
-
-          //Determine the HTTP request type
-          var requestType;
-          //Set a new id and keep our old id
-          if(this.packageModel.isNew()){
-            requestType = "POST";
-          }
-          else{
-            //Update the identifier for this object
-            this.packageModel.updateID();
-            requestType = "PUT";
-          }
-
-          //Create a FormData object to send data with the XHR
-          var formData = new FormData();
-
-          //Add the identifier to the XHR data
-          if(this.packageModel.isNew()){
-            formData.append("pid", this.packageModel.get("id"));
-          }
-          else{
-            //Add the ids to the form data
-            formData.append("newPid", this.packageModel.get("id"));
-            formData.append("pid", this.packageModel.get("oldPid"));
-          }
-
-          try {
-            //Create the resource map XML
-            var mapXML = this.serialize();
-          }
-          catch (serializationException) {
-
-            //If serialization failed, revert back to our old id
-            this.packageModel.resetID();
-
-            this.trigger("errorSaving");
-
-            return;
-          }
-
-          var mapBlob = new Blob([mapXML], {type : 'application/xml'});
-
-          //Get the size of the new resource map
-          this.packageModel.set("size", mapBlob.size);
-
-          //Get the new checksum of the resource map
-          var checksum = md5(mapXML);
-          this.packageModel.set("checksum", checksum);
-          this.packageModel.set("checksumAlgorithm", "MD5");
-
-          //Set the file name based on the id
-          this.packageModel.set("fileName", this.packageModel.get("id").replace(/[^a-zA-Z0-9]/g, "_") +
-            ".rdf.xml");
-
-          //Create the system metadata
-          var sysMetaXML = this.packageModel.serializeSysMeta();
-
-          //Send the system metadata
-          var xmlBlob = new Blob([sysMetaXML], {type : 'application/xml'});
-
-          //Add the object XML and System Metadata XML to the form data
-          //Append the system metadata first, so we can take advantage of Metacat's streaming multipart handler
-          formData.append("sysmeta", xmlBlob, "sysmeta");
-          formData.append("object", mapBlob);
-
-          var collection = this;
-          var requestSettings = {
-              url: this.packageModel.isNew()? this.url() : this.url({ update: true }),
-              type: requestType,
-              cache: false,
-              contentType: false,
-              processData: false,
-              data: formData,
-              success: function(response){
-
-                //Update the object XML
-                collection.objectXML = mapXML;
-                collection.packageModel.set("sysMetaXML", collection.packageModel.serializeSysMeta());
-
-                //Reset the upload status for all members
-                _.each(collection.where({ uploadStatus: "c" }), function(m){
-                  m.set("uploadStatus", m.defaults().uploadStatus);
-                });
-
-                //Reset the upload status for the package
-                collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
-
-                // Reset the content changes status
-                collection.packageModel.set("hasContentChanges", false);
-
-                collection.trigger("successSaving", collection);
-
-                collection.packageModel.fetch({merge: true});
-
-                _.each(sysMetaToUpdate, function(dataModel){
-                  dataModel.set("sysMetaUploadStatus", "c");
-                });
-
-              },
-              error: function(data){
-
-                //Reset the id back to its original state
-                collection.packageModel.resetID();
-
-                //Reset the upload status for all members
-                _.each(collection.where({ uploadStatus: "c" }), function(m){
-                  m.set("uploadStatus", m.defaults().uploadStatus);
-                });
-
-                //Send this exception to Google Analytics
-                if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
-                  ga("send", "exception", {
-                    "exDescription": "DataPackage save error: " + errorMsg +
-                      " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-                    "exFatal": true
+                  //Reset the upload status for all members
+                  _.each(collection.where({ uploadStatus: "c" }), function(m){
+                    m.set("uploadStatus", m.defaults().uploadStatus);
                   });
+
+                  //Reset the upload status for the package
+                  collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
+
+                  // Reset the content changes status
+                  collection.packageModel.set("hasContentChanges", false);
+
+                  collection.trigger("successSaving", collection);
+
+                  collection.packageModel.fetch({merge: true});
+
+                  _.each(sysMetaToUpdate, function(dataModel){
+                    dataModel.set("sysMetaUploadStatus", "c");
+                  });
+
+                },
+                error: function(data){
+
+                  //Reset the id back to its original state
+                  collection.packageModel.resetID();
+
+                  //Reset the upload status for all members
+                  _.each(collection.where({ uploadStatus: "c" }), function(m){
+                    m.set("uploadStatus", m.defaults().uploadStatus);
+                  });
+
+                  //Send this exception to Google Analytics
+                  if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
+                    ga("send", "exception", {
+                      "exDescription": "DataPackage save error: " + errorMsg +
+                        " | Id: " + collection.packageModel.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                      "exFatal": true
+                    });
+                  }
+
+                  //When there is no network connection (status == 0), there will be no response text
+                  if( data.status == 408 || data.status == 0 ){
+                    var parsedResponse = "There was a network issue that prevented this file from uploading. " +
+                             "Make sure you are connected to a reliable internet connection.";
+                  }
+                  else {
+                    var parsedResponse = $(data.responseText).not("style, title").text();
+                  }
+
+                  //Save the error message in the model
+                  collection.packageModel.set("errorMessage", parsedResponse);
+
+                  //Reset the upload status for the package
+                  collection.packageModel.set("uploadStatus", "e");
+
+                  collection.trigger("errorSaving", parsedResponse);
                 }
-
-                //When there is no network connection (status == 0), there will be no response text
-                if( data.status == 408 || data.status == 0 ){
-                  var parsedResponse = "There was a network issue that prevented this file from uploading. " +
-                           "Make sure you are connected to a reliable internet connection.";
-                }
-                else {
-                  var parsedResponse = $(data.responseText).not("style, title").text();
-                }
-
-                //Save the error message in the model
-                collection.packageModel.set("errorMessage", parsedResponse);
-
-                //Reset the upload status for the package
-                collection.packageModel.set("uploadStatus", "e");
-
-                collection.trigger("errorSaving", parsedResponse);
-              }
-          }
-          $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+            }
+            $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
         },
 
         /*
@@ -1844,16 +1895,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               }
             }, this);
 
-            // Since the provenance editor is run from the MetadataView, only
-            // the resource map will have to be updated (with the new prov rels),
-            // as no other editing is possible. Therefor we have to manually set
-            // the resource maps' new id so that the serialize() function will treat
-            // this as an update, not a new resource map.
-            //var oldId = this.dataPackage.packageModel.get("id");
-            //var newId = "resource_map_" + "urn:uuid:" + uuid.v4();
-            //this.dataPackage.packageModel.set("oldPid", oldId);
-            //this.dataPackage.packageModel.set("id", newId);
-            this.save();
+            // When saving provenance only, we only have to save the Resource Map/Package object.
+            //  So we will send the resourceMapOnly flag with the save function.
+            this.save({
+              resourceMapOnly: true
+            });
 
           },
 
@@ -1929,6 +1975,57 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
           if(typeof found == "undefined") {
               graph.removeMatches(subjectNode, predicateNode, objectNode, undefined);
           }
+        },
+
+        /**
+         * Remove orphaned blank nodes from the model's current graph
+         *
+         * This was put in to support replacing package members who are
+         * referenced by provenance statements, specifically members typed as
+         * Programs. rdflib.js will throw an error when serializing if any
+         * statements in the graph have objects that are blank nodes when no
+         * other statements in the graph have subjects for the same blank node.
+         * i.e., blank nodes references that aren't defined.
+         *
+         * Should be called during a call to serialize() and mutates
+         * this.dataPackageGraph directly as a side-effect.
+         */
+        removeOrphanedBlankNodes: function() {
+          if (!this.dataPackageGraph || !this.dataPackageGraph.statements) {
+            return;
+          }
+
+          // Collect an array of statements to be removed
+          var toRemove = [];
+
+          _.each(this.dataPackageGraph.statements, function(statement) {
+            if (statement.object.termType !== "BlankNode") {
+              return;
+            }
+
+            // For this statement, look for other statments about it
+            var matches = 0;
+
+            _.each(this.dataPackageGraph.statements, function(other) {
+              if (
+                other.subject.termType === "BlankNode" &&
+                other.subject.id === statement.object.id
+              ) {
+                matches += 1;
+              }
+            });
+
+            // If none are found, add it to our list
+            if (matches === 0) {
+              toRemove.push(statement);
+            }
+
+          }, this);
+
+          // Remove collected statements
+          _.each(toRemove, function(statement) {
+            this.dataPackageGraph.removeStatement(statement);
+          }, this);
         },
 
         /* Get the execution identifier that is associated with a program id.
@@ -2384,6 +2481,12 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     this.addToAggregation(id);
                 }, this);
               }
+
+              // Remove any references to blank nodes not already cleaned up.
+              // rdflib.js will fail to serialize an IndexedFormula (graph) with
+              // statements whose object is a blank node when the blank node
+              // is not the subject of any other statements.
+              this.removeOrphanedBlankNodes();
 
               var xmlString = serializer.statementsToXML(this.dataPackageGraph.statements);
 

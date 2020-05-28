@@ -1559,7 +1559,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           * @return {string}
           */
           createViewURL: function(){
-            return MetacatUI.root + "/view/" + (this.get("seriesId") || this.get("id"));
+            return MetacatUI.root + "/view/" + encodeURIComponent((this.get("seriesId") || this.get("id")));
           },
 
           /**

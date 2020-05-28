@@ -1,6 +1,12 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationView', 'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html', 'collections/QualityReport'],
-	function($, _, Backbone, d3, DonutChart, CitationView, MdqRunTemplate, SuitesTemplate, LoadingTemplate, QualityReport) {
+define(['jquery', 'underscore', 'backbone', 'd3',
+  "models/SolrResult",
+  'DonutChart', 'views/CitationView',
+  'text!templates/mdqRun.html', 'text!templates/mdqSuites.html', 'text!templates/loading.html', 'collections/QualityReport'],
+	function($, _, Backbone, d3,
+    SolrResult,
+    DonutChart, CitationView,
+    MdqRunTemplate, SuitesTemplate, LoadingTemplate, QualityReport) {
 	'use strict';
 
 	// Build the Footer view of the application
@@ -31,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 		switchSuite: function(event) {
 			var select = $(event.target);
 			var suiteId = $(select).val();
-			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: false});
+			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + encodeURIComponent(this.pid), {trigger: false});
 			this.suiteId = suiteId;
 			this.render();
 			return false;
@@ -70,16 +76,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
                 var msgText;
                 console.log("Error status: " + qualityReport.fetchResponse.status);
                 if(qualityReport.fetchResponse.status == 404) {
-                  msgText = "The quality report for this dataset is not currently available.";
+                  msgText = "The assessment report for this dataset is not currently available.";
                 } else {
-                  msgText = "Error retrieving the quality report for this dataset";
+                  msgText = "Error retrieving the assessment report for this dataset";
                   if(typeof qualityReport.fetchResponse.statusText !== 'undefined' && typeof qualityReport.fetchResponse.status !== 'undefined') {
                     if(qualityReport.fetchResponse.status != 0)
-                      msgText += ": " + qualityReport.fetchResponse.statusText; 
-                  } 
+                      msgText += ": " + qualityReport.fetchResponse.statusText;
+                  }
                 }
                 var message = $(document.createElement("div")).append($(document.createElement("span")).text(msgText));
-                MetacatUI.uiRouter.navigate("view/" + qualityReport.id, { trigger: true, replace: true });
+                MetacatUI.uiRouter.navigate("view/" + encodeURIComponent(qualityReport.id), { trigger: true, replace: true });
                 MetacatUI.appView.showAlert(message, "alert-success", MetacatUI.appView.currentView.$("alert-container"), 10000, { remove: true });
               }),
 
@@ -89,17 +95,17 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
                 var msgText;
                 if(qualityReport.runStatus != "success") {
                   if(qualityReport.runStatus == "failure") {
-                      msgText = "There was an error generating the quality report. The Quality Server reported this error: " + qualityReport.errorDescription;
+                      msgText = "There was an error generating the assessment report. The Assessment Server reported this error: " + qualityReport.errorDescription;
                   } else if (qualityReport.runStatus == "queued") {
-                      msgText = "The quality report is in the Quality Server queue to be generated. It was queued at: " + qualityReport.timestamp;
+                      msgText = "The assessment report is in the Assessment Server queue to be generated. It was queued at: " + qualityReport.timestamp;
                   } else {
-                      msgText = "Error retrieving the quality report."
+                      msgText = "Error retrieving the assessment report."
                   }
                   var message = $(document.createElement("div")).append($(document.createElement("span")).text(msgText));
                   MetacatUI.uiRouter.navigate("view/" + qualityReport.id, { trigger: true, replace: true });
                   MetacatUI.appView.showAlert(message, "alert-success", MetacatUI.appView.currentView.$("alert-container"), 10000, { remove: true });
                 }
-                  
+
                 this.showLoading();
                 // Filter out the checks with level 'METADATA', as these checks are intended
                 // to pass info to metadig-engine indexing (for search, faceting), and not intended for display.
@@ -141,18 +147,33 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
 		},
 
 		showLoading: function() {
-			this.$el.html(this.loadingTemplate({ msg: "Retreiving quality report..."}));
+			this.$el.html(this.loadingTemplate({ msg: "Retreiving assessment report..."}));
 		},
-        
+
         hideLoading: function() {
             if(this.$loading)  this.$loading.remove();
             if(this.$detached) this.$el.html(this.$detached);
 		},
 
 		showCitation: function(){
-			if(!this.citationView) return false;
 
-			this.$("#mdqCitation").prepend(this.citationView.el);
+      var solrResultModel = new SolrResult({
+        id: this.pid
+      });
+
+      this.listenTo(solrResultModel, "sync", function(){
+        var citationView = new CitationView({
+          model: solrResultModel,
+          createLink: false,
+          createTitleLink: true
+        });
+
+        citationView.render();
+
+  			this.$("#mdqCitation").prepend(citationView.el);
+      });
+      solrResultModel.getInfo();
+
 		},
 
 		show: function() {
@@ -216,15 +237,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'DonutChart', 'views/CitationV
     					    				  .text("Search")))
     	    				  .append($(document.createElement("li"))
     					                      .append($(document.createElement("a"))
-    					    				  .attr("href", MetacatUI.root + "/view/" + this.pid)
+    					    				  .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(this.pid))
     					    				  .addClass("inactive")
     					    				  .text("Metadata")))
                               .append($(document.createElement("li"))
                                     .append($(document.createElement("a"))
-                                    .attr("href", MetacatUI.root + "/quality/" + this.pid)
+                                    .attr("href", MetacatUI.root + "/quality/" + encodeURIComponent(this.pid))
                                     .addClass("inactive")
-                                    .text("Quality Report")));
-                                    
+                                    .text("Assessment Report")));
+
     		this.$(this.breadcrumbContainer).html(breadcrumbs);
     	},
 	});
