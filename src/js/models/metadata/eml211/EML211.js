@@ -1508,7 +1508,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         var model = this,
           fetchOptions = _.extend({
-            url: MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+            url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
             dataType: "text",
             success: function(response){
               model.set(DataONEObject.prototype.parse.call(model, response));

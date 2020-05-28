@@ -504,7 +504,7 @@ define(['jquery',
                           .text("Search")))
                   .append($(document.createElement("li"))
                       .append($(document.createElement("a"))
-                          .attr("href", MetacatUI.root + "/view/" + this.pid)
+                          .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(this.pid))
                           .addClass("inactive")
                           .text("Metadata")));
 
@@ -708,7 +708,7 @@ define(['jquery',
               var title = 'Nested Data Set (' + (i+2) + ' of ' +
                           (list.length+1) + ') <span class="subtle">Package: ' +
                           nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root +
-                          '/view/' + nestedPackage.get("id") +
+                          '/view/' + encodeURIComponent(nestedPackage.get("id")) +
                           '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 
               this.insertPackageTable(nestedPackage, { title: title, nested: true });
@@ -828,7 +828,7 @@ define(['jquery',
       _.each(parentPackageMetadata, function(m, i){
         var title = m.get("title"),
           icon = $(document.createElement("i")).addClass("icon icon-on-left icon-level-up"),
-          link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + m.get("id"))
+          link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + encodeURIComponent(m.get("id")))
                              .addClass("parent-link")
                              .text("Parent dataset: " + title)
                              .prepend(icon);
@@ -2278,7 +2278,7 @@ define(['jquery',
 
               if (identifier) {
                 viewRef.hideLoading();
-                var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetacatUI.root + "/view/" + identifier + "'>published data package here</a>";
+                var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetacatUI.root + "/view/" + encodeURIComponent(identifier) + "'>published data package here</a>";
                 viewRef.$el.find('.container').prepend(
                     viewRef.alertTemplate({
                       msg: msg,

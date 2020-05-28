@@ -1578,7 +1578,7 @@ define(["jquery",
             * @return {string}
             */
             createViewURL: function(){
-              return MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + (this.get("label") || this.get("seriesId") || this.get("id"));
+              return MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + encodeURIComponent((this.get("label") || this.get("seriesId") || this.get("id")));
             },
 
             /**

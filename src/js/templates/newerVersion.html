@@ -7,7 +7,7 @@
   <% } else { %>
     <i class="icon-warning-sign"></i>
     A newer version of this dataset exists.
-    <a class="" href="<%= MetacatUI.root %>/view/<%=pid%>">View it now</a>.
+    <a class="" href="<%= MetacatUI.root %>/view/<%= encodeURIComponent(pid) %>">View it now</a>.
   <% } %>
 
 </div>

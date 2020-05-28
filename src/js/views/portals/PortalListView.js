@@ -200,7 +200,7 @@ define(["jquery",
 
               //Create an Edit buttton
               var buttons = $(document.createElement("a")).attr("href",
-                             MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + (searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id")) )
+                             MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent(searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id")) )
                              .text("Edit")
                              .addClass("btn");
 

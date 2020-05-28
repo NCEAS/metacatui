@@ -758,6 +758,13 @@ define(['jquery', 'underscore', 'backbone',
           var modelValues = filterModel.get("values"),
               thisValue   = $(appliedFilterEl).data("value");
 
+          //Numbers that are set on the element `data` are stored as type `number`, but when `number`s are
+          // set on Backbone models, they are converted to `string`s. So we need to check for this use case.
+          if( typeof thisValue == "number" ){
+            //Convert the number to a string
+            thisValue = thisValue.toString();
+          }
+
           //Remove the value that was in this applied filter
           var newValues = _.without(modelValues, thisValue);
 

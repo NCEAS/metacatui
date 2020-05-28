@@ -337,12 +337,11 @@ define(['jquery', 'underscore', 'backbone'],
         //Trim off whitespace
         value = value.trim();
 
-        //Escape special characters
-        value = this.escapeSpecialChar(value);
-
-
         var dateRangeRegEx = /^\[((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d*Z)|\*)( |%20)TO( |%20)((\d{4}-[01]\d-[0-3]\dT[0-2]\d(:|\\:)[0-5]\d(:|\\:)[0-5]\d\.\d*Z)|\*)\]/,
             isDateRange = dateRangeRegEx.test(value);
+
+        //Escape special characters
+        value = this.escapeSpecialChar(value);
 
         //If the value is a search phrase (more than one word), and not a date range string, wrap in quotes
         if( value.indexOf(" ") > -1 && !isDateRange ){
