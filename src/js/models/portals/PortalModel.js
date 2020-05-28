@@ -131,14 +131,20 @@ define(["jquery",
              * @return {string} The portal URL
             */
             url: function() {
+              
+              // use the resolve service if there is no object service url
+              // (e.g. in DataONE theme)
+              var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
+                MetacatUI.appModel.get("resolveServiceUrl");
+              
               //If this object is being updated, use the old pid in the URL
               if ( !this.isNew() && this.get("oldPid") ) {
-                return MetacatUI.appModel.get("objectServiceUrl") +
+                return urlBase +
                     encodeURIComponent(this.get("oldPid"));
               }
               //If this object is new, use the new pid in the URL
-              else{
-                return MetacatUI.appModel.get("objectServiceUrl") +
+              else {
+                return urlBase +
                     encodeURIComponent(this.get("seriesId") || this.get("id"));
               }
             },
