@@ -591,6 +591,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              * Called indirectly via the "change" event on elements with the
              * class .file-upload. See this View's events map.
              *
+             * The bulk of the work is done in a try-catch block to catch
+             * mistakes that would cause the editor to get into a broken state.
+             * On error, we attempt to return the editor back to its pre-replace
+             * state.
+             *
              * @param {Event}
              */
             replaceFile: function(event) {
@@ -614,6 +619,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     return;
                 }
 
+                // Save uploadStatus for reverting if need to
+                var oldUploadStatus = this.model.get("uploadStatus");
+
                 var file = fileList[0],
                     uploadStatus = "q",
                     errorMessage = "";
@@ -629,7 +637,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 					return;
 				}
 
-                this.model.set({
+                // Copy model attributes aside for reverting on error
+                var newAttributes = {
                     synced: false,
                     fileName: file.name,
                     size: file.size,
@@ -641,47 +650,68 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     sysMetaUploadStatus: "c", // I set this so DataPackage::save
                     // wouldn't try to update the sysmeta after the update
                     errorMessage: errorMessage
-                });
+                };
 
-                // Attempt the formatId. Defaults to app/octet-stream
-                this.model.set("formatId", this.model.getFormatId());
+                // Save a copy of the attributes we're changing so we can revert
+                // later if we encounter an exception
+                var oldAttributes = {};
+                _.each(Object.keys(newAttributes), function(k) {
+                    oldAttributes[k] = _.clone(this.model.get(k));
+                }, this);
 
-                // Re-render the view
-                this.render();
+                oldAttributes["uploadStatus"] = oldUploadStatus;
 
-                if (this.model.get("uploadFile") && !this.model.get("checksum")) {
+                try {
 
-                    try {
-                        this.model.calculateChecksum();
-                    } catch (exception) {
-                        // TODO: Fail gracefully here for the user
+                    this.model.set(newAttributes);
+
+                    // Attempt the formatId. Defaults to app/octet-stream
+                    this.model.set("formatId", this.model.getFormatId());
+
+                    // Re-render the view
+                    this.render();
+
+                    if (this.model.get("uploadFile") && !this.model.get("checksum")) {
+
+                        try {
+                            this.model.calculateChecksum();
+                        } catch (exception) {
+                            // TODO: Fail gracefully here for the user
+                        }
                     }
+
+                    MetacatUI.rootDataPackage.packageModel.set("changed", true);
+
+                    // Last, provided a visual indication the replace was completed
+                    var describeButton = this.$el
+                        .children(".controls")
+                        .children(".btn-group")
+                        .children("button.edit")
+                        .first();
+
+                    if (describeButton.length != 1) {
+                        return;
+                    }
+
+                    var oldText = describeButton.html();
+
+                    describeButton.html('<i class="icon icon-ok success" /> Replaced');
+
+                    var previousBtnClasses = describeButton.attr("class");
+                    describeButton.removeClass("warning error").addClass("message");
+
+                    window.setTimeout(function() {
+                        describeButton.html(oldText);
+                        describeButton.addClass(previousBtnClasses).removeClass("message");
+                    }, 3000);
+                } catch (error) {
+                    // Revert changes to the attributes
+                    this.model.set(oldAttributes);
+                    this.model.set("formatId", this.model.getFormatId());
+                    this.model.set("sysMetaUploadStatus", "c"); // Prevents a sysmeta update
+
+                    this.render();
                 }
-
-                MetacatUI.rootDataPackage.packageModel.set("changed", true);
-
-                // Last, provided a visual indication the replace was completed
-                var describeButton = this.$el
-                    .children(".controls")
-                    .children(".btn-group")
-                    .children("button.edit")
-                    .first();
-
-                if (describeButton.length != 1) {
-                    return;
-                }
-
-                var oldText = describeButton.html();
-
-                describeButton.html('<i class="icon icon-ok success" /> Replaced');
-
-                var previousBtnClasses = describeButton.attr("class");
-                describeButton.removeClass("warning error").addClass("message");
-
-                window.setTimeout(function() {
-                    describeButton.html(oldText);
-                    describeButton.addClass(previousBtnClasses).removeClass("message");
-                }, 3000);
 
                 return;
             },
