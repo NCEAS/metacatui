@@ -133,9 +133,15 @@ define(['jquery',
 
       this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
+      //Listen to when the metadata has been rendered
       this.once("metadataLoaded", function(){
         this.createAnnotationViews();
         this.insertMarkdownViews();
+      });
+
+      //Listen to when the package table has been rendered
+      this.once("packageTableRendered", function(){
+        //Scroll to the element on the page that is in the hash fragment (if there is one)
         this.scrollToFragment();
       });
 
@@ -747,6 +753,9 @@ define(['jquery',
       $(tableContainer).find(".tooltip-this").tooltip();
 
       this.subviews.push(tableView);
+
+      //Trigger a custom event in this view that indicates the package table has been rendered
+      this.trigger("packageTableRendered");
     },
 
     insertParentLink: function(packageModel){
@@ -2366,17 +2375,15 @@ define(['jquery',
           return;
       }
 
-      var fragment = decodeURIComponent(hash.substring(1)),
-          sanitized = DataONEObject.prototype.getXMLSafeID(fragment);
+      //Get the id from the URL hash and decode it
+      var idFragment = decodeURIComponent(hash.substring(1));
 
-      // Try to find an anchor tag with the right data-id value
-      var targets = $('*[data-id="' + sanitized + '"]');
+      //Find the corresponding entity details section for this id
+      var entityDetailsEl = this.findEntityDetailsContainer(idFragment);
 
-      if (targets.length <= 0) {
-          return;
+      if( entityDetailsEl || entityDetailsEl.length ){
+        MetacatUI.appView.scrollTo(entityDetailsEl);
       }
-
-      MetacatUI.appView.scrollTo(targets.first());
     },
 
     closePopovers: function(e){
