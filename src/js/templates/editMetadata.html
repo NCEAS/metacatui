@@ -9,7 +9,7 @@
             classes = " tooltip-this";
    }
    else{
-        var attributes = ' href="' + MetacatUI.root + "/submit/" + identifier + '" ',
+        var attributes = ' href="' + MetacatUI.root + "/submit/" + encodeURIComponent(identifier) + '" ',
             title = "",
             classes = "";
    }

@@ -37,7 +37,7 @@ define(['jquery', 'underscore', 'backbone', 'd3',
 		switchSuite: function(event) {
 			var select = $(event.target);
 			var suiteId = $(select).val();
-			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + this.pid, {trigger: false});
+			MetacatUI.uiRouter.navigate("quality/s=" + suiteId + "/" + encodeURIComponent(this.pid), {trigger: false});
 			this.suiteId = suiteId;
 			this.render();
 			return false;
@@ -85,7 +85,7 @@ define(['jquery', 'underscore', 'backbone', 'd3',
                   }
                 }
                 var message = $(document.createElement("div")).append($(document.createElement("span")).text(msgText));
-                MetacatUI.uiRouter.navigate("view/" + qualityReport.id, { trigger: true, replace: true });
+                MetacatUI.uiRouter.navigate("view/" + encodeURIComponent(qualityReport.id), { trigger: true, replace: true });
                 MetacatUI.appView.showAlert(message, "alert-success", MetacatUI.appView.currentView.$("alert-container"), 10000, { remove: true });
               }),
 
@@ -237,12 +237,12 @@ define(['jquery', 'underscore', 'backbone', 'd3',
     					    				  .text("Search")))
     	    				  .append($(document.createElement("li"))
     					                      .append($(document.createElement("a"))
-    					    				  .attr("href", MetacatUI.root + "/view/" + this.pid)
+    					    				  .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(this.pid))
     					    				  .addClass("inactive")
     					    				  .text("Metadata")))
                               .append($(document.createElement("li"))
                                     .append($(document.createElement("a"))
-                                    .attr("href", MetacatUI.root + "/quality/" + this.pid)
+                                    .attr("href", MetacatUI.root + "/quality/" + encodeURIComponent(this.pid))
                                     .addClass("inactive")
                                     .text("Assessment Report")));
 

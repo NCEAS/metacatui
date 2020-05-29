@@ -463,8 +463,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//Display images in the prov chart node
 			if(provEntity.getType() == "image"){
-                $(nodeEl).css("background-image", "url('" + view.serviceUrl + provEntity.get("id") + "')");
-			} 
+                $(nodeEl).css("background-image", "url('" + view.serviceUrl + encodeURIComponent(provEntity.get("id")) + "')");
+			}
 			//Create an icon inside the node for other format types
 			else {
 				var iconEl = $(document.createElement("i"))
@@ -513,9 +513,9 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
               });
 
 			if(_.contains(packageIds, provEntity.get("id"))) {
-				var linkEl = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + provEntity.get("id")).addClass("btn preview").attr("data-id", provEntity.get("id")).text("View").append(arrowIcon);
+				var linkEl = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + encodeURIComponent(provEntity.get("id"))).addClass("btn preview").attr("data-id", provEntity.get("id")).text("View").append(arrowIcon);
             } else {
-				var linkEl = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + provEntity.get("id")).addClass("btn").text("View").append(arrowIcon);
+				var linkEl = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + encodeURIComponent(provEntity.get("id"))).addClass("btn").text("View").append(arrowIcon);
             }
             
 			//The provenance statements
@@ -538,8 +538,8 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 			
 			//Display images in the prov chart node popover 
 			if(provEntity.getType() == "image"){
-                var img = $(document.createElement("img")).attr("src", view.serviceUrl + provEntity.get("id")).addClass("thumbnail");
-                
+                var img = $(document.createElement("img")).attr("src", view.serviceUrl + encodeURIComponent(provEntity.get("id"))).addClass("thumbnail");
+
 				$(citationEl).after(img);
 			}
 
@@ -873,6 +873,7 @@ define(['jquery', 'underscore', 'backbone', "views/CitationView", "views/ProvEnt
 		 */
 		previewData: function(e){
 			//Don't go anywhere yet...
+			e.stopPropagation();
 			e.preventDefault();
 			
 			//If this prov chart has a parent view with a previewData function, then execute that
