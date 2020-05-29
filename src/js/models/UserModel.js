@@ -982,6 +982,35 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
     },
 
+    /**
+    * Given a list of user and/or group subjects, this function checks if this user
+    * has an equivalent identity in that list, or is a member of a group in the list.
+    * A single subject string can be passed instead of an array of subjects.
+    * TODO: This needs to support nested group membership.
+    * @param {string|string[]} subjects
+    * @returns {boolean}
+    */
+    hasIdentityOverlap: function(subjects){
+
+      try{
+        //If only a single subject is given, put it in an array
+        if( typeof subjects == "string" ){
+          subjects = [subjects];
+        }
+        //If the subjects are not a string or an array, or if it's an empty array, exit this function.
+        else if( !Array.isArray(subjects) || !subjects.length ){
+          return false;
+        }
+
+        return _.intersection(this.get("allIdentitiesAndGroups"), subjects).length;
+      }
+      catch(e){
+        console.error(e);
+        return false;
+      }
+
+    },
+
 		reset: function(){
 			var defaults = _.omit(this.defaults(), ["searchModel", "searchResults"]);
 			this.set(defaults);

@@ -16,8 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       this.model     = options.model    || null;
       this.metadata   = options.metadata   || null;
       this.title      = options.title      || null;
-      this.createLink = (options.createLink == false) ? false : true;
-      this.createTitleLink = (options.createLink == false) ? false : true;
+      this.createLink = (options.createLink === false) ? false : true;
+      this.createTitleLink = (options.createTitleLink === false) ? false : true;
 
       //If a metadata doc was passed but no data or package model, then save the metadata as our model, too
       if(!this.model && this.metadata) this.model = this.metadata;

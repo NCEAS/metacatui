@@ -194,9 +194,81 @@ define(['jquery',
           this.renderMetadata();
         }
         else if(this.model.get("formatType") == "DATA"){
-          if(this.model.get("isDocumentedBy")){
-            this.pid = _.first(this.model.get("isDocumentedBy"));
+
+          //Get the metadata pids that document this data object
+          var isDocBy = this.model.get("isDocumentedBy");
+
+          //If there is only one metadata pid that documents this data object, then
+          // get that metadata model for this view.
+          if(isDocBy && isDocBy.length == 1){
+            this.pid = _.first(isDocBy);
             this.getModel(this.pid);
+            return;
+          }
+          //If more than one metadata doc documents this data object, it is most likely
+          // multiple versions of the same metadata. So we need to find the latest version.
+          else if( isDocBy && isDocBy.length > 1 ){
+
+            var view = this;
+
+            require(["collections/Filters", "collections/SolrResults"], function(Filters, SolrResults){
+              //Create a search for the metadata docs that document this data object
+              var searchFilters = new Filters([{
+                    values: isDocBy,
+                    fields: ["id", "seriesId"],
+                    operator: "OR",
+                    matchSubstring: false
+                  }]),
+                  //Create a list of search results
+                  searchResults = new SolrResults([], {
+                    rows: isDocBy.length,
+                    query: searchFilters.getQuery(),
+                    fields: "obsoletes,obsoletedBy,id"
+                  });
+
+              //When the search results are returned, process those results
+              view.listenToOnce(searchResults, "sync", function(searchResults){
+
+                //Keep track of the latest version of the metadata doc(s)
+                var latestVersions = [];
+
+                //Iterate over each search result and find the latest version of each metadata version chain
+                searchResults.each( function(searchResult){
+
+                  //If this metadata isn't obsoleted by another object, it is the latest version
+                  if( !searchResult.get("obsoletedBy") ){
+                    latestVersions.push( searchResult.get("id") );
+                  }
+                  //If it is obsoleted by another object but that newer object does not document this data, then this is the latest version
+                  else if( !_.contains(isDocBy, searchResult.get("obsoletedBy")) ){
+                    latestVersions.push( searchResult.get("id") );
+                  }
+
+                }, view);
+
+                //If at least one latest version was found (should always be the case),
+                if( latestVersions.length ){
+                  //Set that metadata pid as this view's pid and get that metadata model.
+                  // TODO: Support navigation to multiple metadata docs. This should be a rare occurence, but
+                  // it is possible that more than one metadata version chain documents a data object, and we need
+                  // to show the user that the data is involved in multiple datasets.
+                  view.pid = latestVersions[0];
+                  view.getModel(latestVersions[0]);
+                }
+                //If a latest version wasn't found, which should never happen, but just in case, default to the
+                // last metadata pid in the isDocumentedBy field (most liekly to be the most recent since it was indexed last).
+                else{
+                  var fallbackPid =  _.last(isDocBy);
+                  view.pid = fallbackPid;
+                  view.getModel(fallbackPid);
+                }
+
+              });
+
+              //Send the query to the Solr search service
+              searchResults.query();
+            });
+
             return;
           }
           else{
@@ -222,6 +294,7 @@ define(['jquery',
           packageModel.getMembers();
           return;
         }
+
         //Get the package information
         this.getPackageDetails(model.get("resourceMap"));
 
@@ -953,8 +1026,6 @@ define(['jquery',
      * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
      */
     insertOwnerControls: function(){
-      if( !MetacatUI.appModel.get("publishServiceUrl") )
-        return false;
 
       //Do not show user controls for older versions of data sets
       if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
@@ -968,7 +1039,8 @@ define(['jquery',
         viewRef = this;
 
       this.listenToOnce(this.model, "change:isAuthorized", function(){
-        if(!model.get("isAuthorized") || model.get("archived")) return false;
+        if(!model.get("isAuthorized") || model.get("archived"))
+          return false;
 
         //Insert an Edit button
         if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
@@ -984,19 +1056,46 @@ define(['jquery',
           }));
         }
 
-        //Insert a Publish button if its not already published with a DOI
-        if(!model.isDOI()){
-          //Insert the template
-          container.append(
-            viewRef.doiTemplate({
-              isAuthorized: true,
-              identifier: pid
-            }));
+        try{
+          //Determine if this metadata can be published.
+          // The Publish feature has to be enabled in the app.
+          // The model cannot already have a DOI
+          var canBePublished = MetacatUI.appModel.get("enablePublishDOI") && !model.isDOI();
+
+          //If publishing is enabled, check if only certain users and groups can publish metadata
+          if( canBePublished ){
+            //Get the list of authorized publishers from the AppModel
+            var authorizedPublishers = MetacatUI.appModel.get("enablePublishDOIForSubjects");
+            //If the logged-in user is one of the subjects in the list or is in a group that is
+            // in the list, then this metadata can be published. Otherwise, it cannot.
+            if( Array.isArray(authorizedPublishers) && authorizedPublishers.length ){
+              if( MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers) ){
+                canBePublished = true;
+              }
+              else{
+                canBePublished = false;
+              }
+            }
+          }
+
+          //If this metadata can be published, then insert the Publish button template
+          if( canBePublished ){
+            //Insert a Publish button template
+            container.append(
+              viewRef.doiTemplate({
+                isAuthorized: true,
+                identifier: pid
+              }));
+          }
+        }
+        catch(e){
+          console.error("Cannot display the publish button: ", e);
         }
 
         //Check the authority on the package models
         //If there is no package, then exit now
-        if(!viewRef.packageModels || !viewRef.packageModels.length) return;
+        if(!viewRef.packageModels || !viewRef.packageModels.length)
+          return;
 
         //Check for authorization on the resource map
         var packageModel = this.packageModels[0];
@@ -1004,14 +1103,12 @@ define(['jquery',
         //if there is no package, then exit now
         if(!packageModel.get("id")) return;
 
-        //Listen for changes to the authorization flag
-        //packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-        //packageModel.once("sync", viewRef.createProvEditor, viewRef);
-
         //Now get the RDF XML and check for the user's authority on this resource map
         packageModel.fetch();
         packageModel.checkAuthority();
       });
+
+      //Check if the current user has authority to `changePermission` on this metadata
       this.model.checkAuthority();
     },
 
@@ -1065,7 +1162,7 @@ define(['jquery',
       var mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds");
 
       // Check of the current formatId is supported by the current
-      // metadata quality suite. If not, the 'Quality Report' button
+      // metadata quality suite. If not, the 'Assessment Report' button
       // will not be displacyed in the metadata controls panel.
       var thisFormatId = this.model.get("formatId");
       var mdqFormatSupported = false;

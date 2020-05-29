@@ -163,6 +163,13 @@
     }
 
 /*
+* Temp Message
+*/
+.has-temporary-message nav#Navbar {
+    margin-top: 72px;
+}
+
+/*
 * Portal View
 */
 .portal-view .toc-ul a{
@@ -891,6 +898,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	   	margin-right: .5em;
 	   	font-size: 2em;
 	   	float: right;
+      color: #992222;
 		}
 
 		.navbar nav{

@@ -31,12 +31,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 			dataUpdateDates: null,
 			metadataUpdateDates: null,
 
-			downloads: 0,
-			metadataDownloads: null,
-			dataDownloads: null,
-			metadataDownloadDates: null,
-			dataDownloadDates: null,
-
 			firstBeginDate: 0,
 			temporalCoverage: 0,
 			coverageYears: 0,
@@ -47,9 +41,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       //HTTP GET requests are typically limited to 2,083 characters. So query lengths
       // should have this maximum before switching over to HTTP POST
       maxQueryLength: 1958,
-      usePOST: false,
-
-			supportDownloads: (MetacatUI.appModel.get("nodeId") && MetacatUI.appModel.get("d1LogServiceUrl"))
+      usePOST: false
 		},
 
 		//Some dated used for query creation
@@ -93,9 +85,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 			    }
 			})();
 
-			//this.on("change:dataDownloads",     this.sumDownloads);
-			//this.on("change:metadataDownloads", this.sumDownloads);
-
       //Set the request type (GET or POST)
       this.setRequestType();
       this.on("change:query", this.setRequestType);
@@ -119,8 +108,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       this.getFirstUpload();
       
 			this.getFormatTypes();
-
-			this.getDownloadDates();
 
 			// Only get the MetaDIG scores if MetacatUI is configured to display metadata assesments
       // AND this model has them enabled, too.
@@ -1067,162 +1054,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
     },
 
-		/*
-		 * The Downloads query can be customized only by: filtering by a certain MN or filtering by a rightsHolder
-		 */
-
-		getDataDownloadDates: function(){
-			if(!MetacatUI.appModel.get("d1LogServiceUrl")){
-				this.set("downloads", 0);
-				this.trigger("change:downloads");
-				return;
-			}
-
-			var model = this;
-
-			var logSearch = new LogsSearch();
-			logSearch.set("event", "read");
-			logSearch.set("formatType", "DATA");
-			logSearch.set("facetRanges", ["dateLogged"]);
-
-			var searchModel = this.get("searchModel");
-			if(searchModel && searchModel.get("dataSource")){
-				logSearch.set("nodeId", searchModel.get("dataSource"))
-			}
-			if(searchModel && searchModel.get("username")){
-				logSearch.set("username", searchModel.get("username"));
-			}
-
-			var requestSettings = {
-				url: MetacatUI.appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
-				type: "GET",
-				dataType: "json",
-				success: function(data, textStatus, xhr){
-					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
-					model.set("dataDownloads", data.response.numFound);
-					model.set("dataDownloadDates", counts);
-
-					if(data.response.numFound == 0) model.trigger("change:dataDownloads");
-				}
-			}
-
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
-
-		getMetadataDownloadDates: function(){
-			if(!MetacatUI.appModel.get("d1LogServiceUrl")){
-				this.set("downloads", 0);
-				this.trigger("change:downloads");
-
-				return;
-			}
-
-			var model = this;
-
-			var logSearch = new LogsSearch();
-			logSearch.set("event", "read");
-			logSearch.set("formatType", "METADATA");
-			logSearch.set("facetRanges", ["dateLogged"]);
-
-			var searchModel = this.get("searchModel");
-			if(searchModel && searchModel.get("dataSource")){
-				logSearch.set("nodeId", searchModel.get("dataSource"))
-			}
-			if(searchModel && searchModel.get("username")){
-				logSearch.set("username", searchModel.get("username"));
-			}
-
-			var requestSettings = {
-				url: MetacatUI.appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
-				type: "GET",
-				dataType: "json",
-				success: function(data, textStatus, xhr){
-					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
-
-					model.set("metadataDownloads", data.response.numFound);
-					model.set("metadataDownloadDates", counts);
-
-					if(data.response.numFound == 0) model.trigger("change:metadataDownloads");
-				}
-			}
-
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
-
-		getDownloadDates: function(){
-			if( !this.get("supportDownloads") ){
-				this.set("downloads", 0);
-				this.trigger("change:downloads");
-				return;
-			}
-
-			var model = this;
-
-			var logSearch = new LogsSearch();
-			logSearch.set("event", "read");
-			logSearch.set("formatType", ["METADATA", "DATA"]);
-			logSearch.set("facetRanges", ["dateLogged"]);
-			logSearch.set("facets", ["formatType"]);
-
-			var today = new Date();
-			today.setDate(today.getUTCDay() + 1);
-			today.setHours(0);
-			today.setMinutes(0);
-			today.setSeconds(0);
-			today.setMilliseconds(0);
-
-			logSearch.set("facetRangeStart", this.firstPossibleDataONEDownload);
-			logSearch.set("facetRangeEnd", today.toISOString());
-
-			var searchModel = this.get("searchModel");
-			if(searchModel && searchModel.get("dataSource")){
-				logSearch.set("nodeId", searchModel.get("dataSource"))
-			}
-			if(searchModel && searchModel.get("username")){
-				logSearch.set("username", searchModel.get("username"));
-			}
-
-			var requestSettings = {
-				url: MetacatUI.appModel.get("d1LogServiceUrl") + "q=" +  logSearch.getQuery() + logSearch.getFacetQuery() + "&wt=json&rows=0",
-				type: "GET",
-				dataType: "json",
-				success: function(data, textStatus, xhr){
-					var counts = data.facet_counts.facet_ranges.dateLogged.counts;
-
-					var m_index = _.indexOf(data.facet_counts.facet_fields.formatType, "METADATA");
-					if(m_index > -1)
-						model.set("metadataDownloads", data.facet_counts.facet_fields.formatType[m_index+1]);
-					else
-						model.set("metadataDownloads", 0);
-
-					var d_index = _.indexOf(data.facet_counts.facet_fields.formatType, "DATA");
-					if(d_index > -1)
-						model.set("dataDownloads", data.facet_counts.facet_fields.formatType[d_index+1]);
-					else
-						model.set("dataDownloads", 0);
-
-					if(data.facet_counts.facet_fields.formatType[m_index+1] == 0) model.trigger("change:metadataDownloads");
-					if( data.facet_counts.facet_fields.formatType[d_index+1] == 0) model.trigger("change:dataDownloads");
-
-
-					model.set("downloads", data.response.numFound);
-					if(data.response.numFound == 0) model.trigger("change:downloads");
-
-					model.set("downloadDates", counts);
-				}
-			}
-
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
-
-		sumDownloads: function(){
-			if((this.get("dataDownloads") == null) || (this.get("metadataDownloads") == null)) return;
-
-			this.set("downloads", this.get("dataDownloads") + this.get("metadataDownloads"));
-
-			if(this.get("downloads") == 0) this.trigger("change:downloads");
-		},
-
     imgLoad: function(url) {
         // Create new promise with the Promise() constructor;
         // This has as its argument a function with two parameters, resolve and reject
@@ -1295,7 +1126,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       catch(e){
         this.set("mdqScoresImage", this.defaults.mdqScoresImage);
         this.trigger("change:mdqScoresImage");
-        console.error("Cannot get the Metadata Quality scores: ", e);
+        console.error("Cannot get the Metadata Assessment scores: ", e);
       }
     },
 

@@ -142,8 +142,15 @@ define(["jquery",
                 if ((MetacatUI.appModel.get("searchHistory").length > 0) &&
                     (!this.searchModel || Object.keys(this.searchModel).length == 0)
                 ) {
-                    this.searchModel = _.last(MetacatUI.appModel.get("searchHistory")).search.clone();
-                    this.mapModel = _.last(MetacatUI.appModel.get("searchHistory")).map.clone();
+                  var lastSearchModel = _.last(MetacatUI.appModel.get("searchHistory"));
+                  if(lastSearchModel){
+                    this.searchModel = lastSearchModel.clone();
+
+                    if( lastSearchModel.map ){
+                      this.mapModel = lastSearchModel.map.clone();                      
+                    }
+                  }
+
                 } else if ((typeof MetacatUI.appSearchModel !== "undefined") &&
                     (!this.searchModel || Object.keys(this.searchModel).length == 0)
                 ) {

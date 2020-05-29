@@ -151,8 +151,7 @@ define(["jquery",
             // Create a StatsModel
             var statsModel = new StatsModel({
               query: statsSearchModel.getQuery(),
-              searchModel: statsSearchModel,
-              supportDownloads: false
+              searchModel: statsSearchModel
             });
 
             var userType = "portal";
@@ -202,7 +201,7 @@ define(["jquery",
               this.metricsModel.set("pid_list", label_list);
               this.metricsModel.set("filterType", "portal");
             }
-            
+
             this.metricsModel.fetch();
 
             // Add a stats view

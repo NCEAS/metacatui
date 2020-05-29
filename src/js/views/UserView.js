@@ -415,13 +415,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalUploads")));
 			});
 
-			MetacatUI.statsModel.once("change:downloads", function(){
-				if( !this.get("downloads") )
-					view.$("#total-download-wrapper, section.downloads").hide();
-				else
-					view.$("#total-download-container").text(MetacatUI.appView.commaSeparateNumber(this.get("downloads")));
-			});
-
 			//Create a base query for the statistics
 			var statsSearchModel = this.model.get("searchModel").clone();
 			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
