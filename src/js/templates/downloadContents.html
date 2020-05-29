@@ -9,7 +9,7 @@
 		<% if(nested && metadata){ %>
 			<tr class="table-header title">
 				<th colspan="<%=colspan%>" class="table-header">
-					<a href="<%= MetacatUI.root %>/view/<%=metadata.get('id')%>"><strong><%=metadata.get("title")%></strong></a>
+					<a href="<%= MetacatUI.root %>/view/<%=encodeURIComponent(metadata.get('id'))%>"><strong><%=metadata.get("title")%></strong></a>
 				</th>
 			</tr>
 		<% } %>
