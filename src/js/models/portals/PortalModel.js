@@ -1583,17 +1583,17 @@ define(["jquery",
             },
 
             /**
-            * Sets up a portal model for repository profiles
-            * @return {string}
+            * Sets attributes on this Portal using the given Member Node data
+            * @param {object} nodeInfoObject - A literal object taken from the NodeModel 'members' array
             */
-            initalizePortalNodeView: function(nodeInfoObject) {
+            createNodeAttributes: function(nodeInfoObject) {
               var nodePortalModel = {};
 
               if (nodeInfoObject === undefined) {
                 nodeInfoObject = {}
               }
 
-              //to do - check for undefined for each of the nodeInfo properties
+              //TODO - check for undefined for each of the nodeInfo properties
 
               // Setting basic properties from the node info object
               this.set("name", nodeInfoObject.name);
@@ -1604,7 +1604,7 @@ define(["jquery",
               var nodeFilterModel = new FilterModel({
                 fields: ["datasource"],
                 values: [nodeInfoObject.identifier],
-                label: "Dataset for a repository",
+                label: "Datasets for a repository",
                 matchSubstring: false,
                 operator: "OR"
               });
@@ -1614,7 +1614,7 @@ define(["jquery",
               this.get("definitionFilters").add(nodeFilterModel);
 
               // Set up the search model
-              (this.get("searchModel")).get("filters").add(nodeFilterModel);
+              this.get("searchModel").get("filters").add(nodeFilterModel);
 
             },
 
