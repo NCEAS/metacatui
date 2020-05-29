@@ -1273,6 +1273,7 @@ define(["jquery",
 
             /**
             * Queries the Solr discovery index for other Portal objects with this same label.
+            * Also, checks for the existing black list for repository labels
             * If at least one other Portal has the same label, then it is not available.
             * @param {string} label - The label to query for
             */
@@ -1290,6 +1291,17 @@ define(["jquery",
               }
 
               var model = this;
+
+              // Convert the black list to lower case for case insensitive match
+              var lowerCaseBlackList = this.get("labelBlacklist").map(function(value) {
+                return value.toLowerCase();
+              });
+
+              // Check the existing blacklist before making a Solr call
+              if (lowerCaseBlackList.indexOf(label.toLowerCase()) > -1) {
+                model.trigger("labelTaken");
+                return
+              }
 
               // Query solr to see if other portals already use this label
               var requestSettings = {
@@ -1566,7 +1578,42 @@ define(["jquery",
             * @return {string}
             */
             createViewURL: function(){
-              return MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + (this.get("label") || this.get("seriesId") || this.get("id"));
+              return MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + encodeURIComponent((this.get("label") || this.get("seriesId") || this.get("id")));
+            },
+
+            /**
+            * Cleans up the given text so that it is XML-valid by escaping reserved characters, trimming white space, etc.
+            *
+            * @param {string} textString - The string to clean up
+            * @return {string} - The cleaned up string
+            */
+            cleanXMLText: function(textString){
+
+              if( typeof textString != "string" )
+                return;
+
+              textString = textString.trim();
+
+              //Check for XML/HTML elements
+              _.each(textString.match(/<\s*[^>]*>/g), function(xmlNode){
+
+                //Encode <, >, and </ substrings
+                var tagName = xmlNode.replace(/>/g, "&gt;");
+                tagName = tagName.replace(/</g, "&lt;");
+
+                //Replace the xmlNode in the full text string
+                textString = textString.replace(xmlNode, tagName);
+
+              });
+
+              //Remove Unicode characters that are not valid XML characters
+              //Create a regular expression that matches any character that is not a valid XML character
+              // (see https://www.w3.org/TR/xml/#charsets)
+              var invalidCharsRegEx = /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/g;
+              textString = textString.replace(invalidCharsRegEx, "");
+
+              return textString;
+
             }
 
         });

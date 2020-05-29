@@ -16,8 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       this.model     = options.model    || null;
       this.metadata   = options.metadata   || null;
       this.title      = options.title      || null;
-      this.createLink = (options.createLink == false) ? false : true;
-      this.createTitleLink = (options.createLink == false) ? false : true;
+      this.createLink = (options.createLink === false) ? false : true;
+      this.createTitleLink = (options.createTitleLink === false) ? false : true;
 
       //If a metadata doc was passed but no data or package model, then save the metadata as our model, too
       if(!this.model && this.metadata) this.model = this.metadata;
@@ -347,7 +347,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
             var targetLinkEl = $(document.createElement("a"))
                         .addClass("metrics-route-to-metadata")
                         .attr("data-id", key)
-                        .attr("href", MetacatUI.root + "/view/" + (key))
+                        .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(key))
                         .attr("target", "_blank")
                         .text("(" + citationMetadata[key]["origin"][0].split(" ")[0] + additionalAuthors + " "  + (citationMetadata[key]["datePublished"]).slice(0,4) + ")" + commaSeperator + " " );
 
@@ -498,7 +498,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
         return;
 
-      MetacatUI.uiRouter.navigate('view/'+id, {trigger: true});
+      MetacatUI.uiRouter.navigate('view/' + encodeURIComponent(id), {trigger: true});
     }
   });
 

@@ -49,6 +49,7 @@ define(['jquery', 'underscore', 'backbone'],
     defaults: {
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
+      repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
 
       emailContact: "knb-help@nceas.ucsb.edu",
 
@@ -136,12 +137,12 @@ define(['jquery', 'underscore', 'backbone'],
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
 
-      baseUrl: "https://dev.nceas.ucsb.edu",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
-      d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
+      d1CNBaseUrl: "https://cn.dataone.org/",
       d1CNService: "cn/v2",
       d1LogServiceUrl: null,
       nodeServiceUrl: null,
@@ -174,18 +175,6 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {boolean}
       */
       disableQueryPOSTs: false,
-
-      /** If set to true, some parts of the app will use the Solr Join Query syntax
-      * when sending queries to the `/query/solr` DataONE API.
-      * If this is not enabled, then some parts of the UI may not work if a query has too
-      * many characters or has too many boolean clauses. This impacts the "Metrics" tabs of portals/collections,
-      * at least.
-      * The Solr Join Query Parser as added in Solr 4.0.0-ALPHA (I believe!): https://archive.apache.org/dist/lucene/solr/4.0.0/changes/Changes.html#4.0.0-alpha.new_features
-      * About the Solr Join Query Parser: https://lucene.apache.org/solr/guide/8_5/other-parsers.html#join-query-parser
-      * WARNING: At some point, MetacatUI will deprecate this configuration and will REQUIRE Solr Join Queries
-      * @type {boolean}
-      */
-      enableSolrJoins: false,
 
       defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
@@ -236,10 +225,10 @@ define(['jquery', 'underscore', 'backbone'],
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 
       // Metrics Falgs for the /profile view (summary view)
-      hideSummaryCitationsChart: false,
-      hideSummaryDownloadsChart: false,
+      hideSummaryCitationsChart: true,
+      hideSummaryDownloadsChart: true,
       hideSummaryMetadataAssessment: true,
-      hideSummaryViewsChart: false,
+      hideSummaryViewsChart: true,
 
       /**
       * Metrics flag for the Dataset Landing Page
@@ -457,6 +446,70 @@ define(['jquery', 'underscore', 'backbone'],
         associatedParties: false
       },
 
+      /**
+      * The list of labels that should be blacklisted while 
+      * @type {string[]}
+      */
+      portalLabelBlacklist: [
+        'urn:node:CN', 'CN', 'cn',
+        'urn:node:CNUNM1', 'CNUNM1', 'cn-unm-1',
+        'urn:node:CNUCSB1', 'CNUCSB1', 'cn-ucsb-1',
+        'urn:node:CNORC1', 'CNORC1', 'cn-orc-1',
+        'urn:node:KNB', 'KNB', 'KNB Data Repository',
+        'urn:node:ESA', 'ESA', 'ESA Data Registry',
+        'urn:node:SANPARKS', 'SANPARKS', 'SANParks Data Repository',
+        'urn:node:ORNLDAAC', 'ORNLDAAC', 'ORNL DAAC',
+        'urn:node:LTER', 'LTER', 'U.S. LTER Network',
+        'urn:node:CDL', 'CDL', 'UC3 Merritt',
+        'urn:node:PISCO', 'PISCO', 'PISCO MN',
+        'urn:node:ONEShare', 'ONEShare', 'ONEShare DataONE Member Node',
+        'urn:node:mnORC1', 'mnORC1', 'DataONE ORC Dedicated Replica Server',
+        'urn:node:mnUNM1', 'mnUNM1', 'DataONE UNM Dedicated Replica Server',
+        'urn:node:mnUCSB1', 'mnUCSB1', 'DataONE UCSB Dedicated Replica Server',
+        'urn:node:TFRI', 'TFRI', 'TFRI Data Catalog',
+        'urn:node:USANPN', 'USANPN', 'USA National Phenology Network',
+        'urn:node:SEAD', 'SEAD', 'SEAD Virtual Archive',
+        'urn:node:GOA', 'GOA', 'Gulf of Alaska Data Portal',
+        'urn:node:KUBI', 'KUBI', 'University of Kansas - Biodiversity Institute',
+        'urn:node:LTER_EUROPE', 'LTER_EUROPE', 'LTER Europe Member Node',
+        'urn:node:DRYAD', 'DRYAD', 'Dryad Digital Repository',
+        'urn:node:CLOEBIRD', 'CLOEBIRD', 'Cornell Lab of Ornithology - eBird',
+        'urn:node:EDACGSTORE', 'EDACGSTORE', 'EDAC Gstore Repository',
+        'urn:node:IOE', 'IOE', 'Montana IoE Data Repository',
+        'urn:node:US_MPC', 'US_MPC', 'Minnesota Population Center',
+        'urn:node:EDORA', 'EDORA', 'Environmental Data for the Oak Ridge Area (EDORA)',
+        'urn:node:RGD', 'RGD', 'Regional and Global biogeochemical dynamics Data (RGD)',
+        'urn:node:GLEON', 'GLEON', 'GLEON Data Repository',
+        'urn:node:IARC', 'IARC', 'IARC Data Archive',
+        'urn:node:NMEPSCOR', 'NMEPSCOR', 'NM EPSCoR Tier 4 Node',
+        'urn:node:TERN', 'TERN', 'TERN Australia',
+        'urn:node:NKN', 'NKN', 'Northwest Knowledge Network',
+        'urn:node:USGS_SDC', 'USGS_SDC', 'USGS Science Data Catalog',
+        'urn:node:NRDC', 'NRDC', 'NRDC DataONE member node',
+        'urn:node:NCEI', 'NCEI', 'NOAA NCEI Environmental Data Archive',
+        'urn:node:PPBIO', 'PPBIO', 'PPBio',
+        'urn:node:NEON', 'NEON', 'NEON Member Node',
+        'urn:node:TDAR', 'TDAR', 'The Digital Archaeological Record',
+        'urn:node:ARCTIC', 'ARCTIC', 'Arctic Data Center',
+        'urn:node:BCODMO', 'BCODMO', 'Biological and Chemical Oceanography Data Management Office (BCO-DMO) ',
+        'urn:node:GRIIDC', 'GRIIDC', 'Gulf of Mexico Research Initiative Information and Data Cooperative (GRIIDC)',
+        'urn:node:R2R', 'R2R', 'Rolling Deck to Repository (R2R)',
+        'urn:node:EDI', 'EDI', 'Environmental Data Initiative',
+        'urn:node:UIC', 'UIC', 'A Member Node for University of Illinois at Chicago.',
+        'urn:node:RW', 'RW', 'Research Workspace',
+        'urn:node:FEMC', 'FEMC', 'Forest Ecosystem Monitoring Cooperative Member Node',
+        'urn:node:OTS_NDC', 'OTS_NDC', 'Organization for Tropical Studies - Neotropical Data Center',
+        'urn:node:PANGAEA', 'PANGAEA', 'PANGAEA',
+        'urn:node:ESS_DIVE', 'ESS_DIVE', 'ESS-DIVE: Deep Insight for Earth Science Data',
+        'urn:node:CAS_CERN', 'CAS_CERN', 'Chinese Ecosystem Research Network (CERN)',
+        'urn:node:FIGSHARE_CARY', 'FIGSHARE_CARY', 'Cary Institute of Ecosystem Studies (powered by Figshare)',
+        'urn:node:IEDA_EARTHCHEM', 'IEDA_EARTHCHEM', 'IEDA EARTHCHEM',
+        'urn:node:IEDA_USAP', 'IEDA_USAP', 'IEDA USAP',
+        'urn:node:IEDA_MGDL', 'IEDA_MGDL', 'IEDA MGDL',
+        'urn:node:METAGRIL', 'METAGRIL', 'metaGRIL',
+        'urn:node:ARM', 'ARM', 'ARM - Atmospheric Radiation Measurement Research Facility'
+      ],
+
       /** If true, then archived content is available in the search index.
       * Set to false if this MetacatUI is using a Metacat version before 2.10.0
       * @type {boolean}
@@ -659,6 +712,7 @@ define(['jquery', 'underscore', 'backbone'],
             this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
           }
 
+ 
           if(this.get('orcidBaseUrl'))
             this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
@@ -715,13 +769,13 @@ define(['jquery', 'underscore', 'backbone'],
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addKeyword">addKeyword</a></li><li><a href="global.html#addNewKeyword">addNewKeyword</a></li><li><a href="global.html#checkIncompatibility">checkIncompatibility</a></li><li><a href="global.html#clearOldDrafts">clearOldDrafts</a></li><li><a href="global.html#friendlyTimeDiff">friendlyTimeDiff</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#listenForActivity">listenForActivity</a></li><li><a href="global.html#listenForTimeout">listenForTimeout</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li><li><a href="global.html#movePartyDown">movePartyDown</a></li><li><a href="global.html#movePartyUp">movePartyUp</a></li><li><a href="global.html#movePersonDown">movePersonDown</a></li><li><a href="global.html#movePersonUp">movePersonUp</a></li><li><a href="global.html#renderSupport">renderSupport</a></li><li><a href="global.html#saveDraft">saveDraft</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showTimeoutSignIn">showTimeoutSignIn</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addKeyword">addKeyword</a></li><li><a href="global.html#addNewKeyword">addNewKeyword</a></li><li><a href="global.html#checkIncompatibility">checkIncompatibility</a></li><li><a href="global.html#clearOldDrafts">clearOldDrafts</a></li><li><a href="global.html#friendlyTimeDiff">friendlyTimeDiff</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#listenForActivity">listenForActivity</a></li><li><a href="global.html#listenForTimeout">listenForTimeout</a></li><li><a href="global.html#MetacatUI">MetacatUI</a></li><li><a href="global.html#movePartyDown">movePartyDown</a></li><li><a href="global.html#movePartyUp">movePartyUp</a></li><li><a href="global.html#movePersonDown">movePersonDown</a></li><li><a href="global.html#movePersonUp">movePersonUp</a></li><li><a href="global.html#renderSupport">renderSupport</a></li><li><a href="global.html#saveDraft">saveDraft</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showTimeoutSignIn">showTimeoutSignIn</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu May 07 2020 15:41:56 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu May 14 2020 14:56:28 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

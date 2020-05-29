@@ -37,7 +37,14 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/altHeader.html', 'te
 				pause: 'hover'
 			}
 			$('.carousel').carousel(carouselOptions);
-			
+
+      //Check if the temporary message is in this view
+      if( MetacatUI.appModel.get("temporaryMessageContainer") == "#HeaderContainer"){
+        if( typeof MetacatUI.appView.showTemporaryMessage == "function") {
+           MetacatUI.appView.showTemporaryMessage();
+         }
+      }
+
 			return this;
 		}
 		

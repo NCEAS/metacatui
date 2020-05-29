@@ -185,6 +185,8 @@ function ($, _, Backbone) {
 		},
 
 		renderMetadata: function (pid) {
+			pid = decodeURIComponent(pid);
+
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
 

@@ -1,6 +1,6 @@
 # Contributing to MetacatUI
 
-:tada: First off, thanks for contributing!:tada:
+:tada: First off, thanks for contributing! :tada:
 
 - [Types of contributions](#types-of-contributions)
 - [Pull Requests](#pull-requests)
@@ -18,8 +18,9 @@ bug reports, documentation, graphics, and many others.  You might consider contr
 - Report a bug or request a new feature in our [issue tracker](https://github.com/NCEAS/metacatui/issues)
 - Fix a bug and contribute the code with a Pull Request
 - Write or edit some documentation
-- Develop a screencast tutorial
-- Answer questions on our mailing list or Slack team
+- Sharing helpful tips or FAQ-type answers to users or future contributors
+- Create screenshots or tutorials of features of MetacatUI
+- Answer questions on our mailing list or [Slack team](https://slack.dataone.org/)
 - ...
 
 MetacatUI is an open source project, and we welcome full
@@ -38,8 +39,9 @@ In short:
 - on your computer, clone your forked copy of the MetacatUI repository
 - checkout a development branch and commit your changes
 - push your branch to your forked repository, and submit a pull-request
-- go through the review process, making changes until your pull-request can be merged
-- describe your changes in the issue, and close your issue.
+- our team will be notified of your Pull Request and will review your changes
+- our team may request changes before we will approve the Pull Request, or we will make them for you
+- once the code is reviewed, our team will merge in your changes and you're done!
 
 ## Development Workflow
 
@@ -58,18 +60,17 @@ create one `dev-x.y` branch for integrated development and testing of the set of
 targeting a particular release.  Much of the development happens directly on these *dev*
 branches, but when needed a separate feature branch can be created to isolate development
 on a specific set of capabilities, especially if it may be disruptive to other developers
-working on the main dev-* branch.
+working on the main `dev-*` branch.
 
-**feature**. Feature branches should be named with a prefix of the `dev` branch
-that they are targeting,
+**feature**. Feature branches should be named with a prefix of `feature`
 and should include a short descriptive label reflecting their purpose.  For example,
-`dev-2.9-indexing` might be a new feature being developed independently but intended to be merged into the `dev-2.9` branch. If a feature is being developed for an uncertain future
-release, the branch should be prefixed with `feature-` and contain a descriptive label.
-For example, a `feature-globus_auth` might target some unknown future release.
+`feature-new-search` may be a branch name for a feature related to a new search tool.
+You may also want to include the release version that you are targeting, such `feature-2.11.2-new-search`, or the branch you are targeting to merge into, such as `feature-dev-2.11-new-search`.
+You may also want to include the issue number that describes the feature, such as `feature-#1456-new-search`.
 
 All development branches should be frequently merged with changes from `master` to
 ensure that the development branch stays up to date with other features that have
-been tested and are awaiting release.  Thus, each `dev-*` branch represents an opportunity
+been tested and are awaiting release.  Thus, each `feature-*` branch represents an opportunity
 for integration testing of the set of features intended to work together for a
 particular release.
 
@@ -81,22 +82,15 @@ particular release.
 
 ## Release process
 
-The release process starts with integration testing in a `dev*` branch. Once all
-changes that are desired in a release are merged into the `dev` branch, we run
-the full set of tests on a clean checkout of the `dev` branch.
-
-Second, create a pull request to merge those changes from the `metacatui/dev-*` branch
-to the `metacatui/master` branch.  This pull request should be done from the `dev*`
-branch within the MetacatUI repository in order to make it simple for others to
-review the changes, and to maintain a record of the development branch commits.
-This pull request will be reviewed by another developer, and, after issues and
-feedback have been resolved, the pull request can be merged into master.  This
-cycle can be repeated multiple times until all features have been tested and
-merged into master.  At this point, if all features for the planned release
-have been merged to master, then the master branch can be merged to the
-`releases` branch, and tagged with the new release tag for that release. At
+1. Our release process starts with integration testing in a `dev-*` branch. Once all
+changes that are desired in a release are merged into the `dev-` branch, we run
+the full set of tests on a clean checkout of the `dev-` branch.
+2. After testing, the `dev-` branch is merged to master.
+3. Then the master branch can be merged to the `releases` branch, and tagged with
+the new version number (e.g. `2.11.2`). At
 this point, the tip of the `releases` branch will reflect the new release and
 the master branch is ready for work on the next release.
+4. Releases can be downloaded from the [Github releases page for the MetacatUI repository](https://github.com/NCEAS/metacatui/releases).
 
 ## Testing
 
@@ -106,13 +100,8 @@ Any new code developed should include a robust set of unit tests for each public
 method, as well as integration tests from new feature sets.  Tests should fully
 exercise the feature to ensure that it responds correctly to both good data inputs
 as well as various classes of corrupt or bad data.  All tests should pass before
-a `dev` branch is merged to master, and all tests should pass before the `master`
+a `dev-` branch is merged to master, and all tests should pass before the `master`
 branch is merged to `releases` and tagged for a release.
-
-**Continuous integration**. MetacatUI is built upon every commit through the Jenkins
-system for [continuous integration at DataONE](https://purl.dataone.org/integration).  
-Both the `releases` and `master` branch are built and tested, and the current
-development branch is built as well.
 
 ## Code style
 
@@ -121,18 +110,18 @@ readable, and maintainable software.  While there has been significant variablil
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.  Some of the guidelines we follow include:
 
-**Java**. For Java code, follow the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html), with the single exception that indentation is performed with 4 spaces rather than 2.  When working on a class that
-does not follow the conventions, strive to reformat that code module in a single
-isolated code commit before starting other code changes.
+**JSDoc**. 
+All JavaScript code should be fully documented with JSDoc comments.  Special
+attention should be paid to documentation of Model attributes and functions, and View functions.  
 
-**Javadoc**. All Java code should be fully documented with JavaDoc comments.  Special
-attention should be paid to documentation of the public API for classes.  Documentation
+Documentation
 should explain both what the code does, but also why it does it in a particular
-way when appropriate.  Class and method documentation should be written to provide
+way when appropriate.  Model and function documentation should be written to provide
 sufficient context for people that are not intimately familiar with the rest of the code.
-Class-level documentation often is strengthened through explaining the role of the
-class in the architecture.  Avoid using tautological definitions that reuse the name of
-a class or method in its definition.  And please be complete.
+
+Model-level documentation often is strengthened through explaining the role of the
+model in the architecture.  Avoid using tautological definitions that reuse the name of
+a model or function in its definition.  And please be complete.
 
 ## Contributor license agreement
 

@@ -1,77 +1,82 @@
-<% if(memberNode && memberNode.logo){ %>
-	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>">
-    <img src="<%=memberNode.logo%>" class="logo <%=memberNode.shortIdentifier%>" title="From the <%=memberNode.name%> repository" />
-  </a>
+<% if(MetacatUI.appModel.get("displayRepoLogosInSearchResults") ){ %>
+  <% if(memberNode && memberNode.logo){ %>
+  	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>">
+      <img src="<%=memberNode.logo%>" class="logo <%=memberNode.shortIdentifier%>" title="From the <%=memberNode.name%> repository" />
+    </a>
+  <% } %>
+
+  <% if(typeof logo == "string"){ %>
+  	<a href="<%=viewURL%>"><img src="<%=logo%>" class="logo" /></a>
+  <% } %>
 <% } %>
 
-<% if(typeof logo == "string"){ %>
-	<a href="<%=viewURL%>"><img src="<%=logo%>" class="logo" /></a>
-<% } %>
-
-<div class="citation">
-</div>
+<div class="citation"></div>
 <div class="clear"></div>
 <div class="info-icons  ">
-	<div class="icons ">
-    <% if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) { %>
+    <% if( MetacatUI.appModel.get("displayDownloadButtonInSearchResults") ){ %>
+      <% if ((resourceMap && (typeof resourceMap != "undefined")) && (resourceMap.length > 1)) { %>
         <a class="download disabled-download" title="There may be multiple datasets associated with this metadata record. View the metadata page to choose a dataset to download."><i class="icon icon-cloud-download"></i></a>
-	 <%	 }
-			else if(resourceMap && (typeof resourceMap != "undefined")){
-				print('<a class="download pointer" download title="Click to Download" href="', MetacatUI.appModel.get('packageServiceUrl'), encodeURIComponent(resourceMap), '" title="Click to Download"><i class="icon icon-cloud-download "></i></a>');
-			}
+  	  <%	 }
+  		else if(resourceMap && (typeof resourceMap != "undefined")){
+  			print('<a class="download pointer icons" download title="Click to Download" href="', MetacatUI.appModel.get('packageServiceUrl'), encodeURIComponent(resourceMap), '" title="Click to Download"><i class="icon icon-cloud-download "></i></a>');
+  		}
       else{ %>
-        <a class="download pointer" download title="Click to download" href="<%=(MetacatUI.appModel.get('objectServiceUrl') + encodeURIComponent(id))%>"><i class="icon icon-cloud-download"></i></a>
-   <% } %>
-      </div>
+        <a class="download pointer icons" download title="Click to download" href="<%=(MetacatUI.appModel.get('objectServiceUrl') + encodeURIComponent(id))%>"><i class="icon icon-cloud-download"></i></a>
+      <% } %>
+    <% } %>
+
     <% if(typeof abstract != "undefined"){  %>
-		<div class="abstract icons"><i class="icon icon-info-sign popover-this abstract " data-delay="1500"></i></div>
-	<% } %>
+		  <div class="abstract icons"><i class="icon icon-info-sign popover-this abstract " data-delay="1500"></i></div>
+	  <% } %>
     <div class="resource-map icons ">
-	<%	if (numDataFiles > 0) {
+	  <%	if (numDataFiles > 0) {
 	 			print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon " title="'+ dataFilesMessage +'"></i>');
- 			}
-	%>
+ 	  } %>
     </div>
-      	<div class="on-map icons  ">
-		<%
-		if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
-        	print('<i class="icon icon-map-marker on-map open-marker " data-id="'+id+'" data-geohash="' + geohash_9  + '" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
-        }
-        else{
-           print('<i class="icon icon-map-marker inactive "></i>');
-        }
-         %>
-    </div>
-            	<% if(hasProv){
-      			print('<div class="icons provenance active ">');
-      			print('<i class="icon icon-code-fork active " title="This dataset contains provenance information."></i>');
-      		}
-      		else{
-      		    print('<div class="icons provenance inactive ">');
-      			print('<i class="icon icon-code-fork inactive "></i>');
-      		}
-      	%>
-      	</div>
 
-				<% if (showAnnotationIndicator && hasAnnotations) { %>
-					<div class="icons annotations ">
-						<span class="icon-stack annotation-icon"><i class="icon icon-certificate icon-stack-base"></i><i class="icon icon-ok" title="This dataset includes annotations."></i></span>
-					</div>
-				<% } %>
+    <% if(typeof MetacatUI.mapKey == "string" && MetacatUI.mapKey.length){ %>
+      <div class="on-map icons  ">
+  		<% if (typeof geohash_9 !== "undefined" && geohash_9 !== null){
+          	print('<i class="icon icon-map-marker on-map open-marker " data-id="'+id+'" data-geohash="' + geohash_9  + '" title="This data set has ' + geohash_9.length + ' geographic regions on the map"></i>');
+          }
+          else{
+             print('<i class="icon icon-map-marker inactive "></i>');
+          }
+           %>
+      </div>
+    <% } %>
 
-				<div class="catalog-metrics icons">
-			      <span class='catalog-stat resultItem-CitationCount'>
-			        <i class='icon catalog-metric-icon'></i>
-			      </span>
-			      <span class='catalog-stat resultItem-DownloadCount'>
-			        <i class='icon catalog-metric-icon'></i>
-			      </span>
-			      <span class='catalog-stat resultItem-ViewCount'>
-			        <i class='icon catalog-metric-icon'></i>
-			      </span>
-			    </div>
-          <% if(!isPublic){ %>
-            <div class="private icons "><i class="icon icon-lock private " title="This is private content."></i></div>
-          <% } %>
-      	<div class="clear"></div>
+    <% if(hasProv){
+  			print('<div class="icons provenance active ">');
+  			print('<i class="icon icon-code-fork active " title="This dataset contains provenance metadata."></i>');
+  		}
+  		else{
+  		    print('<div class="icons provenance inactive ">');
+  			print('<i class="icon icon-code-fork inactive "></i>');
+  		}
+  	%>
+  	</div>
+
+		<% if (showAnnotationIndicator && hasAnnotations) { %>
+			<div class="icons annotations ">
+				<span class="icon-stack annotation-icon"><i class="icon icon-certificate icon-stack-base"></i><i class="icon icon-ok" title="This dataset includes annotations."></i></span>
+			</div>
+		<% } %>
+
+		<div class="catalog-metrics icons">
+	      <span class='catalog-stat resultItem-CitationCount'>
+	        <i class='icon catalog-metric-icon'></i>
+	      </span>
+	      <span class='catalog-stat resultItem-DownloadCount'>
+	        <i class='icon catalog-metric-icon'></i>
+	      </span>
+	      <span class='catalog-stat resultItem-ViewCount'>
+	        <i class='icon catalog-metric-icon'></i>
+	      </span>
+	    </div>
+
+    <% if(!isPublic){ %>
+      <div class="private icons "><i class="icon icon-lock private " title="This is private content."></i></div>
+    <% } %>
+    <div class="clear"></div>
   </div><!-- END info-icons -->

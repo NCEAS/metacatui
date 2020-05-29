@@ -77,6 +77,12 @@ define(["jquery",
       //Create a Filters collection to store the definition filters
       this.set("definitionFilters", new Filters());
 
+      // Update the blacklist with the node/repository labels
+      var nodeBlackList = MetacatUI.appModel.get("portalLabelBlacklist");
+      if (nodeBlackList !== undefined && Array.isArray(nodeBlackList)) {
+        this.set("labelBlacklist", this.get("labelBlacklist").concat(nodeBlackList));
+      }
+
       //When this Collection has been saved, re-save the collection definition
       this.on("successSaving", function(){
         this.get("definitionFilters").reset(this.getAllDefinitionFilters());
@@ -123,7 +129,7 @@ define(["jquery",
 
       var model = this,
         fetchOptions = _.extend({
-          url: MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId")),
+          url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id") || this.get("seriesId")),
           dataType: "text",
           success: function(response){
             model.set(DataONEObject.prototype.parse.call(model, response));

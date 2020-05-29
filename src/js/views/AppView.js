@@ -46,7 +46,8 @@ define(['jquery',
 					 		 	  "click .open-chat" : "openChatWithMessage",
 					 		 "click .login.redirect" : "sendToLogin",
 					 	   "focus .jump-width-input" : "widenInput",
-					 	"focusout .jump-width-input" : "narrowInput"
+					 	"focusout .jump-width-input" : "narrowInput",
+            "click .temporary-message .close" : "hideTemporaryMessage"
 		},
 
 		initialize: function () {
@@ -60,7 +61,7 @@ define(['jquery',
 			MetacatUI.appUserModel.checkStatus();
 
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
-			$("head").prepend(this.appHeadTemplate({
+			$("head").append(this.appHeadTemplate({
 				theme: MetacatUI.theme,
 				themeTitle: MetacatUI.themeTitle,
 				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
@@ -82,6 +83,8 @@ define(['jquery',
 
 			MetacatUI.footerView = new FooterView();
 			MetacatUI.footerView.setElement($('#Footer')).render();
+
+      this.showTemporaryMessage();
 
 			//Load the Slaask chat widget if it is enabled in this theme
 			if(MetacatUI.appModel.get("slaaskKey") && window._slaask)
@@ -489,6 +492,82 @@ define(['jquery',
                        "speed and the best experience on this site.", "alert-warning", this.$el,
                        false, { remove: true });
         this.$el.children(".alert-container").addClass("important-app-message");
+      }
+    },
+
+    /**
+    * Shows a temporary message at the top of the view
+    */
+    showTemporaryMessage: function(){
+      try{
+        //Is there a temporary message to display throughout the app?
+        if( MetacatUI.appModel.get("temporaryMessage") ){
+        var startTime = MetacatUI.appModel.get("temporaryMessageStartTime"),
+            endTime   = MetacatUI.appModel.get("temporaryMessageEndTime"),
+            today     = new Date(),
+            isDisplayed = false;
+
+        //Find cases where we should display the message
+        //If there is a date range and today is in the range
+        if( startTime && endTime && (today > startTime) && (today < endTime) ){
+          isDisplayed = true;
+        }
+        //If there's just a start time and today is after it
+        else if( startTime && !endTime && (today > startTime) ){
+          isDisplayed = true;
+        }
+        //If there's just an end time and today is before it
+        else if( !startTime && endTime && (today < endTime) ){
+          isDisplayed = true;
+        }
+        //If there's no start or end time
+        else if( !startTime && !endTime ){
+          isDisplayed = true;
+        }
+
+        if( isDisplayed ){
+          require(["text!templates/alert.html"], function(alertTemplate){
+          //Get classes for the message
+          var classes = MetacatUI.appModel.get("temporaryMessageClasses") || "";
+          classes += " temporary-message";
+
+          var container = MetacatUI.appModel.get("temporaryMessageContainer") || "#Navbar";
+
+          //If the message exists already, return
+          if( $(container + " .temporary-message").length ){
+            return;
+          }
+
+          //Insert the message using the Alert template
+          $(container).prepend( _.template(alertTemplate)({
+            classes: classes,
+            msg: MetacatUI.appModel.get("temporaryMessage"),
+            includeEmail: true,
+            remove: true
+          }) );
+
+          //Add a class to the body in case we need to adjust other elements on the page
+          $("body").addClass("has-temporary-message");
+
+        });
+        }
+      }
+      }
+      catch(e){
+        console.error("Couldn't display the temporary message: ", e);
+      }
+    },
+
+    /**
+    * Hides the temporary message
+    */
+    hideTemporaryMessage: function(){
+      try{
+        this.$(".temporary-message").remove();
+        $("body").removeClass("has-temporary-message");
+      }
+      catch(e){
+        console.error("Couldn't hide the temporary message: ", e);
       }
     },
 
