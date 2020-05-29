@@ -3053,10 +3053,27 @@ define(["jquery",
             */
             showError: function(model, response){
 
+              var errorMessage = "";
+
+              try{
+                errorMessage = $(response.responseText).text();
+              }
+              catch{
+                try{
+                  errorMessage = JSON.parse(response.responseText).error.msg;
+                }
+                catch{
+                  errorMessage = "";
+                }
+              }
+              finally{
+                if( typeof errorMessage == "string" && errorMessage.length ){
+                  errorMessage = "<p>Error details: " + errorMessage + "</p>";
+                }
+              }
+
               MetacatUI.appView.showAlert(
-                "<h4><i class='icon icon-frown'></i>Something went wrong while getting the list of datasets.</h4>" +
-                "<p>Error details: " +
-                $(response.responseText).text() + "</p>",
+                "<h4><i class='icon icon-frown'></i>Something went wrong while getting the list of datasets.</h4>" + errorMessage,
                 "alert-error",
                 this.$results
               );
