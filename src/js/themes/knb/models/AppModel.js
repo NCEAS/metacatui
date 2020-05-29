@@ -41,6 +41,17 @@ define(['jquery', 'underscore', 'backbone'],
       temporaryMessageContainer: "#HeaderContainer",
 
       /**
+      * Show or hide the source repository logo in the search result rows
+      * @type {boolean}
+      */
+      displayRepoLogosInSearchResults: true,
+      /**
+      * Show or hide the Download button in the search result rows
+      * @type {boolean}
+      */
+      displayDownloadButtonInSearchResults: false,
+
+      /**
        * Flag which, when true shows Whole Tale features in the UI
        * @type {Boolean}
        */
@@ -94,7 +105,7 @@ define(['jquery', 'underscore', 'backbone'],
         label: "GCMD",
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
-      
+
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 
       // the most likely item to change is the Metacat deployment context
@@ -432,7 +443,7 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
-      * The list of labels that should be blacklisted while 
+      * The list of labels that should be blacklisted while
       * @type {string[]}
       */
       portalLabelBlacklist: [

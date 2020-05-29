@@ -81,6 +81,17 @@ define(['jquery', 'underscore', 'backbone'],
       temporaryMessageContainer: "#Navbar",
 
       /**
+      * Show or hide the source repository logo in the search result rows
+      * @type {boolean}
+      */
+      displayRepoLogosInSearchResults: false,
+      /**
+      * Show or hide the Download button in the search result rows
+      * @type {boolean}
+      */
+      displayDownloadButtonInSearchResults: false,
+
+      /**
        * Flag which, when true shows Whole Tale features in the UI
        * @type {Boolean}
        */

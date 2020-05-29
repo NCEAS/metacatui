@@ -40,6 +40,17 @@ define(['jquery', 'underscore', 'backbone'],
       temporaryMessageClasses: "warning",
       temporaryMessageContainer: "#Navbar",
 
+      /**
+      * Show or hide the source repository logo in the search result rows
+      * @type {boolean}
+      */
+      displayRepoLogosInSearchResults: true,
+      /**
+      * Show or hide the Download button in the search result rows
+      * @type {boolean}
+      */
+      displayDownloadButtonInSearchResults: false,
+
       // set this variable to true, if the content being published is moderated by the data team.
       contentIsModerated: false,
 
@@ -298,7 +309,7 @@ define(['jquery', 'underscore', 'backbone'],
       limitPortalsToSubjects: [],
 
       /**
-      * The list of labels that should be blacklisted while 
+      * The list of labels that should be blacklisted while
       * @type {string[]}
       */
       portalLabelBlacklist: [
@@ -447,7 +458,7 @@ define(['jquery', 'underscore', 'backbone'],
       if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
         this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
       }
-      
+
       if(this.get('orcidBaseUrl'))
         this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
