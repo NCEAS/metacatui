@@ -108,8 +108,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 			// remove the members section directly from the model
 			this.portalModel.removeSection("members");
-			
-			this.portalModel.initalizePortalNodeView(view.model.get("nodeInfo"));
+
+			this.portalModel.createNodeAttributes(view.model.get("nodeInfo"));
 
 			//Setting the repo specific statsModel
 			var statsSearchModel = this.model.get("searchModel").clone();
