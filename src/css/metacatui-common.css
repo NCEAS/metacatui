@@ -2956,7 +2956,7 @@ img[src*="googleapis.com/"].georegion-map{
 	white-space: nowrap;
 	text-align: center;
 	box-sizing: border-box;
-	padding-bottom: 4px; /* to account for a 2px top border and 2px bottom border*/
+	padding-bottom: 3px; /* to account for a 1.5px top border and 1.5px bottom border*/
 }
 
 .vertical-align-image-helper {
@@ -3013,7 +3013,7 @@ img[src*="googleapis.com/"].georegion-map{
 .dropzone,
 .dropzone.dz-started:hover,
 .dropzone.dz-started.dz-drag-hover {
-	border: dashed 2px #999;
+	border: dashed 1.5px #999;
 }
 
 .dz-message{
@@ -3051,6 +3051,149 @@ img[src*="googleapis.com/"].georegion-map{
   display: block;
   font-size: 1.5em;
 }
+
+/******************************************
+* Markdown Editor - Woofmark
+********************************************/
+/* The markdown editor is used in the portal editor markdown section.  */
+/* It uses the imageUploader view, and the woofdown component (prefixed with wk-). */
+/* See https://github.com/bevacqua/woofmark */
+/* and https://github.com/bevacqua/woofmark/blob/master/dist/woofmark.css */
+
+/* markdown editor container - contains editor buttons & markdown textarea */
+.wk-container {
+  position: relative;
+  background-color: #f2f2f2;
+  padding: 10px 10px 0;
+  border-radius: 6px;
+}
+.wk-hide {
+  display: none !important;
+}
+/* markdown editor button */
+.wk-command {
+  background-color: transparent;
+  color: #2c6f90;
+  color: var(--portal-primary-color);
+  border: 0;
+  padding: 14px;
+  cursor: pointer;
+  outline: none;
+  height: 55px;
+  margin: 5px;
+}
+.wk-command:hover{
+  transition: all 0.1s linear;
+  background-color: #f7f7f7;
+  color: #2c7e90;
+  color: var(--portal-secondary-color);
+}
+/* ---- Markdown editor modal ---- */
+/* The modal type dialogs to add image or link */
+.wk-prompt {
+  position: fixed;
+  top: 10%;
+  left: 2%;
+  right: 2%;
+  z-index: 1050;
+  max-width: 330px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  background-clip: padding-box;
+  color: #555;
+  padding: 0px;
+  margin: 0 auto;
+}
+/* The close button is an empty link, add font awesome close icon */
+.wk-prompt-close::before {
+  content: "×";
+  font-size: 25px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  opacity: .2;
+}
+.wk-prompt-close::before:hover {
+  opacity: .3;
+}
+.wk-prompt-header{
+  padding: 9px 15px;
+  border-bottom: 1px solid #eee;
+}
+.wk-prompt-title {
+  margin: 0;
+  line-height: 30px;
+  font-size: 24px;
+}
+.wk-prompt-body {
+  position: relative;
+  max-height: 400px;
+  padding: 15px;
+  overflow-y: auto;
+  color: #999;
+}
+.wk-prompt .image-uploader{
+  position: relative;
+  margin: 5px auto 15px;
+}
+.wk-prompt .dropzone .dz-message{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 0px;
+}
+.wk-prompt-input{
+  width: 100%;
+  max-width: 292px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  display: inline-block;
+  height: 20px;
+  padding: 4px 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #555;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+.wk-prompt-buttons{
+  padding: 14px 15px 15px;
+  margin-bottom: 0;
+  text-align: right;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 6px 6px;
+  box-shadow: inset 0 1px 0 #ffffff;
+  height: auto;
+  position: relative;
+  text-align: center;
+}
+.wk-prompt-buttons > button {
+  font-weight: 400;
+  border: 1px solid #CCC;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #333;
+  padding: 4px 12px;
+}
+.wk-prompt-buttons > .wk-prompt-ok {
+  background-color: #2c7e90;
+  background-color: var(--portal-secondary-color);
+  color: white;
+  margin-left: 10px;
+}
+.wk-container .tooltip{
+  /* ensure the tooltip is not hidden within markdown editor container */
+  position: fixed;
+}
+
+
 /******************************************
 ** AccessPolicy editor view ***
 ******************************************/
@@ -3317,13 +3460,13 @@ img[src*="googleapis.com/"].georegion-map{
   padding-top: 20px;
   padding-bottom: 20px;
 }
-.edit-image .toggle-remove-preview{
+.image-uploader .toggle-remove-preview{
   display: none;
 }
-.edit-image.remove-preview{
+.image-uploader.remove-preview{
   opacity: .5;
 }
-.edit-image .dropzone .remove-message{
+.image-uploader .dropzone .remove-message{
   display: none;
 }
 .image-uploader.remove-preview{
@@ -3380,6 +3523,7 @@ img[src*="googleapis.com/"].georegion-map{
   font-size: 1.5em;
   display: block;
 }
+/* hide the remove message for logo images since we can reemove the entire logo instead */
 .port-editor-settings .logos-container .edit-image .dropzone .remove-message,
 .port-editor-settings .logos-container .edit-image .dropzone .remove {
     display: none;
@@ -3507,11 +3651,17 @@ img[src*="googleapis.com/"].georegion-map{
 
 /* the markdown editor textarea field */
 .port-editor-md textarea.markdown{
-	margin: 20px 0px;
+	
 	width: 100%;
+	height: 45vh;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	margin: 20px 0 0;
 	line-height: 1.6em;
 	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
 	padding: 0.5rem;
+	
+	
 }
 
 .port-editor-md .markdown-help{

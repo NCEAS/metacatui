@@ -1,13 +1,15 @@
 define(['underscore',
         'jquery',
         'backbone',
+        "woofmark",
         "models/portals/PortalSectionModel",
         "models/portals/PortalImage",
+        "views/ImageUploaderView",
         "views/portals/editor/PortEditorSectionView",
         "views/portals/editor/PortEditorImageView",
         "views/portals/PortalSectionView",
         "text!templates/portals/editor/portEditorMdSection.html"],
-function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView, ImageEdit, PortalSectionView, Template){
+function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploader, PortEditorSectionView, ImageEdit, PortalSectionView, Template){
 
   /**
   * @class PortEditorMdSectionView
@@ -51,10 +53,16 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
     template: _.template(Template),
 
     /**
-    * A jQuery selector for the element that the ImageUploader view should be inserted into
+    * A jQuery selector for the element into which the ImageUploader view should be inserted
     * @type {string}
     */
     imageUploaderContainer: ".portal-display-image",
+    
+    /**
+    * A jQuery selector for the markdown textarea
+    * @type {string}
+    */
+    markdownTextarea: ".markdown",
 
     /**
     * A reference to the PortalEditorView
@@ -98,7 +106,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
       try{
 
         // Get the markdown
-        var markdown;
+        var markdown = "";
 
         //Get the markdown from the SectionModel
         if( this.model.get("content") ){
@@ -106,10 +114,6 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           if( !markdown ){
             markdown = this.model.get("content").get("markdownExample");
           }
-        }
-
-        if( !markdown ){
-          markdown = "";
         }
 
         // Insert the template into the view
@@ -124,12 +128,17 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           // breaks when targeting two + components with the same ID
           cid: this.model.cid
         })).data("view", this);
-
+        
+        var markdownTextarea = this.$(this.markdownTextarea);
+        
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
-        this.$(".markdown"    ).data({ model: this.model.get("content") });
+        markdownTextarea.data({ model: this.model.get("content") });
         this.$(".title"       ).data({ model: this.model });
         this.$(".introduction").data({ model: this.model });
+        
+        // Add editing UI to markdown text area.
+        this.renderMarkdownEditor(markdownTextarea[0]);
 
         // Add an ImageEdit view for the sectionImage
         // If the section has no image yet, add the default PortalImage model
@@ -139,8 +148,9 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
         // Add the edit image view (incl. uploader) for the section image
         this.sectionImageUploader = new ImageEdit({
+          
           model: this.model.get("image"),
-          editorView: this.editorView,
+          editorView: this.markdownEditorView,
           imageUploadInstructions: ["Drag & drop a high quality image here or click to upload",
                                     "Suggested image size: 1200 x 1000 pixels"],
           nameLabel: false,
@@ -152,7 +162,8 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           minWidth: 800,
           minHeight: 300,
           maxHeight: 4000,
-          maxWidth: 9000,
+          maxWidth: 9000
+          
         });
         this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
         this.sectionImageUploader.render();
@@ -169,6 +180,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
         this.$("textarea.auto-resize").on('input textareaResize', function(e){
           view.resizeTextarea($(e.target));
         });
+        
         // Make sure the textareas are the right size with their pre-filled
         // content the first time the section is viewed, because scrollHeight
         // is 0px when the element is not displayed.
@@ -178,9 +190,179 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
       }
       catch(e){
-        console.log("The markdown view could not be rendered, error message: " + e);
+        console.log("The portal editor markdown section view could not be rendered, error message: " + e);
       }
 
+    },
+    
+    
+    /**    
+     * renderMarkdownEditor - Add UI for adding and editing markdown    
+     *      
+     * @param  {HTMLElement} textarea The textarea element for which to add markdown editor UI
+     */     
+    renderMarkdownEditor: function(textarea){
+      
+      try {
+        if(!textarea){
+          textarea = this.$(this.markdownTextarea)[0];
+        }
+        
+        if(!textarea){
+          return
+        }
+        
+        // Save the view
+        var view = this;
+        // Set woofmark options. See https://github.com/bevacqua/woofmark
+        var woofmarkOptions = {
+              fencing: true,
+              html: false,
+              wysiwyg: false,
+              defaultMode: "markdown",
+              render: {
+                // Hide buttons that switch between markdown, WYSIWYG, & HTML for now
+                modes: function (button, id) {
+                  button.style.display = "none";
+                }
+              }
+            };
+            
+        // A string used to mark default woofmark buttons for removal.
+        // Woofmark does not have an option to remove default commands/buttons,
+        // so we will remove them after the editor is rendered.
+        var removeButtons = "remove me";
+            
+        // Change some of the strings woofmark uses to generate elements...
+        // See: https://github.com/bevacqua/woofmark/blob/master/src/strings.js
+        
+        // The instructions for uploading in image that displays in the prompt/dialog
+        Woofmark.strings.prompts.image.description = 'Upload an image or enter an image URL';
+
+        // Use font awesome characters for button text.
+        // Add the names of font awesome icons here, and we'll replace any names
+        // starting with "icon-" with the <i></i> elements after the markdown
+        // editor is rendered.
+        Woofmark.strings.buttons = {
+          attachment: removeButtons, //"icon-paper-clip",
+          bold: "icon-bold",
+          code: "icon-code",
+          heading: "Tt",
+          hr: "↵",
+          italic: "icon-italic",
+          link: "icon-link",
+          ol: "icon-list-ol",
+          quote: "icon-quote-left",
+          ul: "icon-list-ul",
+          image: removeButtons, // <---- Hide the default image uploader button...
+          d1Image: "icon-picture" // <--- ... and use custom image function instead
+        }
+        
+        // Add a title for custom image uploader button
+        Woofmark.strings.titles.d1Image = 'Image <img> Ctrl+G';
+
+        // Initialize the woofmark markdown editor
+        this.markdownEditor = Woofmark(textarea, woofmarkOptions);
+        
+        // Add the custom upload image button that uses the ImageUploader view.
+        // Use cmd+G to overwrite Woofmark's built in image uploader function.
+        this.markdownEditor.addCommandButton("d1Image", "cmd+g", function addImage() {
+          
+          // Show woofmark's default image upload dialog, inserted at the end of body
+          view.markdownEditor.showImageDialog();
+          
+          // Select the image upload dialog elements so that we can customize it
+          var imageDialog = $(".wk-prompt"),
+              imageDialogInput = imageDialog.find(".wk-prompt-input"),
+              imageDialogDescription = imageDialog.find(".wk-prompt-description"),
+              imageDialogOkBtn = imageDialog.find(".wk-prompt-ok"),
+              // Save the inner HTML of the button for when we replace it
+              // temporarily during image upload
+              imageDialogOkBtnTxt = imageDialogOkBtn.html();
+          
+          // Create an ImageUploaderView and insert into this view.
+          mdImageUploader = new ImageUploader({
+            uploadInstructions: "Drag & drop an image here or click to upload",
+            imageTagName:       "img",
+            height:             "175",
+            width:              "300",
+            // TODO: shrink very large images ?
+            // maxHeight: 10000,
+            // maxWidth: 10000;
+          });
+          
+          // Show when image is uploading; temporarily disable the OK button
+          view.stopListening(mdImageUploader, "addedfile");
+          view.listenTo(mdImageUploader, "addedfile", function(){
+            // Disable the button during upload;
+            imageDialogOkBtn.prop('disabled', true);
+            imageDialogOkBtn.css("opacity", "0.5");
+            imageDialogOkBtn.html(
+              "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
+              "Uploading..."
+            );
+          });
+          
+          // Update the image input URL when the image is successfully uploaded
+          view.stopListening(mdImageUploader, "successSaving");
+          view.listenTo(mdImageUploader, "successSaving", function(dataONEObject){
+            // Re-enable the button
+            imageDialogOkBtn.prop('disabled', false);
+            imageDialogOkBtn.html(imageDialogOkBtnTxt);
+            imageDialogOkBtn.css("opacity", "1");
+            // Get the uploaded image's url.
+            var url = dataONEObject.url();
+            // Create title out of file name without extension.
+            var title = dataONEObject.get("fileName");
+            if(title && title.lastIndexOf(".") > 0) {
+              title = title.substring(0, title.lastIndexOf("."));
+            }
+            // Add the url + title to the input
+            imageDialogInput.val(url + ' "' + title +'"' );
+          });
+          
+          // Clear the input when the image is removed
+          view.stopListening(mdImageUploader, "removedfile");
+          view.listenTo(mdImageUploader, "removedfile", function(){
+            imageDialogInput.val("");
+          });
+          
+          // Render the image uploader and insert it just after the upload
+          // instructions in the image upload dialog box.
+          mdImageUploader.render();
+          $(mdImageUploader.el).insertAfter(imageDialogDescription);
+          
+        });
+        
+        // After the markdown editor is created...
+
+        // ...modify the default command buttons
+        var buttons = $(this.markdownEditor.textarea).parent().find(".wk-command");
+        
+        buttons.each( function(){
+          var $button = $(this);
+          var buttonText = $button.html();
+          // Remove buttons that were marked for removal
+          if(buttonText === removeButtons){
+            $button.remove();
+          }
+          // Replace button text with Font Awesome icons (<i class="icon-..."></i>)
+          else if (buttonText && buttonText.startsWith("icon-")){
+            var newButtonText = "<i class='" + buttonText + "'></i>";
+            $button.html(newButtonText);
+          }
+          // Add a tooltip, use title
+          $button.tooltip({
+    				placement: "bottom",
+    				delay: 600,
+            trigger: "hover"
+    			})
+        });
+    
+      } catch (e) {
+        console.log("Failed to render the markdown editor UI, error message: " + e );
+      }
+      
     },
 
 

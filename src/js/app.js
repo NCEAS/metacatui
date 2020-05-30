@@ -76,6 +76,8 @@ require.config({
 	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
 	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
+	// woofmark - markdown editor
+	woofmark: MetacatUI.root + '/components/woofmark.min',
 	// drop zone creates drag and drop areas
 	Dropzone: MetacatUI.root + '/components/dropzone-amd-module',
 	// Polyfill required for using dropzone with older browsers 
