@@ -155,12 +155,12 @@ define(['jquery', 'underscore', 'backbone'],
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
 
-      baseUrl: "https://dev.nceas.ucsb.edu",//window.location.origin || (window.location.protocol + "//" + window.location.host),
+      baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 
       // the most likely item to change is the Metacat deployment context
       context: '/metacat',
       d1Service: '/d1/mn/v2',
-      d1CNBaseUrl: "https://cn-stage-2.test.dataone.org/",
+      d1CNBaseUrl: "https://cn.dataone.org/",
       d1CNService: "cn/v2",
       d1LogServiceUrl: null,
       nodeServiceUrl: null,
@@ -477,7 +477,7 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
-      * The list of labels that should be blacklisted while 
+      * The list of labels that should be blacklisted while
       * @type {string[]}
       */
       portalLabelBlacklist: [
@@ -742,7 +742,7 @@ define(['jquery', 'underscore', 'backbone'],
             this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
           }
 
- 
+
           if(this.get('orcidBaseUrl'))
             this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
