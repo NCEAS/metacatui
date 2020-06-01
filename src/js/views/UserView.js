@@ -1,14 +1,14 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'clipboard',
         'collections/UserGroup',
-        'models/UserModel',
+        'models/UserModel', "models/Stats",
         'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
         'views/GroupListView', 'views/portals/PortalListView',
         'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
         'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
 	function($, _, Backbone, Clipboard,
     UserGroup,
-    UserModel,
+    UserModel, Stats,
     SignInView, StatsView, DataCatalogView, GroupListView, PortalListView,
     userProfileTemplate, AlertTemplate, LoadingTemplate,
     ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
@@ -67,6 +67,9 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 			this.stopListening();
 			if(this.model) this.model.stopListening();
+
+      //Create a Stats model
+      this.statsModel = new Stats();
 
 			this.activeSection = (options && options.section)? options.section : "profile";
 			this.activeSubSection = (options && options.subsection)? options.subsection : "";
@@ -172,8 +175,8 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.$profile = $(profileEl);
 
 			//If this user hasn't uploaded anything yet, display so
-			this.listenTo(MetacatUI.statsModel, "change:totalCount", function(){
-				if(!MetacatUI.statsModel.get("totalCount"))
+			this.listenTo(this.statsModel, "change:totalCount", function(){
+				if(!this.statsModel.get("totalCount"))
 					this.noActivity();
 			});
 
@@ -368,17 +371,18 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				view = this;
 
 			//Insert a couple stats into the profile
-			this.listenToOnce(MetacatUI.statsModel, "change:firstUpload", this.insertFirstUpload);
+			this.listenToOnce(this.statsModel, "change:firstUpload", this.insertFirstUpload);
 
-			this.listenToOnce(MetacatUI.statsModel, "change:totalCount", function(){
-				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(MetacatUI.statsModel.get("totalCount")));
+			this.listenToOnce(this.statsModel, "change:totalCount", function(){
+				view.$("#total-upload-container").text(MetacatUI.appView.commaSeparateNumber(view.statsModel.get("totalCount")));
 			});
 
 			//Create a base query for the statistics
 			var statsSearchModel = this.model.get("searchModel").clone();
 			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
-			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-			MetacatUI.statsModel.set("searchModel", statsSearchModel);
+			this.statsModel.set("query", statsSearchModel.getQuery());
+      this.statsModel.set("isSystemMetadataQuery", true);
+			this.statsModel.set("searchModel", statsSearchModel);
 
 			//Create the description for this profile
 			var description;
@@ -404,7 +408,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				description: description,
 				userType: "user",
 				el: this.$("#user-stats"),
-				model: MetacatUI.statsModel
+				model: this.statsModel
 			});
 			this.subviews.push(this.statsView);
 			this.statsView.render();
@@ -467,7 +471,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 		 * Insert the first year of contribution for this user
 		 */
 		insertFirstUpload: function(){
-			if(this.model.noActivity || !MetacatUI.statsModel.get("firstUpload")){
+			if(this.model.noActivity || !this.statsModel.get("firstUpload")){
 				this.$("#first-upload-container, #first-upload-year-container").hide();
 				return;
 			}
@@ -489,7 +493,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 			}
 			else{
-				var	firstUpload = new Date(MetacatUI.statsModel.get("firstUpload"));
+				var	firstUpload = new Date(this.statsModel.get("firstUpload"));
 			}
 
 			// Construct the first upload date sentence
@@ -1318,7 +1322,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.$profile = null;
 
 			//Stop listening to changes in models
-			this.stopListening(MetacatUI.statsModel);
+			this.stopListening(this.statsModel);
 			this.stopListening(this.model);
 			this.stopListening(MetacatUI.appUserModel);
 

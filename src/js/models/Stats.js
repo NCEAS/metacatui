@@ -18,6 +18,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     * @type {Object}
     * @property {string} query - The base query that defines the data collection to get statistis about.
     * @property {string} postQuery - A copy of the `query`, but without any URL encoding
+    * @property {boolean} isSystemMetadataQuery - If true, the `query` set on this model is only filtering on system metadata fields which are common between both metadata and data objects.
     * @property {number} metadataCount - The number of metadata objects in this data collection @readonly
     * @property {number} dataCount - The number of data objects in this data collection
     * @property {number} totalCount - The number of metadata and data objects in this data collection. Essentially this is the sum of metadataCount and dataCount
@@ -28,6 +29,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     * @property {number|string[]} metadataUpdateDates An array of date strings and the number of data objects uploaded on that date. Uses same structure as Solr facet counts: ["2015-08-02", 5]
     * @property {string} firstBeginDate - An ISO date string of the earliest year that this data collection describes, from the science metadata
     * @property {string} lastEndDate - An ISO date string of the latest year that this data collection describes, from the science metadata
+    * @property {string} firstPossibleDate - The first possible date (as a string) that data could have been collected. This is to weed out badly formatted dates when sending queries.
     * @property {object} temporalCoverage A simple object of date ranges (the object key) and the number of metadata objects uploaded in that date range (the object value). Example: { "1990-2000": 5 }
     * @property {number} queryCoverageFrom - The year to start the temporal coverage range query
     * @property {number} queryCoverageUntil - The year to end the temporal coverage range query
@@ -42,6 +44,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       return{
       query: "*:* ",
       postQuery: "",
+      isSystemMetadataQuery: false,
 
       metadataCount: 0,
       dataCount: 0,
@@ -57,20 +60,20 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       metadataUploadDates: null,
       dataUploadDates: null,
 
-      //Number of updates to content for each time period
       firstUpdate: null,
       dataUpdateDates: null,
       metadataUpdateDates: null,
 
       firstBeginDate: null,
       lastEndDate : null,
+      firstPossibleDate: "1800-01-01T00:00:00Z",
       temporalCoverage: 0,
       queryCoverageFrom: null,
       queryCoverageUntil: null,
 
-      metadataTotalSize: 0,
-      dataTotalSize: 0,
-      totalSize: 0,
+      metadataTotalSize: null,
+      dataTotalSize: null,
+      totalSize: null,
 
       hideMetadataAssessment: false,
       mdqScoresImage: null,
@@ -104,7 +107,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       var query = this.get("query"),
           //Filter out the portal and collection documents
-          filterQuery = "-formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
+          filterQuery = "-formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals* AND formatType:METADATA AND -obsoletedBy:*",
           //Use the stats feature to get the sum of the file size
           stats = "true",
           statsField = "size",
@@ -158,7 +161,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       }
 
       //Count all the datasets with coverage before the first year in the year range queries
-      var beginDateLimit = new Date(Date.UTC(firstYear-1));
+      var beginDateLimit = new Date(Date.UTC(firstYear-1, 11, 31, 23, 59, 59, 999));
       facetQueries.push("{!key=<" + firstYear + "}(beginDate:[* TO " +
                         beginDateLimit.toISOString() +"/YEAR])");
 
@@ -195,15 +198,19 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
         }
         //If this is the last date range
         else if (yearsAgo <= binSize){
+          //Get the last year that will be included in this bin
+          var firstYearInBin = (today - yearsAgo),
+              lastYearInBin  = lastYear;
+
           //Label the facet query with a key for easier parsing
           // Because this is the last year range, which could be uneven with the other year ranges, use the exact end year
-          key = (today - yearsAgo) + "-" + lastYear;
+          key = firstYearInBin + "-" + lastYearInBin;
 
           //The coverage should start sometime in this year range or earlier.
           // Because this is the last year range, which could be uneven with the other year ranges, use the exact end year
-          var beginDateLimit = new Date(Date.UTC(today-yearsFromToday.fromEnd, 0, 1));
+          var beginDateLimit = new Date(Date.UTC(lastYearInBin, 11, 31, 23, 59, 59, 999));
           //The coverage should end sometime in this year range or later.
-          var endDateLimit = new Date(Date.UTC(today-yearsAgo, 0, 1));
+          var endDateLimit = new Date(Date.UTC(firstYearInBin, 0, 1));
 
           facetQueries.push("{!key=" + key + "}(beginDate:[* TO " +
                             beginDateLimit.toISOString() +"/YEAR] AND endDate:[" +
@@ -211,13 +218,18 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
         }
         //For all other bins,
         else{
+          //Get the last year that will be included in this bin
+          var firstYearInBin = (today - yearsAgo),
+              lastYearInBin  = (today - yearsAgo + binSize-1);
+
           //Label the facet query with a key for easier parsing
-          key = (today - yearsAgo) + "-" + (today - yearsAgo + binSize-1);
+          key = firstYearInBin + "-" + lastYearInBin;
 
           //The coverage should start sometime in this year range or earlier.
-          var beginDateLimit = new Date(Date.UTC(today - (yearsAgo - binSize), 0, 1));
+        //  var beginDateLimit = new Date(Date.UTC(today - (yearsAgo - binSize), 0, 1));
+          var beginDateLimit = new Date(Date.UTC(lastYearInBin, 11, 31, 23, 59, 59, 999));
           //The coverage should end sometime in this year range or later.
-          var endDateLimit = new Date(Date.UTC(today-yearsAgo, 0, 1));
+          var endDateLimit = new Date(Date.UTC(firstYearInBin, 0, 1));
 
           facetQueries.push("{!key=" + key + "}(beginDate:[* TO " +
                          beginDateLimit.toISOString() + "/YEAR] AND endDate:[" +
@@ -237,6 +249,8 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
           model.set('metadataFormatIDs', ["", 0]);
           model.set('firstUpdate', null);
           model.set("metadataUpdateDates", []);
+          model.set("temporalCoverage", 0);
+          model.trigger("change:temporalCoverage");
         }
         else{
           //Save tthe number of metadata docs found
@@ -319,17 +333,13 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
             var tempCoverages = data.facet_counts.facet_queries;
             model.set("temporalCoverage", tempCoverages);
           }
-          else{
-            model.set("temporalCoverage", 0);
-            model.triggerChange("temporalCoverage");
-          }
 
           //Get the total size of all the files in the index
           if( data.stats && data.stats.stats_fields && data.stats.stats_fields.size && data.stats.stats_fields.size.sum ){
             //Save the size sum
             model.set("metadataTotalSize", data.stats.stats_fields.size.sum);
             //If there is a data size sum,
-            if( model.get("dataTotalSize") > 0 ){
+            if( typeof model.get("dataTotalSize") == "number" ){
               //Add it to the metadata size sum as the total sum
               model.set("totalSize", model.get("dataTotalSize") + data.stats.stats_fields.size.sum);
             }
@@ -433,9 +443,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     */
     getDataStats: function(){
 
-      var query = "{!join from=resourceMap to=resourceMap}" + this.get("query"),
+      //Get the query string from this model
+      var query = this.get("query") || "";
+      //If there is a query set on the model, do a join on the resourceMap field
+      if((query.trim() !== "*:*" && query.trim().length > 0 && !this.get("isSystemMetadataQuery"))
+         && MetacatUI.appModel.get("enableSolrJoins")){
+        query = "{!join from=resourceMap to=resourceMap}" + query;
+      }
+
           //Filter out resource maps and metatdata objects
-          filterQuery = "formatType:DATA",
+      var filterQuery = "formatType:DATA AND -obsoletedBy:*",
           //Use the stats feature to get the sum of the file size
           stats = "true",
           statsField = "size",
@@ -479,13 +496,16 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
         if( !data || !data.response || !data.response.numFound ){
           //Store falsey data
-          model.set("totalCount", 0);
-          model.trigger("change:totalCount");
           model.set('dataCount', 0);
           model.trigger("change:dataCount");
           model.set('dataFormatIDs', ["", 0]);
-          model.set('firstUpdate', null);
           model.set("dataUpdateDates", []);
+          model.set("dataTotalSize", 0);
+
+          if( typeof model.get("metadataTotalSize") == "number" ){
+            //Use the metadata total size as the total size
+            model.set("totalSize", model.get("metadataTotalSize"));
+          }
         }
         else{
           //Save the number of data docs found
@@ -594,48 +614,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     },
 
     /**
-    * @deprecated as of MetacatUI version 2.11.1. Use {@link Stats#getMetadataStats} and {@link Stats#getDataStats} to get the formatTypes.
-    * This function may be removed in a future release.
-    */
-    getFormatTypes: function(){
-      this.getMetadataStats();
-      this.getDataStats();
-    },
-
-    /**
-    * @deprecated as of MetacatUI version 2.11.1. Use {@link Stats#getDataStats} to get the formatTypes.
-    * This function may be removed in a future release.
-    */
-    getDataFormatIDs: function(){
-      this.getDataStats();
-    },
-
-    /**
-    * @deprecated as of MetacatUI version 2.11.1. Use {@link Stats#getMetadataStats} to get the formatTypes.
-    * This function may be removed in a future release.
-    */
-    getMetadataFormatIDs: function(){
-      this.getMetadataStats();
-    },
-
-    /**
-    * @deprecated as of MetacatUI version 2.11.1. Use {@link Stats#getMetadataStats} and {@link Stats#getDataStats} to get the formatTypes.
-    * This function may be removed in a future release.
-    */
-    getUpdateDates: function(){
-      this.getMetadataStats();
-      this.getDataStats();
-    },
-
-    /**
-    * @deprecated as of MetacatUI version 2.11.1. Use {@link Stats#getMetadataStats} to get the formatTypes.
-    * This function may be removed in a future release.
-    */
-    getCollectionYearFacets: function(){
-      this.getMetadataStats();
-    },
-
-    /**
     * Retrieves an image of the metadata assessment scores
     */
     getMdqScores: function(){
@@ -719,6 +697,224 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     },
 
     /**
+    * Sends a Solr query to get the earliest beginDate. If there are no beginDates in the index, then it
+    * searches for the earliest endDate.
+    */
+    getFirstBeginDate: function(){
+      var model = this;
+
+      //Define a success callback when the query is successful
+      var successCallback = function(data, textStatus, xhr) {
+
+        //If nothing was found...
+        if( !data || !data.response || !data.response.numFound ){
+
+          //Construct a query to find the earliest endDate
+          var query = model.get('query') +
+                " AND endDate:[" + this.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "]" + //Use date filter to weed out badly formatted data
+                " AND -obsoletedBy:*",
+              //Get one row only
+              rows = "1",
+              //Sort the results in ascending order
+              sort = "endDate asc",
+              //Return only the endDate field
+              fl = "endDate";
+
+          var successCallback = function(endDateData, textStatus, xhr) {
+            //If not endDates or beginDates are found, there is no temporal data in the index, so save falsey values
+            if( !endDateData || !endDateData.response || !endDateData.response.numFound){
+              model.set('firstBeginDate', null);
+              model.set('lastEndDate', null);
+            }
+            else{
+              model.set('firstBeginDate', new Date(endDateData.response.docs[0].endDate));
+            }
+          }
+
+          if( model.get("usePOST") ){
+
+            var queryData = new FormData();
+            queryData.append("q", query);
+            queryData.append("rows", rows);
+            queryData.append("sort", sort);
+            queryData.append("fl", fl);
+            queryData.append("wt", "json");
+
+            var requestSettings = {
+              url: MetacatUI.appModel.get('queryServiceUrl'),
+              type: "POST",
+              contentType: false,
+              processData: false,
+              data: queryData,
+              dataType: "json",
+              success: successCallback
+            }
+
+          }
+          else{
+            //Find the earliest endDate if there are no beginDates
+            var requestSettings = {
+              url: MetacatUI.appModel.get('queryServiceUrl') + "q=" + query +
+                   "&rows=" + rows + "&sort=" + sort + "&fl=" + fl + "&wt=json",
+              type: "GET",
+              dataType: "json",
+              success: successCallback
+            }
+          }
+
+          $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+        }
+        else{
+          // Save the earliest beginDate
+          model.set('firstBeginDate', new Date(data.response.docs[0].beginDate));
+          model.trigger("change:firstBeginDate");
+        }
+      }
+
+      //Construct a query
+      var specialQueryParams = " AND beginDate:[" + this.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "] AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
+          query = this.get("query") + specialQueryParams,
+          //Get one row only
+          rows = "1",
+          //Sort the results in ascending order
+          sort = "beginDate asc",
+          //Return only the beginDate field
+          fl = "beginDate";
+
+      if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
+
+        var queryData = new FormData();
+        queryData.append("q", query);
+        queryData.append("rows", rows);
+        queryData.append("sort", sort);
+        queryData.append("fl", fl);
+        queryData.append("wt", "json");
+
+        var requestSettings = {
+          url: MetacatUI.appModel.get('queryServiceUrl'),
+          type: "POST",
+          contentType: false,
+          processData: false,
+          data: queryData,
+          dataType: "json",
+          success: successCallback
+        }
+
+      }
+      else{
+
+        var requestSettings = {
+          url: MetacatUI.appModel.get('queryServiceUrl') + "q=" + query +
+               "&rows=" + rows +
+               "&fl=" + fl +
+               "&sort=" + sort +
+               "&wt=json",
+          type: "GET",
+          dataType: "json",
+          success: successCallback
+        }
+
+      }
+
+      //Send the query
+      $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+
+    },
+
+    /**
+    * Gets the latest endDate from the Solr index
+    */
+    getLastEndDate: function(){
+      var model = this;
+
+      var now = new Date();
+
+      //Get the latest temporal data coverage year
+      var specialQueryParams = " AND endDate:[" + this.get("firstPossibleDate") + " TO " + now.toISOString() + "]" + //Use date filter to weed out badly formatted data
+            " AND -obsoletedBy:* AND -formatId:*dataone.org/collections* AND -formatId:*dataone.org/portals*",
+          query = this.get('query') + specialQueryParams,
+          rows = 1,
+          fl   = "endDate",
+          sort = "endDate desc",
+          wt   = "json";
+
+      var successCallback = function(data, textStatus, xhr) {
+        if(typeof data == "string"){
+          data = JSON.parse(data);
+        }
+
+        if(!data || !data.response || !data.response.numFound){
+          //Save some falsey values if none are found
+          model.set('lastEndDate', null);
+        }
+        else{
+          // Save the earliest beginDate and total found in our model - but do not accept a year greater than this current year
+          var now = new Date();
+          if(new Date(data.response.docs[0].endDate).getUTCFullYear() > now.getUTCFullYear()){
+            model.set('lastEndDate', now);
+          }
+          else{
+            model.set('lastEndDate', new Date(data.response.docs[0].endDate));
+          }
+
+          model.trigger("change:lastEndDate");
+        }
+      }
+
+      if( this.get("usePOST") ){
+
+        //Get the unencoded query string
+        if( this.get("postQuery") ){
+          query = this.get("postQuery") + specialQueryParams;
+        }
+        else if( this.get("searchModel") ){
+          query = this.get("searchModel").getQuery(undefined, { forPOST: true });
+          this.set("postQuery", query);
+          query = query + specialQueryParams;
+        }
+
+        var queryData = new FormData();
+        queryData.append("q", query);
+        queryData.append("rows", rows);
+        queryData.append("sort", sort);
+        queryData.append("fl", fl);
+        queryData.append("wt", "json");
+
+        var requestSettings = {
+          url: MetacatUI.appModel.get('queryServiceUrl'),
+          type: "POST",
+          contentType: false,
+          processData: false,
+          data: queryData,
+          dataType: "json",
+          success: successCallback
+        }
+      }
+      else{
+        //Query for the latest endDate
+        var requestSettings = {
+          url: MetacatUI.appModel.get('queryServiceUrl') + "q=" + query +
+               "&rows=" + rows + "&fl=" + fl + "&sort=" + sort + "&wt=" + wt,
+          type: "GET",
+          dataType: "json",
+          success: successCallback
+        }
+      }
+
+      $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+    },
+
+    /**
     * Given the query or URL, determine whether this model should send GET or POST
     * requests, because of URL length restrictions in browsers.
     * @param {string} queryOrURLString - The full query or URL that will be sent to the query service
@@ -737,6 +933,48 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       else{
         return "GET";
       }
+    },
+
+    /**
+    * @deprecated as of MetacatUI version 2.12.0. Use {@link Stats#getMetadataStats} and {@link Stats#getDataStats} to get the formatTypes.
+    * This function may be removed in a future release.
+    */
+    getFormatTypes: function(){
+      this.getMetadataStats();
+      this.getDataStats();
+    },
+
+    /**
+    * @deprecated as of MetacatUI version 2.12.0. Use {@link Stats#getDataStats} to get the formatTypes.
+    * This function may be removed in a future release.
+    */
+    getDataFormatIDs: function(){
+      this.getDataStats();
+    },
+
+    /**
+    * @deprecated as of MetacatUI version 2.12.0. Use {@link Stats#getMetadataStats} to get the formatTypes.
+    * This function may be removed in a future release.
+    */
+    getMetadataFormatIDs: function(){
+      this.getMetadataStats();
+    },
+
+    /**
+    * @deprecated as of MetacatUI version 2.12.0. Use {@link Stats#getMetadataStats} and {@link Stats#getDataStats} to get the formatTypes.
+    * This function may be removed in a future release.
+    */
+    getUpdateDates: function(){
+      this.getMetadataStats();
+      this.getDataStats();
+    },
+
+    /**
+    * @deprecated as of MetacatUI version 2.12.0. Use {@link Stats#getMetadataStats} to get the formatTypes.
+    * This function may be removed in a future release.
+    */
+    getCollectionYearFacets: function(){
+      this.getMetadataStats();
     }
 
   });

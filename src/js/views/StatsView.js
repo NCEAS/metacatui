@@ -34,7 +34,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		initialize: function(options){
 			if(!options) options = {};
 
-
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
 			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
@@ -734,7 +733,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var width = parentEl.width() || null;
 
 			// If results were found but none have temporal coverage, draw a default chart
-			if(!this.model.get('firstBeginDate')){
+			if(!this.model.get('temporalCoverage')){
 
 				parentEl.html("<p class='subtle center'>There are no metadata documents that describe temporal coverage.</p>");
 
@@ -760,7 +759,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		drawCoverageChartTitle: function(){
-			if((!this.model.get('firstBeginDate')) || (!this.model.get('lastEndDate'))) return;
+			if((!this.model.get('firstBeginDate')) || (!this.model.get('lastEndDate')) || !this.model.get("temporalCoverage") ) return;
 
 			//Create the range query
 			var yearRange = this.model.get('firstBeginDate').getUTCFullYear() + " - " + this.model.get('lastEndDate').getUTCFullYear();
@@ -777,7 +776,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
       if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
   			this.$(".show-loading .loading").remove();
 
-  			this.$el.addClass("no-activity");
+  			this.$(".stripe").addClass("no-activity");
       }
 		},
 
