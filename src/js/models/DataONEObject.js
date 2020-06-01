@@ -586,6 +586,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                       //Reset the model isNew attribute
                       model.set("isNew", false);
 
+                      // Reset oldPid so we can replace again
+                      model.set("oldPid", null);
+
                       //Set the last-calculated checksum as the original checksum
                       model.set("originalChecksum", model.get("checksum"));
                       model.set("checksum", model.defaults().checksum);
@@ -1092,7 +1095,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             return accessPolicy;
           },
 
+          /**
+           * Update identifiers for this object
+           *
+           * @param {string} id - Optional identifier to update with. Generated
+           * automatically when not given.
+           *
+           * Note that this method caches the objects attributes prior to
+           * updating so this.resetID() can be called in case of a failure
+           * state.
+           *
+           * Also note that this method won't run if theh oldPid attribute is
+           * set. This enables knowing before this.save is called what the next
+           * PID will be such as the case where we want to update a matching
+           * EML entity when replacing files.
+           */
           updateID: function(id){
+            // Only run once until oldPid is reset
+            if (this.get("oldPid")) {
+              return;
+            }
+
             //Save the attributes so we can reset the ID later
             this.attributeCache = this.toJSON();
 

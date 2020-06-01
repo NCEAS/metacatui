@@ -668,7 +668,24 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     // Attempt the formatId. Defaults to app/octet-stream
                     this.model.set("formatId", this.model.getFormatId());
 
-                    // Re-render the view
+                    // Grab a reference to the entity in the EML for the object
+                    // we're replacing
+                    this.parentSciMeta = this.getParentScienceMetadata(event);
+                    var entity = null;
+
+                    if (this.parentSciMeta) {
+                        entity = this.parentSciMeta.getEntity(this.model);
+                    }
+
+                    // Eagerly update the PID for this object so we can update
+                    // the matching EML entity
+                    this.model.updateID();
+
+                    // Update the EML entity with the new id
+                    if (entity) {
+                        entity.set("xmlID", this.model.getXMLSafeID());
+                    }
+
                     this.render();
 
                     if (this.model.get("uploadFile") && !this.model.get("checksum")) {
@@ -705,10 +722,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                         describeButton.addClass(previousBtnClasses).removeClass("message");
                     }, 3000);
                 } catch (error) {
+                    console.log("Error replacing: ", error);
+
                     // Revert changes to the attributes
                     this.model.set(oldAttributes);
                     this.model.set("formatId", this.model.getFormatId());
                     this.model.set("sysMetaUploadStatus", "c"); // Prevents a sysmeta update
+                    this.model.resetID();
 
                     this.render();
                 }
