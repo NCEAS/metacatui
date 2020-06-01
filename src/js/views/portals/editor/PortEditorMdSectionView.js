@@ -199,7 +199,7 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
     /**    
      * renderMarkdownEditor - Add UI for adding and editing markdown    
      *      
-     * @param  {HTMLElement} textarea The textarea element for which to add markdown editor UI
+     * @param  {HTMLElement} textarea The textarea element for which to add the markdown editor UI
      */     
     renderMarkdownEditor: function(textarea){
       
@@ -214,6 +214,7 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
         
         // Save the view
         var view = this;
+        
         // Set woofmark options. See https://github.com/bevacqua/woofmark
         var woofmarkOptions = {
               fencing: true,
@@ -242,7 +243,7 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
         // Use font awesome characters for button text.
         // Add the names of font awesome icons here, and we'll replace any names
         // starting with "icon-" with the <i></i> elements after the markdown
-        // editor is rendered.
+        // editor is rendered. (Because HTML added here gets converted to text.)
         Woofmark.strings.buttons = {
           attachment: removeButtons, //"icon-paper-clip",
           bold: "icon-bold",
@@ -296,7 +297,7 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
           view.listenTo(mdImageUploader, "addedfile", function(){
             // Disable the button during upload;
             imageDialogOkBtn.prop('disabled', true);
-            imageDialogOkBtn.css("opacity", "0.5");
+            imageDialogOkBtn.css({"opacity":"0.5", "cursor":"not-allowed"});
             imageDialogOkBtn.html(
               "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
               "Uploading..."
@@ -309,7 +310,7 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
             // Re-enable the button
             imageDialogOkBtn.prop('disabled', false);
             imageDialogOkBtn.html(imageDialogOkBtnTxt);
-            imageDialogOkBtn.css("opacity", "1");
+            imageDialogOkBtn.css({"opacity":"1", "cursor":"pointer"});
             // Get the uploaded image's url.
             var url = dataONEObject.url();
             // Create title out of file name without extension.
@@ -318,7 +319,7 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
               title = title.substring(0, title.lastIndexOf("."));
             }
             // Add the url + title to the input
-            imageDialogInput.val(url + ' "' + title +'"' );
+            imageDialogInput.val(url + ' "' + title + '"' );
           });
           
           // Clear the input when the image is removed
@@ -340,10 +341,10 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
         var buttons = $(this.markdownEditor.textarea).parent().find(".wk-command");
         
         buttons.each( function(){
-          var $button = $(this);
-          var buttonText = $button.html();
+          var $button = $(this),
+              buttonText = $button.html();
           // Remove buttons that were marked for removal
-          if(buttonText === removeButtons){
+          if(buttonText === removeButtons) {
             $button.remove();
           }
           // Replace button text with Font Awesome icons (<i class="icon-..."></i>)
@@ -351,7 +352,9 @@ function(_, $, Backbone, Woofmark, PortalSectionModel, PortalImage, ImageUploade
             var newButtonText = "<i class='" + buttonText + "'></i>";
             $button.html(newButtonText);
           }
-          // Add a tooltip, use title
+          // Add a tooltip, use title which was already created by woofmark,
+          // using values in Woofmark.strings
+          // (see https://github.com/bevacqua/woofmark/blob/master/src/strings.js)
           $button.tooltip({
     				placement: "bottom",
     				delay: 600,

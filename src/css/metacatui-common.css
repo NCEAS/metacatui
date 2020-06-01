@@ -3066,7 +3066,24 @@ img[src*="googleapis.com/"].georegion-map{
   background-color: #f2f2f2;
   padding: 10px 10px 0;
   border-radius: 6px;
+	display: flex;
+	flex-direction: column;
 }
+
+/* the markdown editor textarea field */
+textarea.markdown {
+	width: 100%;
+	height: 45vh;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	margin: 5px 0 10px;
+	line-height: 1.6em;
+	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+	padding: 0.5rem;
+	/* so that the textarea is below any and all editor buttons/controls */
+	order: 99; 
+}
+
 .wk-hide {
   display: none !important;
 }
@@ -3106,7 +3123,8 @@ img[src*="googleapis.com/"].georegion-map{
   padding: 0px;
   margin: 0 auto;
 }
-/* The close button is an empty link, add font awesome close icon */
+/* The close button is an empty link (a.wk-prompt-close),
+add font awesome close icon */
 .wk-prompt-close::before {
   content: "×";
   font-size: 25px;
@@ -3647,21 +3665,6 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-md .introduction::placeholder {
 	color: white;
   opacity: 0.4;
-}
-
-/* the markdown editor textarea field */
-.port-editor-md textarea.markdown{
-	
-	width: 100%;
-	height: 45vh;
-	overflow-y: scroll;
-	overflow-x: hidden;
-	margin: 20px 0 0;
-	line-height: 1.6em;
-	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-	padding: 0.5rem;
-	
-	
 }
 
 .port-editor-md .markdown-help{
