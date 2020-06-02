@@ -17,7 +17,7 @@ define(['jquery', 'underscore', 'backbone'],
     * Default attributes for an AppModel
     * @type {Object}
     */
-    defaults: {
+    defaults: _.extend({
       headerType: 'default',
       title: MetacatUI.themeTitle || "Metacat Data Catalog",
       repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
@@ -158,7 +158,7 @@ define(['jquery', 'underscore', 'backbone'],
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 
       // the most likely item to change is the Metacat deployment context
-      context: '/metacat',
+      context: MetacatUI.AppConfig.metacatContext || '/metacat',
       d1Service: '/d1/mn/v2',
       d1CNBaseUrl: "https://cn.dataone.org/",
       d1CNService: "cn/v2",
@@ -668,7 +668,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @deprecated
       */
       //annotatorUrl: null
-		},
+		}, MetacatUI.AppConfig),
 
     defaultView: "data",
 

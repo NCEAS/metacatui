@@ -1,0 +1,3 @@
+MetacatUI.AppConfig = {
+
+}

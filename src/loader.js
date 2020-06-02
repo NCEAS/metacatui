@@ -6,40 +6,73 @@
 
 // Step 1: Find the data-theme specified in the script include
 var MetacatUI = MetacatUI || {};
-MetacatUI.theme = document.getElementById("loader").getAttribute("data-theme");
-MetacatUI.metacatContext = document.getElementById("loader").getAttribute("data-metacat-context");
-MetacatUI.mapKey = document.getElementById("loader").getAttribute("data-map-key");
-if ( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ) {
-    MetacatUI.mapKey = null;
-}
-MetacatUI.useD3 = true;
-
-// Find out of MetacatUI is deployed in a sub-directory off the top level of
-// the domain. This value is used throughout the app to determin the location
-// of assets and, if not set correctly, a lot of things break. Your web server
-// should also set a FallbackResource directive accordingly in order to support
-// users entering MetacatUI from URLs other than the root
-MetacatUI.root = "/metacatui"
-// Remove trailing slash if one is present
-MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
-
-//This version of Metacat UI - used for cache busting
-MetacatUI.metacatUIVersion = "2.11.5";
 
 MetacatUI.loadTheme = function(theme) {
-    var script = document.createElement("script");
-    script.setAttribute("type", "text/javascript");
-    script.setAttribute("src", MetacatUI.root + "/js/themes/" + theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
-    document.getElementsByTagName("body")[0].appendChild(script);
+  //---- Get the MetacatUI root ----/
+  // Find out of MetacatUI is deployed in a sub-directory off the top level of
+  // the domain. This value is used throughout the app to determin the location
+  // of assets and, if not set correctly, a lot of things break. Your web server
+  // should also set a FallbackResource directive accordingly in order to support
+  // users entering MetacatUI from URLs other than the root
+  MetacatUI.root = (typeof MetacatUI.AppConfig.root == "string")? MetacatUI.AppConfig.root : "/metacatui";
+  // Remove trailing slash if one is present
+  MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
 
-    script.onload = function(){
-	    //If this theme has a custom function to start the app, then use it
-	    if(typeof MetacatUI.customInitApp == "function") {
-            MetacatUI.customInitApp();
-        }
-	    //Start the app
-	    else MetacatUI.initApp();
+  //Get the loader element from index.html, which was used to configure the app pre-MetacatUI 2.12.0
+  //Configurations should go in the AppConfig file, as of MetacatUI 2.12.0
+  var loaderEl = document.getElementById("loader");
+
+  //---- Get the theme name ----/
+  //Get the the name from the AppConfig file (the recommended way as of MetacatUI 2.12.0)
+  if(typeof MetacatUI.AppConfig.theme == "string" && MetacatUI.AppConfig.theme.length > 0){
+    MetacatUI.theme = MetacatUI.AppConfig.theme;
+  }
+  //Get the the name from the index.html file (old way - will be deprecated in the future!)
+  else if( loaderEl && typeof loaderEl.getAttribute("data-theme") == "string" ){
+    MetacatUI.theme = loaderEl.getAttribute("data-theme");
+  }
+  //Default to the "default" theme if one isn't specified
+  else{
+    MetacatUI.theme = "default";
+  }
+
+  //---Get the metacat context ---
+  // Use the metacat context from the index.html file if it is NOT in the AppConfig. (old way - will be deprecated in the future!)
+  // As of MetacatUI 2.12.0, it is recommended to put the metacatContext in the AppConfig file.
+  if( loaderEl && typeof loaderEl.getAttribute("data-metacat-context") == "string" &&
+      typeof MetacatUI.AppConfig.metacatContext == "undefined" ){
+    MetacatUI.AppConfig.metacatContext = loaderEl.getAttribute("data-metacat-context");
+  }
+  //Add a leading forward slash to the context
+  if( MetacatUI.AppConfig.metacatContext && MetacatUI.AppConfig.metacatContext.charAt(0) !== "/" ){
+    MetacatUI.AppConfig.metacatContext = "/" + MetacatUI.AppConfig.metacatContext;
+  }
+
+  //---Get the Google Maps API Key---
+  //The recommended way to set the Google Maps API Key is in the AppConfig file, as of MetacatUI 2.12.0
+  MetacatUI.mapKey = loaderEl? loaderEl.getAttribute("data-map-key") : null;
+  if( typeof MetacatUI.mapKey !== "string" || typeof MetacatUI.AppConfig.mapKey == "string" ){
+    MetacatUI.mapKey = MetacatUI.AppConfig.mapKey;
+    if( (MetacatUI.mapKey == "YOUR-GOOGLE-MAPS-API-KEY") || (!MetacatUI.mapKey) ){
+      MetacatUI.mapKey = null;
     }
+  }
+
+  //---- Load the theme config file ----
+  var script = document.createElement("script");
+  script.setAttribute("type", "text/javascript");
+  script.setAttribute("src", MetacatUI.root + "/js/themes/" + MetacatUI.theme + "/config.js?v=" + MetacatUI.metacatUIVersion);
+  document.getElementsByTagName("body")[0].appendChild(script);
+
+  //When the theme config file is loaded, intialize the application
+  script.onload = function(){
+    //If this theme has a custom function to start the app, then use it
+    if(typeof MetacatUI.customInitApp == "function") {
+          MetacatUI.customInitApp();
+      }
+    //Start the app
+    else MetacatUI.initApp();
+  }
 }
 MetacatUI.initApp = function () {
     var script = document.createElement("script");
@@ -57,9 +90,6 @@ MetacatUI.preventCompatibilityIssues = function(){
 		  var myNav = navigator.userAgent.toLowerCase();
 		  return (myNav.indexOf('msie') != -1) ? parseInt(myNav.split('msie')[1]) : false;
 	}
-	//If IE 8 or earlier, don't use D3
-	if (isIE() && (isIE() < 9)) MetacatUI.useD3 = false;
-
 
 	/* Add trim() function for IE*/
 	if(typeof String.prototype.trim !== 'function') {
@@ -456,6 +486,26 @@ MetacatUI.preventCompatibilityIssues = function(){
       }
   })();
 }
-
 MetacatUI.preventCompatibilityIssues();
-MetacatUI.loadTheme(MetacatUI.theme);
+
+//Start the AppConfig object
+MetacatUI.AppConfig = {};
+//Load the config file, if it is specified
+if( typeof appConfigPath == "string" ){
+
+  //If there is no config path specified, start the app
+  if( !appConfigPath ){
+    MetacatUI.loadTheme();
+  }
+  else{
+    //Load the config file, and when it's loaded, start the app
+    var script = document.createElement("script");
+    script.src = appConfigPath;
+    script.onload = MetacatUI.loadTheme;
+    document.getElementsByTagName("body")[0].appendChild(script);
+  }
+}
+//Otherwise, start the app without a config file
+else{
+  MetacatUI.loadTheme();
+}
