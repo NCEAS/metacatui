@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: js/models/filters/SpatialFilter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: js/models/filters/SpatialFilter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(["underscore", "jquery", "backbone", "models/filters/Filter"],
+    function(_, $, Backbone, Filter) {
+
+        /**
+        *A SpatialFilter represents a spatial constraint on the query to be executed,
+        *and stores the geohash strings for all of the geohash tiles that coincide with the
+        * search bounding box at the given zoom level.
+        * @class SpatialFilter
+        * @name SpatialFilter
+        * @constructs
+        * @extends Filter
+        */
+        var SpatialFilter = Filter.extend(
+          /** @lends SpatialFilter.prototype */{
+
+            /* The type of the filter */
+            type: "SpatialFilter",
+
+            /**
+            * @type {object}
+            * @property {string} icon - The icon to display with the Spatial filter
+            * @property {string} label - A short intuitive label
+            */
+            defaults: function() {
+                return _.extend(Filter.prototype.defaults(), {
+
+                    /* The array of geohashes used to spatially constrain the search*/
+                    geohashes: [],
+
+                    /* The easternmost longitude of the represented bounding box */
+                    east: null,
+
+                    /* The westernmost longitude of the represented bounding box */
+                    west: null,
+
+                    /* The northernmost latitude of the represented bounding box */
+                    north: null,
+
+                    /* The southernmost latitude of the represented bounding box */
+                    south: null,
+
+                    /* The default precision level of the geohash-based search */
+                    geohashLevel: null,
+
+                    /* The list of grouped geohashes, as complete or incomplete 32 tiles */
+                    groupedGeohashes: {},
+
+                    label: "Limit search to the map area",
+                    icon: "globe"
+                });
+            },
+
+            /* Standard events and callbacks for this model */
+            events: {
+                "change geohashes": this.groupGeohashes
+            },
+
+            /**
+             * Initialize the model, calling super
+             */
+            initialize: function(attributes, options) {
+                this.on("change:geohashes", this.groupGeohashes);
+            },
+
+            /**
+             * Builds a query string that represents this spatial filter
+             * @return queryFragment - the query string representing the geohash constraints
+             */
+            getQuery: function() {
+                var queryFragment = "";
+                var geohashes = this.get("geohashes");
+                var groups = this.get("geohashGroups");
+                var geohashList;
+
+                // Only return geohash query fragments when they are enabled in the filter
+                if ( (typeof geohashes !== "undefined") &amp;&amp; geohashes.length > 0 ) {
+                    if ( (typeof groups !== "undefined") &amp;&amp;
+                        Object.keys(groups).length > 0
+                    ) {
+                        // Group the Solr query fragment
+                        queryFragment += "+(";
+
+                        // Append geohashes at each level up to a fixed query string length
+                        _.each(Object.keys(groups), function(level) {
+                            geohashList = groups[level];
+                            queryFragment += "geohash_" + level + ":(";
+                            _.each(geohashList, function(geohash) {
+                                if ( queryFragment.length &lt; 7900 ) {
+                                    queryFragment += geohash + "%20OR%20";
+                                }
+                            });
+                            // Remove the last OR
+                            queryFragment =
+                                queryFragment.substring(0, (queryFragment.length - 8));
+                            queryFragment += ")%20OR%20";
+                        });
+                        // Remove the last OR
+                        queryFragment = queryFragment.substring(0, (queryFragment.length - 8));
+                        // Ungroup the Solr query fragment
+                        queryFragment += ")";
+
+                    }
+                }
+                return queryFragment;
+            },
+
+            /**
+             *  Consolidate geohashes into a parent tile if all are present
+             */
+            groupGeohashes: function() {
+                var geohashGroups = {};
+                var sortedGeohashes = this.get("geohashes").sort();
+                var groupedGeohashes = _.groupBy(sortedGeohashes, function(geohash) {
+                    return geohash.substring(0, geohash.length - 1);
+                });
+                //Find groups of geohashes that makeup a complete geohash tile (32)
+                // so we can shorten the query
+                var completeGroups = _.filter(Object.keys(groupedGeohashes), function(group) {
+                    return groupedGeohashes[group].length == 32;
+                });
+
+                // Find groups that fall short of 32 tiles
+                var incompleteGroups = [];
+                _.each(
+                    _.filter(Object.keys(groupedGeohashes), function(group) {
+                        return (groupedGeohashes[group].length &lt; 32)
+                    }), function(incomplete) {
+                        incompleteGroups.push(groupedGeohashes[incomplete]);
+                    }
+                );
+                incompleteGroups = _.flatten(incompleteGroups);
+
+                // Add both complete and incomplete groups to the instance property
+                if((typeof incompleteGroups !== "undefined") &amp;&amp; (incompleteGroups.length > 0)) {
+                    geohashGroups[incompleteGroups[0].length.toString()] = incompleteGroups;
+                }
+                if((typeof completeGroups !== "undefined") &amp;&amp; (completeGroups.length > 0)) {
+                    geohashGroups[completeGroups[0].length.toString()] = completeGroups;
+                }
+                this.set("geohashGroups", geohashGroups); // Triggers a change event
+            },
+        });
+        return SpatialFilter;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppConfig.html">AppConfig</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jun 03 2020 14:09:17 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: js/views/portals/PortalMembersView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: js/views/portals/PortalMembersView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(["jquery",
+    "underscore",
+    "backbone",
+    "text!templates/metadata/EMLPartyDisplay.html",
+    "views/portals/PortalSectionView",
+    "views/portals/PortalLogosView",
+    "text!templates/portals/portalAcknowledgements.html",
+    "text!templates/portals/portalAwards.html"],
+    function($, _, Backbone, EMLPartyDisplayTemplate, PortalSectionView,
+        PortalLogosView, AcknowledgementsTemplate, AwardsTemplate){
+
+    /**
+    * @class PortalMembersView
+    * @classdesc The PortalMembersView is a view to render the
+     * portal members tab (within PortalSectionView)
+     * @extends PortalSectionView
+     * @constructor
+     */
+     var PortalMembersView = PortalSectionView.extend(
+        /** @lends PortalMembersView.prototype */{
+        type: "PortalMembers",
+
+        /**
+        * The display name for this Section
+        * @type {string}
+        */
+        uniqueSectionLabel: "Members",
+
+      //   /* The list of subview instances contained in this view*/
+      //   subviews: [], // Could be a literal object {}
+
+      //   /* Renders the compiled template into HTML */
+        partyTemplate: _.template(EMLPartyDisplayTemplate),
+        acknowledgementsTemplate: _.template(AcknowledgementsTemplate),
+        awardsTemplate: _.template(AwardsTemplate),
+
+      //   /* The events that this view listens to*/
+      //   events: {
+
+      //   },
+
+      //   /* Construct a new instance of PortalMembersView */
+      //   initialize: function() {
+
+      //   },
+
+      //   /* Render the view */
+        render: function() {
+
+          if( this.id ){
+            this.$el.attr("id", this.id);
+          }
+
+            var parties = this.model.get("associatedParties");
+            var thisview = this;
+            // Group parties into sets of 2 to do 2 per row
+            var row_groups = _.groupBy(parties, function(parties, index) {
+                return Math.floor(index / 2);
+            });
+
+            _.each(row_groups, function(row_group){
+                // Create a new bootstrap row for each set of 2 parties
+                var newdiv = $('&lt;div class="row-fluid">&lt;/div>');
+                // Put the empty row into the portal members container
+                thisview.$el.append(newdiv);
+                // iterate for the 2 parties in this row
+                _.each(row_group, function(party) {
+
+                  //Get the party info in JSON form
+                  var partyInfo = party.toJSON();
+
+                  // Create html links from the urls
+                  var regex = /(.+)/gi;
+                  var urlLink = [];
+                  _.each(party.get("onlineUrl"), function(url){
+                      urlLink.push(url.replace(regex, '&lt;a href="$&amp;">$&amp;&lt;/a>'));
+                  });
+                  partyInfo.urlLink = urlLink;
+
+                  //Set the ORCIDs as a blank string
+                  partyInfo.orcids = "";
+
+                  //Get the UserIds so we can display ORCIDs
+                  if( Array.isArray(partyInfo.userId) &amp;&amp; partyInfo.userId.length ){
+
+                    //FInd the user ids that are ORCIDs
+                    _.each( partyInfo.userId, function(userId){
+                      //If this user id is an ORCID,
+                      if( party.isOrcid(userId) ){
+                        //Display it with the icon and as a link
+                        partyInfo.orcids += "&lt;img src=\"" + MetacatUI.root + "/img/orcid_64x64.png\" " +
+                                  "class=\"icon orcid-logo icon-on-left\" />" +
+                                  "&lt;a href=\"" + userId + "\" target=\"_blank\">" + userId + "&lt;/a>";
+                      }
+                    });
+                  }
+
+                  // render party into its row
+                  newdiv.append(thisview.partyTemplate(partyInfo));
+                });
+            });
+
+            var acknowledgements = this.model.get("acknowledgments") || "";
+            var awards = this.model.get("awards") || "";
+
+            //Add a container element
+            if(acknowledgements || awards){
+              var ack_div = $('&lt;div class="well awards-info">&lt;/div>');
+              this.$el.append(ack_div);
+            }
+
+            //Add the awards
+            if( awards ) {
+
+                ack_div.append(this.awardsTemplate({awards: awards}));
+            };
+
+            //Add the acknowledgments
+            if( acknowledgements ) {
+
+              ack_div.append(this.acknowledgementsTemplate(acknowledgements.toJSON()));
+
+            };
+
+            this.$el.data("view", this);
+
+        },
+
+      //   onClose: function() {
+
+      //   }
+
+     });
+
+     return PortalMembersView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppConfig.html">AppConfig</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jun 03 2020 14:09:17 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
