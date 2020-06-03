@@ -88,7 +88,22 @@ define(['jquery', 'underscore', 'backbone'],
       */
       nodeId: null,
 
+      /**
+      * Enable or disable the user profiles. If enabled, users will see a "My profile" link
+      * and can view their datasets, metrics on those datasets, their groups, etc.
+      * @type {boolean}
+      * @default true
+      * @readonly
+      */
       enableUserProfiles: true,
+
+      /**
+      * Enable or disable the user settings view. If enabled, users will see a list of
+      * changeable settings - name, email, groups, portals, etc.
+      * @type {boolean}
+      * @default true
+      * @readonly
+      */
       enableUserProfileSettings: true,
 
       maxDownloadSize: 3000000000,

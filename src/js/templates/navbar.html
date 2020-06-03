@@ -30,17 +30,18 @@
 				'<ul class="dropdown-menu hidden">',
 					'<li class="dropdown-header">', formattedName, '</li>',
 					'<li class="divider"></li>',
-					'<li><a href="' + MetacatUI.root + '/submit" class="show-new-editor">Submit data</a></li>',
-					'<li><a href="' + MetacatUI.root + '/profile/' + username + '">My Profile</a></li>',
-					'<li><a href="' + MetacatUI.root + '/data/my-data">My datasets</a></li>');
-          if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+					'<li><a href="' + MetacatUI.root + '/submit" class="show-new-editor">Submit data</a></li>');
+
+          if( MetacatUI.appModel.get("enableUserProfiles") ){ %>
+            <li><a href="<%=(MetacatUI.root + '/profile/' + username)%>">My Profile</a></li>
+          <% }
+
+					print('<li><a href="' + MetacatUI.root + '/data/my-data">My datasets</a></li>');
+
+          if(MetacatUI.appModel.get("showMyPortals") !== false && MetacatUI.appModel.get("enableUserProfiles") && MetacatUI.appModel.get("enableUserProfileSettings")){ %>
             <li>
               <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
                 My <%= MetacatUI.appModel.get("portalTermPlural") %>
-                <span class="new-icon">
-                  <i class="icon icon-star icon-on-right"></i>
-                  NEW
-                </span>
               </a>
             </li>
           <% }
