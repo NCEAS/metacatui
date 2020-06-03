@@ -3994,11 +3994,13 @@ i.toc-sub-item{
   padding-right: 20px;
 }
 .portal-logos-view .img-logo{
-	max-width: 120px;
   margin: auto;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100px;
+  width: auto;
+  max-height: 125px;
 }
 .well.awards-info {
 	background: inherit;
