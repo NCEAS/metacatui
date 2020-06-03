@@ -13,34 +13,83 @@ define(['jquery', 'underscore', 'backbone'],
   var AppModel = Backbone.Model.extend(
     /** @lends AppModel.prototype */ {
 
-    /**
-    * Default attributes for an AppModel
-    * @type {Object}
-    */
-    defaults: _.extend({
+    defaults: _.extend(
+      /** @lends AppConfig.prototype */{
+
+      //TODO: These attributes are stored in the AppModel, but shouldn't be set in the AppConfig,
+      //so we need to add docs for them in a separate place
       headerType: 'default',
-      title: MetacatUI.themeTitle || "Metacat Data Catalog",
-      repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
-
-      emailContact: "knb-help@nceas.ucsb.edu",
-
-      googleAnalyticsKey: null,
-
-      nodeId: null,
-
       searchMode: MetacatUI.mapKey ? 'map' : 'list',
       searchHistory: [],
-      sortOrder: 'dateUploaded+desc',
       page: 0,
-
       previousPid: null,
       lastPid: null,
-
       anchorId: null,
+      profileUsername: null,
+
+
+      /**
+      * The default page title.
+      * @type {string}
+      */
+      title: MetacatUI.themeTitle || "Metacat Data Catalog",
+
+      /**
+      * The name of this repository. This is used throughout the interface in different
+      * messages and page content.
+      * @type {string}
+      * @default "Metacat Data Catalog"
+      * @readonly
+      */
+      repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
+
+      /**
+      * The e-mail address that people should contact when they need help with
+      * submitting datasets, resolving error messages, etc.
+      * @type {string}
+      * @default knb-help@nceas.ucsb.edu
+      * @readonly
+      */
+      emailContact: "knb-help@nceas.ucsb.edu",
+
+      /**
+      * Your Google Maps API key, which is used to diplay interactive maps on the search
+      * views and static maps on dataset landing pages.
+      * If a Google Maps API key is no specified, the maps will be omitted from the interface.
+      * Sign up for Google Maps services at https://console.developers.google.com/
+      * @type {string}
+      * @example "AIzaSyCYyHnbIokUEpMx5M61ButwgNGX8fIHUs"
+      * @default null
+      * @readonly
+      */
+      mapKey: null,
+
+      /**
+      * Your Google Analytics API key, which is used to send page view and custom events
+      * to the Google Analytics service.
+      * This service is optional in MetacatUI.
+      * Sign up for Google Analytics services at https://analytics.google.com/analytics/web/
+      * @type {string}
+      * @example "UA-74622301-1"
+      * @default null
+      * @readonly
+      */
+      googleAnalyticsKey: null,
+
+      /**
+      * The node identifier for this repository. This is set dynamically by retrieving the
+      * DataONE Coordinating Node document and finding this repository in the Node list.
+      * (see https://cn.dataone.org/cn/v2/node).
+      * If this repository is not registered with DataONE, then set this node id by copying
+      * the node id from your node info at https://your-repo-site.com/metacat/d1/mn/v2/node
+      * @type {string}
+      * @example "urn:node:METACAT"
+      * @default null
+      */
+      nodeId: null,
 
       enableUserProfiles: true,
       enableUserProfileSettings: true,
-      profileUsername: null,
 
       maxDownloadSize: 3000000000,
 
@@ -50,6 +99,7 @@ define(['jquery', 'underscore', 'backbone'],
       * important information.
       * If this attribute is left blank, no message will display, even if there is a start and end time specified.
       * If there are is no start or end time specified, this message will display until you remove it here.
+      *
       * @type {string}
       */
       temporaryMessage: null,
@@ -155,9 +205,25 @@ define(['jquery', 'underscore', 'backbone'],
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
 
+      /**
+      * The base URL for the repository. This only needs to be changed if the repository
+      * is hosted at a different origin than the MetacatUI origin. This URL is used to contruct all
+      * of the DataONE REST API URLs. If you are testing MetacatUI against a development repository
+      * at an external location, this is where you would set that external repository URL.
+      * @type {string}
+      * @default window.location.origin || (window.location.protocol + "//" + window.location.host)
+      * @readonly
+      */
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 
-      // the most likely item to change is the Metacat deployment context
+      /**
+      * The directory that metacat is installed in at the `baseUrl`. For example, if you
+      * have metacat installed in the tomcat webapps directory as `metacat`, then this should be set
+      * to "/metacat". Or if you renamed the metacat webapp to `catalog`, then it should be `/catalog`.
+      * @type {string}
+      * @default "/metacat"
+      * @readonly
+      */
       context: MetacatUI.AppConfig.metacatContext || '/metacat',
       d1Service: '/d1/mn/v2',
       d1CNBaseUrl: "https://cn.dataone.org/",

@@ -20,11 +20,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
             EMLProject, EMLText, EMLMethods) {
 
-      /*
-      An EML211 object represents an Ecological Metadata Language
-      document, version 2.1.1
+      /**
+      * @class EML211
+      * @classdesc An EML211 object represents an Ecological Metadata Language
+      * document, version 2.1.1
+      * @extends ScienceMetadata
       */
-      var EML211 = ScienceMetadata.extend({
+      var EML211 = ScienceMetadata.extend(
+        /** @lends EML211.prototype */{
 
         type: "EML",
 

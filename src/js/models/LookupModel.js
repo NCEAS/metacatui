@@ -3,10 +3,12 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 	function($, $ui, _, Backbone) {
 	'use strict';
 
-	// Lookup Model
-	// ------------------
-	var LookupModel = Backbone.Model.extend({
-		// This model contains functions for looking up values from services
+	/**
+  * @class LookupModel
+  * @classdesc A uttility model that contains functions for looking up values from various services
+  */
+	var LookupModel = Backbone.Model.extend(
+    /** @lends LookupModel.prototype */{
 		defaults: {
 			concepts: {}
 		},

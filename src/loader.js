@@ -4,7 +4,11 @@
  *   MetacatUI is a client-side web interface for querying Metacat servers and other servers that implement the DataONE REST API.
  **/
 
-// Step 1: Find the data-theme specified in the script include
+/**
+* @global
+* @description The global object that contains all of the MetacatUI top-level classes, variables, and functions.
+* @type {object}
+*/
 var MetacatUI = MetacatUI || {};
 
 MetacatUI.loadTheme = function(theme) {
@@ -488,24 +492,11 @@ MetacatUI.preventCompatibilityIssues = function(){
 }
 MetacatUI.preventCompatibilityIssues();
 
-//Start the AppConfig object
-MetacatUI.AppConfig = {};
-//Load the config file, if it is specified
-if( typeof appConfigPath == "string" ){
+/**
+* MetacatUI.AppConfig
+* @class AppConfig
+* @classdesc An object that contains the configuration for this MetacatUI application
+*/
+MetacatUI.AppConfig = MetacatUI.AppConfig || {};
 
-  //If there is no config path specified, start the app
-  if( !appConfigPath ){
-    MetacatUI.loadTheme();
-  }
-  else{
-    //Load the config file, and when it's loaded, start the app
-    var script = document.createElement("script");
-    script.src = appConfigPath;
-    script.onload = MetacatUI.loadTheme;
-    document.getElementsByTagName("body")[0].appendChild(script);
-  }
-}
-//Otherwise, start the app without a config file
-else{
-  MetacatUI.loadTheme();
-}
+MetacatUI.loadTheme();

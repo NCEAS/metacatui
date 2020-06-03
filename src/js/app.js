@@ -2,16 +2,6 @@
 /*jshint unused:false */
 'use strict';
 
-/* NOTE: The theme name and themeMap are specified in the loader.js file */
-
-
-if( !MetacatUI ){
-  /**
-  * The global variable that stores all the top-level data for this application
-  * @type {object}
-  */
-  var MetacatUI = {};
-}
 MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if( MetacatUI.mapKey ){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + MetacatUI.mapKey;
@@ -77,7 +67,7 @@ require.config({
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
 	// drop zone creates drag and drop areas
 	Dropzone: MetacatUI.root + '/components/dropzone-amd-module',
-	// Polyfill required for using dropzone with older browsers 
+	// Polyfill required for using dropzone with older browsers
 	corejs: MetacatUI.root + '/components/core-js',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
