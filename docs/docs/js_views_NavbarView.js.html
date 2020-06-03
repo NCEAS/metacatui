@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: js/views/NavbarView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: js/views/NavbarView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*global define */
+
+define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/navbar.html'],
+	function($, _, Backbone, SignInView, NavbarTemplate) {
+	'use strict';
+
+	/**
+  * @class NavbarView
+  * @classdesc Build the navbar view of the application
+  * @extends Backbone.View
+  * @constructor
+  */
+	var NavbarView = Backbone.View.extend(
+    /** @lends NavbarView.prototype */ {
+
+    /**
+    * @type {string}
+    */
+		el: '#Navbar',
+
+    /**
+    * @type {Underscore.Template}
+    */
+		template: _.template(NavbarTemplate),
+
+    /**
+    * @type {object}
+    */
+		events: {
+						  'click #search_btn' : 'triggerSearch',
+					   'keypress #search_txt' : 'triggerOnEnter',
+			         'click .show-new-search' : 'resetSearch',
+			 		 'click .dropdown-menu a' :  'hideDropdown',
+			 		 	'mouseenter .dropdown' : 'showDropdown',
+			 		 	 'mouseleave .dropdown' : 'hideDropdown',
+			 		 	'click #nav-trigger'  : 'showNav',
+			 		 		  'click .nav li' : 'showSubNav'
+		},
+
+		initialize: function () {
+			// listen to the MetacatUI.appModel for changes in username
+			this.listenTo(MetacatUI.appUserModel, 'change:username', this.render);
+			this.listenTo(MetacatUI.appUserModel, 'change:fullName', this.render);
+			this.listenTo(MetacatUI.appUserModel, 'change:loggedIn', this.render);
+			this.listenTo(MetacatUI.appModel, 'change:headerType', this.toggleHeaderType);
+		},
+
+		render: function () {
+			var name = MetacatUI.appUserModel.get('fullName') ? MetacatUI.appUserModel.get('fullName').charAt(0).toUpperCase() + MetacatUI.appUserModel.get("fullName").substring(1) : MetacatUI.appUserModel.get("username");
+
+			//Insert the navbar template
+			this.$el.html(
+				this.template({
+					username:   MetacatUI.appUserModel.get('username'),
+					formattedName:   name,
+					firstName:  MetacatUI.appUserModel.get('firstName'),
+					loggedIn:   MetacatUI.appUserModel.get("loggedIn"),
+					baseUrl:    MetacatUI.appModel.get('baseUrl')
+				}));
+
+			//Insert the sign-in button
+			var signInView = new SignInView().render();
+			this.$(".login-container").append(signInView.el);
+			signInView.setUpPopup();
+
+			//Initialize the tooltips in the navbar
+			this.$(".tooltip-this").tooltip({
+				delay: {show: 600},
+				trigger: "hover",
+				placement: "bottom"
+			});
+
+			this.changeBackground();
+
+      //Check if the temporary message is in this view
+      if( MetacatUI.appModel.get("temporaryMessageContainer") == "#Navbar"){
+        if( typeof MetacatUI.appView.showTemporaryMessage == "function") {
+           MetacatUI.appView.showTemporaryMessage();
+         }
+      }
+		},
+
+		changeBackground: function(){
+			// Change the background image if there is one
+			var imageEl = $('#bg_image');
+			if ($(imageEl).length > 0) {
+				var imgCnt = $(imageEl).attr('data-image-count');
+
+				//Randomly choose the next background image
+				var bgNum = Math.ceil(Math.random() * imgCnt);
+
+				$(imageEl).css('background-image', "url('" +  MetacatUI.root + "/js/themes/" +  MetacatUI.theme + "/img/backgrounds/bg" + bgNum + ".jpg')");
+			}
+		},
+
+		triggerSearch: function() {
+			// Get the search term entered
+			var searchTerm = $("#search_txt").val();
+
+			//Clear the input value
+			$("#search_txt").val('');
+
+			//Clear the search model to start a fresh search
+			MetacatUI.appSearchModel.clear().set(MetacatUI.appSearchModel.defaults);
+
+			//Create a new array with the new search term
+			var newSearch = [searchTerm];
+
+			//Set up the search model for this new term
+			MetacatUI.appSearchModel.set('all', newSearch);
+
+			// make sure the browser knows where we are
+			MetacatUI.uiRouter.navigate("data", {trigger: true});
+
+			// ...but don't want to follow links
+			return false;
+
+		},
+
+		resetSearch: function(e){
+			e.preventDefault();
+			MetacatUI.appView.resetSearch();
+		},
+
+		hideDropdown: function(e){
+			this.$('.dropdown-menu').addClass('hidden');
+			this.$('.dropdown').removeClass('open');
+		},
+
+		showDropdown: function(e){
+			this.$('.dropdown-menu').removeClass('hidden');
+
+			// Prevent click events immediately following mouseenter events, otherwise
+			// toggleDropdown() is called right after showDropdown on touchscreen devices.
+			// (on touch screen, both mouseenter and click are called when user touches element)
+			this.$('.dropdown .dropdown-toggle').off('click');
+			var view = this;
+			setTimeout(function () {
+				view.$('.dropdown .dropdown-toggle').on('click', function(e){
+					view.toggleDropdown(e)
+				});
+			}, 10);
+		},
+
+		toggleDropdown: function(e){
+			// this.$(".navbar-inner").append(" TOGG: " + e.handleObj.origType)
+			// console.log(e);
+			this.$('.dropdown-menu').toggleClass('hidden');
+			this.$('.dropdown').removeClass('open');
+		},
+
+		showNav: function(){
+			this.$("#main-nav").slideToggle();
+			this.$("#nav-trigger .icon").toggle();
+		},
+
+		showSubNav: function(e){
+			var parentEl = e.target.tagName == "LI"? e.target : $(e.target).parent("li");
+			if(!parentEl || !$(parentEl).length) return;
+
+			$(parentEl).find(".sub-menu").slideToggle();
+		},
+
+		triggerOnEnter: function(e) {
+			if (e.keyCode != 13) return;
+			this.triggerSearch();
+		},
+
+		toggleHeaderType: function(){
+			// set the navbar class based on what the page requested
+			var headerType = MetacatUI.appModel.get('headerType');
+			if (headerType == "default") {
+				//Remove the alt class
+				$(this.$el).removeClass("alt");
+				//Add the class given
+				$(this.$el).addClass(headerType);
+			}
+			else if(headerType == "alt"){
+				//Remove the default class
+				$(this.$el).removeClass("default");
+				//Add the class given
+				$(this.$el).addClass(headerType);
+			}
+		}
+
+	});
+	return NavbarView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppConfig.html">AppConfig</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#MetacatUI">MetacatUI</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jun 03 2020 14:09:17 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

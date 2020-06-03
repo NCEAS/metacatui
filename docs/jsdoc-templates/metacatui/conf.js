@@ -2,7 +2,7 @@
 
 module.exports = {
   "source": {
-    "excludePattern": "themes/goa/|themes/nceas/|themes/ess-dive/"
+    "excludePattern": "js/themes/|components/|config/|css/|font/|img/"
   },
   "templates": {
     "default": {

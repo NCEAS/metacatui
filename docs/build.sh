@@ -27,7 +27,7 @@ if [ "$currentDirOnly" = "$expectedDir" ]
     then
       echo "Building MetacatUI docs..."
       #Build the jsdocs
-      jsdoc -r -d docs/docs/ -c docs/jsdoc-templates/metacatui/conf.js src/js/
+      jsdoc -r -d docs/docs/ -c docs/jsdoc-templates/metacatui/conf.js src/
     elif [ "$currentDirOnly" = "$docsDir" ]
       then
         cd ../
@@ -36,7 +36,7 @@ if [ "$currentDirOnly" = "$expectedDir" ]
             then
               echo "Building MetacatUI docs..."
               #Build the jsdocs
-              jsdoc -r -d docs/docs/ -c docs/jsdoc-templates/metacatui/conf.js src/js/
+              jsdoc -r -d docs/docs/ -c docs/jsdoc-templates/metacatui/conf.js src/
               cd $currentFullDir
             else
               echo "-------------------------------"

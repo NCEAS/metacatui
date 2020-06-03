@@ -18,10 +18,12 @@ define(['jquery',
 
 	var app = app || {};
 
-	var theme = document.getElementById("loader").getAttribute("data-theme");
-
-	// Our overall **AppView** is the top-level piece of UI.
-	var AppView = Backbone.View.extend({
+	/**
+  * @class AppView
+  * @classdesc The top-level view of the UI that contains and coordinates all other views of the UI
+  */
+	var AppView = Backbone.View.extend(
+    /** @lends AppView.prototype */{
 
 		// Instead of generating a new element, bind to the existing skeleton of
 		// the App already present in the HTML.
