@@ -408,7 +408,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		},
 
 		getGrant: function(id, onSuccess, onError){
-			if(!id || !onSuccess || !MetacatUI.appModel.get("grantsUrl")) return;
+			if(!id || !onSuccess || !MetacatUI.appModel.get("useNSFAwardAPI") || !MetacatUI.appModel.get("grantsUrl")) return;
 
 			var requestSettings = {
 					url: MetacatUI.appModel.get("grantsUrl") + "?id=" + id,

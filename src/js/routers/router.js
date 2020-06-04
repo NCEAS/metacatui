@@ -426,7 +426,14 @@ function ($, _, Backbone) {
 
 			var viewChoice;
 
-			if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
+      //If there is a username specified and user profiles are disabled,
+      // forward to the entire repo profile view.
+      if( username && !MetacatUI.appModel.get("enableUserProfiles") ){
+        this.navigate("profile", { trigger: true, replace: true });
+        return;
+      }
+
+			if(!username){
 				this.routeHistory.push("summary");
 
 				// flag indicating /profile view
