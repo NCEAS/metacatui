@@ -1200,6 +1200,11 @@ define(['jquery', 'underscore', 'backbone'],
 
       this.on("change:pid", this.changePid);
 
+      //For backward-compatbility, set the theme and themeTitle variables using the
+      // attributes set on this model, which are taken from the AppConfig
+      MetacatUI.theme = this.get("theme");
+      MetacatUI.themeTitle = this.get("repositoryName");
+
 
     },
 

@@ -65,7 +65,6 @@ define(['jquery',
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
 			$("head").append(this.appHeadTemplate({
 				theme: MetacatUI.theme,
-				themeTitle: MetacatUI.themeTitle,
 				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
       }))
       //Add the JSON-LD to the head element
