@@ -1,5 +1,54 @@
-MetacatUI.theme = MetacatUI.theme || "knb";
-MetacatUI.themeTitle = "KNB";
+if( !MetacatUI.AppConfig ){
+  MetacatUI.AppConfig = {};
+}
+// Set up App Configurations that are always used for the arctic theme.
+// Deployment-specific configurations can be set in a separate file
+MetacatUI.AppConfig = Object.assign({
+  theme: "knb",
+  title: "KNB",
+  repositoryName: "KNB",
+  emlEditorRequiredFields: {
+    abstract: true,
+    alternateIdentifier: false,
+    funding: false,
+    generalTaxonomicCoverage: false,
+    geoCoverage: true,
+    intellectualRights: true,
+    keywordSets: false,
+    methods: false,
+    samplingDescription: false,
+    studyExtentDescription: false,
+    taxonCoverage: false,
+    temporalCoverage: true,
+    title: true
+  },
+  disableQueryPOSTs: false,
+  enableSolrJoins: true,
+  enableLdapSignIn: true,
+  defaultAccessPolicy: [{
+    subject: "CN=knb-data-admins,DC=dataone,DC=org",
+    read: true,
+    write: true,
+    changePermission: true
+    },
+    {
+      subject: "public",
+      read: true
+    }],
+  hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
+  temporaryMessageClasses: "warning auto-height-member",
+  temporaryMessageContainer: "#HeaderContainer",
+  displayRepoLogosInSearchResults: true,
+  mdqSuiteIds: ["knb.suite.1"],
+  mdqSuiteLabels: ["KNB Metadata Completeness Suite v1.0"],
+  mdqFormatIds:["eml*", "https://eml*"],
+  hideSummaryCitationsChart: false,
+  hideSummaryDownloadsChart: false,
+  hideSummaryViewsChart: false,
+  limitPortalsToSubjects: ["CN=knb-data-admins,DC=dataone,DC=org"],
+  portalEditNotAuthCreateMessage: "Creating new portals is a feature currently only available to a select group of Beta testers. You should still be able to access your existing portals. Please contact us with any questions at the email address below."
+}, MetacatUI.AppConfig);
+
 MetacatUI.themeMap =
 {
     '*': {
@@ -10,7 +59,6 @@ MetacatUI.themeMap =
         'views/TextView' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/views/TextView.js',
         'routers/BaseRouter' : MetacatUI.root + '/js/routers/router.js',
         'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router.js',
-        'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js',
 
         // Templates include extension
         'templates/app.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/app.html',

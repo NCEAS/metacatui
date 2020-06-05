@@ -1,5 +1,49 @@
-MetacatUI.theme = MetacatUI.theme || "arctic";
-MetacatUI.themeTitle = "NSF Arctic Data Center";
+if( !MetacatUI.AppConfig ){
+  MetacatUI.AppConfig = {};
+}
+// Set up App Configurations that are always used for the arctic theme.
+// Deployment-specific configurations can be set in a separate file
+MetacatUI.AppConfig = Object.assign({
+  theme: "arctic",
+  repositoryName: "Arctic Data Center",
+  emailContact: "support@arcticdata.io",
+  emlEditorRequiredFields: {
+    abstract: true,
+    alternateIdentifier: false,
+    funding: true,
+    generalTaxonomicCoverage: false,
+    geoCoverage: true,
+    intellectualRights: true,
+    keywordSets: false,
+    methods: false,
+    samplingDescription: false,
+    studyExtentDescription: false,
+    taxonCoverage: false,
+    temporalCoverage: true,
+    title: true
+  },
+  editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted " +
+    "due to a technical error. But, we sent a draft of your edits to " +
+    "our support team, who will contact " +
+    "you via email as soon as possible about getting your data package submitted. ",
+  defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+  mdqSuiteIds: ["arctic.data.center.suite.1"],
+  mdqSuiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
+  mdqFormatIds:["eml*", "https://eml*"],
+  hideSummaryCitationsChart: false,
+  hideSummaryDownloadsChart: false,
+  hideSummaryViewsChart: false,
+  displayDatasetQualityMetric: true,
+  enablePublishDOI: false,
+  defaultAccessPolicy: [{
+    subject: "CN=arctic-data-admins,DC=dataone,DC=org",
+    read: true,
+    write: true,
+    changePermission: true
+  }],
+  hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"]
+}, MetacatUI.AppConfig);
+
 MetacatUI.themeMap =
 {
 	'*': {
@@ -16,7 +60,6 @@ MetacatUI.themeMap =
 		'templates/metadata.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/metadata.html',
 		'templates/insertProgress.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/insertProgress.html',
     'templates/editorSubmitMessage.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/editorSubmitMessage.html',
-		'models/AppModel' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js',
 		'models/Map' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/Map.js',
 		'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router.js'
 		}
