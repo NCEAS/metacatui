@@ -412,6 +412,14 @@ define(['jquery', 'underscore', 'backbone'],
       * @default "https://api.nsf.gov/services/v1/awards.json"
       */
       grantsUrl: "https://api.nsf.gov/services/v1/awards.json",
+
+      /**
+      * The base URL for the ORCID REST services
+      * @type {string}
+      * @default "https:/orcid.org"
+      */
+      orcidBaseUrl: "https:/orcid.org",
+
       /**
       * The URL for the ORCID search API, which can be used to search for information
       * about people using their ORCID, email, name, etc.
@@ -899,6 +907,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string[]}
       */
       portalLabelBlacklist: [
+        "Dataone",
         'urn:node:CN', 'CN', 'cn',
         'urn:node:CNUNM1', 'CNUNM1', 'cn-unm-1',
         'urn:node:CNUCSB1', 'CNUCSB1', 'cn-ucsb-1',
@@ -955,7 +964,9 @@ define(['jquery', 'underscore', 'backbone'],
         'urn:node:IEDA_USAP', 'IEDA_USAP', 'IEDA USAP',
         'urn:node:IEDA_MGDL', 'IEDA_MGDL', 'IEDA MGDL',
         'urn:node:METAGRIL', 'METAGRIL', 'metaGRIL',
-        'urn:node:ARM', 'ARM', 'ARM - Atmospheric Radiation Measurement Research Facility'
+        'urn:node:ARM', 'ARM', 'ARM - Atmospheric Radiation Measurement Research Facility',
+        "urn:node:OPC", "OPC",
+        "urn:node:TNC_DANGERMOND", "dangermond", "TNC_DANGERMOND"
       ],
 
       /** If true, then archived content is available in the search index.
@@ -1052,8 +1063,9 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The Bioportal REST API URL, which is set dynamically only if a bioportalAPIKey is configured
       * @type {string}
+      * @default "https://data.bioontology.org/search"
       */
-      bioportalSearchUrl: null,
+      bioportalSearchUrl: "https://data.bioontology.org/search",
       /**
       * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
       * @type {object}
