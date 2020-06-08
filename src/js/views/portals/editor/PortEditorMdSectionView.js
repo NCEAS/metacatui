@@ -148,7 +148,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
         
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
-        this.$(mdEditor.textarea).data({ model: this.model.get("content") });
+        mdEditor.$(mdEditor.textarea).data({ model: this.model.get("content") });
         this.$(this.titleEl).data({ model: this.model });
         this.$(this.introEl).data({ model: this.model });
 
