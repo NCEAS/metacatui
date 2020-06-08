@@ -148,10 +148,10 @@ define(["jquery",
 
           tocView.render();
 
-          //If more than one link was created in the TOCView, add it to this view
-          if( tocView.$el.find("li").length > 1){
+          // If more than one link was created in the TOCView, add it to this view
+          // Limit to .desktop items (and exclude .mobile items) so that the length isn't doubled 
+          if( tocView.$el.find(".desktop li").length > 1){
             this.$(".portal-section-content").prepend(tocView.el);
-
             //Make a two-column layout
             tocView.$el.addClass("span3");
             this.markdownView.$el.addClass("span9");
