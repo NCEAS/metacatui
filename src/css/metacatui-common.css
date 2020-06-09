@@ -3076,7 +3076,8 @@ img[src*="googleapis.com/"].georegion-map{
 .access-policy-view:not(.modal) .modal-header .close{
   display: none;
 }
-.access-policy-control.disabled{
+.access-policy-control.disabled,
+.replace.disabled {
   cursor: not-allowed;
 }
 .access-policy-view.modal h4{
@@ -6360,6 +6361,9 @@ ul.side-nav-items {
     border-style: solid;
     margin-top: 6px;
 }
+.data-package-item .dropdown-menu .muted {
+    color: #CCC;
+}
 .data-package-item.error-saving .disable-layer{
 	width: 100%;
 }
@@ -6434,6 +6438,13 @@ ul.side-nav-items {
 	opacity: .6;
 }
 
+.data-package-item .controls .btn.message{
+  font-size: 12px;
+}
+.data-package-item .controls .btn.message .icon{
+  margin-left: -5px;
+  margin-right: 5px;
+}
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     border-radius: 4px;

@@ -1227,6 +1227,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           model.set("numSaveAttempts", 0);
           model.set("uploadStatus", "c");
           model.set("sysMetaXML", model.serializeSysMeta());
+          model.set("oldPid", null);
           model.fetch({merge: true, sysMeta: true});
           model.trigger("successSaving", model);
 
