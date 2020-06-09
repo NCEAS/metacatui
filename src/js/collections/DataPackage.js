@@ -1316,6 +1316,10 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                     m.set("uploadStatus", m.defaults().uploadStatus);
                   });
 
+                  // Reset oldPid to null so we know we need to update the ID
+                  // in the future
+                  collection.packageModel.set("oldPid", null);
+
                   //Reset the upload status for the package
                   collection.packageModel.set("uploadStatus", collection.packageModel.defaults().uploadStatus);
 
