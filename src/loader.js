@@ -5,19 +5,32 @@
  **/
 
 /**
-* @global
+* @namespace MetacatUI
 * @description The global object that contains all of the MetacatUI top-level classes, variables, and functions.
 * @type {object}
 */
 var MetacatUI = MetacatUI || {};
 
-MetacatUI.loadTheme = function(theme) {
+/**
+* This function gets configuration settings from the {@see AppConfig}, such as `root`,
+* `theme`, etc. and loads the theme configuration file. When the theme configuration file is
+* loaded, the rest of the app is initialized, in {@see MetacatUI.initApp}
+*/
+MetacatUI.loadTheme = function() {
   //---- Get the MetacatUI root ----/
   // Find out of MetacatUI is deployed in a sub-directory off the top level of
   // the domain. This value is used throughout the app to determin the location
   // of assets and, if not set correctly, a lot of things break. Your web server
   // should also set a FallbackResource directive accordingly in order to support
   // users entering MetacatUI from URLs other than the root
+  /**
+  * The root path of this MetacatUI deployment. This should point to the `src` directory
+  * that was deployed, which contains the `index.html` file for MetacatUI. This root path
+  * is used throughout the app to construct URLs to pages, images, etc.
+  * @type {string}
+  * @default "/metacatui"
+  * @readonly
+  */
   MetacatUI.root = (typeof MetacatUI.AppConfig.root == "string")? MetacatUI.AppConfig.root : "/metacatui";
   // Remove trailing slash if one is present
   MetacatUI.root = MetacatUI.root.replace(/\/$/, "");
@@ -26,6 +39,14 @@ MetacatUI.loadTheme = function(theme) {
   //Configurations should go in the AppConfig file, as of MetacatUI 2.12.0
   var loaderEl = document.getElementById("loader");
 
+  /**
+  * @name MetacatUI.theme
+  * @type {string}
+  * @default "default"
+  * @readonly
+  * @description The theme name for this MetacatUI deployment. This is defined in the {@see AppConfig#theme}.
+  * If no theme is defined, the default theme is used.
+  */
   //---- Get the theme name ----/
   //Get the the name from the AppConfig file (the recommended way as of MetacatUI 2.12.0)
   if(typeof MetacatUI.AppConfig.theme == "string" && MetacatUI.AppConfig.theme.length > 0){
@@ -52,6 +73,14 @@ MetacatUI.loadTheme = function(theme) {
     MetacatUI.AppConfig.metacatContext = "/" + MetacatUI.AppConfig.metacatContext;
   }
 
+  /**
+  * @name MetacatUI.mapKey
+  * @type {string}
+  * @readonly
+  * @see {AppConfig#mapKey}
+  * @description The Google Maps API key for this MetacatUI deployment. This should be set in the
+  * {@see AppConfig} object.
+  */
   //---Get the Google Maps API Key---
   //The recommended way to set the Google Maps API Key is in the AppConfig file, as of MetacatUI 2.12.0
   MetacatUI.mapKey = loaderEl? loaderEl.getAttribute("data-map-key") : null;
@@ -78,6 +107,13 @@ MetacatUI.loadTheme = function(theme) {
     else MetacatUI.initApp();
   }
 }
+
+/**
+* Loads the RequireJS library and the `app.js` file, which contains all of the RequireJS
+* configurations. The appjs is where the bulk of the application initialization happens
+* (for example, creating top-level models and views, initializing the application router,
+*  and rendering the top-level {@see AppView}).
+*/
 MetacatUI.initApp = function () {
     var script = document.createElement("script");
     script.setAttribute("data-main", MetacatUI.root + "/js/app.js?v=" + MetacatUI.metacatUIVersion);
@@ -493,10 +529,13 @@ MetacatUI.preventCompatibilityIssues = function(){
 MetacatUI.preventCompatibilityIssues();
 
 /**
-* MetacatUI.AppConfig
-* @class AppConfig
-* @classdesc An object that contains the configuration for this MetacatUI application
+* @namespace AppConfig
+* @description An object that contains the configuration for this MetacatUI application.
+  These values are set directly on the AppModel when it is initialized and can be accessed
+  from anywhere in the application through the AppModel. (e.g. `MetacatUI.appModel.get("attribute")`` )
+* @type {object}
 */
 MetacatUI.AppConfig = MetacatUI.AppConfig || {};
 
+//Load the theme files
 MetacatUI.loadTheme();

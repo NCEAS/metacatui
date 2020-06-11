@@ -27,6 +27,12 @@ define(['jquery', 'underscore', 'backbone'],
       anchorId: null,
       profileUsername: null,
 
+      /**
+      * The theme name to use
+      * @type {string}
+      * @default "default"
+      */
+      theme: "default",
 
       /**
       * The default page title.
@@ -1216,7 +1222,6 @@ define(['jquery', 'underscore', 'backbone'],
       // attributes set on this model, which are taken from the AppConfig
       MetacatUI.theme = this.get("theme");
       MetacatUI.themeTitle = this.get("repositoryName");
-
 
     },
 

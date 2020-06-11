@@ -2,7 +2,8 @@
 
 module.exports = {
   "source": {
-    "excludePattern": "js/themes/|components/|config/|css/|font/|img/"
+    "excludePattern": "js/themes/|components/|config/|css/|font/|img/",
+    "include": ["docs/other/addtlDocs.jsdoc"]
   },
   "templates": {
     "default": {

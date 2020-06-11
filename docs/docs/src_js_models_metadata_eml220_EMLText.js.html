@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/models/metadata/eml220/EMLText.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/models/metadata/eml220/EMLText.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global define */
+define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText',
+        "text!templates/portals/editor/MarkdownExample.md"],
+    function($, _, Backbone, EMLText211, MarkdownExample) {
+
+  var EMLText = EMLText211.extend(
+    /** @lends EMLText.prototype */{
+
+    defaults: function(){
+      return _.extend(EMLText211.prototype.defaults(), {
+        markdown: null,
+        markdownExample: MarkdownExample
+      });
+    },
+
+    /**
+    * Parses the XML objectDOM into a JSON object to be set on the model.
+    * If this EMLText element contains markdown, then parse it. Otherwise, use
+    * the EMLText 211 parse() method.
+    *
+    * @param {Element} objectDOM - XML Element to parse
+    * @return {JSON} The literal object to be set on the model later
+    */
+    parse: function(objectDOM){
+      if(!objectDOM)
+        var objectDOM = this.get("objectDOM").cloneNode(true);
+
+      // Get the markdown elements inside this EMLText element
+      var markdownElements = $(objectDOM).children("markdown"),
+          modelJSON = {};
+
+      //Grab the contents of each markdown element and add it to the JSON
+      if( markdownElements.length ){
+
+        modelJSON.markdown = "";
+
+        //Get the text content of the markdown element
+        _.each(markdownElements, function(markdownElement){
+          // Concatenate markdown elements with a space.
+          if(modelJSON.markdown === ""){
+            modelJSON.markdown = markdownElement.textContent;
+          } else {
+            modelJSON.markdown += " " + markdownElement.textContent;
+          }
+        });
+
+        //Return the JSON
+        return modelJSON;
+      }
+      //If there is no markdown, parse as the same as EML 2.1.1
+      else{
+        return EMLText211.prototype.parse(objectDOM);
+      }
+
+    },
+
+    /**
+     * Makes a copy of the original XML DOM and updates it with the new values from the model
+     *
+     * @param {string} textType - a string indicating the name for the outer xml element (i.e. content). Used in case there is no exisiting xmlDOM.
+     * @return {XMLElement}
+     */
+    updateDOM: function(textType){
+
+      var objectDOM = this.get("objectDOM");
+
+      if (objectDOM) {
+        objectDOM = objectDOM.cloneNode(true);
+        $(objectDOM).empty();
+      } else {
+        // create an XML section element from scratch
+        var xmlText = "&lt;" + textType + ">&lt;/" + textType + ">",
+            objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+            objectDOM = $(objectDOM).children()[0];
+      };
+
+      var markdown = this.get("markdown");
+
+      if(markdown){
+
+        // There could be multiple markdown elements, or markdown could be a string
+        if(typeof markdown == "string"){
+          markdown = [markdown]
+        }
+
+        _.each(markdown, function(markdownElement){
+          // Create markdown element with content wrapped in CDATA tags
+          var markdownSerialized = objectDOM.ownerDocument.createElement("markdown");
+          var cdataMarkdown = objectDOM.ownerDocument.createCDATASection(markdown);
+          $(markdownSerialized).append(cdataMarkdown);
+          $(objectDOM).append(markdownSerialized)
+        }, this);
+
+        return objectDOM
+
+      }//If there is no markdown, parse as the same as EML 2.1.1
+      else {
+        return EMLText211.prototype.updateDOM.call(this);
+      }
+
+    }
+
+  });
+
+  return EMLText;
+
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Jun 11 2020 13:52:51 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

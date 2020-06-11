@@ -1,0 +1,17 @@
+//This file contains additional JSDoc comments that should be included in the
+// MetacatUI JSDoc documentation build. They are included here because they may document
+// variables defined in HTML files (or other files not supported by jsdoc). Mainly, index.html.
+
+/**
+* The path to your configuration file for MetacatUI. This can be any web-accessible location.
+* This variable must be defined in index.html.
+* @type {string}
+* @name appConfigPath
+* @since 2.12.0
+*/
+
+/**
+* @name MetacatUI.metacatUIVersion
+* @type {string}
+* @description The version of this installation of MetacatUI.
+*/
