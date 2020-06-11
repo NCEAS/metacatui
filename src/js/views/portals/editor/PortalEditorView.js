@@ -633,6 +633,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         //The label category is unique, because it is duplicated in the PortalImage, which can cause bugs
         if( category == "label" ){
           categoryEls = this.$(".change-label-container [data-category='label']");
+          var settingsView = _.findWhere(this.sectionsView.subviews, {type: "PortEditorSettings"});
+          //Show the "change label" elements so the validation will appear
+          settingsView.changeLabel();
         }
 
         //Get the elements that have views attached to them
