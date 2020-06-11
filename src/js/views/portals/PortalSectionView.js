@@ -3,9 +3,8 @@ define(["jquery",
     "backbone",
     'models/portals/PortalSectionModel',
     "views/MarkdownView",
-    "views/TOCView",
     "text!templates/portals/portalSection.html"],
-    function($, _, Backbone, PortalSectionModel, MarkdownView, TOCView, Template){
+    function($, _, Backbone, PortalSectionModel, MarkdownView, Template){
 
     /**
      * @class PortalSectionView
@@ -109,55 +108,28 @@ define(["jquery",
 
           //If there is Markdown, render it
           if( this.model.get("content").get("markdown") ){
+            
             //Create a MarkdownView
-            var sectionMarkdownView = new MarkdownView({
+            this.markdownView = new MarkdownView({
               markdown: this.model.get("content").get("markdown"),
-              citations: this.model.get("literatureCited")
+              citations: this.model.get("literatureCited"),
+              showTOC: true
             });
 
-            //Listen to the markdown view and when it is rendered, format the rendered markdown
-            this.listenTo(sectionMarkdownView, "mdRendered", this.postMarkdownRender);
+            // Listen to the markdown view and when it is rendered, format the rendered markdown
+            this.listenTo(this.markdownView, "mdRendered", this.postMarkdownRender);
+            
+            // Render the view
+            this.markdownView.render();
 
-            //Render the view
-            sectionMarkdownView.render();
-
-            //Add the markdown view element to this view
-            this.$(".portal-section-content").html(sectionMarkdownView.el);
-
-            this.markdownView = sectionMarkdownView;
-
-            //Set TOC to render after the Markdown section, so it
-            // can get the rendered header tags
-            this.listenToOnce(sectionMarkdownView, "mdRendered", this.renderTOC);
+            // Add the markdown view element to this view
+            this.$(".portal-section-content").html(this.markdownView.el);
+            
           }
 
         },
 
-        /**
-        * Renders a table of contents (a TOCView) that links to different sections of the MarkdownView
-        */
-        renderTOC: function(){
-
-          //Create a table of contents view
-          var tocView = new TOCView({
-            contentEl: this.markdownView.el,
-            className: "toc toc-view scrollspy-TOC"
-          });
-
-          this.tocView = tocView;
-
-          tocView.render();
-
-          // If more than one link was created in the TOCView, add it to this view
-          // Limit to .desktop items (and exclude .mobile items) so that the length isn't doubled 
-          if( tocView.$el.find(".desktop li").length > 1){
-            this.$(".portal-section-content").prepend(tocView.el);
-            //Make a two-column layout
-            tocView.$el.addClass("span3");
-            this.markdownView.$el.addClass("span9");
-          }
-
-        },
+        
 
         /**
         * This funciton is called after this view has fully rendered and is
@@ -170,25 +142,10 @@ define(["jquery",
                 subview.postRender();
               }
           });
-
-          // When TOC is added...
-          // Affix the TOC to the top of the window when scrolling past it &
-          // add scrollSpy
-          if( !this.tocView && this.markdownView ){
-            this.listenToOnce(this.markdownView, "mdRendered", function(){
-              this.tocView.$el.affix({
-                offset: this.tocView.$el.offset().top
-              });
-              this.tocView.addScrollspy(".portal-section-view.active .scrollspy-TOC");
-            });
+          
+          if(this.markdownView){
+            this.markdownView.postRender();
           }
-          else if( this.tocView ){
-            this.tocView.$el.affix({
-              offset: this.tocView.$el.offset().top
-            });
-            this.tocView.addScrollspy(".portal-section-view.active .scrollspy-TOC");
-          }
-
         },
 
         /**
@@ -196,17 +153,16 @@ define(["jquery",
         * resulting HTML as needed for this view
         */
         postMarkdownRender: function(){
-
-          this.$(".markdown img").addClass("thumbnail").after("<div class='clear'></div>");
-
-          //If the window location has a hash, scroll to it
+          
+          
+        
+          
+          // If the window location has a hash, scroll to it
           if( window.location.hash && this.$(window.location.hash).length ){
-
             var view = this;
-
-            //Wait 0.5 seconds to allow images time to load before we scroll down the page
+            // Wait 0.5 seconds to allow images time to load before we scroll down the page
             setTimeout(function(){
-              //Scroll to the element specified in the hash
+              // Scroll to the element specified in the hash
               MetacatUI.appView.scrollTo( view.$(window.location.hash) );
             }, 500);
           }

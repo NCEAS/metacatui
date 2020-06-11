@@ -37,7 +37,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, Template){
     template: _.template(Template),
     
     /**
-    * Markdown to insert into the textarea when the view is rendered
+    * Markdown to insert into the textarea when the view is first rendered
     * @type {string}
     */
     markdown: "",
@@ -49,10 +49,19 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, Template){
     markdownPlaceholder: "",
     
     /**
-    * The placeholder text to display in the preview area when there's no markdown
+    * The placeholder text to display in the preview area when there's no
+    * markdown
     * @type {string}
     */
     previewPlaceholder: "",
+    
+    /**
+    * Indicates whether or not to render a table of contents for the markdown
+    * preview. If set to true, a table of contents will be shown in the preview
+    * if there two or more top-level headers are rendered from the markdown.
+    * @type {boolean}
+    */
+    showTOC: false,
     
     /**
     * A jQuery selector for the HTML textarea element that will contain the
@@ -77,10 +86,13 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, Template){
     */
     initialize: function(options){
       
+      console.log("2. mdEditor TOC: " + options.showTOC );
+      
       if(typeof options !== "undefined"){
           this.markdown            =  options.markdown            || "";
           this.markdownPlaceholder =  options.markdownPlaceholder || "";
-          this.previewPlaceholder  =  options.previewPlaceholder || "";
+          this.previewPlaceholder  =  options.previewPlaceholder  || "";
+          this.showTOC             =  options.showTOC             || false;
       }
       
     },
@@ -297,9 +309,11 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, Template){
       try{
         
         var markdownPreview = new MarkdownView({
-            markdown: this.markdown || this.previewPlaceholder
+            markdown: this.markdown || this.previewPlaceholder,
+            showTOC: this.showTOC || false
         });
-        //Render the preview
+        
+        // Render the preview
         markdownPreview.render();
         // Add the rendered markdown to the preview tab
         this.$("#markdown-preview-"+this.cid).html(markdownPreview.el);

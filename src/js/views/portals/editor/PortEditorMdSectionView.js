@@ -141,7 +141,8 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
         var mdEditor = new MarkdownEditor({
           markdown: markdown,
           markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
-          previewPlaceholder: "Add some text in the Edit tab to show a preview here"
+          previewPlaceholder: "Add some text in the Edit tab to show a preview here",
+          showTOC: true
         });
         mdEditor.render();
         this.$(this.markdownEditorContainer).html(mdEditor.el);

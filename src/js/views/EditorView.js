@@ -83,32 +83,32 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      * model is replaced, the listeners can be reset.
      */
     setListeners: function() {
-
+    
       //Stop listening first
       this.stopListening(this.model, "errorSaving", this.saveError);
       this.stopListening(this.model, "successSaving", this.saveSuccess);
       this.stopListening(this.model, "invalid", this.showValidation);
-
+    
       //Set listeners
       this.listenTo(this.model, "errorSaving", this.saveError);
       this.listenTo(this.model, "successSaving", this.saveSuccess);
       this.listenTo(this.model, "invalid", this.showValidation);
-
-      //Set a beforeunload event only if there isn't one already
-      if( !this.beforeunloadCallback ){
-        var view = this;
-        //When the Window is about to be closed, show a confirmation message
-        this.beforeunloadCallback = function(e){
-          if( !view.canClose() ){
-            //Browsers don't support custom confirmation messages anymore,
-            // so preventDefault() needs to be called or the return value has to be set
-            e.preventDefault();
-            e.returnValue = "";
-          }
-          return;
-        }
-        window.addEventListener("beforeunload", this.beforeunloadCallback);
-      }
+    
+      // //Set a beforeunload event only if there isn't one already
+      // if( !this.beforeunloadCallback ){
+      //   var view = this;
+      //   //When the Window is about to be closed, show a confirmation message
+      //   this.beforeunloadCallback = function(e){
+      //     if( !view.canClose() ){
+      //       //Browsers don't support custom confirmation messages anymore,
+      //       // so preventDefault() needs to be called or the return value has to be set
+      //       e.preventDefault();
+      //       e.returnValue = "";
+      //     }
+      //     return;
+      //   }
+      //   window.addEventListener("beforeunload", this.beforeunloadCallback);
+      // }
     },
 
     /**

@@ -84,7 +84,7 @@ define([    "jquery", "underscore", "backbone",
          * displays it.
          */ 
         render: function() {
-
+          
             // Once required extensions are tested for and loaded, convert and
             // append markdown
             this.stopListening();
@@ -130,14 +130,39 @@ define([    "jquery", "underscore", "backbone",
                 }
 
                 this.$el.append(this.template({ markdown: htmlFromMD }));
-                this.trigger("mdRendered");
+                
+                this.$(".markdown img").addClass("thumbnail").after("<div class='clear'></div>");
+                
+                
+                if( this.showTOC ){
+                  this.listenToOnce(this, "TOCRendered", function(){
+                    this.trigger("mdRendered");
+                    this.postRender();
+                  });
+                  this.renderTOC();
+                } else {
+                  this.trigger("mdRendered");
+                  this.postRender();
+                }
+                
             });
 
             // Detect which extensions we'll need
-            this.listRequiredExtensions( this.markdown);
+            this.listRequiredExtensions( this.markdown );
+            
             return this;
+            
         },
-
+        
+        postRender: function(){
+          if(this.tocView){
+            this.tocView.postRender();
+          } else {
+            this.listenToOnce(this, "TOCRendered", function(){
+              this.tocView.postRender();
+            });
+          }
+        },
         
         /**        
          * listRequiredExtensions - test which extensions are needed, then load
@@ -200,8 +225,9 @@ define([    "jquery", "underscore", "backbone",
 
             // --- Test for XSS --- //
 
-            // there is no test for the xss filter because it should always be included.
-            // it's included via the updateExtensionList function for consistency with the other, optional extensions
+            // There is no test for the xss filter because it should always be
+            // included. It's included via the updateExtensionList function for
+            // consistency with the other, optional extensions.
             require(["showdownXssFilter"], function(showdownKatex){
                 updateExtensionList("xssfilter", required=true);
             })
@@ -311,6 +337,46 @@ define([    "jquery", "underscore", "backbone",
             } else {
                 updateExtensionList("showdown-images", required=false);
             };
+
+        },
+
+
+        /**
+        * Renders a table of contents (a TOCView) that links to different sections of the MarkdownView
+        */
+        renderTOC: function(){
+
+          if(this.showTOC === false){
+            return
+          }
+
+          var view = this;
+          
+          require(["views/TOCView"], function(TOCView){
+            
+            //Create a table of contents view
+            view.tocView = new TOCView({
+              contentEl: view.el,
+              className: "toc toc-view",
+              addScrollspy: true,
+              affix: true
+            });
+            
+            view.tocView.render();
+            
+            // If more than one link was created in the TOCView, add it to this
+            // view. Limit to `.desktop` items (i.e. exclude .mobile items) so
+            // that the length isn't doubled 
+            if( view.tocView.$el.find(".desktop li").length > 1){
+              ($(view.tocView.el)).insertBefore(view.$el);
+              // Make a two-column layout
+              view.tocView.$el.addClass("span3");
+              view.$el.addClass("span9");
+            }
+            
+            view.trigger("TOCRendered");
+            
+          });
 
         },
 
