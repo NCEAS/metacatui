@@ -161,9 +161,10 @@ define(['jquery',
 					if (oldView.onClose)
 						oldView.onClose();
 
-					// render the new view
-					view.render(viewOptions);
 					view.$el.fadeIn('slow', function() {
+
+						// render the new view
+						view.render(viewOptions);
 
 						// after fade in, do postRender()
 						if (view.postRender)
