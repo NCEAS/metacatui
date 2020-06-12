@@ -22,7 +22,7 @@ MetacatUI page for every MetacatUI path. Otherwise, your server will return a 40
 
 Add the `FallbackResource` Apache directive:
 
-  ```
+  ```apache
     ...
     # Serve index.html instead of a 404 error in the MetacatUI directory
     <Directory "/var/www/metacatui">
@@ -35,7 +35,7 @@ Add the `FallbackResource` Apache directive:
 
 Add a `mod_rewrite` Apache directive for the MetacatUI index.html file:
 
-  ```
+  ```apache
     <Directory "/var/www/metacatui">
     ...
     ...
@@ -55,7 +55,7 @@ Add a `mod_rewrite` Apache directive for the MetacatUI index.html file:
 
 Add the following to your Apache configuration file:
 
-  ```
+  ```apache
   ...
   # Allow encoded slashes in URLs so encoded identifiers can be sent in MetacatUI URLs
   AllowEncodedSlashes On
@@ -77,14 +77,14 @@ updated regularly, since we recommend you use the [NodeJS Express server instead
 - Choose a location from which to serve *all* your Apache website files. A good location is `/Users/{username}/Sites`
 - Make a subdirectory in `~/Sites` specifically for MetacatUI. The default directory name for MetacatUI is `metacatui`.
 
-  ```
+  ```bash
   mkdir ~/Sites/metacatui
   ```
 
 #### Step 2. Tell Apache to use the directory from Step 1
 - Configure Apache to serve files from your `Sites` directory by opening `/etc/apache2/httpd.conf` and changing the `DocumentRoot` pathname. Example:
 
-    ```
+    ```apache
     DocumentRoot "/Users/walker/Sites"
     <Directory "/Users/walker/Sites/metacatui">
     ```
@@ -92,13 +92,13 @@ updated regularly, since we recommend you use the [NodeJS Express server instead
 #### Step 3. Configure a VirtualHost in Apache for MetacatUI
 - First, create a backup of the default httpd-vhosts.conf file:
 
-  ```
+  ```bash
   sudo cp /etc/apache2/extra/httpd-vhosts.conf /etc/apache2/extra/httpd-vhosts.conf.bak
   ```
 
 - Clear out the example VirtualHost configuration if it is there, and add a VirtualHost for the `~/Sites/metacatui` directory (make sure `walker` is replaced with your username):
 
-  ```
+  ```apache
     <VirtualHost *:80>
       DocumentRoot "/Users/walker/Sites"
       ServerName metacatui.localhost
@@ -116,7 +116,7 @@ updated regularly, since we recommend you use the [NodeJS Express server instead
 
 - Create a host name for `metacatui.locahost`. First, open `/etc/hosts`:
 
-  ```
+  ```bash
   sudo vi /etc/hosts
   ```
 
@@ -132,14 +132,14 @@ updated regularly, since we recommend you use the [NodeJS Express server instead
 #### Step 4. Move MetacatUI files to Apache
 - Move the MetacatUI application code to the directory we chose in Step 2.
 
-    ```
+    ```bash
     cp -rf metacatui-2.0.0/src/* /Users/walker/Sites/metacatui/
     ```
 
 #### Step 5. Start Apache
 - Start (or restart) Apache:
 
-  ```
+  ```bash
   sudo apachectl start
   ```
 

@@ -10,7 +10,7 @@ The basic components of a custom theme are:
 1. A navigation bar at the top of the page (`navbar.html` template)
 2. A footer at the bottom of the page (`footer.html` template)
 3. Custom CSS so you can use your own colors, fonts, etc.
-4. An `AppModel` that contains configuration values for your MetacatUI theme and installation
+4. A configuration file for the theme
 
 To create a custom theme, do the following:
 
@@ -60,24 +60,15 @@ Proceed carefully with this template. You may just want to update the logo image
 In `src/js/themes/{my-theme-name}/css/metacatui.css` and `src/js/themes/{my-theme-name}/css/metacatui.responsive.css`,
 you can add or edit any CSS to make your theme branded the way you'd like.
 
-### Step 5. Configure your theme's functionality
+**Note:** These CSS files must be named `metacatui.css` and `metacatui.responsive.css`
 
-Create an `AppModel` for your theme:
-
-  ```
-  mkdir src/js/themes/{my-theme-name}/models
-  cp src/js/models/AppModel.js src/js/themes/{my-theme-name}/models/
-  ```
-
-The `AppModel` contains MetacatUI settings that control many MetacatUI features. You may want to configure some of these according to your needs. See the [`AppModel` documentation](../docs/AppModel.html#defaults) for details.
-
-### Step 6. Create a theme map to tie it all together
+### Step 5. Create a configuration file to tie it all together
 
 The last piece that glues all your custom theme parts together is your theme `config.js` file. Open the `config.js` file
 in a text editor and in the `themeMap` json variable, add a new line for every template you have customized for your new theme.
-What this does is map the default location of these app components to the customized location (in your theme directory).
+What this does is map the default location of these app components to the customized location in your theme directory.
 
-An example for the `footer.html`, `navbar.html`, and `AppModel.js` files is below. Your CSS does not need to be included here.
+An example for the `footer.html` and `navbar.html` files is below. Your CSS does not need to be included here.
 
   ```
   MetacatUI.themeMap =
@@ -85,11 +76,22 @@ An example for the `footer.html`, `navbar.html`, and `AppModel.js` files is belo
           '*': {
             // example overrides are provided here
             'templates/navbar.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/navbar.html',
-            'templates/footer.html' :  MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/footer.html',
-            'models/AppModel' :  MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/models/AppModel.js'
+            'templates/footer.html' :  MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/footer.html'
             }
   };
   ```
+
+You can also include app configuration for this theme by defining a `MetacatUI.AppConfig` variable with
+configuration options. For example, if you want your theme to always use a certain `emailContact`, you can specify that configuration value like so:
+
+  ```
+  MetacatUI.AppConfig = Object.assign({
+    emailContact: "contact@ourrepo.org"
+  }, (MetacatUI.AppConfig || {}));
+  ```
+
+You could use this `AppConfig` as your primary application configuration by setting the [`appConfigPath`]((../docs/global.html#appConfigPath))
+to this file path. Or it can be used as additional configurations on top of a primary configuration file.
 
 ## Advanced customization by extending models and views
 All the models, collections, views, routers, and templates required to run

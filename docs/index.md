@@ -15,7 +15,7 @@ There are three separate installation instructions, depending on your use case:
 - [Installing MetacatUI locally to use with a remote DataONE Coordinating Node](install/use-with-cn.html)
 
 ### For developers
-- [How to create a custom theme](configuration/index.html)
+- [How to create a custom theme](install/configuration/index.html)
 - [MetacatUI Javascript documentation for developers](/metacatui/docs/index.html)
 
 #### Want to contribute to MetacatUI?
