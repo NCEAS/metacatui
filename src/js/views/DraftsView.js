@@ -1,6 +1,11 @@
 define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!templates/draftsTemplate.html"],
   function($, _, Backbone, LocalForage, Clipboard, draftsTemplate){
-    var view = Backbone.View.extend({
+    /**
+    * @class DraftsView
+    * @classdesc A view that lists the local submission drafts for this user
+    */
+    var view = Backbone.View.extend(
+      /** @lends DraftsView.prototype */{
       type: "DraftsView",
       el: "#Content",
       className: "div",
@@ -48,8 +53,9 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
         return this;
       },
 
-      // Attach a click handler for download buttons that triggers a draft
-      // or all drafts to be downloaded
+      /** Attach a click handler for download buttons that triggers a draft
+      * or all drafts to be downloaded
+      */
       insertDownloadables: function() {
         var view = this;
 
@@ -67,9 +73,10 @@ define(["jquery", "underscore", "backbone", "localforage", "clipboard", "text!te
         this.$el.find(".download-all").on("click", this.createDownloadAll());
       },
 
-      // Creates a function for use as an event handler in insertDownloadables
-      // that creates a closure around the content (text) and filename and
-      // causes the browser to download the draft when clicked
+      /** Creates a function for use as an event handler in insertDownloadables
+      * that creates a closure around the content (text) and filename and
+      * causes the browser to download the draft when clicked
+      */
       createDownloader: function(text, fileName) {
         return function() {
           var blob = new Blob([text], { type: "application/xml" })

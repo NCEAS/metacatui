@@ -44,7 +44,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject'],
     	        		reader.readAsDataURL(this.model.get("uploadFile"));
             		}
             		else{
-            			previewImg.attr("src", MetacatUI.appModel.get("objectServiceUrl") + this.model.get("id"));
+            			previewImg.attr("src", MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(this.model.get("id")));
             		}
             		
             		this.$el.append(previewHTML);

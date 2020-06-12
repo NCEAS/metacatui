@@ -570,6 +570,10 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                         if (typeof filterValue == "object") {
                             filterValue = filterValue.value;
                         }
+                        else if( (typeof filterValue == "string" && !filterValue.length) ||
+                                  typeof filterValue == "undefined" || filterValue === null){
+                          continue;
+                        }
 
                         if (this.needsQuotes(filterValue)) {
                           if( forPOST ){

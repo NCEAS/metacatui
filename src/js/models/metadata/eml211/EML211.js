@@ -20,11 +20,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
             EMLProject, EMLText, EMLMethods) {
 
-      /*
-      An EML211 object represents an Ecological Metadata Language
-      document, version 2.1.1
+      /**
+      * @class EML211
+      * @classdesc An EML211 object represents an Ecological Metadata Language
+      * document, version 2.1.1
+      * @extends ScienceMetadata
       */
-      var EML211 = ScienceMetadata.extend({
+      var EML211 = ScienceMetadata.extend(
+        /** @lends EML211.prototype */{
 
         type: "EML",
 
@@ -1224,6 +1227,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           model.set("numSaveAttempts", 0);
           model.set("uploadStatus", "c");
           model.set("sysMetaXML", model.serializeSysMeta());
+          model.set("oldPid", null);
           model.fetch({merge: true, sysMeta: true});
           model.trigger("successSaving", model);
 
@@ -1508,7 +1512,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         var model = this,
           fetchOptions = _.extend({
-            url: MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+            url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
             dataType: "text",
             success: function(response){
               model.set(DataONEObject.prototype.parse.call(model, response));
@@ -1971,6 +1975,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           textString = textString.replace(xmlNode, tagName);
 
         });
+
+        //Remove Unicode characters that are not valid XML characters
+        //Create a regular expression that matches any character that is not a valid XML character
+        // (see https://www.w3.org/TR/xml/#charsets)
+        var invalidCharsRegEx = /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/g;
+        textString = textString.replace(invalidCharsRegEx, "");
 
         return textString;
 

@@ -13,35 +13,107 @@ define(['jquery', 'underscore', 'backbone'],
   var AppModel = Backbone.Model.extend(
     /** @lends AppModel.prototype */ {
 
-    /**
-    * Default attributes for an AppModel
-    * @type {Object}
-    */
-    defaults: {
+    defaults: _.extend(
+      /** @lends AppConfig.prototype */{
+
+      //TODO: These attributes are stored in the AppModel, but shouldn't be set in the AppConfig,
+      //so we need to add docs for them in a separate place
       headerType: 'default',
-      title: MetacatUI.themeTitle || "Metacat Data Catalog",
-      repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
-
-      emailContact: "knb-help@nceas.ucsb.edu",
-
-      googleAnalyticsKey: null,
-
-      nodeId: null,
-
       searchMode: MetacatUI.mapKey ? 'map' : 'list',
       searchHistory: [],
-      sortOrder: 'dateUploaded+desc',
       page: 0,
-
       previousPid: null,
       lastPid: null,
-
       anchorId: null,
-
-      enableUserProfiles: true,
-      enableUserProfileSettings: true,
       profileUsername: null,
 
+      /**
+      * The theme name to use
+      * @type {string}
+      * @default "default"
+      */
+      theme: "default",
+
+      /**
+      * The default page title.
+      * @type {string}
+      */
+      title: MetacatUI.themeTitle || "Metacat Data Catalog",
+
+      /**
+      * The name of this repository. This is used throughout the interface in different
+      * messages and page content.
+      * @type {string}
+      * @default "Metacat Data Catalog"
+      */
+      repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
+
+      /**
+      * The e-mail address that people should contact when they need help with
+      * submitting datasets, resolving error messages, etc.
+      * @type {string}
+      * @default knb-help@nceas.ucsb.edu
+      */
+      emailContact: "knb-help@nceas.ucsb.edu",
+
+      /**
+      * Your Google Maps API key, which is used to diplay interactive maps on the search
+      * views and static maps on dataset landing pages.
+      * If a Google Maps API key is no specified, the maps will be omitted from the interface.
+      * Sign up for Google Maps services at https://console.developers.google.com/
+      * @type {string}
+      * @example "AIzaSyCYyHnbIokUEpMx5M61ButwgNGX8fIHUs"
+      * @default null
+      */
+      mapKey: null,
+
+      /**
+      * Your Google Analytics API key, which is used to send page view and custom events
+      * to the Google Analytics service.
+      * This service is optional in MetacatUI.
+      * Sign up for Google Analytics services at https://analytics.google.com/analytics/web/
+      * @type {string}
+      * @example "UA-74622301-1"
+      * @default null
+      */
+      googleAnalyticsKey: null,
+
+      /**
+      * The node identifier for this repository. This is set dynamically by retrieving the
+      * DataONE Coordinating Node document and finding this repository in the Node list.
+      * (see https://cn.dataone.org/cn/v2/node).
+      * If this repository is not registered with DataONE, then set this node id by copying
+      * the node id from your node info at https://your-repo-site.com/metacat/d1/mn/v2/node
+      * @type {string}
+      * @example "urn:node:METACAT"
+      * @default null
+      */
+      nodeId: null,
+
+      /**
+      * Enable or disable the user profiles. If enabled, users will see a "My profile" link
+      * and can view their datasets, metrics on those datasets, their groups, etc.
+      * @type {boolean}
+      * @default true
+      */
+      enableUserProfiles: true,
+
+      /**
+      * Enable or disable the user settings view. If enabled, users will see a list of
+      * changeable settings - name, email, groups, portals, etc.
+      * @type {boolean}
+      * @default true
+      */
+      enableUserProfileSettings: true,
+
+      /**
+      * The maximum dataset .zip file size, in bytes, that a user can download.
+      * Datasets whose total size are larger than this maximum will show a disabled
+      * "Download All" button, and users will be directed to download files individually.
+      * This is useful for preventing the Metacat package service from getting overloaded.
+      * @type {number}
+      * @default 3000000000
+      */
       maxDownloadSize: 3000000000,
 
       /**
@@ -50,7 +122,9 @@ define(['jquery', 'underscore', 'backbone'],
       * important information.
       * If this attribute is left blank, no message will display, even if there is a start and end time specified.
       * If there are is no start or end time specified, this message will display until you remove it here.
+      *
       * @type {string}
+      * @default null
       */
       temporaryMessage: null,
 
@@ -58,6 +132,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If there is a temporaryMessage specified, it will display after this start time.
       * Remember that Dates are in GMT time!
       * @type {Date}
+      * @default null
       */
       temporaryMessageStartTime: null,
 
@@ -65,58 +140,126 @@ define(['jquery', 'underscore', 'backbone'],
       * If there is a temporaryMessage specified, it will display before this end time.
       * Remember that Dates are in GMT time!
       * @type {Date}
+      * @default null
       */
       temporaryMessageEndTime: null,
 
       /**
       * Additional HTML classes to give the temporary message element. Use these to style the message.
       * @type {string}
+      * @default "warning"
       */
       temporaryMessageClasses: "warning",
 
       /**
       * A jQuery selector for the element that the temporary message will be displayed in.
       * @type {string}
+      * @default "#Navbar"
       */
       temporaryMessageContainer: "#Navbar",
 
       /**
-       * Flag which, when true shows Whole Tale features in the UI
+      * Show or hide the source repository logo in the search result rows
+      * @type {boolean}
+      * @default false
+      */
+      displayRepoLogosInSearchResults: false,
+      /**
+      * Show or hide the Download button in the search result rows
+      * @type {boolean}
+      * @default false
+      */
+      displayDownloadButtonInSearchResults: false,
+
+      /**
+      * If set to false, some parts of the app will send POST HTTP requests to the
+      * Solr search index via the `/query/solr` DataONE API.
+      * Set this configuration to true if using Metacat 2.10.2 or earlier
+      * @type {boolean}
+      */
+      disableQueryPOSTs: false,
+
+      /** If set to true, some parts of the app will use the Solr Join Query syntax
+      * when sending queries to the `/query/solr` DataONE API.
+      * If this is not enabled, then some parts of the UI may not work if a query has too
+      * many characters or has too many boolean clauses. This impacts the "Metrics" tabs of portals/collections,
+      * at least.
+      * The Solr Join Query Parser as added in Solr 4.0.0-ALPHA (I believe!): https://archive.apache.org/dist/lucene/solr/4.0.0/changes/Changes.html#4.0.0-alpha.new_features
+      * About the Solr Join Query Parser: https://lucene.apache.org/solr/guide/8_5/other-parsers.html#join-query-parser
+      * WARNING: At some point, MetacatUI will deprecate this configuration and will REQUIRE Solr Join Queries
+      * @type {boolean}
+      */
+      enableSolrJoins: false,
+
+      /**
+      * The search filters that will be displayed in the search views. Add or remove
+      * filter names from this array to show or hide them. See "example" to see all the
+      * filter options.
+      * @type {string[]}
+      * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
+      * @example ["all", "annotation", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
+      */
+      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
+
+      /**
+       * Enable to show Whole Tale features
        * @type {Boolean}
+       * @default false
        */
       showWholeTaleFeatures: false,
       /**
-       * The environments that are exposed to DataONE users
-       * @type {Array}
+       * The WholeTale environments that are exposed on the dataset landing pages
+       * @type {string[]}
+       * @default ["RStudio", "Jupyter Notebook"]
        */
       taleEnvironments: ["RStudio", "Jupyter Notebook"],
       /**
-      * The Whole Tale endpoint that handles users
-      * @type {String}
+      * The Whole Tale endpoint
+      * @type {string}
+      * @default 'https://girder.wholetale.org/api/v1/integration/dataone'
       */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
 			/**
-			 * emlEditorRequiredFields is a hash map of all the required fields in the EML Editor.
-			 * Any field set to true will prevent the user from saving the Editor until a value has been given
+			 * A list of all the required fields in the EML Editor.
+			 * Any field set to `true` will prevent the user from saving the Editor until a value has been given
+       * Any EML field not supported in this list cannot be required.
        * @type {object}
+       * @property {boolean} abstract - Default: true
+       * @property {boolean} alternateIdentifier - Default: false
+       * @property {boolean} funding - Default: false
+       * @property {boolean} generalTaxonomicCoverage - Default: false
+       * @property {boolean} taxonCoverage - Default: false. If true, at least one taxonomic rank and value will be required.
+       * @property {boolean} geoCoverage - Default: false. If true, at least one geographic coverage description and point/bounding box will be required.
+       * @property {boolean} intellectualRights - Default: true
+       * @property {boolean} keywordSets - Default: false. If true, at least one keyword will be required.
+       * @property {boolean} methods - Default: false. If true, at least one method step will be required.
+       * @property {boolean} samplingDescription - Default: false
+       * @property {boolean} studyExtentDescription - Default: false
+       * @property {boolean} temporalCoverage - Default: false. If true, at least a beginDate will be required.
+       * @property {boolean} title - Default: true. EML documents always require a title. Only set this to false if you are extending MetacatUI to ensure a title another way.
 			 */
 			emlEditorRequiredFields: {
 				abstract: true,
 				alternateIdentifier: false,
 				funding: false,
 				generalTaxonomicCoverage: false,
+        taxonCoverage: false,
 				geoCoverage: false,
 				intellectualRights: true,
 				keywordSets: false,
 				methods: false,
 				samplingDescription: false,
 				studyExtentDescription: false,
-				taxonCoverage: false,
 				temporalCoverage: false,
 				title: true
 			},
 
+      /**
+      * The metadata formats that are editable in the EditorView. Metadata types not listed
+      * here will not show an Edit button.
+      * @type {string[]}
+      */
 			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
 
       /**
@@ -135,30 +278,172 @@ define(['jquery', 'underscore', 'backbone'],
       * A list of keyword thesauri options for the user to choose from in the EML Editor.
       * A "None" option will also always display.
       * @type {object[]}
-      * @property {string} emlKeywordThesauri.label - A readable and short label for the keyword thesaurus that is displayed in the UI
-      * @property {string} emlKeywordThesauri.thesaurus - The exact keyword thesaurus name that will be saved in the EML
-      * @readonly
+      * @property {string} label - A readable and short label for the keyword thesaurus that is displayed in the UI
+      * @property {string} thesaurus - The exact keyword thesaurus name that will be saved in the EML
       */
       emlKeywordThesauri: [{
         label: "GCMD",
         thesaurus: "NASA Global Change Master Directory (GCMD)"
       }],
 
+      /**
+      * The base URL for the repository. This only needs to be changed if the repository
+      * is hosted at a different origin than the MetacatUI origin. This URL is used to contruct all
+      * of the DataONE REST API URLs. If you are testing MetacatUI against a development repository
+      * at an external location, this is where you would set that external repository URL.
+      * @type {string}
+      * @default window.location.origin || (window.location.protocol + "//" + window.location.host)
+      */
       baseUrl: window.location.origin || (window.location.protocol + "//" + window.location.host),
 
-      // the most likely item to change is the Metacat deployment context
-      context: '/metacat',
+      /**
+      * The directory that metacat is installed in at the `baseUrl`. For example, if you
+      * have metacat installed in the tomcat webapps directory as `metacat`, then this should be set
+      * to "/metacat". Or if you renamed the metacat webapp to `catalog`, then it should be `/catalog`.
+      * @type {string}
+      * @default "/metacat"
+      */
+      context: MetacatUI.AppConfig.metacatContext || '/metacat',
+
+      /**
+      * The URL fragment for the DataONE Member Node (MN) API.
+      * @type {string}
+      * @default '/d1/mn/v2'
+      */
       d1Service: '/d1/mn/v2',
+      /**
+      * The base URL of the DataONE Coordinating Node (CN). CHange this if you
+      * are testing a deployment in a development environment.
+      * @type {string}
+      * @default "https://cn.dataone.org/"
+      * @example "https://cn-stage.test.dataone.org/""
+      */
       d1CNBaseUrl: "https://cn.dataone.org/",
+      /**
+      * The URL fragment for the DataONE Coordinating Node (CN) API.
+      * @type {string}
+      * @default 'cn/v2'
+      */
       d1CNService: "cn/v2",
-      d1LogServiceUrl: null,
+      /**
+      * The URL for the DataONE listNodes() API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.listNodes)
+      * @type {string}
+      */
       nodeServiceUrl: null,
+      /**
+      * The URL for the DataONE View API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#module-MNView)
+      * @type {string}
+      */
       viewServiceUrl: null,
+      /**
+      * The URL for the DataONE getPackage() API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNPackage.getPackage)
+      *
+      * @type {string}
+      */
       packageServiceUrl: null,
+      /**
+      * The URL for the Metacat Publish service. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * @type {string}
+      */
       publishServiceUrl: null,
+      /**
+      * The URL for the DataONE isAuthorized() API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNAuthorization.isAuthorized)
+      * @type {string}
+      */
       authServiceUrl: null,
+      /**
+      * The URL for the DataONE query API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNQuery.query)
+      * @type {string}
+      */
       queryServiceUrl: null,
+      /**
+      * The URL for the DataONE reserveIdentifier() API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.reserveIdentifier)
+      * @type {string}
+      */
       reserveServiceUrl: null,
+      /**
+      * The URL for the DataONE system metadata API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNRead.getSystemMetadata
+      * and https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNStorage.updateSystemMetadata)
+      * @type {string}
+      */
+      metaServiceUrl: null,
+      /**
+      * The URL for the DataONE system metadata API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNRead.getSystemMetadata
+      * and https://releases.dataone.org/online/api-documentation-v2.0/apis/MN_APIs.html#MNStorage.updateSystemMetadata)
+      * @type {string}
+      */
+      objectServiceUrl: null,
+      /**
+      * The URL for the DataONE Formats API. This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.listFormats)
+      * @type {string}
+      */
+      formatsServiceUrl: null,
+      /**
+      * The URL fragment for the DataONE Formats API. This is combined with the AppConfig#formatsServiceUrl
+      * @type {string}
+      * @default "/formats"
+      */
+      formatsUrl: "/formats",
+
+      /**
+      * If true, parts of the UI (most notably, "funding" field in the dataset editor)
+      * may look up NSF Award information
+      * @type {boolean}
+      * @default false
+      */
+      useNSFAwardAPI: false,
+      /**
+      * The URL for the NSF Award API, which can be used by the {@link LookupModel}
+      * to look up award information for the dataset editor or other views
+      * @type {string}
+      * @default "https://api.nsf.gov/services/v1/awards.json"
+      */
+      grantsUrl: "https://api.nsf.gov/services/v1/awards.json",
+
+      /**
+      * The base URL for the ORCID REST services
+      * @type {string}
+      * @default "https:/orcid.org"
+      */
+      orcidBaseUrl: "https:/orcid.org",
+
+      /**
+      * The URL for the ORCID search API, which can be used to search for information
+      * about people using their ORCID, email, name, etc.
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * @type {string}
+      */
+      orcidSearchUrl: null,
+
+      /**
+      * The URL for the Metacat API. The Metacat API has been deprecated and is kept here
+      * for compatability with Metacat repositories that are using the old x509 certificate
+      * authentication mechanism. This is deprecated since authentication is now done via
+      * the DataONE Portal service using auth tokens. (Using the {@link AppConfig#tokenUrl})
+      * This URL is contructed dynamically when the AppModel is initialized.
+      * Only override this if you are an advanced user and have a reason to!
+      * @type {string}
+      */
+      metacatServiceUrl: null,
 
       /**
       * If false, the /monitor/status (the service that returns the status of various DataONE services) will not be used.
@@ -169,33 +454,38 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The URL for the service that returns the status of various DataONE services.
       * The only supported status so far is the search index queue -- the number of
-      *   objects that are waiting to be indexed in the Solr search index
+      * objects that are waiting to be indexed in the Solr search index.
+      * This URL is contructed dynamically when the
+      * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
       * @type {string}
-      * @readonly
       */
       monitorStatusUrl: "",
 
       /**
-      * If set to false, some parts of the app will send POST HTTP requests to the
-      * Solr search index via the `/query/solr` DataONE API.
-      * Set this configuration to true if using Metacat 2.10.2 or earlier
+      * If true, users can sign in using CILogon as the identity provider.
+      * ORCID is the only recommended identity provider. CILogon may be deprecated
+      * in the future.
       * @type {boolean}
+      * @default false
       */
-      disableQueryPOSTs: false,
-
-      defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
-
-      metaServiceUrl: null,
-      metacatBaseUrl: null,
-      metacatServiceUrl: null,
-      objectServiceUrl: null,
-      formatsServiceUrl: null,
-      formatsUrl: "/formats",
-      //grantsUrl: null,
-      //orcidSearchUrl: null,
-      //orcidBioUrl: null,
-      //signInUrl: null,
+      enableCILogonSignIn: false,
+      /**
+      * The URL for the DataONE Sign In API using CILogon as the identity provider
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * @type {string}
+      */
+      signInUrl: null,
+      /**
+      * The URL for the DataONE Sign Out API
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * @type {string}
+      */
       signOutUrl: null,
+      /**
+      * The URL for the DataONE Sign In API using ORCID as the identity provider
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * @type {string}
+      */
       signInUrlOrcid: null,
 
       /**
@@ -203,26 +493,92 @@ define(['jquery', 'underscore', 'backbone'],
       * This is not recommended, as DataONE is moving towards supporting only ORCID logins for users.
       * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
       * @type {boolean}
+      * @default false
       */
       enableLdapSignIn: false,
+      /**
+      * The URL for the DataONE Sign In API using LDAP as the identity provider
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * @type {string}
+      */
       signInUrlLdap: null,
 
+      /**
+      * The URL for the DataONE Token API using ORCID as the identity provider
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * @type {string}
+      */
       tokenUrl: null,
+      /**
+      * The URL for the DataONE echoCredentials() API
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNDiagnostic.echoCredentials)
+      * @type {string}
+      */
       checkTokenUrl: null,
+      /**
+      * The URL for the DataONE Identity API
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#module-CNIdentity)
+      * @type {string}
+      */
       accountsUrl: null,
+      /**
+      * The URL for the DataONE Pending Maps API
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNIdentity.getPendingMapIdentity)
+      * @type {string}
+      */
       pendingMapsUrl: null,
+      /**
+      * The URL for the DataONE mapIdentity() API
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNIdentity.mapIdentity)
+      * @type {string}
+      */
       accountsMapsUrl: null,
+      /**
+      * The URL for the DataONE Groups API
+      * This URL is constructed dynamically once the {@link AppModel} is initialized.
+      * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNIdentity.createGroup)
+      * @type {string}
+      */
       groupsUrl: null,
-      portalUrl: null,
-      // Metadata quality report services
+      /**
+      * The URL for the DataONE metadata assessment service
+      * @type {string}
+      * @default "https://docker-ucsb-4.dataone.org:30443/quality"
+      */
       mdqBaseUrl: "https://docker-ucsb-4.dataone.org:30443/quality",
-      // Quality Suites for the dataset quality chart
-      // suidIds and suiteLables must be specified as a list, even if only one suite is available.
+      /**
+      * Metadata Assessment Suite IDs for the dataset assessment reports.
+      * @type {string[]}
+      * @default ["FAIR.suite.1"]
+      */
       mdqSuiteIds: ["FAIR.suite.1"],
+      /**
+      * Metadata Assessment Suite labels for the dataset assessment reports
+      * @type {string[]}
+      * @default ["FAIR Suite v1.0"]
+      */
       mdqSuiteLabels: ["FAIR Suite v1.0"],
-      // Quality suites for aggregated quality scores (i.e. metrics tab)
+      /**
+      * Metadata Assessment Suite IDs for the aggregated assessment charts
+      * @type {string[]}
+      * @default ["FAIR.suite.1"]
+      */
       mdqAggregatedSuiteIds: ["FAIR.suite.1"],
+      /**
+      * Metadata Assessment Suite labels for the aggregated assessment charts
+      * @type {string[]}
+      * @default ["FAIR.suite.1"]
+      */
       mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
+      /**
+      * The metadata formats for which to display metadata assessment reports
+      * @type {string[]}
+      * @default ["eml*", "https://eml*", "*isotc211*"]
+      */
       mdqFormatIds:["eml*", "https://eml*", "*isotc211*"],
 
       /**
@@ -231,32 +587,109 @@ define(['jquery', 'underscore', 'backbone'],
       */
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 
-      // Metrics Falgs for the /profile view (summary view)
+      /**
+      * Hide or show the aggregated citations chart in the StatsView.
+      * These charts are only available for DataONE Plus members or Hosted Repositories.
+      * (see https://dataone.org)
+      * @type {boolean}
+      * @default true
+      */
       hideSummaryCitationsChart: true,
+      /**
+      * Hide or show the aggregated downloads chart in the StatsView
+      * These charts are only available for DataONE Plus members or Hosted Repositories.
+      * (see https://dataone.org)
+      * @type {boolean}
+      * @default true
+      */
       hideSummaryDownloadsChart: true,
+      /**
+      * Hide or show the aggregated metadata assessment chart in the StatsView
+      * These charts are only available for DataONE Plus members or Hosted Repositories.
+      * (see https://dataone.org)
+      * @type {boolean}
+      * @default true
+      */
       hideSummaryMetadataAssessment: true,
+      /**
+      * Hide or show the aggregated views chart in the StatsView
+      * These charts are only available for DataONE Plus members or Hosted Repositories.
+      * (see https://dataone.org)
+      * @type {boolean}
+      * @default true
+      */
       hideSummaryViewsChart: true,
 
       /**
       * Metrics flag for the Dataset Landing Page
       * Enable this flag to enable metrics display
       * @type {boolean}
+      * @default true
       */
       displayDatasetMetrics: true,
 
-      // Controlling individual functionality
-      // Only works if the parent flags displayDatasetMetrics is enabled
+      /**
+      * If true, displays the dataset metrics tooltips on the metrics buttons.
+      * Turn off all dataset metrics displays using the {@link AppConfig#displayDatasetMetrics}
+      * @type {boolean}
+      * @default true
+      */
       displayDatasetMetricsTooltip: true,
-      displayDatasetCitationMetric: true,
-      displayDatasetDownloadMetric: true,
-      displayDatasetViewMetric: true,
-      displayDatasetEditButton: true,
-      displayDatasetQualityMetric: false,
-      displayDatasetAnalyzeButton: false,
+      /**
+      * If true, displays the datasets metric modal windows on the dataset landing page
+      * Turn off all dataset metrics displays using the {@link AppConfig#displayDatasetMetrics}
+      * @type {boolean}
+      * @default true
+      */
       displayMetricModals: true,
+      /**
+      * If true, displays the dataset citation metrics on the dataset landing page
+      * Turn off all dataset metrics displays using the {@link AppConfig#displayDatasetMetrics}
+      * @type {boolean}
+      * @default true
+      */
+      displayDatasetCitationMetric: true,
+      /**
+      * If true, displays the dataset download metrics on the dataset landing page
+      * Turn off all dataset metrics displays using the {@link AppConfig#displayDatasetMetrics}
+      * @type {boolean}
+      * @default true
+      */
+      displayDatasetDownloadMetric: true,
+      /**
+      * If true, displays the dataset view metrics on the dataset landing page
+      * Turn off all dataset metrics displays using the {@link AppConfig#displayDatasetMetrics}
+      * @type {boolean}
+      * @default true
+      */
+      displayDatasetViewMetric: true,
+      /**
+      * If true, displays the "Edit" button on the dataset landing page
+      * @type {boolean}
+      * @default true
+      */
+      displayDatasetEditButton: true,
+      /**
+      * If true, displays the metadata assessment metrics on the dataset landing page
+      * @type {boolean}
+      * @default false
+      */
+      displayDatasetQualityMetric: false,
+      /**
+      * If true, displays the WholeTale "Analyze" button on the dataset landing page
+      * @type {boolean}
+      * @default false
+      */
+      displayDatasetAnalyzeButton: false,
+      /**
+      * If true, displays various buttons on the dataset landing page for dataset owners
+      * @type {boolean}
+      * @default false
+      */
       displayDatasetControls: true,
       /** Hide metrics display for SolrResult models that match the given properties.
       *  Properties can be functions, which are given the SolrResult model value as a parameter.
+      * Turn off all dataset metrics displays using the {@link AppConfig#displayDatasetMetrics}
       * @type {object}
       * @example
       * {
@@ -271,6 +704,12 @@ define(['jquery', 'underscore', 'backbone'],
       */
       hideMetricsWhen: null,
 
+      /**
+      * If true, the dataset landing pages will generate Schema.org-compliant JSONLD
+      * and insert it into the page.
+      * @type {boolean}
+      * @default true
+      */
       isJSONLDEnabled: true,
 
       /**
@@ -278,6 +717,7 @@ define(['jquery', 'underscore', 'backbone'],
       * document public and gives it a DOI identifier.
       * If false, the button will be hidden completely.
       * @type {boolean}
+      * @default true
       */
       enablePublishDOI: true,
 
@@ -293,6 +733,7 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * If true, users can change the AccessPolicy for their objects.
       * @type {boolean}
+      * @default true
       */
       allowAccessPolicyChanges: true,
 
@@ -341,12 +782,14 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * If false, the rightsHolder of a resource will not be displayed in the AccessPolicyView.
       * @type {boolean}
+      * @default true
       */
       displayRightsHolderInAccessPolicy: true,
 
       /**
       * If false, users will not be able to change the rightsHolder of a resource in the AccessPolicyView
       * @type {boolean}
+      * @default true
       */
       allowChangeRightsHolder: true,
 
@@ -361,6 +804,7 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * If true, the public/private toggle will be displayed in the Sharing Options for portals.
       * @type {boolean}
+      * @default true
       */
       showPortalPublicToggle: true,
 
@@ -375,29 +819,34 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * If true, the public/private toggle will be displayed in the Sharing Options for datasets.
       * @type {boolean}
+      * @default true
       */
       showDatasetPublicToggle: true,
 
       /**
       * Set to false to hide the display of "My Portals", which shows the user's current portals
       * @type {boolean}
+      * @default true
       */
       showMyPortals: true,
       /**
       * The user-facing term for portals in lower-case and in singular form.
       * e.g. "portal"
       * @type {string}
+      * @default "portal"
       */
       portalTermSingular: "portal",
       /**
       * The user-facing term for portals in lower-case and in plural form.
       * e.g. "portals". This allows for portal terms with irregular plurals.
       * @type {string}
+      * @default "portals"
       */
       portalTermPlural: "portals",
       /**
       * Set to false to prevent ANYONE from creating a new portal.
       * @type {boolean}
+      * @default true
       */
       enableCreatePortals: true,
       /**
@@ -435,7 +884,13 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The list of fields that should be required in the portal editor.
       * Set individual properties to `true` to require them in the portal editor.
-      * @type {Object}
+      * @type {object}
+      * @property {boolean} label - Default: true
+      * @property {boolean} name - Default: true
+      * @property {boolean} description - Default: false
+      * @property {boolean} sectionTitle - Default: true
+      * @property {boolean} sectionIntroduction - Default: false
+      * @property {boolean} logo - Default: false
       */
       portalEditorRequiredFields: {
         label: true,
@@ -454,10 +909,11 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
-      * The list of labels that should be blacklisted while 
+      * The list of portals labels that no one should be able to create portals with
       * @type {string[]}
       */
       portalLabelBlacklist: [
+        "Dataone",
         'urn:node:CN', 'CN', 'cn',
         'urn:node:CNUNM1', 'CNUNM1', 'cn-unm-1',
         'urn:node:CNUCSB1', 'CNUCSB1', 'cn-ucsb-1',
@@ -514,12 +970,15 @@ define(['jquery', 'underscore', 'backbone'],
         'urn:node:IEDA_USAP', 'IEDA_USAP', 'IEDA USAP',
         'urn:node:IEDA_MGDL', 'IEDA_MGDL', 'IEDA MGDL',
         'urn:node:METAGRIL', 'METAGRIL', 'metaGRIL',
-        'urn:node:ARM', 'ARM', 'ARM - Atmospheric Radiation Measurement Research Facility'
+        'urn:node:ARM', 'ARM', 'ARM - Atmospheric Radiation Measurement Research Facility',
+        "urn:node:OPC", "OPC",
+        "urn:node:TNC_DANGERMOND", "dangermond", "TNC_DANGERMOND"
       ],
 
       /** If true, then archived content is available in the search index.
       * Set to false if this MetacatUI is using a Metacat version before 2.10.0
       * @type {boolean}
+      * @default true
       */
       archivedContentIsIndexed: true,
 
@@ -609,13 +1068,12 @@ define(['jquery', 'underscore', 'backbone'],
       bioportalAPIKey: "",
       /**
       * The Bioportal REST API URL, which is set dynamically only if a bioportalAPIKey is configured
-      * @readonly
       * @type {string}
+      * @default "https://data.bioontology.org/search"
       */
-      bioportalSearchUrl: null,
+      bioportalSearchUrl: "https://data.bioontology.org/search",
       /**
       * This attribute stores cache of ontology information that is looked up in Bioportal, so that duplicate REST calls don't need to be made.
-      * @readonly
       * @type {object}
       */
       bioportalLookupCache: {},
@@ -630,11 +1088,19 @@ define(['jquery', 'underscore', 'backbone'],
       * A warning message will display on the page for anyone using one of these browsers.
       * @type {RegExp[]}
       */
-      unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
+      unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/],
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
+      /**
+      * The URL for the DataONE log service. This service has been replaced with the DataONE metrics service
+      * (which has not been publicly released), so this configuration will be deprecated in the future.
+      * This URL is constructed dynamically upon AppModel intialization.
+      * @type {string}
+      * @deprecated
+      */
+      d1LogServiceUrl: null
       /**
       * This Bioportal REST API URL is used by the experimental and unsupported AnnotatorView to get multiple ontology class info at once.
       * @deprecated
@@ -645,7 +1111,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @deprecated
       */
       //annotatorUrl: null
-		},
+		}, MetacatUI.AppConfig),
 
     defaultView: "data",
 
@@ -658,7 +1124,6 @@ define(['jquery', 'underscore', 'backbone'],
       }
 
       // these are pretty standard, but can be customized if needed
-      this.set('metacatBaseUrl', this.get('baseUrl') + this.get('context'));
       this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
       this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
       this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
@@ -674,9 +1139,6 @@ define(['jquery', 'underscore', 'backbone'],
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
-
-      if(typeof this.get("grantsUrl") !== "undefined")
-        this.set("grantsUrl", "https://api.nsf.gov/services/v1/awards.json");
 
       //DataONE CN API
       if(this.get("d1CNBaseUrl")){
@@ -704,27 +1166,26 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Token URLs
         if(typeof this.get("tokenUrl") != "undefined"){
-          this.set("portalUrl", this.get("d1CNBaseUrl") + "portal/");
-          this.set("tokenUrl",  this.get("portalUrl") + "token");
+          this.set("tokenUrl", this.get("d1CNBaseUrl") + "portal/" + "token");
 
           this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 
           //The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
-          if(typeof this.get("signInUrl") !== "undefined")
-            this.set("signInUrl", this.get('portalUrl') + "startRequest?target=");
+          if(this.get("enableCILogonSignIn") || typeof this.get("signInUrl") !== "undefined")
+            this.set("signInUrl", this.get("d1CNBaseUrl") + "portal/" + "startRequest?target=");
           if(typeof this.get("signInUrlOrcid") !== "undefined")
-            this.set("signInUrlOrcid", this.get('portalUrl') + "oauth?action=start&target=");
+            this.set("signInUrlOrcid", this.get("d1CNBaseUrl") + "portal/" + "oauth?action=start&target=");
 
           if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
-            this.set("signInUrlLdap", this.get('portalUrl') + "ldap?target=");
+            this.set("signInUrlLdap", this.get("d1CNBaseUrl") + "portal/" + "ldap?target=");
           }
 
- 
+
           if(this.get('orcidBaseUrl'))
             this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
           if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
-            this.set("signOutUrl", this.get('portalUrl') + "logout");
+            this.set("signOutUrl", this.get("d1CNBaseUrl") + "portal/" + "logout");
 
         }
 
@@ -757,6 +1218,10 @@ define(['jquery', 'underscore', 'backbone'],
 
       this.on("change:pid", this.changePid);
 
+      //For backward-compatbility, set the theme and themeTitle variables using the
+      // attributes set on this model, which are taken from the AppConfig
+      MetacatUI.theme = this.get("theme");
+      MetacatUI.themeTitle = this.get("repositoryName");
 
     },
 

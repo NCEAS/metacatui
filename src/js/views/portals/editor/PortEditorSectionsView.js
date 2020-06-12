@@ -1331,8 +1331,12 @@ function(_, $, Backbone, Portal, PortalSection,
 
         //If this section is an object of PortalSection model, update the label.
         if( section && PortalSection.prototype.isPrototypeOf(section) ){
+
+          //Clean up the typed in name so it's valid for XML
+          var label = this.model.cleanXMLText(targetLink.text().trim());
+
           // update the label on the model
-          section.set("label", targetLink.text().trim());
+          section.set("label", label);
         }
         else {
           // TODO: handle the case for non-markdown sections

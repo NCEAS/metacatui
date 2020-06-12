@@ -1,4 +1,4 @@
-﻿﻿/* global define */
+/* global define */
 define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
         'models/metadata/eml211/EML211', 'models/metadata/eml211/EMLOtherEntity',
         'text!templates/dataItem.html'],
@@ -33,10 +33,12 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
                 "click .addFiles"      : "handleAddFiles",    // Edit dropdown, open file picker dialog
                 "change .file-upload"  : "addFiles",          // Adds the files into the collection
+                "change .file-replace" : "replaceFile",       // Replace a file in the collection
                 "dragover"             : "showDropzone",      // Drag & drop, show the dropzone for this row
                 "dragend"              : "hideDropzone",      // Drag & drop, hide the dropzone for this row
                 "dragleave"            : "hideDropzone",      // Drag & drop, hide the dropzone for this row
                 "drop"                 : "addFiles",          // Drag & drop, adds the files into the collection
+                "click .replaceFile"   : "handleReplace",     // Replace dropdown, data in collection
                 "click .removeFiles"   : "handleRemove",      // Edit dropdown, remove sci{data,meta} from collection
                 "click .cancel"        : "handleCancel",      // Cancel a file load
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
@@ -51,7 +53,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
-
+                this.canReplace = false; // Default. Updated in render()
             },
 
             /* Render the template into the DOM */
@@ -77,6 +79,15 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 attributes.numAttributes = 0;
                 attributes.entityIsValid = true;
                 attributes.hasInvalidAttribute = false;
+
+                // Restrict item replacement depending on access
+                //
+                // Note: .canReplace is set here (at render) instead of at init
+                // because render will get called a few times during page load
+                // as the app updates what it knows about the object
+                this.canReplace = this.model.get("accessPolicy") &&
+                    this.model.get("accessPolicy").isAuthorized("write");
+                attributes.canReplace = this.canReplace; // Copy to template
 
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
@@ -215,6 +226,15 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                   }
 
                 }
+
+                // Add tooltip to a disabled Replace link
+                $(this.$el).find(".replace.disabled").tooltip({
+                    title: "You don't have sufficient privileges to replace this item.",
+                    placement: "left",
+                    trigger: "hover",
+                    delay: { show: 400 },
+                    container: "body"
+                  });
 
                 //Check if the data package is in progress of being uploaded
                 this.toggleSaving();
@@ -393,7 +413,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     }
                 } else {
                     this.model.set("fileName", enteredText);
-                    this.model.set("hasContentChanges");
+
+                    // Reset sysMetaUploadStatus only if this item doesn't
+                    // have content changes. This is here because replaceFile
+                    // sets sysMetaUploadStatus to "c" to prevent the editor
+                    // from updating sysmeta after the update call
+                    if (!this.model.get("hasContentChanges")) {
+                        this.model.set("sysMetaUploadStatus", null);
+                    }
                 }
             },
 
@@ -519,6 +546,194 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 if ( this.model.get("type") !== "Metadata" ) return;
                 this.$el.removeClass("droppable");
 
+            },
+
+            /**
+             * Handle the user's click of the Replace item in the DataItemView
+             * dropdown. Triggers replaceFile after some basic validation.
+             *
+             * Called indirectly via the "click" event on elements with the
+             * class .replaceFile. See this View's events map.
+             *
+             * @param {MouseEvent} event: Browser Click event
+             */
+            handleReplace: function(event) {
+                event.stopPropagation();
+
+                // Stop immediately if we know the user doesn't have privs
+                if (!this.canReplace) {
+                    event.preventDefault();
+                    return;
+                }
+
+                var fileReplaceElement = $(event.target)
+                    .parents(".dropdown-menu")
+                    .children(".file-replace")
+
+                if (!fileReplaceElement) {
+                    console.log("Unable to find Replace file picker.");
+
+                    return;
+                }
+
+                fileReplaceElement.val("");
+                fileReplaceElement.trigger("click");
+
+                event.preventDefault();
+            },
+
+            /**
+             * Replace a file (DataONEObject) in the collection with another one
+             * from a file picker. Maintains attributes on the original
+             * DataONEObject and maintains the entity information in the parent
+             * collection's metadata record (i.e., keeps your attributes, etc.).
+             *
+             * Called indirectly via the "change" event on elements with the
+             * class .file-upload. See this View's events map.
+             *
+             * The bulk of the work is done in a try-catch block to catch
+             * mistakes that would cause the editor to get into a broken state.
+             * On error, we attempt to return the editor back to its pre-replace
+             * state.
+             *
+             * @param {Event}
+             */
+            replaceFile: function(event) {
+                event.stopPropagation();
+                event.preventDefault();
+
+                if (!this.canReplace) {
+                    return;
+                }
+
+                var fileList = event.target.files;
+
+                // Pre-check fileList value to make sure we can work with it
+                if (fileList.length != 1) {
+                    // TODO: Show error, find out how to do this
+                    return;
+                }
+
+                if (typeof event.delegateTarget.dataset.id === "undefined") {
+                    // TODO: Show error, find out how to do this
+                    return;
+                }
+
+                // Save uploadStatus for reverting if need to
+                var oldUploadStatus = this.model.get("uploadStatus");
+
+                var file = fileList[0],
+                    uploadStatus = "q",
+                    errorMessage = "";
+
+                if (file.size == 0 ) {
+                    uploadStatus = "e";
+                    errorMessage = "This is an empty file. It won't be included in the dataset.";
+                }
+
+				if (!this.model) {
+                    console.log("Couldn't find model we're supposed to be replacing. Stopping.");
+
+					return;
+				}
+
+                // Copy model attributes aside for reverting on error
+                var newAttributes = {
+                    synced: false,
+                    fileName: file.name,
+                    size: file.size,
+                    mediaType: file.type,
+                    uploadFile: file,
+                    hasContentChanges: true,
+                    checksum: null,
+                    uploadStatus: uploadStatus,
+                    sysMetaUploadStatus: "c", // I set this so DataPackage::save
+                    // wouldn't try to update the sysmeta after the update
+                    errorMessage: errorMessage
+                };
+
+                // Save a copy of the attributes we're changing so we can revert
+                // later if we encounter an exception
+                var oldAttributes = {};
+                _.each(Object.keys(newAttributes), function(k) {
+                    oldAttributes[k] = _.clone(this.model.get(k));
+                }, this);
+
+                oldAttributes["uploadStatus"] = oldUploadStatus;
+
+                try {
+
+                    this.model.set(newAttributes);
+
+                    // Attempt the formatId. Defaults to app/octet-stream
+                    this.model.set("formatId", this.model.getFormatId());
+
+                    // Grab a reference to the entity in the EML for the object
+                    // we're replacing
+                    this.parentSciMeta = this.getParentScienceMetadata(event);
+                    var entity = null;
+
+                    if (this.parentSciMeta) {
+                        entity = this.parentSciMeta.getEntity(this.model);
+                    }
+
+                    // Eagerly update the PID for this object so we can update
+                    // the matching EML entity
+                    this.model.updateID();
+
+                    // Update the EML entity with the new id
+                    if (entity) {
+                        entity.set("xmlID", this.model.getXMLSafeID());
+                    }
+
+                    this.render();
+
+                    if (this.model.get("uploadFile") && !this.model.get("checksum")) {
+
+                        try {
+                            this.model.calculateChecksum();
+                        } catch (exception) {
+                            // TODO: Fail gracefully here for the user
+                        }
+                    }
+
+                    MetacatUI.rootDataPackage.packageModel.set("changed", true);
+
+                    // Last, provided a visual indication the replace was completed
+                    var describeButton = this.$el
+                        .children(".controls")
+                        .children(".btn-group")
+                        .children("button.edit")
+                        .first();
+
+                    if (describeButton.length != 1) {
+                        return;
+                    }
+
+                    var oldText = describeButton.html();
+
+                    describeButton.html('<i class="icon icon-ok success" /> Replaced');
+
+                    var previousBtnClasses = describeButton.attr("class");
+                    describeButton.removeClass("warning error").addClass("message");
+
+                    window.setTimeout(function() {
+                        describeButton.html(oldText);
+                        describeButton.addClass(previousBtnClasses).removeClass("message");
+                    }, 3000);
+                } catch (error) {
+                    console.log("Error replacing: ", error);
+
+                    // Revert changes to the attributes
+                    this.model.set(oldAttributes);
+                    this.model.set("formatId", this.model.getFormatId());
+                    this.model.set("sysMetaUploadStatus", "c"); // Prevents a sysmeta update
+                    this.model.resetID();
+
+                    this.render();
+                }
+
+                return;
             },
 
             /* Handle remove events for this row in the data package table */

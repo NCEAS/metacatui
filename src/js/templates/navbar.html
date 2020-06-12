@@ -6,15 +6,8 @@
       </a>
       <a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
       <ul class="nav" id="main-nav">
-       <li class="dropdown">
-        	<a class="dropdown-toggle" data-toggle="dropdown">Data</a>
-        	<ul class="dropdown-menu">
-        		<li class="dropdown-header">Data</li>
-        		<li class="divider"></li>
-        		<li><a class="show-new-search" href="<%= MetacatUI.root %>/data">Search</a></li>
-        		<li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
-        	</ul>
-        </li>
+        <li><a class="show-new-search" href="<%= MetacatUI.root %>/data">Data</a></li>
+        <li><a href="<%= MetacatUI.root %>/profile">Summary</a></li>
         <li><a href="<%= MetacatUI.root %>/about">About</a></li>
         <li class="input input-append">
         	<form id="direct-search" action="#">
@@ -37,17 +30,18 @@
 				'<ul class="dropdown-menu hidden">',
 					'<li class="dropdown-header">', formattedName, '</li>',
 					'<li class="divider"></li>',
-					'<li><a href="' + MetacatUI.root + '/submit" class="show-new-editor">Submit data</a></li>',
-					'<li><a href="' + MetacatUI.root + '/profile/' + username + '">My Profile</a></li>',
-					'<li><a href="' + MetacatUI.root + '/data/my-data">My datasets</a></li>');
-          if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+					'<li><a href="' + MetacatUI.root + '/submit" class="show-new-editor">Submit data</a></li>');
+
+          if( MetacatUI.appModel.get("enableUserProfiles") ){ %>
+            <li><a href="<%=(MetacatUI.root + '/profile/' + username)%>">My Profile</a></li>
+          <% }
+
+					print('<li><a href="' + MetacatUI.root + '/data/my-data">My datasets</a></li>');
+
+          if(MetacatUI.appModel.get("showMyPortals") !== false && MetacatUI.appModel.get("enableUserProfiles") && MetacatUI.appModel.get("enableUserProfileSettings")){ %>
             <li>
               <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
                 My <%= MetacatUI.appModel.get("portalTermPlural") %>
-                <span class="new-icon">
-                  <i class="icon icon-star icon-on-right"></i>
-                  NEW
-                </span>
               </a>
             </li>
           <% }

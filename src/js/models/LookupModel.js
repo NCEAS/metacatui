@@ -3,10 +3,12 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 	function($, $ui, _, Backbone) {
 	'use strict';
 
-	// Lookup Model
-	// ------------------
-	var LookupModel = Backbone.Model.extend({
-		// This model contains functions for looking up values from services
+	/**
+  * @class LookupModel
+  * @classdesc A uttility model that contains functions for looking up values from various services
+  */
+	var LookupModel = Backbone.Model.extend(
+    /** @lends LookupModel.prototype */{
 		defaults: {
 			concepts: {}
 		},
@@ -406,7 +408,7 @@ define(['jquery', 'jqueryui', 'underscore', 'backbone'],
 		},
 
 		getGrant: function(id, onSuccess, onError){
-			if(!id || !onSuccess || !MetacatUI.appModel.get("grantsUrl")) return;
+			if(!id || !onSuccess || !MetacatUI.appModel.get("useNSFAwardAPI") || !MetacatUI.appModel.get("grantsUrl")) return;
 
 			var requestSettings = {
 					url: MetacatUI.appModel.get("grantsUrl") + "?id=" + id,

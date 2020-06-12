@@ -189,7 +189,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         var container = this.$(".label-container"),
             input = container.find('input'),
             messageEl = container.find('.notification'),
-            value = input.val(),
+            value = this.model.cleanXMLText(input.val()),
             model = this.model;
 
         //If the label is unchanged, remove the validation messaging and exit

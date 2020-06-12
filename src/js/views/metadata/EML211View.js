@@ -30,7 +30,13 @@ define(['underscore', 'jquery', 'backbone',
 			EMLTemporalCoverage, EMLMethods, Template, PeopleTemplate, EMLPartyCopyMenuTemplate, OverviewTemplate,
 			DatesTemplate, LocationsTemplate, TaxonomicCoverageTemplate, TaxonomicClassificationTable, TaxonomicClassificationRow){
 
-    var EMLView = ScienceMetadataView.extend({
+    /**
+    * @class EMLView
+    * @classdesc An EMLView renders an editable view of an EML 2.1.1 document
+    * @extends ScienceMetadataView
+    */
+    var EMLView = ScienceMetadataView.extend(
+      /** @lends EMLView */{
 
       type: "EML211",
 
