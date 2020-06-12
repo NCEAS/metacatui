@@ -2405,7 +2405,7 @@ define(["jquery",
                 // So we will want to filter out geohashes that are not contained in this map.
                 if (mapBBoxes.length == 0) {
                     var filteredTileGeohashes = geohashes;
-                } else {
+                } else if( geohashes ){
                     var filteredTileGeohashes = [];
                     for (var i = 0; i < geohashes.length - 1; i += 2) {
 
