@@ -55,6 +55,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
 			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
 			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
+			
 
 			this.model = options.model || null;
 		},
@@ -66,9 +67,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			var view = this;
 
+			// Check if the node is a coordinating node
+			var userIsCN= false;
+			if( this.userType !== undefined && this.userId !== undefined) {
+				if (this.userType === "repository") {
+					userIsCN = MetacatUI.nodeModel.isCN(this.userId);
+					this.userIsCN = userIsCN;
+				}
+			}
+
 			if ( options.nodeSummaryView ) {
 				this.nodeSummaryView = true;
 				var nodeId = MetacatUI.appModel.get("nodeId");
+				this.userIsCN = MetacatUI.nodeModel.isCN(nodeId);
 
 				// Overwrite the metrics display flags as set in the AppModel
         this.hideMetadataAssessment = false;
@@ -122,11 +133,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.listenTo(this.model, 'change:temporalCoverage',      this.drawCoverageChart);
 				this.listenTo(this.model, "change:dataUpdateDates",       this.drawUpdatesChart);
 				this.listenTo(this.model, "change:totalSize",             this.drawTotalSize);
-				this.listenTo(this.model, "change:totalReplicas",         this.drawTotalReplicas);
 				this.listenTo(this.model, 'change:metadataCount', 	    this.drawTotalCount);
 				this.listenTo(this.model, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 				this.listenTo(this.model, 'change:metadataFormatIDs', this.drawMetadataCountChart);
-
+				
+				// Display replicas only for member nodes
+				if (this.userType === "repository" && !this.userIsCN) 
+					this.listenTo(this.model, "change:totalReplicas",         this.drawTotalReplicas);
 				//this.listenTo(this.model, 'change:dataUploads', 	  this.drawUploadTitle);
 			}
 
@@ -136,12 +149,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
 
+
+
 			//Insert the template
 			this.$el.html(this.template({
 				query: this.model.get('query'),
 				title: this.title,
 				description: this.description,
 				userType: this.userType,
+				userIsCN: this.userIsCN,
 				hideUpdatesChart: this.hideUpdatesChart,
 				hideCitationsChart: this.hideCitationsChart,
 				hideDownloadsChart: this.hideDownloadsChart,

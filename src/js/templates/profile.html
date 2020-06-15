@@ -39,7 +39,7 @@
 					</p>
 				</div>
 			</div>
-			<% if(userTerm == "repository"){ %>
+			<% if(userTerm == "repository" && !userIsCN){ %>
 				<div class="span4 packages badge-container" id="replicas-container">
 					<div id="total-replicas" class="span4 show-loading"></div>
 					<div class="span6">
