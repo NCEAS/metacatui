@@ -341,18 +341,6 @@ select{
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */
-  .notification i.loading{
-  	font-size: 2em;
-  	color: #FFFFFF;
-  }
-
-  .notification p{
-  	font-size: 20px;
-  	width: 350px;
-  	margin: 20px auto;
-  	display: block;
-  	color: #FFFFFF;
-  }
   .filter-contain .notification i{
   	color: #999;
   	font-size: .5em;
