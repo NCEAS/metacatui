@@ -2,6 +2,7 @@ define(["jquery",
         "underscore",
         "backbone",
         "models/portals/PortalModel",
+        "models/UserModel",
         "text!templates/alert.html",
         "text!templates/loading.html",
         "text!templates/portals/portal.html",
@@ -13,7 +14,7 @@ define(["jquery",
         "views/portals/PortalMembersView",
         "views/portals/PortalLogosView"
     ],
-    function($, _, Backbone, Portal, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
+    function($, _, Backbone, Portal, User, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
         PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView) {
         "use_strict";
 
@@ -87,6 +88,12 @@ define(["jquery",
              */
             model: null,
 
+            /**
+             * A User Model is associated with this view for rendering node/user views
+             * @type {User}
+             */
+            userModel: null,
+
             /* Renders the compiled template into HTML */
             template: _.template(PortalTemplate),
             //A template to display a notification message
@@ -149,6 +156,46 @@ define(["jquery",
                 this.$el.html(this.loadingTemplate({
                   msg: "Loading..."
                 }));
+
+                //Repository specific checks
+                if(MetacatUI.nodeModel.get("checked") && this.isNode(this.label)){
+                  
+                  var view = this;
+                  // set the nodeview flag to true and create user mode for this repository
+                  this.nodeView = true;
+
+                  //Create a UserModel with the username given
+                  this.userModel = new User({
+                    username: view.label
+                  });
+                  this.userModel.saveAsNode();
+                  // get the node Info
+                  var nodeInfo =  _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+                    return nodeModel.identifier.toLowerCase() == "urn:node:" + view.label.toLowerCase();
+                    });
+                  this.nodeInfo = nodeInfo;
+                  this.portalId = this.nodeInfo.identifier;
+
+                  // create a portal model for repository
+                  this.model = new Portal({
+                    seriesId: this.portalId,
+                    label: view.label
+                  });
+
+                  // remove the members section directly from the model
+                  this.model.removeSection("members");
+
+                  this.model.createNodeAttributes(this.nodeInfo);
+
+                  //Setting the repo specific statsModel
+                  var statsSearchModel = this.userModel.get("searchModel").clone();
+                  statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
+                  MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+                  MetacatUI.statsModel.set("searchModel", statsSearchModel);
+                }
+                else if (!MetacatUI.nodeModel.get("checked")) {
+                  // TODO: add a listener
+                }
 
                 // Create a new Portal model
                 if (this.model === undefined || this.model === null) {
@@ -730,6 +777,16 @@ define(["jquery",
                 $("#editPortal").remove();
 
                 this.undelegateEvents();
+            },
+
+            // checks if the label is a repository
+            isNode: function(username){
+              var model = this;
+              var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+                  return nodeModel.shortIdentifier.toLowerCase() == (username).toLowerCase();
+                });
+        
+              return (node && (node !== undefined))
             }
         });
 
