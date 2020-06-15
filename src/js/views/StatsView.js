@@ -940,25 +940,26 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					className: "packages" + className
 				}];
 
+				var countBadge = new CircleBadge({
+					id: "total-replica",
+					data: chartData,
+					title: "replicas",
+					titlePlacement: "inside",
+					useGlobalR: true,
+					globalR: 60,
+					height: 220
+				});
+	
+				// draw the badge
+				this.$('#total-replicas').html(countBadge.render().el);
+
 			}
 			else{
-				var chartData = [{
-					count: 0,
-					className: "packages no-activity" 
-				}];
+				// hide the replicas container if the replica count is 0.
+				this.$('#replicas-container').hide()
 			}
 
-			var countBadge = new CircleBadge({
-				id: "total-replica",
-				data: chartData,
-				title: "replicas",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 60,
-				height: 220
-			});
 
-			this.$('#total-replicas').html(countBadge.render().el);
 			
 		}
 
