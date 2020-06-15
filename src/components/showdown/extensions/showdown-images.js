@@ -33,7 +33,11 @@ define(['showdown'], function (showdown) {
               //If the image URL doesn't start with 'http', then assume this is an image
               // identifier and make a URL with the DataONE object API
               if( !imgURL.indexOf("http") == 0 ){
-                imgURL = MetacatUI.appModel.get("objectServiceUrl") + encodeURIComponent(imgURL);
+                // Use the resolve service if there is no object service url
+                // (e.g. in DataONE theme)
+                var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
+                  MetacatUI.appModel.get("resolveServiceUrl");
+                imgURL = urlBase + encodeURIComponent(imgURL);
               }
 
               //Create a regular expression that retrieves the name of the image

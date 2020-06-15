@@ -4284,8 +4284,10 @@ i.toc-sub-item{
 .portal-editor .chart-title .packages{
   color: #2c6f90; /* Back-up color for IE */
   fill: #2c6f90; /* Back-up color for IE */
+	stroke: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
+	stroke: var(--portal-secondary-color);
 }
 .portal-view svg circle.packages,
 .portal-editor svg circle.packages{
