@@ -187,7 +187,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						var linkText = $(document.createElement("span")).text(objectName).prepend(icon);
 						
 						//Make a link out of the object ID
-						var link = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + objectId)
+						var link = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + encodeURIComponent(objectId))
 				                                                 .prepend(linkText)
 				                                                 .attr("data-id", objectId)
 															     .addClass("highlight-node preview node-link");
@@ -236,7 +236,7 @@ define(['jquery', 'underscore', 'backbone', 'views/ExpandCollapseListView', 'tex
 						var linkText = $(document.createElement("span")).text(subjectName);
 												
 						//Make a link of the subject ID
-						var link = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + subjectId)
+						var link = $(document.createElement("a")).attr("href", "<%= MetacatUI.root %>/view/" + encodeURIComponent(subjectId))
 															     .prepend(icon, linkText)
 															     .attr("data-id", subjectId)
 															     .addClass("highlight-node preview");

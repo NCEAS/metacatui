@@ -4,7 +4,22 @@ This folder of the MetacatUI repository contains the documentation for MetacatUI
 - Installation instructions
 - Developer documentation for the MetacatUI application
 
-This directory is also built into a simple HTML website that is hosted on Github Pages. You can view the last published version of the Github site here: https://nceas.github.io/metacatui/
+## Building the documentation website
+This directory is also built into a simple HTML website, using Jekyll, that is hosted on Github Pages. You can view the last published version of the Github site here: https://nceas.github.io/metacatui/
+
+To build a local version of the MetacatUI Github pages site, make sure `Bundler` is installed:
+
+  ```
+  gem install bundler
+  ```
+
+Then serve the Jekyll site from the `docs` directory:
+
+  ```
+  bundle exec jekyll serve
+  ```
+
+[See the Github Pages documentation for additional help](https://help.github.com/en/enterprise/2.14/user/articles/setting-up-your-github-pages-site-locally-with-jekyll#step-4-build-your-local-jekyll-site)
 
 ## Building Developer documentation
 MetacatUI uses [JSDoc](https://github.com/jsdoc/jsdoc) comments to provide inline documentation of classes, methods, and variables. A JSDoc documentation generator will collect all those comments and generate HTML webpages for easier reading and navigation.
@@ -23,4 +38,3 @@ as much as possible to keep things organized. Use relative links with `.html` su
 
 ## Anything missing?
 We maintain a list of questions about MetacatUI that are reviewed and worked into this documentation. If you have a question that was not answered by these docs, or want to make a suggestion for these docs, please add to the list by commenting on [the FAQ Github issue](https://github.com/NCEAS/metacatui/issues/1389)
-

@@ -4,7 +4,7 @@
 
 - Clone the MetacatUI git repository:
 
-  ```
+  ```bash
   git clone https://github.com/NCEAS/metacatui.git
   ```
 
@@ -32,25 +32,48 @@ MetacatUI also comes with a simple script that runs a [node.js](https://nodejs.o
 
 ### Server Option 2. Apache
 
-See the [Apache configuration instructions](https://github.com/NCEAS/metacatui/blob/master/docs/install/apache.md).
+See the [Apache configuration instructions](apache.html).
 The Apache instructions are *not* updated regularly, since we recommend you use the NodeJS Express server instead.
 
 ## Step 3. Configure MetacatUI
 
-- Open `src/index.html` in a text editor and change the following values:
-    - Set `data-metacat-context` to match the Metacat directory name of the Metacat you will be using.
-    For example, if your Metacat is installed at https://your-site.com/metacat, your `data-metacat-context` would be set to `metacat`. (Most Metacat installations are in a `metacat` directory sice that is the default Metacat directory name).
-    - Make sure the path to the `loader.js` file is correct. By default, it is set to `/metacatui/loader.js`, but if you  have your MetacatUI installed at root, (e.g. http://localhost:3000/), the path would be `/loader.js`.
-    - *Optional:* Set the `data-theme` to your chosen theme name, e.g. `default`, `knb`, `arctic`.
-    - *Optional:* Replace `YOUR-GOOGLE-MAPS-API-KEY` with your [Google Maps API key](https://developers.google.com/maps/documentation/javascript/get-api-key) to enable the Google Map features of MetacatUI. If no API key is given, MetacatUI will still work, it just will not include the map features.
+### For MetacatUI v2.12.0 and later
+MetacatUI will work out-of-box without a configuration file, but if you have customized
+any part of the Metacat installation process, you may need to configure MetacatUI.
 
-- Open `src/loader.js` in a text editor and change the following values:
-  - Make sure the `MetacatUI.root` path is the correct path to your MetacatUI installation. By default, it is set to `/metacatui`, but if you  have your MetacatUI installed at root, (e.g. http://localhost:3000/), the path would be `/`.
+Create a configuration Javascript file, `config.js`, and define a `MetacatUI.AppConfig` JS object
+that contains all of your custom `AppConfig` values. See the [`AppConfig` documentation](../docs/AppConfig.html) to see
+all available config options.
 
-- Open `src/js/models/AppModel.js` (or if using a theme other than the default theme, `src/js/themes/{theme name}/models/AppModel.js`) and change the following values:
-    - Set `baseUrl` to the URL where Metacat is deployed (e.g. `https://your-site.com`). This is concatinated with `data-metacat-context` earlier to create the full Metacat URL.
-    - Set `d1CNBaseUrl` to the base URL of the DataONE Coordinating Node environment that the Metacat repository is a part of. (e.g. the DataONE test member Metacat repository, `urn:node:mnTestKNB`, is in the `urn:node:cnStage2` Coordinating Node, so this attribute would be set to `https://cn-stage-2.test.dataone.org/`)
-    - *Optional:* The `AppModel` contains MetacatUI settings that control many MetacatUI features. You may want to configure some of these differently, according to your needs. See the [`AppModel` documentation](https://nceas.github.io/metacatui/docs/AppModel.html#defaults) for details.
+A quick-start `config.js` could look like:
+
+  ```javascript
+    MetacatUI.AppConfig = {
+      //The path to the root location of MetacatUI, i.e. where index.html is
+      root: "/",
+      //The path to the root location of Metacat, i.e. name of the Metacat Tomcat webapp
+      metacatContext: "/metacat",
+      //Your Google Maps API key, for map features
+      mapsKey: "YOUR-GOOGLE-MAPS-KEY"
+    }
+  ```
+
+Change the `appConfigPath` in `index.html` to the location where you will be deploying your `config.js` file.
+
+  ```html
+  ...
+  <script type="text/javascript">
+    // The path to your configuration file for MetacatUI. This can be any web-accessible location.
+    var appConfigPath = "https://my-repo.org/config.js";
+  </script>
+  ...
+  ```
+
+### For MetacatUI v2.11.5 and earlier
+See the [config documentation for MetacatUI 2.11.5 and earlier](configuration/pre-2.12.0.html)
+
+> MetacatUI 2.12.0+ can still be configured via index.html like it used to, but that will be deprecated in future releases.
+It's recommended that MetacatUI be configured via an external config.js file in v 2.12.0 and later.
 
 ## Step 4. DONE!
 
@@ -58,4 +81,4 @@ Go to the installed web location in your web browser (e.g. if you used the Expre
 
 ## Troubleshooting
 
-See the installation [troubleshooting page](https://nceas.github.io/metacatui/install/troubleshooting.md).
+See the installation [troubleshooting page](troubleshooting.html).

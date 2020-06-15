@@ -82,11 +82,19 @@ thead th{
   border-bottom: 2px solid #dee2e6;
   padding: .75rem;
 }
+.props thead th,
+.params thead th {
+    background-color: #CCC;
+    color: #333;
+    border: 0px;
+    border-image-width: 0px;
+    border-bottom: 1px solid hsla(202, 18%, 65%, 1);
+}
 table td{
   padding: .75rem;
   vertical-align: top;
   border-top: 1px solid #dee2e6;
 }
 td.name{
-  background-color: #d0d9de;
+  background-color: #DDD;
 }

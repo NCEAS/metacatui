@@ -1,4 +1,7 @@
 <ul class="nav nav-tabs">
 	<li role="presentation" class="active nav-tab" data-section="profile"><a href="<%= MetacatUI.root %>/profile/<%=username%>" data-section="profile" class="section-link"><i class="icon icon-table"></i>My Data</a></li>
-	<li role="presentation" class="nav-tab" data-section="settings"><a href="<%= MetacatUI.root %>/profile/<%=username%>" data-section="settings" class="section-link"><i class="icon icon-cog"></i>Settings</a></li>	
+
+<% if( MetacatUI.appModel.get("enableUserProfileSettings") ){ %>
+	<li role="presentation" class="nav-tab" data-section="settings"><a href="<%= MetacatUI.root %>/profile/<%=username%>" data-section="settings" class="section-link"><i class="icon icon-cog"></i>Settings</a></li>
+<% } %>
 </ul>

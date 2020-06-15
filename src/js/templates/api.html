@@ -192,7 +192,7 @@
                                 <li>Client-side SSL certificates (deprecated)</li>
                             </ul></p>
                             <p><strong>Using Authentication Tokens</strong>.
-                            In this preferred approach, users sign in to the <a href="<%= MetacatUI.root %>/signin"><%=window.themeTitle%></a>, and copy an
+                            In this preferred approach, users sign in to the <a href="<%= MetacatUI.root %>/signin"><%=MetacatUI.appModel.get("repositoryName")%></a>, and copy an
                             <strong>authentication token</strong> from their
                             <a href="<%= MetacatUI.root %>/my-profile/s=settings/s=token">profile page</a> which can then be included
                             in HTTPS requests in the HTTP header "Authorization:" to establish their identity.</p>
@@ -219,9 +219,9 @@ $ curl -H "Authorization: Bearer $TOKEN" <%=apiBaseUrl%>/object
                             </p>
 
                             <p><strong>Using client-side certificates over SSL</strong>.
-                            
+
                             <blockquote><i class="icon icon-warning-sign icon-warning"></i>
-                                <p class="text-warning">Deprecated.  Client-side SSL certificates are deprecated 
+                                <p class="text-warning">Deprecated.  Client-side SSL certificates are deprecated
                                 because certain clients and browsers do not fully support them. Use JWT Authentication
                                 tokens as described above instead.
                             </p></blockquote>
@@ -245,13 +245,13 @@ $ curl -H "Authorization: Bearer $TOKEN" <%=apiBaseUrl%>/object
                                 <a href="http://curl.haxx.se/mail/archive-2014-10/0053.html">curl mailing list</a>.
                                 Thus, calls to the <%=title%> that require a certificate will fail on the standard Mac curl
                                 version, which can be fixed by replacing this with the MacPorts version
-                                of curl, or by using a certificate converted to PK12 format. 
+                                of curl, or by using a certificate converted to PK12 format.
                             </p></blockquote>
                             </p>
 
                             <h3 id="authz">Authorization</h3>
-                            <p>Authorizing access for each object in the system is determined by the policies in its associated SystemMetadata document, 
-                            which contains fields for <code>rightsHolder</code>, <code>authoritativeMemberNode</code>, and <code>accessPolicy</code>. 
+                            <p>Authorizing access for each object in the system is determined by the policies in its associated SystemMetadata document,
+                            which contains fields for <code>rightsHolder</code>, <code>authoritativeMemberNode</code>, and <code>accessPolicy</code>.
                             Here’s an example SystemMetadata document showing these fields on a test server:</p>
                             <code class="code_example">
 &lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
@@ -280,11 +280,11 @@ $ curl -H "Authorization: Bearer $TOKEN" <%=apiBaseUrl%>/object
                             which links to that user's authenticated identity such as its ORCID identifier. These Subject strings
                             can then be used to grant access to objects within the system. </p>
 
-                            <p>Note how the object is owned by the ORCID on the <code>rightsHolder</code> field — that user can always do anything to the object.  
-                            Additional rules are specified in <code>accessPolicy</code>.  For each user, you can grant <code>read</code>, <code>write</code>, 
-                            and <code>changePermission</code> permissions. Note that the special user <code>public</code> has been granted <code>read</code>, 
-                            which makes the document globally readable by all users, even if they are not logged in.  If you want to allow another account to 
-                            make changes, you could add an <code>allow</code> rule to grant their ORCID the <code>write</code> permission in the SystemMetadata 
+                            <p>Note how the object is owned by the ORCID on the <code>rightsHolder</code> field — that user can always do anything to the object.
+                            Additional rules are specified in <code>accessPolicy</code>.  For each user, you can grant <code>read</code>, <code>write</code>,
+                            and <code>changePermission</code> permissions. Note that the special user <code>public</code> has been granted <code>read</code>,
+                            which makes the document globally readable by all users, even if they are not logged in.  If you want to allow another account to
+                            make changes, you could add an <code>allow</code> rule to grant their ORCID the <code>write</code> permission in the SystemMetadata
                             document, and then update that using the <code>updateSystemMetadata</code> API.
                             </p>
                         </section>

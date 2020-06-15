@@ -483,7 +483,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Get the system metadata for this object
 		 */
 		getSysMeta: function(){
-			var url = MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+			var url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
 				model = this;
 
 			var requestSettings = {
@@ -750,8 +750,8 @@ define(['jquery', 'underscore', 'backbone'],
     */
     createViewURL: function(){
       return (this.getType() == "portal" || this.getType() == "collection") ?
-              MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + (this.get("label") || this.get("seriesId") || this.get("id")) :
-              MetacatUI.root + "/view/" + (this.get("seriesId") || this.get("id"));
+              MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + encodeURIComponent((this.get("label") || this.get("seriesId") || this.get("id"))) :
+              MetacatUI.root + "/view/" + encodeURIComponent((this.get("seriesId") || this.get("id")));
     },
 
 		/****************************/

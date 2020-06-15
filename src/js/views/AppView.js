@@ -18,10 +18,12 @@ define(['jquery',
 
 	var app = app || {};
 
-	var theme = document.getElementById("loader").getAttribute("data-theme");
-
-	// Our overall **AppView** is the top-level piece of UI.
-	var AppView = Backbone.View.extend({
+	/**
+  * @class AppView
+  * @classdesc The top-level view of the UI that contains and coordinates all other views of the UI
+  */
+	var AppView = Backbone.View.extend(
+    /** @lends AppView.prototype */{
 
 		// Instead of generating a new element, bind to the existing skeleton of
 		// the App already present in the HTML.
@@ -61,9 +63,8 @@ define(['jquery',
 			MetacatUI.appUserModel.checkStatus();
 
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
-			$("head").prepend(this.appHeadTemplate({
+			$("head").append(this.appHeadTemplate({
 				theme: MetacatUI.theme,
-				themeTitle: MetacatUI.themeTitle,
 				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
       }))
       //Add the JSON-LD to the head element
