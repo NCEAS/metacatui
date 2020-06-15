@@ -1,23 +1,35 @@
-if( !MetacatUI.AppConfig ){
-  MetacatUI.AppConfig = {};
-}
+
 // Set up App Configurations that are always used for the arctic theme.
 // Deployment-specific configurations can be set in a separate file
 MetacatUI.AppConfig = Object.assign({
+  root: "/",
   title: "DataONE Data Catalog",
   theme: "dataone",
+  baseUrl: "https://search.dataone.org",
+  mapKey: "AIzaSyDuQ9r_7EeSfspKYs2SET7sv4c8FysLIk4",
   repositoryName: "DataONE Data Catalog",
   emailContact: "support@dataone.org",
   nodeId: "urn:node:CN",
   d1Service: "/cn/v2",
   metacatContext: "",
-  temporaryMessageContainer: "#Navbar",
-  displayRepoLogosInSearchResults: true,
-  contentIsModerated: false,
   enableMonitorStatus: false,
+  enableCILogonSignIn: true,
+
+  //Temp message
+  temporaryMessageContainer: "#Navbar",
+
+  //Searching
+  displayRepoLogosInSearchResults: true,
   disableQueryPOSTs: true,
   enableSolrJoins: true,
-  enableCILogonSignIn: true,
+
+  //Submissions
+  contentIsModerated: false,
+  displayDatasetEditButton: false,
+  displayDatasetControls: false,
+  enablePublishDOI: false,
+
+  //Portals
   hideSummaryCitationsChart: false,
   hideSummaryDownloadsChart: false,
   hideSummaryMetadataAssessment: false,
@@ -26,7 +38,7 @@ MetacatUI.AppConfig = Object.assign({
   displayDatasetControls: false,
   enablePublishDOI: false,
   enableCreatePortals: false
-}, MetacatUI.AppConfig);
+}, (MetacatUI.AppConfig || {}));
 
 MetacatUI.themeMap =
 {

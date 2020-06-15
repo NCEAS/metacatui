@@ -4,9 +4,16 @@ if( !MetacatUI.AppConfig ){
 // Set up App Configurations that are always used for the arctic theme.
 // Deployment-specific configurations can be set in a separate file
 MetacatUI.AppConfig = Object.assign({
+  root: "/",
   theme: "knb",
   title: "KNB",
+  baseUrl: "https://knb.ecoinformatics.org",
+  metacatContext: "knb",
+  mapKey: "AIzaSyCFcgRnv0TwBEdAnTsG5rBbD6Hprrv_Yic",
   repositoryName: "KNB",
+  enableLdapSignIn: true,
+
+  //Editor
   emlEditorRequiredFields: {
     abstract: true,
     alternateIdentifier: false,
@@ -22,9 +29,6 @@ MetacatUI.AppConfig = Object.assign({
     temporalCoverage: true,
     title: true
   },
-  disableQueryPOSTs: false,
-  enableSolrJoins: true,
-  enableLdapSignIn: true,
   defaultAccessPolicy: [{
     subject: "CN=knb-data-admins,DC=dataone,DC=org",
     read: true,
@@ -36,12 +40,24 @@ MetacatUI.AppConfig = Object.assign({
       read: true
     }],
   hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
+
+  //Searching
+  disableQueryPOSTs: false,
+  enableSolrJoins: true,
+  displayRepoLogosInSearchResults: true,
+
+  //Temp message
+  temporaryMessage: "The KNB will be unavailable between 11 p.m. PT on Monday, June 15 and 6:30 a.m. PT on Tuesday, June 16 due to upgrades. We apologize for the inconvenience.",
   temporaryMessageClasses: "warning auto-height-member",
   temporaryMessageContainer: "#HeaderContainer",
-  displayRepoLogosInSearchResults: true,
+  temporaryMessageEndTime: new Date("2020-06-16T13:30:00"),
+
+  //Metadata assessments
   mdqSuiteIds: ["knb.suite.1"],
   mdqSuiteLabels: ["KNB Metadata Completeness Suite v1.0"],
   mdqFormatIds:["eml*", "https://eml*"],
+
+  //Portals
   hideSummaryCitationsChart: false,
   hideSummaryDownloadsChart: false,
   hideSummaryViewsChart: false,
