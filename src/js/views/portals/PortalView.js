@@ -159,42 +159,14 @@ define(["jquery",
 
                 //Repository specific checks
                 if(MetacatUI.nodeModel.get("checked") && this.isNode(this.label)){
-                  
-                  var view = this;
-                  // set the nodeview flag to true and create user mode for this repository
-                  this.nodeView = true;
-
-                  //Create a UserModel with the username given
-                  this.userModel = new User({
-                    username: view.label
-                  });
-                  this.userModel.saveAsNode();
-                  // get the node Info
-                  var nodeInfo =  _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
-                    return nodeModel.identifier.toLowerCase() == "urn:node:" + view.label.toLowerCase();
-                    });
-                  this.nodeInfo = nodeInfo;
-                  this.portalId = this.nodeInfo.identifier;
-
-                  // create a portal model for repository
-                  this.model = new Portal({
-                    seriesId: this.portalId,
-                    label: view.label
-                  });
-
-                  // remove the members section directly from the model
-                  this.model.removeSection("members");
-
-                  this.model.createNodeAttributes(this.nodeInfo);
-
-                  //Setting the repo specific statsModel
-                  var statsSearchModel = this.userModel.get("searchModel").clone();
-                  statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
-                  MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-                  MetacatUI.statsModel.set("searchModel", statsSearchModel);
+                  this.renderAsNode()
                 }
                 else if (!MetacatUI.nodeModel.get("checked")) {
-                  // TODO: add a listener
+                  // listen to the nodeModel fetch
+                  this.listenTo(MetacatUI.nodeModel, "change:checked", function(){
+                    if(view.isNode(view.label))
+                      view.renderAsNode();
+                  });
                 }
 
                 // Create a new Portal model
@@ -205,12 +177,9 @@ define(["jquery",
                   });
                 }
                 
-                // If this is a nodeView then directly render portal
-                // do not wait for fetch()
-                if (this.nodeView) {
-                  this.renderPortal();
-                }
-                else {
+                // If this is not a repository view then perform the default render
+                if (!this.nodeView) {
+                  
                   // When the model has been synced, render the results
                   this.stopListening();
                   this.listenToOnce(this.model, "sync", this.renderPortal);
@@ -226,6 +195,53 @@ define(["jquery",
                 }
                 
                 return this;
+            },
+
+            /**
+             * Sets up the render for the protal view
+             */
+            renderAsNode:function(){
+              var view = this;
+              // remove the listener
+              this.stopListening(MetacatUI.nodeModel, "change:checked", function(){
+                if(view.isNode(view.label))
+                  view.renderAsNode();
+              });
+
+              // set the nodeview flag to true and create user mode for this repository
+              this.nodeView = true;
+
+              //Create a UserModel with the username given
+              this.userModel = new User({
+                username: view.label
+              });
+              this.userModel.saveAsNode();
+              // get the node Info
+              var nodeInfo =  _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+                return nodeModel.identifier.toLowerCase() == "urn:node:" + view.label.toLowerCase();
+                });
+              this.nodeInfo = nodeInfo;
+              this.portalId = this.nodeInfo.identifier;
+
+              // create a portal model for repository
+              this.model = new Portal({
+                seriesId: this.portalId,
+                label: view.label
+              });
+
+              // remove the members section directly from the model
+              this.model.removeSection("members");
+
+              this.model.createNodeAttributes(this.nodeInfo);
+
+              //Setting the repo specific statsModel
+              var statsSearchModel = this.userModel.get("searchModel").clone();
+              statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
+              MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+              MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+              // render repository view as portal view
+              this.renderPortal();
             },
 
             /**
