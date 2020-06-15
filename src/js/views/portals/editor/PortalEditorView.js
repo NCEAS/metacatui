@@ -129,7 +129,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Reset arrays and objects set on this View, otherwise they will be shared across intances, causing errors
       this.subviews = new Array();
       this.sectionsView = null;
-      
+
       if(typeof options == "object"){
         // initializing the PortalEditorView properties
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
@@ -534,6 +534,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //We can't update anything without a category
       if(!category) return false;
 
+      //Clean up the value string so it's valid for XML
+      value = this.model.cleanXMLText(value);
+
       //If the value is an empty string,
       if( typeof value == "string" && !value.length ){
         //Remove the value from the input
@@ -630,6 +633,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         //The label category is unique, because it is duplicated in the PortalImage, which can cause bugs
         if( category == "label" ){
           categoryEls = this.$(".change-label-container [data-category='label']");
+          var settingsView = _.findWhere(this.sectionsView.subviews, {type: "PortEditorSettings"});
+          //Show the "change label" elements so the validation will appear
+          settingsView.changeLabel();
         }
 
         //Get the elements that have views attached to them

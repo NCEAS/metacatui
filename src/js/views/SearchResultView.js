@@ -80,9 +80,11 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 				json.dataFilesMessage = "This dataset doesn't contain any data files";
 			}
 
-      //If this result has a logo and it is not a URL, assume it is an ID and create a full URL
-      if( json.logo && !json.logo.startsWith("http") ){
-        json.logo = MetacatUI.appModel.get("objectServiceUrl") + json.logo;
+      if( MetacatUI.appModel.get("displayRepoLogosInSearchResults") ){
+        //If this result has a logo and it is not a URL, assume it is an ID and create a full URL
+        if( json.logo && !json.logo.startsWith("http") ){
+          json.logo = MetacatUI.appModel.get("objectServiceUrl") + json.logo;
+        }
       }
 
       //Create a URL that leads to a view of this object
@@ -253,7 +255,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 			if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
 				return;
 
-			MetacatUI.uiRouter.navigate('view/'+id, {trigger: true});
+			MetacatUI.uiRouter.navigate('view/' + encodeURIComponent(id), {trigger: true});
 		},
 
 		download: function(e){

@@ -129,7 +129,7 @@ define(["jquery",
 
       var model = this,
         fetchOptions = _.extend({
-          url: MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId")),
+          url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id") || this.get("seriesId")),
           dataType: "text",
           success: function(response){
             model.set(DataONEObject.prototype.parse.call(model, response));
@@ -492,6 +492,18 @@ define(["jquery",
                 !this.get("ignoreQueryGroups").includes( filterModel.get("queryGroup") ));
 
       }, this);
+    },
+
+    /**
+    * This is a shortcut function that returns the query for the datasets in this portal,
+    *  using the Search model for this portal. This is the full query that includes the filters not
+    *  serialized to the portal XML, such as the filters used for the DataCatalogView.
+    *
+    */
+    getQuery: function(){
+
+      return this.get("searchModel").get("filters").getQuery();
+
     },
 
     /**

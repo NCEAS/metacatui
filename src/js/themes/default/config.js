@@ -1,5 +1,3 @@
-MetacatUI.theme = MetacatUI.theme || "default";
-MetacatUI.themeTitle = "Metacat Data Catalog";
 MetacatUI.themeMap = 
 {
 	'*': {

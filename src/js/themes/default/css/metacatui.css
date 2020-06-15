@@ -589,10 +589,6 @@ select{
       color: #FFF;
       vertical-align: middle;
     }
-    #Navbar .logo{
-      max-height: 50px;
-    }
-
     .navbar {
       position: relative;
       border: none;

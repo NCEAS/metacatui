@@ -2,11 +2,11 @@
 
 	<p>Thank you, your changes have been saved.</p>
 
-	<h2>Your data set is under review by the <%=MetacatUI.themeTitle%> team.</h2>
+	<h2>Your data set is under review by the <%=MetacatUI.appModel.get("repositoryName")%> team.</h2>
 
-	<p> It's on its way to being published but you're not quite done. You will receive an email from <a href="mailto:<%=MetacatUI.appModel.get('emailContact')%>"><%=MetacatUI.appModel.get('emailContact')%></a> within one business day. Please plan to respond to our emails in order to ensure that your submission gets published.</p>        
+	<p> It's on its way to being published but you're not quite done. You will receive an email from <a href="mailto:<%=MetacatUI.appModel.get('emailContact')%>"><%=MetacatUI.appModel.get('emailContact')%></a> within one business day. Please plan to respond to our emails in order to ensure that your submission gets published.</p>
 
 	<p>Once the review and any revisions are complete, we will assign a DOI, and publicly publish the data package. Until then, it will not be publicly visible.</p>
-	
+
 	<p><a class="btn btn-large btn-primary center" href="<%=viewURL%>">View your dataset</a></p>
 </div>
