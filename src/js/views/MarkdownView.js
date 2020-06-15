@@ -1,10 +1,13 @@
 define([    "jquery", "underscore", "backbone",
             "showdown",
-            "text!templates/markdown.html" ],
+            "text!templates/markdown.html",
+            "text!templates/loading.html"
+        ],
 
     function($, _, Backbone,
         showdown,
-        markdownTemplate ){
+        markdownTemplate,
+        LoadingTemplate ){
 
     /**
     * @class MarkdownView
@@ -33,6 +36,7 @@ define([    "jquery", "underscore", "backbone",
          * @type {UnderscoreTemplate}        
          */         
         template: _.template(markdownTemplate),
+        loadingTemplate: _.template(LoadingTemplate),
         
         /**
         * Markdown to render into HTML
@@ -85,6 +89,11 @@ define([    "jquery", "underscore", "backbone",
          */ 
         render: function() {
           
+            // Show a loading message while we render the markdown to HTML
+            this.$el.html(this.loadingTemplate({
+              msg: "Retrieving content..."
+            }));
+          
             // Once required extensions are tested for and loaded, convert and
             // append markdown
             this.stopListening();
@@ -129,10 +138,9 @@ define([    "jquery", "underscore", "backbone",
                   htmlFromMD = errorMsgTempContainer.innerHTML;
                 }
 
-                this.$el.append(this.template({ markdown: htmlFromMD }));
+                this.$el.html(this.template({ markdown: htmlFromMD }));
                 
                 this.$(".markdown img").addClass("thumbnail").after("<div class='clear'></div>");
-                
                 
                 if( this.showTOC ){
                   this.listenToOnce(this, "TOCRendered", function(){

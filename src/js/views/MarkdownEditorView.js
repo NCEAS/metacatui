@@ -86,8 +86,6 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, Template){
     */
     initialize: function(options){
       
-      console.log("2. mdEditor TOC: " + options.showTOC );
-      
       if(typeof options !== "undefined"){
           this.markdown            =  options.markdown            || "";
           this.markdownPlaceholder =  options.markdownPlaceholder || "";
