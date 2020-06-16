@@ -126,6 +126,28 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			});
 
 			$(this.sectionHolder).append(this.portalView.render());
+			this.updatePath(username);
+			return;
+		},
+
+		/**
+		 * Update the window location path to route to /portals path
+		 * @param {string} [username] - Short identifier for the member node
+		*/
+		updatePath: function(username){
+
+			var pathName      = decodeURIComponent(window.location.pathname)
+								.substring(MetacatUI.root.length)
+								// remove trailing forward slash if one exists in path
+								.replace(/\/$/, "");
+
+			// Routes the /profile/{node-id} to /portals/{node-id}
+			var pathRE = new RegExp("\\/profile(\\/[^\\/]*)?$", "i");
+			var newPathName = pathName.replace(pathRE, "") + "/" +
+							MetacatUI.appModel.get("portalTermPlural") + "/" + username;
+
+			// Update the window location
+			MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
 			return;
 		},
 
