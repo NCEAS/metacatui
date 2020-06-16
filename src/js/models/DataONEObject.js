@@ -2,11 +2,15 @@
 define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPolicy', 'collections/ObjectFormats', 'md5'],
     function($, _, Backbone, uuid, he, AccessPolicy, ObjectFormats, md5){
 
-        /*
-         A DataONEObject represents a DataONE object that has a format
-         type of DATA, METADATA, or RESOURCE.  It stores the system
-         metadata attributes for the object at a minimum.
-         TODO: incorporate Backbone.UniqueModel
+        /**
+        * @class DataONEObject
+        * @classdesc A DataONEObject represents a DataONE object, such as a data file,
+        a science metadata object, or a resource map. It stores the system
+         metadata attributes for the object, performs updates to the system metadata,
+         and other basic DataONE API functions. This model can be extended to provide
+         specific functionality for different object types, such as the {@link ScienceMetadata}
+         model and the {@link EML211} model.
+        * @augments Backbone.Model
         */
         var DataONEObject = Backbone.Model.extend(
           /** @lends DataONEObject.prototype */{
@@ -132,37 +136,40 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           },
 
-          /*
+          /**
            * Maps the lower-case sys meta node names (valid in HTML DOM) to the
            * camel-cased sys meta node names (valid in DataONE).
            * Used during parse() and serialize()
            */
           nodeNameMap: function(){
             return{
-          accesspolicy: "accessPolicy",
-          accessrule: "accessRule",
-          authoritativemembernode: "authoritativeMemberNode",
-          checksumalgorithm: "checksumAlgorithm",
-          dateuploaded: "dateUploaded",
-          datesysmetadatamodified: "dateSysMetadataModified",
-          formatid: "formatId",
-          filename: "fileName",
-          nodereference: "nodeReference",
-          numberreplicas: "numberReplicas",
-          obsoletedby: "obsoletedBy",
-          originmembernode: "originMemberNode",
-          replicamembernode: "replicaMemberNode",
-          replicationallowed: "replicationAllowed",
-          replicationpolicy: "replicationPolicy",
-          replicationstatus: "replicationStatus",
-          replicaverified: "replicaVerified",
-          rightsholder: "rightsHolder",
-          serialversion: "serialVersion",
-                  seriesid: "seriesId"
+              accesspolicy: "accessPolicy",
+              accessrule: "accessRule",
+              authoritativemembernode: "authoritativeMemberNode",
+              checksumalgorithm: "checksumAlgorithm",
+              dateuploaded: "dateUploaded",
+              datesysmetadatamodified: "dateSysMetadataModified",
+              formatid: "formatId",
+              filename: "fileName",
+              nodereference: "nodeReference",
+              numberreplicas: "numberReplicas",
+              obsoletedby: "obsoletedBy",
+              originmembernode: "originMemberNode",
+              replicamembernode: "replicaMemberNode",
+              replicationallowed: "replicationAllowed",
+              replicationpolicy: "replicationPolicy",
+              replicationstatus: "replicationStatus",
+              replicaverified: "replicaVerified",
+              rightsholder: "rightsHolder",
+              serialversion: "serialVersion",
+              seriesid: "seriesId"
             };
           },
 
-          /* Provide the model URL on the server based on the newness of the object */
+          /**
+          * Returns the URL string where this DataONEObject can be fetched from or saved to
+          * @returns {string}
+          */
           url: function(){
 
             // With no id, we can't do anything
@@ -201,7 +208,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }
           },
 
-          /*
+          /**
            * Overload Backbone.Model.fetch, so that we can set custom options for each fetch() request
            */
           fetch: function(options){
@@ -264,7 +271,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           },
 
-          /*
+          /**
            * This function is called by Backbone.Model.fetch.
            * It deserializes the incoming XML from the /meta REST endpoint and converts it into JSON.
            */
@@ -344,7 +351,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 return response;
           },
 
-          // A utility function for converting XML to JSON
+          /** A utility function for converting XML to JSON */
           toJson: function(xml) {
 
               // Create the return object
@@ -415,11 +422,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             return obj;
           },
 
-          /*
+          /**
           Serialize the DataONE object JSON to XML
-          Parameters:
-            json - the JSON object to convert to XML
-            containerNode - an HTML element to inser the resulting XML into
+          @param {object} json - the JSON object to convert to XML
+          @param {Element} containerNode - an HTML element to insertt the resulting XML into
+          @returns {Element} The updated HTML Element
          */
          toXML: function(json, containerNode){
 
@@ -464,7 +471,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             return containerNode;
          },
 
-          /*
+          /**
           * Saves the DataONEObject System Metadata to the server
           */
           save: function(attributes, options){
@@ -650,154 +657,161 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               Backbone.Model.prototype.save.call(this, null, requestSettings);
         },
 
-        /**
-          * Updates the DataONEObject System Metadata to the server
-          */
-        updateSysMeta: function () {
+          /**
+            * Updates the DataONEObject System Metadata to the server
+            */
+          updateSysMeta: function () {
 
-          //Update the upload status to "p" for "in progress"
-          this.set("uploadStatus", "p");
-          //Update the system metadata upload status to "p" as well, so the app
-          // knows that the system metadata, specifically, is being updated.
-          this.set("sysMetaUploadStatus", "p");
+            //Update the upload status to "p" for "in progress"
+            this.set("uploadStatus", "p");
+            //Update the system metadata upload status to "p" as well, so the app
+            // knows that the system metadata, specifically, is being updated.
+            this.set("sysMetaUploadStatus", "p");
 
-          var formData = new FormData();
+            var formData = new FormData();
 
-          //Add the identifier to the XHR data
-          formData.append("pid", this.get("id"));
+            //Add the identifier to the XHR data
+            formData.append("pid", this.get("id"));
 
-          var sysMetaXML = this.serializeSysMeta();
+            var sysMetaXML = this.serializeSysMeta();
 
-          //Send the system metadata as a Blob
-          var xmlBlob = new Blob([sysMetaXML], {type: 'application/xml'});
-          //Add the system metadata XML to the XHR data
-          formData.append("sysmeta", xmlBlob, "sysmeta.xml");
+            //Send the system metadata as a Blob
+            var xmlBlob = new Blob([sysMetaXML], {type: 'application/xml'});
+            //Add the system metadata XML to the XHR data
+            formData.append("sysmeta", xmlBlob, "sysmeta.xml");
 
-          var model = this;
+            var model = this;
 
-          var requestSettings = {
-              url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id"))),
-              cache: false,
-              contentType: false,
-              dataType: "text",
-              type: "PUT",
-              processData: false,
-              data: formData,
-              parse: false,
-              success: function() {
+            var requestSettings = {
+                url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id"))),
+                cache: false,
+                contentType: false,
+                dataType: "text",
+                type: "PUT",
+                processData: false,
+                data: formData,
+                parse: false,
+                success: function() {
 
-                model.set("numSaveAttempts", 0);
+                  model.set("numSaveAttempts", 0);
 
-                //Fetch the system metadata from the server so we have a fresh copy of the newest sys meta.
-                model.fetch({ systemMetadataOnly: true });
+                  //Fetch the system metadata from the server so we have a fresh copy of the newest sys meta.
+                  model.fetch({ systemMetadataOnly: true });
 
-                //Update the upload status to "c" for "complete"
-                model.set("uploadStatus", "c");
-                model.set("sysMetaUploadStatus", "c");
+                  //Update the upload status to "c" for "complete"
+                  model.set("uploadStatus", "c");
+                  model.set("sysMetaUploadStatus", "c");
 
-                //Trigger a custom event that the sys meta was updated
-                model.trigger("sysMetaUpdated");
-              },
-              error: function (xhr, status, statusCode) {
+                  //Trigger a custom event that the sys meta was updated
+                  model.trigger("sysMetaUpdated");
+                },
+                error: function (xhr, status, statusCode) {
 
-                model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
-                var numSaveAttempts = model.get("numSaveAttempts");
+                  model.set("numSaveAttempts", model.get("numSaveAttempts") + 1);
+                  var numSaveAttempts = model.get("numSaveAttempts");
 
-                if (numSaveAttempts < 3 && (statusCode == 408 || statusCode == 0)) {
+                  if (numSaveAttempts < 3 && (statusCode == 408 || statusCode == 0)) {
 
-                    //Try saving again in 10, 40, and 90 seconds
-                    setTimeout(function () {
-                            model.updateSysMeta.call(model);
-                        },
-                        (numSaveAttempts * numSaveAttempts) * 10000);
-                } else {
-                      model.set("numSaveAttempts", 0);
+                      //Try saving again in 10, 40, and 90 seconds
+                      setTimeout(function () {
+                              model.updateSysMeta.call(model);
+                          },
+                          (numSaveAttempts * numSaveAttempts) * 10000);
+                  } else {
+                        model.set("numSaveAttempts", 0);
 
-                      var parsedResponse = $(xhr.responseText).not("style, title").text();
+                        var parsedResponse = $(xhr.responseText).not("style, title").text();
 
-                      //When there is no network connection (status == 0), there will be no response text
-                      if (!parsedResponse)
-                          parsedResponse = "There was a network issue that prevented this file from updating. " +
-                              "Make sure you are connected to a reliable internet connection.";
+                        //When there is no network connection (status == 0), there will be no response text
+                        if (!parsedResponse)
+                            parsedResponse = "There was a network issue that prevented this file from updating. " +
+                                "Make sure you are connected to a reliable internet connection.";
 
-                      model.set("errorMessage", parsedResponse);
-                      model.set("uploadStatus", "e");
-                      model.set("sysMetaUploadStatus", "e");
+                        model.set("errorMessage", parsedResponse);
+                        model.set("uploadStatus", "e");
+                        model.set("sysMetaUploadStatus", "e");
 
-                      //Send this exception to Google Analytics
-                      if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
-                          ga("send", "exception", {
-                              "exDescription": "DataONEObject update system metadata error: " + parsedResponse +
-                                  " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
-                              "exFatal": true
-                          });
-                      }
+                        //Send this exception to Google Analytics
+                        if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
+                            ga("send", "exception", {
+                                "exDescription": "DataONEObject update system metadata error: " + parsedResponse +
+                                    " | Id: " + model.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                                "exFatal": true
+                            });
+                        }
+                    }
+                }
+            }
+
+            //Add the user settings
+            requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+
+            //Send the XHR
+            $.ajax(requestSettings);
+          },
+
+          /**
+           * Check if the current user is authorized to perform an action on this object
+           * @param {string} action - The action (read, write, or changePermission) to check
+           * if the current user has authorization to perform. This function doesn't return
+           * the result of the check, but it sends an XHR, updates this model, and triggers a change event.
+           * @param {object} [options] Additional options for this function. See the properties below.
+           * @property {function} options.onSuccess - A function to execute when the checkAuthority API is successfully completed
+           * @property {function} options.onError - A function to execute when the checkAuthority API returns an error
+           */
+          checkAuthority: function(action, options){
+
+            // return false - if neither PID nor SID is present to check the authority
+            if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
+              return false;
+            }
+
+            if( typeof options == "undefined" ){
+              var options = {};
+            }
+
+            // If PID is not present - check authority with seriesId
+            var identifier = this.get("id");
+            if ( (identifier == null) ) {
+              identifier = this.get("seriesId");
+            }
+
+            if(!action) var action = "changePermission";
+
+            var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
+            if(!authServiceUrl)
+              return false;
+
+            var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+                  model.set("isAuthorized", true);
+                  model.trigger("change:isAuthorized");
+                },
+                onError = options.onError || function(xhr, textStatus, errorThrown){
+                  if(errorThrown == 404){
+                    model.set("notFound", true);
+                    model.trigger("notFound");
                   }
-              }
-          }
+                  else{
+                    model.set("isAuthorized", false);
+                  }
+                };
 
-          //Add the user settings
-          requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+            var model = this;
+            var requestSettings = {
+              url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
+              type: "GET",
+              success: onSuccess,
+              error: onError
+            }
+            $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
-          //Send the XHR
-          $.ajax(requestSettings);
-        },
+          },
 
-        /**
-         * Check if the current user is authorized to perform an action on this object
-         * @param {string} action - The action (read, write, or changePermission) to check
-         * if the current user has authorization to perform. This function doesn't return
-         * the result of the check, but it sends an XHR, updates this model, and triggers a change event.
-         */
-        checkAuthority: function(action, options){
-
-          // return false - if neither PID nor SID is present to check the authority
-          if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
-            return false;
-          }
-
-          if( typeof options == "undefined" ){
-            var options = {};
-          }
-
-          // If PID is not present - check authority with seriesId
-          var identifier = this.get("id");
-          if ( (identifier == null) ) {
-            identifier = this.get("seriesId");
-          }
-
-          if(!action) var action = "changePermission";
-
-          var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
-          if(!authServiceUrl)
-            return false;
-
-          var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
-                model.set("isAuthorized", true);
-                model.trigger("change:isAuthorized");
-              },
-              onError = options.onError || function(xhr, textStatus, errorThrown){
-                if(errorThrown == 404){
-                  model.set("notFound", true);
-                  model.trigger("notFound");
-                }
-                else{
-                  model.set("isAuthorized", false);
-                }
-              };
-
-          var model = this;
-          var requestSettings = {
-            url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
-            type: "GET",
-            success: onSuccess,
-            error: onError
-          }
-          $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-
-        },
-
-        serializeSysMeta: function(){
+          /**
+          * Using the attributes set on this DataONEObject model, serializes the system metadata XML
+          * @returns {string}
+          */
+          serializeSysMeta: function(){
             //Get the system metadata XML that currently exists in the system
             var sysMetaXML = this.get("sysMetaXML"), // sysmeta as string
                 xml, // sysmeta as DOM object
@@ -979,7 +993,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 "mediaTypes": [],  // The list of potential formatIds based on mediaType matches
                 "extensions": []   // The list of possible formatIds based onextension matches
               },
-              fileName = this.get("fileName"),  // the fileName for this object 
+              fileName = this.get("fileName"),  // the fileName for this object
               ext;  // The extension of the filename for this object
 
             objectFormats["mediaTypes"] = MetacatUI.objectFormats.where({formatId: this.get("mediaType")});
@@ -991,7 +1005,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if (objectFormats["mediaTypes"].length > 0 && objectFormats["extensions"].length > 0) {
               var firstMediaType = objectFormats["mediaTypes"][0].get("formatId");
               var firstExtension = objectFormats["extensions"][0].get("formatId");
-              // Check if they're equal 
+              // Check if they're equal
               if (firstMediaType === firstExtension) {
                 formatId = firstMediaType;
                 return formatId;
@@ -1052,11 +1066,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               return sysmetaDOM;
           },
 
-          /*
+          /**
           * Create an access policy for this DataONEObject using the default access
           * policy set in the AppModel.
           *
-          * @param {DOM Element} [accessPolicyXML] - An <accessPolicy> XML node
+          * @param {Element} [accessPolicyXML] - An <accessPolicy> XML node
           *   that contains a list of access rules.
           * @return {AccessPolicy} - an AccessPolicy collection that represents the
           *   given XML or the default policy set in the AppModel.
@@ -1206,8 +1220,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             this.set("archived", false);
           },
 
-          /*
-           * Reset
+          /**
+           * Resets the identifier for this model. This undos all of the changes made in {DataONEObject#updateID}
            */
           resetID: function(){
             if(!this.attributeCache) return false;
@@ -1223,8 +1237,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             this.attributeCache = {};
           },
 
-          /*
+          /**
            * Checks if this model has updates that need to be synced with the server.
+           * @returns {boolean}
            */
           hasUpdates: function(){
             if(this.isNew()) return true;
@@ -1238,11 +1253,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             return !(newSysMeta == oldSysMeta);
           },
 
-          /*
+          /**
              Set the changed flag on any system metadata or content attribute changes,
              and set the hasContentChanges flag on content changes only
+             @param {DataONEObject} [model]
            */
-          handleChange: function(model, options) {
+          handleChange: function(model) {
             if(!model) var model = this;
 
               var sysMetaAttrs = ["serialVersion", "identifier", "formatId", "formatType", "size", "checksum",
@@ -1275,7 +1291,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 this.addToUploadQueue();
               }
 
-            },
+          },
 
           /**
           * Returns true if this DataONE object is new. A DataONE object is new
@@ -1309,8 +1325,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
           },
 
-          /*
+          /**
            * Updates the progress percentage when the model is getting uploaded
+           * @param {ProgressEvent} e - The ProgressEvent when this file is being uploaded
            */
           updateProgress: function(e){
             if(e.lengthComputable){
@@ -1327,7 +1344,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
           },
 
-          /*
+          /**
            * Updates the relationships with other models when this model has been updated
            */
           updateRelationships: function(){
@@ -1353,8 +1370,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }, this);
           },
 
-          /*
+          /**
            * Finds the latest version of this object by travesing the obsolescence chain
+           * @param {string} [latestVersion] - The identifier of the latest known object in the version chain.
+             If not supplied, this model's `id` will be used.
+           * @param {string} [possiblyNewer] - The identifier of the object that obsoletes the latestVersion. It's "possibly" newer, because it may be private/inaccessible
            */
           findLatestVersion: function(latestVersion, possiblyNewer){
             // Make sure we have the /meta service configured
@@ -1431,8 +1451,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
           },
 
-          /*
-           * Will format an XML string or XML nodes by camel-casing the node names, as necessary
+          /**
+           * A utility function that will format an XML string or XML nodes by camel-casing the node names, as necessary
+           * @param {string|Element} xml - The XML to format
+           * @returns {string} The formatted XML string
            */
           formatXML: function(xml){
             var nodeNameMap = this.nodeNameMap(),
@@ -1500,9 +1522,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Convert number of bytes into human readable format
-           *
-           * @return sizeStr for the given model
+           * Converts the number of bytes into a human readable format and updates the `sizeStr` attribute
            */
           bytesToSize: function(){
               var kilobyte = 1024;
@@ -1537,7 +1557,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
           },
 
-          /* Ensure we have a file name */
+          /**
+           * Creates a file name for this DataONEObject and updates the `fileName` attribute
+           */
           setMissingFileName: function() {
             var objectFormats, filename, extension;
 
@@ -1596,8 +1618,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**** Provenance-related functions ****/
-          /*
+          /**
            * Returns true if this provenance field points to a source of this data or metadata object
+           * @param {string} field
+           * @returns {boolean}
            */
           isSourceField: function(field){
             if((typeof field == "undefined") || !field) return false;
@@ -1614,8 +1638,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               return false;
            },
 
-          /*
+          /**
            * Returns true if this provenance field points to a derivation of this data or metadata object
+           * @param {string} field
+           * @returns {boolean}
            */
           isDerivationField: function(field){
             if((typeof field == "undefined") || !field) return false;
@@ -1630,7 +1656,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               return false;
           },
 
-          //Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
+          /**
+          * Returns a plain-english version of the general format - either image, program, metadata, PDF, annotation or data
+          */
           getType: function(){
             //The list of formatIds that are images
 
@@ -1668,9 +1696,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             else return "data";
           },
 
-          /*
-           * param dataObject - a SolrResult representing the data object returned from the index
-           * returns - true if this data object is an image, false if it is other
+          /**
+           * Checks the formatId of this model and determines if it is an image.
+           * @returns {boolean} true if this data object is an image, false if it is other
            */
           isImage: function(){
             //The list of formatIds that are images
@@ -1685,6 +1713,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           },
 
+          /**
+           * Checks the formatId of this model and determines if it is a data file.
+           * This determination is mostly used for display and the provenance editor. In the
+           * DataONE API, many formatIds are considered `DATA` formatTypes, but they are categorized
+           * as images {@link DataONEObject#isImage} or software {@link DataONEObject#isSoftware}.
+           * @returns {boolean} true if this data object is a data file, false if it is other
+           */
           isData: function() {
             var dataIds =  ["application/atom+xml",
                             "application/mathematica",
@@ -1713,9 +1748,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                             "audio/mpeg",
                             "audio/x-ms-wma",
                             "audio/x-wav",
-                                    "image/svg xml",
-                                    "image/svg+xml",
-                                    "image/bmp",
+                            "image/svg xml",
+                            "image/svg+xml",
+                            "image/bmp",
                             "image/tiff",
                             "text/anvl",
                             "text/csv",
@@ -1736,6 +1771,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             else return true;
           },
 
+          /**
+           * Checks the formatId of this model and determines if it is a software file.
+           * This determination is mostly used for display and the provenance editor. In the
+           * DataONE API, many formatIds are considered `DATA` formatTypes, but they are categorized
+           * as images {@link DataONEObject#isImage} for display purposes.
+           * @returns {boolean} true if this data object is a software file, false if it is other
+           */
           isSoftware: function(){
             //The list of formatIds that are programs
             var softwareIds =  ["text/x-python",
@@ -1749,9 +1791,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             else return true;
           },
 
-          /*
-           * param dataObject - a SolrResult representing the data object returned from the index
-           * returns - true if this data object is a pdf, false if it is other
+          /**
+           * Checks the formatId of this model and determines if it a PDF.
+           * @returns {boolean} true if this data object is a pdf, false if it is other
            */
           isPDF: function(){
             //The list of formatIds that are images
@@ -1762,13 +1804,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             else return true;
           },
 
-          /*
+          /**
            * Set the DataONE ProvONE provenance class
            * param className - the shortened form of the actual classname value. The
            * shortname will be appened to the ProvONE namespace, for example,
            * the className "program" will result in the final class name
            * "http://purl.dataone.org/provone/2015/01/15/ontology#Program"
            * see https://github.com/DataONEorg/sem-prov-ontologies/blob/master/provenance/ProvONE/v1/provone.html
+           * @param {string} className
            */
            setProvClass: function(className) {
              className = className.toLowerCase();
@@ -1789,10 +1832,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
            },
 
-          /*
+          /**
            *  Calculate a checksum for the object
-           *  @param algorithm  The algorithm to use, defaults to MD5
-           *  @return checksum  A checksum plain JS object with value and algorithm attributes
+           *  @param {string} [algorithm]  The algorithm to use, defaults to MD5
+           *  @return {string} A checksum plain JS object with value and algorithm attributes
            */
           calculateChecksum: function(algorithm) {
             var algorithm = algorithm || "MD5";
@@ -1867,53 +1910,55 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             }
         },
 
-        /**
-    		 * Checks if the pid or sid or given string is a DOI
-    		 *
-    		 * @param {string} customString - Optional. An identifier string to check instead of the id and seriesId attributes on the model
-    		 * @returns {boolean} True if it is a DOI
-    		 */
-    		isDOI: function(customString) {
-    			var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.",
-    				"https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."],
-    				  DOI_REGEX = new RegExp(/^10.\d{4,9}\/[-._;()/:A-Z0-9]+$/i);;
+          /**
+           * Checks if the pid or sid or given string is a DOI
+           *
+           * @param {string} customString - Optional. An identifier string to check instead of the id and seriesId attributes on the model
+           * @returns {boolean} True if it is a DOI
+           */
+          isDOI: function(customString) {
+          var DOI_PREFIXES = ["doi:10.", "http://dx.doi.org/10.", "http://doi.org/10.", "http://doi.org/doi:10.",
+            "https://dx.doi.org/10.", "https://doi.org/10.", "https://doi.org/doi:10."],
+              DOI_REGEX = new RegExp(/^10.\d{4,9}\/[-._;()/:A-Z0-9]+$/i);;
 
-    			//If a custom string is given, then check that instead of the seriesId and id from the model
-    			if( typeof customString == "string" ){
-    				for (var i=0; i < DOI_PREFIXES.length; i++) {
-    					if (customString.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-    						return true;
-    				}
+          //If a custom string is given, then check that instead of the seriesId and id from the model
+          if( typeof customString == "string" ){
+            for (var i=0; i < DOI_PREFIXES.length; i++) {
+              if (customString.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+                return true;
+            }
 
-    				//If there is no DOI prefix, check for a DOI without the prefix using a regular expression
-    				if( DOI_REGEX.test(customString) ){
-    					return true;
-    				}
+            //If there is no DOI prefix, check for a DOI without the prefix using a regular expression
+            if( DOI_REGEX.test(customString) ){
+              return true;
+            }
 
-    			}
-    			else{
-    				var seriesId = this.get("seriesId"),
-    						pid      = this.get("id");
+          }
+          else{
+            var seriesId = this.get("seriesId"),
+                pid      = this.get("id");
 
-    				for (var i=0; i < DOI_PREFIXES.length; i++) {
-    					if (seriesId && seriesId.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-    						return true;
-    					else if (pid && pid.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
-    						return true;
-    				}
+            for (var i=0; i < DOI_PREFIXES.length; i++) {
+              if (seriesId && seriesId.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+                return true;
+              else if (pid && pid.toLowerCase().indexOf(DOI_PREFIXES[i].toLowerCase()) == 0 )
+                return true;
+            }
 
-    				//If there is no DOI prefix, check for a DOI without the prefix using a regular expression
-    				if( DOI_REGEX.test(seriesId) || DOI_REGEX.test(pid) ){
-    					return true;
-    				}
+            //If there is no DOI prefix, check for a DOI without the prefix using a regular expression
+            if( DOI_REGEX.test(seriesId) || DOI_REGEX.test(pid) ){
+              return true;
+            }
 
-    			}
+          }
 
-    			return false;
+          return false;
         }
     },
     {
-      /* Generate a unique identifier to be used as an XML id attribute */
+      /**
+       Generate a unique identifier to be used as an XML id attribute
+      */
       generateId: function() {
         var idStr = ''; // the id to return
         var length = 30; // the length of the generated string
