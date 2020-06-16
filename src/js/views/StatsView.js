@@ -132,14 +132,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				//this.listenTo(this.model, 'change:dataUploadDates',       this.drawUploadChart);
 				this.listenTo(this.model, 'change:temporalCoverage',      this.drawCoverageChart);
 				this.listenTo(this.model, "change:dataUpdateDates",       this.drawUpdatesChart);
-				this.listenTo(this.model, "change:totalSize",             this.drawTotalSize);
-				this.listenTo(this.model, 'change:metadataCount', 	    this.drawTotalCount);
+				this.listenTo(this.model, "change:totalSize",             this.displayTotalSize);
+				this.listenTo(this.model, 'change:metadataCount', 	    this.displayTotalCount);
 				this.listenTo(this.model, 'change:dataFormatIDs', 	  this.drawDataCountChart);
 				this.listenTo(this.model, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 				
 				// Display replicas only for member nodes
 				if (this.userType === "repository" && !this.userIsCN) 
-					this.listenTo(this.model, "change:totalReplicas",         this.drawTotalReplicas);
+					this.listenTo(this.model, "change:totalReplicas",         this.displayTotalReplicas);
 				//this.listenTo(this.model, 'change:dataUploads', 	  this.drawUploadTitle);
 			}
 
@@ -641,66 +641,54 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		/*
-		 * drawTotalCount - draws a simple count of total metadata files/datasets
+		 * displayTotalCount - draws a simple count of total metadata files/datasets
 		 */
-		drawTotalCount: function(){
+		displayTotalCount: function(){
 
-			var className = "";
+			var className = "quick-stats-count";
 
 			if( !this.model.get("metadataCount") && !this.model.get("dataCount") )
 				className += " no-activity";
+							
+			var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(MetacatUI.appView.commaSeparateNumber(this.model.get("metadataCount")));
 
-			var chartData = [{
-	                    	  count: this.model.get("metadataCount"),
-	                    	  className: "packages" + className
-			                }];
+			var titleEl = $(document.createElement("p"))
+							.addClass("chart-title")
+							.text("datasets");
 
-			//Create the circle badge
-			var countBadge = new CircleBadge({
-				id: "total-datasets-title",
-				data: chartData,
-				title: "datasets",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 60,
-				height: 220
-			});
-
-			this.$('#total-datasets').html(countBadge.render().el);
+			this.$('#total-datasets').html(countEl);
+			this.$('#total-datasets').append(titleEl);
 		},
 
 		/*
-		 * drawTotalSize draws a CircleBadgeView with the total file size of
+		 * displayTotalSize draws a CircleBadgeView with the total file size of
 		 * all current metadata and data files
 		 */
-		drawTotalSize: function(){
+		displayTotalSize: function(){
+
+			var className = "quick-stats-count";
+			var count = "";
 
 			if( !this.model.get("totalSize") ){
-				var chartData = [{
-              	  				  count: "0 bytes",
-				              	  className: "packages no-activity"
-	                			}];
-
+				count = "0 bytes";
+				className += " no-activity";
 			}
 			else{
-				var chartData = [{
-		                    	  count: this.bytesToSize( this.model.get("totalSize") ),
-		                    	  className: "packages"
-				                }];
+				count = this.bytesToSize( this.model.get("totalSize") );
 			}
+							
+			var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(count);
 
-			//Create the circle badge
-			var sizeBadge = new CircleBadge({
-				id: "total-size-title",
-				data: chartData,
-				title: "of content",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 60,
-				height: 220
-			});
+			var titleEl = $(document.createElement("p"))
+							.addClass("chart-title")
+							.text("of content");
 
-			this.$('#total-size').html(sizeBadge.render().el);
+			this.$('#total-size').html(countEl);
+			this.$('#total-size').append(titleEl);
 		},
 
 		/*
@@ -929,29 +917,26 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		/*
 		 * getReplicas gets the number of replicas in this member node
 		 */
-		drawTotalReplicas: function(){
+		displayTotalReplicas: function(){
 
 			var view = this;
-			var className = "";
+			var className = "quick-stats-count";
+			var count;
 
 			if( this.model.get("totalReplicas") > 0 ){
-				var chartData = [{
-					count: view.model.get("totalReplicas"),
-					className: "packages" + className
-				}];
+				count = MetacatUI.appView.commaSeparateNumber(view.model.get("totalReplicas"));
 
-				var countBadge = new CircleBadge({
-					id: "total-replica",
-					data: chartData,
-					title: "replicas",
-					titlePlacement: "inside",
-					useGlobalR: true,
-					globalR: 60,
-					height: 220
-				});
+				var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(count);
+
+				var titleEl = $(document.createElement("p"))
+								.addClass("chart-title")
+								.text("replicas");
 	
 				// draw the badge
-				this.$('#total-replicas').html(countBadge.render().el);
+				this.$('#total-replicas').html(countEl);
+				this.$('#total-replicas').append(titleEl);
 
 			}
 			else{

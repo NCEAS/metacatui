@@ -7341,3 +7341,10 @@ CSS library fixes
 	display: flex;
 	justify-content: center;
 }
+
+
+/* New Summary of Holdings design */
+
+.summary-container.span3 > div {
+    margin-left: 17.02127659574468%;
+}
