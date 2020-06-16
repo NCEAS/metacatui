@@ -974,61 +974,54 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * Get the object format identifier for this object
            */
           getFormatId: function() {
+            var formatId = "application/octet-stream", // default to untyped data
+              objectFormats = {
+                "mediaTypes": [],  // The list of potential formatIds based on mediaType matches
+                "extensions": []   // The list of possible formatIds based onextension matches
+              },
+              fileName = this.get("fileName"),  // the fileName for this object 
+              ext;  // The extension of the filename for this object
 
-              var formatId = "application/octet-stream", // default to untyped data
-              objectFormats = [],  // The list of potential format matches
-              ext; // The extension of the filename for this object
+            objectFormats["mediaTypes"] = MetacatUI.objectFormats.where({formatId: this.get("mediaType")});
+            if ( typeof fileName !== "undefined" && fileName !== null && fileName.length > 1) {
+              ext = fileName.substring(fileName.lastIndexOf(".") + 1, fileName.length);
+              objectFormats["extensions"] = MetacatUI.objectFormats.where({extension: ext});
+            }
 
-              if ( MetacatUI.objectFormats.length > 0 ) {
-
-                  // Does the media type match the object format id?
-                  objectFormats = MetacatUI.objectFormats.where({formatId: this.get("mediaType")});
-
-                  if ( objectFormats.length > 0 ) {
-                      formatId = objectFormats[0].get("formatId");
-                      objectFormats = [];
-                      return formatId;
-
-                  }
-
-                  // Does the media type match the media type name?
-                  objectFormats = MetacatUI.objectFormats.where({mediaType: {_name: this.get("mediaType")}});
-
-                  if ( objectFormats.length > 0 ) {
-                      formatId = objectFormats[0].get("formatId");
-                      objectFormats = [];
-                      return formatId;
-
-                  }
-
-                  // Does the extension match the extension?
-                  // TODO: multiple formats have the same extension - need to discern them, but how?
-                  if ( typeof this.get("fileName") !== "undefined" &&
-                     this.get("fileName") !== null && this.get("fileName").length > 1 ) {
-
-                      ext = this.get("fileName").substring(
-                                  this.get("fileName").lastIndexOf(".") + 1,
-                                  this.get("fileName").length);
-                      objectFormats = MetacatUI.objectFormats.where({extension: ext});
-
-                      if ( objectFormats.length > 0 ) {
-
-                        //If this is a "nc" file, assume it is a netCDF-3 file.
-                        if( ext == "nc" ){
-                          formatId = "netCDF-3";
-                        }
-                        else{
-                              formatId = objectFormats[0].get("formatId");
-                              objectFormats = [];
-                        }
-
-                          return formatId;
-
-                      }
-                  }
+            if (objectFormats["mediaTypes"].length > 0 && objectFormats["extensions"].length > 0) {
+              var firstMediaType = objectFormats["mediaTypes"][0].get("formatId");
+              var firstExtension = objectFormats["extensions"][0].get("formatId");
+              // Check if they're equal 
+              if (firstMediaType === firstExtension) {
+                formatId = firstMediaType;
+                return formatId;
               }
+              // Handle mismatched mediaType and extension cases - additional cases can be added below
+              if (firstMediaType === 'application/vnd.ms-excel' && firstExtension === 'text/csv') {
+                formatId = firstExtension;
+                return formatId;
+              }
+            }
 
+            if (objectFormats["mediaTypes"].length > 0) {
+              formatId = objectFormats["mediaTypes"][0].get("formatId");
+              console.log('returning default mediaType');
+              console.log(formatId);
               return formatId;
+            }
+
+            if (objectFormats["extensions"].length > 0 ) {
+              //If this is a "nc" file, assume it is a netCDF-3 file.
+              if (ext == "nc") {
+                formatId = "netCDF-3";
+              } else {
+                formatId = objectFormats["extensions"][0].get("formatId");
+              }
+              return formatId;
+            }
+
+            return formatId;
+
           },
 
           /*
@@ -1917,7 +1910,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
     			}
 
     			return false;
-    		}
+        }
     },
     {
       /* Generate a unique identifier to be used as an XML id attribute */
