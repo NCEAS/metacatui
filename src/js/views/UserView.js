@@ -99,47 +99,11 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			return this;
 		},
 
-		// Create a customized Portal View to render as repository view
-		// Certain functionalities are disabled from the portal view
-		renderNodeProfile: function(username) {
-			var view = this;
-			var memberNodeID = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(view.model.get("nodeInfo").identifier));
-
-			// Creating  new portal model
-			this.portalModel = new Portal({
-				seriesId: this.model.get("nodeInfo").identifier,
-				label: username
-			});
-
-			// remove the members section directly from the model
-			this.portalModel.removeSection("members");
-
-			this.portalModel.createNodeAttributes(view.model.get("nodeInfo"));
-
-			//Setting the repo specific statsModel
-			var statsSearchModel = this.model.get("searchModel").clone();
-			statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
-			MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
-			MetacatUI.statsModel.set("searchModel", statsSearchModel);
-
-			// Create and render a portal view
-			this.portalView = new PortalView({
-				portalId: this.model.get("nodeInfo").identifier,
-				label: username,
-				model: this.portalModel,
-				nodeView: true
-			});
-
-			$(this.sectionHolder).append(this.portalView.render());
-			this.updatePath(username);
-			return;
-		},
-
 		/**
 		 * Update the window location path to route to /portals path
-		 * @param {string} [username] - Short identifier for the member node
+		 * @param {string} username - Short identifier for the member node
 		*/
-		updatePath: function(username){
+		forwardToPortals: function(username){
 
 			var pathName      = decodeURIComponent(window.location.pathname)
 								.substring(MetacatUI.root.length)
@@ -152,7 +116,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 							MetacatUI.appModel.get("portalTermPlural") + "/" + username;
 
 			// Update the window location
-			MetacatUI.uiRouter.navigate( newPathName, { trigger: false } );
+			MetacatUI.uiRouter.navigate( newPathName, { trigger: true, replace: true } );
 			return;
 		},
 
@@ -190,7 +154,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 					this.model.set("nodeInfo", _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
 						return nodeModel.identifier.toLowerCase() == "urn:node:" + username.toLowerCase();
 					  }));
-					this.renderNodeProfile(username);
+					this.forwardToPortals(username);
 					return;
 				}
 				//If the node model hasn't been checked yet
