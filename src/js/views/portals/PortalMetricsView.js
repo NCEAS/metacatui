@@ -196,10 +196,10 @@ define(["jquery",
               var dataONEPlusMembers = MetacatUI.appModel.get("dataonePlusMembers");
                 
               if ((typeof dataONEPlusMembers !== 'undefined') && Array.isArray(dataONEPlusMembers) && dataONEPlusMembers.includes(this.model.get("seriesId"))){
-                this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideRepositoryMetadataAssessments");
-                this.hideCitationsChart = false || MetacatUI.appModel.get("hideRepositoryCitationsChart");
-                this.hideDownloadsChart = false || MetacatUI.appModel.get("hideRepositoryDownloadsChart");
-                this.hideViewsChart = false || MetacatUI.appModel.get("hideRepositoryViewsChart");
+                this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideSummaryMetadataAssessments");
+                this.hideCitationsChart = false || MetacatUI.appModel.get("hideSummaryCitationsChart");
+                this.hideDownloadsChart = false || MetacatUI.appModel.get("hideSummaryDownloadsChart");
+                this.hideViewsChart = false || MetacatUI.appModel.get("hideSummaryViewsChart");
               }
               else{
                 this.hideMetadataAssessment = true;

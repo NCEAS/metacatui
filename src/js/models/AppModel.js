@@ -621,6 +621,14 @@ define(['jquery', 'underscore', 'backbone'],
       hideSummaryViewsChart: true,
 
       /**
+      * List of Repositories that are DataONE Plus Members
+      * DataONE Plus features are displayed only for these members.
+      * @type {string[]}
+      * @default ["urn:node:ARCTIC"]
+      */
+      dataonePlusMembers: ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB"],
+
+      /**
       * Metrics flag for the Dataset Landing Page
       * Enable this flag to enable metrics display
       * @type {boolean}
