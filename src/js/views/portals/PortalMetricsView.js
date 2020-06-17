@@ -168,7 +168,9 @@ define(["jquery",
 
               // TODO: replace the following logic with dataone bookkeeper service
               // check if the repository is a dataone member
-              if (MetacatUI.appModel.get("dataonePlusMembers").includes(this.model.get("seriesId"))) {
+              var dataONEPlusMembers = MetacatUI.appModel.get("dataonePlusMembers");
+                
+              if ((typeof dataONEPlusMembers !== 'undefined') && Array.isArray(dataONEPlusMembers) && dataONEPlusMembers.includes(this.model.get("seriesId"))){
                 this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideRepositoryMetadataAssessments");
                 this.hideCitationsChart = false || MetacatUI.appModel.get("hideRepositoryCitationsChart");
                 this.hideDownloadsChart = false || MetacatUI.appModel.get("hideRepositoryDownloadsChart");
@@ -228,10 +230,31 @@ define(["jquery",
 
           }
           catch(e){
-            console.log("Failed to render the metrics view. Error message: " + e);
+            this.handlePortalMetricsError(e);
           }
 
         },
+
+        /** 
+         * Handles error display if something went wrong while displaying metrics
+        */
+       handlePortalMetricsError: function(error, errorDisplayMessage){
+
+          if(!errorDisplayMessage) {
+            var errorDisplayMessage = "<p>Sorry, we couldn't retrieve metrics for the \"" + (this.model.get("label") || this.model.get("portalId")) +
+                "\" portal at this time.</p>"
+          }
+
+          //Show a warning message about the metrics error
+          MetacatUI.appView.showAlert(
+            errorDisplayMessage,
+            "alert-warning",
+            this.$el
+          );
+          this.$(".loading").remove();
+          
+          console.log("Failed to render the metrics view. Error message: " + error);
+       },
 
         /**
          * Functionality to execute after the view has been created and rendered initially
