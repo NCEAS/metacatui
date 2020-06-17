@@ -641,7 +641,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		/*
-		 * displayTotalCount - draws a simple count of total metadata files/datasets
+		 * displayTotalCount - renders a simple count of total metadata files/datasets
 		 */
 		displayTotalCount: function(){
 
@@ -663,7 +663,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		/*
-		 * displayTotalSize draws a CircleBadgeView with the total file size of
+		 * displayTotalSize renders a count of the total file size of
 		 * all current metadata and data files
 		 */
 		displayTotalSize: function(){
@@ -934,7 +934,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 								.addClass("chart-title")
 								.text("replicas");
 	
-				// draw the badge
+				// display the totals
 				this.$('#total-replicas').html(countEl);
 				this.$('#total-replicas').append(titleEl);
 
