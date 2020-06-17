@@ -147,6 +147,8 @@ define(["jquery",
              */
             render: function() {
 
+                var view = this;
+
                 //Make sure the subviews array is reset
                 this.subviews = new Array();
 
@@ -157,59 +159,70 @@ define(["jquery",
                   msg: "Loading..."
                 }));
 
-                //Repository specific checks
+                //Perform specific label checks
                 if(MetacatUI.nodeModel.get("checked") && this.isNode(this.label)){
-                  this.renderAsNode()
+                  this.nodeView = true;
+                  this.renderAsNode();
                 }
+                else if(MetacatUI.nodeModel.get("checked") && !this.isNode(this.label)){
+                  this.nodeView = false;
+                  this.renderAsPortal();
+                }
+                // Wait for node model to complete its fetch
                 else if (!MetacatUI.nodeModel.get("checked")) {
-                  // listen to the nodeModel fetch
                   this.listenTo(MetacatUI.nodeModel, "change:checked", function(){
-                    if(view.isNode(view.label))
+                    // perform node checks
+                    if(view.isNode(view.label)){
+                      view.nodeView = true;
                       view.renderAsNode();
+                    }
+                    else {
+                      view.nodeView = false;
+                      view.renderAsPortal();
+                    }
                   });
-                }
-
-                // Create a new Portal model
-                if (this.model === undefined || this.model === null) {
-                  this.model = new Portal({
-                    seriesId: this.portalId,
-                    label: this.label
-                  });
-                }
-                
-                // If this is not a repository view then perform the default render
-                if (!this.nodeView) {
-                  
-                  // When the model has been synced, render the results
-                  this.stopListening();
-                  this.listenToOnce(this.model, "sync", this.renderPortal);
-
-                  //If the portal isn't found, display a 404 message
-                  this.listenTo(this.model, "notFound", this.handleNotFound);
-
-                  //Listen to errors that might occur during fetch()
-                  this.listenToOnce(this.model, "error", this.showError);
-
-                  //Fetch the model
-                  this.model.fetch({ objectOnly: true });
                 }
                 
                 return this;
             },
 
             /**
-             * Sets up the render for the protal view
+             * Entery point for portal rendering
+             */
+            renderAsPortal: function(){
+
+              // At this point we know that the given label is not a
+              // repository short identifier
+
+              // Create a new Portal model
+              if (this.model === undefined || this.model === null) {
+                this.model = new Portal({
+                  seriesId: this.portalId,
+                  label: this.label
+                });
+              }
+
+              // When the model has been synced, render the results
+              this.stopListening();
+              this.listenToOnce(this.model, "sync", this.renderPortal);
+
+              //If the portal isn't found, display a 404 message
+              this.listenTo(this.model, "notFound", this.handleNotFound);
+
+              //Listen to errors that might occur during fetch()
+              this.listenToOnce(this.model, "error", this.showError);
+
+              //Fetch the model
+              this.model.fetch({ objectOnly: true });
+
+            },
+
+            /**
+             * Entry point for a repository portal view
+             * At this point we know for sure that a given label/username is a repository user
              */
             renderAsNode:function(){
               var view = this;
-              // remove the listener
-              this.stopListening(MetacatUI.nodeModel, "change:checked", function(){
-                if(view.isNode(view.label))
-                  view.renderAsNode();
-              });
-
-              // set the nodeview flag to true and create user mode for this repository
-              this.nodeView = true;
 
               //Create a UserModel with the username given
               this.userModel = new User({
@@ -661,12 +674,12 @@ define(["jquery",
             */
             handleNotFound: function(){
 
+              var view = this;
+
               //If the user is NOT logged in OR
-              // if the suer is logged in, and the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
+              // if the user is logged in, and the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
               if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ||
                   (MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") && this.model.get("fetchedWithAuth")) ){
-
-                var view = this;
 
                 //Check if there is an indexing queue, because this model may still be indexing
                 var onError = function(){
@@ -797,6 +810,11 @@ define(["jquery",
 
             // checks if the label is a repository
             isNode: function(username){
+
+              if (username === undefined){
+                this.showNotFound();
+                return;
+              }
               var model = this;
               var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
                   return nodeModel.shortIdentifier.toLowerCase() == (username).toLowerCase();
