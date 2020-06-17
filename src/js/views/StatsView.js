@@ -279,6 +279,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 				if(!self.hideViewsChart)
 					self.renderViewMetric();
+
 			});
 		},
 
@@ -696,6 +697,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 */
 		drawUpdatesChart: function(){
 
+			var view = this;
+
 			//If there was no first upload, draw a blank chart and exit
 			if(!this.model.get('firstUpdate')){
 
@@ -770,6 +773,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 				this.$('.data-updates-chart').html(dataLineChart.render().el);
 			}
+
+			// redraw the charts to avoid overlap at different widths 
+			$(window).on("resize", function(){
+
+				if(!view.hideUpdatesChart)
+					view.drawUpdatesChart();
+
+			});
 
 		},
 
