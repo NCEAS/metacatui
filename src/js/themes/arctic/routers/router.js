@@ -466,9 +466,13 @@ function ($, _, Backbone) {
 			}
 		},
 
-    /**
-     * Render the portal view based on the given name, id, or section
-     */
+		/**		 
+		 * renderPortal - Render the portal view based on the given name or id, as
+		 * well as optional section	 
+		 * 			
+		 * @param  {string} label         The portal ID or name
+		 * @param  {string} portalSection A specific section within the portal 
+		 */
      renderPortal: function(label, portalSection) {
 			 // Add the overall class immediately so the navbar is styled correctly right away
  			 $("body").addClass("PortalView");

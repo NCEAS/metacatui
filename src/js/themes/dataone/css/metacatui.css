@@ -688,7 +688,8 @@ table th.btn-container .btn{
 }
 .dropdown:hover .dropdown-menu.hidden,
 .dropdown-menu.hidden{
-	display: none;
+  /* important to override display set by Portals minimal navigation */
+	display: none !important;
 }
 .nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
     margin-top: 0;
@@ -708,7 +709,6 @@ table th.btn-container .btn{
     margin-top: 30px;
     font-weight: bold;
 }
-
 
 .list-group > .divider {
   list-style: none;
@@ -780,6 +780,34 @@ ul.tb-megamenu-subnav{
 .navbar .nav li.dropdown>.dropdown-toggle .caret,
 .tb-megamenu .dropdown-menu a.mega-group-title .caret{
 	display: none;
+}
+
+/* Minimal navigation - used for the portal view and portal editor view
+-------------------------------------------------- */
+/*  */
+.Portal.Editor .nav-collapse,
+.PortalView .nav-collapse {
+  display: none;
+}
+
+.Portal.Editor .navbar .nav,
+.PortalView .navbar .nav {
+    width: auto;
+}
+
+.Portal.Editor .navbar .nav > li a:not(.btn) ,
+.PortalView .navbar .nav > li a:not(.btn) {
+  color: #555;
+}
+
+.Portal.Editor .navbar .nav > li a:not(.btn):hover,
+.PortalView .navbar .nav > li a:not(.btn):hover {
+  color: #660033;
+}
+
+.Portal.Editor #Navbar .navbar-lower .nav,
+.PortalView #Navbar .navbar-lower .nav {
+  float: right;
 }
 
 /* OTHER NAVIGATION
@@ -2497,4 +2525,3 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   background-color: #FFFFFF;
   color: #1C6E84;
 }
-
