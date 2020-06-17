@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/models/portals/PortalSectionModel.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/models/portals/PortalSectionModel.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global define */
+define(["jquery",
+        "underscore",
+        "backbone",
+        "models/portals/PortalImage",
+        "models/metadata/eml220/EMLText"
+    ],
+    function($, _, Backbone, PortalImage, EMLText) {
+
+      /**
+       * A Portal Section model represents the ContentSectionType from the portal schema
+       */
+      var PortalSectionModel = Backbone.Model.extend(
+        /** @lends PortalSectionModel.prototype */{
+        defaults: function(){
+          return {
+            label: "Untitled",
+            image: "",
+            title: "",
+            introduction: "",
+            content: null,
+            literatureCited: null,
+            objectDOM: null
+          }
+        },
+
+        /**
+         * Parses a &lt;section> element from a portal document
+         *
+         *  @param {XMLElement} objectDOM - A ContentSectionType XML element from a portal document
+         *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+        */
+        parse: function(objectDOM){
+
+          if(!objectDOM){
+            return {};
+          }
+
+          var $objectDOM = $(objectDOM),
+              modelJSON = {};
+
+          //Parse all the simple string elements
+          modelJSON.label = $objectDOM.children("label").text();
+          modelJSON.title = $objectDOM.children("title").text();
+          modelJSON.introduction = $objectDOM.children("introduction").text();
+
+          //Parse the image URL or identifier
+          var image = $objectDOM.children("image");
+          if( image.length ){
+            var portImageModel = new PortalImage({ objectDOM: image[0] });
+            portImageModel.set(portImageModel.parse());
+            modelJSON.image = portImageModel;
+          }
+
+          //Create an EMLText model for the section content
+          modelJSON.content = new EMLText({
+            objectDOM: $objectDOM.children("content")[0]
+          });
+          modelJSON.content.set(modelJSON.content.parse($objectDOM.children("content")));
+
+          return modelJSON;
+
+        },
+
+        /**
+         *  Makes a copy of the original XML DOM and updates it with the new values from the model.
+         *
+         *  @return {XMLElement} An updated ContentSectionType XML element from a portal document
+        */
+        updateDOM: function(){
+
+          var objectDOM = this.get("objectDOM");
+
+          if (objectDOM) {
+            objectDOM = objectDOM.cloneNode(true);
+            $(objectDOM).empty();
+          } else {
+            // create an XML section element from scratch
+            var xmlText = "&lt;section>&lt;/section>",
+                objectDOM = new DOMParser().parseFromString(xmlText, "text/xml"),
+                objectDOM = $(objectDOM).children()[0];
+          };
+
+          // Get and update the simple text strings (everything but content)
+          var sectionTextData = {
+            label: this.get("label"),
+            title: this.get("title"),
+            introduction: this.get("introduction")
+          };
+
+          _.map(sectionTextData, function(value, nodeName){
+
+            // Don't serialize default values, except for default label strings, since labels are required
+            if(value &amp;&amp; (value != this.defaults()[nodeName] || (nodeName == "label" &amp;&amp; typeof value == "string")) ){
+              // Make new sub-node
+              var sectionSubnodeSerialized = objectDOM.ownerDocument.createElement(nodeName);
+              $(sectionSubnodeSerialized).text(value);
+
+              this.addUpdatedXMLNode(objectDOM, sectionSubnodeSerialized);
+            }
+            //If the value was removed from the model, then remove the element from the XML
+            else{
+              $(objectDOM).children(nodeName).remove();
+            }
+
+          }, this);
+
+          //Update the image element
+          if( this.get("image") &amp;&amp; typeof this.get("image").updateDOM == "function" ){
+
+            var imageSerialized = this.get("image").updateDOM();
+
+            this.addUpdatedXMLNode(objectDOM, imageSerialized);
+          }
+          else{
+            $(objectDOM).children("image").remove();
+          }
+
+          // Get markdown which is a child of content
+          var content = this.get("content");
+
+          if(content){
+            var contentSerialized = content.updateDOM("content");
+
+            this.addUpdatedXMLNode(objectDOM, contentSerialized);
+
+          }
+          else{
+            $(objectDOM).children("content").remove();
+          }
+
+          //If nothing was serialized, return an empty string
+          if( !$(objectDOM).children().length ){
+            return "";
+          }
+
+          return objectDOM;
+
+        },
+
+        /**
+        * Takes the updated XML node and inserts it into the given object DOM in
+        * the correct position.
+        * @param {Element} objectDOM - The full object DOM for this model
+        * @param {Element} newElement - The updated element to insert into the object DOM
+        */
+        addUpdatedXMLNode: function(objectDOM, newElement){
+
+          //If a parameter is missing, don't do anything
+          if( !objectDOM || !newElement ){
+            return;
+          }
+
+          try{
+            //Get the node name of the new element
+            var nodeName = $(newElement)[0].nodeName;
+
+            if( nodeName ){
+
+              //Only insert the new element if there is content in it
+              if( $(newElement).children().length || $(newElement).text().length ){
+
+                //Add the new element to the owner Document
+                objectDOM.ownerDocument.adoptNode(newElement);
+
+                //Get the existing node
+                var existingNodes = $(objectDOM).children(nodeName);
+
+                //Get the position that the image should be
+                var insertAfter = this.getXMLPosition(objectDOM, nodeName);
+
+                if( insertAfter ){
+                  //Insert it into that position
+                  $(insertAfter).after(newElement);
+                } else {
+                  objectDOM.appendChild(newElement);
+                }
+
+                existingNodes.remove();
+              }
+            }
+          }
+          catch(e){
+            console.log(e);
+            return;
+          }
+
+        },
+
+        /**
+         * Finds the node in the given portal XML document afterwhich the
+         * given node type should be inserted
+         *
+         * @param {Element} parentNode - The parent XML element
+         * @param {string} nodeName - The name of the node to be inserted
+         *                             into xml
+         * @return {(jQuery|boolean)} A jQuery object indicating a position,
+         *                            or false when nodeName is not in the
+         *                            portal schema
+        */
+        getXMLPosition: function(parentNode, nodeName){
+
+          var nodeOrder = [ "label", "title", "introduction", "image", "content", "option"];
+
+          var position = _.indexOf(nodeOrder, nodeName);
+
+          // First check that nodeName is in the list of nodes
+          if ( position == -1 ) {
+              return false;
+          };
+
+          // If there's already an occurence of nodeName...
+          if($(parentNode).children(nodeName).length > 0){
+            // ...insert it after the last occurence
+            return $(parentNode).children(nodeName).last();
+          } else {
+            // Go through each node in the node list and find the position
+            // after which this node will be inserted
+            for (var i = position - 1; i >= 0; i--) {
+              if ( $(parentNode).children(nodeOrder[i]).length ) {
+                return $(parentNode).children(nodeOrder[i]).last();
+              }
+            }
+          }
+
+          return false;
+        },
+
+        /**
+         * Overrides the default Backbone.Model.validate.function() to
+         * check if this PortalSection model has all the required values necessary
+         * to save to the server.
+         *
+         * @return {Object} If there are errors, an object comprising error
+         *                   messages. If no errors, returns nothing.
+        */
+        validate: function(){
+
+          try{
+
+            var errors = {},
+                requiredFields = MetacatUI.appModel.get("portalEditorRequiredFields");
+
+            //--Validate the label--
+            //Labels are always required
+            if( !this.get("label") ){
+              errors.label = "Please provide a page name.";
+            }
+
+            //---Validate the title---
+            //If section titles are required and there isn't one, set an error message
+            if( requiredFields.sectionTitle &amp;&amp;
+                typeof this.get("title") == "string" &amp;&amp;
+                !this.get("title").length ){
+              errors.title = "Please provide a title for this page.";
+            }
+
+            //---Validate the introduction---
+            //If section introductions are required and there isn't one, set an error message
+            if( requiredFields.sectionIntroduction &amp;&amp;
+                typeof this.get("introduction") == "string" &amp;&amp;
+                !this.get("introduction").length ){
+              errors.introduction = "Please provide some a sub-title or some introductory text for this page.";
+            }
+
+            //---Validate the section content---
+            //Content is always required
+            if( !this.get("content") ){
+              errors.markdown = "Please provide content for this page.";
+            }
+            //Check if there is either markdown or an array of strings in the text attribute
+            else if( !this.get("content").get("markdown") &amp;&amp; !this.get("content").get("text").length ){
+              errors.markdown = "Please provide content for this page.";
+            }
+            //Check if the markdown hasn't been changed from the example markdown
+            else if( this.get("content").get("markdown") == this.get("content").get("markdownExample") ){
+              errors.markdown = "Please provide content for this page.";
+            }
+
+            //---Validate the section image---
+
+            if(requiredFields.sectionImage &amp;&amp; (!this.get("image") || this.get("image").isEmpty())){
+              errors.sectionImage = "A section image is required."
+            }
+
+            //Return the errors object
+            if( Object.keys(errors).length )
+              return errors;
+            else{
+              return;
+            }
+
+          }
+          catch(e){
+            console.error(e);
+            return;
+          }
+
+        }
+
+
+      });
+
+      return PortalSectionModel;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#generateId">generateId</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Jun 16 2020 12:13:42 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

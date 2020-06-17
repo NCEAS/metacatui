@@ -11,10 +11,12 @@ define(['underscore', 'jquery', 'backbone', 'localforage',
     		EMLEntityTemplate,
     		EMLAttributeMenuItemTemplate){
 
-        /*
-            An EMLEntityView shows the basic attributes of a DataONEObject, as described by EML
+        /**
+        * @class EMLEntityView
+        * @classdesc An EMLEntityView shows the basic attributes of a DataONEObject, as described by EML
         */
-        var EMLEntityView = Backbone.View.extend({
+        var EMLEntityView = Backbone.View.extend(
+          /** @lends EMLEntityView.prototype */{
 
             tagName: "div",
 

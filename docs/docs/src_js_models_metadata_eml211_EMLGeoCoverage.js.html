@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/models/metadata/eml211/EMLGeoCoverage.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/models/metadata/eml211/EMLGeoCoverage.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global define */
+define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
+    function ($, _, Backbone, DataONEObject) {
+
+        /**
+        * @class EMLGeoCoverage
+        * @classdesc A description of geographic coverage of a dataset, per the EML 2.1.1 metadata standard
+        * @extends Backbone.Model
+        * @constructor
+        */
+        var EMLGeoCoverage = Backbone.Model.extend(
+          /** @lends EMLGeoCoverage.prototype */{
+
+            defaults: {
+                objectXML: null,
+                objectDOM: null,
+                parentModel: null,
+                description: null,
+                east: null,
+                north: null,
+                south: null,
+                west: null
+            },
+
+            initialize: function (attributes) {
+                if (attributes &amp;&amp; attributes.objectDOM) this.set(this.parse(attributes.objectDOM));
+
+                //specific attributes to listen to
+                this.on("change:description " +
+                    "change:east " +
+                    "change:west " +
+                    "change:south " +
+                    "change:north",
+                    this.trickleUpChange);
+            },
+
+            /*
+             * Maps the lower-case EML node names (valid in HTML DOM) to the camel-cased EML node names (valid in EML).
+             * Used during parse() and serialize()
+             */
+            nodeNameMap: function () {
+                return {
+                    "altitudemaximum": "altitudeMaximum",
+                    "altitudeminimum": "altitudeMinimum",
+                    "altitudeunits": "altitudeUnits",
+                    "boundingaltitudes": "boundingAltitudes",
+                    "boundingcoordinates": "boundingCoordinates",
+                    "eastboundingcoordinate": "eastBoundingCoordinate",
+                    "geographiccoverage": "geographicCoverage",
+                    "geographicdescription": "geographicDescription",
+                    "northboundingcoordinate": "northBoundingCoordinate",
+                    "southboundingcoordinate": "southBoundingCoordinate",
+                    "westboundingcoordinate": "westBoundingCoordinate"
+                }
+            },
+
+            /** Based on this example serialization
+            &lt;geographicCoverage scope="document">
+                &lt;geographicDescription>Rhine-Main-Observatory&lt;/geographicDescription>
+                &lt;boundingCoordinates>
+                    &lt;westBoundingCoordinate>9.0005&lt;/westBoundingCoordinate>
+                    &lt;eastBoundingCoordinate>9.0005&lt;/eastBoundingCoordinate>
+                    &lt;northBoundingCoordinate>50.1600&lt;/northBoundingCoordinate>
+                    &lt;southBoundingCoordinate>50.1600&lt;/southBoundingCoordinate>
+                &lt;/boundingCoordinates>
+            &lt;/geographicCoverage>
+             **/
+            parse: function (objectDOM) {
+
+                var modelJSON = {};
+
+                if (!objectDOM) {
+                    if (this.get("objectDOM"))
+                        var objectDOM = this.get("objectDOM");
+                    else
+                        return {};
+                }
+
+                //Create a jQuery object of the DOM
+                var $objectDOM = $(objectDOM);
+
+                //Get the geographic description
+                modelJSON.description = $objectDOM.children('geographicdescription').text();
+
+                //Get the bounding coordinates
+                var boundingCoordinates = $objectDOM.children('boundingcoordinates');
+                if (boundingCoordinates) {
+                    modelJSON.east = boundingCoordinates.children('eastboundingcoordinate').text().replace("+", "");
+                    modelJSON.north = boundingCoordinates.children('northboundingcoordinate').text().replace("+", "");
+                    modelJSON.south = boundingCoordinates.children('southboundingcoordinate').text().replace("+", "");
+                    modelJSON.west = boundingCoordinates.children('westboundingcoordinate').text().replace("+", "");
+                }
+
+                return modelJSON;
+            },
+
+            serialize: function () {
+                var objectDOM = this.updateDOM(),
+                    xmlString = objectDOM.outerHTML;
+
+                //Camel-case the XML
+                xmlString = this.formatXML(xmlString);
+
+                return xmlString;
+            },
+
+            /*
+             * Makes a copy of the original XML DOM and updates it with the new values from the model.
+             */
+            updateDOM: function () {
+                var objectDOM;
+
+                if (!this.isValid()) {
+                    return "";
+                }
+
+                if (this.get("objectDOM")) {
+                    objectDOM = $(this.get("objectDOM").cloneNode(true));
+                } else {
+                    objectDOM = $(document.createElement("geographiccoverage"));
+                }
+
+                //If only one point is given, make sure both points are the same
+                if ((this.get("north") &amp;&amp; this.get("west")) &amp;&amp; (!this.get("south") &amp;&amp; !this.get("east"))) {
+                    this.set("south", this.get("north"));
+                    this.set("east", this.get("west"));
+                }
+                else if ((this.get("south") &amp;&amp; this.get("east")) &amp;&amp; (!this.get("north") &amp;&amp; !this.get("west"))) {
+                    this.set("north", this.get("south"));
+                    this.set("west", this.get("east"));
+                }
+
+                // Description
+                if (!objectDOM.children("geographicdescription").length)
+                    objectDOM.append($(document.createElement("geographicdescription")).text(this.get("description")));
+                else
+                    objectDOM.children("geographicdescription").text(this.get("description"));
+
+                // Create the bounding coordinates element
+                var boundingCoordinates = objectDOM.find("boundingcoordinates");
+                if (!boundingCoordinates.length) {
+                    boundingCoordinates = document.createElement("boundingcoordinates");
+                    objectDOM.append(boundingCoordinates);
+                }
+
+                //Empty out the coordinates first
+                $(boundingCoordinates).empty();
+
+                //Add the four coordinate values
+                $(boundingCoordinates).append($(document.createElement("westboundingcoordinate")).text(this.get("west")),
+                    $(document.createElement("eastboundingcoordinate")).text(this.get("east")),
+                    $(document.createElement("northboundingcoordinate")).text(this.get("north")),
+                    $(document.createElement("southboundingcoordinate")).text(this.get("south")));
+
+                return objectDOM;
+            },
+
+            /**
+            * Sometimes we'll need to add a space between error messages, but only if an
+            * error has already been triggered. Use addSpace to accomplish this.
+            *
+            * @param {string} msg The string that will be appended
+            * @param {bool} front A flag that when set will append the whitespace to the front of 'msg'
+            * @return {string} The string that was passed in, 'msg', with whitespace appended
+            */
+            addSpace: function (msg, front) {
+                if (typeof front === "undefined") {
+                    front = false;
+                }
+                if (msg) {
+                    if (front) {
+                        return (" " + msg);
+                    }
+                    return msg += " ";
+                }
+                return msg;
+            },
+
+            /**
+            * Because the same error messages are used in a couple of different places, we centralize the strings
+            * and access here.
+            *
+            * @param {string} area Specifies the area that the error message belongs to.
+            * Browse through the switch statement to find the one you need.
+            * @return {string} The error message
+            */
+            getErrorMessage: function (area) {
+                switch (area) {
+                    case "north":
+                        return "The Northwest latitude must be between -90 and 90.";
+                        break;
+                    case "east":
+                        return "The Southeast longitude must be between -180 and 180.";
+                        break;
+                    case "south":
+                        return "The Southeast latitude must be between -90 and 90.";
+                        break;
+                    case "west":
+                        return "The Northwest longitude must be between -180 and 180.";
+                        break;
+                    case "missing":
+                        return "Each coordinate must include a latitude AND longitude.";
+                        break;
+                    case "description":
+                        return "Each location must have a description.";
+                        break;
+                    case "needPair":
+                        return "Each location description must have at least one coordinate pair.";
+                        break;
+                    default:
+                        return "";
+                        break;
+                }
+            },
+
+            /**
+            * Generates an object that describes the current state of each latitude
+            * and longitude box. The status includes whether there is a value and
+            * if the value is valid.
+            *
+            * @return {array} An array containing the current state of each coordinate box
+            */
+            getCoordinateStatus: function () {
+                var north = this.get("north"),
+                    east = this.get("east"),
+                    south = this.get("south"),
+                    west = this.get("west");
+
+                return {
+                    'north': {
+                        isSet: typeof north !== "undefined" &amp;&amp; north != null &amp;&amp; north !== "",
+                        isValid: this.validateCoordinate(north, -90, 90)
+                    },
+                    'east': {
+                        isSet: typeof east !== "undefined" &amp;&amp; east != null &amp;&amp; east !== "",
+                        isValid: this.validateCoordinate(east, -180, 180)
+                    },
+                    'south': {
+                        isSet: typeof south !== "undefined" &amp;&amp; south != null &amp;&amp; south !== "",
+                        isValid: this.validateCoordinate(south, -90, 90)
+                    },
+                    'west': {
+                        isSet: typeof west !== "undefined" &amp;&amp; west != null &amp;&amp; west !== "",
+                        isValid: this.validateCoordinate(west, -180, 180)
+                    },
+                }
+            },
+
+            /**
+            * Checks the status object for conditions that warrant an error message to the user. This is called
+            * during the validation processes (validate() and updateModel()) after the status object has been
+            * created by getCoordinateStatus().
+            *
+            * @param status The status object, holding the state of the coordinates
+            * @return {string} Any errors that need to be displayed to the user
+                */
+            generateStatusErrors: function (status) {
+                var errorMsg = "";
+
+                // Northwest Latitude
+                if (status.north.isSet &amp;&amp; !status.north.isValid) {
+                    errorMsg = this.addSpace(errorMsg);
+                    errorMsg += this.getErrorMessage("north");
+                }
+                // Northwest Longitude
+                if (status.west.isSet &amp;&amp; !status.west.isValid) {
+                    errorMsg = this.addSpace(errorMsg);
+                    errorMsg += this.getErrorMessage("west");
+                }
+                // Southeast Latitude
+                if (status.south.isSet &amp;&amp; !status.south.isValid) {
+                    errorMsg = this.addSpace(errorMsg);
+                    errorMsg += this.getErrorMessage("south");
+                }
+                // Southeast Longitude
+                if (status.east.isSet &amp;&amp; !status.east.isValid) {
+                    errorMsg = this.addSpace(errorMsg);
+                    errorMsg += this.getErrorMessage("east");
+                }
+                return errorMsg;
+
+            },
+
+            /**
+            * This grabs the various location elements and validates the user input. In the case of an error,
+            * we append an error string (errMsg) so that we display all of the messages at the same time. This
+            * validates the entire location row by adding extra checks for a description and for coordinate pairs
+            *
+            * @return {string} The error messages that the user will see
+            */
+            validate: function () {
+                var errors = {};
+
+                if (!this.get("description")) {
+                    errors.description = this.getErrorMessage("description");
+                }
+
+                var pointStatuses = this.getCoordinateStatus();
+/*
+                if (!this.checkForPairs(pointStatuses)) {
+                    errorMsg = this.addSpace(errorMsg);
+                    errorMsg += this.getErrorMessage("needPair");
+                }
+
+                if( this.hasMissingPoint(pointStatuses) ) {
+                    //errorMsg = this.addSpace(errorMsg);
+                    errors += this.getErrorMessage("missing");
+                }
+*/
+ //               errorMsg += this.addSpace(this.generateStatusErrors(pointStatuses), true);
+
+                if( !pointStatuses.north.isSet &amp;&amp; !pointStatuses.south.isSet &amp;&amp;
+                		!pointStatuses.east.isSet &amp;&amp; !pointStatuses.west.isSet){
+                	errors.north = this.getErrorMessage("needPair");
+                	errors.west  = "";
+                }
+
+                //Check that all the values are correct
+                if( pointStatuses.north.isSet &amp;&amp; !pointStatuses.north.isValid )
+                	errors.north = this.getErrorMessage("north");
+                if( pointStatuses.south.isSet &amp;&amp; !pointStatuses.south.isValid )
+                	errors.south = this.getErrorMessage("south");
+                if( pointStatuses.east.isSet &amp;&amp; !pointStatuses.east.isValid )
+                	errors.east = this.getErrorMessage("east");
+                if( pointStatuses.west.isSet &amp;&amp; !pointStatuses.west.isValid )
+                	errors.west = this.getErrorMessage("west");
+
+                if( pointStatuses.north.isSet &amp;&amp; !pointStatuses.west.isSet )
+                	errors.west = this.getErrorMessage("missing");
+                else if( !pointStatuses.north.isSet &amp;&amp; pointStatuses.west.isSet )
+                	errors.north = this.getErrorMessage("missing");
+                else if( pointStatuses.south.isSet &amp;&amp; !pointStatuses.east.isSet )
+                	errors.east = this.getErrorMessage("missing");
+                else if( !pointStatuses.south.isSet &amp;&amp; pointStatuses.east.isSet )
+                	errors.south = this.getErrorMessage("missing");
+
+                if( Object.keys(errors).length )
+                	return errors;
+                else
+                	return false;
+            },
+
+            /**
+             * Checks for any coordinates with missing counterparts.
+             *
+             * @param status The status of the coordinates
+             * @return {bool} True if there are missing coordinates, false otherwise
+             */
+            hasMissingPoint: function (status) {
+                if ((status.north.isSet &amp;&amp; !status.west.isSet) ||
+                    (!status.north.isSet &amp;&amp; status.west.isSet)) {
+                    return true
+                } else if ((status.south.isSet &amp;&amp; !status.east.isSet) ||
+                    (!status.south.isSet &amp;&amp; status.east.isSet)) {
+                    return true;
+                }
+
+                return false;
+
+            },
+
+            /**
+             * Checks that there are either two or four coordinate values. If there aren't,
+             * it means that the user still needs to enter coordinates.
+             *
+             * @param status The current state of the coordinates
+             * @return {bool} True if there are pairs, false otherwise
+             */
+            checkForPairs: function (status) {
+                var isSet = _.filter(status, function (coord) { return coord.isSet == true; });
+
+                if (isSet.length == 0) {
+                    return false;
+                }
+                return true;
+            },
+
+            /**
+             * Validate a coordinate String by making sure it can be coerced into a number and
+             * is within the given bounds.
+             * Note: Min and max are inclusive
+             *
+             * @param value {string} The value of the edit area that will be validated
+             * @param min The minimum value that 'value' can be
+             * @param max The maximum value that 'value' can be
+             * @return {bool} True if the validation passed, otherwise false
+             */
+            validateCoordinate: function (value, min, max) {
+
+                if (typeof value === "undefined" || value === null || value === "" &amp;&amp; isNaN(value)) {
+                    return false;
+                }
+
+                var parsed = Number(value);
+
+                if (isNaN(parsed)) {
+                    return false;
+                }
+
+                if (parsed &lt; min || parsed > max) {
+                    return false;
+                }
+
+                return true;
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" &amp;&amp; tries &lt; 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel &amp;&amp; emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
+            },
+
+            trickleUpChange: function () {
+                this.get("parentModel").trigger("change");
+                this.get("parentModel").trigger("change:geoCoverage");
+            },
+
+            formatXML: function (xmlString) {
+                return DataONEObject.prototype.formatXML.call(this, xmlString);
+            }
+        });
+
+        return EMLGeoCoverage;
+    });
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#generateId">generateId</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Jun 16 2020 12:13:42 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

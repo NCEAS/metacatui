@@ -2,13 +2,6 @@
 /*jshint unused:false */
 'use strict';
 
-/* NOTE: The theme name and themeMap are specified in the loader.js file */
-
-/**
-* The global variable that stores all the top-level data for this application 
-* @type {object}
-*/
-var MetacatUI = MetacatUI || {};
 MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if( MetacatUI.mapKey ){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + MetacatUI.mapKey;
@@ -22,13 +15,9 @@ if( MetacatUI.mapKey ){
 	define('gmaps', null);
 
 }
-if ( MetacatUI.useD3 ) {
-    MetacatUI.d3URL = '../components/d3.v3.min';
 
-} else {
-    MetacatUI.d3URL = null;
+MetacatUI.d3URL = '../components/d3.v3.min';
 
-}
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively
@@ -37,7 +26,7 @@ require.config({
   baseUrl: MetacatUI.root + '/js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: MetacatUI.themeMap,
-  urlArgs: "v=" + MetacatUI.metacatUIVersion,
+  urlArgs: "v=" + (MetacatUI.AppConfig.cachebuster || MetacatUI.metacatUIVersion),
   paths: {
     jquery: MetacatUI.root + '/components/jquery-1.9.1.min',
     jqueryui: MetacatUI.root + '/components/jquery-ui.min',
@@ -78,7 +67,7 @@ require.config({
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
 	// drop zone creates drag and drop areas
 	Dropzone: MetacatUI.root + '/components/dropzone-amd-module',
-	// Polyfill required for using dropzone with older browsers 
+	// Polyfill required for using dropzone with older browsers
 	corejs: MetacatUI.root + '/components/core-js',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
@@ -151,8 +140,11 @@ require(['bootstrap', 'views/AppView', 'models/AppModel'],
 function(Bootstrap, AppView, AppModel) {
 	'use strict';
 
-	// initialize the application
-	MetacatUI.appModel = new AppModel({context: '/' + MetacatUI.metacatContext});
+	// Create an AppModel, which controls the global app configuration and app states
+  //  To be compatible with MetacatUI 2.11.X and earlier, we need to set the metacat context attribute here.
+  //  This supports the old way tof configuring the app via the index.html file.
+  //  As of MetacatUI 2.12.0, it is recommended that you configure MetacatUI via an AppConfig file.
+	MetacatUI.appModel = new AppModel({ context: MetacatUI.AppConfig.metacatContext });
 
 	//Check for custom settings in the theme config file
 	if(typeof MetacatUI.customAppConfig == "function") MetacatUI.customAppConfig();

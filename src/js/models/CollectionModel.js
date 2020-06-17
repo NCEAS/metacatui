@@ -495,6 +495,18 @@ define(["jquery",
     },
 
     /**
+    * This is a shortcut function that returns the query for the datasets in this portal,
+    *  using the Search model for this portal. This is the full query that includes the filters not
+    *  serialized to the portal XML, such as the filters used for the DataCatalogView.
+    *
+    */
+    getQuery: function(){
+
+      return this.get("searchModel").get("filters").getQuery();
+
+    },
+
+    /**
      * Creates a copy of the SolrResults collection and saves it in this
      * model so that there is always access to the unfiltered list of datasets
      *

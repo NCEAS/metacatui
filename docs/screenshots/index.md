@@ -19,7 +19,7 @@
 
 The screenshots above are all from the `default` theme included with MetacatUI.
 There are a few other themes that come preinstalled with MetacatUI, although they are styled and configured specially for their repository brand.
-[See more information on MetacatUI theming](../configuration/index.html).
+[See more information on MetacatUI theming](../install/configuration/index.html).
 
 #### KNB
 ![KNB](https://raw.githubusercontent.com/NCEAS/metacatui/master/docs/screenshots/metacatui-knb-1200w.png)

@@ -20,11 +20,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
             EMLProject, EMLText, EMLMethods) {
 
-      /*
-      An EML211 object represents an Ecological Metadata Language
-      document, version 2.1.1
+      /**
+      * @class EML211
+      * @classdesc An EML211 object represents an Ecological Metadata Language
+      * document, version 2.1.1
+      * @extends ScienceMetadata
       */
-      var EML211 = ScienceMetadata.extend({
+      var EML211 = ScienceMetadata.extend(
+        /** @lends EML211.prototype */{
 
         type: "EML",
 
@@ -1224,6 +1227,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           model.set("numSaveAttempts", 0);
           model.set("uploadStatus", "c");
           model.set("sysMetaXML", model.serializeSysMeta());
+          model.set("oldPid", null);
           model.fetch({merge: true, sysMeta: true});
           model.trigger("successSaving", model);
 

@@ -108,17 +108,31 @@ define(["jquery",
 
             // If there are no datasets in the portal collection
             if(this.model.get("searchResults").header.get("numFound") == 0 ){
-                  // The description for when there is no data in the collection
-              var description = "There are no datasets in " + this.model.get("label") + " yet.",
-                  // use a dummy-ID to create a 'no-activity' metrics view
-                  allIDs = "0";
+              // The description for when there is no data in the collection
+              var description = "There are no datasets in " + this.model.get("label") + " yet.";
             }
             // For portals with data in the collection
             else {
-                  // The description to use for a portal with data
-              var description = "A summary of all datasets from " + this.model.get("label"),
-                  // Get all the facet counts from the search results collection
-                  facetCounts = this.model.get("allSearchResults").facetCounts,
+              // The description to use for a portal with data
+              var description = "A summary of all datasets from " + this.model.get("label");
+
+            }
+
+            //Create a Stats Model for retrieving and storing all of the statistics
+            var statsModel = new StatsModel();
+
+            //If Solr Joins are enabled, set the query on the StatsModel using the Portal Filters
+            if( MetacatUI.appModel.get("enableSolrJoins") && this.model.get("definitionFilters") ){
+
+              console.log(this.model.getQuery());
+              statsModel.set("query", this.model.getQuery());
+
+            }
+            //Otherwise, construct a query using a Search model and all of the ID facet counts
+            else{
+
+              // Get all the facet counts from the search results collection
+              var facetCounts = this.model.get("allSearchResults").facetCounts,
                   //Get the id facet counts
                   idFacets = facetCounts? facetCounts.id : [],
                   //Get the documents facet counts
@@ -139,6 +153,17 @@ define(["jquery",
                 }
               }
 
+              // Create a search model that filters by all the data object Ids
+              var statsSearchModel = new SearchModel({
+                idOnly: allIDs,
+                formatType: [],
+                exclude: []
+              });
+
+              //Sett the query using the query constructing by the Search Model
+              statsModel.set("query", statsSearchModel.getQuery());
+              //Save a reference to the Search Model on the Stats model
+              statsModel.set("searchModel", statsSearchModel);
             }
 
             // Create a search model that filters by all the data object Ids

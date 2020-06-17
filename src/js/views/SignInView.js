@@ -42,7 +42,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 		render: function(){
 			//Don't render a SignIn view if there are no Sign In URLs configured
-			if(!MetacatUI.appModel.get("signInUrl") && !MetacatUI.appModel.get("signInUrlOrcid"))
+			if(!MetacatUI.appModel.get("signInUrlOrcid"))
 				return this;
 
       //Check if this browser is incompatible with third-party cookies, which are required for Sign In
@@ -286,7 +286,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 				shown: function(){
 
 					//Update the sign-in URLs so we are redirected back to the previous page after authentication
-					$("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
+          if( MetacatUI.appModel.get("enableCILogonSignIn") ){
+            $("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
+          }
 					$("a.update-orcid-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
 
 				}

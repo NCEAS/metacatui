@@ -147,7 +147,7 @@ define(["jquery",
                     this.searchModel = lastSearchModel.clone();
 
                     if( lastSearchModel.map ){
-                      this.mapModel = lastSearchModel.map.clone();                      
+                      this.mapModel = lastSearchModel.map.clone();
                     }
                   }
 
@@ -978,7 +978,7 @@ define(["jquery",
                             });
                             return;
                         }
-                        var year = new Date.fromISO(this.statsModel.get("firstBeginDate")).getUTCFullYear();
+                        var year = new Date(this.statsModel.get("firstBeginDate")).getUTCFullYear();
                         if (typeof year !== "undefined") {
                             $("#min_year").val(year);
                             $("#year-range").slider({
@@ -1013,7 +1013,7 @@ define(["jquery",
                             });
                             return;
                         }
-                        var year = new Date.fromISO(this.statsModel.get("lastEndDate")).getUTCFullYear();
+                        var year = new Date(this.statsModel.get("lastEndDate")).getUTCFullYear();
                         if (typeof year !== "undefined") {
                             $("#max_year").val(year);
                             $("#year-range").slider({
@@ -2405,7 +2405,7 @@ define(["jquery",
                 // So we will want to filter out geohashes that are not contained in this map.
                 if (mapBBoxes.length == 0) {
                     var filteredTileGeohashes = geohashes;
-                } else {
+                } else if( geohashes ){
                     var filteredTileGeohashes = [];
                     for (var i = 0; i < geohashes.length - 1; i += 2) {
 
