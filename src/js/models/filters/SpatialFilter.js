@@ -20,33 +20,23 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
 
             /**
             * Inherits all default properties of {@link Filter}
-            * @property {string[]} geohashes
+            * @property {string[]} geohashes - The array of geohashes used to spatially constrain the search
+            * @property {object} groupedGeohashes -The same geohash values, grouped by geohash level (e.g. 1,2,3...). Complete geohash groups (of 32) are consolidated to the level above.
+            * @property {number} east The easternmost longitude of the represented bounding box
+            * @property {number} west The westernmost longitude of the represented bounding box
+            * @property {number} north The northernmost latitude of the represented bounding box
+            * @property {number} south The southernmost latitude of the represented bounding box
+            * @property {number} geohashLvel The default precision level of the geohash-based search
             */
             defaults: function() {
                 return _.extend(Filter.prototype.defaults(), {
-
-                    /* The array of geohashes used to spatially constrain the search*/
                     geohashes: [],
-
-                    /**
-                     The easternmost longitude of the represented bounding box */
                     east: null,
-
-                    /* The westernmost longitude of the represented bounding box */
                     west: null,
-
-                    /* The northernmost latitude of the represented bounding box */
                     north: null,
-
-                    /* The southernmost latitude of the represented bounding box */
                     south: null,
-
-                    /* The default precision level of the geohash-based search */
                     geohashLevel: null,
-
-                    /* The list of grouped geohashes, as complete or incomplete 32 tiles */
                     groupedGeohashes: {},
-
                     label: "Limit search to the map area",
                     icon: "globe",
                     operator: "OR",
