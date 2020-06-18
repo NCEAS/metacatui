@@ -938,7 +938,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         return;
       }
 
-      //If creating portals has bbeen disabled app-wide, then set to false
+      //If creating portals has been disabled app-wide, then set to false
       if( MetacatUI.appModel.get("enableCreatePortals") === false ){
         this.set("isAuthorizedCreatePortal", false);
         return;

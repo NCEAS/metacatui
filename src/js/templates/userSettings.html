@@ -16,7 +16,7 @@
         <% if( MetacatUI.appModel.get("showMyPortals") !== false ){ %>
           <li class="list-group-item subsection-link" data-section="portals">
             <a href="#" class="subsection-link" data-section="portals">
-              My <%= MetacatUI.appModel.get("portalTermPlural") %>
+              My <%= MetacatUI.appModel.get("portalTermPlural") || "portals" %>
               <span class="new-icon">
                 <i class="icon icon-star icon-on-right"></i>
                 NEW
@@ -107,7 +107,7 @@
     <div class="span8 subsection" data-section="portals">
       <div class="panel panel-default">
         <div class="panel-heading">
-  		  	<h4 class="panel-title">My Portals</h4>
+  		  	<h4 class="panel-title">My <%= MetacatUI.appModel.get("portalTermPlural") || "portals" %></h4>
   		  </div>
         <div class="my-portals-container panel-body"></div>
       </div>

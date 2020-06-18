@@ -688,7 +688,8 @@ table th.btn-container .btn{
 }
 .dropdown:hover .dropdown-menu.hidden,
 .dropdown-menu.hidden{
-	display: none;
+  /* important to override display set by Portals minimal navigation */
+	display: none !important;
 }
 .nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
     margin-top: 0;
@@ -708,7 +709,6 @@ table th.btn-container .btn{
     margin-top: 30px;
     font-weight: bold;
 }
-
 
 .list-group > .divider {
   list-style: none;
@@ -780,6 +780,34 @@ ul.tb-megamenu-subnav{
 .navbar .nav li.dropdown>.dropdown-toggle .caret,
 .tb-megamenu .dropdown-menu a.mega-group-title .caret{
 	display: none;
+}
+
+/* Minimal navigation - used for the portal view and portal editor view
+-------------------------------------------------- */
+/*  */
+.Portal.Editor .nav-collapse,
+.PortalView .nav-collapse {
+  display: none;
+}
+
+.Portal.Editor .navbar .nav,
+.PortalView .navbar .nav {
+    width: auto;
+}
+
+.Portal.Editor .navbar .nav > li a:not(.btn) ,
+.PortalView .navbar .nav > li a:not(.btn) {
+  color: #555;
+}
+
+.Portal.Editor .navbar .nav > li a:not(.btn):hover,
+.PortalView .navbar .nav > li a:not(.btn):hover {
+  color: #660033;
+}
+
+.Portal.Editor #Navbar .navbar-lower .nav,
+.PortalView #Navbar .navbar-lower .nav {
+  float: right;
 }
 
 /* OTHER NAVIGATION
@@ -2496,59 +2524,4 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 .metrics:hover .metric-value.badge{
   background-color: #FFFFFF;
   color: #1C6E84;
-}
-
-/*
-* Repository Portal Object specific headers
-*/
-.PortalView #Navbar .RepositoryPortalView {
-	position: fixed;
-	width: 100%;
-	left: 0px;
-	margin: 0px;
-}
-
-.PortalView #Navbar.RepositoryPortalView .nav {
-	display: block;
-}
-.PortalView #Navbar.RepositoryPortalView .nav > li {
-	display: block;
-}
-.PortalView #Navbar.RepositoryPortalView .nav > li a {
-	font-size: 1em;
-	font-weight: normal;
-}
-
-.PortalView #Navbar.RepositoryPortalView  .nav .input > form > label {
-	font-size: 14px;
-}
-
-.PortalView #Navbar.RepositoryPortalView .navbar-inner {
-	background-color: #660033;
-	background-image: none;
-	padding-top: 0px;
-	padding-bottom: 0px;
-	min-height: auto;
-}
-
-.PortalView #Navbar.RepositoryPortalView .navbar-lower {
-	background-color: #3F001F;
-	background-image: none;
-	width: calc(100% - 40px);
-	padding-top: 0px;
-	padding-bottom: 0px;
-	min-height: auto;
-}
-
-
-/*
-	Repository profiles specific styling for temporal coverage
-*/
-.repository-portal-view .packages,
-.repository-portal-view .chart-title .packages,
-.repository-portal-view svg .packages,
-.repository-portal-view .chart-title .packages{
-	color: #FF6633;
-	fill: #FF6633;
-	stroke: #FF6633;
 }

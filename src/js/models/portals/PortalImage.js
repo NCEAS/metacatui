@@ -51,7 +51,13 @@ define(["jquery",
           modelJSON.identifier = $objectDOM.children("identifier").text();
           if( modelJSON.identifier ){
             if( modelJSON.identifier.substring(0, 4) !== "http" ){
-              modelJSON.imageURL = MetacatUI.appModel.get("objectServiceUrl") + modelJSON.identifier;
+              
+              // use the resolve service if there is no object service url
+              // (e.g. in DataONE theme)
+              var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
+                MetacatUI.appModel.get("resolveServiceUrl");
+                
+              modelJSON.imageURL = urlBase + modelJSON.identifier;
             }
             else{
               modelJSON.imageURL = modelJSON.identifier;
