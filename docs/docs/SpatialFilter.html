@@ -255,6 +255,10 @@ search bounding box at the given zoom level.
 
 
 
+<div class="description">
+    Inherits all default properties of <a href="Filter.html">Filter</a>
+</div>
+
 
 
 
@@ -293,13 +297,13 @@ search bounding box at the given zoom level.
 
         <tr>
             
-                <td class="name"><code>icon</code></td>
+                <td class="name"><code>geohashes</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">Array.&lt;string></span>
 
 
             
@@ -309,20 +313,20 @@ search bounding box at the given zoom level.
 
             
 
-            <td class="description last">The icon to display with the Spatial filter</td>
+            <td class="description last">The array of geohashes used to spatially constrain the search</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>label</code></td>
+                <td class="name"><code>groupedGeohashes</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
+<span class="param-type">object</span>
 
 
             
@@ -332,7 +336,122 @@ search bounding box at the given zoom level.
 
             
 
-            <td class="description last">A short intuitive label</td>
+            <td class="description last">The same geohash values, grouped by geohash level (e.g. 1,2,3...). Complete geohash groups (of 32) are consolidated to the level above.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>east</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The easternmost longitude of the represented bounding box</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>west</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The westernmost longitude of the represented bounding box</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>north</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The northernmost latitude of the represented bounding box</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>south</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The southernmost latitude of the represented bounding box</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>geohashLvel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The default precision level of the geohash-based search</td>
         </tr>
 
     
@@ -376,7 +495,7 @@ search bounding box at the given zoom level.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line24">line 24</a>
+        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line31">line 31</a>
     </li></ul></dd>
     
 
@@ -519,7 +638,7 @@ search bounding box at the given zoom level.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line405">line 405</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line406">line 406</a>
     </li></ul></dd>
     
 
@@ -634,7 +753,7 @@ search bounding box at the given zoom level.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line69">line 69</a>
+        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -799,7 +918,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line319">line 319</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line320">line 320</a>
     </li></ul></dd>
     
 
@@ -871,7 +990,9 @@ If not provided, the values set on the model are used.</td>
 
 
 <div class="description">
-    Consolidate geohashes into a parent tile if all are present
+    Consolidates geohashes into groups based on their geohash level
+ and updates the model with those groups. The fields and values attributes
+ on this model are also updated with the geohashes.
 </div>
 
 
@@ -915,7 +1036,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line110">line 110</a>
+        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line133">line 133</a>
     </li></ul></dd>
     
 
@@ -1008,7 +1129,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line392">line 392</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line393">line 393</a>
     </li></ul></dd>
     
 
@@ -1123,7 +1244,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line61">line 61</a>
+        <a href="src_js_models_filters_SpatialFilter.js.html">src/js/models/filters/SpatialFilter.js</a>, <a href="src_js_models_filters_SpatialFilter.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -1265,7 +1386,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line591">line 591</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line592">line 592</a>
     </li></ul></dd>
     
 
@@ -1425,7 +1546,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line97">line 97</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line98">line 98</a>
     </li></ul></dd>
     
 
@@ -1589,7 +1710,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line206">line 206</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line207">line 207</a>
     </li></ul></dd>
     
 
@@ -1799,7 +1920,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line166">line 166</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line167">line 167</a>
     </li></ul></dd>
     
 
@@ -1890,8 +2011,10 @@ If not provided, the values set on the model are used.</td>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Filter.html#resetValue">Filter#resetValue</a>
     </li></ul></dd>
     
@@ -1913,11 +2036,9 @@ If not provided, the values set on the model are used.</td>
     
 
     
-
-    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line384">line 384</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line385">line 385</a>
     </li></ul></dd>
     
 
@@ -2106,8 +2227,10 @@ If not provided, the values set on the model are used.</td>
     
 
     
-    <dt class="inherited-from">Inherited From:</dt>
-    <dd class="inherited-from"><ul class="dummy"><li>
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
         <a href="Filter.html#updateDOM">Filter#updateDOM</a>
     </li></ul></dd>
     
@@ -2129,11 +2252,9 @@ If not provided, the values set on the model are used.</td>
     
 
     
-
-    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line427">line 427</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line428">line 428</a>
     </li></ul></dd>
     
 
@@ -2309,7 +2430,7 @@ If not provided, the values set on the model are used.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line520">line 520</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line521">line 521</a>
     </li></ul></dd>
     
 
@@ -2426,7 +2547,7 @@ since there aren't any easy ways for users to fix these issues themselves in the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line613">line 613</a>
+        <a href="src_js_models_filters_Filter.js.html">src/js/models/filters/Filter.js</a>, <a href="src_js_models_filters_Filter.js.html#line614">line 614</a>
     </li></ul></dd>
     
 
@@ -2500,7 +2621,7 @@ since there aren't any easy ways for users to fix these issues themselves in the
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Jun 16 2020 12:13:43 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Jun 18 2020 17:47:50 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
