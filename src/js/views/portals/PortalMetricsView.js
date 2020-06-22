@@ -165,20 +165,7 @@ define(["jquery",
               //Save a reference to the Search Model on the Stats model
               statsModel.set("searchModel", statsSearchModel);
             }
-
-            // Create a search model that filters by all the data object Ids
-            var statsSearchModel = new SearchModel({
-              idOnly: allIDs,
-              formatType: [],
-              exclude: []
-            });
-
-            // Create a StatsModel
-            var statsModel = new StatsModel({
-              query: statsSearchModel.getQuery(),
-              searchModel: statsSearchModel
-            });
-
+            
             var userType = "portal";
 
             var label_list = [];
