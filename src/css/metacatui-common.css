@@ -2884,8 +2884,6 @@ img[src*="googleapis.com/"].georegion-map{
   font-weight: bold;
 }
 
-
-
 /******************************************
 * Image Uploader
 ********************************************/
@@ -3063,9 +3061,9 @@ img[src*="googleapis.com/"].georegion-map{
 /* markdown editor container - contains editor buttons & markdown textarea */
 .wk-container {
   position: relative;
-  background-color: #f2f2f2;
-  padding: 10px 10px 0;
-  border-radius: 6px;
+  margin: 5px 0;
+	border: 1px solid #e5e5e5;
+	border-radius: 2px;
 	display: flex;
 	flex-direction: column;
 }
@@ -3073,36 +3071,60 @@ img[src*="googleapis.com/"].georegion-map{
 /* the markdown editor textarea field */
 textarea.markdown {
 	width: 100%;
-	height: 45vh;
+	height: 50vh;
 	overflow-y: scroll;
 	overflow-x: hidden;
 	margin: 5px 0 10px;
 	line-height: 1.6em;
 	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-	padding: 0.5rem;
 	/* so that the textarea is below any and all editor buttons/controls */
 	order: 99; 
 }
 
+.wk-container textarea.markdown{
+	box-shadow: none;
+	border: none;
+	border-radius: 2px;
+	margin: 0;
+}
+
 .wk-hide {
   display: none !important;
+}
+.wk-commands-divider{
+  display: inline-block;
+  width: 1px;
+  height: 21px;
+  background-color: #ddd;
+  margin: 10px 6px -7px 6px;
+}
+.wk-commands{
+	border-bottom: 1px solid #e5e5e5;
+  background: #fafafa;
+	padding-left: 0.5rem;
 }
 /* markdown editor button */
 .wk-command {
   background-color: transparent;
   color: #333;
   border: 0;
-  padding: 14px;
+  padding: 7px 10px;
   cursor: pointer;
   outline: none;
-  height: 55px;
-  margin: 5px;
+  margin: 2px;
 	border-radius: 6px;
+	transition: all 0.2s ease-in-out;
+}
+.wk-command svg {
+	transition: fill 0.2s ease-in-out;
+	fill: #333;
 }
 .wk-command:hover{
-  transition: all 0.1s linear;
-  background-color: #f7f7f7;
+  background-color: white;
   color: #2c7e90;
+}
+.wk-command:hover svg {
+	fill: #2c7e90;
 }
 /* ---- Markdown editor modal ---- */
 /* The modal type dialogs to add image or link */
@@ -3112,7 +3134,8 @@ textarea.markdown {
   left: 2%;
   right: 2%;
   z-index: 1050;
-  max-width: 330px;
+	width: fit-content;
+	max-width: 95vw;
   background-color: #fff;
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-radius: 6px;
@@ -3210,6 +3233,128 @@ add font awesome close icon */
   position: fixed;
 }
 
+/******************************************
+* Table Editor View
+********************************************/
+
+.table-editor .spreadsheet {
+  margin: 1rem 2rem 2rem 0.5rem;
+}
+
+.table-editor .table {
+	/* undo bootstrap margin */
+	margin-bottom: 0;
+}
+
+.table-editor td {
+  min-width: 5rem;
+}
+
+.table-editor th {
+	background: #fafafa;
+  padding: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Row numbers */
+.table-editor tbody th {
+  min-width: 2.5rem;
+}
+
+/* Dropdown Button */
+.table-editor .dropbtn {
+  background-color: #e2e2e2d0;
+  color: rgba(0, 0, 0, 0.5);
+  padding: 0rem 0.3rem;
+  border: none;
+  cursor: pointer;
+  transition: ease 0.4s;
+	border-radius: 3px;
+}
+
+.table-editor .dropbtn .icon{
+	pointer-events: none;
+	margin: 0;
+}
+
+/* Dropdown button on hover & focus */
+.table-editor .dropbtn:hover,
+.table-editor .dropbtn:focus {
+  background-color: #d0d0d0;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.table-editor .dropdown {
+  position: relative;
+	float: right;
+	width: 1rem;
+}
+
+/* Dropdown Content (hidden by default) */
+.table-editor .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 7rem;
+  box-shadow: 0 0.5rem 0.8rem 0 rgba(0, 0, 0, 0.1);
+  z-index: 1;
+	border: 1px solid rgba(0,0,0,.05);
+}
+.table-editor .dropdown-content .icon {
+  pointer-events: none;
+}
+/* position row menus to the right of the row number */
+.table-editor .row-header .dropdown-content{
+    left: 1.2rem;
+    top: 0;
+}
+
+/* So the drop down doesn't go into overeflow space */
+.table-editor .column-header:last-of-type .dropdown-content {
+	right: 0;
+}
+
+/* Buttons inside the dropdown */
+.table-editor .row-dropdown-option,
+.table-editor .col-dropdown-option {
+	white-space: nowrap;
+	display: block;
+	width: 100%;
+	text-align: left;
+	background-color: transparent;
+	color: #2c6f90;
+	color: var(--portal-primary-color);
+  padding: 0.2rem 0.8rem;
+	margin: 0.2rem 0;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 100ms ease-in-out;
+}
+
+.table-editor .row-dropdown-option:hover,
+.table-editor .col-dropdown-option:hover {
+	background-color: #f7f7f7;
+	color: #555;
+}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.table-editor .show {
+  display: block;
+}
+
+.table-editor .column-header-span {
+	width: calc(100% - 1.1rem);
+	min-width: 1.5rem;
+	float: left;
+	display: inline-block;
+	margin-left: 0;
+	line-height: 120%;
+}
+
+.table-editor .spreadsheet-controls {
+  margin-left: 0.5rem;
+}
 
 /******************************************
 ** AccessPolicy editor view ***
@@ -4500,6 +4645,26 @@ i.toc-sub-item {
   margin-bottom: 20px;
 }
 
+
+/******************************************
+* HTML converted from Markdown
+********************************************/
+
+/* images in markdown */
+.markdown img.thumbnail {
+	display: block;
+}
+
+/* the following two rules overwrite both:
+	i. the bootstrap `pre` rules
+	ii. individual theme `pre` rules
+*/
+div.markdown pre {
+	color: #383a42;
+	background: #fafafa;
+	border-radius: 3px;
+}
+
 /* markdown citations */
 .markdown .inlineCitation {
 
@@ -4514,19 +4679,6 @@ i.toc-sub-item {
 .markdown #bibliography {
 	margin-top: 40px;
 	margin-bottom: 20px;
-}
-/******************************************
-* HTML converted from Markdown
-********************************************/
-
-/* the following two rules overwrite both:
-	i. the bootstrap `pre` rules
-	ii. individual theme `pre` rules
-*/
-div.markdown pre {
-	color: #383a42;
-	background: #fafafa;
-	border-radius: 3px;
 }
 
 /******************************************

@@ -69,6 +69,9 @@ require.config({
 	woofmark: MetacatUI.root + '/components/woofmark.min',
 	// drop zone creates drag and drop areas
 	Dropzone: MetacatUI.root + '/components/dropzone-amd-module',
+	// Packages that convert between json data to markdown table
+	markdownTableFromJson: MetacatUI.root + '/components/markdown-table-from-json.min',
+	markdownTableToJson: MetacatUI.root + '/components/markdown-table-to-json',
 	// Polyfill required for using dropzone with older browsers
 	corejs: MetacatUI.root + '/components/core-js',
 	//Have a null fallback for our d3 components for browsers that don't support SVG

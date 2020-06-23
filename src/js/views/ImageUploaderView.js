@@ -226,6 +226,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
           previewTemplate: previewTemplate,
           withCredentials: true,
           paramName: "object",
+          hiddenInputContainer: this.el,
 
           headers: {
               "Cache-Control": null,

@@ -105,6 +105,7 @@ define([    "jquery", "underscore", "backbone",
                             customizedHeaderId:true,
                             parseImgDimension: true,
                             tables:true,
+                            tablesHeaderId:true,
                             strikethrough: true,
                             tasklists: true,
                             emoji: true,
@@ -139,8 +140,6 @@ define([    "jquery", "underscore", "backbone",
                 }
 
                 this.$el.html(this.template({ markdown: htmlFromMD }));
-                
-                this.$(".markdown img").addClass("thumbnail").after("<div class='clear'></div>");
                 
                 if( this.showTOC ){
                   this.listenToOnce(this, "TOCRendered", function(){
@@ -182,11 +181,27 @@ define([    "jquery", "underscore", "backbone",
         listRequiredExtensions: function(markdown){
 
             var view = this;
+            
+            // Given a path, check whether a CSS file was already added to the
+            // head, and add it if not. Prevents adding the CSS file multiple
+            // times if the view is loaded more than once.
+            var addCSS = function(path){
+              if($("head link[href='" + path + "']").length <= 0 ){
+                $('<link/>', {
+                   rel: 'stylesheet',
+                   type: 'text/css',
+                   href: path
+                }).appendTo('head');
+              }
+            }
+            
+            addCSS("/components/showdown/extensions/showdown-katex/katex.min.css");
 
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
             var SDextensions = ["xssfilter", "katex", "highlight", "docbook",
                                 "showdown-htags", "bootstrap", "footnotes",
                                 "showdown-citation", "showdown-images"];
+                                
             var numTestsTodo = SDextensions.length;
 
             // Each time an extension is tested for (and loaded if required),
@@ -214,16 +229,12 @@ define([    "jquery", "underscore", "backbone",
 
             var regexHighlight  = new RegExp("`.*`"), // too general?
                 regexDocbook    = new RegExp("<(title|citetitle|emphasis|para|ulink|literallayout|itemizedlist|orderedlist|listitem|subscript|superscript).*>"),
-                // For bootstrap: test for tables, directly from showdown/src/subParsers/makehtml/tables.js
-                // if we add more bootstrap classes, this will become more complicated since we have to test the markdown before the initial parse
-                regexTable1        = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
-                regexTable2        = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
-                regexFootnotes1     = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/mg,
-                regexFootnotes2     = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/mg,
+                regexFootnotes1     = /^\[\^([\d\w]+)\]:( |\n)((.+\n)*.+)$/m,
+                regexFootnotes2     = /^\[\^([\d\w]+)\]:\s*((\n+(\s{2,4}|\t).+)+)$/m,
                 regexFootnotes3     = /\[\^([\d\w]+)\]/m,
                 // test for all of the math/katex delimiters
-                regexKatex      = new RegExp("\\[.*\\]|\\(.*\\)|~.*~|$.*$|```asciimath.*```|```latex.*```"),
-                regexCitation   = /\[@.+\]/g;
+                regexKatex      = new RegExp("\\$\\$.*\\$\\$|\\~.*\\~|\\$.*\\$|```asciimath.*```|```latex.*```"),
+                regexCitation   = /\[@.+\]/;
                 // test for any <h.> tags
                 regexHtags      = new RegExp('#\\s'),
                 regexImages     = /!\[.*\]\(\S+\)/;
@@ -258,10 +269,7 @@ define([    "jquery", "underscore", "backbone",
                     updateExtensionList("katex", required=true);
                 });
                 // css needed for katex
-                view.$el.append(
-                  "<link href='"+ MetacatUI.root +
-                  "/components/showdown/extensions/showdown-katex/katex.min.css' rel='stylesheet' type='text/css'>"
-                );
+                addCSS(MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css");
 
             } else {
                 updateExtensionList("katex", required=false);
@@ -275,12 +283,7 @@ define([    "jquery", "underscore", "backbone",
                     updateExtensionList("highlight", required=true);
                 });
                 // css needed for highlight
-                this.$el.append(
-                  "<link href='" + MetacatUI.root +
-                  "/components/showdown/extensions/showdown-highlight/styles/" +
-                  "atom-one-light" +
-                  ".css' rel='stylesheet' type='text/css'>"
-                );
+                addCSS(MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/atom-one-light.css");
             } else {
                 updateExtensionList("highlight", required=false);
             };
@@ -307,14 +310,14 @@ define([    "jquery", "underscore", "backbone",
 
 
             // --- Test for bootstrap --- //
-
-            if( regexTable1.test(markdown) || regexTable2.test(markdown) ){
-                require(["showdownBootstrap"], function(showdownBootstrap){
-                    updateExtensionList("bootstrap", required=true);
-                });
-            } else {
-                updateExtensionList("bootstrap", required=false);
-            };
+            // The custom bootstrap library is small and only adds some classes
+            // for tables and images, and maybe other HTML elements in the future.
+            // Testing for tables in markdown using regular expressions isn't
+            // straight forward. Better to just load this extension whether or
+            // not it's required.
+            require(["showdownBootstrap"], function(showdownBootstrap){
+                updateExtensionList("bootstrap", required=true);
+            });
 
             // --- Test for footnotes --- //
 

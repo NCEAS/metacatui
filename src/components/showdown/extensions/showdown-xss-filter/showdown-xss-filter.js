@@ -11,7 +11,7 @@ define(['showdown', 'xss'], function (showdown, xss) {
             // custom rules
             var options = {
                 css: false,
-                whiteList: {
+                allowList: {
                     a: ["target", "href", "title", "class", "target"],
                     abbr: ["title"],
                     address: [],
@@ -66,10 +66,10 @@ define(['showdown', 'xss'], function (showdown, xss) {
                     sup: [],
                     strong: [],
                     table: ["width", "border", "align", "valign"],
-                    tbody: ["align", "valign"],
-                    td: ["width", "rowspan", "colspan", "align", "valign"],
+                    tbody: ["align", "valign", "style"],
+                    td: ["width", "rowspan", "colspan", "align", "valign", "style"],
                     tfoot: ["align", "valign"],
-                    th: ["width", "rowspan", "colspan", "align", "valign"],
+                    th: ["width", "rowspan", "colspan", "align", "valign", "style"],
                     thead: ["align", "valign"],
                     tr: ["rowspan", "align", "valign"],
                     tt: [],
