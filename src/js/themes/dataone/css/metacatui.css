@@ -60,17 +60,13 @@
 
 	#Content{
 		background-color: #FFFFFF;
-		padding-bottom: 124px; /** Keeps the footer down **/
 	}
 	.DataCatalog #Content{
 		width: 100%;
 		max-width: 100%;
-		margin-top: 0px;
 		margin-bottom: 0px;
 	}
-	#Footer{
-		height: 124px;
-	}
+
      .container{
     	width: 100%;
     }
@@ -79,7 +75,6 @@
 		padding: 2%;
 		width: 96%;
 	}
-
 
     .center{
     	margin: 0 auto;
@@ -253,85 +248,6 @@
 	display: inline-block;
 }
 
-/* FOOTER CSS
--------------------------------------------------- */
-footer{
-	width: 100%;
-}
-.mapMode #Footer{
-	height: 63px;
-}
-.footer-container{
-	max-width: 1000px;
-	margin-left: auto;
-	margin-right: auto;
-}
-.footer-upper{
-	background-color: #666666;
-	font-size: 1em;
-	padding-top: 15px;
-	padding-bottom: 5px;
-}
-.footer-lower{
-	background-color: #333333;
-	color: white;
-	font-size: .7em;
-	line-height: 1.4em;
-	padding-top: 10px;
-	padding-bottom: 4px;
-}
-.footer-upper a{
-	color: #FFF;
-	font-size: .9em;
-	font-weight: lighter;
-}
-.footer-upper .footer-right a{
-	margin-right: 20px;
-}
-.footer-upper .footer-right .icon{
-	vertical-align: text-bottom;
-}
-.footer-icons a{
-	height: 30px;
-	width: 30px;
-	margin-right: 1em;
-	display: inline-block;
-	background-image: url('../img/footer_icons.png');
-}
-#footer_vimeo{
-	background-position: -5px 35px;
-}
-#footer_youtube{
-	background-position: -54px 35px;
-}
-#footer_linkedin{
-	background-position: -103px 35px;
-}
-#footer_twitter{
-	background-position: -151px 35px;
-}
-#footer_facebook{
-	background-position: -197px 35px;
-}
-#footer_rss{
-	background-position: -243px 35px;
-}
-#footer_slideshare{
-	background-position: -288px 35px;
-}
-#footer_gplus{
-	background-position: -334px 35px;
-}
-.footer-left{
-	float: left;
-}
-.footer-right{
-	float: right;
-}
-.mapMode .footer-upper{
-	display: none;
-}
-
  /* BUTTONS CSS
 -------------------------------------------------- */
     .metro.three-d {
@@ -491,216 +407,6 @@ table th.btn-container .btn{
 }
 .table-striped tfoot>tr>th{
 	background-color:#f9f9f9;
-}
-
-/* THE NAVBAR
--------------------------------------------------- */
-.navbar .nav{
-	width: 100%;
-}
-.navbar .nav,
-.navbar-upper,
-.navbar-lower .nav{
-	transition: width 1s;
-	-webkit-transition: width 1s;
-}
-.navbar-lower .input-append{
-	margin-top: 5px;
-	margin-bottom: 5px;
-}
-.DataCatalog .navbar .nav,
-.DataCatalog .navbar-upper .nav,
-.DataCatalog .navbar-lower .nav{
-	width: 100%;
-}
-.DataCatalog .navbar{
-	margin-bottom: 0px;
-}
-
-.navbar-inner{
-	background-color: #660033;
-	background-image: none;
-	filter: none; /* for IE override */
-	border-radius: 0px;
-	border-width: 0px;
-}
-.navbar .nav > li a {
-       color: #FFF;
-	text-shadow: none;
-	font-size: 1em;
-	font-weight: normal;
-   }
-   .navbar .nav > li a:hover,
-   .navbar .nav > li a:focus{
-   	color: rgb(0,255,255);
-   }
-   .navbar .nav li.dropdown.open>.dropdown-toggle, .navbar .nav li.dropdown.active>.dropdown-toggle, .navbar .nav li.dropdown.open.active>.dropdown-toggle{
-   	background-color: #440029;
-   	color: #FFF;
-   }
-.navbar-lower{
-	width: 100%;
-	width: calc(100% - 40px);
-	min-height: 40px;
-	background-color: #3F001F;
-	background-image: none;
-	filter: none; /* for IE override */
-	padding-left: 20px;
-	padding-right: 20px;
-}
-.navbar-lower .nav > li a {
-	font-size: 1em;
-	font-weight: light;
-}
-.navbar-lower span{
-	color: #9E4884;
-}
-.navbar .nav > .label{
-	font-size: .8em;
-	color: #FFF;
-	font-weight: light;
-	text-transform: uppercase;
-	line-height: 40px;
-	margin-left: 14px;
-	margin-right: 14px;
-}
-   .navbar-upper{
-   	padding-left: 20px;
-   	padding-right: 20px;
-   }
-   .nav li.right{
-   	float: right;
-   }
-   .nav .logo > img{
-   	height: 36px;
-   }
-
-   .navbar-lower > .nav > .input{
-   	margin-left: 40px;
-   }
-   .navbar-lower .input > form > label{
-    color: #CB508A;
-   }
-   .navbar-lower .input > form > input[type="text"]{
-   	background-image: url(../img/subtle-bg-magenta.png);
-   	background-repeat: repeat;
-   	background-size: 100%;
-   	background-color: transparent;
-   	border: 0px;
-   	color: white;
-   }
-.navbar-lower .input > form > .btn,
-.navbar-lower .nav > li a.btn {
-	background-color:#91285F;
-	background-image: none;
-	color:#ffffff;
-	text-shadow:0px 1px 0px #3f0020;
-	border: 0px;
-}
-.navbar-lower .nav > li a.btn{
-	padding: 5px 10px;
-	margin-bottom: 0px;
-}
-.navbar-lower .nav > li a.btn:hover,
-.navbar-lower .input-append > form > .btn:hover{
-	background-color: #A92C6D;
-}
-.navbar-lower .input-append > form > .btn{
-	border-radius: 0px;
-	border-top-right-radius: 2px;
- 	border-bottom-right-radius: 2px;
- 	margin-bottom: 0px;
-}
-   .navbar-lower .input > form > input[type="text"]::-webkit-input-placeholder{
-   	color: #CB508A;
-   }
-   .navbar-lower .input > form > input[type="text"]:-moz-placeholder{
-   	color: #CB508A;
-   }
-   .navbar-lower .input > form > input[type="text"]::-moz-placeholder{
-   	color: #CB508A;
-   }
-   .navbar-lower .input > form > input[type="text"]:-ms-input-placeholder{
-   	color: #CB508A;
-   }
-.navbar-lower .inline-buttons{
-	margin-bottom: 0px;
-	margin-top: 0px;
-	line-height: 40px;
-}
-.navbar-lower .inline-buttons .btn{
-	margin-top: 0px;
-}
-.navbar-lower .nav > li .dropdown-menu a{
-	color: inherit;
-}
-.show-new-dataCatalogView{
-	cursor: pointer;
-}
-.soc-media{
-	float: right;
-	margin-top: 18px;
-}
-.navbar-upper > .logo {
-	margin: 10px;
-	max-height: 83px;
-	float: left;
-}
-.navbar .tb-megamenu-block p a {
-    color: inherit;
-    font-size: 1em;
-}
-/* Depending on the headerType, these classes apply */
-
-.navbar-inner > ul{
-	margin: 0px;
-}
-
-/** Backbone override for dropdowns so they dsplay on hover rather than click **/
-   #Navbar .dropdown-toggle > .icon-sort-down{
-   	font-size: 15px;
-   	width: 5px;
-   }
-   #Navbar .dropdown-menu > li > a:hover{
-   	background-color: transparent;
-   	background-image: none;
-   }
-   .navbar .nav>li>.dropdown-menu:after{
-   	left: 80%;
-   }
-   .dropdown-menu{
-	border-radius: 0px;
-	-moz-border-radius: 0px;
-	-webkit-border-radius: 0px;
-}
-   .dropdown-menu .sub-menu {
-    left: 100%;
-    position: absolute;
-    top: 0;
-    visibility: hidden;
-    margin-top: -1px;
-}
-.dropdown-menu li:hover .sub-menu {
-    visibility: visible;
-}
-.dropdown:hover .dropdown-menu{
-    display: block;
-}
-.dropdown:hover .dropdown-menu.hidden,
-.dropdown-menu.hidden{
-	display: none;
-}
-.nav-tabs .dropdown-menu, .nav-pills .dropdown-menu, .navbar .dropdown-menu {
-    margin-top: 0;
-}
-   .dropdown-header{
-	margin-left: 20px;
-	font-size: 12px;
-	text-transform: uppercase;
-}
-.navbar .nav>li>.dropdown-menu:before,
-.navbar .nav>li>.dropdown-menu:after{
-	display: none;
 }
 
 /** The login form from the navbar **/
@@ -2488,8 +2194,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	stroke: #1C6E84;
 }
 
-
-
 .metrics .metric-value.badge{
   background-color: #1C6E84;
 }
@@ -2498,3 +2202,59 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   color: #1C6E84;
 }
 
+/****************************************************************
+* Styles for compatibility with the d1website styles
+*****************************************************************/
+
+@media only screen and (min-width: 699px){
+  #Navbar {
+    height: fit-content;
+    min-height: 7rem;
+    min-height: var(--nav-height, 7rem);
+  }
+}
+#Navbar {
+  overflow: visible;
+}
+#Content {
+  position: relative;
+  /* space for the footer SVG to overlap with the content background color */
+  padding-bottom: 20rem;
+  padding-bottom: var(--footer-section-overlap, 20rem);
+  max-width: 100vw;
+  overflow: hidden;
+}
+/* ----- */
+/* unset styles set by the base metacatui.css/bootstrap that conflict with d1website styles */
+footer{
+  background-color: unset;
+  height: unset;
+  position: unset;
+  bottom: unset;
+}
+#Footer{
+  overflow: visible !important;
+}
+ul.d1_menu-item__sub-menu {
+  margin: 0;
+}
+.d1_nav{
+  z-index: 100;
+}
+.d1_footer {
+  z-index: 99;
+}
+.d1_footer {
+  box-sizing: border-box;
+}
+a.d1_footer__sitemap-link{
+  font-weight: 400;
+}
+.d1_footer *,
+.d1_footer *:after,
+.d1_footer *:before {
+  box-sizing: inherit;
+}
+.d1_join-form form {
+  margin-bottom: 0;
+}
