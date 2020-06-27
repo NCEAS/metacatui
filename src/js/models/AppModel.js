@@ -255,12 +255,16 @@ define(['jquery', 'underscore', 'backbone'],
 				title: true
 			},
 
-      /**
-      * The metadata formats that are editable in the EditorView. Metadata types not listed
-      * here will not show an Edit button.
-      * @type {string[]}
-      */
-			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
+      editableFormats: [
+        "eml://ecoinformatics.org/eml-2.1.1",
+        "https://eml.ecoinformatics.org/eml-2.2.0"
+      ],
+
+      // Format the editor serializes new EML objects as
+      editorSerializationFormat: "https://eml.ecoinformatics.org/eml-2.2.0",
+
+      // xsi:schemaLocation value to match `editorSerializationFormat`
+      editorSchemaLocation: "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
 
       /**
       * This error message is displayed when the Editor encounters an error saving

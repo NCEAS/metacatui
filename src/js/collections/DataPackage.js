@@ -1412,6 +1412,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 memberModel = new EML211(context.attributes);
                 break;
 
+            case "https://eml.ecoinformatics.org/eml-2.2.0":
+              context.set({type: "Metadata", sortOrder: 1});
+              memberModel = new EML211(context.attributes);
+              break;
+
             case "-//ecoinformatics.org//eml-access-2.0.0beta4//EN" :
                 context.set({type: "Metadata", sortOrder: 1});
                 memberModel = new ScienceMetadata(context.attributes);
