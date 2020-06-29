@@ -1,6 +1,6 @@
 ---
 title: MetacatUI Exports
-type: d1website
+type: metacatUI_exports
 html:
   "nav" : navbar
   "footer" : footer
@@ -18,7 +18,7 @@ outputs:
   - json
 ---
 
-### Version: 2020-06-26 20:31:13.426074 -0400 EDT m=+2.795102287
+### Version: 2020-06-29 12:15:11.5405 -0400 EDT m=+2.822122917
 
 # Exports for MetacatUI DataONE theme
 
