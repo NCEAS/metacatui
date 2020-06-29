@@ -558,6 +558,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				xhrFields: {
 					withCredentials: true
 				},
+        headers: {
+          'Cache-Control': 'no-cache'
+        },
 				url: tokenUrl,
 				data: {},
 				success: callback,
