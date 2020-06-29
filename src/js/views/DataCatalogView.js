@@ -147,11 +147,11 @@ define(["jquery",
                   if(lastSearchModels){
 
                     if( lastSearchModels.search ){
-                      this.searchModel = lastSearchModel.search.clone();
+                      this.searchModel = lastSearchModels.search.clone();
                     }
 
-                    if( lastSearchModel.map ){
-                      this.mapModel = lastSearchModel.map.clone();
+                    if( lastSearchModels.map ){
+                      this.mapModel = lastSearchModels.map.clone();
                     }
                   }
 
