@@ -76,7 +76,6 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
     * @type {Object}
     */
     events: {
-      // update the markdown preview each time the preview tab is clicked.
       "click #markdown-preview-link"   :    "previewMarkdown",
       "focusout .markdown-textarea"    :    "updateMarkdown"
     },
@@ -157,8 +156,9 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           hr: {
             remove: true
           },
+          // Remove the default image uploader button so we can add our own that
+          // uploads the image as a dataone object.
           image: {
-            // Remove the default image uploader button so we can add our own
             remove: true
           },
           // Default woofmark buttons to keep, with custom properties, + custom buttons
@@ -220,7 +220,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
             icon: "picture",
             function: view.addMdImage,
             title: 'Image',
-            // must use Ctrl+G to overwrite the built in image function
+            // use Ctrl+G to overwrite the built-in woofmark image function
             shortcut: "Ctrl+G"
           },
           table: {
@@ -274,13 +274,14 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         
         // Modify the button order & appearance
         var buttonContainer = $(view.markdownEditor.textarea).parent().find(".wk-commands");
-        var x = buttonContainer.clone();
         var buttons = buttonContainer.find(".wk-command");
         _.each(buttonKeys, function(key, i) {
           // Re-order buttons based on the order in buttonOptions, and remove
           // any that are marked for removal
           var options = buttonOptions[key];
-          var buttonEl = buttonContainer.find("button:contains('" + key + "')");
+          var buttonEl = buttonContainer.find(".wk-command").filter(function (){
+              return this.innerHTML == key;
+          });
           if(options.remove !== true){
             // Add tooltip
             buttonEl.tooltip({
@@ -297,7 +298,6 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
             }
             buttonContainer.append(buttonEl);
             if(options.insertDividerAfter === true ){
-              console.log("divider");
               buttonContainer.append("<div class='wk-commands-divider'></div>")
             }
           } else {
@@ -311,7 +311,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
       }
       
     },
-    
+
     /**    
      * addHeader - description    
      *      
@@ -415,7 +415,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
      * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks   
      */     
     addTable: function(e, mode, chunks){
-      
+
       // Use a modified version of the link dialog
       this.markdownEditor.showLinkDialog();
       
@@ -665,7 +665,6 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
       }
 
     },
-
 
   });
 
