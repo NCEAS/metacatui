@@ -1315,14 +1315,18 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			//Reset the active section and subsection
 			this.activeSection = "profile";
 			this.activeSubSection = "";
-			this.model.noActivity = null;
+
+      //Reset the model
+      if( this.model ){
+			  this.model.noActivity = null;
+        this.stopListening(this.model);
+      }
 
 			//Remove saved elements
 			this.$profile = null;
 
 			//Stop listening to changes in models
 			this.stopListening(this.statsModel);
-			this.stopListening(this.model);
 			this.stopListening(MetacatUI.appUserModel);
 
 			//Close the subviews

@@ -142,9 +142,13 @@ define(["jquery",
                 if ((MetacatUI.appModel.get("searchHistory").length > 0) &&
                     (!this.searchModel || Object.keys(this.searchModel).length == 0)
                 ) {
-                  var lastSearchModel = _.last(MetacatUI.appModel.get("searchHistory"));
-                  if(lastSearchModel){
-                    this.searchModel = lastSearchModel.clone();
+                  var lastSearchModels = _.last(MetacatUI.appModel.get("searchHistory"));
+
+                  if(lastSearchModels){
+
+                    if( lastSearchModels.search ){
+                      this.searchModel = lastSearchModel.search.clone();
+                    }
 
                     if( lastSearchModel.map ){
                       this.mapModel = lastSearchModel.map.clone();
