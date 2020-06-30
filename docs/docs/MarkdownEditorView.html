@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>MetacatUI Dev Docs: Class: PortEditorSectionView</title>
+    <title>MetacatUI Dev Docs: Class: MarkdownEditorView</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: PortEditorSectionView</h1>
+    <h1 class="page-title">Class: MarkdownEditorView</h1>
 
     
 
@@ -29,10 +29,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>PortEditorSectionView<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>MarkdownEditorView<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">A view of a single section of the PortalEditorView.
-This default section view displays a choice of which PortalSection to add to the Portal.</div>
+            <div class="class-description">A view of an HTML textarea with markdown editor UI and preview tab</div>
         
     
 </header>
@@ -47,7 +46,7 @@ This default section view displays a choice of which PortalSection to add to the
     
 
     
-    <h4 class="name" id="PortEditorSectionView"><span class="type-signature"></span>new PortEditorSectionView<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="MarkdownEditorView"><span class="type-signature"></span>new MarkdownEditorView<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -95,7 +94,7 @@ This default section view displays a choice of which PortalSection to add to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line11">line 11</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line11">line 11</a>
     </li></ul></dd>
     
 
@@ -210,7 +209,7 @@ This default section view displays a choice of which PortalSection to add to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line44">line 44</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line31">line 31</a>
     </li></ul></dd>
     
 
@@ -282,7 +281,7 @@ This default section view displays a choice of which PortalSection to add to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line95">line 95</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line78">line 78</a>
     </li></ul></dd>
     
 
@@ -300,157 +299,13 @@ This default section view displays a choice of which PortalSection to add to the
 
         
             
-<h4 class="name" id="model"><span class="type-signature"></span>model<span class="type-signature"> :PortalSection</span></h4>
+<h4 class="name" id="markdown"><span class="type-signature"></span>markdown<span class="type-signature"> :string</span></h4>
 
 
 
 
 <div class="description">
-    The PortalSectionModel being displayed
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">PortalSection</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line50">line 50</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="sectionsOptions"><span class="type-signature"></span>sectionsOptions<span class="type-signature"> :Array.&lt;<a href="PorttEditorSectionView.html#sectionOption">PorttEditorSectionView#sectionOption</a>></span></h4>
-
-
-
-
-<div class="description">
-    Information about each of the section types available to a user. Note that the key (e.g. "freeform") is used to ID the UI selection element.
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">Array.&lt;<a href="PorttEditorSectionView.html#sectionOption">PorttEditorSectionView#sectionOption</a>></span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line76">line 76</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="sectionsOptionsContainer"><span class="type-signature"></span>sectionsOptionsContainer<span class="type-signature"> :string</span></h4>
-
-
-
-
-<div class="description">
-    A jQuery selector for the element that the section option buttons should be inserted into
+    Markdown to insert into the textarea when the view is first rendered
 </div>
 
 
@@ -498,7 +353,7 @@ This default section view displays a choice of which PortalSection to add to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line62">line 62</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line44">line 44</a>
     </li></ul></dd>
     
 
@@ -516,13 +371,13 @@ This default section view displays a choice of which PortalSection to add to the
 
         
             
-<h4 class="name" id="tagName"><span class="type-signature"></span>tagName<span class="type-signature"> :string</span></h4>
+<h4 class="name" id="markdownPlaceholder"><span class="type-signature"></span>markdownPlaceholder<span class="type-signature"> :string</span></h4>
 
 
 
 
 <div class="description">
-    The HTML tag name for this view's element
+    The placeholder text to display in the textarea when it's empty
 </div>
 
 
@@ -570,7 +425,7 @@ This default section view displays a choice of which PortalSection to add to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line38">line 38</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -588,16 +443,27 @@ This default section view displays a choice of which PortalSection to add to the
 
         
             
-<h4 class="name" id="template"><span class="type-signature"></span>template<span class="type-signature"></span></h4>
+<h4 class="name" id="previewPlaceholder"><span class="type-signature"></span>previewPlaceholder<span class="type-signature"> :string</span></h4>
 
 
 
 
 <div class="description">
-    References to templates for this view. HTML files are converted to Underscore.js templates
+    The placeholder text to display in the preview area when there's no
+markdown
 </div>
 
 
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
 
 
 
@@ -632,7 +498,7 @@ This default section view displays a choice of which PortalSection to add to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line55">line 55</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line57">line 57</a>
     </li></ul></dd>
     
 
@@ -650,7 +516,227 @@ This default section view displays a choice of which PortalSection to add to the
 
         
             
-<h4 class="name" id="type"><span class="type-signature"></span>type<span class="type-signature"> :string</span></h4>
+<h4 class="name" id="showTOC"><span class="type-signature"></span>showTOC<span class="type-signature"> :boolean</span></h4>
+
+
+
+
+<div class="description">
+    Indicates whether or not to render a table of contents for the markdown
+preview. If set to true, a table of contents will be shown in the preview
+if there two or more top-level headers are rendered from the markdown.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">boolean</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line65">line 65</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="template"><span class="type-signature"></span>template<span class="type-signature"> :Underscore.Template</span></h4>
+
+
+
+
+<div class="description">
+    References to templates for this view. HTML files are converted to
+Underscore.js templates
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Underscore.Template</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line38">line 38</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="textarea"><span class="type-signature"></span>textarea<span class="type-signature"> :string</span></h4>
+
+
+
+
+<div class="description">
+    A jQuery selector for the HTML textarea element that will contain the
+markdown text.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">string</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line72">line 72</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="type"><span class="type-signature">(readonly) </span>type<span class="type-signature"> :string</span></h4>
 
 
 
@@ -704,80 +790,7 @@ This default section view displays a choice of which PortalSection to add to the
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line25">line 25</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="uniqueSectionLabel"><span class="type-signature"></span>uniqueSectionLabel<span class="type-signature"> :string</span></h4>
-
-
-
-
-<div class="description">
-    The unique label for this Section. It most likely matches the label on the model, but
-may include a number after if more than one section has the same name.
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
-<span class="param-type">string</span>
-
-
-        </li>
-    </ul>
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line32">line 32</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line25">line 25</a>
     </li></ul></dd>
     
 
@@ -805,7 +818,7 @@ may include a number after if more than one section has the same name.
     
 
     
-    <h4 class="name" id="addNewSection"><span class="type-signature"></span>addNewSection<span class="signature">(e)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addDivider"><span class="type-signature"></span>addDivider<span class="signature">(e, mode, chunks)</span><span class="type-signature"></span></h4>
     
 
     
@@ -813,7 +826,7 @@ may include a number after if more than one section has the same name.
 
 
 <div class="description">
-    Gets the section type to add, and triggers an event so the rest of the app will add a new section
+    addDivider - Add or remove a divider
 </div>
 
 
@@ -855,7 +868,7 @@ may include a number after if more than one section has the same name.
             <td class="type">
             
                 
-<span class="param-type">Event</span>
+<span class="param-type">event</span>
 
 
             
@@ -865,7 +878,53 @@ may include a number after if more than one section has the same name.
 
             
 
-            <td class="description last">The element that was clicked that represents the section option</td>
+            <td class="description last">is the original event object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mode</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">can be markdown, html, or wysiwyg</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>chunks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks</td>
         </tr>
 
     
@@ -906,7 +965,7 @@ may include a number after if more than one section has the same name.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line294">line 294</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line373">line 373</a>
     </li></ul></dd>
     
 
@@ -942,7 +1001,7 @@ may include a number after if more than one section has the same name.
     
 
     
-    <h4 class="name" id="disableSectionOption"><span class="type-signature"></span>disableSectionOption<span class="signature">(sectionType)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addHeader"><span class="type-signature"></span>addHeader<span class="signature">(e, mode, chunks, id)</span><span class="type-signature"></span></h4>
     
 
     
@@ -950,7 +1009,7 @@ may include a number after if more than one section has the same name.
 
 
 <div class="description">
-    Adds styling and content to a section option element to indicate that the user already added the maximum allowable number of this section type (i.e. it's disabled).
+    addHeader - description
 </div>
 
 
@@ -986,7 +1045,30 @@ may include a number after if more than one section has the same name.
 
         <tr>
             
-                <td class="name"><code>sectionType</code></td>
+                <td class="name"><code>e</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">event</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is the original event object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mode</code></td>
             
 
             <td class="type">
@@ -1002,7 +1084,53 @@ may include a number after if more than one section has the same name.
 
             
 
-            <td class="description last">The section name. This is the same string used as the key in sectionsOptions (e.g. "freeform").</td>
+            <td class="description last">can be markdown, html, or wysiwyg</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>chunks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the ID of the function, set as they key in buttonOptions in the render function</td>
         </tr>
 
     
@@ -1043,7 +1171,7 @@ may include a number after if more than one section has the same name.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line213">line 213</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line323">line 323</a>
     </li></ul></dd>
     
 
@@ -1079,7 +1207,7 @@ may include a number after if more than one section has the same name.
     
 
     
-    <h4 class="name" id="enableSectionOption"><span class="type-signature"></span>enableSectionOption<span class="signature">(sectionType)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addMdImage"><span class="type-signature"></span>addMdImage<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -1087,7 +1215,105 @@ may include a number after if more than one section has the same name.
 
 
 <div class="description">
-    Adds styling and content to a section option element to indicate that the user is able to add more of this section type (i.e. it's not disabled).
+    addMdImage - The function that gets called when a user clicks the custom
+add image button added to the markdown editor. It uses the UI created by
+the ImageUploaderView to allow a user to select & upload an image to the
+repository, and uses Woofmark's built-in add image functionality to
+insert the correct markdown into the textarea. This function must be
+called such that "this" is the markdownEditor view.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line494">line 494</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addTable"><span class="type-signature"></span>addTable<span class="signature">(e, mode, chunks)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    addTable - Creates the UI for editing and adding tables to the textarea.
+Detects whether the selection contained any part of a markdown table,
+then opens a woofmark dialog box and inserts a table editor view. If a
+table was selected, the table information is imported into the table
+editor where the user can edit it. If no table was selected, then it
+creates an empty table where the user can add data.
 </div>
 
 
@@ -1123,7 +1349,30 @@ may include a number after if more than one section has the same name.
 
         <tr>
             
-                <td class="name"><code>sectionType</code></td>
+                <td class="name"><code>e</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">event</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is the original event object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mode</code></td>
             
 
             <td class="type">
@@ -1139,7 +1388,30 @@ may include a number after if more than one section has the same name.
 
             
 
-            <td class="description last">The section name. This is the same string used as the key in sectionsOptions (e.g. "freeform").</td>
+            <td class="description last">can be markdown, html, or wysiwyg</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>chunks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks</td>
         </tr>
 
     
@@ -1180,7 +1452,7 @@ may include a number after if more than one section has the same name.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line262">line 262</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line417">line 417</a>
     </li></ul></dd>
     
 
@@ -1224,7 +1496,7 @@ may include a number after if more than one section has the same name.
 
 
 <div class="description">
-    Creates a new PortEditorSectionView
+    Initialize is executed when a new markdownEditor is created.
 </div>
 
 
@@ -1288,54 +1560,90 @@ may include a number after if more than one section has the same name.
 
 
 
-    <h5 class="subsection-title">Properties:</h5>
+<dl class="details">
 
     
 
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
     
 
-        <tr>
-            
-                <td class="name"><code>options.model</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">PortalSection</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The PortalSection rendered in this view</td>
-        </tr>
+    
 
     
-    </tbody>
-</table>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line87">line 87</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="previewMarkdown"><span class="type-signature"></span>previewMarkdown<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    previewMarkdown - render the markdown preview.
+</div>
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1369,7 +1677,7 @@ may include a number after if more than one section has the same name.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line104">line 104</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line648">line 648</a>
     </li></ul></dd>
     
 
@@ -1413,7 +1721,8 @@ may include a number after if more than one section has the same name.
 
 
 <div class="description">
-    Renders this view
+    render - Renders the markdownEditor - add UI for adding and editing
+markdown to a textarea
 </div>
 
 
@@ -1457,7 +1766,7 @@ may include a number after if more than one section has the same name.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line119">line 119</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line100">line 100</a>
     </li></ul></dd>
     
 
@@ -1493,7 +1802,7 @@ may include a number after if more than one section has the same name.
     
 
     
-    <h4 class="name" id="toggleDisableSectionOption"><span class="type-signature"></span>toggleDisableSectionOption<span class="signature">(sectionType)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="strikethrough"><span class="type-signature"></span>strikethrough<span class="signature">(e, mode, chunks)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1501,7 +1810,11 @@ may include a number after if more than one section has the same name.
 
 
 <div class="description">
-    Checks whether a section type is available to a user to add, then calls functions that change content and styling to indicate the availability to the user.
+    strikethrough - Add or remove the markdown syntax for strike through to
+the textarea. If there is text selected, then strike through formatting
+will be added or removed from that selection. If no selection,
+some placeholder text will be added surrounded by the strikethrough
+delimiters.
 </div>
 
 
@@ -1537,7 +1850,30 @@ may include a number after if more than one section has the same name.
 
         <tr>
             
-                <td class="name"><code>sectionType</code></td>
+                <td class="name"><code>e</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">event</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is the original event object</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mode</code></td>
             
 
             <td class="type">
@@ -1553,7 +1889,30 @@ may include a number after if more than one section has the same name.
 
             
 
-            <td class="description last">The section name. This is the same string used as the key in sectionsOptions (e.g. "freeform").</td>
+            <td class="description last">can be markdown, html, or wysiwyg</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>chunks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks</td>
         </tr>
 
     
@@ -1594,7 +1953,96 @@ may include a number after if more than one section has the same name.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_portals_editor_PortEditorSectionView.js.html">src/js/views/portals/editor/PortEditorSectionView.js</a>, <a href="src_js_views_portals_editor_PortEditorSectionView.js.html#line172">line 172</a>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line581">line 581</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="updateMarkdown"><span class="type-signature"></span>updateMarkdown<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    updateMarkdown - Update the markdown attribute in this view using the
+value of the markdown textarea
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MarkdownEditorView.js.html">src/js/views/MarkdownEditorView.js</a>, <a href="src_js_views_MarkdownEditorView.js.html#line637">line 637</a>
     </li></ul></dd>
     
 
@@ -1646,7 +2094,7 @@ may include a number after if more than one section has the same name.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Jun 30 2020 12:19:07 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Jun 30 2020 12:19:06 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

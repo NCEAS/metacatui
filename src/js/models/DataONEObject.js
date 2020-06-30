@@ -1955,9 +1955,11 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           return false;
         }
     },
+    /** @lends DataONEObject.prototype */
     {
       /**
-       Generate a unique identifier to be used as an XML id attribute
+      * Generate a unique identifier to be used as an XML id attribute
+      * @returns {string} The identifier string that was generated
       */
       generateId: function() {
         var idStr = ''; // the id to return
