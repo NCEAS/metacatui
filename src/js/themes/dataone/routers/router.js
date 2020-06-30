@@ -26,6 +26,7 @@ function ($, _, Backbone) {
 			'logout(/)'                    : 'logout',          // logout the user
 			'signout(/)'                   : 'logout',          // logout the user
 			'signin(/)'					: 'renderTokenSignIn',
+			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal' // old portal route
 		},
 
 		helpPages: {
@@ -35,6 +36,12 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
+			
+			// Add routes to portal dynamically using the appModel portal term
+			var portalTermPlural = MetacatUI.appModel.get("portalTermPlural");
+			this.route( portalTermPlural + "(/:portalId)(/:portalSection)(/)",
+									["portalId", "portalSection"], this.renderPortal
+								);
 
 			// This route handler replaces the route handler we had in the
 			// routes table before which was "view/*pid". The * only finds URL
@@ -357,30 +364,34 @@ function ($, _, Backbone) {
 				MetacatUI.appView.showView(MetacatUI.appView.externalView);
 			}
 		},
+		
+		 /**		 
+		  * renderPortal - Render the portal view based on the given name or id, as
+		  * well as optional section	 
+		  * 			
+		  * @param  {string} label         The portal ID or name
+		  * @param  {string} portalSection A specific section within the portal 
+		  */			
+		 renderPortal: function(label, portalSection) {
+	
+			 // Add the overall class immediately so the navbar is styled correctly right away
+			 $("body").addClass("PortalView");
+			 // Look up the portal document seriesId by its registered name if given
+			 if ( portalSection ) {
+				 this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label + "/" + portalSection);
+			 }
+			 else{
+				 this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label);
+			 }
 
-    /**
-     * Render the portal view based on the given name, id, or section
-     */
-     renderPortal: function(portalId, portalSection) {
-       // Add the overall class immediately so the navbar is styled correctly right away
- 			 $("body").addClass("PortalView");
-       // Look up the portal document seriesId by its registered name if given
-       if ( portalSection ) {
-         this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label + "/" + portalSection);
-       }
-       else{
-         this.routeHistory.push(MetacatUI.appModel.get("portalTermPlural") + "/" + label);
-       }
-
-       require(['views/portals/PortalView'], function(PortalView){
-         MetacatUI.appView.portalView = new PortalView({
-             label: label,
-             activeSectionLabel: portalSection
-         });
-         MetacatUI.appView.showView(MetacatUI.appView.portalView);
-       });
-      },
-
+			 require(['views/portals/PortalView'], function(PortalView){
+				 MetacatUI.appView.portalView = new PortalView({
+						 label: label,
+						 activeSectionLabel: portalSection
+				 });
+				 MetacatUI.appView.showView(MetacatUI.appView.portalView);
+			 });
+		 },
 		/*
 		* Gets an array of route names that are set on this router.
 		* @return {Array} - An array of route names, not including any special characters
