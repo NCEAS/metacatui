@@ -197,7 +197,7 @@ define(['jquery', 'underscore', 'backbone'],
       * filter options.
       * @type {string[]}
       * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
-      * @example ["all", "annotation", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
+      * @example ["all", "annotation", "attribute", "dataSource", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       */
       defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 

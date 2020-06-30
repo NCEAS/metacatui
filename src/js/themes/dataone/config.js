@@ -22,6 +22,7 @@ MetacatUI.AppConfig = Object.assign({
   displayRepoLogosInSearchResults: true,
   disableQueryPOSTs: true,
   enableSolrJoins: true,
+  defaultSearchFilters: ["all", "attribute", "documents", "dataSource", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
   //Submissions
   contentIsModerated: false,
