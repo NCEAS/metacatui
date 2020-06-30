@@ -917,6 +917,11 @@ define(['jquery',
         var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
         var latLngCEN = bounds.getCenter();
 
+        //If there isn't a center point found, don't draw the map.
+        if( typeof latLngCEN == "undefined" ){
+          return;
+        }
+
         var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() +
               "&spn=0.003833,0.010568" +
               "&t=m" +
