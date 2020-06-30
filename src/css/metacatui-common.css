@@ -3078,7 +3078,7 @@ textarea.markdown {
 	line-height: 1.6em;
 	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
 	/* so that the textarea is below any and all editor buttons/controls */
-	order: 99; 
+	order: 99;
 }
 
 .wk-container textarea.markdown{
@@ -4083,8 +4083,8 @@ add font awesome close icon */
 /******************************************
 * Table of Contents
 ********************************************/
-/* The TOC is used optionally in both the markdown view and the preview portion 
- of the markdown editor view. Markdown & markdown editor views are used in the 
+/* The TOC is used optionally in both the markdown view and the preview portion
+ of the markdown editor view. Markdown & markdown editor views are used in the
  portal editor and portal views. */
 .toc-view.affix{
   top: 20px;
@@ -4103,13 +4103,13 @@ add font awesome close icon */
 	position: -webkit-sticky;
   background-color: #2c6f90; /* Back-up color for IE */
   background-color: var(--portal-primary-color);
-  
+
   padding: 0px;
 }
 .toc-ul > li > a {
 	text-shadow: none;
   padding-left: 20px;
-  padding-right: 20px; 
+  padding-right: 20px;
   margin: 0px;
 }
 
@@ -5990,6 +5990,13 @@ body.mapMode{
 }
 #portal-filters > .nav-tabs > li:last-child > a{
 	border-right: 0px;
+}
+/* Hide the Spatial Filter elements until we fully support spatial filters */
+.portal-editor .filter-groups.vertical .applied-filter.label.custom{
+  display: none;
+}
+.portal-editor .toggle-map-filter {
+  display: none !important;
 }
 
 /******** Toggle Widget ************/
