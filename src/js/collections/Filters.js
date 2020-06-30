@@ -237,7 +237,8 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 //Find all the filters in this collection that are related to geohashes
                 this.each(function(filterModel) {
                     if (!filterModel.get("isInvisible") &&
-                        _.intersection(filterModel.fields, ["geohashes", "geohashLevel", "geohashGroups"]).length) {
+                        ( filterModel.type == "SpatialFilter" ||
+                          _.intersection(filterModel.fields, ["geohashes", "geohashLevel", "geohashGroups"]).length )) {
                         filterModel.resetValue();
                     }
                 });
