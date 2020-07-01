@@ -44,8 +44,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
 			this.metricsModel = (typeof options.metricsModel === undefined) ? undefined : options.metricsModel;
+
 			this.userType = (typeof options.userType === undefined) ? undefined : options.userType;
 			this.userId = (typeof options.userId === undefined) ? undefined : options.userId;
+			this.userLabel = (typeof options.userLabel === undefined) ? undefined : options.userLabel;
+
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 
@@ -68,9 +71,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			// Check if the node is a coordinating node
 			var userIsCN= false;
-			if( this.userType !== undefined && this.userId !== undefined) {
+			if( this.userType !== undefined && this.userLabel !== undefined) {
 				if (this.userType === "repository") {
-					userIsCN = MetacatUI.nodeModel.isCN(this.userId);
+					userIsCN = MetacatUI.nodeModel.isCN(this.userLabel);
 					this.userIsCN = userIsCN;
 				}
 			}
@@ -221,9 +224,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 		// Only gather replication stats if the view is a repository view
 		if (this.userType === "repository") {
-			if (this.userId !== undefined)
+			if (this.userLabel !== undefined)
 			{
-				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent("urn:node:" + (this.userId).toUpperCase()));
+				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.userId));
 				this.model.getTotalReplicas(identifier);
 			}
 			else if (this.nodeSummaryView) {

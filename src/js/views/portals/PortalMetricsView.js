@@ -110,11 +110,20 @@ define(["jquery",
             if(this.model.get("searchResults").header.get("numFound") == 0 ){
               // The description for when there is no data in the collection
               var description = "There are no datasets in " + this.model.get("label") + " yet.";
+
+              // update to nodeName for repo profiles
+              if(this.nodeView && typeof this.nodeName !== 'undefined')
+                description = "There are no datasets in " + this.nodeName + " yet.";
+
             }
             // For portals with data in the collection
             else {
               // The description to use for a portal with data
-              var description = "A summary of all datasets from " + this.model.get("label");
+              var description = "A summary of all datasets from " + this.model.get("label") + ".";
+
+              // update to nodeName for repo profiles
+              if(this.nodeView && typeof this.nodeName !== 'undefined')
+                description = "A summary of all datasets from " + this.nodeName + ".";
 
             }
 
@@ -124,7 +133,6 @@ define(["jquery",
             //If Solr Joins are enabled, set the query on the StatsModel using the Portal Filters
             if( MetacatUI.appModel.get("enableSolrJoins") && this.model.get("definitionFilters") ){
 
-              console.log(this.model.getQuery());
               statsModel.set("query", this.model.getQuery());
 
             }
@@ -226,7 +234,8 @@ define(["jquery",
                 el: document.createElement("div"),
                 model: statsModel,
                 userType: userType,
-                userId: this.model.get("label"),
+                userId: this.model.get("seriesId"),
+                userLabel: this.model.get("label"),
                 hideMetadataAssessment: this.hideMetadataAssessment,
                 // Rendering metrics on the portal
                 hideCitationsChart: this.hideCitationsChart,

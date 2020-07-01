@@ -234,6 +234,7 @@ define(["jquery",
                 return nodeModel.identifier.toLowerCase() == "urn:node:" + view.label.toLowerCase();
                 });
               this.nodeInfo = nodeInfo;
+              this.nodeName = this.nodeInfo.name;
               this.portalId = this.nodeInfo.identifier;
 
               // create a portal model for repository
@@ -318,7 +319,8 @@ define(["jquery",
                     model: this.model,
                     id: this.model.get("metricsLabel"),
                     uniqueSectionName: this.model.get("metricsLabel"),
-                    nodeView: this.nodeView
+                    nodeView: this.nodeView,
+                    nodeName: this.nodeName
                   });
 
                   this.subviews.push(this.metricsView);

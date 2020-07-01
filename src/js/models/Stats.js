@@ -838,7 +838,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       var requestSettings = {
           url: MetacatUI.appModel.get("queryServiceUrl") +
             "q=replicaMN:" + memberNodeID +
-            " -datasource:" + memberNodeID +
+            " AND  -datasource:" + memberNodeID +
+            " AND formatType:METADATA" +
+            " AND -obsoletedBy:*" +
             " &wt=json&rows=0",
           type: "GET",
           dataType: "json",
