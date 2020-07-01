@@ -91,6 +91,14 @@ define(['jquery', 'underscore', 'backbone'],
       nodeId: null,
 
       /**
+      * If true, this MetacatUI instance is pointing to a CN rather than a MN.
+      * This attribute is set during the AppModel initialization, based on the other configured attributes.
+      * @readonly
+      * @type {boolean}
+      */
+      isCN: false,
+
+      /**
       * Enable or disable the user profiles. If enabled, users will see a "My profile" link
       * and can view their datasets, metrics on those datasets, their groups, etc.
       * @type {boolean}
@@ -315,16 +323,16 @@ define(['jquery', 'underscore', 'backbone'],
       * The base URL of the DataONE Coordinating Node (CN). CHange this if you
       * are testing a deployment in a development environment.
       * @type {string}
-      * @default "https://cn.dataone.org/"
-      * @example "https://cn-stage.test.dataone.org/""
+      * @default "https://cn.dataone.org"
+      * @example "https://cn-stage.test.dataone.org"
       */
-      d1CNBaseUrl: "https://cn.dataone.org/",
+      d1CNBaseUrl: "https://cn.dataone.org",
       /**
       * The URL fragment for the DataONE Coordinating Node (CN) API.
       * @type {string}
-      * @default 'cn/v2'
+      * @default '/cn/v2'
       */
-      d1CNService: "cn/v2",
+      d1CNService: "/cn/v2",
       /**
       * The URL for the DataONE listNodes() API. This URL is contructed dynamically when the
       * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
@@ -1091,6 +1099,28 @@ define(['jquery', 'underscore', 'backbone'],
       unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/],
 
       /**
+      * A list of alternate repositories to use for fetching and saving DataONEObjects.
+      * In the AppConfig, this is an array of {@link NodeModel#members} attributes, in JSON form.
+      * These are the same attributes retireved from the Node Info document, via the d1/mn/v2/node API.
+      * The only required attributes are name, identifier, and baseURL. 
+      * @type {object[]}
+      * @example [{
+          name: "Metacat MN",
+          identifier: "urn:node:METACAT",
+          baseURL: "https://my-metacat.org/metacat/d1/mn"
+        }]
+      */
+      alternateRepositories: [],
+
+      /**
+      * The node identifier of the alternate repository that should be used for fetching and saving DataONEObjects.
+      * Since there can be multiple alternate repositories configured, this attribute can be used to specify which
+      * one is actively in use.
+      * @type {string}
+      */
+      activeAlternateRepositoryId: null,
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**
@@ -1123,22 +1153,13 @@ define(['jquery', 'underscore', 'backbone'],
         this.set("d1Service", this.get("d1CNService"));
       }
 
-      // these are pretty standard, but can be customized if needed
-      this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
-      this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
-      this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
-      this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
-      this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
+      //Set the DataONE MN API URLs
+      this.set( this.getDataONEMNAPIs() );
 
-      if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
-        this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
-      }
+      //Determine if this instance of MetacatUI is pointing to a CN, rather than a MN
+      this.set("isCN", (this.get("d1Service").indexOf("cn/v2") > 0));
 
       this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
-
-      if( this.get("enableMonitorStatus") ){
-        this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
-      }
 
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
@@ -1170,18 +1191,18 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Token URLs
         if(typeof this.get("tokenUrl") != "undefined"){
-          this.set("tokenUrl", this.get("d1CNBaseUrl") + "portal/" + "token");
+          this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/" + "token");
 
           this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
 
           //The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
           if(this.get("enableCILogonSignIn") || typeof this.get("signInUrl") !== "undefined")
-            this.set("signInUrl", this.get("d1CNBaseUrl") + "portal/" + "startRequest?target=");
+            this.set("signInUrl", this.get("d1CNBaseUrl") + "/portal/" + "startRequest?target=");
           if(typeof this.get("signInUrlOrcid") !== "undefined")
-            this.set("signInUrlOrcid", this.get("d1CNBaseUrl") + "portal/" + "oauth?action=start&target=");
+            this.set("signInUrlOrcid", this.get("d1CNBaseUrl") + "/portal/" + "oauth?action=start&target=");
 
           if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
-            this.set("signInUrlLdap", this.get("d1CNBaseUrl") + "portal/" + "ldap?target=");
+            this.set("signInUrlLdap", this.get("d1CNBaseUrl") + "/portal/" + "ldap?target=");
           }
 
 
@@ -1189,7 +1210,7 @@ define(['jquery', 'underscore', 'backbone'],
             this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
           if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
-            this.set("signOutUrl", this.get("d1CNBaseUrl") + "portal/" + "logout");
+            this.set("signOutUrl", this.get("d1CNBaseUrl") + "/portal/" + "logout");
 
         }
 
@@ -1209,11 +1230,8 @@ define(['jquery', 'underscore', 'backbone'],
 
         //Annotator API
         if(typeof this.get("annotatorUrl") !== "undefined")
-          this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');
+          this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');
       }
-
-      //The package service for v2 DataONE API
-      this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
@@ -1227,10 +1245,69 @@ define(['jquery', 'underscore', 'backbone'],
       MetacatUI.theme = this.get("theme");
       MetacatUI.themeTitle = this.get("repositoryName");
 
+      //Set up the alternative repositories
+      _.map(this.get("alternateRepositories"), function(repo){
+        _.extend(repo, this.getDataONEMNAPIs(repo.baseURL));
+      }, this);
+
+    },
+
+    /**
+    * Constructs the DataONE API URLs for the given baseUrl
+    * @param {string} [baseUrl] - The baseUrl to use in the URLs. If not specified, it uses the AppModel attributes.
+    * @returns {object}
+    */
+    getDataONEMNAPIs: function(baseUrl){
+
+      var urls = {};
+
+      if( typeof baseUrl == "undefined" ){
+        var d1Service = this.get('d1Service').substring(0, this.get('d1Service').lastIndexOf("/v2"));
+        var baseUrl = this.get("baseUrl") + this.get('context') + d1Service;
+      }
+
+      // these are pretty standard, but can be customized if needed
+      urls.viewServiceUrl    = baseUrl + '/v2/views/metacatui/';
+      urls.publishServiceUrl = baseUrl + '/v2/publish/';
+      urls.authServiceUrl    = baseUrl + '/v2/isAuthorized/';
+      urls.queryServiceUrl   = baseUrl + '/v2/query/solr/?';
+      urls.metaServiceUrl    = baseUrl + '/v2/meta/';
+      urls.packageServiceUrl = baseUrl + '/v2/packages/application%2Fbagit-097/';
+
+      if( baseUrl.indexOf("/d1/mn/") > 0 ){
+        urls.objectServiceUrl = baseUrl + '/v2/object/';
+      }
+
+      if( this.get("enableMonitorStatus") ){
+        urls.monitorStatusUrl = baseUrl + "/v2/monitor/status";
+      }
+
+      return urls;
+
     },
 
     changePid: function(model, name){
       this.set("previousPid", model.previous("pid"));
+    },
+
+    /**
+    * Gets the currently-active alternative repository that is configured in this AppModel.
+    * @returns {object}
+    */
+    getActiveAltRepo: function(){
+      //Get the alternative repositories to use for uploading objects
+      var altRepos = this.get("alternateRepositories"),
+          activeAltRepo;
+
+      //Get the active alt repo
+      if( altRepos.length && this.get("activeAlternateRepositoryId") ){
+        activeAltRepo = _.findWhere(altRepos, {identifier: this.get("activeAlternateRepositoryId") });
+
+        return activeAltRepo || null;
+      }
+      else{
+        return null;
+      }
     }
   });
   return AppModel;

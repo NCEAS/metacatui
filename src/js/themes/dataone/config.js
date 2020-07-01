@@ -36,14 +36,15 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryMetadataAssessment: false,
   hideSummaryViewsChart: false,
   displayDatasetEditButton: false,
-  displayDatasetControls: false,
-  enablePublishDOI: false,
-  enableCreatePortals: false
+  displayDatasetControls: false
 }, (MetacatUI.AppConfig || {}));
 
 MetacatUI.themeMap =
 {
 	'*': {
+    // Routers
+    "routers/BaseRouter" : MetacatUI.root + "/js/routers/router.js",
+    "routers/router" : MetacatUI.root + "/js/themes/" + MetacatUI.theme + "/routers/router.js",
 		// example overrides are provided here
 		'templates/navbar.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/navbar.html',
 		'templates/footer.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/footer.html',

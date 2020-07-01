@@ -67,6 +67,18 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       "keypress [contenteditable]" : "showControls"
     },
 
+    initialize: function(){
+
+      //If this MetacatUI instance is pointing to the CN, use an alternate repo
+      if( MetacatUI.appModel.get("isCN") ){
+        if( MetacatUI.appModel.get("alternateRepositories").length ){
+          //Set the active alt repository as the first one in the list
+          MetacatUI.appModel.set("activeAlternateRepositoryId", MetacatUI.appModel.get("alternateRepositories")[0].identifier);
+        }
+      }
+
+    },
+
     /**
     * Renders this view
     */
@@ -83,17 +95,17 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
      * model is replaced, the listeners can be reset.
      */
     setListeners: function() {
-    
+
       //Stop listening first
       this.stopListening(this.model, "errorSaving", this.saveError);
       this.stopListening(this.model, "successSaving", this.saveSuccess);
       this.stopListening(this.model, "invalid", this.showValidation);
-    
+
       //Set listeners
       this.listenTo(this.model, "errorSaving", this.saveError);
       this.listenTo(this.model, "successSaving", this.saveSuccess);
       this.listenTo(this.model, "invalid", this.showValidation);
-    
+
       // //Set a beforeunload event only if there isn't one already
       // if( !this.beforeunloadCallback ){
       //   var view = this;
