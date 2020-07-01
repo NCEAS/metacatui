@@ -176,35 +176,73 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if( !this.get("id") && !this.get("seriesid") )
               return "";
 
+            //Get the active alternative repository, if one is configured
+            var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+            //Start the base URL string
+            var baseUrl = "";
+
             // Determine if we're updating a new/existing object,
             // or just its system metadata
+            // New uploads use the object service URL
             if ( this.isNew() ) {
-                // This is a new upload, use MN.create()
-            return MetacatUI.appModel.get("objectServiceUrl") +
-                    (encodeURIComponent(this.get("id")));
+
+              //Use the object service URL from the alt repo
+              if( activeAltRepo ){
+                baseUrl = activeAltRepo.objectServiceUrl;
+              }
+              //If this MetacatUI deployment is pointing to a MN, use the object service URL from the AppModel
+              else{
+                baseUrl = MetacatUI.appModel.get("objectServiceUrl");
+              }
+
+              //Return the full URL
+              return baseUrl + (encodeURIComponent(this.get("id")));
 
             }
             else {
-                if ( this.hasUpdates() ) {
-                    if ( this.get("hasContentChanges") ) {
-                        // Exists on the server, use MN.update()
-                    return MetacatUI.appModel.get("objectServiceUrl") +
-                        (encodeURIComponent(this.get("oldPid")));
+              if ( this.hasUpdates() ) {
+                if ( this.get("hasContentChanges") ) {
 
-                    } else {
-                        // Exists on the server, use MN.updateSystemMetadata()
-                    return MetacatUI.appModel.get("metaServiceUrl") +
-                            (encodeURIComponent(this.get("id")));
+                  //Use the object service URL from the alt repo
+                  if( activeAltRepo ){
+                    baseUrl = activeAltRepo.objectServiceUrl;
+                  }
+                  else{
+                    baseUrl = MetacatUI.appModel.get("objectServiceUrl");
+                  }
 
-                    }
+                  // Exists on the server, use MN.update()
+                  return baseUrl + (encodeURIComponent(this.get("oldPid")));
 
                 } else {
-                  // Use MN.getSystemMetadata()
-                  return MetacatUI.appModel.get("metaServiceUrl") +
-                          (encodeURIComponent(this.get("id")) ||
-                           encodeURIComponent(this.get("seriesid")));
+
+                  //Use the meta service URL from the alt repo
+                  if( activeAltRepo ){
+                    baseUrl = activeAltRepo.metaServiceUrl;
+                  }
+                  else{
+                    baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+                  }
+
+                  // Exists on the server, use MN.updateSystemMetadata()
+                  return baseUrl + (encodeURIComponent(this.get("id")));
+
+                }
+              } else {
+                //Use the meta service URL from the alt repo
+                if( activeAltRepo ){
+                  baseUrl = activeAltRepo.metaServiceUrl;
+                }
+                else{
+                  baseUrl = MetacatUI.appModel.get("metaServiceUrl");
                 }
 
+                // Use MN.getSystemMetadata()
+                return baseUrl +
+                        (encodeURIComponent(this.get("id")) ||
+                         encodeURIComponent(this.get("seriesid")));
+              }
             }
           },
 
