@@ -868,6 +868,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Stop listening to changes in the model
 			this.stopListening(this.model);
 
+			//Stop listening to resize
+			$(window).off("resize");
+
 			//Reset the stats model
 			this.model = null;
 		},
