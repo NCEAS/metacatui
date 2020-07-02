@@ -17,10 +17,10 @@
 			<h3><i class='icon icon-signal'></i></h3>
 			<h3> <%= summaryTerm %> </h3>
 		</div>
-		<section class="charts">
+		<section class="charts row-fluid">
 			<div class="summary-container span3">
-				<div class="span9 offset2 show-loading summary-count-container" id="total-datasets"></div>
-				<div class="span9 offset2 subtle">
+				<div class="show-loading summary-count-container" id="total-datasets"></div>
+				<div class="subtle">
 					<p>
 						The total number of publicly-available metadata records.
 						Only the latest version of each metadata record is counted.
@@ -29,9 +29,9 @@
 					</p>
 				</div>
 			</div>
-			<div class="summary-container span3 offset1">
-				<div class="span9 offset2 show-loading summary-count-container" id="total-size"></div>
-				<div class="span9 offset2 subtle">
+			<div class="summary-container span3">
+				<div class="show-loading summary-count-container" id="total-size"></div>
+				<div class="subtle">
 					<p>
 						The volume of all publicly-available metadata and data files
 						in this <%= userTerm %>. Only the latest version of each file is
@@ -40,9 +40,9 @@
 				</div>
 			</div>
 			<% if(userTerm == "repository" && !userIsCN){ %>
-				<div class="summary-container span3 offset1" id="replicas-container">
-					<div class="span9 offset2 show-loading summary-count-container" id="total-replicas"></div>
-					<div class="span9 offset2 subtle">
+				<div class="summary-container span3" id="replicas-container">
+					<div class="show-loading summary-count-container" id="total-replicas"></div>
+					<div class="subtle">
 						<p>
 							The total number of data replicas hosted in this <%= userTerm %>.
 						</p>

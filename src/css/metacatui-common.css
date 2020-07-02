@@ -4835,9 +4835,6 @@ address.email-container:before{
 .profile .circle-badge text.no-activity{
 	fill: #CCC;
 }
-.profile .chart-title{
-	float: left;
-}
 .profile .charts{
   box-sizing: border-box;
   display: flex;
@@ -4851,9 +4848,6 @@ address.email-container:before{
 .profile .stripe{
 	clear: both;
 	min-height: 200px;
-}
-.profile .chart-title{
-	height: 100%;
 }
 .profile .chart-title.uploads{
 	width: 100%;
