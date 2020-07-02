@@ -127,9 +127,24 @@ define(["jquery",
       if(!options) var options = {};
       else options = _.clone(options);
 
+      //Get the active alternative repository, if one is configured
+      var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+      if( activeAltRepo ){
+        baseUrl = activeAltRepo.metaServiceUrl;
+      }
+      else{
+        baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+      }
+
+      //Exit if no base URL was found
+      if( !baseUrl ){
+        return;
+      }
+
       var model = this,
         fetchOptions = _.extend({
-          url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id") || this.get("seriesId")),
+          url: baseUrl + encodeURIComponent(this.get("id") || this.get("seriesId")),
           dataType: "text",
           success: function(response){
             model.set(DataONEObject.prototype.parse.call(model, response));

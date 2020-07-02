@@ -126,6 +126,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     initialize: function(options){
 
+      EditorView.prototype.initialize.call(this, options);
+
       //Reset arrays and objects set on this View, otherwise they will be shared across intances, causing errors
       this.subviews = new Array();
       this.sectionsView = null;

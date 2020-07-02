@@ -67,18 +67,6 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       "keypress [contenteditable]" : "showControls"
     },
 
-    initialize: function(){
-
-      //If this MetacatUI instance is pointing to the CN, use an alternate repo
-      if( MetacatUI.appModel.get("isCN") ){
-        if( MetacatUI.appModel.get("alternateRepositories").length ){
-          //Set the active alt repository as the first one in the list
-          MetacatUI.appModel.set("activeAlternateRepositoryId", MetacatUI.appModel.get("alternateRepositories")[0].identifier);
-        }
-      }
-
-    },
-
     /**
     * Renders this view
     */
@@ -87,6 +75,14 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       $("body").addClass("Editor rendering");
 
       this.delegateEvents();
+
+      //If this MetacatUI instance is pointing to the CN, use an alternate repo
+      if( MetacatUI.appModel.get("isCN") ){
+        if( MetacatUI.appModel.get("alternateRepositories").length ){
+          //Set the active alt repository as the first one in the list
+          MetacatUI.appModel.set("activeAlternateRepositoryId", MetacatUI.appModel.get("alternateRepositories")[0].identifier);
+        }
+      }
     },
 
     /**
@@ -544,6 +540,9 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         window.removeEventListener("beforeunload", this.beforeunloadCallback);
         delete this.beforeunloadCallback;
       }
+
+      //Reset the active alternate repository
+      MetacatUI.appModel.set("activeAlternateRepositoryId", null);
 
       //Remove the class from the body element
       $("body").removeClass("Editor rendering");

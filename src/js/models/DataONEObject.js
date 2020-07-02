@@ -254,8 +254,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if ( ! options ) var options = {};
             else var options = _.clone(options);
 
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
             // Default to GET /meta
-            options.url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id"));
+            options.url = baseUrl + encodeURIComponent(this.get("id"));
 
             //If we are using the Solr service to retrieve info about this object, then construct a query
             if((typeof options != "undefined") && options.solrService){
@@ -720,8 +731,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             var model = this;
 
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
             var requestSettings = {
-                url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id"))),
+                url: baseUrl + (encodeURIComponent(this.get("id"))),
                 cache: false,
                 contentType: false,
                 dataType: "text",
@@ -816,9 +838,20 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             if(!action) var action = "changePermission";
 
-            var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
-            if(!authServiceUrl)
+            //Get the active alternative repository, if one is configured
+            var baseUrl = "";
+            var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.authServiceUrl;
+            }
+            else{
+              baseUrl = MetacatUI.appModel.get("authServiceUrl");
+            }
+
+            if( !baseUrl ){
               return false;
+            }
 
             var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
                   model.set("isAuthorized", true);
@@ -836,7 +869,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             var model = this;
             var requestSettings = {
-              url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
+              url: baseUrl + encodeURIComponent(identifier) + "?action=" + action,
               type: "GET",
               success: onSuccess,
               error: onError
@@ -1415,15 +1448,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * @param {string} [possiblyNewer] - The identifier of the object that obsoletes the latestVersion. It's "possibly" newer, because it may be private/inaccessible
            */
           findLatestVersion: function(latestVersion, possiblyNewer){
-            // Make sure we have the /meta service configured
-            if(! MetacatUI.appModel.get('metaServiceUrl')) return;
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
+            if( !baseUrl ){
+              return;
+            }
 
             //If there is no system metadata, then retrieve it first
             if(!this.get("sysMetaXML")){
               this.once("sync", this.findLatestVersion);
               this.once("systemMetadataSync", this.findLatestVersion);
               this.fetch({
-                url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
+                url: baseUrl + encodeURIComponent(this.get("id")),
                 dataType: "text",
                 systemMetadataOnly: true
               });
@@ -1455,7 +1500,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             //Get the system metadata for the possibly newer version
             var requestSettings = {
-              url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer),
+              url: baseUrl + encodeURIComponent(possiblyNewer),
               type: "GET",
               success: function(data) {
 

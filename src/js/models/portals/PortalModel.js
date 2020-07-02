@@ -131,12 +131,20 @@ define(["jquery",
              * @return {string} The portal URL
             */
             url: function() {
-              
+
+              //Start the base URL string
               // use the resolve service if there is no object service url
               // (e.g. in DataONE theme)
               var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
                 MetacatUI.appModel.get("resolveServiceUrl");
-              
+
+              //Get the active alternative repository, if one is configured
+              var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+              if( activeAltRepo ){
+                urlBase = activeAltRepo.objectServiceUrl;
+              }
+
               //If this object is being updated, use the old pid in the URL
               if ( !this.isNew() && this.get("oldPid") ) {
                 return urlBase +
@@ -222,8 +230,21 @@ define(["jquery",
 
               var model = this;
 
+              //Get the base URL for the Solr query
+              var baseUrl = "";
+
+              //Get the active alternative repository, if one is configured
+              var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+              if( activeAltRepo ){
+                baseUrl = activeAltRepo.queryServiceUrl;
+              }
+              else{
+                baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+              }
+
               var requestSettings = {
-                  url: MetacatUI.appModel.get("queryServiceUrl") +
+                  url: baseUrl +
                        "q=label:\"" + this.get("label") + "\" OR " +
                        "seriesId:\"" + this.get("label") + "\"" +
                        "&fl=seriesId,id,label" +
