@@ -1674,10 +1674,6 @@ section.user-view-section > .section.active {
   	display: block;
   }
 
-.profile .chart-title{
-	float: left;
-}
-
 .profile .chart-title h2{
 	font-size: 31px;
 	font-weight: 300;

@@ -1232,7 +1232,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 .profile .chart-title{
 	width: 280px;
-	float: left;
 }
 
 .profile .chart-title h2{
