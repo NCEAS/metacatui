@@ -44,7 +44,7 @@ static_files:
   # "favicon-16x16.png" : favicon.png"
 ---
 
-### Version: 2020-06-30 13:17:51.006388 -0400 EDT m=+4.036352705
+### Version: 2020-07-01 22:00:33.420791 -0400 EDT m=+3.490475919
 
 # Exports from the DataONE website for the MetacatUI DataONE theme
 
@@ -78,6 +78,7 @@ The `src/js/themes/dataone/templates/appHead.html` template has a `<link>` point
 Whenever these files are updated, the MetacatUI theme should be previewed to ensure that changes integrate well.
 There is the potential for conflicting CSS rules.
 Some rules are already set to make the two themes compatible in the `src/js/themes/dataone/css/metacatui.css` file.
+To help avoid conflicts, exported CSS classes are prefixed with `d1-`.
 
 ## Changing the exports from Hugo
 

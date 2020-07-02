@@ -26,7 +26,7 @@ function ($, _, Backbone) {
 			'external(/*url)(/)'                : 'renderExternal', // renders the content of the given url in our UI
 			'logout(/)'                         : 'logout', // logout the user
 			'signout(/)'                        : 'logout', // logout the user
-			'signin(/)'                         : 'renderSignIn', // logout the user
+			'signin(/)'                         : 'renderSignIn', // signin the user
 			"signinsuccess(/)"                  : "renderSignInSuccess",
 			"signinldaperror(/)"                : "renderLdapSignInError",
 			"signinLdap(/)"                     : "renderLdapSignIn",
@@ -539,7 +539,6 @@ function ($, _, Backbone) {
 		},
 
 		renderSignInSuccess: function(){
-
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
 		},
