@@ -2525,3 +2525,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   background-color: #FFFFFF;
   color: #1C6E84;
 }
+
+.quick-stats-count{
+	color: #FF6633;
+	fill: #FF6633;
+	font-size: xx-large;
+}
+.portal-view .quick-stats-count{
+	color: #FF6633; /* Back-up color for IE */
+	fill: #FF6633; /* Back-up color for IE */
+	color: var(--portal-primary-color);
+	fill: var(--portal-primary-color);
+	font-size: xx-large;
+}

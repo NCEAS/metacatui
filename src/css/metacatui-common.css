@@ -7365,6 +7365,11 @@ CSS library fixes
 .quick-stats-count{
 	color: #2c6f90; /* Back-up color for IE */
 	fill: #2c6f90; /* Back-up color for IE */
+	font-size: xx-large;
+}
+.portal-view .quick-stats-count{
+	color: #2c6f90; /* Back-up color for IE */
+	fill: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
 	font-size: xx-large;
