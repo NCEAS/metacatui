@@ -71,17 +71,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			// Check if the node is a coordinating node
 			var userIsCN= false;
+			this.userIsCN = userIsCN;
 			if( this.userType !== undefined && this.userLabel !== undefined) {
 				if (this.userType === "repository") {
-					userIsCN = MetacatUI.nodeModel.isCN(this.userLabel);
-					this.userIsCN = userIsCN;
+					userIsCN = MetacatUI.nodeModel.isCN(this.userId);
+					if (userIsCN && typeof isCN !== 'undefined')
+						this.userIsCN = true;
 				}
 			}
 
 			if ( options.nodeSummaryView ) {
 				this.nodeSummaryView = true;
 				var nodeId = MetacatUI.appModel.get("nodeId");
-				this.userIsCN = MetacatUI.nodeModel.isCN(nodeId);
+				userIsCN = MetacatUI.nodeModel.isCN(nodeId);
+				if (userIsCN && typeof userIsCN !== 'undefined')
+					this.userIsCN = true;
 
 				// Overwrite the metrics display flags as set in the AppModel
         this.hideMetadataAssessment = false;
