@@ -601,7 +601,7 @@ define(["jquery",
 
         // If the label is a restricted string
         var blockList = this.get("labelBlockList");
-        if( blocklist && Array.isArray(blockList) ){
+        if( blockList && Array.isArray(blockList) ){
           if(blockList.includes(label)){
             return "This URL is already taken, please try something else";
           }

@@ -62,6 +62,7 @@ define(["jquery",
                     acknowledgments: null,
                     acknowledgmentsLogos: [],
                     awards: [],
+                    checkedNodeLabels: false,
                     literatureCited: [],
                     filterGroups: [],
                     createSeriesId: true, //If true, a seriesId will be created when this object is saved.
@@ -1279,8 +1280,7 @@ define(["jquery",
             },
 
             /**
-            * Queries the Solr discovery index for other Portal objects with this same label.
-            * Also, checks for the existing block list for repository labels
+            * Checks for the existing block list for repository labels
             * If at least one other Portal has the same label, then it is not available.
             * @param {string} label - The label to query for
             */
@@ -1299,6 +1299,34 @@ define(["jquery",
 
               var model = this;
 
+              if (!this.get("checkedNodeLabels")) {
+                // query CN to fetch the latest node data
+                model.updateNodeBlockList();
+
+                this.listenTo(this, "change:checkedNodeLabels", function(){
+                  this.checkPortalLabelAvailability(label);
+                });
+              }
+              else {
+                this.checkPortalLabelAvailability(label);
+              }
+
+            },
+
+            /**
+             * Queries the Solr discovery index for other Portal objects with this same label.
+             * Also, checks for the existing block list for repository labels
+             * If at least one other Portal has the same label, then it is not available.
+             * @param {string} label - The label to query for
+             */
+            checkPortalLabelAvailability: function(label) {
+              var model = this;
+
+              // Stop Listening to the node model. We only need to retrieve this node label once.
+              this.stopListening(this, "change:checkedNodeLabels", function(){
+                this.checkPortalLabelAvailability(label);
+              });
+
               // Convert the block list to lower case for case insensitive match
               var lowerCaseBlockList = this.get("labelBlockList").map(function(value) {
                 return value.toLowerCase();
@@ -1312,32 +1340,128 @@ define(["jquery",
 
               // Query solr to see if other portals already use this label
               var requestSettings = {
-                  url: MetacatUI.appModel.get("queryServiceUrl") +
-                       "q=label:\"" + label + "\"" +
-                       " AND formatId:\"" + this.get("formatId") + "\"" +
-                       "&rows=0" +
-                       "&wt=json",
-                  error: function(response) {
-                    model.trigger("errorValidatingLabel");
-                  },
-                  success: function(response){
-                    if( response.response.numFound > 0 ){
-                      //Add this label to the blockList so we don't have to query for it later
-                      var blockList = model.get("labelBlockList");
-                      if( Array.isArray(blockList) ){
-                        blockList.push(label);
-                      }
-
-                      model.trigger("labelTaken");
-                    } else {
-                      model.trigger("labelAvailable");
+                url: MetacatUI.appModel.get("queryServiceUrl") +
+                     "q=label:\"" + label + "\"" +
+                     " AND formatId:\"" + this.get("formatId") + "\"" +
+                     "&rows=0" +
+                     "&wt=json",
+                error: function(response) {
+                  model.trigger("errorValidatingLabel");
+                },
+                success: function(response){
+                  if( response.response.numFound > 0 ){
+                    //Add this label to the blockList so we don't have to query for it later
+                    var blockList = model.get("labelBlockList");
+                    if( Array.isArray(blockList) ){
+                      blockList.push(label);
                     }
-                  }
-              }
 
+                    model.trigger("labelTaken");
+                  } else {
+                    model.trigger("labelAvailable");
+                  }
+                }
+              }
               //Attach the User auth info and send the request
               requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
               $.ajax(requestSettings);
+            },
+
+            
+
+            /**
+             * Queries the CN Solr to retrieve the updated BlockList
+             */
+            updateNodeBlockList: function(){
+              var model  = this;
+              
+              $.ajax({
+                url: MetacatUI.appModel.get('nodeServiceUrl'),  
+                dataType: "text",
+                error:  function(data, textStatus, xhr) { 
+                  // if there is an error in retrieving the node list;
+                  // proceed with the existing node list to perform the checks
+                  model.checkPortalLabelAvailability()
+                },
+                success: function(data, textStatus, xhr) { 
+                  
+                  var xmlResponse = $.parseXML(data) || null;
+                  if(!xmlResponse) return;
+                  
+                  // update the node block list on success
+                  model.saveNodeBlockList(xmlResponse);
+                }		
+              });
+            },
+            
+            /**
+             * Parses the retrieved XML document and saves the node information to the BlockList
+             * 
+             * @param {XMLDocument} The XMLDocument returned from the fetch() AJAX call
+             */
+            saveNodeBlockList: function(xml){
+              var model = this,
+                children   = xml.children || xml.childNodes;
+                
+              //Traverse the XML response to get the MN info
+              _.each(children, function(d1NodeList){
+                
+                var d1NodeListChildren = d1NodeList.children || d1NodeList.childNodes;
+                
+                //The first (and only) child should be the d1NodeList
+                _.each(d1NodeListChildren, function(thisNode){
+                  
+                  //Ignore parts of the XML that is not MN info
+                  if(!thisNode.attributes) return;
+                  
+                  //'node' will be a single node
+                  var node = {},
+                    nodeProperties = thisNode.children || thisNode.childNodes;
+                  
+                  //Grab information about this node from XML nodes
+                  _.each(nodeProperties, function(nodeProperty){
+                    
+                    if(nodeProperty.nodeName == "property")
+                      node[$(nodeProperty).attr("key")] = nodeProperty.textContent;
+                    else
+                      node[nodeProperty.nodeName] = nodeProperty.textContent;
+                    
+                    //Check if this member node has v2 read capabilities - important for the Package service
+                    if((nodeProperty.nodeName == "services") && nodeProperty.childNodes.length){
+                      var v2 = $(nodeProperty).find("service[name='MNRead'][version='v2'][available='true']").length;
+                      node["readv2"] = v2;
+                    }
+                  });
+                  
+                  //Grab information about this node from XLM attributes 
+                  _.each(thisNode.attributes, function(attribute){
+                    node[attribute.nodeName] = attribute.nodeValue;
+                  });
+
+                  // Append Node name, node identifier and node short identifier to the array.
+                  // node identifier
+                  if (Array.isArray(model.get("labelBlockList")) && ((model.get("labelBlockList")).indexOf(node.identifier) < 0)) {
+                    model.get("labelBlockList").push(node.identifier);
+                  }
+
+                  // node name
+                  if(node.CN_node_name) {
+                    node.name = node.CN_node_name;
+                    if (Array.isArray(model.get("labelBlockList")) && ((model.get("labelBlockList")).indexOf(node.name) < 0)) {
+                      model.get("labelBlockList").push(node.name);
+                    }
+                  }
+        
+                  // node short identifier
+                  node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
+                  if (Array.isArray(model.get("labelBlockList")) && ((model.get("labelBlockList")).indexOf(node.shortIdentifier) < 0)) {
+                    model.get("labelBlockList").push(node.shortIdentifier);
+                  }
+                
+                });
+              });
+
+              this.set("checkedNodeLabels", "true");
             },
 
             /**
