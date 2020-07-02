@@ -1280,7 +1280,7 @@ define(["jquery",
 
             /**
             * Queries the Solr discovery index for other Portal objects with this same label.
-            * Also, checks for the existing black list for repository labels
+            * Also, checks for the existing block list for repository labels
             * If at least one other Portal has the same label, then it is not available.
             * @param {string} label - The label to query for
             */
@@ -1299,13 +1299,13 @@ define(["jquery",
 
               var model = this;
 
-              // Convert the black list to lower case for case insensitive match
-              var lowerCaseBlackList = this.get("labelBlacklist").map(function(value) {
+              // Convert the block list to lower case for case insensitive match
+              var lowerCaseBlockList = this.get("labelBlockList").map(function(value) {
                 return value.toLowerCase();
               });
 
-              // Check the existing blacklist before making a Solr call
-              if (lowerCaseBlackList.indexOf(label.toLowerCase()) > -1) {
+              // Check the existing blockList before making a Solr call
+              if (lowerCaseBlockList.indexOf(label.toLowerCase()) > -1) {
                 model.trigger("labelTaken");
                 return
               }
@@ -1322,10 +1322,10 @@ define(["jquery",
                   },
                   success: function(response){
                     if( response.response.numFound > 0 ){
-                      //Add this label to the blacklist so we don't have to query for it later
-                      var blacklist = model.get("labelBlacklist");
-                      if( Array.isArray(blacklist) ){
-                        blacklist.push(label);
+                      //Add this label to the blockList so we don't have to query for it later
+                      var blockList = model.get("labelBlockList");
+                      if( Array.isArray(blockList) ){
+                        blockList.push(label);
                       }
 
                       model.trigger("labelTaken");

@@ -920,7 +920,7 @@ define(['jquery', 'underscore', 'backbone'],
       * The list of portals labels that no one should be able to create portals with
       * @type {string[]}
       */
-      portalLabelBlacklist: [
+      portalLabelBlockList: [
         "Dataone",
         'urn:node:CN', 'CN', 'cn',
         'urn:node:CNUNM1', 'CNUNM1', 'cn-unm-1',
