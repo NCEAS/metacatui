@@ -1102,7 +1102,7 @@ define(['jquery', 'underscore', 'backbone'],
       * A list of alternate repositories to use for fetching and saving DataONEObjects.
       * In the AppConfig, this is an array of {@link NodeModel#members} attributes, in JSON form.
       * These are the same attributes retireved from the Node Info document, via the d1/mn/v2/node API.
-      * The only required attributes are name, identifier, and baseURL. 
+      * The only required attributes are name, identifier, and baseURL.
       * @type {object[]}
       * @example [{
           name: "Metacat MN",
@@ -1274,7 +1274,7 @@ define(['jquery', 'underscore', 'backbone'],
       urls.metaServiceUrl    = baseUrl + '/v2/meta/';
       urls.packageServiceUrl = baseUrl + '/v2/packages/application%2Fbagit-097/';
 
-      if( baseUrl.indexOf("/d1/mn/") > 0 ){
+      if( baseUrl.indexOf("/d1/mn") > 0 ){
         urls.objectServiceUrl = baseUrl + '/v2/object/';
       }
 
