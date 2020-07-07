@@ -1055,7 +1055,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 return xmlString;
           },
 
-          /*
+          /**
            * Get the object format identifier for this object
            */
           getFormatId: function() {
@@ -1109,7 +1109,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           },
 
-          /*
+          /**
            * Build a fresh system metadata document for this object when it is new
            * Return it as a DOM object
            */
