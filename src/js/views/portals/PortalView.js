@@ -148,14 +148,6 @@ define(["jquery",
                   msg: "Loading..."
                 }));
 
-                //If this MetacatUI instance is pointing to the CN, use an alternate repo
-                if( MetacatUI.appModel.get("isCN") ){
-                  if( MetacatUI.appModel.get("alternateRepositories").length ){
-                    //Set the active alt repository as the first one in the list
-                    MetacatUI.appModel.set("activeAlternateRepositoryId", MetacatUI.appModel.get("alternateRepositories")[0].identifier);
-                  }
-                }
-
                 // Create a new Portal model
                 this.model = new Portal({
                     seriesId: this.portalId,

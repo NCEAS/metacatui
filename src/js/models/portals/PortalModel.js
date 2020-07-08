@@ -174,7 +174,13 @@ define(["jquery",
               if( !this.get("id") && !this.get("seriesId") && this.get("label") ){
                 this.once("change:seriesId", this.fetch);
                 this.once("latestVersionFound", this.fetch);
+
+                //Set the possible authoritative MNs for this Portal
+                this.setPossibleAuthMNs();
+
+                //Get the series ID of this object
                 this.getSeriesIdByName();
+
                 return;
               }
               //If we found the latest version in this pid version chain,
@@ -185,6 +191,19 @@ define(["jquery",
                 //Stop listening to the change of seriesId and the latest version found
                 this.stopListening("change:seriesId", this.fetch);
                 this.stopListening("latestVersionFound", this.fetch);
+              }
+
+              //If this MetacatUI instance is pointing to a CN, use the origin MN
+              // to fetch the Portal, if available as an alt repo.
+              if( MetacatUI.appModel.get("isCN") && this.get("datasource") ){
+                //Check if the origin MN (datasource) is an alt repo option
+                var altRepo = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: this.get("datasource") });
+
+                if( altRepo ){
+                  //Set the origin MN (datasource) as the active alt repo
+                  MetacatUI.appModel.set("activeAlternateRepositoryId", this.get("datasource"));
+                }
+
               }
 
               //Fetch the system metadata
@@ -230,24 +249,50 @@ define(["jquery",
 
               var model = this;
 
-              //Get the base URL for the Solr query
+              //Start the base URL for the query service
               var baseUrl = "";
 
-              //Get the active alternative repository, if one is configured
-              var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+              try{
+                //If this app instance is pointing to the CN, find the Portal series ID on the MN
+                if( MetacatUI.appModel.get("isCN") ){
 
-              if( activeAltRepo ){
-                baseUrl = activeAltRepo.queryServiceUrl;
+                  //Get the array of possible authoritative MNs
+                  var possibleAuthMNs = this.get("possibleAuthMNs");
+
+                  //If there are no possible authoritative MNs, use the CN query service
+                  if( !possibleAuthMNs.length ){
+                    baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+                  }
+                  else{
+                    baseUrl = possibleAuthMNs[0].queryServiceUrl;
+                  }
+
+                }
+                else{
+                  //Get the query service URL
+                  baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+                }
               }
-              else{
-                baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+              catch(e){
+                console.error("Error in trying to determine the query service URL. Going to try to use the AppModel setting. ", e);
+              }
+              finally{
+                //Default to the query service URL configured in the AppModel, if one wasn't set earlier
+                if( !baseUrl ){
+                  baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+                  //If there isn't a query service URL, trigger a "not found" error and exit
+                  if( !baseUrl ){
+                    this.trigger("notFound");
+                    return;
+                  }
+                }
               }
 
               var requestSettings = {
                   url: baseUrl +
                        "q=label:\"" + this.get("label") + "\" OR " +
                        "seriesId:\"" + this.get("label") + "\"" +
-                       "&fl=seriesId,id,label" +
+                       "&fl=seriesId,id,label,datasource" +
                        "&sort=dateUploaded%20asc" +
                        "&rows=1" +
                        "&wt=json",
@@ -262,7 +307,9 @@ define(["jquery",
                   success: function(response){
                     if( response.response.numFound > 0 ){
 
+                      //Set the label and datasource
                       model.set("label", response.response.docs[0].label);
+                      model.set("datasource", response.response.docs[0].datasource);
 
                       //Save the seriesId, if one is found
                       if( response.response.docs[0].seriesId ){
@@ -284,7 +331,22 @@ define(["jquery",
 
                     }
                     else{
-                      model.trigger("notFound");
+
+                      var possibleAuthMNs = model.get("possibleAuthMNs");
+                      if( possibleAuthMNs.length ){
+                        //Remove the first MN from the array, since it didn't contain the Portal, so it's not the auth MN
+                        possibleAuthMNs.shift();
+                      }
+
+                      //If there are no other possible auth MNs to check, trigger this Portal as Not Found.
+                      if( possibleAuthMNs.length == 0 || !possibleAuthMNs ){
+                        model.trigger("notFound");
+                      }
+                      //If there's more MNs to check, try again
+                      else{
+                        model.getSeriesIdByName();
+                      }
+
                     }
                   }
               }

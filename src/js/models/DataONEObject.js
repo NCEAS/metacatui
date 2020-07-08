@@ -83,6 +83,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     isAuthorized: null, // If the stated permission is authorized by the user
                     createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
+                    possibleAuthMNs: [], //A list of possible authoritative MNs of this object
                     provSources: [],
                     provDerivations: [],
                     prov_generated: [],
@@ -2036,6 +2037,56 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           }
 
           return false;
+        },
+
+        /**
+        * Creates an array of objects that represent Member Nodes that could possibly be this
+        * object's authoritative MN.
+        */
+        setPossibleAuthMNs: function(){
+
+          //Only do this for Coordinating Node MetacatUIs.
+          if( MetacatUI.appModel.get("alternateRepositories").length ){
+            //Set the possibleAuthMNs attribute
+            var possibleAuthMNs = [];
+
+            //If a datasource is already found for this Portal, move that to the top of the list of auth MNs
+            var datasource = this.get("datasource") || "";
+            if( datasource ){
+              //Find the MN object that matches the datasource node ID
+              var datasourceMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: datasource });
+              if( datasourceMN ){
+                //Clone the MN object and add it to the array
+                var clonedDatasourceMN = Object.assign({}, datasourceMN);
+                possibleAuthMNs.push(clonedDatasourceMN);
+              }
+            }
+
+            //If there is an active alternate repo, move that to the top of the list of auth MNs
+            var activeAltRepo = MetacatUI.appModel.get("activeAlternateRepositoryId") || "";
+            if( activeAltRepo ){
+              var activeAltRepoMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: datasource });
+              if( activeAltRepoMN ){
+                //Clone the MN object and add it to the array
+                var clonedActiveAltRepoMN = Object.assign({}, activeAltRepoMN);
+                possibleAuthMNs.push(clonedActiveAltRepoMN);
+              }
+            }
+
+            //Add all the other alternate repositories to the list of auth MNs
+            var otherPossibleAuthMNs = _.reject(MetacatUI.appModel.get("alternateRepositories"), function(mn){
+                                         return (mn.identifier == datasource || mn.identifier == activeAltRepo);
+                                       });
+            //Clone each MN object and add to the array
+            _.each(otherPossibleAuthMNs, function(mn){
+              var clonedMN = Object.assign({}, mn);
+              possibleAuthMNs.push(clonedMN);
+            });
+
+            //Update this model
+            this.set("possibleAuthMNs", possibleAuthMNs);
+
+          }
         }
     },
     /** @lends DataONEObject.prototype */
