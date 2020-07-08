@@ -1,6 +1,7 @@
 /* Smartphones (portrait and landscape) ----------- */
 @media only screen and (max-width : 480px) {
-	#Content{
-		padding-bottom: 270px; /* Keeps footer down */
-	}
+  #Content {
+    padding-bottom: 270px;
+    /* Keeps footer down */
+  }
 }
