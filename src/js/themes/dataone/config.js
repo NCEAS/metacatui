@@ -4,6 +4,7 @@ if( !MetacatUI.AppConfig ){
 // Set up App Configurations that are always used for the arctic theme.
 // Deployment-specific configurations can be set in a separate file
 MetacatUI.AppConfig = Object.assign({
+  root: "/",
   title: "DataONE Data Catalog",
   theme: "dataone",
   repositoryName: "DataONE Data Catalog",
