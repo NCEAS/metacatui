@@ -38,19 +38,21 @@ define(["jquery",
       * @property {string[]} unitOptions The controlled list of `unit` values that can be set on a Quota model
       * @property {string} customerId  The id of the Customer associated with this Quota
       * @property {string} subject  The user or group subject associated with this Quota
+      * @property {number} totalUsage  The total or sum of usage of this Quota
       */
       defaults: function(){
         return {
           id: "",
           name: "",
-          nameOptions: ["portals", "storage"],
+          nameOptions: ["portal", "storage", "repository_storage"],
           object: "quota",
           softLimit: 0,
           hardLimit: 0,
           unit: "",
-          unitOptions: ["portals", "bytes"],
+          unitOptions: ["portal", "byte"],
           customerId: "",
-          subject: ""
+          subject: "",
+          totalUsage: 0
         }
       }
 
