@@ -7,22 +7,32 @@ html {
 }
 
 body {
-  font: 400 14px/20px Helvetica, Arial, "sans serif";
+  /* font: 400 14px/20px Helvetica, Arial, "sans serif"; */
+  font-family: var(--ff-body, 'Work Sans', sans-serif);
+  font-size: var(--fs-body, 1rem);
+  font-weight: var(--fw-body, 400);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a,
 .annotator-widget a {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
   font-weight: 600;
 }
 
 a:hover {
   color: #10424F;
+  color: var(--c-major-accent-6);
+  filter: brightness(1.05);
   text-decoration: none;
 }
 
 body, h1, h2, h3, h4, h5, h6 {
   color: #555;
+  color: var(--c-neutral-7);
 }
 
 h1 {
@@ -38,6 +48,7 @@ strong {
 pre {
   padding: 10px;
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   /*IE 8 fallback*/
   background: rgba(22, 97, 148, 0.7);
   color: #FFFFFF;
@@ -63,6 +74,7 @@ pre {
 
 #clear-all {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   color: white;
   font-weight: normal;
 }
@@ -73,6 +85,7 @@ article, aside, figure, footer, header, hgroup, menu, nav, section {
 
 #Content {
   background-color: #FFFFFF;
+  background-color: var(--c-neutral-1);
 }
 
 .DataCatalog #Content {
@@ -98,6 +111,7 @@ article>.container {
 h1>a[name], h2>a[name], h3>a[name],
 h4>a[name], h5>a[name], h6>a[name] {
   color: #555;
+  color: var(--c-neutral-7);
   text-decoration: none;
   z-index: 20;
   /*keeps hidden anchor tags from blocking content*/
@@ -141,12 +155,62 @@ img.bg {
   /* So that right-clicking on background image will behave like right-clicking on background */
 }
 
+svg.icon {
+  fill: currentColor;
+}
+
 @media screen and (max-width: 1024px) {
   img.bg {
     left: 50%;
     margin-left: -512px;
     /* 50% */
   }
+}
+
+/* Customize bootstrap wells */
+.well {
+  background-color: var(--c-default-darker);
+  border: none;
+}
+
+/* Customize .panel and .breadcrumb */
+/* Similar to @mixin card from the dataone website */
+.panel, .breadcrumb {
+  /* padding: .625rem 1.25rem; */
+  border-radius: var(--br-default, 0.25rem);
+  box-shadow: .19rem .25rem 1.5rem -0.75rem var(--c-shadow-4-on-default);
+  background-color: var(--c-default-lighter, white);
+  border: none;
+}
+
+.breadcrumb>li>a.inactive {
+  color: var(--c-netural-4);
+}
+
+.breadcrumb>li+li:before {
+  color: var(--c-netural-2);
+}
+
+.panel-default>.panel-heading {
+  /* background-color: var(--c-default-darker); */
+  border: none;
+  background-color: transparent;
+}
+
+/* Customize input UI */
+.uneditable-input, input[type=text], input[type=password],
+input[type=datetime], input[type=datetime-local], input[type=date],
+input[type=month], input[type=time], input[type=week], input[type=number],
+input[type=email], input[type=url], input[type=tel], input[type=color],
+input[type=search], textarea {
+  border: none;
+  outline: none;
+  border-radius: var(--br-default, 0.25rem);
+  color: var(--c-neutral-6);
+  background-color: var(--c-neutral-2);
+  box-shadow: 0 .03rem .5rem -0.2rem var(--c-shadow-2-on-default);
+  /* width: 100%; */
+  border-bottom: 1.5px solid transparent;
 }
 
 /** Ellipsis Styles - both single line and multi-line, which needs particular markup structure to work. See http://codepen.io/romanrudenko/pen/ymHFh **/
@@ -208,11 +272,13 @@ img.bg {
 -------------------------------------------------- */
 /* Theme specific colours for the add section 'button' images */
 .port-editor-section svg .theme-primary-fill {
-  fill: #660033
+  fill: #660033;
+  fill: var(--c-minor-accent-6);
 }
 
 .port-editor-section svg .theme-secondary-fill {
-  fill: #1C6E84
+  fill: #1C6E84;
+  fill: var(--c-major-accent-6);
 }
 
 .port-editor-section svg .theme-accent-fill {
@@ -229,6 +295,7 @@ img.bg {
   transition: all 0.3s ease-out;
   padding: 5px;
   color: #555;
+  color: var(--c-neutral-7);
 }
 
 .depth:focus {
@@ -282,8 +349,10 @@ select {
 
 .btn {
   border: 1px solid #1C6E84;
+  border-color: var(--c-major-accent-6);
   background-image: none;
   color: #1C6E84;
+  color: var(--c-major-accent-6);
   margin-bottom: 10px;
   background-color: white;
   box-shadow: none;
@@ -294,34 +363,39 @@ select {
 .annotator-editor a:focus,
 .annotator-editor a:hover {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   background-image: none;
   color: white;
   text-shadow: none;
   cursor: pointer;
   border: 1px solid #1C6E84;
+  border-color: var(--c-major-accent-6);
   box-shadow: none;
 }
 
 .btn-primary,
 .annotator-editor a.annotator-focus,
 .annotator-editor a.annotator-save {
-  background-color: rgb(99, 28, 63);
   background-color: rgba(99, 28, 63, 1);
+  background-color: var(--c-minor-accent-5);
   background-image: none;
   transition: background-color .7s;
   box-shadow: none;
   text-shadow: none;
   border: 0px;
   color: #FFF;
+  color: var(--c-minor-accent-8);
 }
 
 .btn-primary:hover,
 .annotator-editor .annotator-save:hover {
-  background-color: rgb(157, 3, 80);
   background-color: rgba(157, 3, 80, 1);
+  background-color: var(--c-minor-accent-5);
   background-image: none;
   text-shadow: none;
   border: 0px;
+  filter: brightness(1.03);
+  color: var(--c-minor-accent-8);
 }
 
 .btn.subtle,
@@ -374,6 +448,7 @@ select {
 
 .btn-group.open .btn.dropdown-toggle {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
   background: rgba(22, 97, 148, 0.2);
 }
 
@@ -388,6 +463,7 @@ select {
 -------------------------------------------------- */
 .icon-circle-badge {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
 }
 
 /*.annotator-widget::after,
@@ -398,6 +474,7 @@ select {
 -------------------------------------------------- */
 thead tr {
   background-color: #a1b3c2;
+  background-color: var(--c-neutral-4);
   color: #FFF;
 }
 
@@ -407,6 +484,7 @@ thead tr {
 
 tr.table-header {
   background-color: #5F7F88;
+  background-color: var(--c-neutral-5);
 }
 
 tr.table-header th {
@@ -458,7 +536,7 @@ table th.btn-container .btn {
   border-bottom: 1px solid #DDD;
 }
 
-.navbar .sub-menu:before {
+/* .navbar .sub-menu:before {
   border-bottom: 7px solid trans parent;
   border-left: none;
   border-right: 7px solid rgba(0, 0, 0, 0.2);
@@ -475,8 +553,7 @@ table th.btn-container .btn {
   left: 10px;
   top: 11px;
   left: -6px;
-}
-
+} */
 .mega-dropdown-menu .mega-nav>li>a,
 .tb-megamenu .dropdown-menu a {
   display: block;
@@ -497,6 +574,7 @@ ul.tb-megamenu-subnav {
 .tb-megamenu .dropdown-menu a:hover,
 .navbar .dropdown-menu>li>a:hover {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
   text-decoration: none;
 }
 
@@ -514,6 +592,7 @@ ul.tb-megamenu-subnav {
 .mega-dropdown-menu .mega-nav>li>a.mega-group-title,
 .tb-megamenu .dropdown-menu a.mega-group-title {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
   font-weight: bold;
   text-transform: uppercase;
   font-size: .9em;
@@ -546,6 +625,7 @@ ul.tb-megamenu-subnav {
 
 .panel>.list-group .list-group-item.active {
   border-left-color: #660033;
+  border-left-color: var(--c-minor-accent-6);
 }
 
 /* METADATA VIEW CSS
@@ -556,16 +636,11 @@ ul.tb-megamenu-subnav {
 }
 
 .metadata-index {
-  /*border: 1px solid #1C6E84;*/
   padding: 20px;
   border-radius: 7px;
   -moz-border-radius: 7px;
   -webkit-border-radius: 7px;
   -o-border-radius: 7px;
-}
-
-#Metadata>form>cite.citation {
-  /*color: #1C6E84;*/
 }
 
 label.control-label {
@@ -577,6 +652,7 @@ label.control-label {
 
 .form-horizontal .entitydetails>label {
   background-color: #437582;
+  background-color: var(--c-neutral-6);
 }
 
 #Metadata>a[href="data"] {
@@ -596,6 +672,7 @@ label.control-label {
 #Metadata .nav-list>.active>a {
   font-weight: 700;
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   text-shadow: none;
 }
 
@@ -616,12 +693,14 @@ label.control-label {
 #article-container.hasProvLeft,
 #article-container.hasProvRight {
   border: 1px solid #1C6E84;
+  border-color: var(--c-major-accent-6);
   border-radius: 5px;
 }
 
 /* The active attribute in the attribute name list */
 .attributeListTable tr.active {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
 }
 
 /** Prov charts **/
@@ -629,15 +708,18 @@ label.control-label {
 .prov-chart .node,
 .prov-chart .connecter {
   border-color: #1C6E84;
+  border-color: var(--c-major-accent-6);
 }
 
 .prov-chart .node:hover i,
 .prov-chart .node.active i {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
 }
 
 .prov-chart .popover-title {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   color: white;
   font-weight: light;
   padding: 6px;
@@ -647,10 +729,12 @@ label.control-label {
 /**----------------------------------------**/
 .entitydetails {
   border: 1px solid #1C6E84;
+  border-color: var(--c-major-accent-6);
 }
 
 .entitydetails h4 {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
 }
 
 .controls-well img {
@@ -726,6 +810,7 @@ label.control-label {
 -------------------------------------------------- */
 .annotation.tag {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   color: #FFF;
 }
 
@@ -741,11 +826,14 @@ label.control-label {
 
 .annotation .annotation-value {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   border-color: #1C6E84;
+  border-color: var(--c-major-accent-6);
 }
 
 .annotation-icon .icon.icon-stack-base {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
 }
 
 .attributeListTable .active .annotation-icon .icon.icon-stack-base {
@@ -854,6 +942,7 @@ input.filter {
   -moz-border-bottom-right-radius: 0px;
   margin-left: 10px;
   color: #555;
+  color: var(--c-neutral-7);
 }
 
 .filter-contain.no-border {
@@ -890,9 +979,14 @@ input.filter:-ms-input-placeholder {
   text-shadow: none;
 }
 
+.filter-contain>label>.icon {
+  color: var(--c-neutral-5);
+}
+
 .filter-contain .icon.expand:hover,
 .filter-contain .icon.collapse:hover {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
 }
 
 /*-- The 'Year' filter elements --*/
@@ -960,6 +1054,7 @@ input.filter:-ms-input-placeholder {
   display: block;
   border: 0;
   background: #1C6E84;
+  background: var(--c-major-accent-6);
 }
 
 .ui-slider-handle {
@@ -994,6 +1089,7 @@ input.filter:-ms-input-placeholder {
 .current-filters>li,
 .current-filters>li[class*="span"] {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
   color: #FFF;
 }
 
@@ -1025,6 +1121,7 @@ input.filter:-ms-input-placeholder {
 /** for showing "my packages" filter */
 .keyword-search-link.active {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
 }
 
 /*-- Headers in sidebar --*/
@@ -1079,6 +1176,7 @@ ul.collections {
 
 a.collections {
   color: #555555;
+  color: var(--c-neutral-7);
 }
 
 a.collections:hover {
@@ -1119,6 +1217,7 @@ li.ui-menu-item {
 
 li.ui-menu-item>a {
   color: #555555;
+  color: var(--c-neutral-7);
   width: 245px;
 }
 
@@ -1128,6 +1227,7 @@ li.ui-menu-item>a:hover,
   text-decoration: none;
   font-weight: bold;
   color: #1C6E84;
+  color: var(--c-major-accent-6);
 }
 
 /* RESULTS CSS
@@ -1205,10 +1305,12 @@ h5.result-header-count {
   width: 98%;
   /*fallback */
   width: calc(100% - 16px);
+  border-color: var(--c-neutral-2);
 }
 
 .result-row:nth-child(odd) {
   background-color: #F4F6F8;
+  background-color: var(--c-neutral-1);
 }
 
 .result-row:nth-child(odd) .multi-line-ellipsis:after {
@@ -1225,6 +1327,7 @@ h5.result-header-count {
 
 .result-row .citation .title {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
 }
 
 .result-row .citation a:hover,
@@ -1253,6 +1356,7 @@ h5.result-header-count {
 
 .info-icons .icon.private {
   color: #FF6633;
+  color: var(--c-rare-accent-5);
 }
 
 .info-icons .on-map>i.on-map:nth-child(n+2) {
@@ -1320,6 +1424,7 @@ h5.result-header-count {
 .result-row:hover a.download {
   background-image: none;
   color: #555555;
+  color: var(--c-neutral-7);
   padding: 4px 4px;
   margin-bottom: 0;
   width: 100%;
@@ -1406,12 +1511,14 @@ h5.result-header-count {
 .pagination ul>li>a:hover {
   color: #FFF;
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
 }
 
 .pagination ul>.active>a,
 .pagination ul>.active>a:hover {
   color: #FFF;
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
 }
 
 .sort-by label {
@@ -1468,24 +1575,33 @@ h5.result-header-count {
 svg .data,
 .fallback.data {
   color: #660033;
+  color: var(--c-minor-accent-6);
   stroke: #660033;
+  stroke: var(--c-minor-accent-6);
   fill: #660033;
+  fill: var(--c-minor-accent-6);
 }
 
 /* The universal color for metadata */
 svg .metadata,
 .fallback.metadata {
   color: #1C6E84;
+  color: var(--c-major-accent-6);
   stroke: #1C6E84;
+  stroke: var(--c-major-accent-6);
   fill: #1C6E84;
+  fill: var(--c-major-accent-6);
 }
 
 /* The universal color for packages */
 svg .packages,
 .profile .packages {
   color: #FF6633;
+  color: var(--c-rare-accent-5);
   fill: #FF6633;
+  fill: var(--c-rare-accent-5);
   stroke: #FF6633;
+  stroke: var(--c-rare-accent-5);
 }
 
 .profile .bar-label.packages {
@@ -1528,7 +1644,11 @@ svg .packages,
 .donut-title-text,
 svg .title {
   color: #555555;
+  color: var(--c-neutral-7);
+  color: var(--c-neutral-7);
   fill: #555555;
+  fill: var(--c-neutral-7);
+  fill: var(--c-neutral-7);
   font-size: 17px;
   line-height: 17px;
 }
@@ -1571,27 +1691,32 @@ svg .title {
 .donut.metadata>g:nth-child(odd) .donut-arc,
 .donut.metadata>g:nth-child(odd) .donut-arc-label {
   fill: #1C6E84;
+  fill: var(--c-major-accent-6);
 }
 
 .donut.data>g:nth-child(even) .donut-arc,
 .donut.data>g:nth-child(even) .donut-arc-label {
   fill: #2B0015;
+  fill: var(--c-minor-accent-8);
 }
 
 .donut.data>g:nth-child(odd) .donut-arc,
 .donut.data>g:nth-child(odd) .donut-arc-label {
   fill: #660033;
+  fill: var(--c-minor-accent-7);
 }
 
 /* Have a different color for the first arc so no two colors are adjacent */
 .donut.metadata>g:first-child .donut-arc,
 .donut.metadata>g:first-child .donut-arc-label {
   fill: #124958;
+  fill: var(--c-major-accent-7);
 }
 
 .donut.data>g:first-child .donut-arc,
 .donut.data>g:first-child .donut-arc-label {
   fill: #BC005E;
+  fill: var(--c-minor-accent-5);
 }
 
 .profile .format-charts-container {
@@ -1627,6 +1752,7 @@ svg .domain {
   fill: none;
   stroke-width: 1px;
   stroke: #555555;
+  stroke: var(--c-neutral-7);
 }
 
 svg .point {
@@ -1647,6 +1773,7 @@ svg .point {
 
 .line-chart-label.text {
   fill: #555;
+  fill: var(--c-neutral-7);
   font-size: 13px;
 }
 
@@ -1659,6 +1786,7 @@ svg .point {
 .tick line {
   stroke-width: 1px;
   stroke: #CCC;
+  stroke: var(--c-neutral-3);
 }
 
 svg>.title {
@@ -1745,8 +1873,11 @@ svg .default,
 svg .no-activity,
 .fallback.no-activity {
   fill: #CCCCCC;
+  fill: var(--c-neutral-3);
   stroke: #CCCCCC;
+  stroke: var(--c-neutral-3);
   color: #CCCCCC;
+  color: var(--c-neutral-3);
 }
 
 .donut.no-activity>g .donut-arc,
@@ -1755,6 +1886,7 @@ svg .no-activity,
 .donut.no-activity .donut-title-count,
 .donut.no-activity .donut-title-text {
   fill: #CCCCCC;
+  fill: var(--c-neutral-3);
 }
 
 /* MAPS
@@ -1787,7 +1919,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
   font-size: 14px;
   line-height: 17px;
   color: #1C6E84;
+  color: var(--c-major-accent-6);
   border-bottom: 1px dotted #1C6E84;
+  border-color: var(--c-major-accent-6);
   position: absolute;
   top: 25px;
   left: 160px;
@@ -1899,30 +2033,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
   padding-top: 10px;
 }
 
-#metacatDocs .topic {
-  background-color: #FFFFFF;
-  /*iE 8 fallback */
-  background: rgba(255, 255, 255, 0.5);
-  padding: 20px;
-  border-radius: 20px;
-  -webkit-border-radius: 20px;
-  -moz-border-radius: 20px;
-}
-
-#metacatDocs .topic>ul {
-  margin-left: 20px;
-}
-
-#metacatDocs .topic-title {
-  font-size: 24px;
-  margin-top: 0;
-}
-
-#metacatDocs #license pre {
-  width: 700px;
-  margin: 0 auto;
-}
-
 #installing-the-registry .sidebar {
   max-width: 100%;
 }
@@ -1930,66 +2040,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
 dt {
   font-size: 18px;
   line-height: 24px;
-}
-
-#metacatDocs input {
-  -webkit-appearance: none;
-  background-color: white;
-  border-radius: 4px;
-  height: 25px;
-  width: 200px;
-  box-shadow: none;
-  border: 0;
-}
-
-#metacatDocs input[type="submit"] {
-  width: auto;
-}
-
-#metacatDocs h3 {
-  font-size: 24px;
-  line-height: 40px;
-}
-
-#metacatDocs h2 {
-  font-size: 27px;
-  line-height: 40px;
-}
-
-#metacatDocs h1 {
-  font-size: 32px;
-  line-height: 40px;
-}
-
-#metacatDocs h1>a,
-#metacatDocs h2>a,
-#metacatDocs h3>a,
-#metacatDocs h4>a {
-  color: #333333;
-}
-
-#metacatDocs ul ul {
-  margin-left: 20px;
-}
-
-#metacatDocs .note {
-  margin-left: 20px;
-  color: #555555;
-}
-
-#metacatDocs blockquote p {
-  font-size: inherit;
-  font-weight: inherit;
-}
-
-#metacatDocs #contents {
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 20px;
-  -moz-border-radius: 20px;
-  -webkit-border-radius: 20px;
-  margin: 20px auto;
-  clear: both;
-  padding: 10px 10px 10px 40px;
 }
 
 /* CSS for emplparser ------
@@ -2016,21 +2066,25 @@ dt {
 .downloads-metrics .metric-chart .bar,
 .downloads-metrics .metric-chart .bar_context {
   fill: #1C6E84;
+  fill: var(--c-major-accent-6);
 }
 
 #metric-modal .metric-chart .bar,
 .views-metrics .metric-chart .bar,
 .downloads-metrics .metric-chart .bar {
   stroke: #1C6E84;
+  stroke: var(--c-major-accent-6);
 }
 
 .metrics .metric-value.badge {
   background-color: #1C6E84;
+  background-color: var(--c-major-accent-6);
 }
 
 .metrics:hover .metric-value.badge {
   background-color: #FFFFFF;
   color: #1C6E84;
+  color: var(--c-major-accent-6);
 }
 
 /****************************************************************

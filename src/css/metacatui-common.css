@@ -453,6 +453,11 @@ h4 > .icon{
 img.icon{
 	max-height: 1.4em;
 }
+svg.icon {
+	max-height: 19px;
+	max-width: 19px;
+	fill: #555;
+}
 .icon-positive{
 	color: green;
 }
