@@ -1121,6 +1121,49 @@ define(['jquery', 'underscore', 'backbone'],
       activeAlternateRepositoryId: null,
 
       /**
+      * Enable or disable the DataONE Bookkeeper services. If enabled, Portal Views will use the DataONE Plus
+      * paid features for active subscriptions. If disabled, the Portal Views will assume
+      * all portals are in inactive/free, and will only render free features.
+      * @type {boolean}
+      */
+      enableBookkeeperServices: false,
+      /**
+      * The base URL for the DataONE Bookkeeper services, which manage the DataONE membership plans, such as
+      * Hosted Repositories and Plus.
+      * See https://github.com/DataONEorg/bookkeeper for more info on this service.
+      * @type {string}
+      */
+      bookkeeperBaseUrl: "https://api.test.dataone.org:30443/bookkeeper/v1",
+      /**
+      * The URL for the DataONE Bookkeeper Quota API, e.g. listQuotas(), getQuota(), createQuota(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      */
+      bookkeeperQuotasUrl: null,
+      /**
+      * The URL for the DataONE Bookkeeper Portal Usage API, e.g. listUsages(), getUsage(), updateUsage(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      */
+      bookkeeperPortalUsagesUrl: null,
+      /**
+      * The URL for the DataONE Bookkeeper Subscriptions API, e.g. listSubscriptions(), getSubscription(), createSubscription(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      */
+      bookkeeperSubscriptionsUrl: null,
+      /**
+      * The URL for the DataONE Bookkeeper Customers API, e.g. listCustomers(), getCustomer(), createCustomer(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      */
+      bookkeeperCustomersUrl: null,
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**
@@ -1237,6 +1280,14 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
       this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
+
+      //Construct the DataONE Bookkeeper service API URLs
+      if( this.get("enableBookkeeperServices") ){
+        this.set("bookkeeperSubscriptionsUrl", this.get("bookkeeperBaseUrl")  + "/subscriptions");
+        this.set("bookkeeperCustomersUrl",     this.get("bookkeeperBaseUrl")  + "/customers");
+        this.set("bookkeeperQuotasUrl",        this.get("bookkeeperBaseUrl")  + "/quotas");
+        this.set("bookkeeperPortalUsagesUrl",  this.get("bookkeeperQuotaUrl") + "/portal/usage")
+      }
 
       this.on("change:pid", this.changePid);
 
