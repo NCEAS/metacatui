@@ -29,9 +29,9 @@ define(["jquery",
       * @name Quota#defaults
       * @type {Object}
       * @property {string} id  The unique id of this Quota, from Bookkeeper
-      * @property {string} name  The name of this Quota type
-      * @property {string[]} nameOptions The controlled list of `name` values that can be set on a Quota model
-      * @property {string} object  The name of this type of Bookkeeper object, which will always be "quota"
+      * @property {string} quotaType  The quotaType of this Quota type
+      * @property {string[]} quotaTypeOptions The controlled list of `quotaType` values that can be set on a Quota model
+      * @property {string} object  The quotaType of this type of Bookkeeper object, which will always be "quota"
       * @property {number} softLimit  The soft quota limit, which may be surpassed under certain conditions
       * @property {number} hardLimit  The hard quota limit, which cannot be surpassed
       * @property {string} unit  The unit of each Usage of this Quota (e.g. bytes, portals)
@@ -43,8 +43,8 @@ define(["jquery",
       defaults: function(){
         return {
           id: "",
-          name: "",
-          nameOptions: ["portal", "storage", "repository_storage"],
+          quotaType: "",
+          quotaTypeOptions: ["portal", "storage", "repository_storage"],
           object: "quota",
           softLimit: 0,
           hardLimit: 0,
