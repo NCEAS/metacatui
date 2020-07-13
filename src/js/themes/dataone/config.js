@@ -9,6 +9,8 @@ MetacatUI.AppConfig = Object.assign({
   theme: "dataone",
   repositoryName: "DataONE Data Catalog",
   emailContact: "support@dataone.org",
+  baseUrl: "https://search.dataone.org",
+  mapKey: "AIzaSyDuQ9r_7EeSfspKYs2SET7sv4c8FysLIk4",
   nodeId: "urn:node:CN",
   d1Service: "/cn/v2",
   metacatContext: "",
@@ -21,13 +23,14 @@ MetacatUI.AppConfig = Object.assign({
   enableCILogonSignIn: true,
   hideSummaryCitationsChart: false,
   hideSummaryDownloadsChart: false,
-  hideSummaryMetadataAssessment: false,
+  hideSummaryMetadataAssessment: true,
   hideSummaryViewsChart: false,
   displayDatasetEditButton: false,
   displayDatasetControls: false,
   enablePublishDOI: false,
   showMyPortals: false,
-  enableCreatePortals: false
+  enableCreatePortals: false,
+  defaultSearchFilters: ["all", "attribute", "documents", "dataSource", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
 }, MetacatUI.AppConfig);
 
 MetacatUI.themeMap =

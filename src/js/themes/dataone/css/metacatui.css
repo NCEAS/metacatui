@@ -1360,6 +1360,12 @@ h5.result-header-count {
 }
 
 /*-- Results List Icons --*/
+.result-row .info-icons{
+  margin-top: 10px;
+}
+.result-row .info-icons .icon{
+  color: #666;
+}
 .info-icons .icons {
   float: left;
   margin-right: 1em;
