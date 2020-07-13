@@ -5,3 +5,24 @@
     /* Keeps footer down */
   }
 }
+
+/* Narrower widths of desktop browsers */
+@media only screen and (max-width : 980px) {
+  .mapMode #Footer{
+    bottom: -300px;
+  }
+}
+
+/* Narrower widths of desktop browsers */
+@media only screen and (max-width : 750px) {
+  .mapMode #Footer{
+    bottom: -430px;
+  }
+}
+
+/* Narrower widths of desktop browsers */
+@media only screen and (max-width : 700px) {
+  .mapMode #Footer{
+    bottom: -525px;
+  }
+}

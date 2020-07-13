@@ -74,7 +74,7 @@ pre {
 
 #clear-all {
   background-color: #1C6E84;
-  background-color: var(--c-major-accent-6);
+  background-color: var(--c-error-on-default);
   color: white;
   font-weight: normal;
 }
@@ -401,7 +401,7 @@ select {
 .btn.subtle,
 .filter.btn {
   color: #666;
-  border-color: #666;
+  border-color: #AAA;
 }
 
 .filter.btn:hover,
@@ -913,6 +913,9 @@ label.inline {
 /* SIDEBAR CSS
   -------------------------------------------------- */
 /***Filters ***/
+.filter-contain{
+  color: #555;
+}
 /*-- Search buttons next to text inputs --*/
 .filter.btn {
   border-radius: 0px;
@@ -924,7 +927,7 @@ label.inline {
   -webkit-border-bottom-right-radius: 4px;
   -moz-border-top-right-radius: 4px;
   -moz-border-bottom-right-radius: 4px;
-  height: 30px;
+  height: 29px;
   padding: 0px 7px;
   display: inline-block;
 }
@@ -943,6 +946,9 @@ input.filter {
   margin-left: 10px;
   color: #555;
   color: var(--c-neutral-7);
+}
+.filter-input-contain input.filter{
+  width: 70%;
 }
 
 .filter-contain.no-border {
@@ -979,9 +985,6 @@ input.filter:-ms-input-placeholder {
   text-shadow: none;
 }
 
-.filter-contain>label>.icon {
-  color: var(--c-neutral-5);
-}
 
 .filter-contain .icon.expand:hover,
 .filter-contain .icon.collapse:hover {
@@ -991,7 +994,7 @@ input.filter:-ms-input-placeholder {
 
 /*-- The 'Year' filter elements --*/
 #filter-year .filter-input-contain {
-  margin-top: 30px;
+  margin-top: 35px;
 }
 
 #filter-year input[type="number"] {
@@ -1232,6 +1235,22 @@ li.ui-menu-item>a:hover,
 
 /* RESULTS CSS
 -------------------------------------------------- */
+body.mapMode{
+  overflow-y: visible;
+}
+.mapMode footer {
+    position: absolute;
+    height: auto;
+    bottom: -255px;
+    width: 100%;
+}
+#map-mode-extra-padding{
+  display: none;
+}
+.mapMode #map-mode-extra-padding{
+  display: block;
+  height: 90px;
+}
 #results-container {
   width: 75%;
   width: calc(100% - 265px - 20px);
@@ -2004,6 +2023,20 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
   color: #999999;
 }
 
+/* SIGN IN
+------------------------------------------------*/
+#signinPopup.modal {
+    width: 60%;
+    max-width: 700px;
+}
+/* Color the name in the navbar differently */
+.d1_menu-item--profile .d1_menu-item__top-item-name {
+    color: var(--c-minor-accent);
+}
+.d1_menu-item--profile .d1_menu-item__dropdown-icon,
+.d1_menu-item--profile .d1_menu-item__icon{
+  stroke: var(--c-minor-accent);
+}
 /* MISC
  -----------------------------------------------*/
 .align-center {
