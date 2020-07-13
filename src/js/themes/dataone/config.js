@@ -31,6 +31,7 @@ MetacatUI.AppConfig = Object.assign({
   showMyPortals: false,
   enableCreatePortals: false,
   defaultSearchFilters: ["all", "attribute", "documents", "dataSource", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
+  defaultSearchFilters: ["all", "attribute", "annotation", "documents", "dataSource", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
 }, MetacatUI.AppConfig);
 
 MetacatUI.themeMap =
