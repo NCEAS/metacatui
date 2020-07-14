@@ -1,46 +1,28 @@
 /* Smartphones (portrait and landscape) ----------- */
 @media only screen and (max-width : 480px) {
-	
-	/************** Navbar ****************/
-	.navbar-lower{
-		width: 100%;
-		padding-left: 0px;
-		padding-right: 0px;
-	}
-	.navbar-lower #search_txt{
-		margin-top: 0px;
-	}
-	.navbar-lower .nav .label{
-		color: rgba(189, 89, 139, 1);
-		line-height: 30px;
-		border-bottom-width: 0px;
-	}
-	.navbar-upper{
-		padding: 0px;
-	}
-	.navbar-upper .nav{
-		margin: 0px;
-		width: 100%;
-	}
-	.navbar-upper .nav > li:nth-child(1){
-		width: 60%;
-	}
-	.navbar-upper .nav > li:nth-child(2){
-		width: 39%;
-	}
-	.navbar-upper .nav > li img{
-		max-width: 100%;
-	}
-	.navbar-upper .nav > li > a.logo{
-		padding: 5px;
-		margin-top: 13px;
-	}
-	
-	/************** Footer ****************/
-	#Footer{
-		height: 260px; /* Keeps footer down */
-	}
-	#Content{
-		padding-bottom: 270px; /* Keeps footer down */
-	}
+  #Content {
+    padding-bottom: 270px;
+    /* Keeps footer down */
+  }
+}
+
+/* Narrower widths of desktop browsers */
+@media only screen and (max-width : 980px) {
+  .mapMode #Footer{
+    bottom: -300px;
+  }
+}
+
+/* Narrower widths of desktop browsers */
+@media only screen and (max-width : 750px) {
+  .mapMode #Footer{
+    bottom: -430px;
+  }
+}
+
+/* Narrower widths of desktop browsers */
+@media only screen and (max-width : 700px) {
+  .mapMode #Footer{
+    bottom: -525px;
+  }
 }
