@@ -1142,12 +1142,12 @@ define(['jquery', 'underscore', 'backbone'],
       */
       bookkeeperQuotasUrl: null,
       /**
-      * The URL for the DataONE Bookkeeper Portal Usage API, e.g. listUsages(), getUsage(), updateUsage(), etc.
+      * The URL for the DataONE Bookkeeper Usages API, e.g. listUsages(), getUsage(), createUsage(), etc.
       * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
       * @readonly
       * @type {string}
       */
-      bookkeeperPortalUsagesUrl: null,
+      bookkeeperUsagesUrl: null,
       /**
       * The URL for the DataONE Bookkeeper Subscriptions API, e.g. listSubscriptions(), getSubscription(), createSubscription(), etc.
       * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
@@ -1286,7 +1286,7 @@ define(['jquery', 'underscore', 'backbone'],
         this.set("bookkeeperSubscriptionsUrl", this.get("bookkeeperBaseUrl")  + "/subscriptions");
         this.set("bookkeeperCustomersUrl",     this.get("bookkeeperBaseUrl")  + "/customers");
         this.set("bookkeeperQuotasUrl",        this.get("bookkeeperBaseUrl")  + "/quotas");
-        this.set("bookkeeperPortalUsagesUrl",  this.get("bookkeeperQuotaUrl") + "/portal/usage")
+        this.set("bookkeeperUsagesUrl",        this.get("bookkeeperBaseUrl")  + "/usages");
       }
 
       this.on("change:pid", this.changePid);

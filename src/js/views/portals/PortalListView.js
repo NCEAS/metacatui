@@ -26,7 +26,21 @@ define(["jquery",
         * A SolrResults collection that contains the results of the search for the portals
         * @type {SolrResults}
         */
-        searchResults: null,
+        searchResults: new SearchResults(),
+
+        /**
+        * A comma-separated list of Solr index fields to retrieve when searching for portals
+        * @type {string}
+        * @default "id,seriesId,title,formatId,label,logo"
+        */
+        searchFields: "id,seriesId,title,formatId,label,logo",
+
+        /**
+        * The number of portals to retrieve and render in this view
+        * @default 100
+        * @type {number}
+        */
+        numPortals: 100,
 
         /**
         * A jQuery selector for the element that the list should be inserted into
@@ -89,6 +103,25 @@ define(["jquery",
               this.filters = new Filters();
             }
 
+            //Get the search results and render them
+            this.getSearchResults();
+
+            //Add a "Create" button to create a new portal
+            this.renderCreateButton();
+          }
+          catch(e){
+            console.error(e);
+          }
+
+        },
+
+        /**
+        * Queries for the portal objects using the SearchResults collection
+        */
+        getSearchResults: function(){
+
+          try{
+
             //Filter by the portal format ID
             this.filters.add({
               fields: ["formatId"],
@@ -104,35 +137,28 @@ define(["jquery",
               matchSubstring: false,
               exclude: true
             });
-
-            //Create a collection of search results
-            var searchResults = new SearchResults();
-            this.searchResults = searchResults;
-
-            //Set the query on the SearchResults
-            searchResults.setQuery( filters.getQuery() );
-
+            
             //Get 100 rows
-            searchResults.rows = 100;
+            this.searchResults.rows = this.numPortals;
 
             //The fields to return
-            searchResults.fields = "id,seriesId,title,formatId,label,logo";
+            this.searchResults.fields = this.searchFields;
+
+            //Set the query on the SearchResults
+            this.searchResults.setQuery( this.filters.getQuery() );
 
             //Listen to the search results collection and render the results when the search is complete
-            this.listenToOnce( searchResults, "reset", this.renderList );
+            this.listenToOnce( this.searchResults, "reset", this.renderList );
             //Listen to the search results collection for errors
-            this.listenToOnce( searchResults, "error", this.showError );
+            this.listenToOnce( this.searchResults, "error", this.showError );
 
             //Get the first page of results
-            searchResults.toPage(0);
-
-            //Add a "Create" button to create a new portal
-            this.renderCreateButton();
+            this.searchResults.toPage(0);
           }
           catch(e){
-            console.error(e);
+            this.showError();
+            console.error("Failed to fetch the SearchResults for the PortalsList: ", e);
           }
-
         },
 
         /**

@@ -34,6 +34,7 @@ define(["jquery",
       * @property {number} quantity  The quantity of the {@link Quota} that this Usage uses, expressed as {@link Quota#defaults#unit}
       * @property {string} status  The status of this Usage
       * @property {string[]} statusOptions  The controlled list of `status` values that can be set on a Usage model
+      * @property {string} nodeId The Member Node ID that the object is from
       */
       defaults: function(){
         return {
