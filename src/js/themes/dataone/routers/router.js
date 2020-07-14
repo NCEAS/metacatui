@@ -25,8 +25,11 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
 			'logout(/)'                    : 'logout',          // logout the user
 			'signout(/)'                   : 'logout',          // logout the user
-			'signin(/)'					: 'renderTokenSignIn',
-			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal' // old portal route
+			'signin(/)'					: 'renderSignIn',
+			"signinsuccess(/)"                  : "renderSignInSuccess",
+			"signinldaperror(/)"                : "renderLdapSignInError",
+			"signinLdap(/)"                     : "renderLdapSignIn",
+			"signinSuccessLdap(/)"              : "renderLdapSignInSuccess"
 		},
 
 		helpPages: {
@@ -36,7 +39,7 @@ function ($, _, Backbone) {
 
 		initialize: function(){
 			this.listenTo(Backbone.history, "routeNotFound", this.navigateToDefault);
-			
+
 			// Add routes to portal dynamically using the appModel portal term
 			var portalTermPlural = MetacatUI.appModel.get("portalTermPlural");
 			this.route( portalTermPlural + "(/:portalId)(/:portalSection)(/)",
@@ -302,13 +305,13 @@ function ($, _, Backbone) {
 
 		renderMyProfile: function(section, subsection){
 			if(MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn"))
-				this.renderTokenSignIn();
+				this.renderSignIn();
 			else if(!MetacatUI.appUserModel.get("checked")){
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
 					if(MetacatUI.appUserModel.get("loggedIn"))
 						this.renderProfile(MetacatUI.appUserModel.get("username"), section, subsection);
 					else
-						this.renderTokenSignIn();
+						this.renderSignIn();
 				});
 			}
 			else if(MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn")){
@@ -319,35 +322,132 @@ function ($, _, Backbone) {
 		logout: function (param) {
 			//Clear our browsing history when we log out
 			this.routeHistory.length = 0;
-
 			if(((typeof MetacatUI.appModel.get("tokenUrl") == "undefined") || !MetacatUI.appModel.get("tokenUrl")) && !MetacatUI.appView.registryView){
 				require(['views/RegistryView'], function(RegistryView){
 					MetacatUI.appView.registryView = new RegistryView();
 					if(MetacatUI.appView.currentView.onClose)
 						MetacatUI.appView.currentView.onClose();
-					MetacatUI.appUserModel.logout();
 				});
 			}
 			else{
-				if(MetacatUI.appView.currentView.onClose)
+				if(MetacatUI.appView.currentView && MetacatUI.appView.currentView.onClose)
 					MetacatUI.appView.currentView.onClose();
-				MetacatUI.appUserModel.logout();
+			}
+			MetacatUI.appUserModel.logout();
+		},
+
+		renderSignIn: function(){
+
+			var router = this;
+
+			//If there is no SignInView yet, create one
+			if(!MetacatUI.appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
+					router.renderSignIn();
+				});
+
+				return;
+			}
+
+			//If the user status has been checked and they are already logged in, we will forward them to their profile
+			if( MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") ){
+				this.navigate("my-profile", { trigger: true });
+				return;
+			}
+			//If the user status has been checked and they are NOT logged in, show the SignInView
+			else if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ){
+				this.routeHistory.push("signin");
+				MetacatUI.appView.showView(MetacatUI.appView.signInView);
+			}
+			//If the user status has not been checked yet, wait for it
+			else if( !MetacatUI.appUserModel.get("checked") ){
+				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.renderSignIn);
 			}
 		},
 
-		renderTokenSignIn: function(){
-			this.routeHistory.push("signin");
+		renderSignInSuccess: function(){
+			$("body").html("Sign-in successful.");
+			setTimeout(window.close, 1000);
+		},
+
+		renderLdapSignInSuccess: function(){
+
+			//If there is an LDAP sign in error message
+			if(window.location.pathname.indexOf("error=Unable%20to%20authenticate%20LDAP%20user") > -1){
+				this.renderLdapOnlySignInError();
+			}
+			else{
+				this.renderSignInSuccess();
+			}
+
+		},
+
+		renderLdapSignInError: function(){
+			this.routeHistory.push("signinldaperror");
 
 			if(!MetacatUI.appView.signInView){
-				require(["views/SignInView"], function(SignInView){
-					MetacatUI.appView.signInView = new SignInView({ el: "#Content", fullPage: true });
+				require(['views/SignInView'], function(SignInView){
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
+					MetacatUI.appView.signInView.ldapError = true;
+					MetacatUI.appView.signInView.ldapOnly = true;
+					MetacatUI.appView.signInView.fullPage = true;
 					MetacatUI.appView.showView(MetacatUI.appView.signInView);
 				});
 			}
-			else
+			else{
+				MetacatUI.appView.signInView.ldapError = true;
+				MetacatUI.appView.signInView.ldapOnly = true;
+				MetacatUI.appView.signInView.fullPage = true;
 				MetacatUI.appView.showView(MetacatUI.appView.signInView);
+			}
 		},
 
+		renderLdapOnlySignInError: function(){
+			this.routeHistory.push("signinldaponlyerror");
+
+			if(!MetacatUI.appView.signInView){
+
+				require(['views/SignInView'], function(SignInView){
+					var signInView = new SignInView({ el: "#Content"});
+					signInView.ldapError = true;
+					signInView.ldapOnly = true;
+					signInView.fullPage = true;
+					MetacatUI.appView.showView(signInView);
+				});
+
+			}
+			else{
+
+				var signInView = new SignInView({ el: "#Content"});
+				signInView.ldapError = true;
+				signInView.ldapOnly = true;
+				signInView.fullPage = true;
+				MetacatUI.appView.showView(signInView);
+
+			}
+		},
+
+		renderLdapSignIn: function(){
+
+			this.routeHistory.push("signinLdap");
+
+			if(!MetacatUI.appView.signInView){
+				require(['views/SignInView'], function(SignInView){
+					MetacatUI.appView.signInView = new SignInView({ el: "#Content"});
+					MetacatUI.appView.signInView.ldapOnly = true;
+					MetacatUI.appView.signInView.fullPage = true;
+					MetacatUI.appView.showView(MetacatUI.appView.signInView);
+				});
+			}
+			else{
+				var signInLdapView = new SignInView({ el: "#Content"});
+				MetacatUI.appView.signInView.ldapOnly = true;
+				MetacatUI.appView.signInView.fullPage = true;
+				MetacatUI.appView.showView(signInLdapView);
+			}
+
+		},
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");
@@ -364,16 +464,16 @@ function ($, _, Backbone) {
 				MetacatUI.appView.showView(MetacatUI.appView.externalView);
 			}
 		},
-		
-		 /**		 
+
+		 /**
 		  * renderPortal - Render the portal view based on the given name or id, as
-		  * well as optional section	 
-		  * 			
+		  * well as optional section
+		  *
 		  * @param  {string} label         The portal ID or name
-		  * @param  {string} portalSection A specific section within the portal 
-		  */			
+		  * @param  {string} portalSection A specific section within the portal
+		  */
 		 renderPortal: function(label, portalSection) {
-	
+
 			 // Add the overall class immediately so the navbar is styled correctly right away
 			 $("body").addClass("PortalView");
 			 // Look up the portal document seriesId by its registered name if given
