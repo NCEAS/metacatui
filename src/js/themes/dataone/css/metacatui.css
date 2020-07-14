@@ -536,24 +536,6 @@ table th.btn-container .btn {
   border-bottom: 1px solid #DDD;
 }
 
-/* .navbar .sub-menu:before {
-  border-bottom: 7px solid trans parent;
-  border-left: none;
-  border-right: 7px solid rgba(0, 0, 0, 0.2);
-  border-top: 7px solid transparent;
-  left: -7px;
-  top: 10px;
-}
-
-.navbar .sub-menu:after {
-  border-top: 6px solid transparent;
-  border-left: none;
-  border-right: 6px solid #fff;
-  border-bottom: 6px solid transparent;
-  left: 10px;
-  top: 11px;
-  left: -6px;
-} */
 .mega-dropdown-menu .mega-nav>li>a,
 .tb-megamenu .dropdown-menu a {
   display: block;
@@ -613,6 +595,13 @@ ul.tb-megamenu-subnav {
 .navbar .nav li.dropdown>.dropdown-toggle .caret,
 .tb-megamenu .dropdown-menu a.mega-group-title .caret {
   display: none;
+}
+
+#Navbar .d1_nav__inner{
+  max-width: calc(100vw - 80px);
+}
+#Navbar .d1_nav__secondary-items{
+  max-width: calc(100vw - 100px);
 }
 
 /* OTHER NAVIGATION
