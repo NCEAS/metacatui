@@ -78,14 +78,8 @@ define(["jquery",
               //Create search filters for finding the portals
               var filters = new Filters();
 
-              //Filter datasets by their ownership
-              filters.add({
-                fields: ["rightsHolder", "writePermission", "changePermission"],
-                values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
-                operator: "OR",
-                matchSubstring: false,
-                exclude: false
-              });
+              //Filter datasets that the user has ownership of
+              filters.addOwnershipFilter();
 
               this.filters = filters;
             }

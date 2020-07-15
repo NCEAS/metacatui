@@ -85,6 +85,7 @@ define(["jquery",
           //If there are no given filters, create a Filter for the seriesId of each portal Usage
           if( !this.filters && portalIds.length ){
             this.filters = new Filters();
+
             this.filters.mustMatchIds = true;
             this.filters.add({
               fields: ["seriesId"],
@@ -93,6 +94,9 @@ define(["jquery",
               matchSubstring: false,
               exclude: false
             });
+
+            //Only get Portals that the user is an owner of
+            this.filters.addOwnershipFilter();
           }
           //If the filters set on this view is an array of JSON, add it to a Filters collection
           else if( this.filters.length && !Filters.prototype.isPrototypeOf(this.filters) ){

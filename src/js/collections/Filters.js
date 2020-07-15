@@ -287,6 +287,25 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             },
 
             /**
+            * Creates and adds a Filter to this collection that filters datasets
+            * to only those that the logged-in user has permission to write to or change permission of.
+            */
+            addOwnershipFilter: function(){
+
+              if( MetacatUI.appUserModel.get("loggedIn") ){
+                //Filter datasets by their ownership
+                this.add({
+                  fields: ["rightsHolder", "writePermission", "changePermission"],
+                  values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
+                  operator: "OR",
+                  matchSubstring: false,
+                  exclude: false
+                });
+              }
+
+            },
+
+            /**
             * Removes Filter models from this collection if they match the given field
             * @param {string} field - The field whose matching filters that should be removed from this collection
             */
