@@ -2643,7 +2643,7 @@ define(['jquery',
       // Add the rest in conditional on whether they are present.
       var elJSON = {
         "@context": {
-          "@vocab": "http://schema.org",
+          "@vocab": "https://schema.org/",
         },
         "@type": "Dataset",
         "@id": "https://dataone.org/datasets/" +
