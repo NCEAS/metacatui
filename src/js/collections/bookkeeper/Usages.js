@@ -89,8 +89,48 @@ define(["jquery", "underscore", "backbone", "models/bookkeeper/Usage", "models/b
 
     },
 
+    /**
+    * Parses the fetch() of this collection. Bookkeeper returns JSON already, so there
+    * isn't much parsing to do.
+    * @returns {JSON} The collection data in JSON form
+    */
     parse: function(response){
       return response.usages;
+    },
+
+    /**
+    * Merges another collection of models with this collection by matching instanceId to seriesId/id.
+    * A reference to the model from the otherCollection is stored in the corresponding Usage model.
+    * @type {DataPackage|SolrResults}
+    */
+    mergeCollections: function(otherCollection){
+
+      //Iterate over each Usage in this collection
+      this.each(function(usage){
+
+        //Find the other model that matches this Usage
+        var match = otherCollection.find(function(otherModel){
+          //Make a match on the seriesId
+          if( _.contains(otherModel.get("seriesId"), usage.get("instanceId")) ){
+            return true;
+          }
+          //Make a match on the id
+          else if( _.contains(otherModel.get("id"), usage.get("instanceId")) ){
+            return true;
+          }
+          else{
+            return false;
+          }
+        });
+
+        //If a match is found, store a reference in each model
+        if( match ){
+          usage.set(match.type, match);
+          match.set("usageModel", this);
+        }
+
+      }, this);
+
     }
 
   });

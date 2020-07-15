@@ -1164,6 +1164,14 @@ define(['jquery', 'underscore', 'backbone'],
       bookkeeperCustomersUrl: null,
 
       /**
+      * The name of the DataONE Plus membership plan, which is used in messaging throughout the UI.
+      * This is only used if the enableBookkeeperServices setting is set to true.
+      * @type {string}
+      * @default "DataONE Plus"
+      */
+      dataonePlusName: "DataONE Plus",
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**

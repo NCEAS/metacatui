@@ -15,6 +15,13 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
           /** @lends Filters.prototype */{
 
             /**
+            * If the search results must always match one of the ids in the id filters,
+            * then the id filters will be added to the query with an AND operator.
+            * @type {boolean}
+            */
+            mustMatchIds: false,
+
+            /**
             * Is executed when a new Filters collection is created
             */
             initialize: function(models, options) {
@@ -93,7 +100,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                   completeQuery = "",
                   //Get the list of filters that use the 'id' field, since these are used differently
                   idFilters = this.filter(function(filter){
-                    return filter.get("fields").includes("id");
+                    return (filter.get("fields").includes("id") || filter.get("fields").includes("seriesId"));
                   }),
                   otherFilters = this.difference(idFilters),
                   //Separate the filter models in this collection by their query group.
@@ -140,7 +147,17 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
 
               //Add the grouped query for the id filters
               if( completeQuery.length && idFilterQuery.length ){
-                completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
+
+                //If the search results must always match one of the ids in the id filters,
+                // then add the id filters to the query with the AND operator. This flag
+                // is set on this Collection.
+                if( this.mustMatchIds ){
+                  completeQuery = "(" + completeQuery + ")%20AND%20" + idFilterQuery;
+                }
+                //Otherwise, use the OR operator
+                else{
+                  completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
+                }
               }
               //If the query is ONLY made of id filters, then the id filter query is the complete query
               else if( !completeQuery.length && idFilterQuery.length ){

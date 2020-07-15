@@ -47,6 +47,9 @@ define(["jquery",
           //Listen to the collection for errors
           this.listenToOnce(this.usagesCollection, "error", this.showError);
 
+          //When the SearchResults are retrieved, merge them with the Usages collection
+          this.listenToOnce(this.searchResults, "sync", this.mergeSearchResults);
+
           //Fetch the collection
           this.usagesCollection.fetch({
             quotaType: "portal",
@@ -82,6 +85,7 @@ define(["jquery",
           //If there are no given filters, create a Filter for the seriesId of each portal Usage
           if( !this.filters && portalIds.length ){
             this.filters = new Filters();
+            this.filters.mustMatchIds = true;
             this.filters.add({
               fields: ["seriesId"],
               values: portalIds,
@@ -110,6 +114,54 @@ define(["jquery",
           this.showError();
           console.error("Failed to create search results for the portal list: ", e);
         }
+
+      },
+
+      /**
+      * Merges the SearchResults collection with the Usages collection
+      */
+      mergeSearchResults: function(){
+        this.usagesCollection.mergeCollections(this.searchResults);
+
+        //Update the view with info about the corresponding Usage model
+        this.showUsageInfo();
+      },
+
+      /**
+      * Shows the Usage info for each Portal in this view
+      */
+      showUsageInfo: function(){
+
+        this.usagesCollection.each(function(usage){
+
+          //Find the list item HTML element for this Usage
+          var listItem = this.$("[data-seriesId='" + usage.get("instanceId") + "']");
+
+          //If a list item is found, update it
+          if( listItem.length ){
+
+            //Disable the Edit button if the Usage status is "inactive"
+            if( usage.get("status") == "inactive" ){
+              listItem.find(".edit.btn")
+                      .attr("disabled", "disabled")
+                      .popover({
+                        trigger: "hover focus click",
+                        placement: "top",
+                        delay: {
+                          show: 800
+                        },
+                        html: true,
+                        content: "To edit this " + MetacatUI.appModel.get("portalTermSingular") + ", contact us at " +
+                                 "<a href='mailto:" + MetacatUi.appModel.get("emailContact") + "'>" +
+                                 MetacatUi.appModel.get("emailContact") + "</a>" +
+                                 " to activate it. It may be deactivated because your " +
+                                  MetacatUI.appModel.get("dataonePlusName") + " membership has ended."
+                      });
+            }
+
+          }
+
+        }, this);
 
       }
 

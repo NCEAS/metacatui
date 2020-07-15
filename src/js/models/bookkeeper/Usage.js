@@ -35,16 +35,21 @@ define(["jquery",
       * @property {string} status  The status of this Usage
       * @property {string[]} statusOptions  The controlled list of `status` values that can be set on a Usage model
       * @property {string} nodeId The Member Node ID that the object is from
+      * @property {DataONEObject} DataONEObject A reference to the DataONEObject that has the id/seriesId of this Usage instanceId
+      * @property {SolrResult} SolrResult A reference to the SolrResult that has the id/seriesId of this Usage instanceId
       */
       defaults: function(){
         return {
           id: null,
           object: "usage",
           quotaId: null,
-          instanceId: null,
+          instanceId: "",
           quantity: 0,
-          status: null,
-          statusOptions: ["active", "inactive"]
+          status: "",
+          statusOptions: ["active", "inactive"],
+          nodeId: "",
+          DataONEObject: null,
+          SolrResult: null
         }
       }
 

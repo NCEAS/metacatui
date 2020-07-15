@@ -137,7 +137,7 @@ define(["jquery",
               matchSubstring: false,
               exclude: true
             });
-            
+
             //Get 100 rows
             this.searchResults.rows = this.numPortals;
 
@@ -215,6 +215,9 @@ define(["jquery",
 
             if( searchResult && typeof searchResult.get == "function" ){
 
+              //Add an id to the list element
+              listItem.attr("data-seriesId", searchResult.get("seriesId"));
+
               //Create a logo image
               var logo = "";
               if( searchResult.get("logo") ){
@@ -241,7 +244,7 @@ define(["jquery",
                 buttons = $(document.createElement("a")).attr("href",
                              MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
                              .text("Edit")
-                             .addClass("btn");
+                             .addClass("btn edit");
               }
 
 
