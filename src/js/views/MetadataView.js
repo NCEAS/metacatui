@@ -2670,6 +2670,7 @@ define(['jquery',
           elJSON["sameAs"] = doi;
         }
       }
+      
       // Second: Add in optional fields
 
       // Name
@@ -2888,6 +2889,13 @@ define(['jquery',
 
     /**
      * Create a canonical IRI for a DOI given a random DataONE identifier.
+     * 
+     * @param {string} identifier: The identifier to (possibly) create the IRI
+     *   for.
+     * @return {string|null} Returns null when matching the identifier to a DOI
+     *   regex fails or a string when the match is successful
+     * 
+     * Useful for describing resources identified by DOIs in linked open data
      * contexts or possibly also useful for comparing two DOIs for equality.
      * 
      * Note: Really could be generalized to more identifier schemes.
@@ -2902,6 +2910,7 @@ define(['jquery',
 
       return "https://doi.org/" + match[1];
     },
+
     /**
      * Insert citation information as meta tags into the head of the page
      *
