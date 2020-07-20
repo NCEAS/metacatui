@@ -591,7 +591,8 @@ define(['jquery', 'underscore', 'backbone'],
       * DataONE Citation reporting endpoint url
       * @type {string}
       */
-      d1CitationUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/citation',
+      // d1CitationUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/citations',
+      d1CitationUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/test/citations',
 
      /**
       * Hide or show the report Citation button in the dataset landing page.

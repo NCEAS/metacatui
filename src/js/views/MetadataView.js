@@ -2944,7 +2944,7 @@ define(['jquery',
      * Display the Citation registration form
      */
     showCitationForm: function(){
-      var reportCitationView = new ReportCitationView();
+      var reportCitationView = new ReportCitationView({pid: this.pid});
       reportCitationView.render();
       reportCitationView.show();
     }
