@@ -2643,7 +2643,7 @@ define(['jquery',
       // Add the rest in conditional on whether they are present.
       var elJSON = {
         "@context": {
-          "@vocab": "http://schema.org",
+          "@vocab": "https://schema.org/",
         },
         "@type": "Dataset",
         "@id": "https://dataone.org/datasets/" +
@@ -2654,11 +2654,23 @@ define(['jquery',
           "name": this.getPublisherText()
         },
         "identifier": model.get("id"),
+        "version": model.get("version"),
         "url": "https://dataone.org/datasets/" +
           encodeURIComponent(model.get("id")),
         "schemaVersion": model.get("formatId"),
+        "isAccessibleForFree": true
       };
 
+      // Attempt to add in a sameAs property of we have high confidence the 
+      // identifier is a DOI
+      if (this.model.isDOI(model.get("id"))) {
+        var doi = this.getCanonicalDOIIRI(model.get("id"));
+
+        if (doi) {
+          elJSON["sameAs"] = doi;
+        }
+      }
+      
       // Second: Add in optional fields
 
       // Name
@@ -2873,6 +2885,30 @@ define(['jquery',
       var postamble = "]]}}";
 
       return preamble + inner + postamble;
+    },
+
+    /**
+     * Create a canonical IRI for a DOI given a random DataONE identifier.
+     * 
+     * @param {string} identifier: The identifier to (possibly) create the IRI
+     *   for.
+     * @return {string|null} Returns null when matching the identifier to a DOI
+     *   regex fails or a string when the match is successful
+     * 
+     * Useful for describing resources identified by DOIs in linked open data
+     * contexts or possibly also useful for comparing two DOIs for equality.
+     * 
+     * Note: Really could be generalized to more identifier schemes.
+     */
+    getCanonicalDOIIRI: function(identifier) {
+      var pattern = /(10\.\d{4,9}\/[-\._;()\/:A-Z0-9]+)$/,
+          match = identifier.match(pattern);
+
+      if (match === null || match.length !== 2 || match[1].length <= 0) {
+        return null;
+      }
+
+      return "https://doi.org/" + match[1];
     },
 
     /**
