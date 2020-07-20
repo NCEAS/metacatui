@@ -1,7 +1,11 @@
 <div class="metrics-container btn-toolbar"></div>
 
 <div class="controls btn-toolbar">
-	<a class="btn copy" data-clipboard-text="<%=citation%>"><i class="icon icon-copy"></i> Copy Citation</a>
+  <a class="btn copy" data-clipboard-text="<%=citation%>"><i class="icon icon-copy"></i> Copy Citation</a>
+  
+  <% if ( !hideReportCitationButton ){ %>
+    <a class="btn report-citation" ><i class="icon icon-plus"></i> Report Citation</a>
+  <% } %>
 
   <% if (showWholetale){ %>
     <div class="analyze dropdown">
