@@ -129,14 +129,25 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
             },
 
             getCurrentFilters: function() {
-                var changedAttr = this.changedAttributes(_.clone(this.defaults()));
+                var changedAttr = this.changedAttributes(_.clone(this.defaults())),
+                    currentFilters = Object.keys(changedAttr),
+                    ignoreAttr = ["sortOrder", "provFields"];
 
                 if (!changedAttr) return new Array();
 
-                var currentFilters = _.keys(changedAttr);
+                //Check for changed attributes that should be ignored
+                _.each( Object.keys(changedAttr), function(attr){
 
-                //Don't count the sort order as a changed filter
-                currentFilters = _.without(currentFilters, "sortOrder");
+                  //If the value is an empty array, but the default value is an empty array too,
+                  // then it's not a changed filter attribute
+                  if( Array.isArray(this.get(attr)) && this.get(attr).length == 0 &&
+                      Array.isArray(this.defaults()[attr]) && this.defaults()[attr].length == 0 ){
+                    currentFilters = _.without(currentFilters, attr);
+                  }
+                  else if( ignoreAttr.includes(attr) ){
+                    currentFilters = _.without(currentFilters, attr);
+                  }
+                }, this);
 
                 //Don't count the geohashes or directions as a filter if the geohash filter is turned off
                 if (!this.get("useGeohash")) {
@@ -250,6 +261,11 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
                 //Save it
                 this.set("geohashGroups", geohashGroups);
                 this.trigger("change", "geohashGroups");
+            },
+
+            hasGeohashFilter: function(){
+              var currentGeohashFilter = this.get("geohashGroups");
+              return (typeof currentGeohashFilter == "object" && Object.keys(currentGeohashFilter).length > 0);
             },
 
             /**
