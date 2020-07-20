@@ -1,0 +1,270 @@
+<a id="clear-all" class="auto-height-member"><i class="icon-remove"></i> Clear all filters</a>
+		<!--SIDEBAR AREA-->
+		<aside id="sidebar" class="auto-height">
+			<div class="input-append">
+				<label>Search <i class="icon icon-on-right icon-question-sign tooltip-this subtle" data-trigger="hover" data-placement="bottom" data-viewport="#sidebar" data-title="This is a broad, full-text search. Searching for multiple words at the same time will look for matches with that exact phrase."></i></label>
+				<input class="filter" type="text" placeholder="Search phrase" id="all_input" data-category="all">
+				<button class="filter btn" id="all_btn" data-category="all"><i class="icon-search"></i></button>
+		    	<div class="clear"></div>
+		    </div>
+		    <div class="current-filters-container">
+		    	<h5>My Search</h5>
+		    	<ul id="current-all-filters" class="current-filters" data-category="all"></ul>
+		    	<ul id="current-attribute-filters" class="current-filters" data-category="attribute"></ul>
+		    	<ul id="current-annotation-filters" class="current-filters" data-category="annotation"></ul>
+		    	<ul id="current-documents-filters" class="current-filters" data-category="documents">
+		    		<% if (searchModelRef.filterIsAvailable("documents") && documents){ %>
+		    			<li class="current-filter"><span class="category"><%=searchModelRef.fieldLabels["documents"]%></span><i class="icon-remove remove-filter"></i></li>
+		    		<% } %>
+		    	</ul>
+		    	<ul id="current-dataSource-filters" class="current-filters" data-category="dataSource"></ul>
+		    	<ul id="current-creator-filters" class="current-filters " data-category="creator">
+		    		<% if(isMySearch){ %>
+		    				<li class="current-filter" data-category="username" data-term="<%=username%>">
+		    					Creator: Me
+		    					<i class="icon icon-remove remove-filter"></i>
+		    				</li>
+		    		<% } %>
+			    </ul>
+		    	<ul id="current-dataYear-filters" class="current-filters " data-category="dataYear"></ul>
+		    	<ul id="current-pubYear-filters" class="current-filters " data-category="pubYear"></ul>
+			    <ul id="current-id-filters" class="current-filters" data-category="id"></ul>
+				<ul id="current-taxon-filters" class="current-filters" data-category="taxon"></ul>
+				<ul id="current-spatial-filters" class="current-filters" data-category="spatial"></ul>
+				<ul id="current-additionalCriteria-filters" class="current-filters" data-category="additionalCriteria"></ul>
+		    </div>
+    		<div class="filter-container collapsable">
+				<h5 id="filters-header">Filter by:</h5>
+
+				<div class="filter-contain collapsable" data-category="attribute">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-table"></i>
+						<span class="tooltip-this" data-trigger="hover" data-title="Measurement type, e.g. density, temperature, species" data-placement="top">
+							Data attribute
+						</span>
+					</label>
+					<div class="filter-input-contain input-append">
+						<input class="filter" type="text" placeholder="density, length, etc." id="attribute_input" data-category="attribute">
+						<button class="filter btn" id="attribute_btn" data-category="attribute"><i class="icon-search"></i></button>
+					</div>
+				    <div class="clear"></div>
+			    </div>
+
+			    <% if(searchModelRef.filterIsAvailable("annotation")){ %>
+			    <div class="filter-contain collapsable" data-category="annotation">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-tag"></i>
+						<span  class="tooltip-this" data-trigger="hover" data-title="User-submitted semantic annotations or tags" data-placement="top">
+							Annotation
+						</span>
+					</label>
+					<div class="filter-input-contain input-append ">
+						<input class="filter" type="hidden" placeholder="tags, concepts, etc." id="annotation_input" data-category="annotation">
+						<!--  <button class="filter btn" id="annotation_btn" data-category="annotation"><i class="icon-search"></i></button> -->
+					</div>
+				    <div class="clear"></div>
+			    </div>
+
+			    <% } %>
+
+			   <% if(searchModelRef.filterIsAvailable("documents")){ %>
+				   <div class="filter-contain collapsable" id="includes-files" data-category="documents">
+						<label class="expand-collapse-control">
+							<i class="icon icon-caret-right expand"></i>
+							<i class="icon icon-caret-down collapse"></i>
+							<img src="<%= MetacatUI.root %>/img/data-table.png" class="icon" />
+							<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
+								Data files
+							</span>
+						</label>
+						<div class="filter-input-contain clear">
+              <input class="filter" type="checkbox" id="includes_data" data-category="documents"
+                     name="includes_data" <% if (searchModelRef.filterIsAvailable("documents") && documents){ print("checked"); } %> />
+							<label for="includes_data" data-trigger="hover" data-title="Checking this option will only return packages that include data files. Leaving this unchecked may return packages that only include metadata."
+                     data-placement="top" class="tooltip-this">
+								Only results with data
+							</label>
+						</div>
+						<div class="clear"></div>
+					</div>
+				<% } %>
+
+				<% if( _.contains(MetacatUI.appModel.get("defaultSearchFilters"), "dataSource") ){ %>
+					<div class="filter-contain collapsable" id="member-nodes-container" data-category="dataSource">
+						<label class="expand-collapse-control">
+							<i class="icon icon-caret-right expand"></i>
+							<i class="icon icon-caret-down collapse"></i>
+							<i class="icon icon-group"></i>
+							<span class="tooltip-this" data-trigger="hover" data-title="The name of the DataONE member node that a dataset originates from" data-placement="top">
+								<%=dataSourceTitle%>
+							</span>
+						</label>
+						<div class="clear"></div>
+						<div class="member-nodes-placeholder">
+							<%=loading%>
+						</div>
+					</div>
+				<% } %>
+
+				<div class="filter-contain collapsable">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-user"></i>
+						<span  class="tooltip-this" data-trigger="hover" data-title="The name of the creator or originator of a dataset" data-placement="top">
+							Creator
+						</span>
+					</label>
+					<div class="filter-input-contain input-append">
+						<input class="filter" type="text" placeholder="Name" id="creator_input" data-category="creator" />
+						<button class="filter btn" id="creator_btn" data-category="creator"><i class="icon-search"></i></button>
+			    	</div>
+				    <div class="clear"></div>
+			    </div>
+
+				<div id="filter-year" class="filter-contain collapsable">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-calendar"></i>
+						<span class="tooltip-this" data-trigger="hover" data-title="Data coverage year and/or the year a dataset was published or uploaded" data-placement="top">
+							Year
+						</span>
+					</label>
+					<div class="filter-input-contain">
+						<div id="year-range"></div>
+						<div class="clear"></div>
+						<input class="span3"  type="number" id="min_year"  value="<%=yearMin%>"/>
+						<input class="span3"  type="number" id="max_year"  value="<%=yearMax%>"/>
+						<div class="clear"></div>
+
+						<input class="left filter" type="checkbox" id="data_year" name="data-coverage-year"
+                   data-category="dataYear" <% if (dataYear){ print("checked"); } %> />
+						<label for="data_year" id="data-year-label" data-trigger="hover"
+                   data-title="Only show results with data collected within the year range"
+                   data-placement="top" class="tooltip-this">
+							Data coverage
+						</label>
+						<div class="clear"></div>
+
+						<input class="left filter"  type="checkbox" id="publish_year"
+                   name="publish-year" data-category="pubYear" <% if (pubYear){ print("checked"); } %> />
+						<label id="pub-year-label" for="publish_year" data-trigger="hover"
+                   data-title="Only show results that were published within the year range"
+                   data-placement="top" class="tooltip-this">
+							Publish year
+						</label>
+						<div class="clear"></div>
+					</div>
+					<div class="clear"></div>
+				</div>
+
+				<div class="filter-contain collapsable" data-category="id">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-bullseye span1"></i>
+						<span class="tooltip-this" data-trigger="hover" data-title="Find datasets if you have all or part of its DOI or ID" data-placement="top">
+							Identifier
+						</span>
+					</label>
+					<div class="filter-input-contain input-append ">
+						<input class="filter" type="text" placeholder="DOI or ID" id="id_input" data-category="id">
+						<button class="filter btn" id="id_btn" data-category="id"><i class="icon-search"></i></button>
+					</div>
+					<div class="clear"></div>
+				</div>
+
+				<div class="filter-contain collapsable" data-category="taxon">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-sitemap span1"></i>
+						<span class="tooltip-this" data-trigger="hover" data-title="Any taxonomic rank provided by the submitter" data-placement="top">
+							Taxon
+						</span>
+					</label>
+					<div class="filter-input-contain input-append">
+						<input class="filter" type="text" placeholder="Class, family, etc." id="taxon_input" data-category="taxon">
+						<button class="filter btn" id="taxon_btn" data-category="taxon"><i class="icon-search"></i></button>
+					</div>
+					<div class="clear"></div>
+				</div>
+
+				<div class="filter-contain collapsable no-border" data-category="spatial">
+					<label class="expand-collapse-control">
+						<i class="icon icon-caret-right expand"></i>
+						<i class="icon icon-caret-down collapse"></i>
+						<i class="icon icon-globe"></i>
+						<span class="tooltip-this" data-trigger="hover" data-title="The geographic region or site, as described by the submitter" data-placement="top">
+							Location
+						</span>
+					</label>
+					<div class="filter-input-contain input-append">
+						<input class="filter" type="text" placeholder="Geographic region" id="spatial_input" data-category="spatial">
+						<button class="filter btn" id="spatial_btn" data-category="spatial"><i class="icon-search"></i></button>
+					</div>
+					<div class="clear"></div>
+				</div>
+
+			</div>
+		</aside>
+
+		<div id="bioportal-tree"></div>
+		<div id="bioportal-popover" data-category="annotation"></div>
+
+		<!--CONTENT AREA-->
+		<div id="results-container" class="auto-height">
+
+			<div id="results-view">
+				<% if((typeof gmaps !== "undefined") && (gmaps)){ %>
+					<div class="map-toggle-container">
+						<a class="toggle-map" href="<%= MetacatUI.root %>/data/mode=list"><i class="icon icon-double-angle-left"></i> Show Map</a>
+					</div>
+				<% } %>
+				<div id="results-header" class="row-fluid result-header">
+
+					<!-- count stats -->
+					<div class="result-header-count">
+						<div id="statcounts"></div>
+							<div class="sort-by">
+								<label for="sortOrder">Sort by</label>
+								<select id="sortOrder">
+									<option <% if (sortOrder == "dateUploaded+desc") { print('selected="selected"'); } %> value="dateUploaded+desc">Most recent</option>
+									<option <% if (sortOrder == "id+asc") { print('selected="selected"'); } %> value="id+asc">Identifier (a-z)</option>
+									<option <% if (sortOrder == "titlestr+asc") { print('selected="selected"'); } %> value="titlestr+asc">Title (a-z)</option>
+									<option <% if (sortOrder == "authorSurNameSort+asc") { print('selected="selected"'); } %> value="authorSurNameSort+asc">Author (a-z)</option>
+									<% if (searchModelRef.get("sortByReads")){ %><option <% if (sortOrder == "read_count_i+asc") { print('selected="selected"'); } %> value="read_count_i+desc">Popularity</option><% } %>
+								</select>
+							</div>
+					</div>
+
+					<div class="row-fluid pagination pagination-centered">
+						<div class="resultspager"></div>
+					</div>
+				</div>
+
+				<!-- search results here -->
+				<div id="results" class="search-results"></div>
+
+				<!-- pager -->
+				<div class="row-fluid pagination pagination-centered">
+					<div class="resultspager"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="map-container" class="auto-height">
+			<div class="map-toggle-container">
+				<a class="toggle-map" href="<%= MetacatUI.root %>/data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
+
+				<label class="toggle-map-filter">Limit my search to the map area</label>
+				<input type="checkbox" name="map" checked="true" class="toggle-map-filter" />
+			</div>
+		</div>
+
+		<div class="clear"></div>
