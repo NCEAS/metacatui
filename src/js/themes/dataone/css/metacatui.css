@@ -2024,14 +2024,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
     width: 60%;
     max-width: 700px;
 }
-/* Color the name in the navbar differently */
-.d1_menu-item--profile .d1_menu-item__top-item-name {
-    color: var(--c-minor-accent);
-}
-.d1_menu-item--profile .d1_menu-item__dropdown-icon,
-.d1_menu-item--profile .d1_menu-item__icon{
-  stroke: var(--c-minor-accent);
-}
+
 /* MISC
  -----------------------------------------------*/
 .align-center {

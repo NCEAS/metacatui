@@ -17,7 +17,7 @@ js:
   assets:
     - helpers
 css:
-  filename: d1website
+  filename: css/d1website
   assets:
     - variables
     - fonts
@@ -44,7 +44,7 @@ static_files:
   # "favicon-16x16.png" : favicon.png"
 ---
 
-### Version: 2020-07-13 15:43:48.704277 -0500 CDT m=+2.456602553
+### Version: 2020-07-20 15:34:38.335618 -0400 EDT m=+2.493628707
 
 # Exports from the DataONE website for the MetacatUI DataONE theme
 
@@ -59,10 +59,8 @@ To build the website, download the repository, [install Hugo](https://gohugo.io/
 You will most likely want to use the command with the following flags:
 
 ```
-hugo --baseURL 'https://www.dataone.org' -d $DESTINATION_DIRECTORY --minify --cleanDestinationDir
+hugo -d $DESTINATION_DIRECTORY --minify --cleanDestinationDir
 ```
-
-*Note: setting the `baseURL` in the `hugo` command is essential, as Hugo uses this value to make the URLs in the navbar and footer absolute (instead of relative).*
 
 Hugo will output the files you need for metacatUI in a sub-directory within `$DESTINATION_DIRECTORY` called `metacatUI_exports`.
 (All of the other files & directories that were created in `$DESTINATION_DIRECTORY` can be discarded.)
