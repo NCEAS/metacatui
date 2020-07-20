@@ -2323,19 +2323,14 @@ Non-clickable (Disabled) button styling for metrics views
 ***********/
 a.btn.metrics-button-disabled {
 	width: 164px;
-	margin-bottom: 0px;
-    color: #555;
-    background-color: #F3F3F3;
+    color: #777;
     cursor: default;
-    border: none;
-    box-shadow: none;
-
 }
 .metrics-button-disabled> .metric-value.badge {
     float: right;
     color: #FFF;
     margin-left: 20px;
-    background-color: #555;
+    background-color: #777;
     margin-top: 2px;
 }
 .metrics-button-disabled.metric-icon {
