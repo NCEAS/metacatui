@@ -21,6 +21,7 @@ define(['jquery',
     'views/CitationView',
     'views/AnnotationView',
     'views/MarkdownView',
+    'views/ReportCitationView',
     'text!templates/metadata/metadata.html',
     'text!templates/dataSource.html',
     'text!templates/publishDOI.html',
@@ -39,7 +40,7 @@ define(['jquery',
     ],
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
        MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-       CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+       CitationView, AnnotationView, MarkdownView, ReportCitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
        VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
   'use strict';
@@ -98,7 +99,8 @@ define(['jquery',
       "mouseover .highlight-node"  : "highlightNode",
       "mouseout  .highlight-node"  : "highlightNode",
       "click     .preview"        : "previewData",
-      "click     #save-metadata-prov" : "saveProv"
+      "click     #save-metadata-prov" : "saveProv",
+      "click     .report-citation" : "showCitationForm"
     },
 
 
@@ -1194,6 +1196,7 @@ define(['jquery',
           url: window.location,
           displayQualtyReport: MetacatUI.appModel.get("mdqBaseUrl") && formatFound && MetacatUI.appModel.get("displayDatasetQualityMetric"),
           showWholetale: MetacatUI.appModel.get("showWholeTaleFeatures"),
+          hideReportCitationButton: MetacatUI.appModel.get("hideReportCitationButton"),
           model: this.model.toJSON()
         });
 
@@ -2935,7 +2938,17 @@ define(['jquery',
 
         newView.render();
       });
+    },
+
+    /**
+     * Display the Citation registration form
+     */
+    showCitationForm: function(){
+      var reportCitationView = new ReportCitationView();
+      reportCitationView.render();
+      reportCitationView.show();
     }
+
   });
 
   return MetadataView;

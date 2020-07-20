@@ -1,0 +1,41 @@
+<div >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <div class="left-header-section">
+    
+            <i class='icon icon-plus'></i>
+            Report Citation
+        </div>
+        <div class="right-header-section">
+            <button type="button" class="metric close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body mx-3">
+        <form>
+
+            <div class="form-group">
+                <label for="exampleFormControlInput1"> Enter DOI of the Publication </label>
+                <input type="email" class="form-control" id="exampleFormControlInput1" placeholder="doi:10.1037/0003-066X">
+            </div>
+
+            <div class="form-row align-items-center">
+              <div class="col-auto my-1">
+                <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Type of Citation</label>
+                <select class="custom-select mr-sm-2" id="inlineFormCustomSelect">
+                  <option selected>Choose...</option>
+                  <option value="1">Publication cites this dataset</option>
+                  <option value="2">Publication uses this dataset</option>
+                </select>
+              </div>
+              
+            </div>
+          </form>
+
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button class="btn btn-indigo">Send <i class="fas fa-paper-plane-o ml-1"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
