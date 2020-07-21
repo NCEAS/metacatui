@@ -1143,10 +1143,6 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('metaServiceUrl',    baseUrl + this.get('context') + this.get('d1Service') + '/meta/');
       this.set('packageServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
-      if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
-        this.set('objectServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/object/');
-      }
-
       this.set('metacatServiceUrl', baseUrl + this.get('context') + '/metacat');
 
       if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
