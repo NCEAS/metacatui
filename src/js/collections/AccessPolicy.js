@@ -14,6 +14,12 @@ define(["jquery", "underscore", "backbone", "models/AccessRule"],
 
           model: AccessRule,
 
+          /**
+          * The DataONEObject that will be saved with this AccessPolicy
+          * @type {DataONEObject}
+          */
+          dataONEObject: null,
+
           initialize: function(){
 
             //When a model triggers the event "removeMe", remove it from this collection
