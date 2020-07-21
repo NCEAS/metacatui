@@ -81,6 +81,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     sysMetaXML: null, // A cached original version of the fetched system metadata document
                     objectXML: null, // A cached version of the object fetched from the server
                     isAuthorized: null, // If the stated permission is authorized by the user
+                    isAuthorized_read: null, //If the user has permission to read
+                    isAuthorized_write: null, //If the user has permission to write
+                    isAuthorized_changePermission: null, //If the user has permission to changePermission
                     createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
                     provSources: [],
@@ -783,6 +786,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               return false;
 
             var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+                  model.set("isAuthorized_" + action, true);
                   model.set("isAuthorized", true);
                   model.trigger("change:isAuthorized");
                 },
@@ -792,6 +796,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     model.trigger("notFound");
                   }
                   else{
+                    model.set("isAuthorized_" + action, false);
                     model.set("isAuthorized", false);
                   }
                 };

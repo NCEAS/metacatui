@@ -425,6 +425,12 @@ body > .alert-container.important-app-message > .alert{
   margin-bottom: 0px;
   position: relative;
 }
+.alert.subtle{
+  background-color: #f9f7f7;
+  border-color: #CCC;
+  color: #999;
+  border-width: 0px;
+}
 
 /******************************************
 ** Icons ***
@@ -3454,6 +3460,12 @@ add font awesome close icon */
 }
 .access-policy-view:not(.modal) .modal-footer{
   display: none;
+}
+.access-policy-view.unauthorized .alert{
+  margin-top: 20px;
+  min-height: 100px;
+  line-height: 100px;
+  text-align: center;
 }
 /******************************************
 * Portal Editor
