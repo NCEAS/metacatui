@@ -44,7 +44,7 @@ static_files:
   # "favicon-16x16.png" : favicon.png"
 ---
 
-### Version: 2020-07-20 15:34:38.335618 -0400 EDT m=+2.493628707
+### Version: 2020-07-21 12:14:42.130857 -0400 EDT m=+4.011582645
 
 # Exports from the DataONE website for the MetacatUI DataONE theme
 
