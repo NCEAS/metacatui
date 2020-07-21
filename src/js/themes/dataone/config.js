@@ -30,6 +30,7 @@ MetacatUI.AppConfig = Object.assign({
   displayDatasetEditButton: false,
   displayDatasetControls: false,
   enablePublishDOI: false,
+  allowChangeRightsHolder: false,
 
   //Portals
   hideSummaryCitationsChart: false,

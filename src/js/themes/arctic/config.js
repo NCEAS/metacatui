@@ -49,6 +49,7 @@ MetacatUI.AppConfig = Object.assign({
     temporalCoverage: true,
     title: true
   },
+  allowChangeRightsHolder: false,
 
   //Searching
   enableSolrJoins: true,
