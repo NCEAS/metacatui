@@ -392,7 +392,7 @@ function ($, _, Backbone) {
 			var seriesId;
 
 			//Check for a seriesId
-			if(MetacatUI.appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
+			if( pid.indexOf("version:") > -1 ){
 				seriesId = pid.substr(0, pid.indexOf(", version:"));
 
 				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);
