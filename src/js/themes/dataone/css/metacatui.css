@@ -26,7 +26,6 @@ a,
 a:hover {
   color: #10424F;
   color: var(--c-major-accent-6);
-  filter: brightness(1.05);
   text-decoration: none;
 }
 
