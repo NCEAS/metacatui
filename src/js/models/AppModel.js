@@ -1149,6 +1149,10 @@ define(['jquery', 'underscore', 'backbone'],
 
       this.set('metacatServiceUrl', baseUrl + this.get('context') + '/metacat');
 
+      if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
+        this.set('objectServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/object/');
+      }
+
       if( this.get("enableMonitorStatus") ){
         this.set("monitorStatusUrl", baseUrl + this.get('context') + this.get('d1Service') + "/monitor/status");
       }
