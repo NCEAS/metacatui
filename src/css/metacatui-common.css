@@ -2366,8 +2366,18 @@ a.btn.metrics-button-disabled:hover{
 section#user-citations {
     min-height: 300px;
 }
+#user-summary .charts{
+  display: flex;
+}
+#user-summary .summary-container{
+  flex: 1;
+}
 .metrics-title > h3 {
 	display: inline-block;
+  margin-bottom: 30px;
+}
+.metrics-title > p{
+  margin-bottom: 30px;
 }
 .views-metrics .metric-chart,
 .downloads-metrics .metric-chart {
@@ -5155,6 +5165,7 @@ address.email-container:before{
 .profile .chart{
 	float: left;
 	margin-left: 20px;
+  margin-right: 20px;
 	margin-top: 30px;
 }
 .profile .stripe{
@@ -5164,10 +5175,6 @@ address.email-container:before{
 .profile .chart-title.uploads{
 	width: 100%;
 }
-.profile .quick-stats,
-.profile .quick-stats .badge-container{
-	height: 220px;
-}s
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
 	width: 100%;
@@ -5217,6 +5224,9 @@ address.email-container:before{
 }
 .bar-chart.log-scale .tick line{
 	stroke: #EEE;
+}
+.profile .temporal-coverage-chart{
+  width: calc(100% - 40px);
 }
 
 
@@ -7671,6 +7681,19 @@ CSS library fixes
 
 /* New Summary of Holdings design */
 
+.summary-container {
+  flex: 1;
+  margin-right: 10px;
+  margin-left: 10px;
+  display: grid;
+}
+.summary-count-container {
+    width: 100%;
+    display: grid;
+    align-self: center;
+    ttext-ALIGN: center;
+    justify-self: center;
+}
 .summary-container.span3 > div {
     margin-left: 17.02127659574468%;
 }

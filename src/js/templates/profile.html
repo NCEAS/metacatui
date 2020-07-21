@@ -18,7 +18,7 @@
 			<h3> <%= summaryTerm %> </h3>
 		</div>
 		<section class="charts row-fluid">
-			<div class="summary-container span3">
+			<div class="summary-container">
 				<div class="show-loading summary-count-container" id="total-datasets"></div>
 				<div class="subtle">
 					<p>
@@ -29,7 +29,7 @@
 					</p>
 				</div>
 			</div>
-			<div class="summary-container span3">
+			<div class="summary-container">
 				<div class="show-loading summary-count-container" id="total-size"></div>
 				<div class="subtle">
 					<p>
@@ -40,11 +40,11 @@
 				</div>
 			</div>
 			<% if(userTerm == "repository" && !userIsCN){ %>
-				<div class="summary-container span3" id="replicas-container">
+				<div class="summary-container" id="replicas-container">
 					<div class="show-loading summary-count-container" id="total-replicas"></div>
 					<div class="subtle">
 						<p>
-							The total number of data replicas hosted in this <%= userTerm %>.
+							The total number of data replicas hosted by this <%= userTerm %>.
 						</p>
 					</div>
 				</div>

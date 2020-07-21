@@ -1778,8 +1778,7 @@ svg .title {
 }
 
 /* Line Chart */
-.upload-chart,
-.temporal-coverage-chart {
+.upload-chart {
   width: 650px;
   float: right;
 }
@@ -1880,10 +1879,6 @@ svg .point:hover~.line-chart-label {
   fill: #0E69A1;
   font-size: 14px;
   font-weight: bold;
-}
-
-.bar-chart .x.axis .tick text {
-  font-size: 11px;
 }
 
 #data-coverage-year-range {
