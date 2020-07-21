@@ -240,9 +240,9 @@ define(['jquery',
 		resetSearch: function(){
 			// Clear the search and map model to start a fresh search
 			MetacatUI.appSearchModel.clear();
-			MetacatUI.appSearchModel.set(MetacatUI.appSearchModel.defaults);
+			MetacatUI.appSearchModel.set(MetacatUI.appSearchModel.defaults());
 			MetacatUI.mapModel.clear();
-			MetacatUI.mapModel.set(MetacatUI.mapModel.defaults);
+			MetacatUI.mapModel.set(MetacatUI.mapModel.defaults());
 
 			//Clear the search history
 			MetacatUI.appModel.set("searchHistory", new Array());

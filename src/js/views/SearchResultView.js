@@ -166,7 +166,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
 
 			// Get the individual dataset metics only if the response from Metrics Service API
 			// has non-zero array sizes
-			if(datasets.length > 0) {
+			if(datasets && datasets.length > 0) {
 				var index = datasets.indexOf(this.model.get("id"));
 				viewCount = views[index];
 				downloadCount = downloads[index];

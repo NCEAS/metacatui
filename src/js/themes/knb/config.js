@@ -40,6 +40,7 @@ MetacatUI.AppConfig = Object.assign({
       read: true
     }],
   hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
+  allowChangeRightsHolder: false,
 
   //Searching
   disableQueryPOSTs: false,
@@ -53,6 +54,7 @@ MetacatUI.AppConfig = Object.assign({
   temporaryMessageEndTime: new Date("2020-06-16T13:30:00"),
 
   //Metadata assessments
+  displayDatasetQualityMetric: true,
   mdqSuiteIds: ["knb.suite.1"],
   mdqSuiteLabels: ["KNB Metadata Completeness Suite v1.0"],
   mdqFormatIds:["eml*", "https://eml*"],
@@ -83,7 +85,6 @@ MetacatUI.themeMap =
         'templates/featuredData.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/featuredData.html',
         'templates/footer.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/footer.html',
         'templates/mainContent.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/mainContent.html',
-        'templates/metadataControls.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/metadataControls.html',
         'templates/altHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/altHeader.html',
         'templates/defaultHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
         'templates/about.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/about.html',

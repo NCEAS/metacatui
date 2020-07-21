@@ -1,4 +1,4 @@
-﻿/* global define */
+/* global define */
 define(['jquery', 'underscore', 'backbone', 'uuid',
         'collections/Units',
         'models/metadata/ScienceMetadata',
@@ -34,7 +34,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         defaults: function(){
           return _.extend(ScienceMetadata.prototype.defaults(), {
             id: "urn:uuid:" + uuid.v4(),
-            formatId: "eml://ecoinformatics.org/eml-2.1.1",
+            formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
             objectXML: null,
               isEditable: false,
               alternateIdentifier: [],
@@ -61,7 +61,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               entities: [], //An array of EMLEntities
               pubplace: null,
               methods: null, // An EMLMethods objects
-              project: null // An EMLProject object
+              project: null, // An EMLProject object
+              nodeOrder: [
+                "alternateidentifier",
+                "shortname",
+                "title",
+                "creator",
+                "metadataprovider",
+                "associatedparty",
+                "pubdate",
+                "language",
+                "series",
+                "abstract",
+                "keywordset",
+                "additionalinfo",
+                "intellectualrights",
+                "licensed",
+                "distribution",
+                "coverage",
+                "annotation",
+                "purpose",
+                "introduction",
+                "gettingstarted",
+                "acknowledgements",
+                "maintenance",
+                "contact",
+                "publisher",
+                "pubplace",
+                "methods",
+                "project",
+                "datatable",
+                "spatialraster",
+                "spatialvector",
+                "storedprocedure",
+                "view",
+                "otherentity",
+                "referencepublications",
+                "usagecitations",
+                "literaturecited",
+              ]
           });
         },
 
@@ -134,6 +172,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "attributename" : "attributeName",
                 "attributeorientation" : "attributeOrientation",
                 "attributereference" : "attributeReference",
+                "awardnumber" : "awardNumber",
+                "awardurl" : "awardUrl",
                 "audiovisual" : "audioVisual",
                 "authsystem" : "authSystem",
                 "banddescription" : "bandDescription",
@@ -217,6 +257,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "formatstring" : "formatString",
                 "formatversion" : "formatVersion",
                 "fractiondigits" : "fractionDigits",
+                "fundername" : "funderName",
+                "funderidentifier" : "funderIdentifier",
+                "gettingstarted" : "gettingStarted",
                 "gring" : "gRing",
                 "gringpoint" : "gRingPoint",
                 "gringlatitude" : "gRingLatitude",
@@ -243,10 +286,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "languagevalue" : "LanguageValue",
                 "languagecodestandard" : "LanguageCodeStandard",
                 "lensdistortioninformationavailability" : "lensDistortionInformationAvailability",
+                "licensename" : "licenseName",
                 "licenseurl" : "licenseURL",
                 "linenumber" : "lineNumber",
                 "literalcharacter" : "literalCharacter",
                 "literallayout" : "literalLayout",
+                "literaturecited" : "literatureCited",
                 "lowwavelength" : "lowWaveLength",
                 "machineprocessor" : "machineProcessor",
                 "maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
@@ -327,6 +372,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "researchproject" : "researchProject",
                 "researchtopic" : "researchTopic",
                 "recorddelimiter" : "recordDelimiter",
+                "referencepublication" : "referencePublication",
                 "revieweditem" : "reviewedItem",
                 "rowcolumnorientation" : "rowColumnOrientation",
                 "runtimememoryusage" : "runtimeMemoryUsage",
@@ -361,6 +407,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "uniquekey" : "uniqueKey",
                 "unittype" : "unitType",
                 "unitlist" : "unitList",
+                "usagecitation" : "usageCitation",
+                "valueuri" : "valueURI",
                 "valueattributereference" : "valueAttributeReference",
                 "verticalaccuracy" : "verticalAccuracy",
                 "vertcoordsys" : "vertCoordSys",
@@ -617,14 +665,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
        * Returns the EML XML as a string.
        */
       serialize: function(){
-
         //Get the EML document
         var xmlString   = this.get("objectXML"),
-            eml         = $.parseHTML(xmlString),
-            datasetNode = $(eml).filter("eml\\:eml").find("dataset");
+            html        = $.parseHTML(xmlString),
+            eml         = $(html).filter("eml\\:eml"),
+            datasetNode = $(eml).find("dataset");
 
         //Update the packageId on the eml node with the EML id
         $(eml).attr("packageId", this.get("id"));
+
+        // Set schema version
+        $(eml).attr("xmlns:eml", 
+          MetacatUI.appModel.get("editorSerializationFormat") || 
+          "https://eml.ecoinformatics.org/eml-2.2.0");
+
+        // Set formatID
+        this.set("formatId", 
+          MetacatUI.appModel.get("editorSerializationFormat") ||
+          "https://eml.ecoinformatics.org/eml-2.2.0");
+
+        // Ensure xsi:schemaLocation has a value for the current format
+        eml = this.setSchemaLocation(eml);
 
         var nodeNameMap = this.nodeNameMap();
 
@@ -637,7 +698,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           basicTextValues = [basicTextValues];
 
         // Remove existing nodes
-        datasetNode.find(fieldName.toLowerCase()).remove();
+        datasetNode.children(fieldName.toLowerCase()).remove();
 
         // Create new nodes
         var nodes = _.map(basicTextValues, function(value) {
@@ -662,7 +723,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         else{
           datasetNode.prepend(nodes);
         }
-
       }, this);
 
       // Serialize pubDate
@@ -997,7 +1057,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       //Camel-case the XML
       var emlString = "";
-      _.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
+      _.each(html, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
 
       return emlString;
     },
@@ -1008,13 +1068,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
     serializeParties: function(eml, type){
 
       //Remove the nodes from the EML for this party type
-      $(eml).find(type.toLowerCase()).remove();
+      $(eml).children("dataset").children(type.toLowerCase()).remove();
 
       //Serialize each party of this type
        _.each(this.get(type), function(party, i){
 
          //Get the last node of this type to insert after
-         var insertAfter = $(eml).find(type.toLowerCase()).last();
+         var insertAfter = $(eml).children("dataset").children(type.toLowerCase()).last();
 
          //If there isn't a node found, find the EML position to insert after
          if( !insertAfter.length ) {
@@ -1527,36 +1587,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
           $.ajax(fetchOptions);
       },
-
       /*
-       * Returns the node in the given EML document that the given node type should be inserted after
+       * Returns the nofde in the given EML document that the given node type
+       * should be inserted after
+       *
+       * Returns false if either the node is not found in the and this should
+       * be handled by the caller.
        */
       getEMLPosition: function(eml, nodeName) {
-        var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
-                        "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights",
-                        "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace",
-                        "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-          var entityNodes = ["datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-          var isEntityNode = _.contains(entityNodes, nodeName);
-          var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
-          if ( position == -1 ) {
-              return false;
-          }
+        var nodeOrder = this.get("nodeOrder");
+        var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
 
-          //Go through each node in the node list and find the position where this node will be inserted after
-          for (var i = position - 1; i >= 0; i--) {
-              if ( $(eml).find(nodeOrder[i]).length ) {
-                  // Handle non-entity nodes
-                  if ( ! isEntityNode ) {
-                      return $(eml).find("dataset").children(nodeOrder[i]).last();
-                  } else {
-                      // Handle entity nodes by returning the
-                      // last child of the parent <dataset> since
-                      // entities have a {0..n}+ model
-                      // (i.e optional, repeatable, no specific order)
-                      return $(eml).find("dataset").children().last();
-                  }
-              }
+        if (position == -1) {
+          return false;
+        }
+
+        // Go through each node in the node list and find the position where this
+        // node will be inserted after
+        for (var i = position - 1; i >= 0; i--) {
+          if ($(eml).find("dataset").find(nodeOrder[i]).length) {
+            return $(eml).find("dataset").children(nodeOrder[i]).last();
+          }
         }
 
         return false;
@@ -1896,13 +1947,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       /* Initialize the object XML for brand spankin' new EML objects */
       createXML: function() {
-          var xml = "<eml:eml xmlns:eml=\"eml://ecoinformatics.org/eml-2.1.1\"></eml:eml>",
+          var xml = "<eml:eml xmlns:eml=\"https://eml.ecoinformatics.org/eml-2.2.0\"></eml:eml>",
               eml = $($.parseHTML(xml));
 
               // Set base attributes
               eml.attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
               eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
-              eml.attr("xsi:schemaLocation", "eml://ecoinformatics.org/eml-2.1.1 eml.xsd");
+              eml.attr("xsi:schemaLocation", "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd");
               eml.attr("packageId", this.get("id"));
               eml.attr("system", "knb"); // We could make this configurable at some point
 
@@ -2067,8 +2118,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         //Mark the package as changed
         MetacatUI.rootDataPackage.packageModel.set("changed", true);
-      }
+      },
 
+      /**
+       * Sets the xsi:schemaLocation attribute on the passed-in Element 
+       * depending on the application configuration.
+       * 
+       * @param {Element} eml: The root eml:eml element to modify
+       * @return {Element} The element, possibly modified
+       */
+      setSchemaLocation: function(eml) {
+        if (!MetacatUI || !MetacatUI.appModel) {
+          return eml;
+        }
+
+        var current = $(eml).attr("xsi:schemaLocation"),
+            format = MetacatUI.appModel.get("editorSerializationFormat"),
+            location = MetacatUI.appModel.get("editorSchemaLocation");
+
+        // Return now if we can't do anything anyway
+        if (!format || !location) {
+          return eml;
+        }
+
+        // Simply add if the attribute isn't present to begin with
+        if (!current || typeof current !== "string") {
+          $(eml).attr("xsi:schemaLocation", format + " " + location);
+
+          return eml;
+        }
+
+        // Don't append if it's already present
+        if (current.indexOf(format) >= 0) {
+          return eml;
+        }
+
+        $(eml).attr("xsi:schemaLocation", current + " " + location);
+
+        return eml;
+      }
     });
 
     return EML211;

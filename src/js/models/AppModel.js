@@ -197,7 +197,7 @@ define(['jquery', 'underscore', 'backbone'],
       * filter options.
       * @type {string[]}
       * @default ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
-      * @example ["all", "annotation", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
+      * @example ["all", "annotation", "attribute", "dataSource", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"]
       */
       defaultSearchFilters: ["all", "attribute", "documents", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
@@ -255,12 +255,16 @@ define(['jquery', 'underscore', 'backbone'],
 				title: true
 			},
 
-      /**
-      * The metadata formats that are editable in the EditorView. Metadata types not listed
-      * here will not show an Edit button.
-      * @type {string[]}
-      */
-			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
+      editableFormats: [
+        "eml://ecoinformatics.org/eml-2.1.1",
+        "https://eml.ecoinformatics.org/eml-2.2.0"
+      ],
+
+      // Format the editor serializes new EML objects as
+      editorSerializationFormat: "https://eml.ecoinformatics.org/eml-2.2.0",
+
+      // xsi:schemaLocation value to match `editorSerializationFormat`
+      editorSchemaLocation: "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
 
       /**
       * This error message is displayed when the Editor encounters an error saving
@@ -324,7 +328,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @default 'cn/v2'
       */
-      d1CNService: "cn/v2",
+      d1CNService: "/cn/v2",
       /**
       * The URL for the DataONE listNodes() API. This URL is contructed dynamically when the
       * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
@@ -1131,21 +1135,30 @@ define(['jquery', 'underscore', 'backbone'],
         this.set("d1Service", this.get("d1CNService"));
       }
 
-      // these are pretty standard, but can be customized if needed
-      this.set('viewServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/views/metacatui/');
-      this.set('publishServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/publish/');
-      this.set('authServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/isAuthorized/');
-      this.set('queryServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/query/solr/?');
-      this.set('metaServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/meta/');
 
-      if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
-        this.set('objectServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/object/');
+      //Remove a forward slash to the end of the base URL if there is one
+      var baseUrl = this.get("baseUrl");
+      if( baseUrl.charAt( baseUrl.length-1 ) == "/" ){
+        baseUrl = baseUrl.substring(0, baseUrl.length-1);
+        this.set("baseUrl", baseUrl);
       }
 
-      this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
+      // these are pretty standard, but can be customized if needed
+      this.set('viewServiceUrl',    baseUrl + this.get('context') + this.get('d1Service') + '/views/metacatui/');
+      this.set('publishServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/publish/');
+      this.set('authServiceUrl',    baseUrl + this.get('context') + this.get('d1Service') + '/isAuthorized/');
+      this.set('queryServiceUrl',   baseUrl + this.get('context') + this.get('d1Service') + '/query/solr/?');
+      this.set('metaServiceUrl',    baseUrl + this.get('context') + this.get('d1Service') + '/meta/');
+      this.set('packageServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+
+      this.set('metacatServiceUrl', baseUrl + this.get('context') + '/metacat');
+
+      if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
+        this.set('objectServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/object/');
+      }
 
       if( this.get("enableMonitorStatus") ){
-        this.set("monitorStatusUrl", this.get('baseUrl') + this.get('context') + this.get('d1Service') + "/monitor/status");
+        this.set("monitorStatusUrl", baseUrl + this.get('context') + this.get('d1Service') + "/monitor/status");
       }
 
       // Metadata quality report services
@@ -1155,9 +1168,16 @@ define(['jquery', 'underscore', 'backbone'],
       //DataONE CN API
       if(this.get("d1CNBaseUrl")){
 
+        //Add a forward slash to the end of the base URL if there isn't one
+        var d1CNBaseUrl = this.get("d1CNBaseUrl");
+        if( d1CNBaseUrl.charAt( d1CNBaseUrl.length-1 ) == "/" ){
+          d1CNBaseUrl = d1CNBaseUrl.substring(0, d1CNBaseUrl.length-1);
+          this.set("d1CNBaseUrl", d1CNBaseUrl);
+        }
+
         //Account services
         if(typeof this.get("accountsUrl") != "undefined"){
-          this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+          this.set("accountsUrl", d1CNBaseUrl + this.get("d1CNService") + "/accounts/");
 
           if(typeof this.get("pendingMapsUrl") != "undefined")
             this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
@@ -1166,30 +1186,30 @@ define(['jquery', 'underscore', 'backbone'],
             this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
 
           if(typeof this.get("groupsUrl") != "undefined")
-            this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
+            this.set("groupsUrl", d1CNBaseUrl + this.get("d1CNService") + "/groups/");
         }
 
         if(typeof this.get("d1LogServiceUrl") != "undefined")
-          this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
+          this.set('d1LogServiceUrl', d1CNBaseUrl + this.get('d1CNService') + '/query/logsolr/?');
 
-        this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
-        this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
-        this.set("reserveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/reserve");
+        this.set("nodeServiceUrl",    d1CNBaseUrl + this.get("d1CNService") + "/node/");
+        this.set('resolveServiceUrl', d1CNBaseUrl + this.get('d1CNService') + '/resolve/');
+        this.set("reserveServiceUrl", d1CNBaseUrl + this.get("d1CNService") + "/reserve");
 
         //Token URLs
         if(typeof this.get("tokenUrl") != "undefined"){
-          this.set("tokenUrl", this.get("d1CNBaseUrl") + "portal/" + "token");
+          this.set("tokenUrl", d1CNBaseUrl + "/portal/" + "token");
 
-          this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
+          this.set("checkTokenUrl", d1CNBaseUrl + this.get("d1CNService") + "/diag/subject");
 
           //The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
           if(this.get("enableCILogonSignIn") || typeof this.get("signInUrl") !== "undefined")
-            this.set("signInUrl", this.get("d1CNBaseUrl") + "portal/" + "startRequest?target=");
+            this.set("signInUrl", d1CNBaseUrl + "/portal/" + "startRequest?target=");
           if(typeof this.get("signInUrlOrcid") !== "undefined")
-            this.set("signInUrlOrcid", this.get("d1CNBaseUrl") + "portal/" + "oauth?action=start&target=");
+            this.set("signInUrlOrcid", d1CNBaseUrl + "/portal/" + "oauth?action=start&target=");
 
           if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
-            this.set("signInUrlLdap", this.get("d1CNBaseUrl") + "portal/" + "ldap?target=");
+            this.set("signInUrlLdap", d1CNBaseUrl + "/portal/" + "ldap?target=");
           }
 
 
@@ -1197,31 +1217,24 @@ define(['jquery', 'underscore', 'backbone'],
             this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
           if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
-            this.set("signOutUrl", this.get("d1CNBaseUrl") + "portal/" + "logout");
+            this.set("signOutUrl", d1CNBaseUrl + "/portal/" + "logout");
 
         }
 
         // Object format list
         if ( typeof this.get("formatsUrl") != "undefined" ) {
              this.set("formatsServiceUrl",
-             this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+               d1CNBaseUrl + this.get("d1CNService") + this.get("formatsUrl"));
         }
 
         //ORCID search
         if(typeof this.get("orcidBaseUrl") != "undefined")
           this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 
-        //Turn the seriesId feature on
-        if(typeof this.get("useSeriesId") != "undefined")
-          this.set("useSeriesId", true);
-
         //Annotator API
         if(typeof this.get("annotatorUrl") !== "undefined")
-          this.set('annotatorUrl', this.get('d1CNBaseUrl') + 'portal/annotator');
+          this.set('annotatorUrl', d1CNBaseUrl + '/portal/annotator');
       }
-
-      //The package service for v2 DataONE API
-      this.set('packageServiceUrl', this.get('baseUrl') + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
 
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");

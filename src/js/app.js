@@ -52,7 +52,7 @@ require.config({
     he: MetacatUI.root + '/components/he',
     citation: MetacatUI.root + '/components/citation.min',
     promise: MetacatUI.root + '/components/es6-promise.min',
-	// showdown + extensions (used in the markdownView to convert markdown to html)
+	// showdown + extensions (used in the MarkdownView to convert markdown to html)
 	showdown: MetacatUI.root + '/components/showdown/showdown.min',
 	showdownHighlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/showdown-highlight',
 	highlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/highlight.pack',
@@ -65,8 +65,13 @@ require.config({
 	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
 	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
+	// woofmark - markdown editor
+	woofmark: MetacatUI.root + '/components/woofmark.min',
 	// drop zone creates drag and drop areas
 	Dropzone: MetacatUI.root + '/components/dropzone-amd-module',
+	// Packages that convert between json data to markdown table
+	markdownTableFromJson: MetacatUI.root + '/components/markdown-table-from-json.min',
+	markdownTableToJson: MetacatUI.root + '/components/markdown-table-to-json',
 	// Polyfill required for using dropzone with older browsers
 	corejs: MetacatUI.root + '/components/core-js',
 	//Have a null fallback for our d3 components for browsers that don't support SVG

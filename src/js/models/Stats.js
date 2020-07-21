@@ -711,7 +711,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
           //Construct a query to find the earliest endDate
           var query = model.get('query') +
-                " AND endDate:[" + this.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "]" + //Use date filter to weed out badly formatted data
+                " AND endDate:[" + model.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "]" + //Use date filter to weed out badly formatted data
                 " AND -obsoletedBy:*",
               //Get one row only
               rows = "1",

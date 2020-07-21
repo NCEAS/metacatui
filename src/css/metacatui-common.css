@@ -425,6 +425,12 @@ body > .alert-container.important-app-message > .alert{
   margin-bottom: 0px;
   position: relative;
 }
+.alert.subtle{
+  background-color: #f9f7f7;
+  border-color: #CCC;
+  color: #999;
+  border-width: 0px;
+}
 
 /******************************************
 ** Icons ***
@@ -452,6 +458,11 @@ h4 > .icon{
 }
 img.icon{
 	max-height: 1.4em;
+}
+svg.icon {
+	max-height: 19px;
+	max-width: 19px;
+	fill: #555;
 }
 .icon-positive{
 	color: green;
@@ -2317,20 +2328,19 @@ button.modal-btn.btn.btn-default {
 Non-clickable (Disabled) button styling for metrics views
 ***********/
 a.btn.metrics-button-disabled {
-	width: 164px;
-	margin-bottom: 0px;
-    color: #555;
-    background-color: #F3F3F3;
-    cursor: default;
-    border: none;
-    box-shadow: none;
-
+  width: 164px;
+  color: #777;
+  border-color: #777;
+  cursor: default;
+}
+a.btn.metrics-button-disabled:hover{
+  background-color: transparent;
 }
 .metrics-button-disabled> .metric-value.badge {
     float: right;
     color: #FFF;
     margin-left: 20px;
-    background-color: #555;
+    background-color: #777;
     margin-top: 2px;
 }
 .metrics-button-disabled.metric-icon {
@@ -2884,8 +2894,6 @@ img[src*="googleapis.com/"].georegion-map{
   font-weight: bold;
 }
 
-
-
 /******************************************
 * Image Uploader
 ********************************************/
@@ -2956,7 +2964,7 @@ img[src*="googleapis.com/"].georegion-map{
 	white-space: nowrap;
 	text-align: center;
 	box-sizing: border-box;
-	padding-bottom: 4px; /* to account for a 2px top border and 2px bottom border*/
+	padding-bottom: 3px; /* to account for a 1.5px top border and 1.5px bottom border*/
 }
 
 .vertical-align-image-helper {
@@ -3013,7 +3021,7 @@ img[src*="googleapis.com/"].georegion-map{
 .dropzone,
 .dropzone.dz-started:hover,
 .dropzone.dz-started.dz-drag-hover {
-	border: dashed 2px #999;
+	border: dashed 1.5px #999;
 }
 
 .dz-message{
@@ -3051,6 +3059,313 @@ img[src*="googleapis.com/"].georegion-map{
   display: block;
   font-size: 1.5em;
 }
+
+/******************************************
+* Markdown Editor - Woofmark
+********************************************/
+/* The markdown editor is used in the portal editor markdown section.  */
+/* It uses the imageUploader view, and the woofdown component (prefixed with wk-). */
+/* See https://github.com/bevacqua/woofmark */
+/* and https://github.com/bevacqua/woofmark/blob/master/dist/woofmark.css */
+
+/* markdown editor container - contains editor buttons & markdown textarea */
+.wk-container {
+  position: relative;
+  margin: 5px 0;
+	border: 1px solid #e5e5e5;
+	border-radius: 2px;
+	display: flex;
+	flex-direction: column;
+}
+
+/* the markdown editor textarea field */
+textarea.markdown {
+	width: 100%;
+	height: 50vh;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	margin: 5px 0 10px;
+	line-height: 1.6em;
+	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+	/* so that the textarea is below any and all editor buttons/controls */
+	order: 99;
+}
+
+.wk-container textarea.markdown{
+	box-shadow: none;
+	border: none;
+	border-radius: 2px;
+	margin: 0;
+}
+
+.wk-hide {
+  display: none !important;
+}
+.wk-commands-divider{
+  display: inline-block;
+  width: 1px;
+  height: 21px;
+  background-color: #ddd;
+  margin: 10px 6px -7px 6px;
+}
+.wk-commands{
+	border-bottom: 1px solid #e5e5e5;
+  background: #fafafa;
+	padding-left: 0.5rem;
+}
+/* markdown editor button */
+.wk-command {
+  background-color: transparent;
+  color: #333;
+  border: 0;
+  padding: 7px 10px;
+  cursor: pointer;
+  outline: none;
+  margin: 2px;
+	border-radius: 6px;
+	transition: all 0.2s ease-in-out;
+}
+.wk-command svg {
+	transition: fill 0.2s ease-in-out;
+	fill: #333;
+}
+.wk-command:hover{
+  background-color: white;
+  color: #2c7e90;
+}
+.wk-command:hover svg {
+	fill: #2c7e90;
+}
+/* ---- Markdown editor modal ---- */
+/* The modal type dialogs to add image or link */
+.wk-prompt {
+  position: fixed;
+  top: 10%;
+  left: 2%;
+  right: 2%;
+  z-index: 1050;
+	width: fit-content;
+	max-width: 95vw;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  background-clip: padding-box;
+  color: #555;
+  padding: 0px;
+  margin: 0 auto;
+}
+/* The close button is an empty link (a.wk-prompt-close),
+add font awesome close icon */
+.wk-prompt-close::before {
+  content: "×";
+  font-size: 25px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  opacity: .2;
+}
+.wk-prompt-close::before:hover {
+  opacity: .3;
+}
+.wk-prompt-header{
+  padding: 9px 15px;
+  border-bottom: 1px solid #eee;
+}
+.wk-prompt-title {
+  margin: 0;
+  line-height: 30px;
+  font-size: 24px;
+}
+.wk-prompt-body {
+  position: relative;
+  max-height: 400px;
+  padding: 15px;
+  overflow-y: auto;
+  color: #999;
+}
+.wk-prompt .image-uploader{
+  position: relative;
+  margin: 5px auto 15px;
+}
+.wk-prompt .dropzone .dz-message{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 0px;
+}
+.wk-prompt-input{
+  width: 100%;
+  max-width: 292px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  display: inline-block;
+  height: 20px;
+  padding: 4px 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #555;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+.wk-prompt-buttons{
+  padding: 14px 15px 15px;
+  margin-bottom: 0;
+  text-align: right;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 6px 6px;
+  box-shadow: inset 0 1px 0 #ffffff;
+  height: auto;
+  position: relative;
+  text-align: center;
+}
+.wk-prompt-buttons > button {
+  font-weight: 400;
+  border: 1px solid #CCC;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #333;
+  padding: 4px 12px;
+}
+.wk-prompt-buttons > .wk-prompt-ok {
+  background-color: #2c7e90;
+  background-color: var(--portal-secondary-color);
+  color: white;
+  margin-left: 10px;
+}
+.wk-container .tooltip{
+  /* ensure the tooltip is not hidden within markdown editor container */
+  position: fixed;
+}
+
+/******************************************
+* Table Editor View
+********************************************/
+
+.table-editor .spreadsheet {
+  margin: 1rem 2rem 2rem 0.5rem;
+}
+
+.table-editor .table {
+	/* undo bootstrap margin */
+	margin-bottom: 0;
+}
+
+.table-editor td {
+  min-width: 5rem;
+}
+
+.table-editor th {
+	background: #fafafa;
+  padding: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Row numbers */
+.table-editor tbody th {
+  min-width: 2.5rem;
+}
+
+/* Dropdown Button */
+.table-editor .dropbtn {
+  background-color: #e2e2e2d0;
+  color: rgba(0, 0, 0, 0.5);
+  padding: 0rem 0.3rem;
+  border: none;
+  cursor: pointer;
+  transition: ease 0.4s;
+	border-radius: 3px;
+}
+
+.table-editor .dropbtn .icon{
+	pointer-events: none;
+	margin: 0;
+}
+
+/* Dropdown button on hover & focus */
+.table-editor .dropbtn:hover,
+.table-editor .dropbtn:focus {
+  background-color: #d0d0d0;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.table-editor .dropdown {
+  position: relative;
+	float: right;
+	width: 1rem;
+}
+
+/* Dropdown Content (hidden by default) */
+.table-editor .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 7rem;
+  box-shadow: 0 0.5rem 0.8rem 0 rgba(0, 0, 0, 0.1);
+  z-index: 1;
+	border: 1px solid rgba(0,0,0,.05);
+}
+.table-editor .dropdown-content .icon {
+  pointer-events: none;
+}
+/* position row menus to the right of the row number */
+.table-editor .row-header .dropdown-content{
+    left: 1.2rem;
+    top: 0;
+}
+
+/* So the drop down doesn't go into overeflow space */
+.table-editor .column-header:last-of-type .dropdown-content {
+	right: 0;
+}
+
+/* Buttons inside the dropdown */
+.table-editor .row-dropdown-option,
+.table-editor .col-dropdown-option {
+	white-space: nowrap;
+	display: block;
+	width: 100%;
+	text-align: left;
+	background-color: transparent;
+	color: #2c6f90;
+	color: var(--portal-primary-color);
+  padding: 0.2rem 0.8rem;
+	margin: 0.2rem 0;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 100ms ease-in-out;
+}
+
+.table-editor .row-dropdown-option:hover,
+.table-editor .col-dropdown-option:hover {
+	background-color: #f7f7f7;
+	color: #555;
+}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.table-editor .show {
+  display: block;
+}
+
+.table-editor .column-header-span {
+	width: calc(100% - 1.1rem);
+	min-width: 1.5rem;
+	float: left;
+	display: inline-block;
+	margin-left: 0;
+	line-height: 120%;
+}
+
+.table-editor .spreadsheet-controls {
+  margin-left: 0.5rem;
+}
+
 /******************************************
 ** AccessPolicy editor view ***
 ******************************************/
@@ -3145,6 +3460,12 @@ img[src*="googleapis.com/"].georegion-map{
 }
 .access-policy-view:not(.modal) .modal-footer{
   display: none;
+}
+.access-policy-view.unauthorized .alert{
+  margin-top: 20px;
+  min-height: 100px;
+  line-height: 100px;
+  text-align: center;
 }
 /******************************************
 * Portal Editor
@@ -3318,13 +3639,13 @@ img[src*="googleapis.com/"].georegion-map{
   padding-top: 20px;
   padding-bottom: 20px;
 }
-.edit-image .toggle-remove-preview{
+.image-uploader .toggle-remove-preview{
   display: none;
 }
-.edit-image.remove-preview{
+.image-uploader.remove-preview{
   opacity: .5;
 }
-.edit-image .dropzone .remove-message{
+.image-uploader .dropzone .remove-message{
   display: none;
 }
 .image-uploader.remove-preview{
@@ -3381,6 +3702,7 @@ img[src*="googleapis.com/"].georegion-map{
   font-size: 1.5em;
   display: block;
 }
+/* hide the remove message for logo images since we can reemove the entire logo instead */
 .port-editor-settings .logos-container .edit-image .dropzone .remove-message,
 .port-editor-settings .logos-container .edit-image .dropzone .remove {
     display: none;
@@ -3435,6 +3757,7 @@ img[src*="googleapis.com/"].georegion-map{
   padding-bottom: 0px;
   margin-top: -1px;
 }
+.portal-editor h2,
 .portal-view h2 {
     font-size: 2em;
     font-weight: normal;
@@ -3462,10 +3785,6 @@ img[src*="googleapis.com/"].georegion-map{
   z-index: 10; /* so it's above all the dropzone stuff */
 }
 
-.port-editor-markdown-container div.portal-display-image {
-	padding: 0;
-	min-height: 300px;
-}
 .port-editor-md > *{
   padding-left: 40px;
   padding-right: 40px;
@@ -3504,15 +3823,6 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-md .introduction::placeholder {
 	color: white;
   opacity: 0.4;
-}
-
-/* the markdown editor textarea field */
-.port-editor-md textarea.markdown{
-	margin: 20px 0px;
-	width: 100%;
-	line-height: 1.6em;
-	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-	padding: 0.5rem;
 }
 
 .port-editor-md .markdown-help{
@@ -3786,83 +4096,75 @@ img[src*="googleapis.com/"].georegion-map{
   margin-bottom: 0px;
   padding: 7px;
 }
-/* markdown section table of contents (portal and portal editor) */
-.Editor.Portal .toc-view.affix,
-.portal-section-content .toc-view.affix{
+/******************************************
+* Table of Contents
+********************************************/
+/* The TOC is used optionally in both the markdown view and the preview portion
+ of the markdown editor view. Markdown & markdown editor views are used in the
+ portal editor and portal views. */
+.toc-view.affix{
   top: 20px;
 }
-.Editor.Portal .toc-view.affix-bottom,
-.portal-section-content .toc-view.affix-bottom{
+.toc-view.affix-bottom{
   top: 20px;
   position: fixed;
 }
-.Editor.Portal .toc-view.span3.affix + .span9,
-.Editor.Portal .toc-view.span3.affix-bottom + .span9,
-.portal-section-content .toc-view.span3.affix + .span9,
-.portal-section-content .toc-view.span3.affix-bottom + .span9{
+.toc-view.span3.affix + .span9,
+.toc-view.span3.affix-bottom + .span9 {
   margin-left: 26.5%;
 }
-.Editor.Portal .toc-ul,
-.portal-view .toc-ul{
+
+.toc-ul{
 	position: sticky;
 	position: -webkit-sticky;
   background-color: #2c6f90; /* Back-up color for IE */
   background-color: var(--portal-primary-color);
-  margin-left: -20px;
+
   padding: 0px;
 }
-.Editor.Portal .toc-ul > li > a,
-.portal-view .toc-ul > li > a{
+.toc-ul > li > a {
+	text-shadow: none;
   padding-left: 20px;
   padding-right: 20px;
   margin: 0px;
 }
-.Editor.Portal .toc-ul a,
-.portal-view .toc-ul a{
+
+
+.toc-ul a{
   line-height: 2em;
 }
-.Editor.Portal .toc-ul > li > ul,
-.portal-view .toc-ul > li > ul{
+.toc-ul > li > ul{
   margin-left: 0px;
   list-style: none;
 }
-.Editor.Portal .toc-ul > li > ul > li > a,
-.portal-view .toc-ul > li > ul > li > a{
+.toc-ul > li > ul > li > a{
   padding-left: 40px;
 }
-.Editor.Portal .toc-ul li,
-.Editor.Portal .toc-ul a,
-.portal-view .toc-ul li,
-.portal-view .toc-ul a{
+.toc-ul li,
+.toc-ul a {
   background-color: transparent;
   color: #FFF;
   border:0px;
   border-radius: 0px;
   text-shadow: none;
 }
-.Editor.Portal .toc li.active > a,
-.portal-view .toc li.active > a {
+.toc li.active > a {
   background-color: #2c7e90; /* Back-up color for IE */
 	background-color: var(--portal-secondary-color);
 }
-
-.Editor.Portal .toc-ul a:hover,
-.portal-view .toc-ul a:hover{
+.toc-ul a:hover {
   color: #FFF;
   background-color: transparent;
-}
-.toc a{
-	color: #555;
 }
 .toc .icon{
 	color: #069;
 }
-i.toc-sub-item{
+i.toc-sub-item {
 	margin-left: 18px;
 	visibility: hidden;
 }
 /* hide mobile TOC by default */
-.portal-section-content .toc .mobile {
+.toc .mobile {
 	display: none;
 }
 .submenu.hidden{
@@ -3914,6 +4216,9 @@ i.toc-sub-item{
 }
 .portal-section-content{
   padding: 20px;
+}
+.portal-section-content .toc-ul {
+	margin-left: -20px;
 }
 .portal-display-image{
   background-repeat: no-repeat;
@@ -4367,6 +4672,26 @@ i.toc-sub-item{
   margin-bottom: 20px;
 }
 
+
+/******************************************
+* HTML converted from Markdown
+********************************************/
+
+/* images in markdown */
+.markdown img.thumbnail {
+	display: block;
+}
+
+/* the following two rules overwrite both:
+	i. the bootstrap `pre` rules
+	ii. individual theme `pre` rules
+*/
+div.markdown pre {
+	color: #383a42;
+	background: #fafafa;
+	border-radius: 3px;
+}
+
 /* markdown citations */
 .markdown .inlineCitation {
 
@@ -4381,19 +4706,6 @@ i.toc-sub-item{
 .markdown #bibliography {
 	margin-top: 40px;
 	margin-bottom: 20px;
-}
-/******************************************
-* HTML converted from Markdown
-********************************************/
-
-/* the following two rules overwrite both:
-	i. the bootstrap `pre` rules
-	ii. individual theme `pre` rules
-*/
-div.markdown pre {
-	color: #383a42;
-	background: #fafafa;
-	border-radius: 3px;
 }
 
 /******************************************
@@ -5699,6 +6011,13 @@ body.mapMode{
 }
 #portal-filters > .nav-tabs > li:last-child > a{
 	border-right: 0px;
+}
+/* Hide the Spatial Filter elements until we fully support spatial filters */
+.portal-editor .filter-groups.vertical .applied-filter.label.custom{
+  display: none;
+}
+.portal-editor .toggle-map-filter {
+  display: none !important;
 }
 
 /******** Toggle Widget ************/
