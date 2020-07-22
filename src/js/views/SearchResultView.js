@@ -90,6 +90,12 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
       //Create a URL that leads to a view of this object
       json.viewURL = this.model.createViewURL();
 
+      //Construct a URL to the profile of this repository
+      json.profileURL = (json.memberNode.identifier == MetacatUI.appModel.get("nodeId"))?
+                         MetacatUI.root + "/profile" :
+                         MetacatUI.appModel.get("dataoneSearchUrl") + "/portals/" + json.memberNode.shortIdentifier;
+
+
 			var resultRow = this.template(json);
 			this.$el.html(resultRow);
 

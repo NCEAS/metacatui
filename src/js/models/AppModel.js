@@ -410,6 +410,15 @@ define(['jquery', 'underscore', 'backbone'],
       */
       d1CNService: "/cn/v2",
       /**
+      * The URL for the DataONE Search MetacatUI. This only needs to be changed
+      * if you want to point to a development environment.
+      * @type {string}
+      * @default "https://search.dataone.org"
+      * @readonly
+      * @since 2.13.0
+      */
+      dataoneSearchUrl: "https://search.dataone.org",
+      /**
       * The URL for the DataONE listNodes() API. This URL is contructed dynamically when the
       * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
       * (see https://releases.dataone.org/online/api-documentation-v2.0/apis/CN_APIs.html#CNCore.listNodes)
