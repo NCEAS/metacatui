@@ -45,6 +45,7 @@ define(['jquery', 'underscore', 'backbone'],
       * messages and page content.
       * @type {string}
       * @default "Metacat Data Catalog"
+      * @since 2.11.2
       */
       repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
 
@@ -133,6 +134,7 @@ define(['jquery', 'underscore', 'backbone'],
       *
       * @type {string}
       * @default null
+      * @since 2.11.4
       */
       temporaryMessage: null,
 
@@ -140,7 +142,9 @@ define(['jquery', 'underscore', 'backbone'],
       * If there is a temporaryMessage specified, it will display after this start time.
       * Remember that Dates are in GMT time!
       * @type {Date}
+      * @example new Date(1594818000000)
       * @default null
+      * @since 2.11.4
       */
       temporaryMessageStartTime: null,
 
@@ -148,7 +152,9 @@ define(['jquery', 'underscore', 'backbone'],
       * If there is a temporaryMessage specified, it will display before this end time.
       * Remember that Dates are in GMT time!
       * @type {Date}
+      * @example new Date(1594818000000)
       * @default null
+      * @since 2.11.4
       */
       temporaryMessageEndTime: null,
 
@@ -156,6 +162,7 @@ define(['jquery', 'underscore', 'backbone'],
       * Additional HTML classes to give the temporary message element. Use these to style the message.
       * @type {string}
       * @default "warning"
+      * @since 2.11.4
       */
       temporaryMessageClasses: "warning",
 
@@ -163,6 +170,7 @@ define(['jquery', 'underscore', 'backbone'],
       * A jQuery selector for the element that the temporary message will be displayed in.
       * @type {string}
       * @default "#Navbar"
+      * @since 2.11.4
       */
       temporaryMessageContainer: "#Navbar",
 
@@ -228,9 +236,9 @@ define(['jquery', 'underscore', 'backbone'],
       */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
-			/**
-			 * A list of all the required fields in the EML Editor.
-			 * Any field set to `true` will prevent the user from saving the Editor until a value has been given
+      /**
+       * A list of all the required fields in the EML Editor.
+       * Any field set to `true` will prevent the user from saving the Editor until a value has been given
        * Any EML field not supported in this list cannot be required.
        * @type {object}
        * @property {boolean} abstract - Default: true
@@ -246,29 +254,95 @@ define(['jquery', 'underscore', 'backbone'],
        * @property {boolean} studyExtentDescription - Default: false
        * @property {boolean} temporalCoverage - Default: false. If true, at least a beginDate will be required.
        * @property {boolean} title - Default: true. EML documents always require a title. Only set this to false if you are extending MetacatUI to ensure a title another way.
-			 */
-			emlEditorRequiredFields: {
-				abstract: true,
-				alternateIdentifier: false,
-				funding: false,
-				generalTaxonomicCoverage: false,
+       * @default {
+                     abstract: true,
+                     alternateIdentifier: false,
+                     funding: false,
+                     generalTaxonomicCoverage: false,
+                     taxonCoverage: false,
+                     geoCoverage: false,
+                     intellectualRights: true,
+                     keywordSets: false,
+                     methods: false,
+                     samplingDescription: false,
+                     studyExtentDescription: false,
+                     temporalCoverage: false,
+                     title: true
+                   }
+        * @example
+        *  {
+        *    abstract: true,
+        *    alternateIdentifier: false,
+        *    funding: false,
+        *    generalTaxonomicCoverage: false,
+        *    taxonCoverage: false,
+        *    geoCoverage: false,
+        *    intellectualRights: true,
+        *    keywordSets: false,
+        *    methods: false,
+        *    samplingDescription: false,
+        *    studyExtentDescription: false,
+        *    temporalCoverage: false,
+        *    title: true
+        *  }
+       */
+      emlEditorRequiredFields: {
+        abstract: true,
+        alternateIdentifier: false,
+        funding: false,
+        generalTaxonomicCoverage: false,
         taxonCoverage: false,
-				geoCoverage: false,
-				intellectualRights: true,
-				keywordSets: false,
-				methods: false,
-				samplingDescription: false,
-				studyExtentDescription: false,
-				temporalCoverage: false,
-				title: true
-			},
+        geoCoverage: false,
+        intellectualRights: true,
+        keywordSets: false,
+        methods: false,
+        samplingDescription: false,
+        studyExtentDescription: false,
+        temporalCoverage: false,
+        title: true
+      },
 
       /**
-      * The metadata formats that are editable in the EditorView. Metadata types not listed
-      * here will not show an Edit button.
+      * An array of science metadata format IDs that are editable in MetacatUI.
+      * Metadata documents with these format IDs will have an Edit button and will be
+      * editable in the Editor Views.
+      * This should only be changed if you have extended MetacatUI to edit a new format,
+      * or if you want to disable editing of a specific format ID.
       * @type {string[]}
+      * @default [
+        "eml://ecoinformatics.org/eml-2.1.1",
+        "https://eml.ecoinformatics.org/eml-2.2.0"
+      ]
+      * @example
+      *  [
+      *    "eml://ecoinformatics.org/eml-2.1.1",
+      *    "https://eml.ecoinformatics.org/eml-2.2.0"
+      *  ]
+      * @readonly
       */
-			editableFormats: ["eml://ecoinformatics.org/eml-2.1.1"],
+      editableFormats: [
+        "eml://ecoinformatics.org/eml-2.1.1",
+        "https://eml.ecoinformatics.org/eml-2.2.0"
+      ],
+
+      /**
+      * The format ID the dataset editor serializes new EML as
+      * @type {string}
+      * @default "https://eml.ecoinformatics.org/eml-2.2.0"
+      * @readonly
+      * @since 2.13.0
+      */
+      editorSerializationFormat: "https://eml.ecoinformatics.org/eml-2.2.0",
+
+      /**
+      * The XML schema location the dataset editor will use when creating new EML. This should
+      * correspond with {@link AppConfig#editorSerializationFormat}
+      * @type {string}
+      * @default "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
+      * @readonly
+      * @since 2.13.0
+      */
+      editorSchemaLocation: "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
 
       /**
       * This error message is displayed when the Editor encounters an error saving
@@ -288,6 +362,16 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {object[]}
       * @property {string} label - A readable and short label for the keyword thesaurus that is displayed in the UI
       * @property {string} thesaurus - The exact keyword thesaurus name that will be saved in the EML
+      * @since 2.10.0
+      * @default [{
+                  label: "GCMD",
+                  thesaurus: "NASA Global Change Master Directory (GCMD)"
+                }]
+      * @example
+      *  [{
+      *    label: "GCMD",
+      *    thesaurus: "NASA Global Change Master Directory (GCMD)"
+      *  }]
       */
       emlKeywordThesauri: [{
         label: "GCMD",
@@ -333,6 +417,15 @@ define(['jquery', 'underscore', 'backbone'],
       * @default '/cn/v2'
       */
       d1CNService: "/cn/v2",
+      /**
+      * The URL for the DataONE Search MetacatUI. This only needs to be changed
+      * if you want to point to a development environment.
+      * @type {string}
+      * @default "https://search.dataone.org"
+      * @readonly
+      * @since 2.13.0
+      */
+      dataoneSearchUrl: "https://search.dataone.org",
       /**
       * The URL for the DataONE listNodes() API. This URL is contructed dynamically when the
       * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
@@ -456,6 +549,8 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * If false, the /monitor/status (the service that returns the status of various DataONE services) will not be used.
       * @type {boolean}
+      * @default true
+      * @since 2.9.0
       */
       enableMonitorStatus: true,
 
@@ -466,6 +561,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This URL is contructed dynamically when the
       * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
       * @type {string}
+      * @since 2.9.0
       */
       monitorStatusUrl: "",
 
@@ -502,6 +598,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
       * @type {boolean}
       * @default false
+      * @since 2.11.0
       */
       enableLdapSignIn: false,
       /**
@@ -601,6 +698,7 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryCitationsChart: true,
       /**
@@ -609,6 +707,7 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryDownloadsChart: true,
       /**
@@ -617,6 +716,7 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryMetadataAssessment: true,
       /**
@@ -625,8 +725,23 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryViewsChart: true,
+
+      /*
+      * List of Repositories that are DataONE Plus Members.
+      * DataONE Plus features are displayed only for these members.
+      * @type {string[]}
+      * @readonly
+      * @default ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB", "urn:node:mnUCSB1"]
+      * @since 2.13.0
+      * ------------------------------------
+      * This config will not be displayed in the JSDoc documentation since it is
+      * temporary and only useful for internal DataONE purposes. This functionality will be replaced
+      * with the DataONE Bookkeeper service, eventually.
+      */
+      dataonePlusMembers: ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB", "urn:node:mnUCSB1"],
 
       /**
       * Metrics flag for the Dataset Landing Page
@@ -701,16 +816,50 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {object}
       * @example
       * {
-      *    formatId: "eml://ecoinformatics.org/eml-2.1.1",
-      *    isPublic: true,
-      *    dateUploaded: function(date){
-      *      return new Date(date) < new Date('1995-12-17T03:24:00');
-      *    }
+      *   formatId: "eml://ecoinformatics.org/eml-2.1.1",
+      *   isPublic: true,
+      *   dateUploaded: function(date){
+      *     return new Date(date) < new Date('1995-12-17T03:24:00');
+      *   }
       * }
-      * This example would hide metrics for any objects that are:
-      *   EML 2.1.1 OR public OR were uploaded before 12/17/1995.
+      * // This example would hide metrics for any objects that are:
+      * //  EML 2.1.1 OR public OR were uploaded before 12/17/1995.
       */
       hideMetricsWhen: null,
+
+      /**
+      * The zoom level to use in the Google Static Map images on the dataset landing pages.
+      * The higher the zoom level, the more zoomed in the map will be. Set to 0 to show
+      * the entire world in the map, and 15+ to show fine details. The highest zoom level
+      * is about 20. For more information, see the Google Statis Maps API docs: https://developers.google.com/maps/documentation/maps-static/start#Zoomlevels
+      * @type {number}
+      * @default 6
+      * @since 2.13.0
+      */
+      datasetMapZoomLevel: 6,
+
+      /**
+      * The bounding box path color to use in the Google Static Map images on the dataset landing pages.
+      * Specify the color either as a 24-bit (example: color=0xFFFFCC) or 32-bit hexadecimal value
+      * (example: color=0xFFFFCCFF), or from the set: black, brown, green, purple, yellow, blue, gray, orange, red, white.
+      * For more information, see the Google Statis Maps API docs: https://developers.google.com/maps/documentation/maps-static/start#PathStyles
+      * @type {string}
+      * @default "0xDA4D3Aff" (red)
+      * @since 2.13.0
+      */
+      datasetMapPathColor: "0xDA4D3Aff",
+
+      /**
+      * The bounding box fill color to use in the Google Static Map images on the dataset landing pages.
+      * If you don't want to fill in the bounding boxes with a color, set this to null or undefined.
+      * Specify the color either as a 24-bit (example: color=0xFFFFCC) or 32-bit hexadecimal value
+      * (example: color=0xFFFFCCFF), or from the set: black, brown, green, purple, yellow, blue, gray, orange, red, white.
+      * For more information, see the Google Statis Maps API docs: https://developers.google.com/maps/documentation/maps-static/start#PathStyles
+      * @type {string}
+      * @default "0xFFFF0033" (light yellow)
+      * @since 2.13.0
+      */
+      datasetMapFillColor: "0xFFFF0033",
 
       /**
       * If true, the dataset landing pages will generate Schema.org-compliant JSONLD
@@ -742,6 +891,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, users can change the AccessPolicy for their objects.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       allowAccessPolicyChanges: true,
 
@@ -751,6 +901,17 @@ define(['jquery', 'underscore', 'backbone'],
       * See the AccessRule model list of default attributes for options on what to set here.
       * @see {@link AccessRule}
       * @type {object[]}
+      * @since 2.9.0
+      * @default [{
+                  subject: "public",
+                  read: true
+                }]
+      * @example
+      * [{
+      *   subject: "public",
+      *   read: true
+      * }]
+      * // This example would assign public access to all new objects created in MetacatUI.
       */
       defaultAccessPolicy: [{
         subject: "public",
@@ -760,6 +921,8 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The user-facing name for editing the Access Policy. This is displayed as the header of the AccessPolicyView, for example
       * @type {string}
+      * @since 2.9.0
+      * @default "Sharing options"
       */
       accessPolicyName: "Sharing options",
 
@@ -768,6 +931,20 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {boolean} accessRuleOptions.read  - If true, users will be able to give others read access to their DataONE objects
       * @property {boolean} accessRuleOptions.write - If true, users will be able to give others write access to their DataONE objects
       * @property {boolean} accessRuleOptions.changePermission - If true, users will be able to give others changePermission access to their DataONE objects
+      * @since 2.9.0
+      * @default {
+                  read: true,
+                  write: true,
+                  changePermission: true
+                }
+      * @example
+      * {
+      *   read: true,
+      *   write: true,
+      *   changePermission: false
+      * }
+      * // This example would enable users to edit the read and write access to files,
+      * // but not change ownership, in the Access Policy View.
       */
       accessRuleOptions: {
         read: true,
@@ -780,6 +957,13 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {boolean} accessRuleOptionNames.read  - The user-facing name of the "read" access in Access Rules
       * @property {boolean} accessRuleOptionNames.write - The user-facing name of the "write" access in Access Rules
       * @property {boolean} accessRuleOptionNames.changePermission - The user-facing name of the "changePermission" access in Access Rules
+      * @since 2.9.0
+      * @example
+      *  {
+      *    read: "Can view",
+      *    write: "Can edit",
+      *    changePermission: "Is owner"
+      *  }
       */
       accessRuleOptionNames: {
         read: "Can view",
@@ -791,6 +975,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If false, the rightsHolder of a resource will not be displayed in the AccessPolicyView.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       displayRightsHolderInAccessPolicy: true,
 
@@ -798,6 +983,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If false, users will not be able to change the rightsHolder of a resource in the AccessPolicyView
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       allowChangeRightsHolder: true,
 
@@ -806,6 +992,8 @@ define(['jquery', 'underscore', 'backbone'],
       * everyone except those in the group. This is useful for preventing users from
       * removing repository administrative groups from access policies.
       * @type {string[]}
+      * @since 2.9.0
+      * @example ["CN=data-admin-group,DC=dataone,DC=org"]
       */
       hiddenSubjectsInAccessPolicy: [],
 
@@ -813,6 +1001,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, the public/private toggle will be displayed in the Sharing Options for portals.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       showPortalPublicToggle: true,
 
@@ -821,6 +1010,7 @@ define(['jquery', 'underscore', 'backbone'],
       * the given users or groups. To display the public/private toggle for everyone,
       * set `showPortalPublicToggle` to true and keep this array empty.
       * @type {string[]}
+      * @since 2.9.0
       */
       showPortalPublicToggleForSubjects: [],
 
@@ -828,6 +1018,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, the public/private toggle will be displayed in the Sharing Options for datasets.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       showDatasetPublicToggle: true,
 
@@ -917,10 +1108,12 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
-      * The list of portals labels that no one should be able to create portals with
+      * A list of portals labels that no one should be able to create portals with
       * @type {string[]}
+      * @readonly
+      * @since 2.11.3
       */
-      portalLabelBlacklist: [
+      portalLabelBlockList: [
         "Dataone",
         'urn:node:CN', 'CN', 'cn',
         'urn:node:CNUNM1', 'CNUNM1', 'cn-unm-1',
@@ -1095,6 +1288,9 @@ define(['jquery', 'underscore', 'backbone'],
       * A list of unsupported User-Agent regular expressions for browsers that will not work well with MetacatUI.
       * A warning message will display on the page for anyone using one of these browsers.
       * @type {RegExp[]}
+      * @since 2.10.0
+      * @default [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
+      * @example [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
       */
       unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/],
 
@@ -1219,9 +1415,16 @@ define(['jquery', 'underscore', 'backbone'],
       //DataONE CN API
       if(this.get("d1CNBaseUrl")){
 
+        //Add a forward slash to the end of the base URL if there isn't one
+        var d1CNBaseUrl = this.get("d1CNBaseUrl");
+        if( d1CNBaseUrl.charAt( d1CNBaseUrl.length-1 ) == "/" ){
+          d1CNBaseUrl = d1CNBaseUrl.substring(0, d1CNBaseUrl.length-1);
+          this.set("d1CNBaseUrl", d1CNBaseUrl);
+        }
+
         //Account services
         if(typeof this.get("accountsUrl") != "undefined"){
-          this.set("accountsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/accounts/");
+          this.set("accountsUrl", d1CNBaseUrl + this.get("d1CNService") + "/accounts/");
 
           if(typeof this.get("pendingMapsUrl") != "undefined")
             this.set("pendingMapsUrl", this.get("accountsUrl") + "pendingmap/");
@@ -1230,30 +1433,30 @@ define(['jquery', 'underscore', 'backbone'],
             this.set("accountsMapsUrl", this.get("accountsUrl") + "map/");
 
           if(typeof this.get("groupsUrl") != "undefined")
-            this.set("groupsUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/groups/");
+            this.set("groupsUrl", d1CNBaseUrl + this.get("d1CNService") + "/groups/");
         }
 
         if(typeof this.get("d1LogServiceUrl") != "undefined")
-          this.set('d1LogServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/query/logsolr/?');
+          this.set('d1LogServiceUrl', d1CNBaseUrl + this.get('d1CNService') + '/query/logsolr/?');
 
-        this.set("nodeServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/node/");
-        this.set('resolveServiceUrl', this.get('d1CNBaseUrl') + this.get('d1CNService') + '/resolve/');
-        this.set("reserveServiceUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/reserve");
+        this.set("nodeServiceUrl",    d1CNBaseUrl + this.get("d1CNService") + "/node/");
+        this.set('resolveServiceUrl', d1CNBaseUrl + this.get('d1CNService') + '/resolve/');
+        this.set("reserveServiceUrl", d1CNBaseUrl + this.get("d1CNService") + "/reserve");
 
         //Token URLs
         if(typeof this.get("tokenUrl") != "undefined"){
-          this.set("tokenUrl", this.get("d1CNBaseUrl") + "/portal/" + "token");
+          this.set("tokenUrl", d1CNBaseUrl + "/portal/" + "token");
 
-          this.set("checkTokenUrl", this.get("d1CNBaseUrl") + this.get("d1CNService") + "/diag/subject");
+          this.set("checkTokenUrl", d1CNBaseUrl + this.get("d1CNService") + "/diag/subject");
 
           //The sign-in and out URLs - allow these to be turned off by removing them in the defaults above (hence the check for undefined)
           if(this.get("enableCILogonSignIn") || typeof this.get("signInUrl") !== "undefined")
-            this.set("signInUrl", this.get("d1CNBaseUrl") + "/portal/" + "startRequest?target=");
+            this.set("signInUrl", d1CNBaseUrl + "/portal/" + "startRequest?target=");
           if(typeof this.get("signInUrlOrcid") !== "undefined")
-            this.set("signInUrlOrcid", this.get("d1CNBaseUrl") + "/portal/" + "oauth?action=start&target=");
+            this.set("signInUrlOrcid", d1CNBaseUrl + "/portal/" + "oauth?action=start&target=");
 
           if(this.get("enableLdapSignIn") && !this.get("signInUrlLdap")){
-            this.set("signInUrlLdap", this.get("d1CNBaseUrl") + "/portal/" + "ldap?target=");
+            this.set("signInUrlLdap", d1CNBaseUrl + "/portal/" + "ldap?target=");
           }
 
 
@@ -1261,27 +1464,23 @@ define(['jquery', 'underscore', 'backbone'],
             this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/v1.1/search/orcid-bio?q=');
 
           if((typeof this.get("signInUrl") !== "undefined") || (typeof this.get("signInUrlOrcid") !== "undefined"))
-            this.set("signOutUrl", this.get("d1CNBaseUrl") + "/portal/" + "logout");
+            this.set("signOutUrl", d1CNBaseUrl + "/portal/" + "logout");
 
         }
 
         // Object format list
         if ( typeof this.get("formatsUrl") != "undefined" ) {
              this.set("formatsServiceUrl",
-             this.get("d1CNBaseUrl") + this.get("d1CNService") + this.get("formatsUrl"));
+               d1CNBaseUrl + this.get("d1CNService") + this.get("formatsUrl"));
         }
 
         //ORCID search
         if(typeof this.get("orcidBaseUrl") != "undefined")
           this.set('orcidSearchUrl', this.get('orcidBaseUrl') + '/search/orcid-bio?q=');
 
-        //Turn the seriesId feature on
-        if(typeof this.get("useSeriesId") != "undefined")
-          this.set("useSeriesId", true);
-
         //Annotator API
         if(typeof this.get("annotatorUrl") !== "undefined")
-          this.set('annotatorUrl', this.get('d1CNBaseUrl') + '/portal/annotator');
+          this.set('annotatorUrl', d1CNBaseUrl + '/portal/annotator');
       }
 
       // Metadata quality report services
@@ -1320,25 +1519,48 @@ define(['jquery', 'underscore', 'backbone'],
 
       var urls = {};
 
-      if( typeof baseUrl == "undefined" ){
-        var d1Service = this.get('d1Service').substring(0, this.get('d1Service').lastIndexOf("/v2"));
-        var baseUrl = this.get("baseUrl") + this.get('context') + d1Service;
+      //Remove a forward slash to the end of the base URL if there is one
+      var baseUrl = this.get("baseUrl");
+      if( baseUrl.charAt( baseUrl.length-1 ) == "/" ){
+        baseUrl = baseUrl.substring(0, baseUrl.length-1);
+        this.set("baseUrl", baseUrl);
       }
 
-      // these are pretty standard, but can be customized if needed
-      urls.viewServiceUrl    = baseUrl + '/v2/views/metacatui/';
-      urls.publishServiceUrl = baseUrl + '/v2/publish/';
-      urls.authServiceUrl    = baseUrl + '/v2/isAuthorized/';
-      urls.queryServiceUrl   = baseUrl + '/v2/query/solr/?';
-      urls.metaServiceUrl    = baseUrl + '/v2/meta/';
-      urls.packageServiceUrl = baseUrl + '/v2/packages/application%2Fbagit-097/';
+      //Get the Dataone API fragment, which is either "/d1/mn/v2" or "/cn/v2"
+      var d1Service = this.get('d1Service');
+      if( typeof d1Service != "string" || !d1Service.length ){
+        d1Service = "/d1/mn/v2";
+      }
+      else if( d1Service.charAt(0) != "/" ){
+        d1Service = "/" + d1Service;
+      }
 
-      if( baseUrl.indexOf("/d1/mn") > 0 ){
-        urls.objectServiceUrl = baseUrl + '/v2/object/';
+      //Get the Metacat context, and make sure it starts with a forward slash
+      var context = this.get("context");
+      if( typeof context != "string" || !context.length ){
+        context = "";
+      }
+      else if( context.charAt(0) != "/" ){
+        context = "/" + context;
+      }
+
+      //Construct the base URL
+      baseUrl = baseUrl + context + d1Service;
+
+      // these are pretty standard, but can be customized if needed
+      urls.viewServiceUrl    = baseUrl + '/views/metacatui/';
+      urls.publishServiceUrl = baseUrl + '/publish/';
+      urls.authServiceUrl    = baseUrl + '/isAuthorized/';
+      urls.queryServiceUrl   = baseUrl + '/query/solr/?';
+      urls.metaServiceUrl    = baseUrl + '/meta/';
+      urls.packageServiceUrl = baseUrl + '/packages/application%2Fbagit-097/';
+
+      if( d1Service.indexOf("mn") > 0 ){
+        urls.objectServiceUrl = baseUrl + '/object/';
       }
 
       if( this.get("enableMonitorStatus") ){
-        urls.monitorStatusUrl = baseUrl + "/v2/monitor/status";
+        urls.monitorStatusUrl = baseUrl + "/monitor/status";
       }
 
       return urls;

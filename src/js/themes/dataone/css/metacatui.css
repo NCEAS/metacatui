@@ -26,7 +26,6 @@ a,
 a:hover {
   color: #10424F;
   color: var(--c-major-accent-6);
-  filter: brightness(1.05);
   text-decoration: none;
 }
 
@@ -1779,8 +1778,7 @@ svg .title {
 }
 
 /* Line Chart */
-.upload-chart,
-.temporal-coverage-chart {
+.upload-chart {
   width: 650px;
   float: right;
 }
@@ -1881,10 +1879,6 @@ svg .point:hover~.line-chart-label {
   fill: #0E69A1;
   font-size: 14px;
   font-weight: bold;
-}
-
-.bar-chart .x.axis .tick text {
-  font-size: 11px;
 }
 
 #data-coverage-year-range {
@@ -2052,14 +2046,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
     width: 60%;
     max-width: 700px;
 }
-/* Color the name in the navbar differently */
-.d1_menu-item--profile .d1_menu-item__top-item-name {
-    color: var(--c-minor-accent);
-}
-.d1_menu-item--profile .d1_menu-item__dropdown-icon,
-.d1_menu-item--profile .d1_menu-item__icon{
-  stroke: var(--c-minor-accent);
-}
+
 /* MISC
  -----------------------------------------------*/
 .align-center {
@@ -2208,4 +2195,17 @@ a.d1_footer__sitemap-link {
 
 .d1_join-form form {
   margin-bottom: 0;
+}
+
+.quick-stats-count{
+	color: #FF6633;
+	fill: #FF6633;
+	font-size: xx-large;
+}
+.portal-view .quick-stats-count{
+	color: #FF6633; /* Back-up color for IE */
+	fill: #FF6633; /* Back-up color for IE */
+	color: var(--portal-primary-color);
+	fill: var(--portal-primary-color);
+	font-size: xx-large;
 }

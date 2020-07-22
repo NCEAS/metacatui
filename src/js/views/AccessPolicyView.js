@@ -113,6 +113,13 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
           resourceType: this.resourceType
         }));
 
+        //If the user is not authorized to change the permissions of this object,
+        // then skip rendering the rest of the AccessPolicy.
+        if( dataONEObject.get("isAuthorized_changePermission") === false ){
+          this.showUnauthorized();
+          return;
+        }
+
         //Show the rightsHolder as an AccessRuleView
         this.showRightsholder();
 
@@ -629,6 +636,32 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
       //Remove the listener for this function
       this.stopListening(dataONEObject, "change:uploadStatus", this.showSaveProgress);
+    },
+
+    /**
+    * Adds messaging to this view to tell the user they are unauthorized to change the AccessPolicy
+    * of this object(s)
+    */
+    showUnauthorized: function(){
+
+      //Get the container element for the message
+      var msgContainer = this.$(".modal-body").length? this.$(".modal-body") : this.$el;
+
+      //Empty the container element
+      msgContainer.empty();
+
+      //Show the info message
+      MetacatUI.appView.showAlert("The person who owns this " + this.resourceType + " has not given you permission to change the " +
+                                    MetacatUI.appModel.get("accessPolicyName") + ". Contact the owner to be added " +
+                                    " as another owner of this " + this.resourceType + ".",
+                                  "alert-info subtle",
+                                  msgContainer,
+                                  null,
+                                  { remove: false });
+
+      //Add an unauthorized class to this view for further styling options
+      this.$el.addClass("unauthorized");
+
     }
 
   });

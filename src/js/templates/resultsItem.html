@@ -1,6 +1,6 @@
 <% if(MetacatUI.appModel.get("displayRepoLogosInSearchResults") ){ %>
-  <% if(memberNode && memberNode.logo){ %>
-  	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>">
+  <% if(memberNode && memberNode.logo && profileURL){ %>
+  	<a href="<%=profileURL%>">
       <img src="<%=memberNode.logo%>" class="logo <%=memberNode.shortIdentifier%>" title="From the <%=memberNode.name%> repository" />
     </a>
   <% } %>

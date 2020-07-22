@@ -6,3 +6,16 @@
       <%=name%>
   </h1>
 </div>
+<% if( viewType == "nodeView" ){ %>
+  <div class="portal-member-since">
+    <span id="first-upload-container" class="subtle"></span>
+  </div>
+<% } %>
+<div class="portal-description">
+  <% if( viewType == "nodeView" && description ){ %>
+    <p>
+      <%=description%>
+    </p>
+  <% } %>
+</div>
+

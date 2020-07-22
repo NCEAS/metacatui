@@ -1,7 +1,9 @@
 /*global define */
 define(['jquery', 'underscore', 'backbone', 'clipboard',
         'collections/UserGroup',
-        'models/UserModel', "models/Stats",
+    		'models/UserModel',
+    		'models/portals/PortalModel',
+        "models/Stats",
         'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
         'views/GroupListView',
         'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
@@ -60,10 +62,10 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 		//------------------------------------------ Rendering the main parts of the view ------------------------------------------------//
 		render: function (options) {
-      //Don't render anything if the user profiles are turned off
-      if( MetacatUI.appModel.get("enableUserProfiles") === false ){
-        return;
-      }
+			//Don't render anything if the user profiles are turned off
+			if( MetacatUI.appModel.get("enableUserProfiles") === false ){
+				return;
+			}
 
 			this.stopListening();
 			if(this.model) this.model.stopListening();
@@ -73,6 +75,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 
 			this.activeSection = (options && options.section)? options.section : "profile";
 			this.activeSubSection = (options && options.subsection)? options.subsection : "";
+			this.username = (options && options.username)? options.username : undefined;
 
 			//Add the container element for our profile sections
 			this.sectionHolder = $(document.createElement("section")).addClass("user-view-section");
@@ -94,10 +97,33 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			return this;
 		},
 
+		/**
+		 * Update the window location path to route to /portals path
+		 * @param {string} username - Short identifier for the member node
+		*/
+		forwardToPortals: function(username){
+
+			var pathName      = decodeURIComponent(window.location.pathname)
+								.substring(MetacatUI.root.length)
+								// remove trailing forward slash if one exists in path
+								.replace(/\/$/, "");
+
+			// Routes the /profile/{node-id} to /portals/{node-id}
+			var pathRE = new RegExp("\\/profile(\\/[^\\/]*)?$", "i");
+			var newPathName = pathName.replace(pathRE, "") + "/" +
+							MetacatUI.appModel.get("portalTermPlural") + "/" + username;
+
+			// Update the window location
+			MetacatUI.uiRouter.navigate( newPathName, { trigger: true, replace: true } );
+			return;
+		},
+
 		renderUser: function(){
+
+
 			this.model = MetacatUI.appUserModel;
 
-			var username = MetacatUI.appModel.get("profileUsername"),
+			var username = MetacatUI.appModel.get("profileUsername") || view.username,
 				currentUser = MetacatUI.appUserModel.get("username") || "";
 
 			if(username.toUpperCase() == currentUser.toUpperCase()){ //Case-insensitive matching of usernames
@@ -123,9 +149,10 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 				//Is this a member node?
 				if(MetacatUI.nodeModel.get("checked") && this.model.isNode()){
 					this.model.saveAsNode();
-					this.model.set("nodeInfo", _.findWhere(MetacatUI.nodeModel.get("members"), { identifier: "urn:node:" + username }));
-					this.renderProfile();
-					this.resetSections();
+					this.model.set("nodeInfo", _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+						return nodeModel.identifier.toLowerCase() == "urn:node:" + username.toLowerCase();
+					  }));
+					this.forwardToPortals(username);
 					return;
 				}
 				//If the node model hasn't been checked yet
@@ -215,30 +242,30 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 		},
 
 		renderSettings: function(){
-      //Don't render anything if the user profile settings are turned off
-      if( MetacatUI.appModel.get("enableUserProfileSettings") === false ){
-        return;
-      }
+		//Don't render anything if the user profile settings are turned off
+		if( MetacatUI.appModel.get("enableUserProfileSettings") === false ){
+			return;
+		}
 
-			//Insert the template first
-			this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
-			this.$settings = this.$("[data-section='settings']");
+		//Insert the template first
+		this.sectionHolder.append(this.settingsTemplate(this.model.toJSON()));
+		this.$settings = this.$("[data-section='settings']");
 
-			//Draw the group list
-			this.insertCreateGroupForm();
-			this.listenTo(this.model, "change:isMemberOf", this.getGroups);
-			this.getGroups();
+		//Draw the group list
+		this.insertCreateGroupForm();
+		this.listenTo(this.model, "change:isMemberOf", this.getGroups);
+		this.getGroups();
 
-			//Listen for the identity list
-			this.listenTo(this.model, "change:identities", this.insertIdentityList);
-			this.insertIdentityList();
+		//Listen for the identity list
+		this.listenTo(this.model, "change:identities", this.insertIdentityList);
+		this.insertIdentityList();
 
-			//Listen for the pending list
-			this.listenTo(this.model, "change:pending", this.insertPendingList);
-			this.model.getPendingIdentities();
+		//Listen for the pending list
+		this.listenTo(this.model, "change:pending", this.insertPendingList);
+		this.model.getPendingIdentities();
 
-      //Render the portals subsection
-      this.renderMyPortals();
+		//Render the portals subsection
+		this.renderMyPortals();
 
 			//Listen for updates to person details
 			this.listenTo(this.model, "change:lastName change:firstName change:email change:registered", this.updateModForm);
@@ -415,8 +442,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			if(this.model.noActivity)
 				this.statsView.$el.addClass("no-activity");
 
-			if(this.model.isNode())
-				this.insertReplicas();
 		},
 
 		/*
@@ -555,34 +580,6 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			this.$("#first-upload-year-container").text(time);
 		},
 
-		/*
-		 * getReplicas gets the number of replicas in this member node
-		 */
-		insertReplicas: function(statsModel){
-
-			var view = this,
-					memberNodeID = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.model.get("nodeInfo").identifier));
-
-			var requestSettings = {
-					url: MetacatUI.appModel.get("queryServiceUrl") +
-						"q=replicaMN:" + memberNodeID +
-						 " -datasource:" + memberNodeID +
-						"&wt=json&rows=0",
-					type: "GET",
-					dataType: "json",
-					success: function(data, textStatus, xhr){
-						if( data.response.numFound > 0 ){
-							view.$("#total-replicas-container").html(MetacatUI.appView.commaSeparateNumber(data.response.numFound));
-							view.$("#total-replicas-wrapper").show();
-						}
-						else{
-							view.$("#total-replicas-wrapper").hide();
-						}
-					}
-			}
-
-			$.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
-		},
 
 		/*
 		 * Insert a list of this user's content
@@ -1336,14 +1333,18 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 			//Reset the active section and subsection
 			this.activeSection = "profile";
 			this.activeSubSection = "";
-			this.model.noActivity = null;
+
+      //Reset the model
+      if( this.model ){
+			  this.model.noActivity = null;
+        this.stopListening(this.model);
+      }
 
 			//Remove saved elements
 			this.$profile = null;
 
 			//Stop listening to changes in models
 			this.stopListening(this.statsModel);
-			this.stopListening(this.model);
 			this.stopListening(MetacatUI.appUserModel);
 
 			//Close the subviews

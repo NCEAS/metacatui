@@ -142,12 +142,16 @@ define(["jquery",
                 if ((MetacatUI.appModel.get("searchHistory").length > 0) &&
                     (!this.searchModel || Object.keys(this.searchModel).length == 0)
                 ) {
-                  var lastSearchModel = _.last(MetacatUI.appModel.get("searchHistory"));
-                  if(lastSearchModel){
-                    this.searchModel = lastSearchModel.clone();
+                  var lastSearchModels = _.last(MetacatUI.appModel.get("searchHistory"));
 
-                    if( lastSearchModel.map ){
-                      this.mapModel = lastSearchModel.map.clone();
+                  if(lastSearchModels){
+
+                    if( lastSearchModels.search ){
+                      this.searchModel = lastSearchModels.search.clone();
+                    }
+
+                    if( lastSearchModels.map ){
+                      this.mapModel = lastSearchModels.map.clone();
                     }
                   }
 
@@ -2014,9 +2018,12 @@ define(["jquery",
                 // Get the map options and create the map
                 gmaps.visualRefresh = true;
                 var mapOptions = this.mapModel.get("mapOptions");
+                var defaultZoom = mapOptions.zoom;
                 $("#map-container").append("<div id='map-canvas'></div>");
                 this.map = new gmaps.Map($("#map-canvas")[0], mapOptions);
                 this.mapModel.set("map", this.map);
+                this.hasZoomed  = false;
+                this.hasDragged = false;
 
                 // Hide the map filter toggle element
                 this.$(this.mapFilterToggle).hide();
@@ -2025,117 +2032,108 @@ define(["jquery",
                 var mapRef = this.map;
                 var viewRef = this;
 
-                google.maps.event.addListener(mapRef, "idle", function() {
+                google.maps.event.addListener(mapRef, "zoom_changed", function() {
+                  // If the map is zoomed in further than the default zoom level,
+                  // than we want to mark the map as zoomed in
+                  if(viewRef.map.getZoom() > defaultZoom){
+                    viewRef.hasZoomed = true;
+                  }
+                  //If we are at the default zoom level or higher, than do not mark the map
+                  // as zoomed in
+                  else{
+                    viewRef.hasZoomed = false;
+                  }
+                });
+
+                google.maps.event.addListener(mapRef, "dragend", function() {
+                  viewRef.hasDragged = true;
+                });
+
+                google.maps.event.addListener(mapRef, "idle", function(){
+                  // Remove all markers from the map
+                  for (var i = 0; i < viewRef.resultMarkers.length; i++) {
+                      viewRef.resultMarkers[i].setMap(null);
+                  }
+                  viewRef.resultMarkers = new Array();
+
+                  //Check if the user has interacted with the map just now, and if so, we
+                  // want to alter the geohash filter (changing the geohash values or resetting it completely)
+                  var alterGeohashFilter = viewRef.allowSearch || viewRef.hasZoomed || viewRef.hasDragged;
+                  if( !alterGeohashFilter ){
+                    return;
+                  }
+
+                  //Determine if the map needs to be recentered. The map only needs to be
+                  // recentered if it is not at the default lat,long center point AND it
+                  // is not zoomed in or dragged to a new center point
+                  var setGeohashFilter = viewRef.hasZoomed && viewRef.isMapFilterEnabled();
+
+                  //If we are using the geohash filter defined by this map, then
+                  // apply the filter and trigger a new search
+                  if( setGeohashFilter ){
+
+                    viewRef.$(viewRef.mapFilterToggle).show();
+
+                    // Get the Google map bounding box
+                    var boundingBox = mapRef.getBounds();
+
+                    // Set the search model spatial filters
+                    // Encode the Google Map bounding box into geohash
+                    var north = boundingBox.getNorthEast().lat(),
+                        west = boundingBox.getSouthWest().lng(),
+                        south = boundingBox.getSouthWest().lat(),
+                        east = boundingBox.getNorthEast().lng();
+
+                    viewRef.searchModel.set("north", north);
+                    viewRef.searchModel.set("west", west);
+                    viewRef.searchModel.set("south", south);
+                    viewRef.searchModel.set("east", east);
+
+                    // Save the center position and zoom level of the map
+                    viewRef.mapModel.get("mapOptions").center = mapRef.getCenter();
+                    viewRef.mapModel.get("mapOptions").zoom = mapRef.getZoom();
+
+                    // Determine the precision of geohashes to search for
+                    var zoom = mapRef.getZoom();
+
+                    var precision = viewRef.mapModel.getSearchPrecision(zoom);
+
+                    // Get all the geohash tiles contained in the map bounds
+                    var geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
+
+                    // Save our geohash search settings
+                    viewRef.searchModel.set("geohashes", geohashBBoxes);
+                    viewRef.searchModel.set("geohashLevel", precision);
+
+                    //Start back at page 0
+                    MetacatUI.appModel.set("page", 0);
+
+                    //Mark the view as ready to start a search
                     viewRef.ready = true;
 
-                    // Remove all markers from the map
-                    for (var i = 0; i < viewRef.resultMarkers.length; i++) {
-                        viewRef.resultMarkers[i].setMap(null);
-                    }
-                    viewRef.resultMarkers = new Array();
+                    // Trigger a new search
+                    viewRef.triggerSearch();
 
-                    // Trigger a resize so the map background image tiles load completely
-                    google.maps.event.trigger(mapRef, "resize");
+                    viewRef.allowSearch = false;
+                  }
+                  else{
 
-                    var currentMapCenter = viewRef.mapModel.get("map").getCenter(),
-                        savedMapCenter = viewRef.mapModel.get("mapOptions").center,
-                        needsRecentered = (currentMapCenter != savedMapCenter);
+                    //Reset the map filter
+                    viewRef.resetMap();
 
-                    // If we are doing a new search...
-                    if (viewRef.allowSearch) {
+                    //Start back at page 0
+                    MetacatUI.appModel.set("page", 0);
 
-                        // If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
-                        if (viewRef.map.getZoom() == mapOptions.minZoom) {
+                    //Mark the view as ready to start a search
+                    viewRef.ready = true;
 
-                            if (!viewRef.hasZoomed) {
-                                if (needsRecentered && !viewRef.hasDragged) viewRef.mapModel.get("map").setCenter(savedMapCenter);
-                                return;
-                            }
+                    // Trigger a new search
+                    viewRef.triggerSearch();
 
-                            // Hide the map filter toggle element
-                            viewRef.$(viewRef.mapFilterToggle).hide();
+                    viewRef.allowSearch = false;
 
-                            viewRef.resetMap();
-                        } else {
-                            // If the user has not zoomed or dragged to a new area of the map yet and our map is off-center, recenter it
-                            if (!viewRef.hasZoomed && needsRecentered) {
-                                viewRef.mapModel.get("map").setCenter(savedMapCenter);
-                            }
-
-                            // Show the map filter toggle element
-                            viewRef.$(viewRef.mapFilterToggle).show();
-
-                            // Get the Google map bounding box
-                            var boundingBox = mapRef.getBounds();
-
-                            // Set the search model spatial filters
-                            // Encode the Google Map bounding box into geohash
-                            var north = boundingBox.getNorthEast().lat(),
-                                west = boundingBox.getSouthWest().lng(),
-                                south = boundingBox.getSouthWest().lat(),
-                                east = boundingBox.getNorthEast().lng();
-
-                            viewRef.searchModel.set("north", north);
-                            viewRef.searchModel.set("west", west);
-                            viewRef.searchModel.set("south", south);
-                            viewRef.searchModel.set("east", east);
-
-                            // Save the center position and zoom level of the map
-                            viewRef.mapModel.get("mapOptions").center = mapRef.getCenter();
-                            viewRef.mapModel.get("mapOptions").zoom = mapRef.getZoom();
-
-                            // Determine the precision of geohashes to search for
-                            var zoom = mapRef.getZoom();
-
-                            var precision = viewRef.mapModel.getSearchPrecision(zoom);
-
-                            // Get all the geohash tiles contained in the map bounds
-                            var geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
-
-                            // Save our geohash search settings
-                            viewRef.searchModel.set("geohashes", geohashBBoxes);
-                            viewRef.searchModel.set("geohashLevel", precision);
-                        }
-
-                        // Reset to the first page
-                        if (viewRef.hasZoomed) {
-                            MetacatUI.appModel.set("page", 0);
-                        }
-
-                        // Trigger a new search
-                        viewRef.triggerSearch();
-
-                        viewRef.allowSearch = false;
-                    } else {
-                        // Else, if this is the fresh map render on page load
-                        if (needsRecentered && !viewRef.hasDragged) {
-                            viewRef.mapModel.get("map").setCenter(savedMapCenter);
-                        }
-
-                        // Show the map filter toggle element
-                        if (viewRef.map.getZoom() > mapOptions.minZoom) {
-                            viewRef.$(viewRef.mapFilterToggle).show();
-                        }
-                    }
-
-                    viewRef.hasZoomed = false;
-                });
-
-                // When the user has zoomed in or out on the map, we want to trigger a new search
-                google.maps.event.addListener(mapRef, "zoom_changed", function() {
-                    viewRef.allowSearch = true;
-                    viewRef.hasZoomed = true;
-                });
-
-                // When the user has dragged the map to a new location, we don't want to load cached results.
-                // We still may not trigger a new search because the user has to zoom in first, after the map initially loads at full-world view
-                google.maps.event.addListener(mapRef, "dragend", function() {
-                    viewRef.hasDragged = true;
-
-                    if (viewRef.map.getZoom() > mapOptions.minZoom) {
-                        viewRef.hasZoomed = true;
-                        viewRef.allowSearch = true;
-                    }
+                    return;
+                  }
                 });
 
             },
@@ -2162,6 +2160,13 @@ define(["jquery",
                 this.allowSearch = false;
             },
 
+            isMapFilterEnabled: function(){
+              var toggleInput = this.$("input" + this.mapFilterToggle);
+              if ((typeof toggleInput === "undefined") || !toggleInput) return;
+
+              return $(toggleInput).prop("checked");
+            },
+
             toggleMapFilter: function(e, a) {
                 var toggleInput = this.$("input" + this.mapFilterToggle);
                 if ((typeof toggleInput === "undefined") || !toggleInput) return;
@@ -2174,14 +2179,6 @@ define(["jquery",
                     toggleInput.prop("checked", isOn);
                 }
 
-                if (isOn) {
-                    this.searchModel.set("useGeohash", true);
-                } else {
-                    this.searchModel.set("useGeohash", false);
-                }
-
-                // Tell the map to trigger a new search and redraw tiles
-                this.allowSearch = true;
                 google.maps.event.trigger(this.mapModel.get("map"), "idle");
 
                 // Send this event to Google Analytics
@@ -3060,10 +3057,27 @@ define(["jquery",
             */
             showError: function(model, response){
 
+              var errorMessage = "";
+
+              try{
+                errorMessage = $(response.responseText).text();
+              }
+              catch{
+                try{
+                  errorMessage = JSON.parse(response.responseText).error.msg;
+                }
+                catch{
+                  errorMessage = "";
+                }
+              }
+              finally{
+                if( typeof errorMessage == "string" && errorMessage.length ){
+                  errorMessage = "<p>Error details: " + errorMessage + "</p>";
+                }
+              }
+
               MetacatUI.appView.showAlert(
-                "<h4><i class='icon icon-frown'></i>Something went wrong while getting the list of datasets.</h4>" +
-                "<p>Error details: " +
-                $(response.responseText).text() + "</p>",
+                "<h4><i class='icon icon-frown'></i>Something went wrong while getting the list of datasets.</h4>" + errorMessage,
                 "alert-error",
                 this.$results
               );

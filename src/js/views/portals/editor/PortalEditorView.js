@@ -383,7 +383,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         // Create a new, default portal model
         this.model = new Portal({
           //Set the isNew attribute so the model will execute certain functions when a Portal is new
-          isNew: true
+          isNew: true,
+          rightsHolder: MetacatUI.appUserModel.get("username")
         });
 
       }

@@ -462,7 +462,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
               try {
 
                 //First, make sure we are only using one CN Base URL in the RDF or the RDF parsing will fail.
-                var cnResolveUrl = MetacatUI.appModel.get('d1CNBaseUrl') + MetacatUI.appModel.get('d1CNService') +  '/resolve/';
+                var cnResolveUrl = MetacatUI.appModel.get('resolveServiceUrl');
 
                 var cnURLs = _.uniq(response.match(/cn\S+\.test\.dataone\.org\/cn\/v\d\/resolve|cn\.dataone\.org\/cn\/v\d\/resolve/g));
                 if(cnURLs.length > 1){
@@ -1411,6 +1411,11 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 context.set({type: "Metadata", sortOrder: 1});
                 memberModel = new EML211(context.attributes);
                 break;
+
+            case "https://eml.ecoinformatics.org/eml-2.2.0":
+              context.set({type: "Metadata", sortOrder: 1});
+              memberModel = new EML211(context.attributes);
+              break;
 
             case "-//ecoinformatics.org//eml-access-2.0.0beta4//EN" :
                 context.set({type: "Metadata", sortOrder: 1});

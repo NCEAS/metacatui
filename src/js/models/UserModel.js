@@ -405,15 +405,22 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 
 		isNode: function(){
-			var node = _.where(MetacatUI.nodeModel.get("members"), { shortIdentifier: this.get("username") });
-			return (node && node.length)
+			var model = this;
+			var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+				return nodeModel.shortIdentifier.toLowerCase() == (model.get("username")).toLowerCase();
+			  });
+
+			return (node && (node !== undefined))
 		},
 
 		// Will check if this user is a Member Node. If so, it will save the MN info to the model
 		saveAsNode: function(){
 			if(!this.isNode()) return;
 
-			var node = _.where(MetacatUI.nodeModel.get("members"), { shortIdentifier: this.get("username") })[0];
+			var model = this;
+			var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+				return nodeModel.shortIdentifier.toLowerCase() == (model.get("username")).toLowerCase();
+			  });
 
 			this.set({
 				type: "node",

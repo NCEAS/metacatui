@@ -2,6 +2,7 @@ define(["jquery",
         "underscore",
         "backbone",
         "models/portals/PortalModel",
+        "models/UserModel",
         "text!templates/alert.html",
         "text!templates/loading.html",
         "text!templates/portals/portal.html",
@@ -13,7 +14,7 @@ define(["jquery",
         "views/portals/PortalMembersView",
         "views/portals/PortalLogosView"
     ],
-    function($, _, Backbone, Portal, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
+    function($, _, Backbone, Portal, User, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
         PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView) {
         "use_strict";
 
@@ -87,6 +88,12 @@ define(["jquery",
              */
             model: null,
 
+            /**
+             * A User Model is associated with this view for rendering node/user views
+             * @type {User}
+             */
+            userModel: null,
+
             /* Renders the compiled template into HTML */
             template: _.template(PortalTemplate),
             //A template to display a notification message
@@ -126,6 +133,8 @@ define(["jquery",
             initialize: function(options) {
                 // Set the current PortalView properties
                 this.portalId = options.portalId ? options.portalId : undefined;
+                this.model = options.model ? options.model : undefined;
+                this.nodeView = options.nodeView ? options.nodeView : undefined;
                 this.label = options.label ? options.label : undefined;
                 this.activeSection = options.activeSection ? options.activeSection : undefined;
                 this.activeSectionLabel = options.activeSectionLabel ? options.activeSectionLabel : undefined;
@@ -138,6 +147,8 @@ define(["jquery",
              */
             render: function() {
 
+                var view = this;
+
                 //Make sure the subviews array is reset
                 this.subviews = new Array();
 
@@ -148,26 +159,103 @@ define(["jquery",
                   msg: "Loading..."
                 }));
 
-                // Create a new Portal model
-                this.model = new Portal({
-                    seriesId: this.portalId,
-                    label: this.label
-                });
-
-                // When the model has been synced, render the results
-                this.stopListening();
-                this.listenToOnce(this.model, "sync", this.renderPortal);
-
-                //If the portal isn't found, display a 404 message
-                this.listenTo(this.model, "notFound", this.handleNotFound);
-
-                //Listen to errors that might occur during fetch()
-                this.listenToOnce(this.model, "error", this.showError);
-
-                //Fetch the model
-                this.model.fetch({ objectOnly: true });
-
+                //Perform specific label checks
+                if(MetacatUI.nodeModel.get("checked") && this.isNode(this.label)){
+                  this.nodeView = true;
+                  this.renderAsNode();
+                }
+                else if(MetacatUI.nodeModel.get("checked") && !this.isNode(this.label)){
+                  this.nodeView = false;
+                  this.renderAsPortal();
+                }
+                // Wait for node model to complete its fetch
+                else if (!MetacatUI.nodeModel.get("checked")) {
+                  this.listenTo(MetacatUI.nodeModel, "change:checked", function(){
+                    // perform node checks
+                    if(view.isNode(view.label)){
+                      view.nodeView = true;
+                      view.renderAsNode();
+                    }
+                    else {
+                      view.nodeView = false;
+                      view.renderAsPortal();
+                    }
+                  });
+                }
+                
                 return this;
+            },
+
+            /**
+             * Entery point for portal rendering
+             */
+            renderAsPortal: function(){
+
+              // At this point we know that the given label is not a
+              // repository short identifier
+
+              // Create a new Portal model
+              if (this.model === undefined || this.model === null) {
+                this.model = new Portal({
+                  seriesId: this.portalId,
+                  label: this.label
+                });
+              }
+
+              // When the model has been synced, render the results
+              this.stopListening();
+              this.listenToOnce(this.model, "sync", this.renderPortal);
+
+              //If the portal isn't found, display a 404 message
+              this.listenTo(this.model, "notFound", this.handleNotFound);
+
+              //Listen to errors that might occur during fetch()
+              this.listenToOnce(this.model, "error", this.showError);
+
+              //Fetch the model
+              this.model.fetch({ objectOnly: true });
+
+            },
+
+            /**
+             * Entry point for a repository portal view
+             * At this point we know for sure that a given label/username is a repository user
+             */
+            renderAsNode:function(){
+              var view = this;
+
+              //Create a UserModel with the username given
+              this.userModel = new User({
+                username: view.label
+              });
+              this.userModel.saveAsNode();
+              // get the node Info
+              var nodeInfo =  _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+                return nodeModel.identifier.toLowerCase() == "urn:node:" + view.label.toLowerCase();
+                });
+              this.nodeInfo = nodeInfo;
+              this.nodeName = this.nodeInfo.name;
+              this.portalId = this.nodeInfo.identifier;
+
+              // create a portal model for repository
+              this.model = new Portal({
+                seriesId: this.portalId,
+                label: view.label
+              });
+
+              // remove the members section directly from the model
+              this.model.removeSection("members");
+
+              this.model.createNodeAttributes(this.nodeInfo);
+
+              //Setting the repo specific statsModel
+              var statsSearchModel = this.userModel.get("searchModel").clone();
+              statsSearchModel.set("exclude", [], {silent: true}).set("formatType", [], {silent: true});
+              MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
+              MetacatUI.statsModel.set("searchModel", statsSearchModel);
+
+              // render repository view as portal view
+              this.renderPortal();
             },
 
             /**
@@ -175,9 +263,11 @@ define(["jquery",
              */
             renderPortal: function() {
 
-
-              // Add edit button if user is authorized
-              this.insertOwnerControls();
+              // only displaying the edit button for non-repository profiles
+              if (!this.nodeView){
+                // Add edit button if user is authorized
+                this.insertOwnerControls();
+              }
 
               // Getting the correct portal label and seriesID
               this.label = this.model.get("label");
@@ -192,7 +282,8 @@ define(["jquery",
 
                 // Render the header view
                 this.headerView = new PortalHeaderView({
-                    model: this.model
+                    model: this.model,
+                    nodeView: this.nodeView
                 });
                 this.headerView.render();
                 this.subviews.push(this.headerView);
@@ -206,8 +297,9 @@ define(["jquery",
                 if( this.model.get("hideData") !== true ) {
                     this.sectionDataView = new PortalDataView({
                         model: this.model,
+                        sectionName: "Data",
                         id: "Data",
-                        sectionName: "Data"
+                        nodeView: this.nodeView
                     });
                     this.subviews.push(this.sectionDataView);
 
@@ -226,7 +318,9 @@ define(["jquery",
                   this.metricsView = new PortalMetricsView({
                     model: this.model,
                     id: this.model.get("metricsLabel"),
-                    uniqueSectionName: this.model.get("metricsLabel")
+                    uniqueSectionName: this.model.get("metricsLabel"),
+                    nodeView: this.nodeView,
+                    nodeName: this.nodeName
                   });
 
                   this.subviews.push(this.metricsView);
@@ -446,8 +540,11 @@ define(["jquery",
                 sectionView.postRender();
               }
 
-              //Update the location path with the new section name
-              this.updatePath(showSectionLabelInURL);
+              if (!this.nodeView) {
+                //Update the location path with the new section name
+                this.updatePath(showSectionLabelInURL);
+              }
+
 
             },
 
@@ -579,12 +676,12 @@ define(["jquery",
             */
             handleNotFound: function(){
 
+              var view = this;
+
               //If the user is NOT logged in OR
-              // if the suer is logged in, and the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
+              // if the user is logged in, and the last fetch was done with user credentials, then this Portal is either not accessible or non-existent
               if( MetacatUI.appUserModel.get("checked") && !MetacatUI.appUserModel.get("loggedIn") ||
                   (MetacatUI.appUserModel.get("checked") && MetacatUI.appUserModel.get("loggedIn") && this.model.get("fetchedWithAuth")) ){
-
-                var view = this;
 
                 //Check if there is an indexing queue, because this model may still be indexing
                 var onError = function(){
@@ -714,6 +811,21 @@ define(["jquery",
                 $("#editPortal").remove();
 
                 this.undelegateEvents();
+            },
+
+            // checks if the label is a repository
+            isNode: function(username){
+
+              if (username === undefined){
+                this.showNotFound();
+                return;
+              }
+              var model = this;
+              var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+                  return nodeModel.shortIdentifier.toLowerCase() == (username).toLowerCase();
+                });
+        
+              return (node && (node !== undefined))
             }
         });
 

@@ -42,7 +42,7 @@ define(["jquery",
         name: null,
         label: null,
         originalLabel: null,
-        labelBlacklist: ["new"],
+        labelBlockList: ["new"],
         description: null,
         formatId: "https://purl.dataone.org/collections-1.0.0",
         formatType: "METADATA",
@@ -77,10 +77,10 @@ define(["jquery",
       //Create a Filters collection to store the definition filters
       this.set("definitionFilters", new Filters());
 
-      // Update the blacklist with the node/repository labels
-      var nodeBlackList = MetacatUI.appModel.get("portalLabelBlacklist");
-      if (nodeBlackList !== undefined && Array.isArray(nodeBlackList)) {
-        this.set("labelBlacklist", this.get("labelBlacklist").concat(nodeBlackList));
+      // Update the blocklist with the node/repository labels
+      var nodeBlockList = MetacatUI.appModel.get("portalLabelBlockList");
+      if (nodeBlockList !== undefined && Array.isArray(nodeBlockList)) {
+        this.set("labelBlockList", this.get("labelBlockList").concat(nodeBlockList));
       }
 
       //When this Collection has been saved, re-save the collection definition
@@ -615,9 +615,9 @@ define(["jquery",
         }
 
         // If the label is a restricted string
-        var blacklist = this.get("labelBlacklist");
-        if( blacklist && Array.isArray(blacklist) ){
-          if(blacklist.includes(label)){
+        var blockList = this.get("labelBlockList");
+        if( blockList && Array.isArray(blockList) ){
+          if(blockList.includes(label)){
             return "This URL is already taken, please try something else";
           }
         }

@@ -9,7 +9,17 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 			title: null,
 			funding: [],
 			personnel: null,
-			parentModel: null
+			parentModel: null,
+			nodeOrder: [
+				"title",
+				"personnel",
+				"abstract",
+				"funding",
+				"award",
+				"studyAreaDescription",
+				"designDescription",
+				"relatedProject"
+			]
 		},
 
 		initialize: function(options){
@@ -25,7 +35,11 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 				"designdescription" : "designDescription",
 				"studyareadescription" : "studyAreaDescription",
 				"relatedproject" : "relatedProject",
-				"researchproject" : "researchProject"
+				"researchproject" : "researchProject",
+				"fundername" : "funderName",
+				"funderidentifier" : "funderIdentifier",
+				"awardnumber" : "awardNumber",
+				"awardurl" : "awardUrl"
 			}
 		},
 
@@ -140,7 +154,7 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 				if (fundingNode.length == 0) {
 
 					fundingNode = document.createElement("funding");
-					$(objectDOM).append(fundingNode);
+					this.getEMLPosition(objectDOM, "funding").after(fundingNode);
 
 				} else {
 
@@ -168,6 +182,27 @@ define(['jquery', 'underscore', 'backbone', "models/DataONEObject", "models/meta
 			$(objectDOM).find("*").filter(function() { return $.trim(this.innerHTML) === ""; } ).remove();
 
 			return objectDOM;
+		},
+
+		getEMLPosition: function(objectDOM, nodeName) {
+			var nodeOrder = this.get("nodeOrder");
+			var position = _.indexOf(nodeOrder, nodeName);
+
+			// Append to the bottom if not found
+			if ( position == -1 ) {
+					return $(objectDOM).children().last()[0];
+			}
+
+			// Otherwise, go through each node in the node list and find the
+			// position where this node will be inserted after
+			for ( var i = position - 1; i >= 0; i-- ) {
+					if ( $(objectDOM).find( nodeOrder[i].toLowerCase() ).length ) {
+							return $(objectDOM).find(nodeOrder[i].toLowerCase()).last()[0];
+					}
+			}
+
+			// Always return something so calling code can be cleaner
+			return $(objectDOM).children().last()[0];
 		},
 
     /*

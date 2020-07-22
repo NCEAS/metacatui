@@ -425,6 +425,12 @@ body > .alert-container.important-app-message > .alert{
   margin-bottom: 0px;
   position: relative;
 }
+.alert.subtle{
+  background-color: #f9f7f7;
+  border-color: #CCC;
+  color: #999;
+  border-width: 0px;
+}
 
 /******************************************
 ** Icons ***
@@ -2322,20 +2328,20 @@ button.modal-btn.btn.btn-default {
 Non-clickable (Disabled) button styling for metrics views
 ***********/
 a.btn.metrics-button-disabled {
-	width: 164px;
-	margin-bottom: 0px;
-    color: #555;
-    background-color: #F3F3F3;
-    cursor: default;
-    border: none;
-    box-shadow: none;
-
+  width: 164px;
+  color: #777;
+  border-color: #CCC;
+  background-color: #efefef;
+  cursor: default;
+}
+a.btn.metrics-button-disabled:hover{
+  background-color: transparent;
 }
 .metrics-button-disabled> .metric-value.badge {
     float: right;
     color: #FFF;
     margin-left: 20px;
-    background-color: #555;
+    background-color: #777;
     margin-top: 2px;
 }
 .metrics-button-disabled.metric-icon {
@@ -2361,8 +2367,18 @@ a.btn.metrics-button-disabled {
 section#user-citations {
     min-height: 300px;
 }
+#user-summary .charts{
+  display: flex;
+}
+#user-summary .summary-container{
+  flex: 1;
+}
 .metrics-title > h3 {
 	display: inline-block;
+  margin-bottom: 30px;
+}
+.metrics-title > p{
+  margin-bottom: 30px;
 }
 .views-metrics .metric-chart,
 .downloads-metrics .metric-chart {
@@ -3456,6 +3472,12 @@ add font awesome close icon */
 .access-policy-view:not(.modal) .modal-footer{
   display: none;
 }
+.access-policy-view.unauthorized .alert{
+  margin-top: 20px;
+  min-height: 100px;
+  line-height: 100px;
+  text-align: center;
+}
 /******************************************
 * Portal Editor
 ********************************************/
@@ -4280,6 +4302,15 @@ i.toc-sub-item {
   margin: 0px;
   font-size: 2em;
   display: inline-block;
+}
+.portal-view .portal-description{
+	margin-left: -20px;
+	margin-top: 10px;
+	margin-right: 20px;
+}
+.portal-view .portal-member-since {
+	margin-left: -20px;
+	margin-top: 10px;
 }
 .portal-logos-view{
   border-top: 1px solid #ededed;
@@ -5127,31 +5158,24 @@ address.email-container:before{
 .profile .circle-badge text.no-activity{
 	fill: #CCC;
 }
-.profile .chart-title{
-	float: left;
-}
 .profile .charts{
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 .profile .chart{
 	float: left;
 	margin-left: 20px;
+  margin-right: 20px;
 	margin-top: 30px;
 }
 .profile .stripe{
 	clear: both;
 	min-height: 200px;
 }
-.profile .chart-title{
-	height: 100%;
-}
 .profile .chart-title.uploads{
 	width: 100%;
 }
-.profile .quick-stats,
-.profile .quick-stats .badge-container{
-	height: 330px;
-}s
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
 	width: 100%;
@@ -5182,10 +5206,10 @@ address.email-container:before{
 	fill: transparent;
 }
 .profile .quick-stats .circle-badge .count{
-	font-size: 27px;
+	font-size: 24px;
 }
 .profile .quick-stats .circle-badge .title{
-	font-size: 18px;
+	font-size: 16px;
 }
 
 /**** Bar Charts ******/
@@ -5201,6 +5225,9 @@ address.email-container:before{
 }
 .bar-chart.log-scale .tick line{
 	stroke: #EEE;
+}
+.profile .temporal-coverage-chart{
+  width: calc(100% - 40px);
 }
 
 
@@ -7650,4 +7677,37 @@ CSS library fixes
 #metadata-assessment-graphic {
 	display: flex;
 	justify-content: center;
+}
+
+
+/* New Summary of Holdings design */
+
+.summary-container {
+  flex: 1;
+  margin-right: 10px;
+  margin-left: 10px;
+  display: grid;
+}
+.summary-count-container {
+    width: 100%;
+    display: grid;
+    align-self: center;
+    ttext-ALIGN: center;
+    justify-self: center;
+}
+.summary-container.span3 > div {
+    margin-left: 17.02127659574468%;
+}
+
+.quick-stats-count{
+	color: #2c6f90; /* Back-up color for IE */
+	fill: #2c6f90; /* Back-up color for IE */
+	font-size: xx-large;
+}
+.portal-view .quick-stats-count{
+	color: #2c6f90; /* Back-up color for IE */
+	fill: #2c6f90; /* Back-up color for IE */
+	color: var(--portal-primary-color);
+	fill: var(--portal-primary-color);
+	font-size: xx-large;
 }

@@ -1626,7 +1626,9 @@ section.user-view-section > .section.active {
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	clear: both;
+	clear: both;
+	display: flex;
+	justify-content: center;
 }
 .stripe{
 	min-height: 350px;
@@ -1659,10 +1661,6 @@ section.user-view-section > .section.active {
   	margin-right: auto;
   	display: block;
   }
-
-.profile .chart-title{
-	float: left;
-}
 
 .profile .chart-title h2{
 	font-size: 31px;
