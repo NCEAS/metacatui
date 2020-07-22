@@ -2330,7 +2330,8 @@ Non-clickable (Disabled) button styling for metrics views
 a.btn.metrics-button-disabled {
   width: 164px;
   color: #777;
-  border-color: #777;
+  border-color: #CCC;
+  background-color: #efefef;
   cursor: default;
 }
 a.btn.metrics-button-disabled:hover{
