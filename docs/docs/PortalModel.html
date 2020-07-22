@@ -102,7 +102,7 @@ overall branding of the portal.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line23">line 23</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line24">line 24</a>
     </li></ul></dd>
     
 
@@ -206,7 +206,7 @@ overall branding of the portal.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line104">line 104</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line106">line 106</a>
     </li></ul></dd>
     
 
@@ -278,7 +278,7 @@ overall branding of the portal.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line42">line 42</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line43">line 43</a>
     </li></ul></dd>
     
 
@@ -413,7 +413,7 @@ document. For example, the Data, Metrics, and Members sections.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1484">line 1484</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1609">line 1609</a>
     </li></ul></dd>
     
 
@@ -501,7 +501,7 @@ document. For example, the Data, Metrics, and Members sections.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1572">line 1572</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1697">line 1697</a>
     </li></ul></dd>
     
 
@@ -545,8 +545,7 @@ document. For example, the Data, Metrics, and Members sections.</td>
 
 
 <div class="description">
-    Queries the Solr discovery index for other Portal objects with this same label.
-Also, checks for the existing black list for repository labels
+    Checks for the existing block list for repository labels
 If at least one other Portal has the same label, then it is not available.
 </div>
 
@@ -640,7 +639,146 @@ If at least one other Portal has the same label, then it is not available.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1286">line 1286</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1287">line 1287</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="checkPortalLabelAvailability"><span class="type-signature"></span>checkPortalLabelAvailability<span class="signature">(label)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Queries the Solr discovery index for other Portal objects with this same label.
+Also, checks for the existing block list for repository labels
+If at least one other Portal has the same label, then it is not available.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>label</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The label to query for</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1322">line 1322</a>
     </li></ul></dd>
     
 
@@ -777,7 +915,7 @@ If at least one other Portal has the same label, then it is not available.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1596">line 1596</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1757">line 1757</a>
     </li></ul></dd>
     
 
@@ -824,6 +962,143 @@ If at least one other Portal has the same label, then it is not available.
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createNodeAttributes"><span class="type-signature"></span>createNodeAttributes<span class="signature">(nodeInfoObject)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Sets attributes on this Portal using the given Member Node data
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>nodeInfoObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A literal object taken from the NodeModel 'members' array</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1719">line 1719</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -887,7 +1162,7 @@ If at least one other Portal has the same label, then it is not available.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1586">line 1586</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1711">line 1711</a>
     </li></ul></dd>
     
 
@@ -993,7 +1268,7 @@ If at least one other Portal has the same label, then it is not available.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1142">line 1142</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1144">line 1144</a>
     </li></ul></dd>
     
 
@@ -1082,7 +1357,7 @@ specify default attributes for the portal model
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line49">line 49</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -1325,7 +1600,7 @@ fetch options
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line160">line 160</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line162">line 162</a>
     </li></ul></dd>
     
 
@@ -1435,7 +1710,7 @@ fetch options
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line217">line 217</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line219">line 219</a>
     </li></ul></dd>
     
 
@@ -1597,7 +1872,7 @@ given node type should be inserted
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line556">line 556</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line558">line 558</a>
     </li></ul></dd>
     
 
@@ -1761,7 +2036,7 @@ given node type should be inserted
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line536">line 536</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line538">line 538</a>
     </li></ul></dd>
     
 
@@ -1916,7 +2191,7 @@ provide some custom initialize options
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line112">line 112</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line114">line 114</a>
     </li></ul></dd>
     
 
@@ -2054,7 +2329,7 @@ portal XML document
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line288">line 288</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line290">line 290</a>
     </li></ul></dd>
     
 
@@ -2259,7 +2534,7 @@ portal XML document
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line473">line 473</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line475">line 475</a>
     </li></ul></dd>
     
 
@@ -2445,7 +2720,7 @@ portal XML document
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1349">line 1349</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1474">line 1474</a>
     </li></ul></dd>
     
 
@@ -2583,7 +2858,7 @@ logo, sections, or acknowledgmentsLogos node of the portal model.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1540">line 1540</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1665">line 1665</a>
     </li></ul></dd>
     
 
@@ -2726,7 +3001,7 @@ document. For example, the Data, Metrics, and Members sections.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1439">line 1439</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1564">line 1564</a>
     </li></ul></dd>
     
 
@@ -2814,7 +3089,144 @@ document. For example, the Data, Metrics, and Members sections.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1362">line 1362</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1487">line 1487</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="saveNodeBlockList"><span class="type-signature"></span>saveNodeBlockList<span class="signature">(The)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Parses the retrieved XML document and saves the node information to the BlockList
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>The</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">XMLDocument</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">XMLDocument returned from the fetch() AJAX call</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1402">line 1402</a>
     </li></ul></dd>
     
 
@@ -2957,7 +3369,7 @@ the defaults are set in PortalSectionModel.defaults.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1091">line 1091</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1093">line 1093</a>
     </li></ul></dd>
     
 
@@ -3068,7 +3480,7 @@ to produce the new or modified portal document.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line594">line 594</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line596">line 596</a>
     </li></ul></dd>
     
 
@@ -3178,7 +3590,95 @@ to produce the new or modified portal document.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line508">line 508</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line510">line 510</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="updateNodeBlockList"><span class="type-signature"></span>updateNodeBlockList<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Queries the CN Solr to retrieve the updated BlockList
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1375">line 1375</a>
     </li></ul></dd>
     
 
@@ -3266,7 +3766,7 @@ to produce the new or modified portal document.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line133">line 133</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line135">line 135</a>
     </li></ul></dd>
     
 
@@ -3472,7 +3972,7 @@ to save to the server.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1162">line 1162</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line1164">line 1164</a>
     </li></ul></dd>
     
 
@@ -3685,7 +4185,7 @@ to save to the server.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line523">line 523</a>
+        <a href="src_js_models_portals_PortalModel.js.html">src/js/models/portals/PortalModel.js</a>, <a href="src_js_models_portals_PortalModel.js.html#line525">line 525</a>
     </li></ul></dd>
     
 
@@ -3721,7 +4221,7 @@ to save to the server.
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Jun 30 2020 12:19:07 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jul 22 2020 10:00:04 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

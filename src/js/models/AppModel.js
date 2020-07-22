@@ -45,6 +45,7 @@ define(['jquery', 'underscore', 'backbone'],
       * messages and page content.
       * @type {string}
       * @default "Metacat Data Catalog"
+      * @since 2.11.2
       */
       repositoryName: MetacatUI.themeTitle || "Metacat Data Catalog",
 
@@ -125,6 +126,7 @@ define(['jquery', 'underscore', 'backbone'],
       *
       * @type {string}
       * @default null
+      * @since 2.11.4
       */
       temporaryMessage: null,
 
@@ -132,7 +134,9 @@ define(['jquery', 'underscore', 'backbone'],
       * If there is a temporaryMessage specified, it will display after this start time.
       * Remember that Dates are in GMT time!
       * @type {Date}
+      * @example new Date(1594818000000)
       * @default null
+      * @since 2.11.4
       */
       temporaryMessageStartTime: null,
 
@@ -140,7 +144,9 @@ define(['jquery', 'underscore', 'backbone'],
       * If there is a temporaryMessage specified, it will display before this end time.
       * Remember that Dates are in GMT time!
       * @type {Date}
+      * @example new Date(1594818000000)
       * @default null
+      * @since 2.11.4
       */
       temporaryMessageEndTime: null,
 
@@ -148,6 +154,7 @@ define(['jquery', 'underscore', 'backbone'],
       * Additional HTML classes to give the temporary message element. Use these to style the message.
       * @type {string}
       * @default "warning"
+      * @since 2.11.4
       */
       temporaryMessageClasses: "warning",
 
@@ -155,6 +162,7 @@ define(['jquery', 'underscore', 'backbone'],
       * A jQuery selector for the element that the temporary message will be displayed in.
       * @type {string}
       * @default "#Navbar"
+      * @since 2.11.4
       */
       temporaryMessageContainer: "#Navbar",
 
@@ -220,9 +228,9 @@ define(['jquery', 'underscore', 'backbone'],
       */
       dashboardUrl: 'https://girder.wholetale.org/api/v1/integration/dataone',
 
-			/**
-			 * A list of all the required fields in the EML Editor.
-			 * Any field set to `true` will prevent the user from saving the Editor until a value has been given
+      /**
+       * A list of all the required fields in the EML Editor.
+       * Any field set to `true` will prevent the user from saving the Editor until a value has been given
        * Any EML field not supported in this list cannot be required.
        * @type {object}
        * @property {boolean} abstract - Default: true
@@ -238,32 +246,94 @@ define(['jquery', 'underscore', 'backbone'],
        * @property {boolean} studyExtentDescription - Default: false
        * @property {boolean} temporalCoverage - Default: false. If true, at least a beginDate will be required.
        * @property {boolean} title - Default: true. EML documents always require a title. Only set this to false if you are extending MetacatUI to ensure a title another way.
-			 */
-			emlEditorRequiredFields: {
-				abstract: true,
-				alternateIdentifier: false,
-				funding: false,
-				generalTaxonomicCoverage: false,
+       * @default {
+                     abstract: true,
+                     alternateIdentifier: false,
+                     funding: false,
+                     generalTaxonomicCoverage: false,
+                     taxonCoverage: false,
+                     geoCoverage: false,
+                     intellectualRights: true,
+                     keywordSets: false,
+                     methods: false,
+                     samplingDescription: false,
+                     studyExtentDescription: false,
+                     temporalCoverage: false,
+                     title: true
+                   }
+        * @example
+        *  {
+        *    abstract: true,
+        *    alternateIdentifier: false,
+        *    funding: false,
+        *    generalTaxonomicCoverage: false,
+        *    taxonCoverage: false,
+        *    geoCoverage: false,
+        *    intellectualRights: true,
+        *    keywordSets: false,
+        *    methods: false,
+        *    samplingDescription: false,
+        *    studyExtentDescription: false,
+        *    temporalCoverage: false,
+        *    title: true
+        *  }
+       */
+      emlEditorRequiredFields: {
+        abstract: true,
+        alternateIdentifier: false,
+        funding: false,
+        generalTaxonomicCoverage: false,
         taxonCoverage: false,
-				geoCoverage: false,
-				intellectualRights: true,
-				keywordSets: false,
-				methods: false,
-				samplingDescription: false,
-				studyExtentDescription: false,
-				temporalCoverage: false,
-				title: true
-			},
+        geoCoverage: false,
+        intellectualRights: true,
+        keywordSets: false,
+        methods: false,
+        samplingDescription: false,
+        studyExtentDescription: false,
+        temporalCoverage: false,
+        title: true
+      },
 
+      /**
+      * An array of science metadata format IDs that are editable in MetacatUI.
+      * Metadata documents with these format IDs will have an Edit button and will be
+      * editable in the Editor Views.
+      * This should only be changed if you have extended MetacatUI to edit a new format,
+      * or if you want to disable editing of a specific format ID.
+      * @type {string[]}
+      * @default [
+        "eml://ecoinformatics.org/eml-2.1.1",
+        "https://eml.ecoinformatics.org/eml-2.2.0"
+      ]
+      * @example
+      *  [
+      *    "eml://ecoinformatics.org/eml-2.1.1",
+      *    "https://eml.ecoinformatics.org/eml-2.2.0"
+      *  ]
+      * @readonly
+      */
       editableFormats: [
         "eml://ecoinformatics.org/eml-2.1.1",
         "https://eml.ecoinformatics.org/eml-2.2.0"
       ],
 
-      // Format the editor serializes new EML objects as
+      /**
+      * The format ID the dataset editor serializes new EML as
+      * @type {string}
+      * @default "https://eml.ecoinformatics.org/eml-2.2.0"
+      * @readonly
+      * @since 2.13.0
+      */
       editorSerializationFormat: "https://eml.ecoinformatics.org/eml-2.2.0",
 
-      // xsi:schemaLocation value to match `editorSerializationFormat`
+      /**
+      * The XML schema location the dataset editor will use when creating new EML. This should
+      * correspond with {@link AppConfig#editorSerializationFormat}
+      * @type {string}
+      * @default "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd"
+      * @readonly
+      * @since 2.13.0
+      */
       editorSchemaLocation: "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd",
 
       /**
@@ -284,6 +354,16 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {object[]}
       * @property {string} label - A readable and short label for the keyword thesaurus that is displayed in the UI
       * @property {string} thesaurus - The exact keyword thesaurus name that will be saved in the EML
+      * @since 2.10.0
+      * @default [{
+                  label: "GCMD",
+                  thesaurus: "NASA Global Change Master Directory (GCMD)"
+                }]
+      * @example
+      *  [{
+      *    label: "GCMD",
+      *    thesaurus: "NASA Global Change Master Directory (GCMD)"
+      *  }]
       */
       emlKeywordThesauri: [{
         label: "GCMD",
@@ -452,6 +532,8 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * If false, the /monitor/status (the service that returns the status of various DataONE services) will not be used.
       * @type {boolean}
+      * @default true
+      * @since 2.9.0
       */
       enableMonitorStatus: true,
 
@@ -462,6 +544,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This URL is contructed dynamically when the
       * AppModel is initialized. Only override this if you are an advanced user and have a reason to!
       * @type {string}
+      * @since 2.9.0
       */
       monitorStatusUrl: "",
 
@@ -498,6 +581,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This LDAP authentication is separate from the File-based authentication for the Metacat Admin interface.
       * @type {boolean}
       * @default false
+      * @since 2.11.0
       */
       enableLdapSignIn: false,
       /**
@@ -597,6 +681,7 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryCitationsChart: true,
       /**
@@ -605,6 +690,7 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryDownloadsChart: true,
       /**
@@ -613,6 +699,7 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryMetadataAssessment: true,
       /**
@@ -621,16 +708,23 @@ define(['jquery', 'underscore', 'backbone'],
       * (see https://dataone.org)
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       hideSummaryViewsChart: true,
 
-      /**
-      * List of Repositories that are DataONE Plus Members
+      /*
+      * List of Repositories that are DataONE Plus Members.
       * DataONE Plus features are displayed only for these members.
       * @type {string[]}
-      * @default ["urn:node:ARCTIC"]
+      * @readonly
+      * @default ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB", "urn:node:mnUCSB1"]
+      * @since 2.13.0
+      * ------------------------------------
+      * This config will not be displayed in the JSDoc documentation since it is
+      * temporary and only useful for internal DataONE purposes. This functionality will be replaced
+      * with the DataONE Bookkeeper service, eventually.
       */
-      dataonePlusMembers: ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB"],
+      dataonePlusMembers: ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB", "urn:node:mnUCSB1"],
 
       /**
       * Metrics flag for the Dataset Landing Page
@@ -705,14 +799,14 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {object}
       * @example
       * {
-      *    formatId: "eml://ecoinformatics.org/eml-2.1.1",
-      *    isPublic: true,
-      *    dateUploaded: function(date){
-      *      return new Date(date) < new Date('1995-12-17T03:24:00');
-      *    }
+      *   formatId: "eml://ecoinformatics.org/eml-2.1.1",
+      *   isPublic: true,
+      *   dateUploaded: function(date){
+      *     return new Date(date) < new Date('1995-12-17T03:24:00');
+      *   }
       * }
-      * This example would hide metrics for any objects that are:
-      *   EML 2.1.1 OR public OR were uploaded before 12/17/1995.
+      * // This example would hide metrics for any objects that are:
+      * //  EML 2.1.1 OR public OR were uploaded before 12/17/1995.
       */
       hideMetricsWhen: null,
 
@@ -746,6 +840,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, users can change the AccessPolicy for their objects.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       allowAccessPolicyChanges: true,
 
@@ -755,6 +850,17 @@ define(['jquery', 'underscore', 'backbone'],
       * See the AccessRule model list of default attributes for options on what to set here.
       * @see {@link AccessRule}
       * @type {object[]}
+      * @since 2.9.0
+      * @default [{
+                  subject: "public",
+                  read: true
+                }]
+      * @example
+      * [{
+      *   subject: "public",
+      *   read: true
+      * }]
+      * // This example would assign public access to all new objects created in MetacatUI.
       */
       defaultAccessPolicy: [{
         subject: "public",
@@ -764,6 +870,8 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * The user-facing name for editing the Access Policy. This is displayed as the header of the AccessPolicyView, for example
       * @type {string}
+      * @since 2.9.0
+      * @default "Sharing options"
       */
       accessPolicyName: "Sharing options",
 
@@ -772,6 +880,20 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {boolean} accessRuleOptions.read  - If true, users will be able to give others read access to their DataONE objects
       * @property {boolean} accessRuleOptions.write - If true, users will be able to give others write access to their DataONE objects
       * @property {boolean} accessRuleOptions.changePermission - If true, users will be able to give others changePermission access to their DataONE objects
+      * @since 2.9.0
+      * @default {
+                  read: true,
+                  write: true,
+                  changePermission: true
+                }
+      * @example
+      * {
+      *   read: true,
+      *   write: true,
+      *   changePermission: false
+      * }
+      * // This example would enable users to edit the read and write access to files,
+      * // but not change ownership, in the Access Policy View.
       */
       accessRuleOptions: {
         read: true,
@@ -784,6 +906,13 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {boolean} accessRuleOptionNames.read  - The user-facing name of the "read" access in Access Rules
       * @property {boolean} accessRuleOptionNames.write - The user-facing name of the "write" access in Access Rules
       * @property {boolean} accessRuleOptionNames.changePermission - The user-facing name of the "changePermission" access in Access Rules
+      * @since 2.9.0
+      * @example
+      *  {
+      *    read: "Can view",
+      *    write: "Can edit",
+      *    changePermission: "Is owner"
+      *  }
       */
       accessRuleOptionNames: {
         read: "Can view",
@@ -795,6 +924,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If false, the rightsHolder of a resource will not be displayed in the AccessPolicyView.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       displayRightsHolderInAccessPolicy: true,
 
@@ -802,6 +932,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If false, users will not be able to change the rightsHolder of a resource in the AccessPolicyView
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       allowChangeRightsHolder: true,
 
@@ -810,6 +941,8 @@ define(['jquery', 'underscore', 'backbone'],
       * everyone except those in the group. This is useful for preventing users from
       * removing repository administrative groups from access policies.
       * @type {string[]}
+      * @since 2.9.0
+      * @example ["CN=data-admin-group,DC=dataone,DC=org"]
       */
       hiddenSubjectsInAccessPolicy: [],
 
@@ -817,6 +950,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, the public/private toggle will be displayed in the Sharing Options for portals.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       showPortalPublicToggle: true,
 
@@ -825,6 +959,7 @@ define(['jquery', 'underscore', 'backbone'],
       * the given users or groups. To display the public/private toggle for everyone,
       * set `showPortalPublicToggle` to true and keep this array empty.
       * @type {string[]}
+      * @since 2.9.0
       */
       showPortalPublicToggleForSubjects: [],
 
@@ -832,6 +967,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, the public/private toggle will be displayed in the Sharing Options for datasets.
       * @type {boolean}
       * @default true
+      * @since 2.9.0
       */
       showDatasetPublicToggle: true,
 
@@ -921,8 +1057,10 @@ define(['jquery', 'underscore', 'backbone'],
       },
 
       /**
-      * The list of portals labels that no one should be able to create portals with
+      * A list of portals labels that no one should be able to create portals with
       * @type {string[]}
+      * @readonly
+      * @since 2.11.3
       */
       portalLabelBlockList: [
         "Dataone",
@@ -1099,6 +1237,9 @@ define(['jquery', 'underscore', 'backbone'],
       * A list of unsupported User-Agent regular expressions for browsers that will not work well with MetacatUI.
       * A warning message will display on the page for anyone using one of these browsers.
       * @type {RegExp[]}
+      * @since 2.10.0
+      * @default [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
+      * @example [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
       */
       unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/],
 

@@ -69,6 +69,33 @@
         model: undefined,
 
         /**
+        * Aggregated Quality Metrics flag
+        * @type {boolean}
+        */
+        hideMetadataAssessment: false,
+
+
+        /**
+        * Aggregated Citation Metrics flag
+        * @type {boolean}
+        */
+        hideCitationsChart: false,
+
+
+        /**
+        * Aggregated Download Metrics flag
+        * @type {boolean}
+        */
+        hideDownloadsChart: false,
+
+
+        /**
+        * Aggregated View Metrics flag
+        * @type {boolean}
+        */
+        hideViewsChart: false,
+
+        /**
         A template for displaying a loading message
         * @type {Underscore.Template}
         */
@@ -112,11 +139,20 @@
             if(this.model.get("searchResults").header.get("numFound") == 0 ){
               // The description for when there is no data in the collection
               var description = "There are no datasets in " + this.model.get("label") + " yet.";
+
+              // update to nodeName for repo profiles
+              if(this.nodeView &amp;&amp; typeof this.nodeName !== 'undefined')
+                description = "There are no datasets in " + this.nodeName + " yet.";
+
             }
             // For portals with data in the collection
             else {
               // The description to use for a portal with data
-              var description = "A summary of all datasets from " + this.model.get("label");
+              var description = "A summary of all datasets from " + this.model.get("label") + ".";
+
+              // update to nodeName for repo profiles
+              if(this.nodeView &amp;&amp; typeof this.nodeName !== 'undefined')
+                description = "A summary of all datasets from " + this.nodeName + ".";
 
             }
 
@@ -126,7 +162,6 @@
             //If Solr Joins are enabled, set the query on the StatsModel using the Portal Filters
             if( MetacatUI.appModel.get("enableSolrJoins") &amp;&amp; this.model.get("definitionFilters") ){
 
-              console.log(this.model.getQuery());
               statsModel.set("query", this.model.getQuery());
 
             }
@@ -167,24 +202,74 @@
               //Save a reference to the Search Model on the Stats model
               statsModel.set("searchModel", statsSearchModel);
             }
+            
+            var userType = "portal";
 
-            //Create a Metrics Model for this portal and fetch the metrics
-            var metricsModel = new MetricsModel({pid_list: [this.model.get("label")], type: "portal"});
-            metricsModel.fetch();
+            var label_list = [];
+            label_list.push(this.model.get("label"));
+
+            var metricsModel = new MetricsModel();
+            this.metricsModel = metricsModel;
+
+            if (this.nodeView) {
+
+              userType = "repository";
+
+              // TODO: replace the following logic with dataone bookkeeper service
+              // check if the repository is a dataone member
+              var dataONEPlusMembers = MetacatUI.appModel.get("dataonePlusMembers");
+                
+              if ((typeof dataONEPlusMembers !== 'undefined') &amp;&amp; Array.isArray(dataONEPlusMembers) &amp;&amp; dataONEPlusMembers.includes(this.model.get("seriesId"))){
+                this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideSummaryMetadataAssessments");
+                this.hideCitationsChart = false || MetacatUI.appModel.get("hideSummaryCitationsChart");
+                this.hideDownloadsChart = false || MetacatUI.appModel.get("hideSummaryDownloadsChart");
+                this.hideViewsChart = false || MetacatUI.appModel.get("hideSummaryViewsChart");
+              }
+              else{
+                this.hideMetadataAssessment = true;
+                this.hideCitationsChart = true;
+                this.hideDownloadsChart = true;
+                this.hideViewsChart = true;
+              }
+
+              // set the statsModel
+              statsModel = MetacatUI.statsModel;
+
+              if (!this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart) {
+                // create a metrics query for repository object
+                var pid_list = new Array();
+                pid_list.push(this.model.get("seriesId"));
+                this.metricsModel.set("pid_list", pid_list);
+                this.metricsModel.set("filterType", "repository");
+              }
+              else{
+                this.metricsModel.set("pid_list", []);
+                this.metricsModel.set("filterType", "");
+              }
+            }
+            else {
+              // create a metrics query for portal object
+              this.metricsModel.set("pid_list", label_list);
+              this.metricsModel.set("filterType", "portal");
+            }
+
+            this.metricsModel.fetch();
 
             // Add a stats view
             this.statsView = new StatsView({
                 title: "Statistics and Figures",
                 description: description,
-                metricsModel: metricsModel,
+                metricsModel: this.metricsModel,
                 el: document.createElement("div"),
                 model: statsModel,
-                userType: "portal",
-                hideMetadataAssessment: false,
+                userType: userType,
+                userId: this.model.get("seriesId"),
+                userLabel: this.model.get("label"),
+                hideMetadataAssessment: this.hideMetadataAssessment,
                 // Rendering metrics on the portal
-                hideCitationsChart: false,
-                hideDownloadsChart: false,
-                hideViewsChart: false
+                hideCitationsChart: this.hideCitationsChart,
+                hideDownloadsChart: this.hideDownloadsChart,
+                hideViewsChart: this.hideViewsChart,
             });
 
             //Insert the StatsView into this view
@@ -195,10 +280,31 @@
 
           }
           catch(e){
-            console.log("Failed to render the metrics view. Error message: " + e);
+            this.handlePortalMetricsError(e);
           }
 
         },
+
+        /** 
+         * Handles error display if something went wrong while displaying metrics
+        */
+       handlePortalMetricsError: function(error, errorDisplayMessage){
+
+          if(!errorDisplayMessage) {
+            var errorDisplayMessage = "&lt;p>Sorry, we couldn't retrieve metrics for the \"" + (this.model.get("label") || this.model.get("portalId")) +
+                "\" portal at this time.&lt;/p>"
+          }
+
+          //Show a warning message about the metrics error
+          MetacatUI.appView.showAlert(
+            errorDisplayMessage,
+            "alert-warning",
+            this.$el
+          );
+          this.$(".loading").remove();
+          
+          console.log("Failed to render the metrics view. Error message: " + error);
+       },
 
         /**
          * Functionality to execute after the view has been created and rendered initially
@@ -230,7 +336,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Jun 30 2020 12:19:06 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jul 22 2020 10:00:03 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
