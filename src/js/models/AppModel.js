@@ -811,6 +811,40 @@ define(['jquery', 'underscore', 'backbone'],
       hideMetricsWhen: null,
 
       /**
+      * The zoom level to use in the Google Static Map images on the dataset landing pages.
+      * The higher the zoom level, the more zoomed in the map will be. Set to 0 to show
+      * the entire world in the map, and 15+ to show fine details. The highest zoom level
+      * is about 20. For more information, see the Google Statis Maps API docs: https://developers.google.com/maps/documentation/maps-static/start#Zoomlevels
+      * @type {number}
+      * @default 6
+      * @since 2.13.0
+      */
+      datasetMapZoomLevel: 6,
+
+      /**
+      * The bounding box path color to use in the Google Static Map images on the dataset landing pages.
+      * Specify the color either as a 24-bit (example: color=0xFFFFCC) or 32-bit hexadecimal value
+      * (example: color=0xFFFFCCFF), or from the set: black, brown, green, purple, yellow, blue, gray, orange, red, white.
+      * For more information, see the Google Statis Maps API docs: https://developers.google.com/maps/documentation/maps-static/start#PathStyles
+      * @type {string}
+      * @default "0xDA4D3Aff" (red)
+      * @since 2.13.0
+      */
+      datasetMapPathColor: "0xDA4D3Aff",
+
+      /**
+      * The bounding box fill color to use in the Google Static Map images on the dataset landing pages.
+      * If you don't want to fill in the bounding boxes with a color, set this to null or undefined.
+      * Specify the color either as a 24-bit (example: color=0xFFFFCC) or 32-bit hexadecimal value
+      * (example: color=0xFFFFCCFF), or from the set: black, brown, green, purple, yellow, blue, gray, orange, red, white.
+      * For more information, see the Google Statis Maps API docs: https://developers.google.com/maps/documentation/maps-static/start#PathStyles
+      * @type {string}
+      * @default "0xFFFF0033" (light yellow)
+      * @since 2.13.0
+      */
+      datasetMapFillColor: "0xFFFF0033",
+
+      /**
       * If true, the dataset landing pages will generate Schema.org-compliant JSONLD
       * and insert it into the page.
       * @type {boolean}

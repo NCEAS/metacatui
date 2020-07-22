@@ -926,6 +926,34 @@ define(['jquery',
               "&spn=0.003833,0.010568" +
               "&t=m" +
               "&z=10";
+
+        //Get the dataset map zoom level
+        var zoomLevel = MetacatUI.appModel.get("datasetMapZoomLevel");
+        if(typeof zoomLevel !== "number"){
+          zoomLevel = parseInt(zoomLevel);
+        }
+        if( !zoomLevel > 0){
+          zoomLevel = 6;
+        }
+
+        //Get the map path color
+        var pathColor = MetacatUI.appModel.get("datasetMapPathColor");
+        if( pathColor ){
+          pathColor = "color:" + pathColor + "|";
+        }
+        else{
+          pathColor = "";
+        }
+
+        //Get the map path fill color
+        var fillColor = MetacatUI.appModel.get("datasetMapFillColor");
+        if( fillColor ){
+          fillColor = "fillcolor:" + fillColor + "|";
+        }
+        else{
+          fillColor = "";
+        }
+
         //Create a google map image
         var mapHTML = "<img class='georegion-map' " +
                 "src='https://maps.googleapis.com/maps/api/staticmap?" +
@@ -933,9 +961,9 @@ define(['jquery',
                 "&size=800x350" +
                 "&maptype=terrain" +
                 "&markers=size:mid|color:0xDA4D3Aff|"+latLngCEN.lat()+","+latLngCEN.lng() +
-                "&path=color:0xDA4D3Aff|weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
+                "&path=" + fillColor + pathColor + "weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
                 "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
-                "&zoom=4" +
+                "&zoom=" + zoomLevel +
                 "&sensor=false" +
                 "&key=" + MetacatUI.mapKey + "'/>";
 
@@ -2661,7 +2689,7 @@ define(['jquery',
         "isAccessibleForFree": true
       };
 
-      // Attempt to add in a sameAs property of we have high confidence the 
+      // Attempt to add in a sameAs property of we have high confidence the
       // identifier is a DOI
       if (this.model.isDOI(model.get("id"))) {
         var doi = this.getCanonicalDOIIRI(model.get("id"));
@@ -2670,7 +2698,7 @@ define(['jquery',
           elJSON["sameAs"] = doi;
         }
       }
-      
+
       // Second: Add in optional fields
 
       // Name
@@ -2889,15 +2917,15 @@ define(['jquery',
 
     /**
      * Create a canonical IRI for a DOI given a random DataONE identifier.
-     * 
+     *
      * @param {string} identifier: The identifier to (possibly) create the IRI
      *   for.
      * @return {string|null} Returns null when matching the identifier to a DOI
      *   regex fails or a string when the match is successful
-     * 
+     *
      * Useful for describing resources identified by DOIs in linked open data
      * contexts or possibly also useful for comparing two DOIs for equality.
-     * 
+     *
      * Note: Really could be generalized to more identifier schemes.
      */
     getCanonicalDOIIRI: function(identifier) {
