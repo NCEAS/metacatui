@@ -30,6 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
         },
 
         teardown: function() {
+            this.$el.modal('hide');
             this.$el.data('modal', null);
             this.remove();
         },

@@ -61,32 +61,36 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
                 // Dataset landing page - metadataview
                 if ( self.citationsForDataCatalogView ) {
+                    var emptyString = "We couldn't find any citations for this dataset. " +
+                        "If this dataset has been cited, you can register the citation to DataONE.";
+
+                    var $emptyDataElement = $(document.createElement("p"))
+                        .text(emptyString)
+                        .addClass("empty-citation-list-text");
 
                     $emptyList.append(this.registerCitationTemplate());
-                    // 
-
-                    var emptyString = "We couldn't find any citations for this dataset. " +
-                        "To report a citation of this dataset, " +
-                        "send the citation information to our support team at " ;
+                    $emptyList.append($emptyDataElement);
+                        
                 }
                 else {
                     var emptyString = "We couldn't find any citations for these datasets. " +
                         "To report a citation of one of these datasets, " +
                         "send the citation information to our support team at " ;
+
+                    var $emptyDataElement = $(document.createElement("p"))
+                        .text(emptyString)
+                        .addClass("empty-citation-list-text");
+
+                    // Adding Email link 
+                    var $emailLink = $('<a>', {
+                        href: 'mailto:' + MetacatUI.appModel.get("emailContact"),
+                        text: MetacatUI.appModel.get("emailContact")
+                    });
+                    $emptyDataElement.append($emailLink);
+
+                    $emptyList.append($emptyDataElement);
                 }
-                
-                var $emptyDataElement = $(document.createElement("p"))
-                                        .text(emptyString)
-                                        .addClass("empty-citation-list-text");
 
-                // Adding Email link 
-                var $emailLink = $('<a>', {
-                    href: 'mailto:' + MetacatUI.appModel.get("emailContact"),
-                    text: MetacatUI.appModel.get("emailContact")
-                });
-                $emptyDataElement.append($emailLink);
-
-                $emptyList.append($emptyDataElement);
                 this.$el.append($emptyList);
             }
             else {
@@ -113,8 +117,19 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
                 // Dataset landing page - metadataview
                 if ( self.citationsForDataCatalogView ) {
-                    this.$el.append(this.registerCitationTemplate());
+                    var $emptyList = $(document.createElement("div"))
+                                        .addClass("register-citation-element");
+
+                    var registerCitationString = "Register additional citations for this dataset to DataONE.";
+
+                    var $registerCitationElement = $(document.createElement("p"))
+                        .text(registerCitationString)
+                        .addClass("register-citation-text");
+
+                    // $emptyList.append($registerCitationElement);
+                    $emptyList.append(this.registerCitationTemplate());
                 }
+                this.$el.append($emptyList);
             }
 
         }

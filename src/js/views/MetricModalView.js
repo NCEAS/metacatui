@@ -17,9 +17,9 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
         events: {
           'hidden': 'teardown',
-          'click .left-modal-footer' : 'showPreviousMetricModal',
+          'click .left-modal-footer'  : 'showPreviousMetricModal',
           'click .right-modal-footer' : 'showNextMetricModal',
-          'click     .register-citation' : 'showCitationForm'
+          'click .register-citation'  : 'showCitationForm'
         },
 
         initialize: function(options) {
@@ -57,6 +57,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         },
 
         teardown: function() {
+          this.$el.modal('hide');
           this.$el.data('modal', null);
           this.remove();
         },
