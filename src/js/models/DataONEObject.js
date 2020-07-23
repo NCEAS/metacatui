@@ -201,7 +201,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               }
 
               //Return the full URL
-              return baseUrl + (encodeURIComponent(this.get("id")));
+              return baseUrl;
 
             }
             else {
@@ -2070,7 +2070,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             //If there is an active alternate repo, move that to the top of the list of auth MNs
             var activeAltRepo = MetacatUI.appModel.get("activeAlternateRepositoryId") || "";
             if( activeAltRepo ){
-              var activeAltRepoMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: datasource });
+              var activeAltRepoMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: activeAltRepo });
               if( activeAltRepoMN ){
                 //Clone the MN object and add it to the array
                 var clonedActiveAltRepoMN = Object.assign({}, activeAltRepoMN);

@@ -1301,10 +1301,12 @@ define(['jquery', 'underscore', 'backbone'],
       * The only required attributes are name, identifier, and baseURL.
       * @type {object[]}
       * @example [{
-          name: "Metacat MN",
-          identifier: "urn:node:METACAT",
-          baseURL: "https://my-metacat.org/metacat/d1/mn"
-        }]
+      *    name: "Metacat MN",
+      *    identifier: "urn:node:METACAT",
+      *    baseURL: "https://my-metacat.org/metacat/d1/mn"
+      *  }]
+      *
+      * @since 2.14.0
       */
       alternateRepositories: [],
 
@@ -1313,6 +1315,8 @@ define(['jquery', 'underscore', 'backbone'],
       * Since there can be multiple alternate repositories configured, this attribute can be used to specify which
       * one is actively in use.
       * @type {string}
+      * @example "urn:node:METACAT"
+      * @since 2.14.0
       */
       activeAlternateRepositoryId: null,
 
@@ -1321,6 +1325,7 @@ define(['jquery', 'underscore', 'backbone'],
       * paid features for active subscriptions. If disabled, the Portal Views will assume
       * all portals are in inactive/free, and will only render free features.
       * @type {boolean}
+      * @since 2.14.0
       */
       enableBookkeeperServices: false,
       /**
@@ -1328,6 +1333,7 @@ define(['jquery', 'underscore', 'backbone'],
       * Hosted Repositories and Plus.
       * See https://github.com/DataONEorg/bookkeeper for more info on this service.
       * @type {string}
+      * @since 2.14.0
       */
       bookkeeperBaseUrl: "https://api.test.dataone.org:30443/bookkeeper/v1",
       /**
@@ -1335,6 +1341,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
       * @readonly
       * @type {string}
+      * @since 2.14.0
       */
       bookkeeperQuotasUrl: null,
       /**
@@ -1342,6 +1349,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
       * @readonly
       * @type {string}
+      * @since 2.14.0
       */
       bookkeeperUsagesUrl: null,
       /**
@@ -1349,6 +1357,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
       * @readonly
       * @type {string}
+      * @since 2.14.0
       */
       bookkeeperSubscriptionsUrl: null,
       /**
@@ -1356,6 +1365,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
       * @readonly
       * @type {string}
+      * @since 2.14.0
       */
       bookkeeperCustomersUrl: null,
 
@@ -1505,7 +1515,7 @@ define(['jquery', 'underscore', 'backbone'],
 
       //Set up the alternative repositories
       _.map(this.get("alternateRepositories"), function(repo){
-        _.extend(repo, this.getDataONEMNAPIs(repo.baseURL));
+        repo = _.extend(repo, this.getDataONEMNAPIs(repo.baseURL));
       }, this);
 
     },
@@ -1519,33 +1529,45 @@ define(['jquery', 'underscore', 'backbone'],
 
       var urls = {};
 
+      //Get the baseUrl from this model if one isn't given
+      if( typeof baseUrl == "undefined" ){
+        var baseUrl = this.get("baseUrl");
+      }
+
       //Remove a forward slash to the end of the base URL if there is one
-      var baseUrl = this.get("baseUrl");
       if( baseUrl.charAt( baseUrl.length-1 ) == "/" ){
         baseUrl = baseUrl.substring(0, baseUrl.length-1);
-        this.set("baseUrl", baseUrl);
       }
 
-      //Get the Dataone API fragment, which is either "/d1/mn/v2" or "/cn/v2"
-      var d1Service = this.get('d1Service');
-      if( typeof d1Service != "string" || !d1Service.length ){
-        d1Service = "/d1/mn/v2";
-      }
-      else if( d1Service.charAt(0) != "/" ){
-        d1Service = "/" + d1Service;
-      }
+      //If the baseUrl doesn't have the full DataONE MN API structure, then construct it
+      if( baseUrl.indexOf("/d1/mn") == -1 ){
 
-      //Get the Metacat context, and make sure it starts with a forward slash
-      var context = this.get("context");
-      if( typeof context != "string" || !context.length ){
-        context = "";
-      }
-      else if( context.charAt(0) != "/" ){
-        context = "/" + context;
-      }
+        //Get the Dataone API fragment, which is either "/d1/mn/v2" or "/cn/v2"
+        var d1Service = this.get('d1Service');
+        if( typeof d1Service != "string" || !d1Service.length ){
+          d1Service = "/d1/mn/v2";
+        }
+        else if( d1Service.charAt(0) != "/" ){
+          d1Service = "/" + d1Service;
+        }
 
-      //Construct the base URL
-      baseUrl = baseUrl + context + d1Service;
+        //Get the Metacat context, and make sure it starts with a forward slash
+        var context = this.get("context");
+        if( typeof context != "string" || !context.length ){
+          context = "";
+        }
+        else if( context.charAt(0) != "/" ){
+          context = "/" + context;
+        }
+
+        //Construct the base URL
+        baseUrl = baseUrl + context + d1Service;
+      }
+      //Otherwise, just make sure the API version is appended to the base URL
+      else if( baseUrl.substring( baseUrl.length-3 ) != "/v2" ){
+        d1Service = "/d1/mn";
+        baseUrl = baseUrl + "/v2";
+      }
 
       // these are pretty standard, but can be customized if needed
       urls.viewServiceUrl    = baseUrl + '/views/metacatui/';
