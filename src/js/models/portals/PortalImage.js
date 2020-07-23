@@ -1,25 +1,26 @@
 /* global define */
 define(["jquery",
         "underscore",
-        "backbone"
+        "backbone",
+        "models/DataONEObject"
     ],
-    function($, _, Backbone) {
+    function($, _, Backbone, DataONEObject) {
 
       /**
        * @class PortalImage
        * A Portal Image model represents a single image used in a Portal
        */
-      var PortalImageModel = Backbone.Model.extend(
+      var PortalImageModel = DataONEObject.extend(
         /** @lends PortalImage.prototype */{
         defaults: function(){
-          return {
+          return _.extend(DataONEObject.prototype.defaults(), {
             identifier: "",
             imageURL: "",
             label: "",
             associatedURL: "",
             objectDOM: null,
             nodeName: "image"
-          }
+          });
         },
 
         /**
@@ -184,6 +185,15 @@ define(["jquery",
             !this.get("associatedURL")  &&
             !this.get("identifier")
           ) ;
+        },
+
+        /**
+        * Returns true if this PortalImage hasn't been saved to a Portal yet, so it is a new object.
+        * For now, all PortalImages will be considered new objects since we will not be performing updates on them.
+        * @return {boolean}
+        */
+        isNew: function(){
+          return true;
         }
 
       });

@@ -211,7 +211,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         // For config details, see: https://www.dropzonejs.com/#configuration
         var $dropZone = view.$(".dropzone").dropzone({
 
-          url: MetacatUI.appModel.get("objectServiceUrl"),
+          url: view.model.url(),
           acceptedFiles: "image/*",
           addRemoveLinks: false,
           maxFiles: 1,
@@ -491,8 +491,9 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
 
       try{
 
-        if(!this.url){
-          return
+        //If there is no URL or the model hasn't been saved yet, then don't show the image
+        if( !this.url || this.model.isNew() ){
+          return;
         }
 
         // A mock image file to identify the image provided to this view
