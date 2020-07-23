@@ -1,18 +1,18 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/reportCitation.html', 'text!templates/alert.html',],
-    function($, _, Backbone, ReportCitationTemplate, AlertTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.html', 'text!templates/alert.html',],
+    function($, _, Backbone, RegisterCitationTemplate, AlertTemplate) {
     'use strict';
 
-    var ReportCitationView = Backbone.View.extend({
+    var RegisterCitationView = Backbone.View.extend({
 
         id:               'citation-modal',
         className:        'modal fade hide',
-        template:         _.template(ReportCitationTemplate),
+        template:         _.template(RegisterCitationTemplate),
         alertTemplate:    _.template(AlertTemplate),
 
         events: {
           'hidden'                      : 'teardown',
-          'click .btn-report-citation'  : 'reportCitation'
+          'click .btn-register-citation'  : 'registerCitation'
         },
 
         initialize: function(options) {
@@ -48,14 +48,14 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/reportCitation.html'
         /**
          * Get inputs from the modal and sends it to the Metrics Service
          */
-        reportCitation: function() {
+        registerCitation: function() {
 
             // get the input values
             var publicationIdentifier = this.$("#publication-identifier").val();
 
             var citationType = this.$("#citationTypeCustomSelect").val();
             var relation_type = null;
-            relation_type = citationType == 1 ? "is_Cited_By" : "is_Cited_By";
+            relation_type = citationType == 1 ? "is_Cited_By" : "is_Used_By";
 
 
             // create a request object 
@@ -67,11 +67,11 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/reportCitation.html'
             formData["request_type"] = "dataset";
             formData["metadata"] = new Array();
 
-            var citationReportObject = {};
-            citationReportObject["target_id"] = this.pid;
-            citationReportObject["source_id"] = publicationIdentifier;
-            citationReportObject["relation_type"] = relation_type;
-            formData["metadata"].push(citationReportObject);
+            var citationRegisterObject = {};
+            citationRegisterObject["target_id"] = this.pid;
+            citationRegisterObject["source_id"] = publicationIdentifier;
+            citationRegisterObject["relation_type"] = relation_type;
+            formData["metadata"].push(citationRegisterObject);
 			
 			// ajax call to submit the given form and then render the results in the content area
 			var viewRef = this;
@@ -109,5 +109,5 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/reportCitation.html'
 
     });
 
-     return ReportCitationView;
+     return RegisterCitationView;
   });

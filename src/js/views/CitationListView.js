@@ -15,6 +15,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
         },
 
+        registerCitationTemplate:  _.template("<a class='btn register-citation' >" + 
+                                                "<i class='icon icon-plus'>" +
+                                                "</i> Register Citation</a>"),
+
         initialize: function(options) {
             if((typeof options == "undefined")){
                 var options = {};
@@ -55,7 +59,12 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                 var $emptyList = $(document.createElement("div"))
                                             .addClass("empty-citation-list");
 
+                // Dataset landing page - metadataview
                 if ( self.citationsForDataCatalogView ) {
+
+                    $emptyList.append(this.registerCitationTemplate());
+                    // 
+
                     var emptyString = "We couldn't find any citations for this dataset. " +
                         "To report a citation of this dataset, " +
                         "send the citation information to our support team at " ;
@@ -101,6 +110,11 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
                 $table.append($tableBody);
                 this.$el.append($table);
+
+                // Dataset landing page - metadataview
+                if ( self.citationsForDataCatalogView ) {
+                    this.$el.append(this.registerCitationTemplate());
+                }
             }
 
         }

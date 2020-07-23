@@ -21,7 +21,6 @@ define(['jquery',
     'views/CitationView',
     'views/AnnotationView',
     'views/MarkdownView',
-    'views/ReportCitationView',
     'text!templates/metadata/metadata.html',
     'text!templates/dataSource.html',
     'text!templates/publishDOI.html',
@@ -40,7 +39,7 @@ define(['jquery',
     ],
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
        MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
-       CitationView, AnnotationView, MarkdownView, ReportCitationView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
+       CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
        VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
   'use strict';
@@ -99,8 +98,7 @@ define(['jquery',
       "mouseover .highlight-node"  : "highlightNode",
       "mouseout  .highlight-node"  : "highlightNode",
       "click     .preview"        : "previewData",
-      "click     #save-metadata-prov" : "saveProv",
-      "click     .report-citation" : "showCitationForm"
+      "click     #save-metadata-prov" : "saveProv"
     },
 
 
@@ -1196,7 +1194,6 @@ define(['jquery',
           url: window.location,
           displayQualtyReport: MetacatUI.appModel.get("mdqBaseUrl") && formatFound && MetacatUI.appModel.get("displayDatasetQualityMetric"),
           showWholetale: MetacatUI.appModel.get("showWholeTaleFeatures"),
-          hideReportCitationButton: MetacatUI.appModel.get("hideReportCitationButton"),
           model: this.model.toJSON()
         });
 
@@ -1312,17 +1309,17 @@ define(['jquery',
         var buttonToolbar = this.$(".metrics-container");
 
         if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-          var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel});
+          var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel, pid: this.pid});
           buttonToolbar.append(citationsMetricView.render().el);
         }
 
         if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
-          var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel});
+          var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel, pid: this.pid});
           buttonToolbar.append(downloadsMetricView.render().el);
         }
 
         if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
-          var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel});
+          var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel, pid: this.pid});
           buttonToolbar.append(viewsMetricView.render().el);
         }
 
@@ -2938,15 +2935,6 @@ define(['jquery',
 
         newView.render();
       });
-    },
-
-    /**
-     * Display the Citation registration form
-     */
-    showCitationForm: function(){
-      var reportCitationView = new ReportCitationView({pid: this.pid});
-      reportCitationView.render();
-      reportCitationView.show();
     }
 
   });
