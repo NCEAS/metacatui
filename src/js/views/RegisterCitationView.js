@@ -9,6 +9,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
         className:        'modal fade hide',
         template:         _.template(RegisterCitationTemplate),
         alertTemplate:    _.template(AlertTemplate),
+        successFooterTemplate: _.template("<button class='btn btn-indigo'" + 
+                                            " data-dismiss='modal'" +
+                                            ">Done</button>"),
 
         events: {
           'hidden'                      : 'teardown',
@@ -86,16 +89,17 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
                     dataType: "json",
 					success: function(data, textStatus, jqXHR) {
 						var	successMessage = $.parseHTML(viewRef.alertTemplate({
-                            msg: 'Successfully registered citation to the DataONE Metrics Service',
+                            msg: 'Thank you! Your citation has been successfully submitted to DataONE. It may take upto 24 hours to display the citation.',
                             classes: "alert-success"
                         }));
 
                         
                         viewRef.$(".modal-body").html(successMessage);
+                        viewRef.$(".modal-footer").html(viewRef.successFooterTemplate());
                     },
                     error: function(){
                         var	errorMessage = $.parseHTML(viewRef.alertTemplate({
-                            msg: 'Encountered an error while registering citation to the DataONE Metrics Service',
+                            msg: 'Sorry! We encountered an error while registering citation to DataONE.',
                             classes: "alert-error"
                         }));
 
