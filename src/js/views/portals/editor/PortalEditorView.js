@@ -431,7 +431,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
            this.listenToOnce(this.model, "notFound", this.showNotFound);
 
            //Get the seriesId or latest pid
-           this.model.getSeriesIdByName();
+           this.model.getSeriesIdByLabel();
            return;
          }
          else{

@@ -181,7 +181,7 @@ define(["jquery",
                 this.setPossibleAuthMNs();
 
                 //Get the series ID of this object
-                this.getSeriesIdByName();
+                this.getSeriesIdByLabel();
 
                 return;
               }
@@ -241,9 +241,9 @@ define(["jquery",
             },
 
             /**
-            * Get the portal seriesId by searching for the portal by its name in Solr
+            * Get the portal seriesId by searching for the portal by its label in Solr
             */
-            getSeriesIdByName: function(){
+            getSeriesIdByLabel: function(){
 
               //Exit if there is no portal name set
               if( !this.get("label") )
@@ -346,7 +346,7 @@ define(["jquery",
                       }
                       //If there's more MNs to check, try again
                       else{
-                        model.getSeriesIdByName();
+                        model.getSeriesIdByLabel();
                       }
 
                     }
@@ -362,6 +362,13 @@ define(["jquery",
               $.ajax(requestSettings);
 
             },
+
+            /**
+            * This function has been renamed `getSeriesIdByLabel` and may be removed in future releases.
+            * @deprecated This function has been renamed `getSeriesIdByLabel` and may be removed in future releases.
+            * @see PortalModel#getSeriesIdByLabel
+            */
+            getSeriesIdByName: function(){ this.getSeriesIdByLabel() },
 
             /**
              * Overrides the default Backbone.Model.parse() function to parse the custom
@@ -1450,73 +1457,73 @@ define(["jquery",
               $.ajax(requestSettings);
             },
 
-            
+
 
             /**
              * Queries the CN Solr to retrieve the updated BlockList
              */
             updateNodeBlockList: function(){
               var model  = this;
-              
+
               $.ajax({
-                url: MetacatUI.appModel.get('nodeServiceUrl'),  
+                url: MetacatUI.appModel.get('nodeServiceUrl'),
                 dataType: "text",
-                error:  function(data, textStatus, xhr) { 
+                error:  function(data, textStatus, xhr) {
                   // if there is an error in retrieving the node list;
                   // proceed with the existing node list to perform the checks
                   model.checkPortalLabelAvailability()
                 },
-                success: function(data, textStatus, xhr) { 
-                  
+                success: function(data, textStatus, xhr) {
+
                   var xmlResponse = $.parseXML(data) || null;
                   if(!xmlResponse) return;
-                  
+
                   // update the node block list on success
                   model.saveNodeBlockList(xmlResponse);
-                }		
+                }
               });
             },
-            
+
             /**
              * Parses the retrieved XML document and saves the node information to the BlockList
-             * 
+             *
              * @param {XMLDocument} The XMLDocument returned from the fetch() AJAX call
              */
             saveNodeBlockList: function(xml){
               var model = this,
                 children   = xml.children || xml.childNodes;
-                
+
               //Traverse the XML response to get the MN info
               _.each(children, function(d1NodeList){
-                
+
                 var d1NodeListChildren = d1NodeList.children || d1NodeList.childNodes;
-                
+
                 //The first (and only) child should be the d1NodeList
                 _.each(d1NodeListChildren, function(thisNode){
-                  
+
                   //Ignore parts of the XML that is not MN info
                   if(!thisNode.attributes) return;
-                  
+
                   //'node' will be a single node
                   var node = {},
                     nodeProperties = thisNode.children || thisNode.childNodes;
-                  
+
                   //Grab information about this node from XML nodes
                   _.each(nodeProperties, function(nodeProperty){
-                    
+
                     if(nodeProperty.nodeName == "property")
                       node[$(nodeProperty).attr("key")] = nodeProperty.textContent;
                     else
                       node[nodeProperty.nodeName] = nodeProperty.textContent;
-                    
+
                     //Check if this member node has v2 read capabilities - important for the Package service
                     if((nodeProperty.nodeName == "services") && nodeProperty.childNodes.length){
                       var v2 = $(nodeProperty).find("service[name='MNRead'][version='v2'][available='true']").length;
                       node["readv2"] = v2;
                     }
                   });
-                  
-                  //Grab information about this node from XLM attributes 
+
+                  //Grab information about this node from XLM attributes
                   _.each(thisNode.attributes, function(attribute){
                     node[attribute.nodeName] = attribute.nodeValue;
                   });
@@ -1534,13 +1541,13 @@ define(["jquery",
                       model.get("labelBlockList").push(node.name);
                     }
                   }
-        
+
                   // node short identifier
                   node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
                   if (Array.isArray(model.get("labelBlockList")) && ((model.get("labelBlockList")).indexOf(node.shortIdentifier) < 0)) {
                     model.get("labelBlockList").push(node.shortIdentifier);
                   }
-                
+
                 });
               });
 
