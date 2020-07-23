@@ -514,10 +514,11 @@
 
     .btn-primary {
        background-color: #007DBB;
-      border-color: #0070a8;
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;
+    padding: 10px;
+    border-width: 0px;
     }
 
     button.btn-primary a {

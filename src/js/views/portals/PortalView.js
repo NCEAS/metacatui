@@ -119,6 +119,12 @@ define(["jquery",
             */
             sectionEls: ".portal-section-view",
             /**
+            * A jQuery selection for the element that will contain the Edit button.
+            * @type {string}
+            * @since 2.14.0
+            */
+            editButtonContainer: ".edit-portal-link-container",
+            /**
              * The events this view will listen to and the associated function to call.
              * @type {Object}
              */
@@ -182,7 +188,7 @@ define(["jquery",
                     }
                   });
                 }
-                
+
                 return this;
             },
 
@@ -263,12 +269,6 @@ define(["jquery",
              */
             renderPortal: function() {
 
-              // only displaying the edit button for non-repository profiles
-              if (!this.nodeView){
-                // Add edit button if user is authorized
-                this.insertOwnerControls();
-              }
-
               // Getting the correct portal label and seriesID
               this.label = this.model.get("label");
               this.portalId = this.model.get("seriesId");
@@ -287,6 +287,12 @@ define(["jquery",
                 });
                 this.headerView.render();
                 this.subviews.push(this.headerView);
+
+                // only displaying the edit button for non-repository profiles
+                if (!this.nodeView){
+                  // Add edit button if user is authorized
+                  this.insertOwnerControls();
+                }
 
                 // Render the content sections
                 _.each(this.model.get("sections"), function(section){
@@ -409,7 +415,7 @@ define(["jquery",
             insertOwnerControls: function(){
 
               // Insert the button into the navbar
-              var container = $(".edit-portal-link-container");
+              var container = $(this.editButtonContainer);
 
               var model = this.model;
 
@@ -824,7 +830,7 @@ define(["jquery",
               var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
                   return nodeModel.shortIdentifier.toLowerCase() == (username).toLowerCase();
                 });
-        
+
               return (node && (node !== undefined))
             }
         });

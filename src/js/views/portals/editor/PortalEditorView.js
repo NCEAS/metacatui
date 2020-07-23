@@ -498,7 +498,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         // Add the image view (incl. uploader) for the portal logo
         this.logoEdit = new ImageEdit({
           model: this.model.get("logo"),
-          imageUploadInstructions: "Drag & drop a logo here or click to upload",
+          imageUploadInstructions: "Drag & drop a logo or click to upload",
           imageWidth: 100,
           imageHeight: 100,
           minWidth: 64,

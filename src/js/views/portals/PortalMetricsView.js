@@ -109,7 +109,7 @@ define(["jquery",
             // If there are no datasets in the portal collection
             if(this.model.get("searchResults").header.get("numFound") == 0 ){
               // The description for when there is no data in the collection
-              var description = "There are no datasets in " + this.model.get("label") + " yet.";
+              var description = "There are no datasets in " + this.model.get("title") + " yet.";
 
               // update to nodeName for repo profiles
               if(this.nodeView && typeof this.nodeName !== 'undefined')
@@ -173,7 +173,7 @@ define(["jquery",
               //Save a reference to the Search Model on the Stats model
               statsModel.set("searchModel", statsSearchModel);
             }
-            
+
             var userType = "portal";
 
             var label_list = [];
@@ -189,7 +189,7 @@ define(["jquery",
               // TODO: replace the following logic with dataone bookkeeper service
               // check if the repository is a dataone member
               var dataONEPlusMembers = MetacatUI.appModel.get("dataonePlusMembers");
-                
+
               if ((typeof dataONEPlusMembers !== 'undefined') && Array.isArray(dataONEPlusMembers) && dataONEPlusMembers.includes(this.model.get("seriesId"))){
                 this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideSummaryMetadataAssessments");
                 this.hideCitationsChart = false || MetacatUI.appModel.get("hideSummaryCitationsChart");
@@ -256,7 +256,7 @@ define(["jquery",
 
         },
 
-        /** 
+        /**
          * Handles error display if something went wrong while displaying metrics
         */
        handlePortalMetricsError: function(error, errorDisplayMessage){
@@ -273,7 +273,7 @@ define(["jquery",
             this.$el
           );
           this.$(".loading").remove();
-          
+
           console.log("Failed to render the metrics view. Error message: " + error);
        },
 

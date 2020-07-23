@@ -3595,7 +3595,8 @@ add font awesome close icon */
     margin-right: 20px;
 }
 .logo-editor-container .dropzone .dz-message{
-  font-size: .9em;
+  font-size: .87em;
+  line-height: 1em;
 }
 
 .logo-editor-container p.notification.error {
@@ -4275,7 +4276,6 @@ i.toc-sub-item {
   display: table-cell;
 }
 .portal-view .portal-logo{
-	max-width: 100%;
 	max-height: 80px;
   display: inline-block;
   margin-right: 30px;
@@ -4302,11 +4302,13 @@ i.toc-sub-item {
   margin: 0px;
   font-size: 2em;
   display: inline-block;
+  flex: 2;
 }
 .portal-view .portal-description{
 	margin-left: -20px;
 	margin-top: 10px;
 	margin-right: 20px;
+  color: #999;
 }
 .portal-view .portal-member-since {
 	margin-left: -20px;
@@ -4513,7 +4515,6 @@ i.toc-sub-item {
 }
 #portal-section-tabs .section-link-container.page-Settings{
   flex-grow: unset;
-  width: 100px;
 }
 #portal-section-tabs .section-link-container.page-Settings.error{
   width: 120px;
@@ -6877,6 +6878,7 @@ textarea.medium{
 	border-radius: 0px;
 	-moz-border-radius: 0px;
 	-webkit-border-radius: 0px;
+  z-index: 999;
 }
 .Editor #Content > .alert-container .alert .container {
 	width: auto;

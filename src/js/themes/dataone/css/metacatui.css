@@ -283,6 +283,12 @@ input[type=search], textarea {
 .port-editor-section svg .theme-accent-fill {
   fill: #91285f
 }
+/* Make the editor success banner match the theme better */
+.Editor #Content > .alert-container .alert.alert-success{
+  background-color: var(--c-success-subtle-on-default);
+  color: white;
+  text-shadow: none;
+}
 
 ,
 /* FORM/INPUT CUSTOMIZATIONS
