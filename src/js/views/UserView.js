@@ -2,7 +2,6 @@
 define(['jquery', 'underscore', 'backbone', 'clipboard',
         'collections/UserGroup',
     		'models/UserModel',
-    		'models/portals/PortalModel',
         "models/Stats",
         'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
         'views/GroupListView',
