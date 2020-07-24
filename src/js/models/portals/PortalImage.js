@@ -67,7 +67,7 @@ define(["jquery",
               var urlBase = "";
 
               //If this MetacatUI is using the CN, find the URL to use for the image
-              if( MetacatUI.appModel.get("isCN") ){
+              if( MetacatUI.appModel.get("activeAlternateRepositoryId") ){
 
                 var imageMN;
 

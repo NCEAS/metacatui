@@ -138,6 +138,16 @@ define(["jquery",
             //The fields to return
             this.searchResults.fields = this.searchFields;
 
+            //Set the query service URL
+            try{
+              if( MetacatUI.appModel.get("activeAlternateRepositoryId") ){
+                this.searchResults.queryServiceUrl = MetacatUI.appModel.getActiveAltRepo().queryServiceUrl;
+              }
+            }
+            catch(e){
+              console.error("Could not get active alt repo. ", e);
+            }
+
             //Set the query on the SearchResults
             this.searchResults.setQuery( this.filters.getQuery() );
 
