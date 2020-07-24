@@ -995,8 +995,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding-right: 25px;
     }
 
-    #SignIn {
-      float: right;
+    .navbar .login-container .login.btn{
+      border: 0px;
+      background-color: transparent;
+      font-size: 1em;
+      box-shadow: none;
+      text-shadow: none;
+      font-size: 18px;
+      font-weight: 400;
+      text-transform: uppercase;
+      color: #555;
     }
 
     .dropdown-header {
