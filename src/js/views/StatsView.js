@@ -57,7 +57,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
 			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
 			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
-			
+
 
 			this.model = options.model || null;
 		},
@@ -147,9 +147,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
         //Render the total number of datasets in this collection
 				this.listenTo(this.model, 'change:metadataCount', this.displayTotalCount);
-        
+
         // Display replicas only for member nodes
-				if (this.userType === "repository" && !this.userIsCN) 
+				if (this.userType === "repository" && !this.userIsCN)
 					this.listenTo(this.model, "change:totalReplicas", this.displayTotalReplicas);
 
         //Draw charts that show the breakdown of format IDs for metadata and data files
@@ -238,7 +238,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(nodeId));
 				this.model.getTotalReplicas(identifier);
 			}
-			
+
 		}
 
 		return this;
@@ -632,7 +632,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			if( !this.model.get("metadataCount") && !this.model.get("dataCount") )
 				className += " no-activity";
-							
+
 			var countEl = $(document.createElement("p"))
 							.addClass(className)
 							.text(MetacatUI.appView.commaSeparateNumber(this.model.get("metadataCount")));
@@ -661,7 +661,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			else{
 				count = this.bytesToSize( this.model.get("totalSize") );
 			}
-							
+
 			var countEl = $(document.createElement("p"))
 							.addClass(className)
 							.text(count);
@@ -761,7 +761,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
       //Render the LineChart and insert it into the container element
       this.$('.data-updates-chart').html(dataLineChart.render().el);
 
-			// redraw the charts to avoid overlap at different widths 
+			// redraw the charts to avoid overlap at different widths
 			$(window).on("resize", function(){
 
 				if(!view.hideUpdatesChart)
@@ -890,19 +890,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			// for each of the usage metrics section
 			metricsEls.forEach(function(iconEl) {
-				var errorMessage = "";
+				var errorMessage = "We weren't able to get the ";
 
 				if(iconEl === ".citations-metrics-list") {
-					errorMessage = "Something went wrong while getting the citation metrics.";
+					errorMessage += "citation metrics. ";
 				}
 				else if(iconEl === '#user-downloads-chart') {
-					errorMessage = "Something went wrong while getting the download metrics.";
+					errorMessage += "download metrics. ";
 				}
 				else if(iconEl === "#user-views-chart") {
-					errorMessage = "Something went wrong while getting the view metrics.";
+					errorMessage += "view metrics. ";
 				}
 				else {
-					errorMessage = "Something went wrong while getting the usage metrics.";
+					errorMessage += "usage metrics. ";
 				}
 
 				// remove the loading icon
@@ -911,7 +911,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				// display the error message
 				MetacatUI.appView.showAlert(
 					errorMessage,
-					"alert-error",
+					"alert-warning",
 					$(iconEl)
 				);
 			});
@@ -937,7 +937,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var titleEl = $(document.createElement("p"))
 								.addClass("chart-title")
 								.text("replicas");
-	
+
 				// display the totals
 				this.$('#total-replicas').html(countEl);
 				this.$('#total-replicas').append(titleEl);
@@ -949,7 +949,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 
 
-			
+
 		}
 
 	});

@@ -279,6 +279,7 @@ define(['jquery',
     * @param {string|Element} [container]
     * @param {boolean} [delay]
     * @param {object} [options]
+    * @param {boolean} [options.includeEmail] If true, the alert will include a link to the {@link AppConfig#emailContact}
     * @param {string} [options.emailBody]
     * @param {boolean} [options.remove]
     */
