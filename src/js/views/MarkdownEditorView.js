@@ -23,39 +23,39 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
     * @readonly
     */
     type: "MarkdownEditor",
-    
+
     /**
     * The HTML classes to use for this view's element
     * @type {string}
     */
     className: "markdown-editor",
-    
+
     /**
     * References to templates for this view. HTML files are converted to
     * Underscore.js templates
     * @type {Underscore.Template}
     */
     template: _.template(Template),
-    
+
     /**
     * Markdown to insert into the textarea when the view is first rendered
     * @type {string}
     */
     markdown: "",
-    
+
     /**
     * The placeholder text to display in the textarea when it's empty
     * @type {string}
     */
     markdownPlaceholder: "",
-    
+
     /**
     * The placeholder text to display in the preview area when there's no
     * markdown
     * @type {string}
     */
     previewPlaceholder: "",
-    
+
     /**
     * Indicates whether or not to render a table of contents for the markdown
     * preview. If set to true, a table of contents will be shown in the preview
@@ -63,14 +63,14 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
     * @type {boolean}
     */
     showTOC: false,
-    
+
     /**
     * A jQuery selector for the HTML textarea element that will contain the
     * markdown text.
     * @type {string}
     */
     textarea: ".markdown-textarea",
-    
+
     /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
@@ -79,7 +79,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
       "click #markdown-preview-link"   :    "previewMarkdown",
       "focusout .markdown-textarea"    :    "updateMarkdown"
     },
-    
+
     /**
     * Initialize is executed when a new markdownEditor is created.
     * @param {Object} options - A literal object with options to pass to the view
@@ -92,18 +92,18 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           this.showTOC             =  options.showTOC             || false;
       }
     },
-    
-    /**    
+
+    /**
      * render - Renders the markdownEditor - add UI for adding and editing
      * markdown to a textarea
-     */     
+     */
     render: function(){
-      
+
       try {
-        
+
         // Save the view
         var view = this;
-        
+
         // Insert the template into the view
         this.$el.html(this.template({
           markdown: this.markdown || "",
@@ -117,7 +117,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           console.log("error: the markdown editor view was not rendered because no textarea element was found.");
           return
         }
-        
+
         // Set woofmark options. See https://github.com/bevacqua/woofmark
         var woofmarkOptions =
           {
@@ -132,7 +132,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
                 }
               }
           };
-        
+
         // Set options for all the buttons that will be shown in the toolbar.
         // Buttons will be shown in the order they are listed.
         // Defaults from Woofmark will be used unless they are replaced here,
@@ -208,7 +208,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           },
           quote: {
             icon: "quote-left",
-          }, 
+          },
           code: {
             icon: "code",
             insertDividerAfter: true
@@ -230,9 +230,9 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
             insertDividerAfter: true
           }
         }
-        
+
         var buttonKeys = Object.keys(buttonOptions);
-      
+
         // PRE-RENDER WOOFMARK
         // Set titles on buttons before the Woofmark text editor is rendered.
         // This way we can use Woofmark's build in functionality to convert "Ctrl"
@@ -249,14 +249,14 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           // they are rendered, use the key as the button text for now.
           Woofmark.strings.buttons[key] = key;
         }, this);
-        
+
         // RENDER WOOFMARK
         // Initialize the woofmark markdown editor
         this.markdownEditor = Woofmark(textarea, woofmarkOptions);
-        
+
         // POST-RENDER WOOFMARK
         // After the markdown editor is initialized..
-        
+
         // Add custom functions
         _.each(buttonKeys, function(key, i) {
           var options = buttonOptions[key];
@@ -271,7 +271,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
             })
           }
         });
-        
+
         // Modify the button order & appearance
         var buttonContainer = $(view.markdownEditor.textarea).parent().find(".wk-commands");
         var buttons = buttonContainer.find(".wk-command");
@@ -304,24 +304,24 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
             buttonEl.remove();
           }
         });
-      
+
       } catch (e) {
         console.log(e);
         console.log("Failed to render the markdown editor UI, error message: " + e );
       }
-      
+
     },
 
-    /**    
-     * addHeader - description    
-     *      
+    /**
+     * addHeader - description
+     *
      * @param  {event}  e      is the original event object
      * @param  {string} mode   can be markdown, html, or wysiwyg
-     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks 
+     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
      * @param  {string} id     the ID of the function, set as they key in buttonOptions in the render function
-     */     
+     */
     addHeader: function(e, mode, chunks, id){
-      
+
       // Get the header level from the ID
       var levelToCreate = parseInt(id.replace( /^\D+/g, ''));
 
@@ -336,20 +336,20 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         chunks.skip({ before: 1, after: 1 });
         return;
       }
-      
+
       chunks.findTags(/#+[ ]*/, /[ ]*#+/);
 
       if (/#+/.test(chunks.startTag)) {
         level = RegExp.lastMatch.length;
       }
-      
+
       chunks.startTag = chunks.endTag = '';
       chunks.findTags(null, /\s?(-+|=+)/);
-      
+
       if (/=+/.test(chunks.endTag)) {
         level = 1;
       }
-      
+
       if (/-+/.test(chunks.endTag)) {
         level = 2;
       }
@@ -360,18 +360,18 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
       if (levelToCreate > 0) {
         chunks.startTag = new Array(levelToCreate + 1).join('#') + ' ';
       }
-      
+
     },
-    
-    /**    
-     * addDivider - Add or remove a divider   
-     *      
+
+    /**
+     * addDivider - Add or remove a divider
+     *
      * @param  {event} e      is the original event object
      * @param  {string} mode   can be markdown, html, or wysiwyg
-     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks    
-     */     
+     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
+     */
     addDivider: function(e, mode, chunks){
-      
+
       // If the selection includes a divider, remove it
       var markdown = chunks.before + chunks.selection + chunks.after;
       var startSel = chunks.before.length;
@@ -401,31 +401,31 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         chunks.before = chunks.before + dividerToAdd
       }
     },
-    
-    /**    
+
+    /**
      * addTable - Creates the UI for editing and adding tables to the textarea.
      * Detects whether the selection contained any part of a markdown table,
      * then opens a woofmark dialog box and inserts a table editor view. If a
      * table was selected, the table information is imported into the table
      * editor where the user can edit it. If no table was selected, then it
      * creates an empty table where the user can add data.
-     *      
+     *
      * @param  {event} e      is the original event object
      * @param  {string} mode   can be markdown, html, or wysiwyg
-     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks   
-     */     
+     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
+     */
     addTable: function(e, mode, chunks){
 
       // Use a modified version of the link dialog
       this.markdownEditor.showLinkDialog();
-      
+
       // Select the image upload dialog elements so that we can customize it
       var dialog = $(".wk-prompt"),
           dialogContent = dialog.find(".wk-prompt-input-container"),
           dialogTitle = dialog.find(".wk-prompt-title"),
           dialogDescription = dialog.find(".wk-prompt-description"),
           dialogOkBtn = dialog.find(".wk-prompt-ok");
-      
+
       // Detect whether the selection includes a markdown table.
       // If it does, ensure the complete table is selected, and save the
       // markdown table string segment to be parsed.
@@ -449,11 +449,11 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           break;
         }
       }
-      
+
       // Clone the chunks object at this point in case the textarea loses focus
       // and the selection changes before the "ok" buttons is pressed
       const chunksClone = JSON.parse(JSON.stringify(chunks));
-      
+
       // Add a table editor view.
       // Pass the parsesd markdown table, if there is one
       var tableEditor = new TableEditor({
@@ -465,7 +465,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
       dialogContent.html(tableEditor.el);
       dialogDescription.remove();
       dialogTitle.text("Insert Table");
-      
+
       // Listen for when the OK button is clicked. Attach listener to the dialog
       // so that it's destroyed when the dialog is destroyed. It won't be called
       // if the user presses cancel.
@@ -479,10 +479,10 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           chunks.selection = tableMarkdown;
         });
       });
-      
-      
+
+
     },
-    
+
     /**
      * addMdImage - The function that gets called when a user clicks the custom
      * add image button added to the markdown editor. It uses the UI created by
@@ -492,13 +492,13 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
      * called such that "this" is the markdownEditor view.
      */
     addMdImage: function() {
-      
+
       try {
         var view = this;
-        
+
         // Show woofmark's default image upload dialog, inserted at the end of body
         view.markdownEditor.showImageDialog();
-        
+
         // Select the image upload dialog elements so that we can customize it
         var imageDialog = $(".wk-prompt"),
             imageDialogInput = imageDialog.find(".wk-prompt-input"),
@@ -507,7 +507,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
             // Save the inner HTML of the button for when we replace it
             // temporarily during image upload
             imageDialogOkBtnTxt = imageDialogOkBtn.html();
-          
+
         // Create an ImageUploaderView and insert into this view.
         mdImageUploader = new ImageUploader({
           uploadInstructions: "Drag & drop an image here or click to upload",
@@ -518,7 +518,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           // maxHeight: 10000,
           // maxWidth: 10000;
         });
-        
+
         // Show when image is uploading; temporarily disable the OK button
         view.stopListening(mdImageUploader, "addedfile");
         view.listenTo(mdImageUploader, "addedfile", function(){
@@ -530,31 +530,64 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
             "Uploading..."
           );
         });
-        
+
         // Update the image input URL when the image is successfully uploaded
         view.stopListening(mdImageUploader, "successSaving");
         view.listenTo(mdImageUploader, "successSaving", function(dataONEObject){
+
+          //Execute the DataONEObject function that performs various functions after
+          // a successful save
+          dataONEObject.onSuccessfulSave();
+
           // Re-enable the button
           imageDialogOkBtn.prop('disabled', false);
           imageDialogOkBtn.html(imageDialogOkBtnTxt);
           imageDialogOkBtn.css({"opacity":"1", "cursor":"pointer"});
+
           // Get the uploaded image's url.
-          var url = dataONEObject.url();
+          //var url = dataONEObject.url();
+          var url = "";
+
+          if( MetacatUI.appModel.get("isCN") ){
+            var sourceRepo;
+
+            //Use the object service URL from the origin MN/datasource
+            if( dataONEObject.get("datasource") ){
+              sourceRepo = MetacatUI.nodeModel.getMember(dataONEObject.get("datasource"));
+            }
+              //Use the object service URL from the alt repo
+            if( !sourceRepo ){
+              sourceRepo = MetacatUI.appModel.getActiveAltRepo();
+            }
+
+            if( sourceRepo ){
+              url = sourceRepo.objectServiceUrl;
+            }
+          }
+
+          //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+          if( !url ){
+            url = MetacatUI.appModel.get("objectServiceUrl") || MetacatUI.appModel.get("resolveServiceUrl");
+          }
+
+          url = url + dataONEObject.get("id");
+
           // Create title out of file name without extension.
           var title = dataONEObject.get("fileName");
           if(title && title.lastIndexOf(".") > 0) {
             title = title.substring(0, title.lastIndexOf("."));
           }
+
           // Add the url + title to the input
           imageDialogInput.val(url + ' "' + title + '"' );
         });
-        
+
         // Clear the input when the image is removed
         view.stopListening(mdImageUploader, "removedfile");
         view.listenTo(mdImageUploader, "removedfile", function(){
           imageDialogInput.val("");
         });
-        
+
         // Render the image uploader and insert it just after the upload
         // instructions in the image upload dialog box.
         mdImageUploader.render();
@@ -564,20 +597,20 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
       } catch (e) {
         console.log("Failed to load the UI for adding markdown images. Error: " + e);
       }
-      
+
     },
-    
-    /**    
+
+    /**
      * strikethrough - Add or remove the markdown syntax for strike through to
      * the textarea. If there is text selected, then strike through formatting
      * will be added or removed from that selection. If no selection,
      * some placeholder text will be added surrounded by the strikethrough
      * delimiters.
-     *      
+     *
      * @param  {event} e      is the original event object
      * @param  {string} mode   can be markdown, html, or wysiwyg
-     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks  
-     */     
+     * @param  {object} chunks is a chunks object, describing the current state of the editor, see https://github.com/bevacqua/woofmark#chunks
+     */
     strikethrough: function(e, mode, chunks){
       try {
         var markup = "~~";
@@ -593,21 +626,21 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         var rnewlines = /\n{2,}/g;
         // the text to add when no text is selected
         var placeholder = "strikethrough text";
-      
+
         // Remove leading & trailing white space from selection
         // (but do not remove from the user's text)
         chunks.trim();
         // Replace 2+ consecutive line breaks with 1 linebreak, otherwise
         // strikethrough syntax is incorrect and won't render HTML as expected
         chunks.selection = chunks.selection.replace(rnewlines, '\n');
-        
+
         // See if the text before or after already contains ~~ at the start/end
         var leadTildes = rtrailing.exec(chunks.before);
         var trailTildes = rleading.exec(chunks.after);
         // See if the selected text already contains ~~ at start or end
         var selectLeadTildes = rleading.exec(chunks.selection);
         var selectTrailTildes = rtrailing.exec(chunks.selection);
-        
+
         // If the selection is already surrounded by ~~, remove them
         if(leadTildes && trailTildes){
           chunks.before = chunks.before.replace(rtrailing, "");
@@ -629,11 +662,11 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         console.log("Failed to add or remove strikethrough formatting from markdown. Error: " + e );
       }
     },
-    
-    /**    
+
+    /**
      * updateMarkdown - Update the markdown attribute in this view using the
      * value of the markdown textarea
-     */     
+     */
     updateMarkdown: function(){
       try {
         this.markdown = this.$(this.textarea).val();
@@ -641,25 +674,25 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         console.log("Failed to the view's markdown attribute, error: " + e);
       }
     },
-    
+
     /**
      * previewMarkdown - render the markdown preview.
      */
     previewMarkdown: function(){
-  
+
       try{
-        
+
         var markdownPreview = new MarkdownView({
             markdown: this.markdown || this.previewPlaceholder,
             showTOC: this.showTOC || false
         });
-        
+
         // Render the preview
         markdownPreview.render();
         // Add the rendered markdown to the preview tab
         this.$("#markdown-preview-"+this.cid).html(markdownPreview.el);
       }
-      
+
       catch(e){
         console.log("Failed to preview markdown content. Error message: " + e);
       }
@@ -669,5 +702,5 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
   });
 
   return MarkdownEditorView;
-  
+
 });

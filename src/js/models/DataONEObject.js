@@ -47,6 +47,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     mediaType: null,
                     fileName: null,
                     // Non-system metadata attributes:
+                    isNew: null,
                     datasource: null,
                     insert_count_i: null,
                     read_count_i: null,
@@ -137,6 +138,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             this.on("sync", function(){
               this.set("synced", true);
             });
+
+            //Find Member Node object that might be the authoritative MN
+            //This is helpful when MetacatUI may be displaying content from multiple MNs
+            this.setPossibleAuthMNs();
 
           },
 
@@ -628,31 +633,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                     return xhr;
                   },
-                  success: function(model, response, xhr){
-
-                      model.set("numSaveAttempts", 0);
-                      model.set("uploadStatus", "c");
-                      model.trigger("successSaving", model);
-
-                      // Get the newest sysmeta set by the MN
-                      model.fetch({
-                        merge: true,
-                        systemMetadataOnly: true
-                      });
-
-                      // Reset the content changes status
-                      model.set("hasContentChanges", false);
-
-                      //Reset the model isNew attribute
-                      model.set("isNew", false);
-
-                      // Reset oldPid so we can replace again
-                      model.set("oldPid", null);
-
-                      //Set the last-calculated checksum as the original checksum
-                      model.set("originalChecksum", model.get("checksum"));
-                      model.set("checksum", model.defaults().checksum);
-                  },
+                  success: this.onSuccessfulSave,
                   error: function(model, response, xhr){
 
                     //Reset the identifier changes
@@ -708,6 +689,44 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
               //Send the Save request
               Backbone.Model.prototype.save.call(this, null, requestSettings);
+        },
+
+        /**
+        * This function is executed when the XHR that saves this DataONEObject has
+        * successfully completed. It can be called directly if a DataONEObject is saved
+        * without directly using the DataONEObject.save() function.
+        * @param {DataONEObject} [model] A reference to this DataONEObject model
+        * @param {XMLHttpRequest.response} [response] The XHR response object
+        * @param {XMLHttpRequest} [xhr] The XHR that was just completed successfully
+        */
+        onSuccessfulSave: function(model, response, xhr){
+
+          if(typeof model == "undefined"){
+            var model = this;
+          }
+
+          model.set("numSaveAttempts", 0);
+          model.set("uploadStatus", "c");
+          model.trigger("successSaving", model);
+
+          // Get the newest sysmeta set by the MN
+          model.fetch({
+            merge: true,
+            systemMetadataOnly: true
+          });
+
+          // Reset the content changes status
+          model.set("hasContentChanges", false);
+
+          //Reset the model isNew attribute
+          model.set("isNew", false);
+
+          // Reset oldPid so we can replace again
+          model.set("oldPid", null);
+
+          //Set the last-calculated checksum as the original checksum
+          model.set("originalChecksum", model.get("checksum"));
+          model.set("checksum", model.defaults().checksum);
         },
 
           /**
@@ -1376,6 +1395,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           * @return {boolean}
           */
           isNew: function(){
+
+            //If the model is explicitly marked as not new, return false
+            if( this.get("isNew") === false ){
+              return false;
+            }
+
             //Check if there is an upload date that was retrieved from the server
             return ( this.get("dateUploaded") === this.defaults().dateUploaded &&
                      this.get("synced") );
@@ -2046,7 +2071,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
         /**
         * Creates an array of objects that represent Member Nodes that could possibly be this
-        * object's authoritative MN.
+        * object's authoritative MN. This function updates the `possibleAuthMNs` attribute on this model.
         */
         setPossibleAuthMNs: function(){
 

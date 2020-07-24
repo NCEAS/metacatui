@@ -19,7 +19,8 @@ define(["jquery",
             label: "",
             associatedURL: "",
             objectDOM: null,
-            nodeName: "image"
+            nodeName: "image",
+            portalModel: null
           });
         },
 
@@ -39,8 +40,17 @@ define(["jquery",
             }
           }
 
-          var $objectDOM = $(objectDOM),
+          var portalModel = this.get("portalModel"),
+              $objectDOM = $(objectDOM),
               modelJSON = {};
+
+          if( portalModel ){
+            modelJSON.datasource = portalModel.get("datasource");
+            modelJSON.submitter  = portalModel.get("submitter");
+            modelJSON.rightsHolder = portalModel.get("rightsHolder");
+            modelJSON.originMemberNode = portalModel.get("originMemberNode");
+            modelJSON.authoritativeMemberNode = portalModel.get("authoritativeMemberNode");
+          }
 
           modelJSON.nodeName = objectDOM.nodeName;
 
@@ -52,12 +62,33 @@ define(["jquery",
           modelJSON.identifier = $objectDOM.children("identifier").text();
           if( modelJSON.identifier ){
             if( modelJSON.identifier.substring(0, 4) !== "http" ){
-              
-              // use the resolve service if there is no object service url
-              // (e.g. in DataONE theme)
-              var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
-                MetacatUI.appModel.get("resolveServiceUrl");
-                
+
+              //Use the MN base URL
+              var urlBase = "";
+
+              //If this MetacatUI is using the CN, find the URL to use for the image
+              if( MetacatUI.appModel.get("isCN") ){
+
+                var imageMN;
+
+                //If there is an origin member node in the sys meta, use that object service URL
+                if( modelJSON.datasource ){
+                  imageMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: modelJSON.datasource  });
+                }
+
+                //Otherwise, use the CN resolve service
+                if( !imageMN ){
+                  urlBase = MetacatUI.appModel.get("resolveServiceUrl");
+                }
+                else{
+                  urlBase = imageMN.objectServiceUrl;
+                }
+              }
+              else{
+                //For MetacatUI's using MNs, use the object service URL from the AppModel
+                urlBase = MetacatUI.appModel.get("objectServiceUrl");
+              }
+
               modelJSON.imageURL = urlBase + modelJSON.identifier;
             }
             else{
@@ -193,7 +224,12 @@ define(["jquery",
         * @return {boolean}
         */
         isNew: function(){
-          return true;
+          if( this.get("identifier") ){
+            return false;
+          }
+          else{
+            return true;
+          }
         }
 
       });

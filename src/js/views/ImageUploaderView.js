@@ -33,8 +33,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
     className: "image-uploader",
 
     /**
-    * The DataONEObject that is being edited
-    * @type {DataONEObject}
+    * The DataONEObject or PortalImage that is being edited
+    * @type {DataONEObject|PortalImage}
     */
     model: undefined,
 
@@ -153,6 +153,10 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
           this.maxHeight          = options.maxHeight;
           this.maxWidth           = options.maxWidth;
 
+          if( !this.model ){
+            this.model = new DataONEObject({ synced: true });
+          }
+
           if (!this.url && this.model) {
             this.url = this.model.url();
           }
@@ -207,11 +211,13 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         // Insert the main template for this view
         view.$el.html(dropzoneTemplate);
 
+        console.log("isNew: ", view.model.isNew(), view.model.get("imageURL") || view.model.url());
+
         // Add upload & drag and drop functionality to the dropzone div.
         // For config details, see: https://www.dropzonejs.com/#configuration
         var $dropZone = view.$(".dropzone").dropzone({
 
-          url: view.model.url(),
+          url: view.model.get("imageURL") || view.model.url(),
           acceptedFiles: "image/*",
           addRemoveLinks: false,
           maxFiles: 1,
@@ -256,7 +262,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
             } catch (e) {
               console.log("Error generating thumbnail image, error message: " + e);
             }
-            
+
           },
 
           // Dropzone will check filetype = options.acceptedFiles. Add functions
@@ -347,7 +353,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
               console.log("Issue initializing dropzone, error message: " + e);
             }
           }
-          
+
         });
 
         // Save the dropzone element for other functions to access later
@@ -378,28 +384,33 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
     prepareD1Model: function(object, filename, filetype, callback){
 
       try{
-        // Reference to the view
-        var view = this;
 
-        this.model = new DataONEObject({
+        var modelAttributes = {
           synced: true,
           type: "image",
           fileName: filename,
           mediaType: filetype,
           size: object.size,
           uploadFile: object
-        });
+        }
+
+        if( !this.model ){
+          this.model = new DataONEObject(modelAttributes);
+        }
+        else{
+          this.model.set(modelAttributes)
+        }
 
         this.model.updateID();
         this.model.set("obsoletes", null);
         this.model.get("accessPolicy").makePublic();
 
         // Start checksum, and call the callback function when it's complete
-        view.model.stopListening(view.model, "checksumCalculated");
-        view.model.listenToOnce(view.model, "checksumCalculated", function(){
+        this.model.stopListening(this.model, "checksumCalculated");
+        this.model.listenToOnce(this.model, "checksumCalculated", function(){
             callback(object);
         });
-        view.model.calculateChecksum();
+        this.model.calculateChecksum();
 
       } catch (exception) {
         console.log("there was a problem calculating the checksum, exception: " + exception);
@@ -515,11 +526,11 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         console.log("image could not be displayed, error message: " + error);
         // When the preview image fails to render, show some explanatory text
         this.showError($(this.imageDropzone.element));
-        
+
       }
 
     },
-    
+
     /**
      * showError - Indicates to the user that the image uploader may not work
      * due to browser issues.

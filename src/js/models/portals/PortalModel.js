@@ -177,9 +177,6 @@ define(["jquery",
                 this.once("change:seriesId", this.fetch);
                 this.once("latestVersionFound", this.fetch);
 
-                //Set the possible authoritative MNs for this Portal
-                this.setPossibleAuthMNs();
-
                 //Get the series ID of this object
                 this.getSeriesIdByLabel();
 
@@ -381,6 +378,7 @@ define(["jquery",
 
                 //Start the empty JSON object
                 var modelJSON = {},
+                    modelRef = this,
                     portalNode;
 
                 // Iterate over each root XML node to find the portal node
@@ -405,7 +403,10 @@ define(["jquery",
                 // Parse the portal logo
                 var portLogo = $(portalNode).children("logo")[0];
                 if (portLogo) {
-                  var portImageModel = new PortalImage({ objectDOM: portLogo });
+                  var portImageModel = new PortalImage({
+                    objectDOM: portLogo,
+                    portalModel: this
+                  });
                   portImageModel.set(portImageModel.parse());
                   modelJSON.logo = portImageModel
                 };
@@ -437,7 +438,8 @@ define(["jquery",
                   // Create a new PortalSectionModel
                   modelJSON.sections.push( new PortalSectionModel({
                     objectDOM: section,
-                    literatureCited: modelJSON.literatureCited
+                    literatureCited: modelJSON.literatureCited,
+                    portalModel: modelRef
                   }) );
                   //Parse the PortalSectionModel
                   modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
@@ -1713,7 +1715,9 @@ define(["jquery",
                     case "freeform":
                       // Add a new, blank markdown section
                       var sectionModels = _.clone(this.get("sections")),
-                          newSection = new PortalSectionModel();
+                          newSection = new PortalSectionModel({
+                            portalModel: this
+                          });
 
                       // Set default temp values on the new markdown section.
                       newSection.set({

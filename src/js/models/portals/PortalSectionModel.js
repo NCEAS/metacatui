@@ -20,7 +20,8 @@ define(["jquery",
             introduction: "",
             content: null,
             literatureCited: null,
-            objectDOM: null
+            objectDOM: null,
+            portalModel: null
           }
         },
 
@@ -47,7 +48,10 @@ define(["jquery",
           //Parse the image URL or identifier
           var image = $objectDOM.children("image");
           if( image.length ){
-            var portImageModel = new PortalImage({ objectDOM: image[0] });
+            var portImageModel = new PortalImage({
+              objectDOM: image[0],
+              portalModel: this.get("portalModel")
+            });
             portImageModel.set(portImageModel.parse());
             modelJSON.image = portImageModel;
           }
