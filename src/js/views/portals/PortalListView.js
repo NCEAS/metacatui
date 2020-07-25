@@ -33,7 +33,7 @@ define(["jquery",
         * @type {string}
         * @default "id,seriesId,title,formatId,label,logo"
         */
-        searchFields: "id,seriesId,title,formatId,label,logo",
+        searchFields: "id,seriesId,title,formatId,label,logo,datasource",
 
         /**
         * The number of portals to retrieve and render in this view
@@ -100,8 +100,6 @@ define(["jquery",
             //Get the search results and render them
             this.getSearchResults();
 
-            //Add a "Create" button to create a new portal
-            this.renderCreateButton();
           }
           catch(e){
             console.error(e);
@@ -196,6 +194,13 @@ define(["jquery",
 
             }, this);
 
+            //TODO: Unwrap the call to renderCreateButton() from this if condition,
+            // because the ListView will only ever be used when Usages/Bookkeeper is enabled
+            if( !MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+              //Add a "Create" button to create a new portal
+              this.renderCreateButton();
+            }
+
           }
           catch(e){
             console.error(e);
@@ -227,10 +232,22 @@ define(["jquery",
               if( searchResult.get("logo") ){
                 if( !searchResult.get("logo").startsWith("http") ){
 
-                  // use the resolve service if there is no object service url
-                  // (e.g. in DataONE theme)
-                  var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
-                    MetacatUI.appModel.get("resolveServiceUrl");
+                  var urlBase = "";
+
+                  //If there are alt repos configured, use the datasource obbject service URL
+                  if( MetacatUI.appModel.get("alternateRepositories").length && searchResult.get("datasource") ){
+                    var sourceMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: searchResult.get("datasource") });
+                    if( sourceMN ){
+                      urlBase = sourceMN.objectServiceUrl;
+                    }
+                  }
+
+                  if( !urlBase ){
+                    // use the resolve service if there is no object service url
+                    // (e.g. in DataONE theme)
+                    urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
+                              MetacatUI.appModel.get("resolveServiceUrl");
+                  }
 
                   searchResult.set("logo", urlBase + searchResult.get("logo") );
 
@@ -288,35 +305,89 @@ define(["jquery",
               MetacatUI.appUserModel.isAuthorizedCreatePortal();
             }
             else{
-              //If the user isn't authorized and the portal quota is not zero, then don't show the button
-              if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false &&
-                  MetacatUI.appUserModel.get("portalQuota") !== 0 ){
+
+              //Create a New portal buttton
+              var createButton = $(document.createElement("a"))
+                                 .addClass("btn btn-primary")
+                                 .append( $(document.createElement("i")).addClass("icon icon-plus icon-on-left"),
+                                   "New " + MetacatUI.appModel.get('portalTermSingular'));
+
+              var isNotAuthorizedNoBookkeeper   = !MetacatUI.appModel.get("enableBookkeeperServices") &&
+                                                   MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false,
+                  reachedLimitWithBookkeeper    = MetacatUI.appModel.get("enableBookkeeperServices") &&
+                                                  MetacatUI.appUserModel.get("isAuthorizedCreatePortal") === false,
+                  reachedLimitWithoutBookkeeper = !MetacatUI.appModel.get("enableBookkeeperServices") &&
+                                                   MetacatUI.appModel.get("portalLimit") <= this.searchResults.length;
+
+              //If creating portals is disabled in the entire app, or is only limited to certain groups,
+              // then don't show the Create button.
+              if( isNotAuthorizedNoBookkeeper ){
                 return;
               }
-              else{
-                //Create a New portal buttton
-                var createButton = $(document.createElement("a"))
-                                   .addClass("btn btn-primary")
-                                   .attr("href", MetacatUI.root + "/edit/" + MetacatUI.appModel.get("portalTermPlural"))
-                                   .append( $(document.createElement("i")).addClass("icon icon-plus icon-on-left"),
-                                     "New " + MetacatUI.appModel.get('portalTermSingular'));
+              //If creating portals is enabled, but this person is unauthorized because of Bookkeeper info,
+              // then show the Create button as disabled.
+              else if( reachedLimitWithBookkeeper || reachedLimitWithoutBookkeeper ){
 
-                //If the user doesn't have any quota left, disable the button
-                if( MetacatUI.appUserModel.get("portalQuota") === 0 ){
-                  createButton.attr("disabled", "disabled")
-                             .tooltip({
-                               title: "You have reached your portal quota.",
-                               delay: 500,
-                               placement: "top",
-                               trigger: "hover"
-                             });
-                }
+                 //Disable the button
+                 createButton.addClass("disabled");
+
+                 //Add the create button to the view
+                 this.$(this.createBtnContainer).html(createButton);
+
+                 var message = "You've already reached the " + MetacatUI.appModel.get("portalTermSingular") +
+                               " limit for your ";
+
+                 if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+                   message += MetacatUI.appModel.get("dataonePlusName");
+
+                   if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+                     message += " free preview. ";
+                   }
+                   else{
+                     message += " subscription. ";
+                   }
+
+                   var portalQuotas = MetacatUI.appUserModel.getQuotas("portal");
+                   if( portalQuotas.length ){
+                     message += "(" + portalQuotas[0].get("softLimit") + " " +
+                                ((portalQuotas[0].get("softLimit") > 1)? MetacatUI.appModel.get("portalTermPlural") : MetacatUI.appModel.get("portalTermSingular")) + ")";
+                   }
+
+                   message += " Contact us to upgrade your subscription.";
+
+                 }
+                 else{
+                   message += " account. ";
+
+                   var portalLimit = MetacatUI.appModel.get("portalLimit");
+                   if( portalLimit > 0 ){
+                     message += "(" + portalLimit + " " +
+                                ((portalLimit > 1)? MetacatUI.appModel.get("portalTermPlural") : MetacatUI.appModel.get("portalTermSingular")) +
+                                ")"
+                   }
+                 }
+
+                 //Add the tooltip to the button
+                 createButton.tooltip({
+                   placement: "top",
+                   trigger: "hover click focus",
+                   delay: {
+                     show: 500
+                   },
+                   title: message
+                 });
+              }
+              else{
+
+                //Add the link URL to the button
+                createButton.attr("href", MetacatUI.root + "/edit/" + MetacatUI.appModel.get("portalTermPlural"))
 
                 //Add the create button to the view
                 this.$(this.createBtnContainer).html(createButton);
-                //Reset the isAuthorizedCreatePortal attribute
-                MetacatUI.appUserModel.set("isAuthorizedCreatePortal", null);
               }
+
+              //Reset the isAuthorizedCreatePortal attribute
+              MetacatUI.appUserModel.set("isAuthorizedCreatePortal", null);
             }
           }
           catch(e){

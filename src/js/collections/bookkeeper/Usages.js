@@ -74,7 +74,7 @@ define(["jquery", "underscore", "backbone", "models/bookkeeper/Usage", "models/b
     * stores them on this collection.
     * @param {Object} [options]
     * @property {string} options.quotaType  The Usage quotaType to fetch
-    * @property {string} options.subject  The user or group subject associated with these Usages
+    * @property {string} options.subscriber  The user or group subject associated with these Usages
     */
     fetch: function(options){
 

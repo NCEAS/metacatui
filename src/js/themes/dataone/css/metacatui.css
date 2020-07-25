@@ -407,6 +407,12 @@ select {
   color: #666;
   border-color: #AAA;
 }
+.btn.disabled,
+.btn.disabled:hover{
+  cursor: default;
+  background-color: #aaa;
+  color: #fff;
+}
 
 .filter.btn:hover,
 .btn.subtle:hover {

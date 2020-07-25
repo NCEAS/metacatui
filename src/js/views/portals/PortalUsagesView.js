@@ -38,6 +38,32 @@ define(["jquery",
             this.usagesCollection = new Usages();
           }
 
+          //When in DataONE Plus Preview mode, search for portals in Solr first,
+          // then create Usage models for each portal in Solr.
+          if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+            this.listenToOnce(this.searchResults, "sync", function(){
+
+              //Create a Usage for each portal found in Solr
+              this.searchResults.each(function(searchResult){
+                this.usagesCollection.add({
+                  instanceId: searchResult.get("id"),
+                  status: "active",
+                  quantity: 1,
+                  nodeId: searchResult.get("datasource")
+                });
+              }, this);
+
+              //Merge the Usages and Search Results
+              this.mergeSearchResults();
+            });
+
+            //Call the PortalListView render function
+            PortalListView.prototype.render.call(this);
+
+            //Don't do anything else in this render function
+            return;
+          }
+
           //Insert the template
           this.$el.html(this.template());
 
@@ -55,11 +81,6 @@ define(["jquery",
             quotaType: "portal",
             subject: MetacatUI.appUserModel.get("username")
           });
-
-          if(MetacatUI.appModel.get("enableCreatePortals")){
-            //Add a "Create" button to create a new portal
-            this.renderCreateButton();
-          }
 
         }
         catch(e){
@@ -127,6 +148,17 @@ define(["jquery",
       mergeSearchResults: function(){
         this.usagesCollection.mergeCollections(this.searchResults);
 
+        //If in DataONE Plus Preview mode, total the portal count from Solr and use that as the portal totalUsage
+        if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+
+          var portalQuotas = MetacatUI.appUserModel.getQuotas("portal");
+
+          if( portalQuotas.length ){
+            portalQuotas[0].set("totalUsage", this.usagesCollection.length);
+          }
+
+        }
+
         //Update the view with info about the corresponding Usage model
         this.showUsageInfo();
       },
@@ -166,6 +198,10 @@ define(["jquery",
           }
 
         }, this);
+
+        //Add a "Create" button to create a new portal, since we know the total Usage and
+        // remaining Quota now.
+        this.renderCreateButton();
 
       }
 

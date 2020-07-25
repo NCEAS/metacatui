@@ -1176,6 +1176,15 @@ define(['jquery', 'underscore', 'backbone'],
         "urn:node:TNC_DANGERMOND", "dangermond", "TNC_DANGERMOND"
       ],
 
+      /**
+      * Limit users to a certain number of portals. This limit will be ignored if {@link AppConfig#enableBookkeeperServices}
+      * is set to true, because the limit will be enforced by Bookkeeper Quotas instead.
+      * @type {number}
+      * @default 1
+      * @since 2.14.0
+      */
+      portalLimit: 1,
+
       /** If true, then archived content is available in the search index.
       * Set to false if this MetacatUI is using a Metacat version before 2.10.0
       * @type {boolean}
@@ -1376,6 +1385,8 @@ define(['jquery', 'underscore', 'backbone'],
       * @default "DataONE Plus"
       */
       dataonePlusName: "DataONE Plus",
+
+      dataonePlusPreviewMode: false,
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
