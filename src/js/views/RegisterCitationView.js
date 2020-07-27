@@ -59,8 +59,14 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
 
             var citationType = this.$("#citationTypeCustomSelect").val();
             var relation_type = null;
-            relation_type = citationType == 1 ? "is_Cited_By" : "is_Used_By";
 
+            // If the user has not selected a valid 
+            if (citationType != 0) {
+                relation_type = citationType == 1 ? "isCitedBy" : "isReferencedBy";
+            }
+            else {
+                relation_type = "isCitedBy";
+            }
 
             // create a request object 
             var citationsUrl = MetacatUI.appModel.get("d1CitationUrl");

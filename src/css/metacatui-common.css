@@ -2025,12 +2025,17 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	margin-top: 3px;
 }
 
-
 .register-citation-element > .register-citation {
-	right: 10px;
-    position: absolute;
+	position: fixed;
+    display: block;
+    margin-top: 60px;
 }
 
+.register-citation-element {
+	display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /******************************************
 * Search Page / Data Catalog Page Metrics

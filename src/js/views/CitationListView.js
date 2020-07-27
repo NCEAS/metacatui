@@ -54,6 +54,16 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         // citation found in the citations collection object.
         renderView: function() {
             var self = this;
+            
+            // Get node display name for the message
+            var nodeId = MetacatUI.appModel.get("nodeId");
+            // get the node Info
+            var nodeInfo =  _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+                return nodeModel.identifier.toLowerCase() == nodeId.toLowerCase();
+            });
+            var nodeName = "DataONE"
+            if (nodeInfo !== undefined) 
+                var nodeName = nodeInfo.name;
 
             if (this.emptyCitations) {
                 var $emptyList = $(document.createElement("div"))
@@ -62,7 +72,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                 // Dataset landing page - metadataview
                 if ( self.citationsForDataCatalogView ) {
                     var emptyString = "We couldn't find any citations for this dataset. " +
-                        "If this dataset has been cited, you can register the citation to DataONE.";
+                        "If this dataset has been cited, you can register the citation to " + nodeName + ".";
 
                     var $emptyDataElement = $(document.createElement("p"))
                         .text(emptyString)
@@ -120,13 +130,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                     var $emptyList = $(document.createElement("div"))
                                         .addClass("register-citation-element");
 
-                    var registerCitationString = "Register additional citations for this dataset to DataONE.";
+                    var registerCitationString = "If this dataset has additional citations, you can now register that citation to " + nodeName + ".";
 
                     var $registerCitationElement = $(document.createElement("p"))
                         .text(registerCitationString)
                         .addClass("register-citation-text");
 
-                    // $emptyList.append($registerCitationElement);
+                    $emptyList.append($registerCitationElement);
                     $emptyList.append(this.registerCitationTemplate());
                 }
                 this.$el.append($emptyList);
