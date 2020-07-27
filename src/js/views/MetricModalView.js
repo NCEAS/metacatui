@@ -17,8 +17,9 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
         events: {
           'hidden': 'teardown',
-          'click .left-modal-footer' : 'showPreviousMetricModal',
-          'click .right-modal-footer' : 'showNextMetricModal'
+          'click .left-modal-footer'  : 'showPreviousMetricModal',
+          'click .right-modal-footer' : 'showNextMetricModal',
+          'click .register-citation'  : 'showCitationForm'
         },
 
         initialize: function(options) {
@@ -29,6 +30,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
           this.metricName = options.metricName;
           this.metricsModel = options.metricsModel;
+          this.pid = options.pid;
 
         },
         
@@ -55,6 +57,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         },
 
         teardown: function() {
+          this.$el.modal('hide');
           this.$el.data('modal', null);
           this.remove();
         },
@@ -85,7 +88,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
                 this.citationList = citationList;
 
-                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html(), hideReportCitationButton: MetacatUI.appModel.get("hideReportCitationButton")}));
             }
             else {
                 if (this.metricName === "Views") {
@@ -135,6 +138,21 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalDownloads"), metricBody:"<div class='metric-chart'></div>"}));
                 this.drawMetricsChart();
             }
+        },
+
+        /**
+         * Display the Citation registration form
+         */
+        showCitationForm: function(){
+            // close the current modal
+            this.teardown();
+            var viewRef = this;
+            require(['views/RegisterCitationView'], function(RegisterCitationView){
+                // display a register citation modal
+                var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
+                registerCitationView.render();
+                registerCitationView.show();
+            });
         },
 
 

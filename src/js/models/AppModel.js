@@ -685,6 +685,19 @@ define(['jquery', 'underscore', 'backbone'],
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 
       /**
+      * DataONE Citation reporting endpoint url
+      * @type {string}
+      */
+      d1CitationUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/citations',
+
+     /**
+      * Hide or show the report Citation button in the dataset landing page.
+      * @type {boolean}
+      * @default true
+      */
+      hideReportCitationButton: false,
+
+      /**
       * Hide or show the aggregated citations chart in the StatsView.
       * These charts are only available for DataONE Plus members or Hosted Repositories.
       * (see https://dataone.org)
