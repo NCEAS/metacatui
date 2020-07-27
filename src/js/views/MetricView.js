@@ -76,7 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
         // Handling the Click function
         // Displaying the metric modal on Click
         showMetricModal: function(e) {
-            if (MetacatUI.appModel.get("displayMetricModals") && ((this.model.get("totalCitations")+this.model.get("totalDownloads")+this.model.get("totalViews") != 0))) {
+            if (MetacatUI.appModel.get("displayMetricModals") ) {
                 var modalView = new MetricModalView({metricName: this.metricName, metricsModel: this.model, pid: this.pid});
                 modalView.render();
                 modalView.show();
@@ -98,11 +98,6 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             this.$('.metric-value').text(MetacatUI.appView.numberAbbreviator(total, 1));
             this.$('.metric-value').addClass("badge");
 
-            if((this.model.get("totalCitations") == 0) && (this.model.get("totalDownloads") == 0) && (this.model.get("totalViews") == 0)) {
-                this.$el.removeClass("metrics");
-                this.$el.addClass("metrics-button-disabled");
-                this.$el.click(function(){return false;});
-            }
         },
 
         renderError: function() {
