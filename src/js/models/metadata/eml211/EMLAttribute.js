@@ -42,7 +42,8 @@ define(["jquery", "underscore", "backbone",
 	                    "missingValueCode",
 	                    "accuracy",
 	                    "coverage",
-	                    "methods"
+	                    "methods",
+	                    "annotation"
 	                ]
             	}
             },
@@ -60,7 +61,9 @@ define(["jquery", "underscore", "backbone",
                 "storagetype": "storageType",
                 "typesystem": "typeSystem",
                 "measurementscale": "measurementScale",
-                "missingvaluecode": "missingValueCode"
+                "missingvaluecode": "missingValueCode",
+                "propertyuri": "propertyURI",
+                "valueuri" : "valueURI"
             },
 
             /* Initialize an EMLAttribute object */

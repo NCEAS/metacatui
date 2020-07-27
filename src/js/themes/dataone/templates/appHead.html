@@ -35,6 +35,11 @@
       <link href="<%= MetacatUI.root %>/components/bioportal/jquery.ncbo.tree.min.css" rel="stylesheet" type="text/css">
     <% } %>
 
+    <!-- Imported from the dataone website -->
+    <% const d1WebsiteDir = MetacatUI.root + "/js/themes/" + MetacatUI.theme + "/components/d1website" %>
+    <script src="<%= d1WebsiteDir %>/d1website.min.js"></script>
+    <link href="<%= d1WebsiteDir %>/css/d1website.min.css?v=<%=MetacatUI.metacatUIVersion%>" type="text/css" rel="stylesheet">
+    
     <script>
 	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

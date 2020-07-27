@@ -94,21 +94,21 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       this.listenTo(this.model, "successSaving", this.saveSuccess);
       this.listenTo(this.model, "invalid", this.showValidation);
 
-      //Set a beforeunload event only if there isn't one already
-      if( !this.beforeunloadCallback ){
-        var view = this;
-        //When the Window is about to be closed, show a confirmation message
-        this.beforeunloadCallback = function(e){
-          if( !view.canClose() ){
-            //Browsers don't support custom confirmation messages anymore,
-            // so preventDefault() needs to be called or the return value has to be set
-            e.preventDefault();
-            e.returnValue = "";
-          }
-          return;
-        }
-        window.addEventListener("beforeunload", this.beforeunloadCallback);
-      }
+      // //Set a beforeunload event only if there isn't one already
+      // if( !this.beforeunloadCallback ){
+      //   var view = this;
+      //   //When the Window is about to be closed, show a confirmation message
+      //   this.beforeunloadCallback = function(e){
+      //     if( !view.canClose() ){
+      //       //Browsers don't support custom confirmation messages anymore,
+      //       // so preventDefault() needs to be called or the return value has to be set
+      //       e.preventDefault();
+      //       e.returnValue = "";
+      //     }
+      //     return;
+      //   }
+      //   window.addEventListener("beforeunload", this.beforeunloadCallback);
+      // }
     },
 
     /**
@@ -162,8 +162,10 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       //If the AccessPolicy editor is enabled, add a button for opening it
       if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){
 
+        var isHiddenBehindControl = (this.$(this.accessPolicyControlContainer).length > 0);
+
         //Render the AccessPolicy control, if the container element is on the page
-        if( this.$(this.accessPolicyControlContainer).length ){
+        if( isHiddenBehindControl ){
           //If it isn't, then add it to the page.
           //Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
           this.$(this.accessPolicyControlContainer).prepend( $(document.createElement("a"))
@@ -173,26 +175,28 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
                                                       $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
                                                       "Share") );
         }
-        else{
-          this.renderAccessPolicy();
-        }
 
-        //Check that this user is authorized to change permissions on this object
-        var view = this,
-            checkAuthorityOptions = {
-              onSuccess: function(){
-                return;
-              },
-              onError: function(){
-                //Disable the button for the AccessPolicyView if the user is not authorized
-                view.$(".access-policy-control").attr("disabled", "disabled")
-                                                .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
-                                                .addClass("disabled");
-              }
-        }
+        //When the user's changePermission authority has been checked, edit their
+        //  access to the AccessPolicyView
+        this.listenToOnce(this.model, "change:isAuthorized_changePermission", function(){
+          //If there is an AccessPolicy control, disable it
+          if( isHiddenBehindControl ){
+
+            if( this.model.get("isAuthorized_changePermission") === false ){
+              //Disable the button for the AccessPolicyView if the user is not authorized
+              this.$(".access-policy-control").attr("disabled", "disabled")
+                                              .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
+                                              .addClass("disabled");
+            }
+          }
+          else{
+            //Render the AccessPolicyView
+            this.renderAccessPolicy();
+          }
+        });
 
         //Check the user's authority to change permissions on this object
-        this.model.checkAuthority("changePermission", checkAuthorityOptions);
+        this.model.checkAuthority("changePermission");
       }
     },
 
@@ -249,6 +253,9 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
             //If not, create a new AccessPolicyView using the AccessPolicy collection
             var accessPolicyView = new AccessPolicyView();
             accessPolicyView.collection = thisView.model.get("accessPolicy");
+
+            //Store a reference to the AccessPolicyView on this view
+            thisView.accessPolicyView = accessPolicyView;
 
             //Add the view to the page
             thisView.$(thisView.accessPolicyViewContainer).html(accessPolicyView.el);

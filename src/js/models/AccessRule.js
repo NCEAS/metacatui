@@ -28,7 +28,7 @@ define(['jquery', 'underscore', 'backbone'],
 
 		/**
 		* Translates the access rule XML DOM into a JSON object to be set on the model.
-		* @param {Element} Either an <allow> or <deny> DOM element that contains a single access rule
+		* @param {Element} accessRuleXML Either an <allow> or <deny> DOM element that contains a single access rule
 		* @return {JSON} The Access Rule values to be set on this model
 		*/
 		parse: function( accessRuleXML ){

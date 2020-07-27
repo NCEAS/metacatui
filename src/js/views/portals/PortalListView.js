@@ -193,16 +193,31 @@ define(["jquery",
               var logo = "";
               if( searchResult.get("logo") ){
                 if( !searchResult.get("logo").startsWith("http") ){
-                  searchResult.set("logo", MetacatUI.appModel.get("objectServiceUrl") + searchResult.get("logo"));
+
+                  // use the resolve service if there is no object service url
+                  // (e.g. in DataONE theme)
+                  var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
+                    MetacatUI.appModel.get("resolveServiceUrl");
+
+                  searchResult.set("logo", urlBase + searchResult.get("logo") );
+
                 }
-                logo = $(document.createElement("img")).attr("src", searchResult.get("logo"));
+
+                logo = $(document.createElement("img"))
+                          .attr("src", searchResult.get("logo"))
+                          .attr("alt", searchResult.get("title") + " logo");
               }
 
               //Create an Edit buttton
-              var buttons = $(document.createElement("a")).attr("href",
-                             MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent(searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id")) )
+              var buttons = "";
+              if(Object.values(MetacatUI.uiRouter.routes).includes("renderPortalEditor")){
+
+                buttons = $(document.createElement("a")).attr("href",
+                             MetacatUI.root + "/edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + encodeURIComponent((searchResult.get("label") || searchResult.get("seriesId") || searchResult.get("id"))) )
                              .text("Edit")
                              .addClass("btn");
+              }
+
 
               //Create a link to the portal view with the title as the text
               var titleLink = $(document.createElement("a"))

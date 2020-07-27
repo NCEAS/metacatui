@@ -711,7 +711,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
           //Construct a query to find the earliest endDate
           var query = model.get('query') +
-                " AND endDate:[" + this.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "]" + //Use date filter to weed out badly formatted data
+                " AND endDate:[" + model.get("firstPossibleDate") + " TO " + (new Date()).toISOString() + "]" + //Use date filter to weed out badly formatted data
                 " AND -obsoletedBy:*",
               //Get one row only
               rows = "1",
@@ -828,7 +828,31 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       //Send the query
       $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+    },
+    
+    // Getting total number of replicas for repository profiles
+    getTotalReplicas: function(memberNodeID) {
 
+			var model = this;
+
+      var requestSettings = {
+          url: MetacatUI.appModel.get("queryServiceUrl") +
+            "q=replicaMN:" + memberNodeID +
+            " AND  -datasource:" + memberNodeID +
+            " AND formatType:METADATA" +
+            " AND -obsoletedBy:*" +
+            " &wt=json&rows=0",
+          type: "GET",
+          dataType: "json",
+          success: function(data, textStatus, xhr){
+            model.set("totalReplicas", data.response.numFound );
+          },
+          error: function(data, textStatus, xhr){
+            model.set("totalReplicas", 0 );
+          }
+      }
+
+      $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
     },
 
     /**

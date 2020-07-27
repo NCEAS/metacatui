@@ -1,18 +1,18 @@
 # Showdown and the Markdown View
 
-showdown is the markdown to HTML converter used by the markdownView.
-The showdown folder contains all the components required for the markdownView (`src/js/views/markdownView.js`).
+showdown is the markdown to HTML converter used by the MarkdownView.
+The showdown folder contains all the components required for the MarkdownView (`src/js/views/MarkdownView.js`).
 
 ### Background:
 
 - showdown github repository: https://github.com/showdownjs/showdown
     - wiki: https://github.com/showdownjs/showdown/wiki
 - showdown website: http://showdownjs.com/
-- metacatUI markdownView issue: https://github.com/NCEAS/metacatui/issues/820
+- metacatUI MarkdownView issue: https://github.com/NCEAS/metacatui/issues/820
 
 ### Extensions:
 
-The markdown view uses 7 showdown extensions. The names of six of these extensions are listed in the `listRequiredExtensions` function in the markdownView:
+The markdown view uses 7 showdown extensions. The names of six of these extensions are listed in the `listRequiredExtensions` function in the MarkdownView:
 
 ```
 var SDextensions = ["xssfilter", "katex", "highlight", "docbook", "showdown-htags", "bootstrap", "footnotes", "showdown-citation"];
@@ -22,7 +22,7 @@ They are also listed in `src/js/app.js` in the list of `require.config` `path`s.
 
 All of the extensions' components (`.js` and `.css`) are found in the `src/components/showdown/extensions` directory.
 
-### markdownView:
+### MarkdownView:
 
 `render` sets a listener for the custom event `requiredExtensionsLoaded`. The event is triggered after the markdown has been tested to see which extensions are needed, and then those extensions are loaded. When the event is triggered, it passes in the list of required extensions (`SDextensions`) and `render` then creates a showdown converter (`var converter  = new showdown.Converter({...options...}`), converts the markdown, and appends it to the markdown template.
 

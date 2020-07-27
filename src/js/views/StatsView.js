@@ -17,6 +17,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 		hideUpdatesChart: false,
 
+		/*
+		* Flag to indicate whether the statsview is a node summary view
+		* @type {boolean}
+		*/
+		nodeSummaryView: false,
+
 		/**
 		 * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
 		 * @type {boolean}
@@ -38,7 +44,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
 			this.metricsModel = (typeof options.metricsModel === undefined) ? undefined : options.metricsModel;
-			this.userType = options.userType;
+
+			this.userType = (typeof options.userType === undefined) ? undefined : options.userType;
+			this.userId = (typeof options.userId === undefined) ? undefined : options.userId;
+			this.userLabel = (typeof options.userLabel === undefined) ? undefined : options.userLabel;
+
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 
@@ -47,6 +57,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
 			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
 			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
+			
 
 			this.model = options.model || null;
 		},
@@ -58,8 +69,23 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			var view = this;
 
+			// Check if the node is a coordinating node
+			var userIsCN= false;
+			this.userIsCN = userIsCN;
+			if( this.userType !== undefined && this.userLabel !== undefined) {
+				if (this.userType === "repository") {
+					userIsCN = MetacatUI.nodeModel.isCN(this.userId);
+					if (userIsCN && typeof isCN !== 'undefined')
+						this.userIsCN = true;
+				}
+			}
+
 			if ( options.nodeSummaryView ) {
+				this.nodeSummaryView = true;
 				var nodeId = MetacatUI.appModel.get("nodeId");
+				userIsCN = MetacatUI.nodeModel.isCN(nodeId);
+				if (userIsCN && typeof userIsCN !== 'undefined')
+					this.userIsCN = true;
 
 				// Overwrite the metrics display flags as set in the AppModel
         this.hideMetadataAssessment = false;
@@ -117,10 +143,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
         this.listenTo(this.model, "change:metadataUpdateDates", this.drawMetadataUpdatesChart);
 
         //Render the total file size of all contents in this collection
-				this.listenTo(this.model, "change:totalSize", this.drawTotalSize);
+				this.listenTo(this.model, "change:totalSize", this.displayTotalSize);
 
         //Render the total number of datasets in this collection
-				this.listenTo(this.model, 'change:metadataCount', this.drawTotalCount);
+				this.listenTo(this.model, 'change:metadataCount', this.displayTotalCount);
+        
+        // Display replicas only for member nodes
+				if (this.userType === "repository" && !this.userIsCN) 
+					this.listenTo(this.model, "change:totalReplicas", this.displayTotalReplicas);
 
         //Draw charts that show the breakdown of format IDs for metadata and data files
 				this.listenTo(this.model, 'change:dataFormatIDs',     this.drawDataCountChart);
@@ -136,12 +166,15 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
 
+
+
 			//Insert the template
 			this.$el.html(this.template({
 				query: this.model.get('query'),
 				title: this.title,
 				description: this.description,
 				userType: this.userType,
+				userIsCN: this.userIsCN,
 				hideUpdatesChart: this.hideUpdatesChart,
 				hideCitationsChart: this.hideCitationsChart,
 				hideDownloadsChart: this.hideDownloadsChart,
@@ -192,6 +225,21 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 		//Start retrieving data from Solr
 		this.model.getAll();
+
+		// Only gather replication stats if the view is a repository view
+		if (this.userType === "repository") {
+			if (this.userLabel !== undefined)
+			{
+				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.userId));
+				this.model.getTotalReplicas(identifier);
+			}
+			else if (this.nodeSummaryView) {
+				var nodeId = MetacatUI.appModel.get("nodeId");
+				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(nodeId));
+				this.model.getTotalReplicas(identifier);
+			}
+			
+		}
 
 		return this;
 	},
@@ -248,6 +296,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 				if(!self.hideViewsChart)
 					self.renderViewMetric();
+
 			});
 		},
 
@@ -575,66 +624,54 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		/*
-		 * drawTotalCount - draws a simple count of total metadata files/datasets
+		 * displayTotalCount - renders a simple count of total metadata files/datasets
 		 */
-		drawTotalCount: function(){
+		displayTotalCount: function(){
 
-			var className = "";
+			var className = "quick-stats-count";
 
 			if( !this.model.get("metadataCount") && !this.model.get("dataCount") )
 				className += " no-activity";
+							
+			var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(MetacatUI.appView.commaSeparateNumber(this.model.get("metadataCount")));
 
-			var chartData = [{
-	                    	  count: this.model.get("metadataCount"),
-	                    	  className: "packages" + className
-			                }];
+			var titleEl = $(document.createElement("p"))
+							.addClass("chart-title")
+							.text("datasets");
 
-			//Create the circle badge
-			var countBadge = new CircleBadge({
-				id: "total-datasets-title",
-				data: chartData,
-				title: "datasets",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 100,
-				height: 220
-			});
-
-			this.$('#total-datasets').html(countBadge.render().el);
+			this.$('#total-datasets').html(countEl);
+			this.$('#total-datasets').append(titleEl);
 		},
 
 		/*
-		 * drawTotalSize draws a CircleBadgeView with the total file size of
+		 * displayTotalSize renders a count of the total file size of
 		 * all current metadata and data files
 		 */
-		drawTotalSize: function(){
+		displayTotalSize: function(){
+
+			var className = "quick-stats-count";
+			var count = "";
 
 			if( !this.model.get("totalSize") ){
-				var chartData = [{
-              	  				  count: "0 bytes",
-				              	  className: "packages no-activity"
-	                			}];
-
+				count = "0 bytes";
+				className += " no-activity";
 			}
 			else{
-				var chartData = [{
-		                    	  count: this.bytesToSize( this.model.get("totalSize") ),
-		                    	  className: "packages"
-				                }];
+				count = this.bytesToSize( this.model.get("totalSize") );
 			}
+							
+			var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(count);
 
-			//Create the circle badge
-			var sizeBadge = new CircleBadge({
-				id: "total-size-title",
-				data: chartData,
-				title: "of content",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 100,
-				height: 220
-			});
+			var titleEl = $(document.createElement("p"))
+							.addClass("chart-title")
+							.text("of content");
 
-			this.$('#total-size').html(sizeBadge.render().el);
+			this.$('#total-size').html(countEl);
+			this.$('#total-size').append(titleEl);
 		},
 
     /**
@@ -694,6 +731,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
     drawDataUpdatesChart: function(){
       //Set some configurations for the LineChart
       var chartClasses = "data",
+          view = this,
           data;
 
       //Use the data update dates for the LineChart
@@ -723,13 +761,25 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
       //Render the LineChart and insert it into the container element
       this.$('.data-updates-chart').html(dataLineChart.render().el);
 
-    },
+			// redraw the charts to avoid overlap at different widths 
+			$(window).on("resize", function(){
+
+				if(!view.hideUpdatesChart)
+					view.drawUpdatesChart();
+
+			});
+
+		},
 
 		//Draw a bar chart for the temporal coverage
 		drawCoverageChart: function(e, data){
 
 			//Get the width of the chart by using the parent container width
 			var parentEl = this.$('.temporal-coverage-chart');
+
+			if (this.userType == "repository") {
+				parentEl.addClass("repository-portal-view");
+			}
 			var width = parentEl.width() || null;
 
 			// If results were found but none have temporal coverage, draw a default chart
@@ -822,6 +872,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			//Stop listening to changes in the model
 			this.stopListening(this.model);
 
+			//Stop listening to resize
+			$(window).off("resize");
+
 			//Reset the stats model
 			this.model = null;
 		},
@@ -863,6 +916,40 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				);
 			});
 
+		},
+
+		/*
+		 * getReplicas gets the number of replicas in this member node
+		 */
+		displayTotalReplicas: function(){
+
+			var view = this;
+			var className = "quick-stats-count";
+			var count;
+
+			if( this.model.get("totalReplicas") > 0 ){
+				count = MetacatUI.appView.commaSeparateNumber(view.model.get("totalReplicas"));
+
+				var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(count);
+
+				var titleEl = $(document.createElement("p"))
+								.addClass("chart-title")
+								.text("replicas");
+	
+				// display the totals
+				this.$('#total-replicas').html(countEl);
+				this.$('#total-replicas').append(titleEl);
+
+			}
+			else{
+				// hide the replicas container if the replica count is 0.
+				this.$('#replicas-container').hide()
+			}
+
+
+			
 		}
 
 	});

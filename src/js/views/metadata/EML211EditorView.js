@@ -1,4 +1,4 @@
-﻿/* global define */
+/* global define */
 define(['underscore',
         'jquery',
         'backbone',
@@ -421,7 +421,10 @@ define(['underscore',
 
             // render metadata as the collection is updated, but only EML passed from the event
             if ( typeof model.get === "undefined" ||
-                        model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                        !(
+                                model.get("formatId") === "eml://ecoinformatics.org/eml-2.1.1" ||
+                                model.get("formatId") === "https://eml.ecoinformatics.org/eml-2.2.0"
+                        )  ) {
                 console.log("Not EML. TODO: Render generic ScienceMetadata.");
                 return;
 

@@ -22,7 +22,8 @@ define(['jquery', 'underscore', 'backbone'],
 
     /**
     * Default attributes for this model
-    * @type {Object}
+    * @type {object}
+    * @returns {object}
     * @property {Element} objectDOM - The XML DOM for this filter
     * @property {string} nodeName - The XML node name for this filter's XML DOM
     * @property {string[]} fields - The search index fields to search

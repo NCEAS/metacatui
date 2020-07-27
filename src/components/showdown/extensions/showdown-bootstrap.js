@@ -10,7 +10,8 @@ define(['showdown'], function (showdown) {
         // htmlElement: bootstrap class to add
         var bootstrapMap = {
             table: 'table table-hover',
-            // TODO: what other bootstrap classes to inject?
+            img: 'thumbnail'
+            // More bootstrap classes can be injected here
         };
 
         var extensions = Object.keys(bootstrapMap).map(key => ({

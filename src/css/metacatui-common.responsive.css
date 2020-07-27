@@ -475,28 +475,30 @@
     padding: 0;
 	}
 
-	.portal-section-content .toc .mobile {
+	.toc .mobile {
 		display: flex;
 		flex-direction: row;
 		width: 100vw;
 		margin: 0;
+		background-color: #2c7e90; 
 		background-color: var(--portal-secondary-color);
 		color: white;
 	}
 
-	.portal-section-content .toc .mobile a {
+	.toc .mobile a,
+	.toc .mobile a:hover {
 		color: white;
 	}
 
-	.portal-section-content .toc .desktop {
+	.toc .desktop {
 	  display: none;
 	}
 
-	.toc-ul li, .portal-view .toc-ul a {
-		background-color: none;
+	.toc-ul li, .toc-ul a {
+		background-color: transparent;
 	}
 
-	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul {
+	.mobile .toc-ul, .mobile  .toc-ul {
     position: sticky;
     position: -webkit-sticky;
     background-color: transparent;
@@ -504,13 +506,12 @@
     padding: 0px;
 	}
 
-	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul a {
+	.mobile .toc-ul, .mobile .toc-ul a {
 		color: #242424;
 	}
 
-	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul li.active > a {
+	.mobile .toc-ul, .mobile .toc-ul li.active > a {
 		color: white;
-		background-color: var(--portal-secondary-color);
 	}
 
 	.toc .mobile > * {
@@ -564,13 +565,13 @@
 	}
 
 	/* affix the TOC to the top */
-	.Editor.Portal .toc-view.affix,
-	.portal-section-content .toc-view.affix {
+	.toc-view.affix,
+	.toc-view.affix {
     top: 0px;
 	}
 
 	/* make markdown content take full width */
-	.portal-section-content > .markdown {
+	.markdown.span9 {
     padding: 13px 10px;
     width: 100vw;
     box-sizing: border-box;
@@ -578,7 +579,7 @@
 		overflow-y: scroll; /* so that vw calculation includes space for scroll bar */
 	}
 
-	.portal-section-content .toc-view.span3.affix + .span9 {
+	.toc-view.span3.affix + .span9 {
 		margin-left: 0;
 	}
 
@@ -627,6 +628,10 @@
 		margin-right: 0;
 		width: 100%;
 		box-sizing: border-box;
+	}
+	
+	.portal-editor .toc {
+		margin-left: -9px !important;
 	}
 
 	#Metrics metrics-figure-container {

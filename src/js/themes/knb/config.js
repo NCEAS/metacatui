@@ -4,9 +4,17 @@ if( !MetacatUI.AppConfig ){
 // Set up App Configurations that are always used for the arctic theme.
 // Deployment-specific configurations can be set in a separate file
 MetacatUI.AppConfig = Object.assign({
+  root: "/",
   theme: "knb",
   title: "KNB",
+  baseUrl: "https://knb.ecoinformatics.org",
+  metacatContext: "knb",
+  //mapKey: "AIzaSyCFcgRnv0TwBEdAnTsG5rBbD6Hprrv_Yic",
+  mapKey: "AIzaSyDzcwSToW96_uCe_lYtdOHSilE4Ks8A65w",
   repositoryName: "KNB",
+  enableLdapSignIn: true,
+
+  //Editor
   emlEditorRequiredFields: {
     abstract: true,
     alternateIdentifier: false,
@@ -22,9 +30,6 @@ MetacatUI.AppConfig = Object.assign({
     temporalCoverage: true,
     title: true
   },
-  disableQueryPOSTs: false,
-  enableSolrJoins: true,
-  enableLdapSignIn: true,
   defaultAccessPolicy: [{
     subject: "CN=knb-data-admins,DC=dataone,DC=org",
     read: true,
@@ -36,12 +41,26 @@ MetacatUI.AppConfig = Object.assign({
       read: true
     }],
   hiddenSubjectsInAccessPolicy: ["CN=knb-data-admins,DC=dataone,DC=org"],
+  allowChangeRightsHolder: false,
+
+  //Searching
+  disableQueryPOSTs: false,
+  enableSolrJoins: true,
+  displayRepoLogosInSearchResults: true,
+
+  //Temp message
+  temporaryMessage: "The KNB will be unavailable between 11 p.m. PT on Monday, June 15 and 6:30 a.m. PT on Tuesday, June 16 due to upgrades. We apologize for the inconvenience.",
   temporaryMessageClasses: "warning auto-height-member",
   temporaryMessageContainer: "#HeaderContainer",
-  displayRepoLogosInSearchResults: true,
+  temporaryMessageEndTime: new Date("2020-06-16T13:30:00"),
+
+  //Metadata assessments
+  displayDatasetQualityMetric: true,
   mdqSuiteIds: ["knb.suite.1"],
   mdqSuiteLabels: ["KNB Metadata Completeness Suite v1.0"],
   mdqFormatIds:["eml*", "https://eml*"],
+
+  //Portals
   hideSummaryCitationsChart: false,
   hideSummaryDownloadsChart: false,
   hideSummaryViewsChart: false,
@@ -67,7 +86,6 @@ MetacatUI.themeMap =
         'templates/featuredData.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/featuredData.html',
         'templates/footer.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/footer.html',
         'templates/mainContent.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/mainContent.html',
-        'templates/metadataControls.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/metadataControls.html',
         'templates/altHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/altHeader.html',
         'templates/defaultHeader.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/defaultHeader.html',
         'templates/about.html' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/templates/about.html',

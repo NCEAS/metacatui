@@ -1,12 +1,39 @@
-if( !MetacatUI.AppConfig ){
-  MetacatUI.AppConfig = {};
-}
+
 // Set up App Configurations that are always used for the arctic theme.
 // Deployment-specific configurations can be set in a separate file
 MetacatUI.AppConfig = Object.assign({
+  root: "/catalog",
   theme: "arctic",
+  baseUrl: "https://arcticdata.io",
+  bioportalAPIKey: "",
   repositoryName: "Arctic Data Center",
   emailContact: "support@arcticdata.io",
+
+  //Metadata quality
+  mdqSuiteIds: ["arctic.data.center.suite.1"],
+  mdqSuiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
+  mdqFormatIds:["eml*", "https://eml*"],
+  displayDatasetQualityMetric: true,
+
+  //Portals
+  hideSummaryCitationsChart: false,
+  hideSummaryDownloadsChart: false,
+  hideSummaryViewsChart: false,
+
+  //Editor
+  useNSFAwardAPI: true,
+  defaultAccessPolicy: [{
+    subject: "CN=arctic-data-admins,DC=dataone,DC=org",
+    read: true,
+    write: true,
+    changePermission: true
+  }],
+  enablePublishDOI: false,
+  hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"],
+  editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted " +
+    "due to a technical error. But, we sent a draft of your edits to " +
+    "our support team, who will contact " +
+    "you via email as soon as possible about getting your data package submitted. ",
   emlEditorRequiredFields: {
     abstract: true,
     alternateIdentifier: false,
@@ -22,27 +49,21 @@ MetacatUI.AppConfig = Object.assign({
     temporalCoverage: true,
     title: true
   },
-  editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted " +
-    "due to a technical error. But, we sent a draft of your edits to " +
-    "our support team, who will contact " +
-    "you via email as soon as possible about getting your data package submitted. ",
+  allowChangeRightsHolder: false,
+
+  //Searching
+  enableSolrJoins: true,
+  mapKey: "AIzaSyCYoTkUEpMAiOoWx5M61ButwgNGX8fIHUs",
   defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
-  mdqSuiteIds: ["arctic.data.center.suite.1"],
-  mdqSuiteLabels: ["Arctic Data Center Conformance Suite v1.0"],
-  mdqFormatIds:["eml*", "https://eml*"],
-  hideSummaryCitationsChart: false,
-  hideSummaryDownloadsChart: false,
-  hideSummaryViewsChart: false,
-  displayDatasetQualityMetric: true,
-  enablePublishDOI: false,
-  defaultAccessPolicy: [{
-    subject: "CN=arctic-data-admins,DC=dataone,DC=org",
-    read: true,
-    write: true,
-    changePermission: true
-  }],
-  hiddenSubjectsInAccessPolicy: ["CN=arctic-data-admins,DC=dataone,DC=org"]
-}, MetacatUI.AppConfig);
+
+  //Temp message
+  temporaryMessage: "The Arctic Data Center will be unavailable between 11 p.m. PT on Monday, June 15 and 6:30 a.m. PT on Tuesday, June 16 due to upgrades. We apologize for the inconvenience.",
+  temporaryMessageStartTime: null,
+  temporaryMessageEndTime: new Date("2020-06-16T13:30:00"),
+  temporaryMessageClasses: "warning",
+  temporaryMessageContainer: "#Navbar",
+
+}, (MetacatUI.AppConfig || {}));
 
 MetacatUI.themeMap =
 {

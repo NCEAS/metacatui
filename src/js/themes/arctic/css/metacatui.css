@@ -988,6 +988,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	clear: both;
   	padding: 20px;
 	/* max-width: 960px; */
+	display: flex;
+	justify-content: center;
   }
 
   .profile .stripe{
@@ -1019,7 +1021,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 .profile .chart-title{
 	width: 280px;
-	float: left;
 }
 
 .profile .chart-title h2{
@@ -1028,7 +1029,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 .profile .chart{
 	float: left;
-	width: 650px;
 	margin-left: 20px;
 	margin-top: 30px;
 }
@@ -1164,8 +1164,7 @@ svg .title{
 }
 
 /* Line Chart */
-.upload-chart,
-.temporal-coverage-chart{
+.upload-chart{
 	width: 650px;
 	float: right;
 }
@@ -1243,10 +1242,6 @@ svg .domain{
 	fill: #0E69A1;
 	font-size: 14px;
 	font-weight: bold;
-}
-
-.bar-chart .x.axis .tick text{
-	font-size: 11px;
 }
 
 #data-coverage-year-range{

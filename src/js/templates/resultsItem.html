@@ -1,6 +1,6 @@
 <% if(MetacatUI.appModel.get("displayRepoLogosInSearchResults") ){ %>
-  <% if(memberNode && memberNode.logo){ %>
-  	<a href="<%= MetacatUI.root %>/profile/<%=memberNode.shortIdentifier%>">
+  <% if(memberNode && memberNode.logo && profileURL){ %>
+  	<a href="<%=profileURL%>">
       <img src="<%=memberNode.logo%>" class="logo <%=memberNode.shortIdentifier%>" title="From the <%=memberNode.name%> repository" />
     </a>
   <% } %>
@@ -30,7 +30,8 @@
 	  <% } %>
     <div class="resource-map icons ">
 	  <%	if (numDataFiles > 0) {
-	 			print('<img src="' + MetacatUI.root + '/img/data-table.png" class="icon " title="'+ dataFilesMessage +'"></i>');
+        <!-- img/data-table.svg -->
+        print('<svg class="icon" fill="inherit" title="'+ dataFilesMessage +'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1536 1792" fill="inherit"><path d="M1468 380c19 19 35 44 48 76s20 61 20 88v1152c0 27-9 49-28 68a93 93 0 01-68 28H96c-27 0-49-9-68-28a93 93 0 01-28-68V96c0-27 9-49 28-68S69 0 96 0h896c27 0 56 7 88 20s57 29 76 48l312 312zm-444-244v376h376c-7-19-14-33-22-41l-313-313c-8-8-22-15-41-22zm384 1528V640H992c-27 0-49-9-68-28a93 93 0 01-28-68V128H128v1536h1280z"/><path d="M565 1491v-121c0-6-2-11-6-15s-9-6-14-6H341c-6 0-10 2-14 6s-6 9-6 15v121c0 6 2 11 6 15s8 6 14 6h204c5 0 10-2 14-6s6-9 6-15zm0-243v-122c0-6-2-11-6-15s-9-6-14-6H341c-6 0-10 2-14 6s-6 9-6 15v122c0 6 2 10 6 14s8 6 14 6h204c5 0 10-2 14-6s6-8 6-14zm325 243v-121c0-6-2-11-6-15s-8-6-14-6H666c-6 0-10 2-14 6s-6 9-6 15v121c0 6 2 11 6 15s8 6 14 6h204c6 0 10-2 14-6s6-9 6-15zm-325-487V882c0-6-2-11-6-15s-9-5-14-5H341c-6 0-10 1-14 5s-6 9-6 15v122c0 6 2 11 6 14 4 4 8 6 14 6h204c5 0 10-2 14-6 4-3 6-8 6-14zm325 244v-122c0-6-2-11-6-15s-8-6-14-6H666c-6 0-10 2-14 6s-6 9-6 15v122c0 6 2 10 6 14s8 6 14 6h204c6 0 10-2 14-6s6-8 6-14zm325 243v-121c0-6-2-11-6-15s-8-6-14-6H992c-6 0-11 2-15 6s-6 9-6 15v121c0 6 2 11 6 15s9 6 15 6h203c6 0 10-2 14-6s6-9 6-15zm-325-487V882c0-6-2-11-6-15s-8-5-14-5H666c-6 0-10 1-14 5s-6 9-6 15v122c0 6 2 11 6 14 4 4 8 6 14 6h204c6 0 10-2 14-6 4-3 6-8 6-14zm325 244v-122c0-6-2-11-6-15s-8-6-14-6H992c-6 0-11 2-15 6s-6 9-6 15v122c0 6 2 10 6 14s9 6 15 6h203c6 0 10-2 14-6s6-8 6-14zm0-244V882c0-6-2-11-6-15s-8-5-14-5H992c-6 0-11 1-15 5s-6 9-6 15v122c0 6 2 11 6 14 4 4 9 6 15 6h203c6 0 10-2 14-6 4-3 6-8 6-14zm81-203v690c0 28-10 52-30 72a98 98 0 01-71 30H341c-28 0-52-10-71-30a98 98 0 01-30-72V801c0-28 10-52 30-72 19-20 43-30 71-30h854c28 0 52 10 71 30 20 20 30 44 30 72z"/></svg>');
  	  } %>
     </div>
 

@@ -36,7 +36,7 @@ define(["jquery",
           'click .dropdown'       : 'toggleDropdown'
     		},
 
-        //The element on the page that contains the content that this table of contents
+        // The element on the page that contains the content that this table of contents
         //  is associated with.
         contentEl: null,
 
@@ -60,6 +60,8 @@ define(["jquery",
                 this.topLevelItems = options.topLevelItems || "";
                 this.contentEl = options.contentEl || "";
                 this.className = options.className || "toc toc-view";
+                this.addScrollspy = options.addScrollspy || true;
+                this.affix = options.affix || true;
 
                 if(options.showSubItems === false){
                   this.showSubItems = false;
@@ -107,7 +109,7 @@ define(["jquery",
 
           }, this);
 
-          //If no custom top-level items were given, find the headers in the content
+          // If no custom top-level items were given, find the headers in the content
           if( !this.topLevelItems.length && this.contentEl ){
 
             //Create links from the headers found in the content
@@ -116,7 +118,8 @@ define(["jquery",
             }, this);
 
           }
-
+          
+          var view = this;
           return this;
 
         },
@@ -152,7 +155,7 @@ define(["jquery",
         },
 
         createLinksFromHeaders: function( contentEl, headerLevel ){
-
+          
           //If no content element is specified, use the one attached to this view
           if( !contentEl && this.contentEl ){
             var contentEl = this.contentEl;
@@ -247,40 +250,69 @@ define(["jquery",
          * and sets the listener to call this view's scrollSpyExtras when
          * Bootstrap's "activate" event is called. This function should be called
          * anytime the DOM is updated.
-         *
-         * @param  {string} scrollSpyTarget  a selector for the TOC element which should be updated with scrollSpy. If nothing is set, it defaults to ".scrollspy-TOC"
          */
-        addScrollspy: function(scrollSpyTarget){
-
+        renderScrollspy: function(){
+          
           try {
-
-            if(!scrollSpyTarget){
-              var scrollSpyTarget = ".scrollspy-TOC"
-            }
-
+            
+            var view = this;
+            var scrollSpyClass = "scrollspy-TOC-" + this.cid;
+            var scrollSpyTarget = "." + scrollSpyClass;
+            
+            this.$el.addClass(scrollSpyClass);
+              
+            // Manually set scrollspy data,
+            // see https://github.com/twbs/bootstrap/issues/20022#issuecomment-561376832
+            var $spy = $("body").scrollspy({ target: scrollSpyTarget, offset: 35});
+            var newSpyData = $spy.data();
+            newSpyData.scrollspy.selector = scrollSpyTarget + " .nav li > a";
+            $.fn.scrollspy.call($spy, newSpyData);
+            $spy.scrollspy("process");
+            $spy.scrollspy("refresh");
+            
             // Remove any active classes to start
             var activeEls = this.$(scrollSpyTarget + " .active");
             activeEls.removeClass("active");
-
+          
             // Add scroll spy
-            var view = this;
-            $("body").scrollspy({ target:  scrollSpyTarget , offset: 35});
-            $("body").scrollspy("refresh");
             $("body").off("activate");
             $("body").on("activate", function(e){
               view.scrollSpyExtras(e);
             });
             $(window).off("resize");
             $(window).on("resize", function(){
-              $("body").scrollspy("refresh");
+              $spy.scrollspy("refresh");
             });
-
+          
           } catch (e) {
             console.log("Error adding scrollspy! Error message: " + e);
           }
 
         },
-
+        
+        
+        /**        
+         * affixTOC - description             
+         */         
+        postRender: function(){
+          
+          try {
+            
+            var isVisible = this.$el.find(":visible").length > 0;
+            
+            if(this.affix === true && isVisible){
+              this.$el.affix({ offset: this.$el.offset().top });
+            }
+            
+            if(this.addScrollspy && isVisible){
+              this.renderScrollspy();
+            }
+            
+          } catch (e) {
+            console.log("Error affixing the table of contents, error message: " + e);
+          }
+          
+        },
 
         /**
          * scrollSpyExtras - Adds extra functionality to Bootstrap's scrollSpy function.
@@ -296,6 +328,7 @@ define(["jquery",
 
           try {
             if(e && e.target){
+              // console.log($(e.target)[0].innerText);
 
               var activeLI        = $(e.target),
                   mobileContainer = activeLI.closest(".mobile"),
