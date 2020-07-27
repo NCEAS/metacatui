@@ -41,10 +41,34 @@ fonts:
   - "martel-v4-latin"
   - "work-sans-v5-latin"
 static_files:
-  # "favicon-16x16.png" : favicon.png"
+  "android-chrome-192x192.png"  : "android-chrome-192x192.png"
+  "android-chrome-512x512.png"  : "android-chrome-512x512.png"
+  "apple-touch-icon-120x120-precomposed.png"  : "apple-touch-icon-120x120-precomposed.png"
+  "apple-touch-icon-120x120.png"  : "apple-touch-icon-120x120.png"
+  "apple-touch-icon-152x152-precomposed.png"  : "apple-touch-icon-152x152-precomposed.png"
+  "apple-touch-icon-152x152.png"  : "apple-touch-icon-152x152.png"
+  "apple-touch-icon-180x180-precomposed.png"  : "apple-touch-icon-180x180-precomposed.png"
+  "apple-touch-icon-180x180.png"  : "apple-touch-icon-180x180.png"
+  "apple-touch-icon-60x60-precomposed.png"  : "apple-touch-icon-60x60-precomposed.png"
+  "apple-touch-icon-60x60.png"  : "apple-touch-icon-60x60.png"
+  "apple-touch-icon-76x76-precomposed.png"  : "apple-touch-icon-76x76-precomposed.png"
+  "apple-touch-icon-76x76.png"  : "apple-touch-icon-76x76.png"
+  "apple-touch-icon-precomposed.png"  : "apple-touch-icon-precomposed.png"
+  "apple-touch-icon.png"  : "apple-touch-icon.png"
+  "browserconfig.xml" : "browserconfig.xml"
+  "favicon-16x16.png" : "favicon-16x16.png"
+  "favicon-32x32.png" : "favicon-32x32.png"
+  "favicon.ico" : "favicon.ico"
+  "mstile-144x144.png"  : "mstile-144x144.png"
+  "mstile-150x150.png"  : "mstile-150x150.png"
+  "mstile-310x150.png"  : "mstile-310x150.png"
+  "mstile-310x310.png"  : "mstile-310x310.png"
+  "mstile-70x70.png"  : "mstile-70x70.png"
+  "safari-pinned-tab.svg" : "safari-pinned-tab.svg"
+  "site.webmanifest"  : "site.webmanifest"
 ---
 
-### Version: 2020-07-21 12:14:42.130857 -0400 EDT m=+4.011582645
+### Version: 2020-07-23 12:40:36.394847 -0400 EDT m=+3.364787941
 
 # Exports from the DataONE website for the MetacatUI DataONE theme
 

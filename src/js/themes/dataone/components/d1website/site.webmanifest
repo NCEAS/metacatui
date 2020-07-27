@@ -1,0 +1,19 @@
+{
+    "name": "DataONE",
+    "short_name": "DataONE",
+    "icons": [
+        {
+            "src": "/img/favicons/android-chrome-192x192.png?v=qAJPwnNwkA",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/img/favicons/android-chrome-512x512.png?v=qAJPwnNwkA",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#7aeefd",
+    "background_color": "#7aeefd",
+    "display": "standalone"
+}
