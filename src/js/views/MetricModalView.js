@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView', 'views/RegisterCitationView'],
-    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList, RegisterCitationView) {
+define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metricModalTemplate.html', 'collections/Citations', 'views/CitationListView'],
+    function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList) {
     'use strict';
 
     var MetricModalView = Backbone.View.extend({
@@ -146,11 +146,13 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         showCitationForm: function(){
             // close the current modal
             this.teardown();
-
-            // display a register citation modal
-            var registerCitationView = new RegisterCitationView({pid: this.pid});
-            registerCitationView.render();
-            registerCitationView.show();
+            var viewRef = this;
+            require(['views/RegisterCitationView'], function(RegisterCitationView){
+                // display a register citation modal
+                var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
+                registerCitationView.render();
+                registerCitationView.show();
+            });
         },
 
 
