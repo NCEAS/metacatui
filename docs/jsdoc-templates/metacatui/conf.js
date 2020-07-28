@@ -15,5 +15,8 @@ module.exports = {
         ]
       }
     }
+  },
+  "opts": {
+    "template": "./docs/jsdoc-templates/metacatui"
   }
 }
