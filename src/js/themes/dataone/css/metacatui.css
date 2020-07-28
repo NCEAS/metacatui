@@ -596,12 +596,12 @@ ul.tb-megamenu-subnav {
   display: none;
 }
 
-#Navbar .d1_nav__inner{
+/* #Navbar .d1_nav__inner{
   max-width: calc(100vw - 80px);
 }
 #Navbar .d1_nav__secondary-items{
   max-width: calc(100vw - 100px);
-}
+} */
 
 /* Minimal navigation - used for the portal view and portal editor view
 -------------------------------------------------- */
