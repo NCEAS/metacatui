@@ -1340,22 +1340,29 @@ define(['jquery', 'underscore', 'backbone'],
         this.set("baseUrl", baseUrl);
       }
 
-      // these are pretty standard, but can be customized if needed
-      this.set('viewServiceUrl',    baseUrl + this.get('context') + this.get('d1Service') + '/views/metacatui/');
-      this.set('publishServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/publish/');
-      this.set('authServiceUrl',    baseUrl + this.get('context') + this.get('d1Service') + '/isAuthorized/');
-      this.set('queryServiceUrl',   baseUrl + this.get('context') + this.get('d1Service') + '/query/solr/?');
-      this.set('metaServiceUrl',    baseUrl + this.get('context') + this.get('d1Service') + '/meta/');
-      this.set('packageServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+      //Make sure the Metacat context sttarts with a forward slash
+      var context = this.get("context");
+      if( context.length && context.charAt(0) != "/" ){
+        context = "/" + context;
+      }
 
-      this.set('metacatServiceUrl', baseUrl + this.get('context') + '/metacat');
+
+      // these are pretty standard, but can be customized if needed
+      this.set('viewServiceUrl',    baseUrl + context + this.get('d1Service') + '/views/metacatui/');
+      this.set('publishServiceUrl', baseUrl + context + this.get('d1Service') + '/publish/');
+      this.set('authServiceUrl',    baseUrl + context + this.get('d1Service') + '/isAuthorized/');
+      this.set('queryServiceUrl',   baseUrl + context + this.get('d1Service') + '/query/solr/?');
+      this.set('metaServiceUrl',    baseUrl + context + this.get('d1Service') + '/meta/');
+      this.set('packageServiceUrl', baseUrl + context + this.get('d1Service') + '/packages/application%2Fbagit-097/');
+
+      this.set('metacatServiceUrl', baseUrl + context + '/metacat');
 
       if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
-        this.set('objectServiceUrl', baseUrl + this.get('context') + this.get('d1Service') + '/object/');
+        this.set('objectServiceUrl', baseUrl + context + this.get('d1Service') + '/object/');
       }
 
       if( this.get("enableMonitorStatus") ){
-        this.set("monitorStatusUrl", baseUrl + this.get('context') + this.get('d1Service') + "/monitor/status");
+        this.set("monitorStatusUrl", baseUrl + context + this.get('d1Service') + "/monitor/status");
       }
 
       // Metadata quality report services
