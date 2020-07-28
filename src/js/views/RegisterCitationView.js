@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.html', 'text!templates/alert.html',],
-    function($, _, Backbone, RegisterCitationTemplate, AlertTemplate) {
+define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.html'],
+    function($, _, Backbone, RegisterCitationTemplate) {
     'use strict';
 
     /**
@@ -19,10 +19,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
         * The URL to save the citation to
         * @type {string}
         */
-        citationUrl: "",
+        citationsUrl: MetacatUI.appModel.get("dataoneCitationsUrl"),
 
         template:         _.template(RegisterCitationTemplate),
-        alertTemplate:    _.template(AlertTemplate),
         successFooterTemplate: _.template("<button class='btn btn-indigo'" +
                                             " data-dismiss='modal'" +
                                             ">Done</button>"),
@@ -100,10 +99,6 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
           else {
               relation_type = "isCitedBy";
           }
-
-          // create a request object
-          var citationsUrl = MetacatUI.appModel.get("d1CitationUrl");
-          this.citationsUrl = citationsUrl;
 
           // get the form data before replacing everything with the loading icon!
           var formData = {};
