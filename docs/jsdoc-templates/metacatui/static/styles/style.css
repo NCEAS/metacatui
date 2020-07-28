@@ -98,3 +98,11 @@ table td{
 td.name{
   background-color: #DDD;
 }
+.class-screenshot h3{
+  text-align: center;
+}
+.class-screenshot img{
+  margin: auto;
+  display: flex;
+  max-width: 600px;
+}
