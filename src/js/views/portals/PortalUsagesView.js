@@ -188,8 +188,8 @@ define(["jquery",
                         },
                         html: true,
                         content: "To edit this " + MetacatUI.appModel.get("portalTermSingular") + ", contact us at " +
-                                 "<a href='mailto:" + MetacatUi.appModel.get("emailContact") + "'>" +
-                                 MetacatUi.appModel.get("emailContact") + "</a>" +
+                                 "<a href='mailto:" + MetacatUI.appModel.get("emailContact") + "'>" +
+                                 MetacatUI.appModel.get("emailContact") + "</a>" +
                                  " to activate it. It may be deactivated because your " +
                                   MetacatUI.appModel.get("dataonePlusName") + " membership has ended."
                       });
