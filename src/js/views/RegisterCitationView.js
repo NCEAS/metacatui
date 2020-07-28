@@ -27,13 +27,27 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
                                             " data-dismiss='modal'" +
                                             ">Done</button>"),
 
+        /**
+        * The message to display the citation is successfully submitted
+        * @type {string}
+        */
+        successMessage: 'Thank you! Your citation has been successfully submitted. ' +
+             'It may take up to 24 hours to see the citation on the dataset page.',
+
+       /**
+       * The message to display the citation has failed to submit
+       * @type {string}
+       */
+        errorMessage: 'Sorry! We encountered an error while registering that citation. Please try ' +
+                      'again or try emailing us the citation.',
+
         events: {
           'hidden'                        : 'teardown',
           'click .btn-register-citation'  : 'registerCitation'
         },
 
         initialize: function(options) {
-          _.bindAll(this, 'show', 'teardown', 'render', 'renderView');
+          _.bindAll(this, 'show', 'teardown', 'render');
           if((typeof options == "undefined")){
               var options = {};
           }
@@ -113,21 +127,23 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
             data: JSON.stringify(formData),
             dataType: "json",
             success: function(data, textStatus, jqXHR) {
-              var successMessage = $.parseHTML(viewRef.alertTemplate({
-                msg: 'Thank you! Your citation has been successfully submitted to DataONE. It may take upto 24 hours to display the citation.',
-                classes: "alert-success"
-              }));
 
-              viewRef.$(".modal-body").html(successMessage);
+              MetacatUI.appView.showAlert(viewRef.successMessage, "alert-success",
+                                          viewRef.$(".modal-body"), null,
+                                          { includeEmail: false,
+                                             replaceContents: true
+                                           });
+
               viewRef.$(".modal-footer").html(viewRef.successFooterTemplate());
             },
             error: function(){
-              var errorMessage = $.parseHTML(viewRef.alertTemplate({
-                  msg: 'Sorry! We encountered an error while registering that citation to DataONE.',
-                  classes: "alert-error"
-              }));
 
-              viewRef.$(".modal-body").html(errorMessage);
+              MetacatUI.appView.showAlert(viewRef.errorMessage, "alert-error",
+                                          viewRef.$(".modal-body"), null,
+                                          { includeEmail: true,
+                                             replaceContents: true
+                                           });
+
             }
           }
 
