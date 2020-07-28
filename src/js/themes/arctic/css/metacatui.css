@@ -3037,3 +3037,6 @@ a {
 .has-temporary-message #Content {
     padding-top: 185px;
 }
+.has-temporary-message.PortalView #Content{
+  padding-top: 0px;
+}
