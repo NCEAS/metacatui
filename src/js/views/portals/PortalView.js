@@ -166,17 +166,8 @@ define(["jquery",
                 }));
 
                 //Perform specific label checks
-                if(MetacatUI.nodeModel.get("checked") && this.isNode(this.label)){
-                  this.nodeView = true;
-                  this.renderAsNode();
-                }
-                else if(MetacatUI.nodeModel.get("checked") && !this.isNode(this.label)){
-                  this.nodeView = false;
-                  this.renderAsPortal();
-                }
-                // Wait for node model to complete its fetch
-                else if (!MetacatUI.nodeModel.get("checked")) {
-                  this.listenTo(MetacatUI.nodeModel, "change:checked", function(){
+                if (!MetacatUI.nodeModel.get("checked")) {
+                  this.listenToOnce(MetacatUI.nodeModel, "change:checked", function(){
                     // perform node checks
                     if(view.isNode(view.label)){
                       view.nodeView = true;
@@ -187,6 +178,21 @@ define(["jquery",
                       view.renderAsPortal();
                     }
                   });
+
+                  this.listenToOnce(MetacatUI.nodeModel, "error", function(){
+                    this.showError(null, "Couldn't get the DataONE Node info document");
+                  });
+                }
+                else if( MetacatUI.nodeModel.get("error") ){
+                  this.showError(null, "Couldn't get the DataONE Node info document");
+                }
+                else if( this.isNode(this.label) ){
+                  this.nodeView = true;
+                  this.renderAsNode();
+                }
+                else if( !this.isNode(this.label) ){
+                  this.nodeView = false;
+                  this.renderAsPortal();
                 }
 
                 return this;
@@ -751,13 +757,16 @@ define(["jquery",
             /**
             * Show an error message in this view
             * @param {SolrResult} model
-            * @param {XMLHttpRequest.response} response
+            * @param {XMLHttpRequest.response|string} reponse
             */
             showError: function(model, response){
 
               var errorMsg = "";
               if( response && response.responseText ){
                 errorMsg = "<p>Error details: " + $(response.responseText).text() + "</p>";
+              }
+              if( typeof response == "string" ){
+                errorMsg = "<p>Error details: " + response + "</p>";
               }
 
               //Show the error message

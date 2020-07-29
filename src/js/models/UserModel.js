@@ -915,7 +915,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
       return;
       //End of temporary code
 
-      var model = this;
+    /*  var model = this;
 
       var requestSettings = {
         url: "",
@@ -929,7 +929,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
       }
 
       $.ajax(_.extend(requestSettings, this.createAjaxSettings()));
-
+*/
     },
 
     /**

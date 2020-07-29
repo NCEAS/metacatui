@@ -24,7 +24,7 @@ A quick-start `config.js` could look like:
       //The path to the root location of MetacatUI, i.e. where index.html is
       root: "/",
       //Your Google Maps API key, for map features
-      mapsKey: "YOUR-GOOGLE-MAPS-KEY",
+      mapKey: "YOUR-GOOGLE-MAPS-KEY",
       //Choose the dataone theme, which is already set up with all the CN values
       theme: "dataone"
     }

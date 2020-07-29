@@ -3,7 +3,14 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
     function($, _, Backbone, MetricsChart, MetricModalTemplate, Citations, CitationList) {
     'use strict';
 
-    var MetricModalView = Backbone.View.extend({
+    /**
+    * @class MetricModalView
+    * @classdesc A Bootstrap Modal that displays a DataONE dataset usage metric,
+    * such as downloads, views, or citations.
+    * @extends Backbone.View
+    */
+    var MetricModalView = Backbone.View.extend(
+      /** @lends MetricModalView.prototype */ {
 
         id: 'metric-modal',
         className: 'modal fade hide',
@@ -17,8 +24,9 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
         events: {
           'hidden': 'teardown',
-          'click .left-modal-footer' : 'showPreviousMetricModal',
-          'click .right-modal-footer' : 'showNextMetricModal'
+          'click .left-modal-footer'  : 'showPreviousMetricModal',
+          'click .right-modal-footer' : 'showNextMetricModal',
+          'click .register-citation'  : 'showCitationForm'
         },
 
         initialize: function(options) {
@@ -29,23 +37,24 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
           this.metricName = options.metricName;
           this.metricsModel = options.metricsModel;
+          this.pid = options.pid;
 
         },
-        
+
         getPreviousMetric : function(currentMetricName) {
             if(currentMetricName != 'undefined') {
                     this.metricIndex = this.metrics.indexOf(currentMetricName);
             }
-            
+
             // Implementing a circular queue to get the previous metric
             return(this.metrics[((this.metricIndex + this.metrics.length - 1) % this.metrics.length)]);
         },
-        
+
         getNextMetric : function(currentMetricName) {
             if(currentMetricName != 'undefined') {
                     this.metricIndex = this.metrics.indexOf(currentMetricName);
             }
-            
+
             // Implementing a circular queue to get the next metric
             return(this.metrics[((this.metricIndex + this.metrics.length + 1) % this.metrics.length)]);
         },
@@ -55,6 +64,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         },
 
         teardown: function() {
+          this.$el.modal('hide');
           this.$el.data('modal', null);
           this.remove();
         },
@@ -85,7 +95,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
 
                 this.citationList = citationList;
 
-                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
+                this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html(), hideReportCitationButton: MetacatUI.appModel.get("hideReportCitationButton")}));
             }
             else {
                 if (this.metricName === "Views") {
@@ -102,11 +112,11 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         },
 
         showPreviousMetricModal: function() {
-            
+
             this.nextMetricName = this.metricName;
             this.metricName = this.getPreviousMetric(this.metricName);
             this.nextMetricName = this.getPreviousMetric(this.metricName);
-            
+
 
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             if ( this.metricName === "Citations") {
@@ -122,7 +132,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 else {
                     var citationList = new CitationList({citations: this.citationCollection, citationsForDataCatalogView: true});
                 }
-                
+
                 this.citationList = citationList;
 
                 this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));
@@ -137,12 +147,27 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
             }
         },
 
+        /**
+         * Display the Citation registration form
+         */
+        showCitationForm: function(){
+            // close the current modal
+            this.teardown();
+            var viewRef = this;
+            require(['views/RegisterCitationView'], function(RegisterCitationView){
+                // display a register citation modal
+                var registerCitationView = new RegisterCitationView({pid: viewRef.pid});
+                registerCitationView.render();
+                registerCitationView.show();
+            });
+        },
+
 
         showNextMetricModal: function() {
             this.prevMetricName = this.metricName;
             this.metricName = this.getNextMetric(this.metricName);
             this.nextMetricName = this.getNextMetric(this.metricName);
-            
+
 
             this.metricNameLemma = this.metricName.toLowerCase().substring(0, this.metricName.length - 1);
             if ( this.metricName === "Citations") {
@@ -158,7 +183,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                 else {
                     var citationList = new CitationList({citations: this.citationCollection, citationsForDataCatalogView: true});
                 }
-                
+
                 this.citationList = citationList;
 
                 this.$el.html(this.template({metricName:this.metricName, metricNameLemma:this.metricNameLemma, metricValue: this.metricsModel.get("totalCitations"), metricBody:this.citationList.render().$el.html()}));

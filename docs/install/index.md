@@ -27,7 +27,7 @@ A quick-start `config.js` could look like:
       //The path to the root location of Metacat, i.e. name of the Metacat Tomcat webapp
       metacatContext: "/metacat",
       //Your Google Maps API key, for map features
-      mapsKey: "YOUR-GOOGLE-MAPS-KEY"
+      mapKey: "YOUR-GOOGLE-MAPS-KEY"
     }
   ```
 

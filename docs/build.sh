@@ -10,6 +10,10 @@ if [ -z $isJsdocInstalled ]
     then
       echo -e "${GRAY}The Node.js package 'jsdoc' isn't installed. Attempting to install with 'npm install jsdoc'..."
       npm install jsdoc
+      npm install common-path-prefix
+      npm install open-sans-fonts
+      npm install code-prettify
+      npm install @jsdoc/util
 fi
 
 # Check if the installation succeeded. If not, display an error and exit

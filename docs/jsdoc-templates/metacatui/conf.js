@@ -5,6 +5,10 @@ module.exports = {
     "excludePattern": "js/themes/|components/|config/|css/|font/|img/",
     "include": ["docs/other/addtlDocs.jsdoc"]
   },
+  "plugins": ["./docs/jsdoc-templates/metacatui/plugins/screenshot"],
+  "screenshot": {
+    "dir": "../screenshots"
+  },
   "templates": {
     "default": {
       "outputSourceFiles" : true,
@@ -15,5 +19,8 @@ module.exports = {
         ]
       }
     }
+  },
+  "opts": {
+    "template": "./docs/jsdoc-templates/metacatui"
   }
 }

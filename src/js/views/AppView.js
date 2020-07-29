@@ -282,8 +282,14 @@ define(['jquery',
     * @param {boolean} [options.includeEmail] If true, the alert will include a link to the {@link AppConfig#emailContact}
     * @param {string} [options.emailBody]
     * @param {boolean} [options.remove]
+    * @param {boolean} [options.replaceContents]
     */
 		showAlert: function(msg, classes, container, delay, options) {
+
+      if(typeof options == "undefined"){
+        var options = {}
+      }
+
 			if(!classes)
 				var classes = 'alert-success';
 			if(!container || !$(container).length)
@@ -300,11 +306,11 @@ define(['jquery',
 			var emailOptions = "";
 
 			//Check for more options
-			if(typeof options != "undefined" && options.emailBody)
+			if(options.emailBody)
 				emailOptions += "?body=" + options.emailBody;
 
 			//Allow error messages to be removed
-			var remove = options? options.remove : false;
+			var remove = options.remove || false;
 
 			var alert = $.parseHTML(this.alertTemplate({
 				msg: msg,
@@ -315,11 +321,24 @@ define(['jquery',
 
 			if(delay){
 				$(alert).hide();
-				$(container).prepend(alert);
-				$(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
-			}
-			else
-				$(container).prepend(alert);
+
+        if( options.replaceContents ){
+          $(container).html(alert);
+        }
+        else{
+          $(container).prepend(alert);
+        }
+
+        $(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
+     }
+     else{
+        if( options.replaceContents ){
+          $(container).html(alert);
+        }
+        else{
+          $(container).prepend(alert);
+        }
+      }
 		},
 
 		/**

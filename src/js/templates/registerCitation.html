@@ -1,0 +1,40 @@
+<div >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="register-citation-modal-header modal-header">
+        <div class="left-header-section">
+            <i class='icon icon-plus'></i>
+            Register Citation
+        </div>
+        <div class="right-header-section">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body mx-3">
+        <form>
+
+            <div class="form-group">
+                <label for="publication-identifier">Enter DOI of the Publication </label>
+                <input type="text" class="form-control" id="publication-identifier" placeholder="doi:10.1037/0003-066X">
+            </div>
+
+            <div class="form-row align-items-center">
+              <div class="col-auto my-1">
+                <label class="mr-sm-2 sr-only" for="citationTypeCustomSelect">Type of Citation</label>
+                <select class="custom-select mr-sm-2" id="citationTypeCustomSelect">
+                  <option value="0" selected>Choose...</option>
+                  <option value="1">Publication cites this dataset</option>
+                  <option value="2">Publication uses this dataset</option>
+                </select>
+              </div>
+              
+            </div>
+          </form>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-indigo btn-register-citation">Register<i class="fas fa-paper-plane-o ml-1"></i></button>
+      </div>
+    </div>
+  </div>
+</div>

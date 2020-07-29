@@ -85,14 +85,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
         if( json.logo && !json.logo.startsWith("http") ){
           json.logo = MetacatUI.appModel.get("objectServiceUrl") + json.logo;
         }
-        
+
         var datasourceId = json.memberNode? json.memberNode.identifier : json.datasource,
             currentMemberNode = MetacatUI.appModel.get("nodeId") || datasourceId;
 
         //Construct a URL to the profile of this repository
         json.profileURL = (datasourceId == currentMemberNode)?
                            MetacatUI.root + "/profile" :
-                           MetacatUI.appModel.get("dataoneSearchUrl") + "/portals/" + json.memberNode.shortIdentifier;
+                           MetacatUI.appModel.get("dataoneSearchUrl") + "/portals/" + datasourceId.replace("urn:node:", "");
 
       }
 

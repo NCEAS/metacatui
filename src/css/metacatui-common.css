@@ -1981,11 +1981,12 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	padding-top: 22px;
 }
 .empty-citation-list-text {
-    font-size: 16px;
+	font-size: 16px;
     font-weight: 100;
     color: #555555;
     text-align: center;
-    position: relative;
+    margin-left: 10px;
+    position: absolute;
     top: 50%;
     -ms-transform: translateY(-50%);
 }
@@ -1993,14 +1994,49 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     width: 80%;
     top: 22%;
     left: 10%;
-    display: block;
-    position: absolute;
+    display: flex;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 50%;
     border-radius: 2px;
     background-color: #f5f5f5;
     box-shadow: 0 0 black;
 }
 
+.empty-citation-list > .register-citation {
+	top: 30%;
+    position: absolute;
+}
+
+.register-citation-modal-header{
+	height: 25px;
+}
+
+.register-citation-modal-header > .left-header-section{
+	width: 90%;
+	float: left;
+	margin-top: 3px;
+}
+
+.register-citation-modal-header > .right-header-section{
+	width: 10%;
+	float: right;
+	margin-top: 3px;
+}
+
+.register-citation-element > .register-citation {
+	position: fixed;
+    display: block;
+    margin-top: 60px;
+}
+
+.register-citation-element {
+	display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /******************************************
 * Search Page / Data Catalog Page Metrics
@@ -2856,7 +2892,6 @@ img[src*="googleapis.com/"].georegion-map{
 .media,
 .media-body {
   overflow: hidden;
-  zoom: 1;
 }
 .media-body {
   width: 10000px;

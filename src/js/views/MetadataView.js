@@ -1348,17 +1348,17 @@ define(['jquery',
         var buttonToolbar = this.$(".metrics-container");
 
         if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-          var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel});
+          var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel, pid: this.pid});
           buttonToolbar.append(citationsMetricView.render().el);
         }
 
         if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
-          var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel});
+          var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel, pid: this.pid});
           buttonToolbar.append(downloadsMetricView.render().el);
         }
 
         if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
-          var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel});
+          var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel, pid: this.pid});
           buttonToolbar.append(viewsMetricView.render().el);
         }
 
@@ -3011,6 +3011,7 @@ define(['jquery',
         newView.render();
       });
     }
+
   });
 
   return MetadataView;
