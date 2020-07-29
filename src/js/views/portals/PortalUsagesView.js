@@ -1,11 +1,12 @@
 define(["jquery",
   "underscore",
   "backbone",
+  "collections/SolrResults",
   "collections/Filters",
   "collections/bookkeeper/Usages",
   "views/portals/PortalListView",
   "text!templates/portals/portalList.html"],
-  function($, _, Backbone, Filters, Usages, PortalListView, Template){
+  function($, _, Backbone, SearchResults, Filters, Usages, PortalListView, Template){
 
     /**
     * @class PortalUsagesView
@@ -41,12 +42,13 @@ define(["jquery",
           //When in DataONE Plus Preview mode, search for portals in Solr first,
           // then create Usage models for each portal in Solr.
           if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
-            this.listenToOnce(this.searchResults, "sync", function(){
+
+            this.listenTo(this.searchResults, "sync", function(){
 
               //Create a Usage for each portal found in Solr
               this.searchResults.each(function(searchResult){
                 this.usagesCollection.add({
-                  instanceId: searchResult.get("id"),
+                  instanceId: searchResult.get("seriesId"),
                   status: "active",
                   quantity: 1,
                   nodeId: searchResult.get("datasource")
@@ -55,7 +57,100 @@ define(["jquery",
 
               //Merge the Usages and Search Results
               this.mergeSearchResults();
+
+              //Update the view with info about the corresponding Usage model
+              this.showUsageInfo();
             });
+
+            if( MetacatUI.appModel.get("dataonePlusPreviewPortals").length ){
+
+              this.altReposChecked = 0;
+              this.altReposToCheck = [];
+              this.additionalPortalsToDisplay = [];
+
+              _.each( MetacatUI.appModel.get("alternateRepositories"), function(altRepo){
+
+                var portalsInThisRepo = _.where(MetacatUI.appModel.get("dataonePlusPreviewPortals"),
+                                          { datasource: altRepo.identifier });
+
+                if( portalsInThisRepo.length ){
+
+                  var searchResults = new SearchResults();
+                  this.listenToOnce(searchResults, "reset", function(){
+
+                    if( searchResults.length ){
+                      this.additionalPortalsToDisplay = this.additionalPortalsToDisplay.concat( searchResults.models );
+                    }
+
+                    if(typeof this.altReposChecked == "number" ){
+                      this.altReposChecked++;
+                      if( this.altReposChecked == this.altReposToCheck ){
+                        //Call the PortalListView render function
+                        PortalListView.prototype.render.call(this);
+                      }
+                    }
+
+                    //Create a Usage for each portal found in Solr
+                    searchResults.each(function(searchResult){
+                      this.usagesCollection.add({
+                        instanceId: searchResult.get("seriesId"),
+                        status: "active",
+                        quantity: 1,
+                        nodeId: searchResult.get("datasource")
+                      });
+                    }, this);
+
+                    //Merge the Usages and Search Results
+                    this.mergeSearchResults(searchResults);
+
+                    //Update the view with info about the corresponding Usage model
+                    this.showUsageInfo();
+
+                  });
+
+                  //Create a Filters() collection
+                  var portalFilters = new Filters();
+                  portalFilters.mustMatchIds = true;
+                  portalFilters.addWritePermissionFilter();
+                  portalFilters.add({
+                    fields: ["obsoletedBy"],
+                    values: ["*"],
+                    matchSubstring: false,
+                    exclude: true
+                  });
+                  portalFilters.add({
+                    fields: ["datasource"],
+                    values: [altRepo.identifier],
+                    matchSubstring: false,
+                    exclude: false
+                  });
+                  var portalIds = _.pluck(portalsInThisRepo, "seriesId");
+                  portalFilters.add({
+                    fields: ["seriesId"],
+                    values: portalIds,
+                    operator: "OR",
+                    matchSubstring: false
+                  });
+
+                  searchResults.rows = portalIds.length;
+                  searchResults.fields = this.searchFields;
+
+                  searchResults.queryServiceUrl = altRepo.queryServiceUrl;
+
+                  searchResults.setQuery( portalFilters.getQuery() );
+
+                  this.altReposToCheck++;
+
+                  //Get the first page of results
+                  searchResults.toPage(0);
+                }
+
+              }, this);
+
+
+              return;
+
+            }
 
             //Call the PortalListView render function
             PortalListView.prototype.render.call(this);
@@ -74,7 +169,12 @@ define(["jquery",
           this.listenToOnce(this.usagesCollection, "error", this.showError);
 
           //When the SearchResults are retrieved, merge them with the Usages collection
-          this.listenToOnce(this.searchResults, "sync", this.mergeSearchResults);
+          this.listenToOnce(this.searchResults, "sync", function(){
+            this.mergeSearchResults();
+
+            //Update the view with info about the corresponding Usage model
+            this.showUsageInfo();
+          });
 
           //Fetch the collection
           this.usagesCollection.fetch({
@@ -117,7 +217,7 @@ define(["jquery",
             });
 
             //Only get Portals that the user is an owner of
-            this.filters.addOwnershipFilter();
+            this.filters.addWritePermissionFilter();
           }
           //If the filters set on this view is an array of JSON, add it to a Filters collection
           else if( this.filters.length && !Filters.prototype.isPrototypeOf(this.filters) ){
@@ -145,8 +245,13 @@ define(["jquery",
       /**
       * Merges the SearchResults collection with the Usages collection
       */
-      mergeSearchResults: function(){
-        this.usagesCollection.mergeCollections(this.searchResults);
+      mergeSearchResults: function(searchResults){
+
+        if(typeof searchResults == "undefined"){
+          var searchResults = this.searchResults;
+        }
+
+        this.usagesCollection.mergeCollections(searchResults);
 
         //If in DataONE Plus Preview mode, total the portal count from Solr and use that as the portal totalUsage
         if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
@@ -158,9 +263,6 @@ define(["jquery",
           }
 
         }
-
-        //Update the view with info about the corresponding Usage model
-        this.showUsageInfo();
       },
 
       /**

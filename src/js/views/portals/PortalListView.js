@@ -43,6 +43,14 @@ define(["jquery",
         numPortals: 100,
 
         /**
+        * An array of additional SolrResult models for portals that will be displayed
+        * in this view in addition to the SolrResults found as a result of the search.
+        * These could be portals that wouldn't otherwise be found by a search but should be displayed anyway.
+        * @type {SolrResult[]}
+        */
+        additionalPortalsToDisplay: [],
+
+        /**
         * A jQuery selector for the element that the list should be inserted into
         * @type {string}
         */
@@ -79,7 +87,7 @@ define(["jquery",
               var filters = new Filters();
 
               //Filter datasets that the user has ownership of
-              filters.addOwnershipFilter();
+              filters.addWritePermissionFilter();
 
               this.filters = filters;
             }
@@ -99,6 +107,20 @@ define(["jquery",
 
             //Get the search results and render them
             this.getSearchResults();
+
+            //Display any additional portals in the list that have been passed to
+            // the view directly.
+            _.each(this.additionalPortalsToDisplay, function(searchResult){
+              //Get the list container element
+              var listContainer = this.$(this.listContainer);
+
+              //Remove any 'loading' elements before adding items to the list
+              listContainer.find(".loading").remove();
+
+              //Create a list item element and add the search result element
+              // to the list container
+              listContainer.append(this.createListItem(searchResult));
+            }, this);
 
           }
           catch(e){
@@ -174,7 +196,7 @@ define(["jquery",
             var listContainer = this.$(this.listContainer);
 
             //If no search results were found, display a message
-            if( !this.searchResults || !this.searchResults.length ){
+            if( (!this.searchResults || !this.searchResults.length) && !this.additionalPortalsToDisplay.length){
               var row = this.createListItem();
               row.html("<td colspan='4' class='center'>You haven't created or have access to any " +
                         MetacatUI.appModel.get("portalTermPlural") + " yet.</td>");
@@ -219,10 +241,16 @@ define(["jquery",
         createListItem: function(searchResult){
 
           try{
+
             //Create a table row
             var listItem = $(document.createElement("tr"));
 
             if( searchResult && typeof searchResult.get == "function" ){
+
+              //Don't render a list item for a portal that is already there
+              if( this.$("tr[data-seriesId='" + searchResult.get("seriesId") + "']").length ){
+                return listItem;
+              }
 
               //Add an id to the list element
               listItem.attr("data-seriesId", searchResult.get("seriesId"));
@@ -399,14 +427,18 @@ define(["jquery",
         * Displays an error message when rendering this view has failed.
         */
         showError: function(){
+
           //Remove the loading elements
           this.$(this.listContainer).find(".loading").remove();
 
-          //Show an error message
-          MetacatUI.appView.showAlert(
-            "Something went wrong while getting this list of portals.",
-            "alert-error",
-            this.$(this.listContainer));
+          if( this.$(this.listContainer).children("tr").length == 0 ){
+
+            //Show an error message
+            MetacatUI.appView.showAlert(
+              "Something went wrong while getting this list of portals.",
+              "alert-error",
+              this.$(this.listContainer));
+          }
         }
 
       });

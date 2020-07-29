@@ -1388,6 +1388,8 @@ define(['jquery', 'underscore', 'backbone'],
 
       dataonePlusPreviewMode: false,
 
+      dataonePlusPreviewPortals: [],
+
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
