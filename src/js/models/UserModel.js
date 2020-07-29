@@ -129,7 +129,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					verified   = $(userNode).find("verified").first().text(),
 					memberOf   = this.get("isMemberOf"),
 					ownerOf	   = this.get("isOwnerOf"),
-					identities = this.get("identities");
+					identities = this.get("identities"),
+          equivUsernames = [];
 
 				//Sometimes names are saved as "NA" when they are not available - translate these to false values
 				if(firstName == "NA")
@@ -167,6 +168,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
 						var equivalentUser = new UserModel({ username: username, basicUser: true, rawData: equivUserNode });
 						identities.push(equivalentUser);
+            equivUsernames.push(username);
 					});
 				}
 
@@ -190,7 +192,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
       var allSubjects = _.pluck( this.get("isMemberOf"), "groupId" );
       allSubjects.push(this.get("username"));
-      allSubjects.push(this.get("identities"));
+      allSubjects = allSubjects.concat(equivUsernames);
 
 			return {
 				isMemberOf: memberOf,
