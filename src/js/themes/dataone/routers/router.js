@@ -363,6 +363,7 @@ function ($, _, Backbone) {
 			//If the user status has not been checked yet, wait for it
 			else if( !MetacatUI.appUserModel.get("checked") ){
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.renderSignIn);
+        MetacatUI.appView.showView(MetacatUI.appView.signInView);
 			}
 		},
 
