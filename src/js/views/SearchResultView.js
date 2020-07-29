@@ -92,7 +92,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult', 'models/Package
         //Construct a URL to the profile of this repository
         json.profileURL = (datasourceId == currentMemberNode)?
                            MetacatUI.root + "/profile" :
-                           MetacatUI.appModel.get("dataoneSearchUrl") + "/portals/" + datasourceId;
+                           MetacatUI.appModel.get("dataoneSearchUrl") + "/portals/" + datasourceId.replace("urn:node:", "");
 
       }
 
