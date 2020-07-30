@@ -211,8 +211,6 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         // Insert the main template for this view
         view.$el.html(dropzoneTemplate);
 
-        console.log("isNew: ", view.model.isNew(), view.model.get("imageURL") || view.model.url());
-
         // Add upload & drag and drop functionality to the dropzone div.
         // For config details, see: https://www.dropzonejs.com/#configuration
         var $dropZone = view.$(".dropzone").dropzone({
