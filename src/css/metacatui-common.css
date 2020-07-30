@@ -4692,6 +4692,7 @@ i.toc-sub-item {
 }
 .portal-list-container .loading {
   height: 50px;
+  text-align: center;
 }
 
 .my-portals-container table td.title > a {

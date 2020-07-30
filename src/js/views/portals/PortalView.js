@@ -199,7 +199,7 @@ define(["jquery",
             },
 
             /**
-             * Entery point for portal rendering
+             * Entry point for portal rendering
              */
             renderAsPortal: function(){
 
@@ -282,6 +282,36 @@ define(["jquery",
               // Remove the listeners that were set during the fetch() process
               this.stopListening(this.model, "notFound", this.handleNotFound);
               this.stopListening(this.model, "error", this.showError);
+
+              //If this is in DataONE Plus Preview Mode, check that the portal is
+              // a Plus portal before rendering. Member Node portals are always displayed.
+              if( MetacatUI.appModel.get("dataonePlusPreviewMode") && !this.nodeView){
+                var sourceMN = this.model.get("datasource");
+
+                //Check if the portal source node is from the active alt repo OR is
+                // configured as a Plus portal.
+                if( typeof sourceMN != "string" ||
+                    (sourceMN != MetacatUI.appModel.get("defaultAlternateRepositoryId") &&
+                    !_.findWhere(MetacatUI.appModel.get("dataonePlusPreviewPortals"),
+                                 { datasource: sourceMN, seriesId: this.model.get("seriesId") })) ){
+
+                    //Get the name of the source member node
+                    var sourceMNName = "original data repository";
+                    if( typeof sourceMN == "string" ){
+                      var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
+                      if( sourceMNObject ){
+                        sourceMNName = sourceMNObject.nodeName;
+                      }
+                    }
+
+                    //Show a message that the portal can be found on the repository website.
+                    MetacatUI.appView.showAlert({
+                      message: "The " + this.label + " " + MetacatUI.appModel.get("portalTermSingular") +
+                                " can be viewed in the " + sourceMNName,
+                      container: this.$el
+                    });
+                }
+              }
 
                 // Insert the overall portal template
                 this.$el.html(this.template(this.model.toJSON()));
@@ -811,7 +841,7 @@ define(["jquery",
                 this.stopListening();
 
                 //Reset the active alternate repository
-                MetacatUI.appModel.set("activeAlternateRepositoryId", null);
+                //MetacatUI.appModel.set("activeAlternateRepositoryId", null);
 
                 //Delete the metrics view from this view
                 delete this.sectionMetricsView;

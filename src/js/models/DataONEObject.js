@@ -844,62 +844,107 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            */
           checkAuthority: function(action, options){
 
-            // return false - if neither PID nor SID is present to check the authority
-            if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
+            try{
+              // return false - if neither PID nor SID is present to check the authority
+              if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
+                return false;
+              }
+
+              if( typeof options == "undefined" ){
+                var options = {};
+              }
+
+              // If PID is not present - check authority with seriesId
+              var identifier = this.get("id");
+              if ( (identifier == null) ) {
+                identifier = this.get("seriesId");
+              }
+
+              if(!action) var action = "changePermission";
+
+              //If there are alt repositories configured, find the possible authoritative
+              // Member Node for this DataONEObject.
+              if( MetacatUI.appModel.get("alternateRepositories").length ){
+
+                //Get the array of possible authoritative MNs
+                var possibleAuthMNs = this.get("possibleAuthMNs");
+
+                //If there are no possible authoritative MNs, use the auth service URL from the AppModel
+                if( !possibleAuthMNs.length ){
+                  baseUrl = MetacatUI.appModel.get("authServiceUrl");
+                }
+                else{
+                  //Use the auth service URL from the top possible auth MN
+                  baseUrl = possibleAuthMNs[0].authServiceUrl;
+                }
+
+              }
+              else{
+                //Get the auth service URL from the AppModel
+                baseUrl = MetacatUI.appModel.get("authServiceUrl");
+              }
+
+              if( !baseUrl ){
+                return false;
+              }
+
+              var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+                    model.set("isAuthorized_" + action, true);
+                    model.set("isAuthorized", true);
+                    model.trigger("change:isAuthorized");
+                  },
+                  onError = options.onError || function(xhr, textStatus, errorThrown){
+                    if(errorThrown == 404){
+                      var possibleAuthMNs = model.get("possibleAuthMNs");
+                      if( possibleAuthMNs.length ){
+                        //Remove the first MN from the array, since it didn't contain the object, so it's not the auth MN
+                        possibleAuthMNs.shift();
+                      }
+
+                      //If there are no other possible auth MNs to check, trigger this model as Not Found.
+                      if( possibleAuthMNs.length == 0 || !possibleAuthMNs ){
+                        model.set("notFound", true);
+                        model.trigger("notFound");
+                      }
+                      //If there's more MNs to check, try again
+                      else{
+                        model.checkAuthority(action, options);
+                      }
+                    }
+                    else{
+                      model.set("isAuthorized_" + action, false);
+                      model.set("isAuthorized", false);
+                    }
+                  };
+
+              var model = this;
+              var requestSettings = {
+                url: baseUrl + encodeURIComponent(identifier) + "?action=" + action,
+                type: "GET",
+                success: onSuccess,
+                error: onError
+              }
+              $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+            }
+            catch(e){
+              //Log an error to the console
+              console.error("Couldn't check the authority for this user: ", e);
+
+              //Send this exception to Google Analytics
+              if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
+                  ga("send", "exception", {
+                      "exDescription": "Couldn't check the authority for the user " + MetacatUI.appModel.get("username") +
+                          " | Object Id: " + this.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                      "exFatal": true
+                  });
+              }
+
+              //Set the user as unauthorized
+              model.set("isAuthorized_" + action, false);
+              model.set("isAuthorized", false);
               return false;
+
             }
-
-            if( typeof options == "undefined" ){
-              var options = {};
-            }
-
-            // If PID is not present - check authority with seriesId
-            var identifier = this.get("id");
-            if ( (identifier == null) ) {
-              identifier = this.get("seriesId");
-            }
-
-            if(!action) var action = "changePermission";
-
-            //Get the active alternative repository, if one is configured
-            var baseUrl = "";
-            var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
-
-            if( activeAltRepo ){
-              baseUrl = activeAltRepo.authServiceUrl;
-            }
-            else{
-              baseUrl = MetacatUI.appModel.get("authServiceUrl");
-            }
-
-            if( !baseUrl ){
-              return false;
-            }
-
-            var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
-                  model.set("isAuthorized_" + action, true);
-                  model.set("isAuthorized", true);
-                  model.trigger("change:isAuthorized");
-                },
-                onError = options.onError || function(xhr, textStatus, errorThrown){
-                  if(errorThrown == 404){
-                    model.set("notFound", true);
-                    model.trigger("notFound");
-                  }
-                  else{
-                    model.set("isAuthorized_" + action, false);
-                    model.set("isAuthorized", false);
-                  }
-                };
-
-            var model = this;
-            var requestSettings = {
-              url: baseUrl + encodeURIComponent(identifier) + "?action=" + action,
-              type: "GET",
-              success: onSuccess,
-              error: onError
-            }
-            $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
           },
 

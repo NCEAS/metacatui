@@ -122,6 +122,15 @@ define(["jquery",
               listContainer.append(this.createListItem(searchResult));
             }, this);
 
+            if( this.additionalPortalsToDisplay.length ){
+              //While the search is being sent for the other portals in this list,
+              // show a loading sign underneath the additional portals we just displayed.
+              var loadingListItem = this.createListItem();
+              loadingListItem.html("<td class='loading subtle' colspan='4'>Loading more " +
+                                     MetacatUI.appModel.get("portalTermPlural") + "...</td>");
+              this.$(this.listContainer).append(loadingListItem);
+            }
+
           }
           catch(e){
             console.error(e);
@@ -160,8 +169,11 @@ define(["jquery",
 
             //Set the query service URL
             try{
-              if( MetacatUI.appModel.get("activeAlternateRepositoryId") ){
-                this.searchResults.queryServiceUrl = MetacatUI.appModel.getActiveAltRepo().queryServiceUrl;
+              if( MetacatUI.appModel.get("defaultAlternateRepositoryId") ){
+                var mnToQuery = _.findWhere( MetacatUI.appModel.get("alternateRepositories"), { identifier: MetacatUI.appModel.get("defaultAlternateRepositoryId") } );
+                if( mnToQuery ){
+                  this.searchResults.queryServiceUrl = mnToQuery.queryServiceUrl;
+                }
               }
             }
             catch(e){

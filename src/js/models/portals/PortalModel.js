@@ -253,7 +253,7 @@ define(["jquery",
 
               try{
                 //If this app instance is pointing to the CN, find the Portal series ID on the MN
-                if( MetacatUI.appModel.get("isCN") ){
+                if( MetacatUI.appModel.get("alternateRepositories").length ){
 
                   //Get the array of possible authoritative MNs
                   var possibleAuthMNs = this.get("possibleAuthMNs");

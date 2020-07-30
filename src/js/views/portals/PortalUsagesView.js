@@ -35,6 +35,9 @@ define(["jquery",
             return;
           }
 
+          //Insert the template
+          this.$el.html(this.template());
+
           if( !this.usagesCollection ){
             this.usagesCollection = new Usages();
           }
@@ -158,9 +161,6 @@ define(["jquery",
             //Don't do anything else in this render function
             return;
           }
-
-          //Insert the template
-          this.$el.html(this.template());
 
           //When the collection has been fetched, redner the Usage list
           this.listenToOnce(this.usagesCollection, "sync", this.getSearchResultsForUsages);

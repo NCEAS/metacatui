@@ -274,6 +274,93 @@ define(['jquery',
 
     /**
     * Displays the given message to the user in a Bootstrap "alert" style.
+    * @param {object} options A literal object of options for the alert message.
+    * @property {string|Element} options.message A message string or HTML Element to display
+    * @property {string} [options.classes] A string of HTML classes to set on the alert
+    * @property {string|Element} [options.container] The container to show the alert in
+    * @property {boolean} [options.replaceContents] If true, the alert will replace the contents of the container element.
+    *                                               If false, the alert will be prepended to the container element.
+    * @property {boolean|number} [options.delay] Set to true or specify a number of milliseconds to display the alert temporarily
+    * @property {boolean} [options.remove] If true, the user will be able to remove the alert with a "close" icon.
+    * @property {boolean} [options.includeEmail] If true, the alert will include a link to the {@link AppConfig#emailContact}
+    * @property {string} [options.emailBody] Specify an email body to use in the email link.
+    */
+    showAlert: function() {
+      if( arguments.length > 1 ){
+        var options = {
+          message: arguments[0],
+          classes: arguments[1],
+          container: arguments[2],
+          delay: arguments[3]
+        }
+        if( typeof arguments[4] == "object" ){
+          options = _.extend(options, arguments[4]);
+        }
+      }
+      else{
+        var options = arguments[0];
+      }
+
+      if( typeof options != "object" || !options ){
+        return;
+      }
+
+      if(!options.classes)
+				options.classes = 'alert-success';
+
+			if(!options.container || !$(options.container).length)
+				options.container = this.$el;
+
+			//Remove any alerts that are already in this container
+			if($(options.container).children(".alert-container").length > 0)
+				$(options.container).children(".alert-container").remove();
+
+			//Allow messages to be HTML or strings
+			if(typeof options.message != "string")
+				options.message = $(document.createElement("div")).append($(options.message)).html();
+
+			var emailOptions = "";
+
+			//Check for more options
+			if(options.emailBody)
+				emailOptions += "?body=" + options.emailBody;
+
+			var alert = $.parseHTML(this.alertTemplate({
+				msg: options.message,
+				classes: options.classes,
+				emailOptions: emailOptions,
+				remove: options.remove || false
+			}).trim());
+
+			if(options.delay){
+				$(alert).hide();
+
+        if( options.replaceContents ){
+          $(options.container).html(alert);
+        }
+        else{
+          $(options.container).prepend(alert);
+        }
+
+        $(alert).show().delay(typeof options.delay == "number"? options.delay : 3000).fadeOut();
+     }
+     else{
+        if( options.replaceContents ){
+          $(options.container).html(alert);
+        }
+        else{
+          $(options.container).prepend(alert);
+        }
+      }
+
+    },
+
+    /**
+    * Previous to MetacatUI 2.14.0, the {@link AppView#showAlert} function allowed up to five parameters
+    * to customize the alert message. As of 2.14.0, the function has condensed these options into
+    * a single literal object. See the docs for {@link AppView#showAlert}. The old signature of five
+    * parameters may soon be deprecated completely, but is still supported.
+    * @deprecated
     * @param {string|Element} msg
     * @param {string} [classes]
     * @param {string|Element} [container]
@@ -284,62 +371,7 @@ define(['jquery',
     * @param {boolean} [options.remove]
     * @param {boolean} [options.replaceContents]
     */
-		showAlert: function(msg, classes, container, delay, options) {
-
-      if(typeof options == "undefined"){
-        var options = {}
-      }
-
-			if(!classes)
-				var classes = 'alert-success';
-			if(!container || !$(container).length)
-				var container = this.$el;
-
-			//Remove any alerts that are already in this container
-			if($(container).children(".alert-container").length > 0)
-				$(container).children(".alert-container").remove();
-
-			//Allow messages to be HTML or strings
-			if(typeof msg != "string")
-				msg = $(document.createElement("div")).append($(msg)).html();
-
-			var emailOptions = "";
-
-			//Check for more options
-			if(options.emailBody)
-				emailOptions += "?body=" + options.emailBody;
-
-			//Allow error messages to be removed
-			var remove = options.remove || false;
-
-			var alert = $.parseHTML(this.alertTemplate({
-				msg: msg,
-				classes: classes,
-				emailOptions: emailOptions,
-				remove: remove
-			}).trim());
-
-			if(delay){
-				$(alert).hide();
-
-        if( options.replaceContents ){
-          $(container).html(alert);
-        }
-        else{
-          $(container).prepend(alert);
-        }
-
-        $(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
-     }
-     else{
-        if( options.replaceContents ){
-          $(container).html(alert);
-        }
-        else{
-          $(container).prepend(alert);
-        }
-      }
-		},
+		showAlert_deprecated: function(msg, classes, container, delay, options) {},
 
 		/**
     * Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else

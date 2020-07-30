@@ -1333,6 +1333,17 @@ define(['jquery', 'underscore', 'backbone'],
       alternateRepositories: [],
 
       /**
+      * The node identifier of the alternate repository that is used for fetching and saving DataONEObjects.
+      * this attribute is dynamically set by MetacatUI to keep track of the currently active alt repo.
+      * To specify a repository that should be active by default, set {@link AppConfig#defaultAlternateRepositoryId}
+      * @type {string}
+      * @example "urn:node:METACAT"
+      * @since 2.14.0
+      * @readonly
+      */
+      activeAlternateRepositoryId: null,
+
+      /**
       * The node identifier of the alternate repository that should be used for fetching and saving DataONEObjects.
       * Since there can be multiple alternate repositories configured, this attribute can be used to specify which
       * one is actively in use.
@@ -1340,7 +1351,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @example "urn:node:METACAT"
       * @since 2.14.0
       */
-      activeAlternateRepositoryId: null,
+      defaultAlternateRepositoryId: null,
 
       /**
       * Enable or disable the DataONE Bookkeeper services. If enabled, Portal Views will use the DataONE Plus
