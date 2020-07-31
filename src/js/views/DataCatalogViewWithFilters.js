@@ -270,38 +270,42 @@ define(["jquery",
                 var page; // The page of search results to render
                 var position; // The geohash level position in the facet array
 
+                // Get the Solr query string from the Search filter collection
+                query = this.searchModel.get("filters").getQuery();
+
+                //If the query hasn't changed since the last query that was sent, don't do anything.
+                //This function may have been triggered by a change event on a filter that doesn't
+                //affect the query at all
+                if( query == this.searchResults.getLastQuery()){
+                  return;
+                }
+
                 if ( sortOrder ) {
                     this.searchResults.setSort(sortOrder);
                 }
 
                 //Specify which fields to retrieve
-                var fields = [];
-                    fields.push("id");
-                    fields.push("seriesId");
-                    fields.push("title");
-                    fields.push("origin");
-                    fields.push("pubDate");
-                    fields.push("dateUploaded");
-                    fields.push("abstract");
-                    fields.push("resourceMap");
-                    fields.push("beginDate");
-                    fields.push("endDate");
-                    fields.push("read_count_i");
-                    fields.push("geohash_9");
-                    fields.push("datasource");
-                    fields.push("isPublic");
-                    fields.push("documents");
+                var fields = ["id",
+                              "seriesId",
+                              "title",
+                              "origin",
+                              "pubDate",
+                              "dateUploaded",
+                              "abstract",
+                              "resourceMap",
+                              "beginDate",
+                              "endDate",
+                              "read_count_i",
+                              "geohash_9",
+                              "datasource",
+                              "isPublic",
+                              "documents"];
                 // Add spatial fields if the map is present
                 if ( gmaps ) {
-                    fields.push("northBoundCoord");
-                    fields.push("southBoundCoord");
-                    fields.push("eastBoundCoord");
-                    fields.push("westBoundCoord");
+                    fields.push("northBoundCoord", "southBoundCoord", "eastBoundCoord", "westBoundCoord");
                 }
+                //Set the field list on the SolrResults collection as a comma-separated string
                 this.searchResults.setfields(fields.join(","));
-
-                // Get the Solr query string from the Search filter collection
-                query = this.searchModel.get("filters").getQuery();
 
                 // Specify which geohash level is used to return tile counts
                 if ( gmaps && this.map ) {
@@ -314,7 +318,7 @@ define(["jquery",
                     }
                 }
 
-                // Run the query
+                // Set the query on the SolrResults collection
                 this.searchResults.setQuery(query);
 
                 // Get the page number
@@ -328,7 +332,7 @@ define(["jquery",
                 }
                 this.searchResults.start = page * this.searchResults.rows;
 
-                // go to the page
+                // go to the page, which triggers a search
                 this.showPage(page);
 
                 // don't want to follow links

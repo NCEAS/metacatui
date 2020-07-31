@@ -173,9 +173,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			if (this.currentquery != newquery) {
 				this.currentquery = newquery;
 				this.start = 0;
-
+        this.lastQuery = newquery;
 			}
 		},
+
+    getLastQuery: function(){
+      return this.lastQuery;
+    },
 
 		setfields: function(newfields) {
 				this.fields = newfields;
