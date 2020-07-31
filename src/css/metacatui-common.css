@@ -4043,7 +4043,13 @@ add font awesome close icon */
 /******************************************
 * Portals & Portal Editor (styles shared between both)
 ********************************************/
-
+#editPortal.btn{
+  height: 2em;
+min-width: 180px;
+text-align: center;
+line-height: 2em;
+font-size: 1.1em;
+}
 .portal-editor #editor-header{
   border-bottom: 0px;
   padding: 20px 40px;
