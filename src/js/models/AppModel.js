@@ -1648,6 +1648,35 @@ define(['jquery', 'underscore', 'backbone'],
       else{
         return null;
       }
+    },
+
+    /**
+    * Gets the default alternate repository and sets it as the active alternate repository.
+    * If a default alt repo ({@link AppConfig#defaultAlternateRepositoryId}) isn't configured,
+    * the first alt repo in the {@link AppConfig#alternateRepositories} list is used.
+    * @fires AppModel#change:activeAlternateRepositoryId
+    */
+    setActiveAltRepo: function(){
+      //Get the alternative repositories to use for uploading objects
+      var altRepos = this.get("alternateRepositories"),
+          defaultAltRepo;
+
+      if( !altRepos.length ){
+        return;
+      }
+
+      //If a default alt repo is configured, set that as the active alt repo
+      if( this.get("defaultAlternateRepositoryId") ){
+        defaultAltRepo = _.findWhere(altRepos, {identifier: this.get("defaultAlternateRepositoryId") });
+        if( defaultAltRepo ){
+          this.set("activeAlternateRepositoryId", defaultAltRepo.identifier);
+        }
+      }
+
+      //Otherwise, use the first alt repo in the list
+      if( !defaultAltRepo ){
+        this.set("activeAlternateRepositoryId", altRepos[0].identifier);
+      }
     }
   });
   return AppModel;

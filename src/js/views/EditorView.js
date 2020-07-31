@@ -76,12 +76,9 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
       this.delegateEvents();
 
-      //If this MetacatUI instance is pointing to the CN, use an alternate repo
-      if( MetacatUI.appModel.get("isCN") ){
-        if( MetacatUI.appModel.get("alternateRepositories").length ){
-          //Set the active alt repository as the first one in the list
-          MetacatUI.appModel.set("activeAlternateRepositoryId", MetacatUI.appModel.get("alternateRepositories")[0].identifier);
-        }
+      //If there is no active alternate repository, set one
+      if( !MetacatUI.appModel.getActiveAltRepo() && MetacatUI.appModel.get("alternateRepositories").length ){
+        MetacatUI.appModel.setActiveAltRepo();
       }
     },
 
