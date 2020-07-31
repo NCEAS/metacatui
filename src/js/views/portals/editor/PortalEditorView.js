@@ -759,7 +759,14 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
             if( showMessage ){
               //Show a free trial message in the editor footer
               var freeTrialMessage = "This " + MetacatUI.appModel.get("portalTermSingular") + " is a free preview of " + MetacatUI.appModel.get("dataonePlusName");
-              this.$("#editor-footer").prepend( $(document.createElement("span")).addClass("free-trial-message").text(freeTrialMessage) );
+              var messageEl = $(document.createElement("span"))
+                                .addClass("free-trial-message")
+                                .text(freeTrialMessage);
+              this.$("#editor-footer").prepend(messageEl);
+
+              require(["text!templates/dataonePlusIcon.html"], function(iconTemplate){
+                messageEl.prepend(iconTemplate);
+              });
             }
           }
 
