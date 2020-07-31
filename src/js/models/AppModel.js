@@ -1410,8 +1410,9 @@ define(['jquery', 'underscore', 'backbone'],
       */
       dataonePlusName: "DataONE Plus",
 
+      //These two DataONE Plus Preview attributes are for a special DataONE Plus tag of MetacatUI
+      // and won't be released in an offical MetacatUI version, since they will be replaced by bookkeeper
       dataonePlusPreviewMode: false,
-
       dataonePlusPreviewPortals: [],
 
       /**
