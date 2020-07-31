@@ -742,7 +742,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
           //Show the free trial message for this portal, if the subscription is in a free trial
           var subscription = MetacatUI.appUserModel.get("dataoneSubscription"),
-              showMessage  = false;
+              isFreeTrial  = false;
 
           //If the Subscription is in free trial mode
           if( subscription && subscription.isTrialing() ){
@@ -750,13 +750,13 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
             if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
               //If this portal is not in the configured list of Plus portals
               var trialExceptions = MetacatUI.appModel.get("dataonePlusPreviewPortals");
-              showMessage = !_.findWhere(trialExceptions, { seriesId: this.model.get("seriesId") });
+              isFreeTrial = !_.findWhere(trialExceptions, { seriesId: this.model.get("seriesId") });
             }
             else{
-              showMessage = true;
+              isFreeTrial = true;
             }
 
-            if( showMessage ){
+            if( isFreeTrial ){
               //Show a free trial message in the editor footer
               var freeTrialMessage = "This " + MetacatUI.appModel.get("portalTermSingular") + " is a free preview of " + MetacatUI.appModel.get("dataonePlusName");
               var messageEl = $(document.createElement("span"))
