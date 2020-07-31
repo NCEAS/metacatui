@@ -326,6 +326,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Render the sections view
       this.sectionsView.render();
 
+      //If this portal is a free trial DataONE Plus portal, then display some messaging
+      this.renderSubscriptionInfo();
+
       //Show the required fields for this editor
       this.renderRequiredIcons(MetacatUI.appModel.get("portalEditorRequiredFields"));
 
@@ -724,6 +727,48 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         $(container).append('<h1>Sign in to edit a portal</h1>', signInButtons);
       }
 
+    },
+
+    /**
+    * The DataONE Plus Subscription if fetched from Bookkeeper and the status of the
+    * Subscription is rendered on the page.
+    * Subviews in this view should have their own renderSubscriptionInfo() function
+    * that inserts subscription details into the subview.
+    */
+    renderSubscriptionInfo: function(){
+      if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+        this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", function(){
+
+          //Show the free trial message for this portal, if the subscription is in a free trial
+          var subscription = MetacatUI.appUserModel.get("dataoneSubscription"),
+              showMessage  = false;
+
+          //If the Subscription is in free trial mode
+          if( subscription && subscription.isTrialing() ){
+
+            if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+              //If this portal is not in the configured list of Plus portals
+              var trialExceptions = MetacatUI.appModel.get("dataonePlusPreviewPortals");
+              showMessage = !_.findWhere(trialExceptions, { seriesId: this.model.get("seriesId") });
+            }
+            else{
+              showMessage = true;
+            }
+
+            if( showMessage ){
+              //Show a free trial message in the editor footer
+              var freeTrialMessage = "This " + MetacatUI.appModel.get("portalTermSingular") + " is a free preview of " + MetacatUI.appModel.get("dataonePlusName");
+              this.$("#editor-footer").prepend( $(document.createElement("span")).addClass("free-trial-message").text(freeTrialMessage) );
+            }
+          }
+
+        });
+
+        //Fetch the user subscription info
+        MetacatUI.appUserModel.fetchSubscription();
+
+      }
     },
 
     /**

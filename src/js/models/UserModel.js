@@ -43,7 +43,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				rawData: null,
         portalQuota: -1,
         isAuthorizedCreatePortal: null,
-        dataoneQuotas: null
+        dataoneQuotas: null,
+        dataoneSubscription: null
 			}
 		},
 
@@ -66,7 +67,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
       if( MetacatUI.appModel.get("enableBookkeeperServices") ){
         //When the user is logged in, see if they have a DataONE subscription
-        this.on("change:loggedIn", this.getSubscription);
+        this.on("change:loggedIn", this.fetchSubscription);
       }
 		},
 
@@ -1049,7 +1050,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
     /**
     * Retrieve all the info about this user's DataONE Subscription
     */
-    getSubscription: function(){
+    fetchSubscription: function(){
 
       //If Bookkeeper services are disabled, exit
       if( !MetacatUI.appModel.get("enableBookkeeperServices") ){
@@ -1058,10 +1059,13 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
       try{
         var thisUser = this;
-        require(["collections/bookkeeper/Quotas"], function(Quotas){
+        require(["collections/bookkeeper/Quotas", "models/bookkeeper/Subscription"], function(Quotas, Subscription){
 
           //Create a Quotas collection
           var quotas = new Quotas();
+
+          //Create a Subscription model
+          var subscription = new Subscription();
 
           if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
             //Create Quota models for preview mode
@@ -1070,19 +1074,36 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
               hardLimit: MetacatUI.appModel.get("portalLimit"),
               quotaType: "portal",
               unit: "portal",
-              subject: thisUser.get("username")
+              subject: thisUser.get("username"),
+              subscription: subscription
             });
+
+            //Default to all people being in trial mode
+            subscription.set("status", "trialing");
 
             //Save a reference to the Quotas on this UserModel
             thisUser.set("dataoneQuotas", quotas);
+
+            //Save a reference to the Subscriptioin on this UserModel
+            thisUser.set("dataoneSubscription", subscription);
+
           }
           else{
             thisUser.listenToOnce(quotas, "reset", function(){
               //Save a reference to the Quotas on this UserModel
               thisUser.set("dataoneQuotas", quotas);
             });
+
+            thisUser.listenToOnce(subscription, "sync", function(){
+              //Save a reference to the Subscriptioin on this UserModel
+              thisUser.set("dataoneSubscription", subscription);
+            });
+
             //Fetch the Quotas
             quotas.fetch({ subscriber: thisUser.get("username") });
+
+            //Fetch the Subscriptioin
+            subscription.fetch();
           }
 
         });

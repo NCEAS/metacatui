@@ -56,10 +56,19 @@ define(["jquery",
           quantity: 0,
           startDate: null,
           status: null,
-          statusOptions: ["active", "inactive"],
+          statusOptions: ["trialing", "active", "past_due", "canceled", "unpaid", "incomplete_expired", "incomplete"],
           trialEnd: null,
           trialStart: null
         }
+      },
+
+      /**
+      *
+      * Returns true if this Subscription is in a free trial period.
+      * @returns {boolean}
+      */
+      isTrialing: function(){
+        return this.get("status") == "trialing";
       }
 
   });

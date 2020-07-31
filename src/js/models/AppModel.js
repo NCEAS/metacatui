@@ -1386,7 +1386,7 @@ define(['jquery', 'underscore', 'backbone'],
       */
       bookkeeperUsagesUrl: null,
       /**
-      * The URL for the DataONE Bookkeeper Subscriptions API, e.g. listSubscriptions(), getSubscription(), createSubscription(), etc.
+      * The URL for the DataONE Bookkeeper Subscriptions API, e.g. listSubscriptions(), fetchSubscription(), createSubscription(), etc.
       * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
       * @readonly
       * @type {string}

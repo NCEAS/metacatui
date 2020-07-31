@@ -6605,6 +6605,12 @@ ul.side-nav-items {
   z-index: 13;
 	height: 74px;
 	box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+#editor-footer .free-trial-message{
+  color: #FFF;
 }
 .metadata-view #editor-footer{
     display: none;
