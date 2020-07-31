@@ -11,7 +11,7 @@
     <![endif]-->
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-    <link type="text/css" rel="stylesheet" href="style.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
 </head>
 
 <body>
@@ -299,38 +299,42 @@
                 var page; // The page of search results to render
                 var position; // The geohash level position in the facet array
 
+                // Get the Solr query string from the Search filter collection
+                query = this.searchModel.get("filters").getQuery();
+
+                //If the query hasn't changed since the last query that was sent, don't do anything.
+                //This function may have been triggered by a change event on a filter that doesn't
+                //affect the query at all
+                if( query == this.searchResults.getLastQuery()){
+                  return;
+                }
+
                 if ( sortOrder ) {
                     this.searchResults.setSort(sortOrder);
                 }
 
                 //Specify which fields to retrieve
-                var fields = [];
-                    fields.push("id");
-                    fields.push("seriesId");
-                    fields.push("title");
-                    fields.push("origin");
-                    fields.push("pubDate");
-                    fields.push("dateUploaded");
-                    fields.push("abstract");
-                    fields.push("resourceMap");
-                    fields.push("beginDate");
-                    fields.push("endDate");
-                    fields.push("read_count_i");
-                    fields.push("geohash_9");
-                    fields.push("datasource");
-                    fields.push("isPublic");
-                    fields.push("documents");
+                var fields = ["id",
+                              "seriesId",
+                              "title",
+                              "origin",
+                              "pubDate",
+                              "dateUploaded",
+                              "abstract",
+                              "resourceMap",
+                              "beginDate",
+                              "endDate",
+                              "read_count_i",
+                              "geohash_9",
+                              "datasource",
+                              "isPublic",
+                              "documents"];
                 // Add spatial fields if the map is present
                 if ( gmaps ) {
-                    fields.push("northBoundCoord");
-                    fields.push("southBoundCoord");
-                    fields.push("eastBoundCoord");
-                    fields.push("westBoundCoord");
+                    fields.push("northBoundCoord", "southBoundCoord", "eastBoundCoord", "westBoundCoord");
                 }
+                //Set the field list on the SolrResults collection as a comma-separated string
                 this.searchResults.setfields(fields.join(","));
-
-                // Get the Solr query string from the Search filter collection
-                query = this.searchModel.get("filters").getQuery();
 
                 // Specify which geohash level is used to return tile counts
                 if ( gmaps &amp;&amp; this.map ) {
@@ -343,7 +347,7 @@
                     }
                 }
 
-                // Run the query
+                // Set the query on the SolrResults collection
                 this.searchResults.setQuery(query);
 
                 // Get the page number
@@ -357,7 +361,7 @@
                 }
                 this.searchResults.start = page * this.searchResults.rows;
 
-                // go to the page
+                // go to the page, which triggers a search
                 this.showPage(page);
 
                 // don't want to follow links
@@ -524,7 +528,7 @@
 
                 // References to the map and catalog view instances for callbacks
                 var mapRef;
-                var catalogViewRef;
+                var viewRef;
 
                 if (this.isSubView) {
                     this.$el.addClass("mapMode");
@@ -535,9 +539,12 @@
                 // Get the map options and create the map
                 gmaps.visualRefresh = true;
                 mapOptions = this.mapModel.get("mapOptions");
+                var defaultZoom = mapOptions.zoom;
                 $("#map-container").append("&lt;div id='map-canvas'>&lt;/div>");
                 this.map = new gmaps.Map($("#map-canvas")[0], mapOptions);
                 this.mapModel.set("map", this.map);
+                this.hasZoomed  = false;
+                this.hasDragged = false;
 
                 // Hide the map filter toggle element
                 this.$(this.mapFilterToggle).hide();
@@ -554,155 +561,126 @@
 
                 // Store references
                 mapRef = this.map;
-                catalogViewRef = this;
+                viewRef = this;
 
                 // Listen to idle events on the map (at rest), and render content as needed
                 google.maps.event.addListener(mapRef, "idle", function() {
-                    catalogViewRef.ready = true;
+                  // Remove all markers from the map
+                  for (var i = 0; i &lt; viewRef.resultMarkers.length; i++) {
+                      viewRef.resultMarkers[i].setMap(null);
+                  }
+                  viewRef.resultMarkers = new Array();
 
-                    // Remove all markers from the map
-                    for (var i = 0; i &lt; catalogViewRef.resultMarkers.length; i++) {
-                        catalogViewRef.resultMarkers[i].setMap(null);
-                    }
-                    catalogViewRef.resultMarkers = new Array();
+                  //Check if the user has interacted with the map just now, and if so, we
+                  // want to alter the geohash filter (changing the geohash values or resetting it completely)
+                  var alterGeohashFilter = viewRef.allowSearch || viewRef.hasZoomed || viewRef.hasDragged;
+                  if( !alterGeohashFilter ){
+                    return;
+                  }
 
-                    // Trigger a resize so the map background image tiles load completely
-                    google.maps.event.trigger(mapRef, "resize");
+                  //Determine if the map needs to be recentered. The map only needs to be
+                  // recentered if it is not at the default lat,long center point AND it
+                  // is not zoomed in or dragged to a new center point
+                  var setGeohashFilter = viewRef.hasZoomed &amp;&amp; viewRef.isMapFilterEnabled();
 
-                    var currentMapCenter = catalogViewRef.mapModel.get("map").getCenter(),
-                        savedMapCenter = catalogViewRef.mapModel.get("mapOptions").center,
-                        needsRecentered = (currentMapCenter != savedMapCenter);
+                  //If we are using the geohash filter defined by this map, then
+                  // apply the filter and trigger a new search
+                  if( setGeohashFilter ){
+                    // Get the Google map bounding box
+                    boundingBox = mapRef.getBounds();
 
-                    // If we are doing a new search
-                    if ( catalogViewRef.allowSearch ) {
-
-                        // If the map is at the minZoom, i.e. zoomed out all the way so the whole world is visible, do not apply the spatial filter
-                        if (catalogViewRef.map.getZoom() == mapOptions.minZoom) {
-                            if (!catalogViewRef.hasZoomed) {
-                                if (needsRecentered &amp;&amp; !catalogViewRef.hasDragged) {
-                                    catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
-                                }
-                                return;
-                            }
-
-                            //Hide the map filter toggle element
-                            catalogViewRef.$(catalogViewRef.mapFilterToggle).hide();
-
-                            catalogViewRef.resetMap();
-                        } else {
-                            // If the user has not zoomed or dragged to a new area of the map yet
-                            // and our map is off-center, recenter it
-                            if (!catalogViewRef.hasZoomed &amp;&amp; needsRecentered) {
-                                catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
-                            }
-
-                            // Show the map filter toggle element
-                            catalogViewRef.$(catalogViewRef.mapFilterToggle).show();
-
-                            // Get the Google map bounding box
-                            boundingBox = mapRef.getBounds();
-
-                            // Set the search model's spatial filter properties
-                            // Encode the Google Map bounding box into geohash
-                            if ( typeof boundingBox !== "undefined") {
-                                north = boundingBox.getNorthEast().lat();
-                                west = boundingBox.getSouthWest().lng();
-                                south = boundingBox.getSouthWest().lat();
-                                east = boundingBox.getNorthEast().lng();
-                            }
-
-                            // Save the center position and zoom level of the map
-                            catalogViewRef.mapModel.get("mapOptions").center = mapRef.getCenter();
-                            catalogViewRef.mapModel.get("mapOptions").zoom = mapRef.getZoom();
-
-                            // Determine the precision of geohashes to search for
-                            zoom = mapRef.getZoom();
-
-                            precision = catalogViewRef.mapModel.getSearchPrecision(zoom);
-
-                            // Get all the geohash tiles contained in the map bounds
-                            if ( south &amp;&amp; west &amp;&amp; north &amp;&amp; east &amp;&amp; precision )  {
-                                geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
-                            }
-
-                            // Save our geohash search settings
-                            spatialFilter.set({
-                                "geohashes": geohashBBoxes,
-                                "geohashLevel": precision,
-                                "north": north,
-                                "west": west,
-                                "south": south,
-                                "east": east,
-                            });
-
-                            // Add the spatial filter to the filters collection if enabled
-                            if ( catalogViewRef.searchModel.get("useGeohash") ) {
-
-                                catalogViewRef.searchModel.get("filters").add(spatialFilter);
-
-                                if( catalogViewRef.filterGroupsView &amp;&amp; spatialFilter ){
-                                  catalogViewRef.filterGroupsView.addCustomAppliedFilter(spatialFilter);
-
-                                  //When the custom spatial filter is removed in the UI, toggle the map filter
-                                  catalogViewRef.listenTo( catalogViewRef.filterGroupsView, "customAppliedFilterRemoved", function(removedFilter){
-
-                                      if( removedFilter.type == "SpatialFilter" ){
-
-                                        //Uncheck the map filter on the map itself
-                                        catalogViewRef.$(".toggle-map-filter").prop("checked", false);
-                                        catalogViewRef.toggleMapFilter();
-
-                                      }
-
-                                  });
-
-                                }
-
-                            } else {
-                                // If we have zoomed but have not added or removed filters, we
-                                // still trigger a search to update the facet tiles
-                                if ( catalogViewRef.hasZoomed ) {
-                                    catalogViewRef.triggerSearch();
-                                }
-                            }
-                        }
-                        // Reset to the first page
-                        if (catalogViewRef.hasZoomed) {
-                            MetacatUI.appModel.set("page", 0);
-                        }
-                        catalogViewRef.allowSearch = false;
-
-                    } else {
-                        // Else, if this is the fresh map render on page load
-                        if (needsRecentered &amp;&amp; !catalogViewRef.hasDragged) {
-                            catalogViewRef.mapModel.get("map").setCenter(savedMapCenter);
-                        }
-
-                        //Show the map filter toggle element
-                        if (catalogViewRef.map.getZoom() > mapOptions.minZoom) {
-                            catalogViewRef.$(catalogViewRef.mapFilterToggle).show();
-                        }
+                    // Set the search model's spatial filter properties
+                    // Encode the Google Map bounding box into geohash
+                    if ( typeof boundingBox !== "undefined") {
+                        north = boundingBox.getNorthEast().lat();
+                        west = boundingBox.getSouthWest().lng();
+                        south = boundingBox.getSouthWest().lat();
+                        east = boundingBox.getNorthEast().lng();
                     }
 
-                    catalogViewRef.hasZoomed = false;
+                    // Save the center position and zoom level of the map
+                    viewRef.mapModel.get("mapOptions").center = mapRef.getCenter();
+                    viewRef.mapModel.get("mapOptions").zoom = mapRef.getZoom();
+
+                    // Determine the precision of geohashes to search for
+                    zoom = mapRef.getZoom();
+
+                    precision = viewRef.mapModel.getSearchPrecision(zoom);
+
+                    // Get all the geohash tiles contained in the map bounds
+                    if ( south &amp;&amp; west &amp;&amp; north &amp;&amp; east &amp;&amp; precision )  {
+                        geohashBBoxes = nGeohash.bboxes(south, west, north, east, precision);
+                    }
+
+                    // Save our geohash search settings
+                    spatialFilter.set({
+                        "geohashes": geohashBBoxes,
+                        "geohashLevel": precision,
+                        "north": north,
+                        "west": west,
+                        "south": south,
+                        "east": east,
+                    });
+
+                    // Add the spatial filter to the filters collection if enabled
+                    if ( viewRef.searchModel.get("useGeohash") ) {
+
+                        viewRef.searchModel.get("filters").add(spatialFilter);
+
+                        if( viewRef.filterGroupsView &amp;&amp; spatialFilter ){
+                          viewRef.filterGroupsView.addCustomAppliedFilter(spatialFilter);
+
+                          //When the custom spatial filter is removed in the UI, toggle the map filter
+                          viewRef.listenTo( viewRef.filterGroupsView, "customAppliedFilterRemoved", function(removedFilter){
+
+                              if( removedFilter.type == "SpatialFilter" ){
+
+                                //Uncheck the map filter on the map itself
+                                viewRef.$(".toggle-map-filter").prop("checked", false);
+                                viewRef.toggleMapFilter();
+
+                              }
+
+                          });
+                        }
+                    }
+                  }
+                  else{
+
+                    //Reset the map filter
+                    viewRef.resetMap();
+
+                    //Start back at page 0
+                    MetacatUI.appModel.set("page", 0);
+
+                    //Mark the view as ready to start a search
+                    viewRef.ready = true;
+
+                    // Trigger a new search
+                    viewRef.triggerSearch();
+
+                    viewRef.allowSearch = false;
+
+                    return;
+                  }
+
                 });
 
-                // When the user has zoomed the map, trigger a new search, idle event follows
                 google.maps.event.addListener(mapRef, "zoom_changed", function() {
-                    catalogViewRef.allowSearch = true;
-                    catalogViewRef.hasZoomed = true;
-
+                  // If the map is zoomed in further than the default zoom level,
+                  // than we want to mark the map as zoomed in
+                  if(viewRef.map.getZoom() > defaultZoom){
+                    viewRef.hasZoomed = true;
+                  }
+                  //If we are at the default zoom level or higher, than do not mark the map
+                  // as zoomed in
+                  else{
+                    viewRef.hasZoomed = false;
+                  }
                 });
 
-                // When the user has dragged the map, don't load cached results.
-                // We still may not trigger a new search because the user has to zoom in first,
-                // after the map initially loads at full-world view. Idel event follows
                 google.maps.event.addListener(mapRef, "dragend", function() {
-                    catalogViewRef.hasDragged = true;
-                    if (catalogViewRef.map.getZoom() > mapOptions.minZoom) {
-                        catalogViewRef.hasZoomed = true;
-                        catalogViewRef.allowSearch = true;
-                    }
+                  viewRef.hasDragged = true;
                 });
             }
         });
@@ -718,13 +696,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Quota.html">Quota</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="Usage.html">Usage</a></li><li><a href="Usages.html">Usages</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Quota.html">Quota</a></li><li><a href="Quotas.html">Quotas</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="Usage.html">Usage</a></li><li><a href="Usages.html">Usages</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#className">className</a></li><li><a href="global.html#logos">logos</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#tagName">tagName</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#type">type</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jul 08 2020 22:29:29 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Jul 31 2020 12:52:37 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

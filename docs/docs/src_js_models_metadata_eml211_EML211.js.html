@@ -11,7 +11,7 @@
     <![endif]-->
     <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-    <link type="text/css" rel="stylesheet" href="style.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
 </head>
 
 <body>
@@ -27,7 +27,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>﻿/* global define */
+            <pre class="prettyprint source linenums"><code>/* global define */
 define(['jquery', 'underscore', 'backbone', 'uuid',
         'collections/Units',
         'models/metadata/ScienceMetadata',
@@ -63,7 +63,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         defaults: function(){
           return _.extend(ScienceMetadata.prototype.defaults(), {
             id: "urn:uuid:" + uuid.v4(),
-            formatId: "eml://ecoinformatics.org/eml-2.1.1",
+            formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
             objectXML: null,
               isEditable: false,
               alternateIdentifier: [],
@@ -90,7 +90,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               entities: [], //An array of EMLEntities
               pubplace: null,
               methods: null, // An EMLMethods objects
-              project: null // An EMLProject object
+              project: null, // An EMLProject object
+              nodeOrder: [
+                "alternateidentifier",
+                "shortname",
+                "title",
+                "creator",
+                "metadataprovider",
+                "associatedparty",
+                "pubdate",
+                "language",
+                "series",
+                "abstract",
+                "keywordset",
+                "additionalinfo",
+                "intellectualrights",
+                "licensed",
+                "distribution",
+                "coverage",
+                "annotation",
+                "purpose",
+                "introduction",
+                "gettingstarted",
+                "acknowledgements",
+                "maintenance",
+                "contact",
+                "publisher",
+                "pubplace",
+                "methods",
+                "project",
+                "datatable",
+                "spatialraster",
+                "spatialvector",
+                "storedprocedure",
+                "view",
+                "otherentity",
+                "referencepublications",
+                "usagecitations",
+                "literaturecited",
+              ]
           });
         },
 
@@ -163,6 +201,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "attributename" : "attributeName",
                 "attributeorientation" : "attributeOrientation",
                 "attributereference" : "attributeReference",
+                "awardnumber" : "awardNumber",
+                "awardurl" : "awardUrl",
                 "audiovisual" : "audioVisual",
                 "authsystem" : "authSystem",
                 "banddescription" : "bandDescription",
@@ -246,6 +286,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "formatstring" : "formatString",
                 "formatversion" : "formatVersion",
                 "fractiondigits" : "fractionDigits",
+                "fundername" : "funderName",
+                "funderidentifier" : "funderIdentifier",
+                "gettingstarted" : "gettingStarted",
                 "gring" : "gRing",
                 "gringpoint" : "gRingPoint",
                 "gringlatitude" : "gRingLatitude",
@@ -272,10 +315,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "languagevalue" : "LanguageValue",
                 "languagecodestandard" : "LanguageCodeStandard",
                 "lensdistortioninformationavailability" : "lensDistortionInformationAvailability",
+                "licensename" : "licenseName",
                 "licenseurl" : "licenseURL",
                 "linenumber" : "lineNumber",
                 "literalcharacter" : "literalCharacter",
                 "literallayout" : "literalLayout",
+                "literaturecited" : "literatureCited",
                 "lowwavelength" : "lowWaveLength",
                 "machineprocessor" : "machineProcessor",
                 "maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
@@ -356,6 +401,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "researchproject" : "researchProject",
                 "researchtopic" : "researchTopic",
                 "recorddelimiter" : "recordDelimiter",
+                "referencepublication" : "referencePublication",
                 "revieweditem" : "reviewedItem",
                 "rowcolumnorientation" : "rowColumnOrientation",
                 "runtimememoryusage" : "runtimeMemoryUsage",
@@ -390,6 +436,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "uniquekey" : "uniqueKey",
                 "unittype" : "unitType",
                 "unitlist" : "unitList",
+                "usagecitation" : "usageCitation",
+                "valueuri" : "valueURI",
                 "valueattributereference" : "valueAttributeReference",
                 "verticalaccuracy" : "verticalAccuracy",
                 "vertcoordsys" : "vertCoordSys",
@@ -646,14 +694,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
        * Returns the EML XML as a string.
        */
       serialize: function(){
-
         //Get the EML document
         var xmlString   = this.get("objectXML"),
-            eml         = $.parseHTML(xmlString),
-            datasetNode = $(eml).filter("eml\\:eml").find("dataset");
+            html        = $.parseHTML(xmlString),
+            eml         = $(html).filter("eml\\:eml"),
+            datasetNode = $(eml).find("dataset");
 
         //Update the packageId on the eml node with the EML id
         $(eml).attr("packageId", this.get("id"));
+
+        // Set schema version
+        $(eml).attr("xmlns:eml", 
+          MetacatUI.appModel.get("editorSerializationFormat") || 
+          "https://eml.ecoinformatics.org/eml-2.2.0");
+
+        // Set formatID
+        this.set("formatId", 
+          MetacatUI.appModel.get("editorSerializationFormat") ||
+          "https://eml.ecoinformatics.org/eml-2.2.0");
+
+        // Ensure xsi:schemaLocation has a value for the current format
+        eml = this.setSchemaLocation(eml);
 
         var nodeNameMap = this.nodeNameMap();
 
@@ -666,7 +727,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           basicTextValues = [basicTextValues];
 
         // Remove existing nodes
-        datasetNode.find(fieldName.toLowerCase()).remove();
+        datasetNode.children(fieldName.toLowerCase()).remove();
 
         // Create new nodes
         var nodes = _.map(basicTextValues, function(value) {
@@ -691,7 +752,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         else{
           datasetNode.prepend(nodes);
         }
-
       }, this);
 
       // Serialize pubDate
@@ -1026,7 +1086,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       //Camel-case the XML
       var emlString = "";
-      _.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
+      _.each(html, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
 
       return emlString;
     },
@@ -1037,13 +1097,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
     serializeParties: function(eml, type){
 
       //Remove the nodes from the EML for this party type
-      $(eml).find(type.toLowerCase()).remove();
+      $(eml).children("dataset").children(type.toLowerCase()).remove();
 
       //Serialize each party of this type
        _.each(this.get(type), function(party, i){
 
          //Get the last node of this type to insert after
-         var insertAfter = $(eml).find(type.toLowerCase()).last();
+         var insertAfter = $(eml).children("dataset").children(type.toLowerCase()).last();
 
          //If there isn't a node found, find the EML position to insert after
          if( !insertAfter.length ) {
@@ -1556,36 +1616,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
           $.ajax(fetchOptions);
       },
-
       /*
-       * Returns the node in the given EML document that the given node type should be inserted after
+       * Returns the nofde in the given EML document that the given node type
+       * should be inserted after
+       *
+       * Returns false if either the node is not found in the and this should
+       * be handled by the caller.
        */
       getEMLPosition: function(eml, nodeName) {
-        var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
-                        "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights",
-                        "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace",
-                        "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-          var entityNodes = ["datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-          var isEntityNode = _.contains(entityNodes, nodeName);
-          var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
-          if ( position == -1 ) {
-              return false;
-          }
+        var nodeOrder = this.get("nodeOrder");
+        var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
 
-          //Go through each node in the node list and find the position where this node will be inserted after
-          for (var i = position - 1; i >= 0; i--) {
-              if ( $(eml).find(nodeOrder[i]).length ) {
-                  // Handle non-entity nodes
-                  if ( ! isEntityNode ) {
-                      return $(eml).find("dataset").children(nodeOrder[i]).last();
-                  } else {
-                      // Handle entity nodes by returning the
-                      // last child of the parent &lt;dataset> since
-                      // entities have a {0..n}+ model
-                      // (i.e optional, repeatable, no specific order)
-                      return $(eml).find("dataset").children().last();
-                  }
-              }
+        if (position == -1) {
+          return false;
+        }
+
+        // Go through each node in the node list and find the position where this
+        // node will be inserted after
+        for (var i = position - 1; i >= 0; i--) {
+          if ($(eml).find("dataset").find(nodeOrder[i]).length) {
+            return $(eml).find("dataset").children(nodeOrder[i]).last();
+          }
         }
 
         return false;
@@ -1925,13 +1976,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       /* Initialize the object XML for brand spankin' new EML objects */
       createXML: function() {
-          var xml = "&lt;eml:eml xmlns:eml=\"eml://ecoinformatics.org/eml-2.1.1\">&lt;/eml:eml>",
+          var xml = "&lt;eml:eml xmlns:eml=\"https://eml.ecoinformatics.org/eml-2.2.0\">&lt;/eml:eml>",
               eml = $($.parseHTML(xml));
 
               // Set base attributes
               eml.attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
               eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
-              eml.attr("xsi:schemaLocation", "eml://ecoinformatics.org/eml-2.1.1 eml.xsd");
+              eml.attr("xsi:schemaLocation", "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd");
               eml.attr("packageId", this.get("id"));
               eml.attr("system", "knb"); // We could make this configurable at some point
 
@@ -2096,8 +2147,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         //Mark the package as changed
         MetacatUI.rootDataPackage.packageModel.set("changed", true);
-      }
+      },
 
+      /**
+       * Sets the xsi:schemaLocation attribute on the passed-in Element 
+       * depending on the application configuration.
+       * 
+       * @param {Element} eml: The root eml:eml element to modify
+       * @return {Element} The element, possibly modified
+       */
+      setSchemaLocation: function(eml) {
+        if (!MetacatUI || !MetacatUI.appModel) {
+          return eml;
+        }
+
+        var current = $(eml).attr("xsi:schemaLocation"),
+            format = MetacatUI.appModel.get("editorSerializationFormat"),
+            location = MetacatUI.appModel.get("editorSchemaLocation");
+
+        // Return now if we can't do anything anyway
+        if (!format || !location) {
+          return eml;
+        }
+
+        // Simply add if the attribute isn't present to begin with
+        if (!current || typeof current !== "string") {
+          $(eml).attr("xsi:schemaLocation", format + " " + location);
+
+          return eml;
+        }
+
+        // Don't append if it's already present
+        if (current.indexOf(format) >= 0) {
+          return eml;
+        }
+
+        $(eml).attr("xsi:schemaLocation", current + " " + location);
+
+        return eml;
+      }
     });
 
     return EML211;
@@ -2113,13 +2201,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Quota.html">Quota</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="Usage.html">Usage</a></li><li><a href="Usages.html">Usages</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Quota.html">Quota</a></li><li><a href="Quotas.html">Quotas</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="Usage.html">Usage</a></li><li><a href="Usages.html">Usages</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#className">className</a></li><li><a href="global.html#logos">logos</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#tagName">tagName</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#type">type</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jul 08 2020 22:29:29 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Jul 31 2020 12:52:37 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
