@@ -67,7 +67,7 @@ define(["jquery",
               var urlBase = "";
 
               //If this MetacatUI is using the CN, find the URL to use for the image
-              if( MetacatUI.appModel.get("activeAlternateRepositoryId") ){
+              if( MetacatUI.appModel.getActiveAltRepo() ){
 
                 var imageMN;
 
@@ -78,7 +78,7 @@ define(["jquery",
 
                 //Otherwise, use the CN resolve service
                 if( !imageMN ){
-                  urlBase = MetacatUI.appModel.get("resolveServiceUrl");
+                  urlBase = MetacatUI.appModel.get("objectServiceUrl") || MetacatUI.appModel.get("resolveServiceUrl");
                 }
                 else{
                   urlBase = imageMN.objectServiceUrl;
@@ -86,7 +86,7 @@ define(["jquery",
               }
               else{
                 //For MetacatUI's using MNs, use the object service URL from the AppModel
-                urlBase = MetacatUI.appModel.get("objectServiceUrl");
+                urlBase = MetacatUI.appModel.get("objectServiceUrl") || MetacatUI.appModel.get("resolveServiceUrl");
               }
 
               modelJSON.imageURL = urlBase + modelJSON.identifier;

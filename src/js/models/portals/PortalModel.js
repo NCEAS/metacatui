@@ -417,13 +417,16 @@ define(["jquery",
                 _.each(logos, function(logo, i) {
                     if ( !logo ) return;
 
-                    var imageModel = new PortalImage({ objectDOM: logo });
+                    var imageModel = new PortalImage({
+                      objectDOM: logo,
+                      portalModel: this
+                    });
                     imageModel.set(imageModel.parse());
 
                     if( imageModel.get("imageURL") ){
                       modelJSON.acknowledgmentsLogos.push( imageModel );
                     }
-                });
+                }, this);
 
                 // Parse the literature cited
                 // This will only work for bibtex at the moment
