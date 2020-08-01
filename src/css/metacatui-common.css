@@ -2066,18 +2066,17 @@ i.catalog-metric-icon {
 #user-downloads-chart {
     width: 90%;
 }
-
-.metric-chart-loading {
-    font-size: 3em;
-    margin: 0 auto;
-    text-align: center;
+.metric-chart-loading .message{
+	text-align: center;
+	padding: rem 1.2rem;
+	font-size: 1.1rem;
+	box-shadow: 0 1px 3px -1px rgba(0,0,0,0.15), 0 1px 14px -6px rgba(0,0,0,0.28);
 }
 
-#user-views-chart > .metric-chart-loading,
-#user-downloads-chart > .metric-chart-loading {
-    font-size: 1em;
-    margin: 0 auto;
-    text-align: center;
+.metric-chart-loading .message strong {
+	display: block;
+	font-weight: 600;
+	margin-top: 0.3rem;
 }
 
 /*
@@ -2415,10 +2414,10 @@ section#user-citations {
 }
 .metrics-title > h3 {
 	display: inline-block;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
-.metrics-title > p{
-  margin-bottom: 30px;
+.metric-description {
+  margin-bottom: 40px;
 }
 .views-metrics .metric-chart,
 .downloads-metrics .metric-chart {
@@ -5177,13 +5176,20 @@ address.email-container:before{
 /******************************************
 ** Stats ***
 ******************************************/
-.no-activity *,
+.no-activity h3,
+.no-activity p,
+.no-activity .summary-container p,
+.no-activity a,
+.no-activity .message,
 .no-activity svg .title,
 .no-activity svg .bar-label,
 .profile .no-activity .packages p{
     color: #CCC;
     stroke: #CCC;
     fill: #CCC;
+}
+.no-activity svg.character {
+	display: none;
 }
 
 /*Moving the circle badge at the center of the div*/

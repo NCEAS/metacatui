@@ -2,10 +2,10 @@
 define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge',
 'collections/Citations', 'models/MetricsModel', 'models/Stats', 'MetricsChart', 'views/CitationListView',
 'text!templates/metricModalTemplate.html',  'text!templates/profile.html',
-'text!templates/alert.html', 'text!templates/loading.html'],
+'text!templates/alert.html', 'text!templates/loading.html', 'text!templates/loading-metrics.html', ],
 	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel,
     StatsModel, MetricsChart, CitationList, MetricModalTemplate, profileTemplate, AlertTemplate,
-    LoadingTemplate) {
+    LoadingTemplate, MetricsLoadingTemplate) {
 	'use strict';
 
 	var StatsView = Backbone.View.extend(
@@ -36,6 +36,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		alertTemplate: _.template(AlertTemplate),
 
 		loadingTemplate: _.template(LoadingTemplate),
+		
+		metricsLoadingTemplate: _.template(MetricsLoadingTemplate),
 
 		initialize: function(options){
 			if(!options) options = {};
@@ -162,11 +164,31 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
       //When the total count is updated, check if there if the count is 0, so we can show there is no "activity" for this collection
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
-
+			
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
 
 
+			// Loading template for the citations section
+			var citationsLoadingHtml = this.metricsLoadingTemplate({
+				message: "Scouring our records for publications that cited these datasets...",
+				character: "none",
+				type: "citations"
+			});
+			
+			// Loading template for the downloads bar chart
+			var downloadsLoadingHtml = this.metricsLoadingTemplate({
+				message: "Crunching some numbers...",
+				character: "developer",
+				type: "barchart"
+			});
+			
+			// Loading template for the views bar chart
+			var viewsLoadingHtml = this.metricsLoadingTemplate({
+				message: "Just doing a few more calculations...",
+				character: "statistician",
+				type: "barchart"
+			});
 
 			//Insert the template
 			this.$el.html(this.template({
@@ -175,6 +197,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				description: this.description,
 				userType: this.userType,
 				userIsCN: this.userIsCN,
+				citationsLoadingHtml: citationsLoadingHtml,
+				downloadsLoadingHtml: downloadsLoadingHtml,
+				viewsLoadingHtml: viewsLoadingHtml,
 				hideUpdatesChart: this.hideUpdatesChart,
 				hideCitationsChart: this.hideCitationsChart,
 				hideDownloadsChart: this.hideDownloadsChart,
@@ -345,7 +370,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var metricCount = this.metricsModel.get("totalDownloads");
 			var downloadCountEl = this.$('.download-count');
 			downloadCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
-
+			
 			downloadEl.html(this.drawMetricsChart(metricName));
 		},
 
@@ -355,7 +380,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var metricCount = this.metricsModel.get("totalViews");
 			var viewCountEl = this.$('.view-count');
 			viewCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
-
+			
 			viewEl.html(this.drawMetricsChart(metricName));
 		},
 
@@ -822,12 +847,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 * Shows that this person/group/node has no activity
 		 */
 		showNoActivity: function(){
-
+			
       if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
   			this.$(".show-loading .loading").remove();
-
   			this.$(".stripe").addClass("no-activity");
+				this.$(".metric-chart-loading svg animate").remove();
+				$.each($(".metric-chart-loading .message"), function(i,messageEl){
+					$(messageEl).html("No metrics to show")
+				});
       }
+			
 		},
 
 				/**
@@ -880,42 +909,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		renderUsageMetricsError: function() {
-			// Remove the Spinning icons and display error
-
-			var metricsEls = new Array();
-
-			metricsEls.push('.citations-metrics-list');
-			metricsEls.push('#user-downloads-chart');
-			metricsEls.push('#user-views-chart');
-
-			// for each of the usage metrics section
-			metricsEls.forEach(function(iconEl) {
-				var errorMessage = "We weren't able to get the ";
-
-				if(iconEl === ".citations-metrics-list") {
-					errorMessage += "citation metrics. ";
-				}
-				else if(iconEl === '#user-downloads-chart') {
-					errorMessage += "download metrics. ";
-				}
-				else if(iconEl === "#user-views-chart") {
-					errorMessage += "view metrics. ";
-				}
-				else {
-					errorMessage += "usage metrics. ";
-				}
-
-				// remove the loading icon
-				$(iconEl).find('.metric-chart-loading').css("display", "none");
-
-				// display the error message
-				MetacatUI.appView.showAlert(
-					errorMessage,
-					"alert-warning",
-					$(iconEl)
-				);
+			$.each($(".metric-chart-loading .message"), function(i,messageEl){
+				$(messageEl).append("<br><strong>This might take some time. Check back in 24 hours to see your metrics results.</strong>")
 			});
-
 		},
 
 		/*

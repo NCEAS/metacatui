@@ -80,29 +80,25 @@
 		</div>
 		<div class="citations-metrics-list">
 			<div class="metric-chart-loading">
-                <i class="icon-spinner icon-spin icon-large loading icon"></i>
-            </div>
+				<%= citationsLoadingHtml %>
+			</div>
 		</div>
 		<div class="clear"></div>
-	</section>
-	<% } %>
-
-	<% if(!hideDownloadsChart){ %>
-		<section id="user-downloads" class="stripe metrics">
-			<div class="metrics-title">
-				<h3><i class='icon icon-cloud-download'></i></h3>
-				<h3 class="download-count"></h3>
-				<h3>Downloads</h3>
+	</section> <% } %> <% if(!hideDownloadsChart){ %> <section id="user-downloads" class="stripe metrics">
+		<div class="metrics-title">
+			<h3><i class='icon icon-cloud-download'></i></h3>
+			<h3 class="download-count"></h3>
+			<h3>Downloads</h3>
+		</div>
+		<div class="downloads-metrics">
+			<div class="metric-description">
+				<p>For all versions of the data sets in this <%= userTerm %>, the number of times that all or part of these data sets were downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning
+					that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
+				<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
 			</div>
-			<div class="downloads-metrics">
-				<div class="metric-description">
-					<p>For all versions of the data sets in this <%= userTerm %>, the number of times that all or part of these data sets were downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
-					<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
-				</div>
-				<div id="user-downloads-chart" class='metric-chart'>
-					<div class="metric-chart-loading">
-						<i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
-					</div>
+			<div id="user-downloads-chart" class='metric-chart'>
+				<div class="metric-chart-loading">
+					<%= downloadsLoadingHtml %>
 				</div>
 			</div>
 			<div class="clear"></div>
@@ -122,9 +118,9 @@
 				<p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
 			</div>
 			<div id="user-views-chart" class='metric-chart'>
-                <div class="metric-chart-loading">
-	                <i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
-                </div>
+				<div class="metric-chart-loading">
+					<%= viewsLoadingHtml %>
+				</div>
 			</div>
 		</div>
 		<div class="clear"></div>
