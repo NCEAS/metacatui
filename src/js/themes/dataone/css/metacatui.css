@@ -288,6 +288,15 @@ input[type=search], textarea {
   background-color: var(--c-success-subtle-on-default);
   text-shadow: none;
 }
+.portal-editor .label-container .notification.free-trial{
+  color: var(--c-rare-accent-6);
+}
+#editor-footer .free-trial-message{
+  color: var(--c-rare-accent-4);
+}
+#editor-footer .free-trial-message .icon{
+  fill: var(--c-rare-accent-4);
+}
 
 ,
 /* FORM/INPUT CUSTOMIZATIONS
@@ -328,6 +337,9 @@ select {
   width: auto;
   font-size: 14px;
   line-height: 14px;
+}
+input[type="text"][disabled="disabled"] {
+    background-color: #d4dee1;
 }
 
 /* CUSTOMIZE THE ACCORDIAN

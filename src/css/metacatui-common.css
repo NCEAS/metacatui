@@ -497,6 +497,7 @@ svg.icon {
 }
 .dataone-plus-icon{
   height: 1em;
+  vertical-align: text-top;
 }
 /******************************************
 ** Results and Result Rows ***

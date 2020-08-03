@@ -812,12 +812,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
               var freeTrialMessage = "This " + MetacatUI.appModel.get("portalTermSingular") + " is a free preview of " + MetacatUI.appModel.get("dataonePlusName");
               var messageEl = $(document.createElement("span"))
                                 .addClass("free-trial-message")
-                                .text(freeTrialMessage);
+                                .text(freeTrialMessage)
+                                .prepend( $(document.createElement("i")).addClass("dataone-plus-icon-container") );
               this.$("#editor-footer").prepend(messageEl);
-
-              require(["text!templates/dataonePlusIcon.html"], function(iconTemplate){
-                messageEl.prepend(iconTemplate);
-              });
 
               // Update the label element to randomly generated label
               // And disable the input
@@ -826,12 +823,17 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
               labelEL.attr("disabled", "disabled");
 
               // Show edit label message if the edit button is disabled
-              var editLabelMessage = "Create a custom " + MetacatUI.appModel.get("portalTermSingular") + " name for the URL when your free preview of " + MetacatUI.appModel.get("dataonePlusName") + " ends.";
-              var editLabelMessageEl = $(document.createElement("p"))
-                                      .addClass("muted")
-                                      .text(editLabelMessage);
+              var editLabelMessage = "Create a custom " + MetacatUI.appModel.get("portalTermSingular") + " name for the URL when your free preview of " +
+                                      "<i class='dataone-plus-icon-container'></i>" + MetacatUI.appModel.get("dataonePlusName") + " ends.";
+              this.$(".label-container .notification").html(editLabelMessage).addClass("free-trial");
 
-              this.$(".change-label-container > p:nth-child(1)").after(editLabelMessageEl);
+              //Insert the DataONE Plus icon
+              var viewRef = this;
+              require(["text!templates/dataonePlusIcon.html"], function(iconTemplate){
+                viewRef.$(".dataone-plus-icon-container").html(iconTemplate);
+              });
+
+
             }
           }
 

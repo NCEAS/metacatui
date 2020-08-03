@@ -123,15 +123,13 @@ define(["jquery",
               }
 
               // check for info received from Bookkeeper
-              if ( MetacatUI.appModel.get("dataonePlusPreviewMode")==true ) {
-                if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+              if( MetacatUI.appModel.get("enableBookkeeperServices") ){
 
-                  this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", function(){
-                    if(MetacatUI.appUserModel.get("dataoneSubscription").isTrialing()) {
-                      this.setRandomPortalLabel();
-                    }
-                  });
-                }
+                this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", function(){
+                  if(MetacatUI.appUserModel.get("dataoneSubscription").isTrialing()) {
+                    this.setRandomLabel();
+                  }
+                });
 
                 //Fetch the user subscription info
                 MetacatUI.appUserModel.fetchSubscription();
@@ -1895,8 +1893,12 @@ define(["jquery",
 
             },
 
-            // generates a random portal label for free trial portals
-            setRandomPortalLabel: function() {
+            /**
+            * Generates a random portal label for free trial portals
+            * @fires PortalModel#change:label
+            * @since 2.14.0
+            */
+            setRandomLabel: function() {
 
               var labelLength = MetacatUI.appModel.get("randomLabelNumericLength");
               var randomGeneratedLabel = Math.floor(Math.pow(10,labelLength - 1) + Math.random() * ( 9 * Math.pow(10,labelLength - 1)));
