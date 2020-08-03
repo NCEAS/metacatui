@@ -60,10 +60,10 @@
 			</div>
 			<section class="charts">
 				<div class = "static-img-container">
-					<div id="metadata-assessment-loading" class="show-loading"></div>
-			<h4>FAIR Assessment</h4>
+					<h4>FAIR Assessment</h4>
 					<div id="metadata-assessment-graphic">
-				</div>
+						<%= fairLoadingHtml %>
+					</div>
 			</section>
 		</section>
 	<% } %>
@@ -79,9 +79,7 @@
 			<p>For all versions of the data sets in this <%= userTerm %>, the number of citations reported to DataONE. </p>
 		</div>
 		<div class="citations-metrics-list">
-			<div class="metric-chart-loading">
-				<%= citationsLoadingHtml %>
-			</div>
+			<%= citationsLoadingHtml %>
 		</div>
 		<div class="clear"></div>
 	</section> <% } %> <% if(!hideDownloadsChart){ %> <section id="user-downloads" class="stripe metrics">
@@ -97,9 +95,7 @@
 				<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
 			</div>
 			<div id="user-downloads-chart" class='metric-chart'>
-				<div class="metric-chart-loading">
-					<%= downloadsLoadingHtml %>
-				</div>
+				<%= downloadsLoadingHtml %>
 			</div>
 			<div class="clear"></div>
 		</section>
@@ -118,9 +114,7 @@
 				<p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
 			</div>
 			<div id="user-views-chart" class='metric-chart'>
-				<div class="metric-chart-loading">
-					<%= viewsLoadingHtml %>
-				</div>
+				<%= viewsLoadingHtml %>
 			</div>
 		</div>
 		<div class="clear"></div>

@@ -168,7 +168,13 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
 
-
+			// Loading template for the FAIR chart
+			var fairLoadingHtml = this.metricsLoadingTemplate({
+				message: "Measuring metadata and running some models...",
+				character: "none",
+				type: "FAIR"
+			});
+			
 			// Loading template for the citations section
 			var citationsLoadingHtml = this.metricsLoadingTemplate({
 				message: "Scouring our records for publications that cited these datasets...",
@@ -197,6 +203,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				description: this.description,
 				userType: this.userType,
 				userIsCN: this.userIsCN,
+				fairLoadingHtml: fairLoadingHtml,
 				citationsLoadingHtml: citationsLoadingHtml,
 				downloadsLoadingHtml: downloadsLoadingHtml,
 				viewsLoadingHtml: viewsLoadingHtml,
@@ -208,12 +215,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}));
 
 		// Insert the metadata assessment chart
+		var view = this;
 		if( this.hideMetadataAssessment !== true ){
 			this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
 			this.listenTo(this.model, "change:mdqScoresError", function () {
-					this.$("#metadata-assessment-loading").remove();
-					MetacatUI.appView.showAlert("Metadata assessment scores are not available for this collection. " + this.model.get("mdqScoresError"),
-						"alert-warning", this.$("#metadata-assessment-graphic"));
+					view.renderMetadataAssessmentError();
 				});
 		}
 
@@ -275,31 +281,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
     drawMetadataAssessment: function(){
       try {
         var scoresImage = this.model.get("mdqScoresImage");
-        // Hide the spinner
-        this.$("#metadata-assessment-loading").remove();
-
         if( scoresImage ){
-          // Show the figure
-          this.$("#metadata-assessment-graphic").append(scoresImage);
+          // Replace the preloader figure with the assessment chart
+        	this.$("#metadata-assessment-graphic").html(scoresImage);
         }
-        //If there was no image received from the MDQ scores service, then show a warning message
-        else{
-          MetacatUI.appView.showAlert(
-            "Something went wrong while getting the metadata assessment scores. If changes were recently made " +
-              " to these dataset(s), the scores may still be calculating.",
-            "alert-warning",
-            this.$("#metadata-assessment-graphic")
-          );
+        // If there was no image received from the MDQ scores service,
+				// then show a warning message
+        else {
+					this.renderMetadataAssessmentError();
         }
       } catch (e) {
-        // If there's an error inserting the image, remove the entire section
-        // that contains the image.
-        console.error("Error displaying the metadata assessment figure. Error message: " + e);
-        MetacatUI.appView.showAlert(
-          "Something went wrong while getting the metadata assessment scores.",
-          "alert-error",
-          this.$("#metadata-assessment-graphic")
-        );
+        // If there's an error inserting the image, log an error message
+        console.log("Error displaying the metadata assessment figure. Error message: " + e);
+				this.renderMetadataAssessmentError();
       }
     },
 
@@ -894,24 +888,23 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		    }
 		},
 
-		onClose: function () {
-			//Clear the template
-			this.$el.html("");
-
-			//Stop listening to changes in the model
-			this.stopListening(this.model);
-
-			//Stop listening to resize
-			$(window).off("resize");
-
-			//Reset the stats model
-			this.model = null;
-		},
-
 		renderUsageMetricsError: function() {
-			$.each($(".metric-chart-loading .message"), function(i,messageEl){
-				$(messageEl).append("<br><strong>This might take some time. Check back in 24 hours to see your metrics results.</strong>")
+			$.each($('.views-metrics, .downloads-metrics, #user-citations'), function(i,metricEl){
+				$(metricEl).find(".message").append("<br><strong>This might take some time. Check back in 24 hours to see these results.</strong>")
 			});
+		},
+		
+		/**		
+		 * renderMetadataAssessmentError - update the metadata assessment
+		 * pre-loading figure to indicate to the user that the assessment is not
+		 * available at the moment.
+		 */		 
+		renderMetadataAssessmentError: function(){
+			try {
+				$("#metadata-assessment-graphic .message").append("<br><strong>This might take some time. Check back in 24 hours to see these results.</strong>")
+			} catch (e) {
+				console.log("Error showing the metadata assessment error message in the metrics. " + e);
+			}
 		},
 
 		/*
@@ -944,8 +937,20 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				this.$('#replicas-container').hide()
 			}
 
+		},
+		
+		onClose: function () {
+			//Clear the template
+			this.$el.html("");
 
+			//Stop listening to changes in the model
+			this.stopListening(this.model);
 
+			//Stop listening to resize
+			$(window).off("resize");
+
+			//Reset the stats model
+			this.model = null;
 		}
 
 	});
