@@ -275,10 +275,11 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
         //Check if the portal source node is from the active alt repo OR is
         // configured as a Plus portal.
-        if( typeof sourceMN != "string" ||
+        if( !this.model.isNew() &&
+            (typeof sourceMN != "string" ||
             (sourceMN != MetacatUI.appModel.get("defaultAlternateRepositoryId") &&
             !_.findWhere(MetacatUI.appModel.get("dataonePlusPreviewPortals"),
-                         { datasource: sourceMN, seriesId: this.model.get("seriesId") })) ){
+                         { datasource: sourceMN, seriesId: this.model.get("seriesId") }))) ){
 
             //Get the name of the source member node
             var sourceMNName = "original data repository",
