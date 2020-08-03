@@ -767,13 +767,24 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
               require(["text!templates/dataonePlusIcon.html"], function(iconTemplate){
                 messageEl.prepend(iconTemplate);
               });
+
+              // Update the label element to randomly generated label
+              // And disable the input
+              var labelEL = $('.label-input-text');
+              labelEL.val(this.model.get("label"));
+              labelEL.attr("disabled", "disabled");
+
+              // Show edit label message if the edit button is disabled
+              var editLabelMessage = "Create a custom " + MetacatUI.appModel.get("portalTermSingular") + " name for the URL when your free preview of " + MetacatUI.appModel.get("dataonePlusName") + " ends.";
+              var editLabelMessageEl = $(document.createElement("p"))
+                                      .addClass("muted")
+                                      .text(editLabelMessage);
+
+              this.$(".change-label-container > p:nth-child(1)").after(editLabelMessageEl);
             }
           }
 
         });
-
-        //Fetch the user subscription info
-        MetacatUI.appUserModel.fetchSubscription();
 
       }
     },

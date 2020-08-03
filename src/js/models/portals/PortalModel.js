@@ -122,6 +122,21 @@ define(["jquery",
                 this.addIsPartOfFilter();
               }
 
+              // check for info received from Bookkeeper
+              if ( MetacatUI.appModel.get("dataonePlusPreviewMode")==true ) {
+                if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+                  this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", function(){
+                    if(MetacatUI.appUserModel.get("dataoneSubscription").isTrialing()) {
+                      this.setRandomPortalLabel();
+                    }
+                  });
+                }
+
+                //Fetch the user subscription info
+                MetacatUI.appUserModel.fetchSubscription();
+              }
+
               // Cache this model for later use
               this.cachePortal();
 
@@ -1877,6 +1892,15 @@ define(["jquery",
               textString = textString.replace(invalidCharsRegEx, "");
 
               return textString;
+
+            },
+
+            // generates a random portal label for free trial portals
+            setRandomPortalLabel: function() {
+
+              var labelLength = MetacatUI.appModel.get("randomLabelNumericLength");
+              var randomGeneratedLabel = Math.floor(Math.pow(10,labelLength - 1) + Math.random() * ( 9 * Math.pow(10,labelLength - 1)));
+              this.set("label", randomGeneratedLabel);
 
             }
 
