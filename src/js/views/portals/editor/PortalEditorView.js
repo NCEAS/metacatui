@@ -269,6 +269,56 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     renderPortalEditor: function() {
 
+      //Check if this is a plus portal
+      if( MetacatUI.appModel.get("dataonePlusPreviewMode")){
+        var sourceMN = this.model.get("datasource");
+
+        //Check if the portal source node is from the active alt repo OR is
+        // configured as a Plus portal.
+        if( typeof sourceMN != "string" ||
+            (sourceMN != MetacatUI.appModel.get("defaultAlternateRepositoryId") &&
+            !_.findWhere(MetacatUI.appModel.get("dataonePlusPreviewPortals"),
+                         { datasource: sourceMN, seriesId: this.model.get("seriesId") })) ){
+
+            //Get the name of the source member node
+            var sourceMNName = "original data repository",
+                mnURL        = "";
+            if( typeof sourceMN == "string" ){
+              var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
+              if( sourceMNObject ){
+                sourceMNName = sourceMNObject.name;
+
+                //If there is a baseURL string
+                if( sourceMNObject.baseURL ){
+                  //Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
+                  mnURL = sourceMNObject.baseURL.substring(0, sourceMNObject.baseURL.lastIndexOf(".")) +
+                          sourceMNObject.baseURL.substring(sourceMNObject.baseURL.lastIndexOf("."),
+                                                           sourceMNObject.baseURL.indexOf("/", sourceMNObject.baseURL.lastIndexOf(".")));
+                }
+              }
+            }
+
+            //Show a message that the portal can be found on the repository website.
+            var message = $(document.createElement("h3")).addClass("center stripe");
+            message.text("The " + this.model.get("name") + " " + MetacatUI.appModel.get("portalTermSingular") +
+                      " can be edited in the ");
+
+            if(mnURL){
+              message.append( $(document.createElement("a"))
+                                .attr("href", mnURL)
+                                .attr("target", "_blank")
+                                .text(sourceMNName) );
+            }
+            else{
+              message.append(sourceMNName);
+            }
+
+            this.$el.html(message);
+
+            return;
+        }
+      }
+
       // Add the template to the view and give the body the "Editor" class
       this.$el.html(this.template({
         name: this.model.get("name"),
