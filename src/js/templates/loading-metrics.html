@@ -1,15 +1,94 @@
-<div style="
+<div class="metric-chart-loading" style="
     box-sizing: border-box;
     position: relative;
-    height: auto;
+    height: 100%;
     width: 100%;
+    display: flex;
 ">
 <% var minHeightSvg = "300px"; var maxHeightSvg = "380px"; %>
 
-<!-- bar chart loading skeleton -->
-  <% if(type == "barchart"){ %>
-  <!-- bar chart loading -->
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1392 353" preserveAspectRatio="none" class="preloading-chart" style="height: 100%; width: 100%; max-height:<%= maxHeightSvg %>; min-height:<%= minHeightSvg %>;">
+  <!-- FAIR line chart loading skeleton -->
+  <% if(type == "FAIR"){ %>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 852 426" preserveAspectRatio="none" style="width: 100%; height: 100%; min-width: 950px;">
+      <g fill="none" fill-rule="evenodd">
+        <g fill="#f7f7f7">
+          <path d="M56 35h612v344H56zM691 146h45v11h-45zM9 127h13v169H9zM35 44h11v13H35zM35 122h11v13H35zM35 200h11v13H35zM35 278h11v13H35zM35 356h11v13H35zM724 174h85v11h-85z"/>
+          <g transform="translate(694 177)">
+            <path d="M0 1h20v4H0z"/>
+          </g>
+          <path d="M724 199h97v11h-97z"/>
+          <g transform="translate(694 202)">
+            <path d="M0 1h20v4H0z"/>
+          </g>
+          <path d="M724 224h110v11H724z"/>
+          <g transform="translate(694 227)">
+            <path d="M0 1h20v4H0z"/>
+          </g>
+          <path d="M724 249h90v11h-90z"/>
+          <g transform="translate(694 252)">
+            <path d="M0 1h20v4H0z"/>
+          </g>
+          <path d="M74 386h29v11H74zM145 386h29v11h-29zM215 386h29v11h-29zM286 386h29v11h-29zM356 386h29v11h-29zM427 386h29v11h-29zM497 386h29v11h-29zM568 386h29v11h-29zM638 386h29v11h-29zM341 423h42v-13h-42z"/>
+        </g>
+        <g stroke="#ebebeb" stroke-width="5" transform="translate(90 80)" stroke-linecap="round" stroke-linejoin="round">
+          <%
+            const makeLineAnim = function(lineString){
+              var values = [lineString];
+              for (i = 1; i <= 12; i += 2) {
+                var nums = lineString.split(" ");
+                nums[i] = nums[i] - 20;
+                var newLine = nums.join(' ');
+                values.push(newLine)
+              }
+              values.push(lineString);
+              values.push(lineString);
+              values.push(lineString);
+              return values.join('; ');
+            };
+          %>
+          <% var animDur = "2.5s"; %>
+          <% var line1 = "0 268 105 243 210 204 315 187 420 186 525 189"; %>
+          <% var line1Animated = makeLineAnim(line1); %>
+          <polyline points="<%= line1 %>">
+            <animate
+              attributeName="points"
+              dur="<%= animDur %>"
+              values = "<%= line1Animated %>"
+              repeatCount="indefinite"/>
+          </polyline>
+          <% var line2 = "0 232 105 209 210 140 315 123 420 125 525 117"; %>
+          <% var line2Animated = makeLineAnim(line2); %>
+          <polyline points="<%= line2 %>">
+            <animate
+              attributeName="points"
+              dur="<%= animDur %>"
+              values = "<%= line2Animated %>"
+              repeatCount="indefinite"/>
+          </polyline>
+          <% var line3 = "0 184 105 157 210 91 315 80 420 64 525 64"; %>
+          <% var line3Animated = makeLineAnim(line3); %>
+          <polyline points="<%= line3 %>">
+            <animate
+              attributeName="points"
+              dur="<%= animDur %>"
+              values = "<%= line3Animated %>"
+              repeatCount="indefinite"/>
+          </polyline>
+          <% var line4 = "0 144 105 102 210 41 315 16 420 0 525 1"; %>
+          <% var line4Animated = makeLineAnim(line4); %>
+          <polyline points="<%= line4 %>">
+            <animate
+              attributeName="points"
+              dur="<%= animDur %>"
+              values = "<%= line4Animated %>"
+              repeatCount="indefinite"/>
+          </polyline>
+        </g>
+      </g>
+    </svg>
+  <!-- bar chart loading skeleton -->
+  <% } else if (type == "barchart") { %>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1392 353" preserveAspectRatio="none" style="height: 100%; width: 100%; max-height:<%= maxHeightSvg %>; min-height:<%= minHeightSvg %>;">
     <!-- background elements -->
     <g fill="none" fill-rule="evenodd">
       <g fill="#f7f7f7">
