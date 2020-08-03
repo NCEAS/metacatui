@@ -1416,6 +1416,15 @@ define(['jquery', 'underscore', 'backbone'],
       dataonePlusPreviewPortals: [],
 
       /**
+      * The length of random portal label generated during preview/trial mode of DataONE Plus
+      * @readonly
+      * @type {number}
+      * @default 7
+      * @since 2.14.0
+      */
+      randomLabelNumericLength: 7,
+
+      /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
       */
       /**
