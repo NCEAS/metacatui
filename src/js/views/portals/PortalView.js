@@ -296,20 +296,41 @@ define(["jquery",
                                  { datasource: sourceMN, seriesId: this.model.get("seriesId") })) ){
 
                     //Get the name of the source member node
-                    var sourceMNName = "original data repository";
+                    var sourceMNName = "original data repository",
+                        mnURL        = "";
                     if( typeof sourceMN == "string" ){
                       var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
                       if( sourceMNObject ){
-                        sourceMNName = sourceMNObject.nodeName;
+                        sourceMNName = sourceMNObject.name;
+
+                        //If there is a baseURL string
+                        if( sourceMNObject.baseURL ){
+                          //Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
+                          mnURL = sourceMNObject.baseURL.substring(0, sourceMNObject.baseURL.lastIndexOf(".")) +
+                                  sourceMNObject.baseURL.substring(sourceMNObject.baseURL.lastIndexOf("."),
+                                                                   sourceMNObject.baseURL.indexOf("/", sourceMNObject.baseURL.lastIndexOf(".")));
+                        }
                       }
                     }
 
                     //Show a message that the portal can be found on the repository website.
-                    MetacatUI.appView.showAlert({
-                      message: "The " + this.label + " " + MetacatUI.appModel.get("portalTermSingular") +
-                                " can be viewed in the " + sourceMNName,
-                      container: this.$el
-                    });
+                    var message = $(document.createElement("h3")).addClass("center stripe");
+                    message.text("The " + this.model.get("name") + " " + MetacatUI.appModel.get("portalTermSingular") +
+                              " can be viewed in the ");
+
+                    if(mnURL){
+                      message.append( $(document.createElement("a"))
+                                        .attr("href", mnURL)
+                                        .attr("target", "_blank")
+                                        .text(sourceMNName) );
+                    }
+                    else{
+                      message.append(sourceMNName);
+                    }
+
+                    this.$el.html(message);
+
+                    return;
                 }
               }
 
