@@ -35,13 +35,15 @@ MetacatUI.AppConfig = Object.assign({
   //Portals
   hideSummaryCitationsChart: false,
   hideSummaryDownloadsChart: false,
-  hideSummaryMetadataAssessment: true,
+  hideSummaryMetadataAssessment: false,
   hideSummaryViewsChart: false,
   enableCreatePortals: true,
   enableBookkeeperServices: true,
 
+  //Dataset landing pages
   displayDatasetEditButton: false,
-  displayDatasetControls: false
+  displayDatasetControls: false,
+  displayDatasetQualityMetric: false
 }, (MetacatUI.AppConfig || {}));
 
 MetacatUI.themeMap =
