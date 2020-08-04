@@ -4170,13 +4170,9 @@ font-size: 1.1em;
 .toc-view.span3.affix-bottom + .span9 {
   margin-left: 26.5%;
 }
-
 .toc-ul{
 	position: sticky;
 	position: -webkit-sticky;
-  background-color: #2c6f90; /* Back-up color for IE */
-  background-color: var(--portal-primary-color);
-
   padding: 0px;
 }
 .toc-ul > li > a {
@@ -4205,7 +4201,7 @@ font-size: 1.1em;
   border-radius: 0px;
   text-shadow: none;
 }
-.toc li.active > a {
+.portal-view .toc li.active > a {
   background-color: #2c7e90; /* Back-up color for IE */
 	background-color: var(--portal-secondary-color);
 }
@@ -4438,10 +4434,6 @@ i.toc-sub-item {
   bottom: -1px;
   left: 0;
 }
-.portal-editor #portal-section-tabs .section-link-container.active:hover::after {
-  border-bottom: 1px solid #2c7e90; /* Back-up color for IE */
-	border-bottom: 1px solid var(--portal-secondary-color);
-}
 
 #portal-section-tabs .section-link-container{
   background-color: #2c6f90; /* Back-up color for IE */
@@ -4482,10 +4474,6 @@ i.toc-sub-item {
   background-color: #FFF;
   border-color: #CCC;
 }
-.portal-view #portal-section-tabs .section-link-container.active{
-  background-color: #2c7e90; /* Back-up color for IE */
-  background-color: var(--portal-secondary-color);
-}
 #portal-section-tabs .section-link-container.error{
   border-color: #b94a48;
   background-color: #f2dede;
@@ -4512,10 +4500,6 @@ i.toc-sub-item {
 	box-sizing: border-box;
 	max-width: 44px;
 }
-#portal-section-tabs .active .section-menu-link{
-  color: #2c6f90; /* Back-up color for IE */
-  color: var(--portal-primary-color);
-}
 #portal-section-tabs .portal-section-link[contenteditable="true"]{
   width: calc(100% - 48px);
 }
@@ -4529,24 +4513,9 @@ i.toc-sub-item {
 #portal-section-tabs .section-link-container.page-AddPage .icon{
   font-size: 1.75em;
 }
-#portal-section-tabs .section-link-container.page-AddPage .portal-section-link:hover,
-#portal-section-tabs .section-link-container.page-Settings .portal-section-link:hover{
-  background-color: transparent;
-  color: #2c7e90; /* Back-up color for IE */
-  color: var(--portal-secondary-color);
-}
 #portal-section-tabs .section-link-container.page-AddPage .portal-section-link{
   color: #FFF;
   width: 100%;
-}
-#portal-section-tabs .section-link-container.active .portal-section-link{
-  color: #2c6f90; /* Back-up color for IE */
-  color: var(--portal-primary-color);
-}
-#portal-section-tabs .section-link-container.active:hover,
-#portal-section-tabs .section-link-container:hover {
-  background-color: #2c7e90; /* Back-up color for IE */
-  background-color: var(--portal-secondary-color);
 }
 #portal-section-tabs .section-link-container:hover .portal-section-link,
 #portal-section-tabs .section-link-container.active:hover .section-menu-link,
@@ -4569,7 +4538,6 @@ i.toc-sub-item {
 }
 #portal-section-tabs .section-link-container .dropdown-menu>li>a{
   color: #2c6f90; /* Back-up color for IE */
-  color: var(--portal-primary-color);
   border-bottom: 1px solid #CCC;
   line-height: 25px;
 }
@@ -4582,6 +4550,42 @@ i.toc-sub-item {
   background-image: none;
   background-color: #DDD;
 }
+
+/** --------------------------Portal colors -----------------------------***/
+.portal-view #portal-section-tabs .section-link-container.active{
+  background-color: #2c7e90; /* Back-up color for IE */
+  background-color: var(--portal-secondary-color);
+}
+#portal-section-tabs .active .section-menu-link{
+  color: #2c6f90; /* Back-up color for IE */
+  color: var(--portal-primary-color);
+}
+#portal-section-tabs .section-link-container.page-AddPage .portal-section-link:hover,
+#portal-section-tabs .section-link-container.page-Settings .portal-section-link:hover{
+  background-color: transparent;
+  color: #2c7e90; /* Back-up color for IE */
+  color: var(--portal-secondary-color);
+}
+#portal-section-tabs .section-link-container.active .portal-section-link{
+  color: #2c6f90; /* Back-up color for IE */
+  color: var(--portal-primary-color);
+}
+#portal-section-tabs .section-link-container.active:hover,
+#portal-section-tabs .section-link-container:hover {
+  background-color: #2c7e90; /* Back-up color for IE */
+  background-color: var(--portal-secondary-color);
+}
+#portal-section-tabs .section-link-container .dropdown-menu>li>a{
+  color: var(--portal-primary-color);
+}
+.portal-editor #portal-section-tabs .section-link-container.active:hover::after {
+  border-bottom: 1px solid #2c7e90; /* Back-up color for IE */
+	border-bottom: 1px solid var(--portal-secondary-color);
+}
+.portal-view .toc-ul {
+  background-color: #2c6f90; /* Back-up color for IE */
+  background-color: var(--portal-primary-color);
+}
 .portal-view .toc-ul li > a:hover,
 .portal-editor .toc-ul li > a:hover{
   background-color: #2c7e90; /* Back-up color for IE */
@@ -4592,6 +4596,11 @@ i.toc-sub-item {
 .portal-editor .result-row .citation .title{
   color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
+}
+.portal-view .pagination ul > li > a:hover,
+.portal-editor .pagination ul > li > a:hover{
+  background-color: var(--portal-primary-color);
+  color: #FFF;
 }
 .portal-view .applied-filter,
 .portal-editor .applied-filter{
@@ -4658,7 +4667,7 @@ i.toc-sub-item {
 	stroke: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
-	stroke: var(--portal-secondary-color);
+	stroke: var(--portal-primary-color);
 }
 .portal-view svg circle.packages,
 .portal-editor svg circle.packages{
@@ -4675,6 +4684,35 @@ i.toc-sub-item {
 	fill: var(--portal-secondary-color);
 	stroke: var(--portal-secondary-color);
 }
+.portal-view svg .data,
+.portal-view .fallback.data,
+.portal-editor svg .data,
+.portal-editor .fallback.data{
+  color: var(--portal-accent-color);
+  fill: var(--portal-accent-color);
+  stroke: var(--portal-accent-color);
+}
+.portal-view #metric-modal .metric-chart .bar,
+.portal-view .views-metrics .metric-chart .bar,
+.portal-view .downloads-metrics .metric-chart .bar,
+.portal-view #metric-modal .metric-chart .scale_button:hover rect,
+.portal-view #metric-modal .metric-chart .bar,
+.portal-view #metric-modal .metric-chart .bar_context,
+.portal-view .views-metrics .metric-chart .scale_button:hover rect,
+.portal-view .views-metrics .metric-chart .bar,
+.portal-view .views-metrics .metric-chart .bar_context,
+.portal-view .downloads-metrics .metric-chart .scale_button:hover rect,
+.portal-view .downloads-metrics .metric-chart .bar,
+.portal-view .downloads-metrics .metric-chart .bar_context {
+    stroke: var(--portal-primary-color);
+    fill: var(--portal-primary-color);
+}
+.portal-view .donut-title-count.data,
+.portal-view .donut-title-count.metadata,
+.portal-view .donut-title-text,
+.portal-view .donut-title-text{
+  fill: #555;
+}
 .portal-view .line-chart .line,
 .portal-editor .line-chart .line{
 	fill: none;
@@ -4687,6 +4725,37 @@ i.toc-sub-item {
 .portal-editor #portal-members a{
   color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
+}
+.portal-section-content thead tr {
+  background-color: var(--portal-primary-color);
+}
+.portal-section-content a {
+  color: var(--portal-primary-color);
+}
+.portal-view .toc-view a {
+  color: #FFF;
+}
+.portal-section-view a {
+  color: var(--portal-primary-color);
+}
+.portal-view .pagination ul > .active > a,
+.portal-view .pagination ul > .active > a:hover {
+  background-color: var(--portal-primary-color);
+}
+.portal-view .info-icons .icon:hover {
+  color: var(--portal-primary-color);
+}
+.portal-view,
+.portal-view .portal-section-content,
+.portal-view h2,
+.portal-view h3,
+.portal-view h4,
+.portal-view h5,
+.portal-view h6 {
+  color: #555;
+}
+.portal-view .portal-title {
+  color: var(--portal-primary-color);
 }
 
 .my-portals-container table td {
