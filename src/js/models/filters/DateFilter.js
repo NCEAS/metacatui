@@ -28,7 +28,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       return _.extend(Filter.prototype.defaults(), {
         min: 0,
         max: (new Date()).getUTCFullYear(),
-        rangeMin: 0,
+        rangeMin: 1800,
         rangeMax: (new Date()).getUTCFullYear(),
         matchSubstring: false,
         nodeName: "dateFilter"
