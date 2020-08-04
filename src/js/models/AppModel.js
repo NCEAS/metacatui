@@ -1267,11 +1267,12 @@ define(['jquery', 'underscore', 'backbone'],
               description: "Only show results with data collected within the year range"
             },
             {
-              fields: ["id", "identifier", "documents", "resourceMap", "seriesId"],
+              fields: ["identifier", "documents", "resourceMap", "seriesId"],
               label: "Identifier",
               placeholder: "DOI or ID",
               icon: "bullseye",
-              description: "Find datasets if you have all or part of its DOI or ID"
+              description: "Find datasets if you have all or part of its DOI or ID",
+              operator: "OR"
             },
             {
               fields: ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
