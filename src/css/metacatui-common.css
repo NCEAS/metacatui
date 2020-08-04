@@ -3531,6 +3531,30 @@ add font awesome close icon */
 	box-sizing: border-box;
 	overflow-y: auto;
 }
+
+/* Portal editor login page */
+.portal-login-page{
+	display: grid;
+	grid-template-columns: 100%;
+	grid-template-rows: auto;
+	justify-items: center;
+	gap: 1rem;
+}
+.portal-login-page .portal-image {
+	max-width: 900px;
+	margin: auto;
+}
+
+.portal-login-page .portal-login-title{
+	margin-top: 3rem;
+	font-weight: 300;
+	line-height: 1.4;
+}
+.portal-login-page .portal-login-title strong{
+	font-weight: 600;
+	
+}
+
 /* Editor navigation (tabs) */
 .section-links-container{
   margin-bottom: 0px;

@@ -10,11 +10,12 @@ define(['underscore',
         "views/portals/editor/PortEditorImageView",
         "text!templates/loading.html",
         "text!templates/portals/editor/portalEditor.html",
-        "text!templates/portals/editor/portalEditorSubmitMessage.html"
+        "text!templates/portals/editor/portalEditorSubmitMessage.html",
+        "text!templates/portals/editor/portalLoginPage.html"
       ],
 function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
   PortEditorSectionsView, ImageEdit, LoadingTemplate, Template,
-  portalEditorSubmitMessageTemplate){
+  portalEditorSubmitMessageTemplate, LoginTemplate){
 
   /**
   * @class PortalEditorView
@@ -61,6 +62,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     template: _.template(Template),
     loadingTemplate: _.template(LoadingTemplate),
+    loginTemplate: _.template(LoginTemplate),
     // Over-ride the default editor submit message template (which is currently
     // used by the metadata editor) with the portal editor version
     editorSubmitMessageTemplate: _.template(portalEditorSubmitMessageTemplate),
@@ -766,17 +768,25 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * Show Sign In buttons
     */
     showSignIn: function(){
-      var container = $(document.createElement("div")).addClass("container center");
-      this.$el.html(container);
+
       var signInButtons = new SignInView().render().el;
+      $(signInButtons).find(".login.btn").addClass("btn-primary btn-large");
 
       // Message to create a portal if the portal is new
+      var title = "Sign in with your ORCID to edit this portal"
       if (this.model.get("isNew")) {
-        $(container).append('<h1>Sign in to create a portal</h1>', signInButtons);
+        title = "<strong>You're one step away from the portal builder</strong><br>Start by signing in with your ORCID"
       }
-      else {
-        $(container).append('<h1>Sign in to edit a portal</h1>', signInButtons);
-      }
+      
+      this.$el.html(this.loginTemplate({
+        title: title,
+        portalInfoLink: "https://dataone.org/plus/",
+        portalImageSrc: MetacatUI.root + "/img/portals/portal-data-page-example.png",
+        altText: "Screen shot of a portal data page for a climate research lab. The page shows a search bar, customized filters, and a map of the the geographic area the data covers."
+      }));
+      
+      this.$(".portal-login-button").html(signInButtons);
+      
 
     },
 
