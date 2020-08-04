@@ -7,7 +7,9 @@
 	<%}%>
 
 <article id="Profile" class="profile">
-<h2 class="profile-title"><%=title%></h2>
+  <% if(title){ %>
+    <h2 class="profile-title"><%=title%></h2>
+  <% } %>
 <section class="charts-container">
 	<% if(typeof description == "string"){ %>
 		<p><%=description%></p>
