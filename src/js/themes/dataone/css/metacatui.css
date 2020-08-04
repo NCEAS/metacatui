@@ -487,6 +487,11 @@ input[type="text"][disabled="disabled"] {
   background-color: #1C6E84;
   background-color: var(--c-major-accent-6);
 }
+.pill{
+  background-color: var(--c-minor-accent);
+  --d1_pill-c-background: var(--c-minor-accent);
+  --d1_pill-c-foreground: var(--c-foreground-on-minor-accent);
+}
 
 /*.annotator-widget::after,
 .annotator-widget a::after{

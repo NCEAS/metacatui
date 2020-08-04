@@ -499,6 +499,13 @@ svg.icon {
   height: 1em;
   vertical-align: text-top;
 }
+.pill{
+  border-radius: 5px;
+width: auto;
+display: inline;
+padding: .25em .5em;
+text-shadow: none;
+}
 /******************************************
 ** Results and Result Rows ***
 ******************************************/
@@ -3552,7 +3559,7 @@ add font awesome close icon */
 }
 .portal-login-page .portal-login-title strong{
 	font-weight: 600;
-	
+
 }
 
 /* Editor navigation (tabs) */
@@ -5350,6 +5357,9 @@ address.email-container:before{
 }
 .profile .quick-stats .circle-badge .title{
 	font-size: 16px;
+}
+.profile .charts + p{
+  margin-top: 20px;
 }
 
 /**** Bar Charts ******/
