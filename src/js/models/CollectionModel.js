@@ -608,10 +608,16 @@ define(["jquery",
           var label = this.get("label");
         }
 
-        //If the label is empty
+        //If the label is not a string or is an empty string
         if( typeof label != "string" || !label.trim().length ){
-          var type = this.type.toLowerCase();
-          return "Please choose a name for this " + type + " to use in the URL.";
+          //Convert numbers to strings
+          if(typeof label == "number"){
+            label = label.toString();
+          }
+          else{
+            var type = this.type.toLowerCase();
+            return "Please choose a name for this " + type + " to use in the URL.";
+          }
         }
 
         // If the label is a restricted string

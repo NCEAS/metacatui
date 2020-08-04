@@ -1903,6 +1903,7 @@ define(["jquery",
               if( this.isNew() ){
                 var labelLength = MetacatUI.appModel.get("randomLabelNumericLength");
                 var randomGeneratedLabel = Math.floor(Math.pow(10,labelLength - 1) + Math.random() * ( 9 * Math.pow(10,labelLength - 1)));
+                randomGeneratedLabel = randomGeneratedLabel.toString();
                 this.set("label", randomGeneratedLabel);
               }
 
