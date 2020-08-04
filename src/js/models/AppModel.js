@@ -1056,6 +1056,15 @@ define(['jquery', 'underscore', 'backbone'],
       */
       portalTermPlural: "portals",
       /**
+      * A URL of a webpage for people to learn more about portals. If no URL is provided,
+      * links to more info about portals will be omitted.
+      * @since 2.14.0
+      * @type {string}
+      * @example "https://dataone.org/plus"
+      * @default null
+      */
+      portalInfoURL: null,
+      /**
       * Set to false to prevent ANYONE from creating a new portal.
       * @type {boolean}
       * @default true

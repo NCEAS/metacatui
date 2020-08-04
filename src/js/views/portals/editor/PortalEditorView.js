@@ -245,7 +245,14 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           //If the user authentication hasn't been checked yet, then wait for it
           if ( !MetacatUI.appUserModel.get("tokenChecked") ) {
             this.listenTo(MetacatUI.appUserModel, "change:tokenChecked", function(){
-              MetacatUI.appUserModel.isAuthorizedCreatePortal();
+              if( MetacatUI.appUserModel.get("loggedIn") ){
+                //Check if this user is authorized to create a new portal
+                MetacatUI.appUserModel.isAuthorizedCreatePortal();
+              }
+              //If the user is not logged in, show the sign in buttons
+              else if( !MetacatUI.appUserModel.get("loggedIn") ){
+                this.showSignIn();
+              }
             });
             return;
           }
@@ -777,16 +784,16 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       if (this.model.get("isNew")) {
         title = "<strong>You're one step away from the portal builder</strong><br>Start by signing in with your ORCID"
       }
-      
+
       this.$el.html(this.loginTemplate({
         title: title,
-        portalInfoLink: "https://dataone.org/plus/",
+        portalInfoLink: MetacatUI.appModel.get("portalInfoURL"),
         portalImageSrc: MetacatUI.root + "/img/portals/portal-data-page-example.png",
         altText: "Screen shot of a portal data page for a climate research lab. The page shows a search bar, customized filters, and a map of the the geographic area the data covers."
       }));
-      
+
       this.$(".portal-login-button").html(signInButtons);
-      
+
 
     },
 

@@ -39,6 +39,7 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryViewsChart: false,
   enableCreatePortals: true,
   enableBookkeeperServices: true,
+  portalInfoURL: "https://dataone.org/plus",
 
   //Dataset landing pages
   displayDatasetEditButton: false,
