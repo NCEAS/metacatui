@@ -63,6 +63,7 @@ define(["jquery",
                     acknowledgmentsLogos: [],
                     awards: [],
                     checkedNodeLabels: false,
+                    labelDoubleChecked: false,
                     literatureCited: [],
                     filterGroups: [],
                     createSeriesId: true, //If true, a seriesId will be created when this object is saved.
@@ -1466,7 +1467,43 @@ define(["jquery",
 
                     model.trigger("labelTaken");
                   } else {
-                    model.trigger("labelAvailable");
+                    if( MetacatUI.appModel.get("alternateRepositories").length ){
+
+                      MetacatUI.appModel.setActiveAltRepo();
+                      var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+                      if( activeAltRepo ){
+                        var requestSettings = {
+                          url: activeAltRepo.queryServiceUrl +
+                               "q=label:\"" + label + "\"" +
+                               " AND formatId:\"" + model.get("formatId") + "\"" +
+                               "&rows=0" +
+                               "&wt=json",
+                          error: function(response) {
+                            model.trigger("errorValidatingLabel");
+                          },
+                          success: function(response){
+                            if( response.response.numFound > 0 ){
+                              //Add this label to the blockList so we don't have to query for it later
+                              var blockList = model.get("labelBlockList");
+                              if( Array.isArray(blockList) ){
+                                blockList.push(label);
+                              }
+
+                              model.trigger("labelTaken");
+                            } else {
+                              model.trigger("labelAvailable");
+                            }
+                          }
+                        }
+                        //Attach the User auth info and send the request
+                        requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+                        $.ajax(requestSettings);
+                      }
+
+                    }
+                    else{
+                      model.trigger("labelAvailable");
+                    }
                   }
                 }
               }
@@ -1623,7 +1660,62 @@ define(["jquery",
                 }
               }
               else{
-                this.trigger("valid");
+
+                //Double-check that the label is available, if it was changed
+                if( (this.isNew() || this.get("originalLabel") != this.get("label")) && !this.get("labelDoubleChecked") ){
+                  //If the label is taken
+                  this.once("labelTaken", function(){
+
+                    //Stop listening to the label availablity
+                    this.stopListening("labelAvailable");
+
+                    //Set that the label has been double-checked
+                    this.set("labelDoubleChecked", true);
+
+                    //If this portal is in a free trial of DataONE Plus, generate a new random label
+                    // and start the save process again
+                    if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+                      var subscription = MetacatUI.appUserModel.get("dataoneSubscription");
+                      if(subscription && subscription.isTrialing()) {
+                        this.setRandomLabel();
+
+                        this.set("labelDoubleChecked", true);
+
+                        // Start the save process again
+                        this.save();
+
+                        return;
+                      }
+
+                    }
+                    else{
+                      //If the label is taken, trigger an invalid event
+                      this.trigger("invalid");
+                      //Trigger a cancellation of the save event
+                      this.trigger("cancelSave");
+                    }
+
+                  });
+
+                  this.once("labelAvailable", function(){
+                    this.stopListening("labelTaken");
+                    this.set("labelDoubleChecked", true);
+                    this.save();
+                  });
+
+                  // Check label availability
+                  this.checkLabelAvailability(this.get("label"));
+
+                  console.log("Double checking label");
+
+                  //Don't proceed with the rest of the save
+                  return;
+                }
+                else{
+                  this.trigger("valid");
+                }
+
               }
 
               //Check if the checksum has been calculated yet.
