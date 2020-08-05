@@ -27,9 +27,9 @@
   }
 
   .PortalView .d1_nav__minimal-nav, .Portal .d1_nav__minimal-nav{
-    grid-template-columns: 50px 1fr;
+    grid-template-columns: 30px 1fr;
     grid-template-rows: 45px;
-    justify-content: center;
+    grid-gap: 10px;
   }
   .PortalView .d1_nav__button-text, .Portal .d1_nav__button-text{
     display: none;
@@ -45,13 +45,13 @@
     grid-template-rows: 35px;
   }
   .PortalView .d1_nav__button, .Portal .d1_nav__button{
-    padding-top: 0px;
+    padding: 0px;
   }
   .PortalView .d1_menu-item__top-item, .Portal .d1_menu-item__top-item{
     line-height: 35px;
   }
   .Portal .d1_nav__minmal-items, .PortalView .d1_nav__minmal-items{
-    margin-top: 0px;
+    margin: 0px;
   }
 }
 

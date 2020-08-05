@@ -323,6 +323,7 @@ input[type=search], textarea {
 .Portal .d1_nav__minimal-nav{
   display: grid;
   grid-template-columns: 145px 1fr;
+  width: 99%;
 }
 .PortalView .d1_nav__button--logo,
 .Portal .d1_nav__button--logo {
@@ -406,6 +407,10 @@ color: #FFF;
 .Portal .d1_footer{
   margin: 0px;
   padding: 0px;
+}
+.PortalView .d1_menu-item__sub-menu[aria-hidden="false"],
+.Portal .d1_menu-item__sub-menu[aria-hidden="false"]{
+  left: 35%;
 }
 
 /* FORM/INPUT CUSTOMIZATIONS
