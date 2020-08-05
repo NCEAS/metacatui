@@ -181,27 +181,35 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
                                                       "Share") );
         }
 
-        //When the user's changePermission authority has been checked, edit their
-        //  access to the AccessPolicyView
-        this.listenToOnce(this.model, "change:isAuthorized_changePermission", function(){
-          //If there is an AccessPolicy control, disable it
-          if( isHiddenBehindControl ){
+        //If the authorization has already been checked
+        if( this.model.get("isAuthorized_changePermission") === true ){
+          //Render the AccessPolicyView
+          this.renderAccessPolicy();
+        }
+        else{
+          //When the user's changePermission authority has been checked, edit their
+          //  access to the AccessPolicyView
+          this.listenToOnce(this.model, "change:isAuthorized_changePermission", function(){
+            //If there is an AccessPolicy control, disable it
+            if( isHiddenBehindControl ){
 
-            if( this.model.get("isAuthorized_changePermission") === false ){
-              //Disable the button for the AccessPolicyView if the user is not authorized
-              this.$(".access-policy-control").attr("disabled", "disabled")
-                                              .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
-                                              .addClass("disabled");
+              if( this.model.get("isAuthorized_changePermission") === false ){
+                //Disable the button for the AccessPolicyView if the user is not authorized
+                this.$(".access-policy-control").attr("disabled", "disabled")
+                                                .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
+                                                .addClass("disabled");
+              }
             }
-          }
-          else{
-            //Render the AccessPolicyView
-            this.renderAccessPolicy();
-          }
-        });
+            else{
+              //Render the AccessPolicyView
+              this.renderAccessPolicy();
+            }
+          });
 
-        //Check the user's authority to change permissions on this object
-        this.model.checkAuthority("changePermission");
+          //Check the user's authority to change permissions on this object
+          this.model.checkAuthority("changePermission");
+        }
+
       }
     },
 

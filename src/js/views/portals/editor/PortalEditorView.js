@@ -447,7 +447,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.model = new Portal({
           //Set the isNew attribute so the model will execute certain functions when a Portal is new
           isNew: true,
-          rightsHolder: MetacatUI.appUserModel.get("username")
+          rightsHolder: MetacatUI.appUserModel.get("username"),
+          isAuthorized_read: true,
+          isAuthorized_write: true,
+          isAuthorized_changePermission: true
         });
 
       }
