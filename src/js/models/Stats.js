@@ -635,8 +635,9 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
         if( Array.isArray(MetacatUI.appModel.get('mdqAggregatedSuiteIds')) && MetacatUI.appModel.get('mdqAggregatedSuiteIds').length ){
           var suite = MetacatUI.appModel.get('mdqAggregatedSuiteIds')[0];
-          var id = MetacatUI.appView.currentView.model.get("id");
-          var url = serviceUrl + "?collection=" + id + "&suite=" + suite;
+          var id = MetacatUI.appView.currentView.model.get("seriesId");
+          var url = serviceUrl + "?id=" + id + "&suite=" + suite; 
+          
           this.imgLoad(url).then(function (response) {
               // The first runs when the promise resolves, with the request.reponse specified within the resolve() method.
               var imageURL = window.URL.createObjectURL(response);
