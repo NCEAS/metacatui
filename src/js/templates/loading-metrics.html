@@ -1,10 +1,4 @@
-<div class="metric-chart-loading" style="
-    box-sizing: border-box;
-    position: relative;
-    height: 100%;
-    width: 100%;
-    display: flex;
-">
+<div class="metric-chart-loading">
 <% var minHeightSvg = "300px"; var maxHeightSvg = "380px"; %>
 
   <!-- FAIR line chart loading skeleton -->
@@ -172,7 +166,7 @@
           <animate attributeName="height" attributeType="XML" begin="1s" dur="2s" values="187;107;187" repeatCount="indefinite" />
           <animate attributeName="y" attributeType="XML" begin="1s" dur="2s" values="30;110;30" repeatCount="indefinite" />
         </rect>
-        
+
         <rect x="972" width="34" height="72" y="145">
           <animate attributeName="height" attributeType="XML" dur="2s" values="30;72;30" repeatCount="indefinite" />
           <animate attributeName="y" attributeType="XML" dur="2s" values="187;145;187" repeatCount="indefinite" />
@@ -197,7 +191,7 @@
           <animate attributeName="height" attributeType="XML" begin="1.2s" dur="2s" values="187;107;187" repeatCount="indefinite" />
           <animate attributeName="y" attributeType="XML" begin="1.2s" dur="2s" values="30;110;30" repeatCount="indefinite" />
         </rect>
-        
+
       </g>
     </g>
   </svg>
@@ -206,7 +200,7 @@
   <!-- citations -->
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1443 438" preserveAspectRatio="none" style="height: 100%; width: 100%; max-height:<%= maxHeightSvg %>; min-height:<%= minHeightSvg %>;">
     <linearGradient id="shimmer" x1="0%" y1="0%" x1="100%" y1="10%">
-    
+
       <stop offset="0%" stop-color="#f7f7f7">
         <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
       </stop>
@@ -246,7 +240,7 @@
       <stop offset="100%" stop-color="#f7f7f7">
         <animate attributeName="stop-color" values="#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2;#f2f2f2" dur="1.95s" repeatCount="indefinite"/>
       </stop>
-      
+
     </linearGradient>
     <g fill="none" fill-rule="evenodd">
       <!-- background elements -->
@@ -426,7 +420,7 @@
     <!-- paper -->
     <path fill="#18ACC0" fill-rule="nonzero" d="M1213 120l-34-2-6 66 34 2z" />
   </svg>
-  <% } %> 
+  <% } %>
   <!-- message -->
   <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); min-width: 250px;" class="alert alert-info message"><%= message %></div>
 </div>

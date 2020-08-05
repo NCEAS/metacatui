@@ -2071,6 +2071,13 @@ i.catalog-metric-icon {
 #user-downloads-chart {
     width: 90%;
 }
+.metric-chart-loading {
+    display: flex;
+      box-sizing: border-box;
+      position: relative;
+      max-height: 350px;
+      height: 350px
+}
 .metric-chart-loading .message{
 	text-align: center;
 	padding: rem 1.2rem;
