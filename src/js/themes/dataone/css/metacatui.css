@@ -300,10 +300,15 @@ input[type=search], textarea {
 
 /* PORTALS
 -------------------------------------------------- */
+.Portal #Content,
+.PortalView #Content{
+  background-color: #FFF;
+}
 .Portal .d1_nav,
 .PortalView .d1_nav{
   height: auto;
-  background-color: #ddd;
+  background-color: #efefef;
+  box-shadow: none;
 }
 .PortalView .d1_nav__inner,
 .Portal .d1_nav__inner{

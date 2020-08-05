@@ -25,4 +25,21 @@
   .mapMode #Footer{
     bottom: -525px;
   }
+
+  .PortalView .d1_nav__minimal-nav, .Portal .d1_nav__minimal-nav{
+    grid-template-columns: 50px 1fr;
+  }
+  .PortalView .d1_nav__button-text, .Portal .d1_nav__button-text{
+    display: none;
+  }
+  .PortalView #Navbar, .Portal #Navbar{
+    min-height: 0px;
+  }
+}
+
+@media only screen and (max-width : 575px) {
+  .PortalView .d1_menu-item .d1_menu-item--get-dataone-plus,
+  .Portal .d1_menu-item .d1_menu-item--get-dataone-plus{
+    display: none;
+  }
 }
