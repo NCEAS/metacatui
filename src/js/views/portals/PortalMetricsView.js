@@ -167,19 +167,29 @@ define(["jquery",
 
               // TODO: replace the following logic with dataone bookkeeper service
               // check if the repository is a dataone member
-              var dataONEPlusMembers = MetacatUI.appModel.get("dataonePlusMembers");
+              var dataoneHostedRepos = MetacatUI.appModel.get("dataoneHostedRepos");
 
-              if ((typeof dataONEPlusMembers !== 'undefined') && Array.isArray(dataONEPlusMembers) && dataONEPlusMembers.includes(this.model.get("seriesId"))){
-                this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideSummaryMetadataAssessments");
-                this.hideCitationsChart = false || MetacatUI.appModel.get("hideSummaryCitationsChart");
-                this.hideDownloadsChart = false || MetacatUI.appModel.get("hideSummaryDownloadsChart");
-                this.hideViewsChart = false || MetacatUI.appModel.get("hideSummaryViewsChart");
+              if ((typeof dataoneHostedRepos !== 'undefined') && Array.isArray(dataoneHostedRepos) &&
+                  dataoneHostedRepos.includes(this.model.get("seriesId"))){
+
+                if( MetacatUI.appModel.get("hideSummaryMetadataAssessments") !== false )
+                  this.hideMetadataAssessment = false;
+
+                if( MetacatUI.appModel.get("hideSummaryCitationsChart") !== false )
+                  this.hideCitationsChart = false;
+
+                if( MetacatUI.appModel.get("hideSummaryDownloadsChart") !== false )
+                  this.hideDownloadsChart = false;
+
+                if( MetacatUI.appModel.get("hideSummaryViewsChart") !== false )
+                  this.hideViewsChart = false;
               }
+              //Hide all of the metrics charts
               else{
                 this.hideMetadataAssessment = true;
                 this.hideCitationsChart = true;
                 this.hideDownloadsChart = true;
-                this.hideViewsChart = true;
+                this.hideViewsChart     = true;
               }
 
               // set the statsModel

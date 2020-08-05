@@ -742,20 +742,6 @@ define(['jquery', 'underscore', 'backbone'],
       */
       hideSummaryViewsChart: true,
 
-      /*
-      * List of Repositories that are DataONE Plus Members.
-      * DataONE Plus features are displayed only for these members.
-      * @type {string[]}
-      * @readonly
-      * @default ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB", "urn:node:mnUCSB1"]
-      * @since 2.13.0
-      * ------------------------------------
-      * This config will not be displayed in the JSDoc documentation since it is
-      * temporary and only useful for internal DataONE purposes. This functionality will be replaced
-      * with the DataONE Bookkeeper service, eventually.
-      */
-      dataonePlusMembers: ["urn:node:ARCTIC", "urn:node:ESS_DIVE", "urn:node:KNB", "urn:node:mnUCSB1"],
-
       /**
       * Metrics flag for the Dataset Landing Page
       * Enable this flag to enable metrics display
@@ -1424,6 +1410,18 @@ define(['jquery', 'underscore', 'backbone'],
       // and won't be released in an offical MetacatUI version, since they will be replaced by bookkeeper
       dataonePlusPreviewMode: false,
       dataonePlusPreviewPortals: [],
+      /*
+      * List of Repositories that are DataONE Hosted Repos.
+      * DataONE Hosted Repo features are displayed only for these members.
+      * @type {string[]}
+      * @readonly
+      * @since 2.13.0
+      * ------------------------------------
+      * This config will not be displayed in the JSDoc documentation since it is
+      * temporary and only useful for internal DataONE purposes. This functionality will be replaced
+      * with the DataONE Bookkeeper service, eventually.
+      */
+      dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
 
       /**
       * The length of random portal label generated during preview/trial mode of DataONE Plus
