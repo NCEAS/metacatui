@@ -1193,6 +1193,29 @@ define(['jquery', 'underscore', 'backbone'],
       */
       portalLimit: 1,
 
+      /**
+      * The default colors to use in portals when colors haven't been saved to the portal document.
+      * Colors can be hex codes, rgb codes, or any other form supported by browsers in CSS
+      * @type {object}
+      * @property {string} primaryColor The color that is used most frequently in the portal view
+      * @property {string} secondaryColor The color that is used second-most frequently in the portal view
+      * @property {string} accentColor The color that is rarely used in portal views as an accent color
+      * @property {string} primaryColorTransparent An rgba() version of the primaryColor that is semi-transparent
+      * @property {string} secondaryColorTransparent An rgba() version of the secondaryColor that is semi-transparent
+      * @property {string} accentColorTransparent An rgba() version of the accentColor that is semi-transparent
+      * @example {
+      *   primaryColor: "#16acc0",
+      *   primaryColorTransparent: "rgba(22, 172, 192, .7)",
+      *   secondaryColor: "#EED268",
+      *   secondaryColorTransparent: "rgba(238, 210, 104, .7)",
+      *   accentColor: "#0f5058",
+      *   accentColorTransparent: "rgba(15, 80, 88, .7)"
+      *  }
+      * @since 2.14.0
+      */
+      portalDefaultColors: {
+      },
+
       /** If true, then archived content is available in the search index.
       * Set to false if this MetacatUI is using a Metacat version before 2.10.0
       * @type {boolean}

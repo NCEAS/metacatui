@@ -97,7 +97,7 @@ define(["jquery",
                     primaryColorTransparent: "rgba(0, 102, 153, .7)",
                     secondaryColorTransparent: "rgba(0, 146, 153, .7)",
                     accentColorTransparent: "rgba(248, 148, 6, .7)"
-                });
+                }, MetacatUI.appModel.get("portalDefaultColors"));
             },
 
             /**

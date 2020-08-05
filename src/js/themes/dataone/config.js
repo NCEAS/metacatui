@@ -40,6 +40,14 @@ MetacatUI.AppConfig = Object.assign({
   enableCreatePortals: true,
   enableBookkeeperServices: true,
   portalInfoURL: "https://dataone.org/plus",
+  portalDefaultColors: {
+    primaryColor: "#16acc0",
+    primaryColorTransparent: "rgba(22, 172, 192, .7)",
+    secondaryColor: "#18556e",
+    secondaryColorTransparent: "rgba(24, 85, 110, .7)",
+    accentColor: "#EED268",
+    accentColorTransparent: "rgba(238, 210, 104, .7)"
+  },
 
   //Dataset landing pages
   displayDatasetEditButton: false,
