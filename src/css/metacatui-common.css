@@ -5281,6 +5281,9 @@ address.email-container:before{
 ** Stats ***
 ******************************************/
 .no-activity h3,
+.no-activity h4,
+.no-activity h5,
+.no-activity h6,
 .no-activity p,
 .no-activity .summary-container p,
 .no-activity a,
