@@ -873,15 +873,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               xml.find("size").text(this.get("size"));
             }
 
-            //Update the checksum and checksum algorithm
+            //Save the original checksum
             if( !this.get("checksum") && this.get("originalChecksum") ){
               xml.find("checksum").text(this.get("originalChecksum"));
             }
+            //Update the checksum and checksum algorithm
             else{
               xml.find("checksum").text(this.get("checksum"));
+              xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
             }
-
-            xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
 
             //Update the rightsholder
             xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
