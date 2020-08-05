@@ -18,13 +18,16 @@ define(["jquery",
             image: "",
             title: "",
             introduction: "",
-            content: null,
+            content: new EMLText({
+                          type: "content",
+                          parentModel: this
+                      }),
             literatureCited: null,
             objectDOM: null,
             portalModel: null
           }
         },
-
+        
         /**
          * Parses a <section> element from a portal document
          *

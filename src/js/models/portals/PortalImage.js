@@ -23,6 +23,22 @@ define(["jquery",
             portalModel: null
           });
         },
+        
+        initialize: function(attrs){
+        
+          // Call the super class initialize function
+          DataONEObject.prototype.initialize.call(this, attrs);
+        
+          // If the image model is initialized with an identifier but no image URL,
+          // create the full image URL
+          if(this.get("identifier") && !this.get("imageURL")){
+          
+            var baseURL = this.getBaseURL(),
+                imageURL = baseURL + this.get("identifier");
+                this.set("imageURL", imageURL);
+          }
+        
+        },
 
         /**
          * Parses an ImageType XML element from a portal document
@@ -58,38 +74,14 @@ define(["jquery",
           modelJSON.label = $objectDOM.children("label").text();
           modelJSON.associatedURL = $objectDOM.children("associatedURL").text();
 
-          //Parse the image URL or identifier
+          // Parse the image URL or identifier
           modelJSON.identifier = $objectDOM.children("identifier").text();
           if( modelJSON.identifier ){
             if( modelJSON.identifier.substring(0, 4) !== "http" ){
 
-              //Use the MN base URL
-              var urlBase = "";
-
-              //If this MetacatUI is using the CN, find the URL to use for the image
-              if( MetacatUI.appModel.getActiveAltRepo() ){
-
-                var imageMN;
-
-                //If there is an origin member node in the sys meta, use that object service URL
-                if( modelJSON.datasource ){
-                  imageMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: modelJSON.datasource  });
-                }
-
-                //Otherwise, use the CN resolve service
-                if( !imageMN ){
-                  urlBase = MetacatUI.appModel.get("objectServiceUrl") || MetacatUI.appModel.get("resolveServiceUrl");
-                }
-                else{
-                  urlBase = imageMN.objectServiceUrl;
-                }
-              }
-              else{
-                //For MetacatUI's using MNs, use the object service URL from the AppModel
-                urlBase = MetacatUI.appModel.get("objectServiceUrl") || MetacatUI.appModel.get("resolveServiceUrl");
-              }
-
-              modelJSON.imageURL = urlBase + modelJSON.identifier;
+              var baseURL = this.getBaseURL();
+              modelJSON.imageURL = baseURL + modelJSON.identifier;
+              
             }
             else{
               modelJSON.imageURL = modelJSON.identifier;
@@ -98,6 +90,79 @@ define(["jquery",
 
           return modelJSON;
 
+        },
+        
+        /**        
+         * imageExists - Check if an image exists with the given
+         * url, or if no url provided, with the baseURL + identifier
+         *          
+         * @param  {string} imageURL  The image URL to check
+         * @return {boolean}          Returns true if an HTTP request returns anything but 404
+         */         
+        imageExists: function (imageURL){
+          
+          if(!imageURL){
+            this.get("imageURL")
+          }
+          
+          if(!imageURL && this.get("identifier")){
+            var baseURL = this.getBaseURL(),
+                imageURL = baseURL + this.get("identifier");
+          }
+          
+          if(!imageURL){
+            return false
+          }
+          
+          var http = new XMLHttpRequest();
+          http.open('HEAD', imageURL, false);
+          http.send();
+          
+          return http.status != 404;
+          
+        },
+
+        /**        
+         * getBaseURL - Get the base URL to use with an image identifier
+         *          
+         * @return {string}  The image base URL, or an empty string if not found
+         */         
+        getBaseURL: function(){
+          
+          var url = "",
+              portalModel = this.get("portalModel"),
+              // datasource = portalModel ? portalModel.get("datasource") : false;
+              datasource = this.get("datasource"),
+              datasource = (portalModel && !datasource) ? portalModel.get("datasource") : datasource;
+
+          if( MetacatUI.appModel.get("isCN") ){
+            var sourceRepo;
+
+            //Use the object service URL from the origin MN/datasource
+            if( datasource ){
+              sourceRepo = MetacatUI.nodeModel.getMember(datasource);
+            }
+            // Use the object service URL from the alt repo
+            if( !sourceRepo ){
+              sourceRepo = MetacatUI.appModel.getActiveAltRepo();
+            }
+            if( sourceRepo ){
+              url = sourceRepo.objectServiceUrl;
+            }
+          }
+          
+          if(!url && datasource){
+            var imageMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: datasource });
+            if(imageMN){
+              url = imageMN.objectServiceUrl;
+            }
+          }
+
+          //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+          if( !url ){
+            url = MetacatUI.appModel.get("objectServiceUrl") || MetacatUI.appModel.get("resolveServiceUrl");
+          }
+          return url;
         },
 
         /**

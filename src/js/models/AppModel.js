@@ -1192,11 +1192,18 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.14.0
       */
       portalLimit: 1,
-
+      
       /**
-      * The default colors to use in portals when colors haven't been saved to the portal document.
+      * The default values to use in portals. Default sections are applied when a portal is new.
+      * Default images are used in new freeform pages in the portal builder.
+      * The default colors are used when colors haven't been saved to the portal document.
       * Colors can be hex codes, rgb codes, or any other form supported by browsers in CSS
       * @type {object}
+      * @property {object[]} sections The default sections for a new portal. Each object within the section array can have a title property and a label property
+      * @property {string} label The name of the section that will appear in the tab
+      * @property {string} title A longer title for the section that will appear in the section header
+      * @property {string} newPortalActiveSectionLabel When a user start the portal builder for a brand new portal, the label for the section that the builder should start on. Can be set to "Data", "Metrics", "Settings", or one of the labels from the default sections described above. 
+      * @property {string[]} sectionImageIdentifiers A list of image pids to use as default images for new markdown sections
       * @property {string} primaryColor The color that is used most frequently in the portal view
       * @property {string} secondaryColor The color that is used second-most frequently in the portal view
       * @property {string} accentColor The color that is rarely used in portal views as an accent color
@@ -1204,6 +1211,16 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {string} secondaryColorTransparent An rgba() version of the secondaryColor that is semi-transparent
       * @property {string} accentColorTransparent An rgba() version of the accentColor that is semi-transparent
       * @example {
+      *   sections: [
+      *     { label: "About",
+      *       title: "About our project"
+      *     },
+      *     { label: "Publications",
+      *       title: "Selected publications by our lab group"
+      *     }
+      *   ],
+      *   newPortalActiveSectionLabel: "About",
+      *   sectionImageIdentifiers: ["urn:uuid:d2f31a83-debf-4d78-bef7-6abe20962581", "urn:uuid:6ad37acd-d0ac-4142-9f42-e5f05ff55564", "urn:uuid:0b6be09f-2e6f-4e7b-a83c-2823495f9608", "urn:uuid:5b4e0347-07ed-4580-b039-6c4df57ed801", "urn:uuid:0cf62da9-a099-440e-9c1e-595a55c0d60d"],
       *   primaryColor: "#16acc0",
       *   primaryColorTransparent: "rgba(22, 172, 192, .7)",
       *   secondaryColor: "#EED268",
@@ -1212,8 +1229,8 @@ define(['jquery', 'underscore', 'backbone'],
       *   accentColorTransparent: "rgba(15, 80, 88, .7)"
       *  }
       * @since 2.14.0
-      */
-      portalDefaultColors: {
+      */     
+      portalDefaults: {
       },
 
       /** If true, then archived content is available in the search index.

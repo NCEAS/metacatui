@@ -55,7 +55,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * When a new portal is being created, this is the label of the section that will be active when the editor first renders
     * @type {string}
     */
-    newPortalDefaultSectionLabel: "Settings",
+    newPortalActiveSectionLabel: (MetacatUI.appModel.get("portalDefaults") ? MetacatUI.appModel.get("portalDefaults").newPortalActiveSectionLabel : "") || "Settings",
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
@@ -139,6 +139,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
         this.activeSectionLabel = options.activeSectionLabel || "";
       }
+      
+      this.activeSectionLabel = "About"
 
     },
 
@@ -215,7 +217,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
             if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") ){
               // Start new portals on the settings tab
-              this.activeSectionLabel = this.newPortalDefaultSectionLabel;
+              this.activeSectionLabel = this.newPortalActiveSectionLabel;
 
               // Render the default model if the portal is new
               this.renderPortalEditor();

@@ -40,7 +40,14 @@ MetacatUI.AppConfig = Object.assign({
   enableCreatePortals: true,
   enableBookkeeperServices: true,
   portalInfoURL: "https://dataone.org/plus",
-  portalDefaultColors: {
+  portalDefaults: {
+    sections: [
+      { label: "About",
+        title: "About our project"
+      }
+    ],
+    newPortalActiveSectionLabel: "About",
+    sectionImageIdentifiers: ["urn:uuid:2ae933df-27fc-4f26-9dab-7c55dd073e00", "urn:uuid:eaf0d87a-7ba1-4bd1-8895-6f6163df0f28", "urn:uuid:4514ef43-a0a3-4d21-a428-ba38ae706bad", "urn:uuid:241afa07-82a0-4522-abf5-e7614fc8dfb6", "urn:uuid:dbd8645e-9200-431e-8e46-350984730cc2"],
     primaryColor: "#16acc0",
     primaryColorTransparent: "rgba(22, 172, 192, .7)",
     secondaryColor: "#18556e",
@@ -48,7 +55,6 @@ MetacatUI.AppConfig = Object.assign({
     accentColor: "#EED268",
     accentColorTransparent: "rgba(238, 210, 104, .7)"
   },
-
   //Dataset landing pages
   displayDatasetEditButton: false,
   displayDatasetControls: false,

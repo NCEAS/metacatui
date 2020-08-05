@@ -88,16 +88,16 @@ define(["jquery",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
                             "mapShapeHue", "hideData", "hideMetrics", "hideMembers"],
                     // Portal view colors, as specified in the portal document options
-                    primaryColor: "#006699",
-                    secondaryColor: "#009299",
-                    accentColor: "#f89406",
+                    primaryColor: MetacatUI.appModel.get("portalDefaults").primaryColor || "#006699",
+                    secondaryColor: MetacatUI.appModel.get("portalDefaults").secondaryColor || "#009299",
+                    accentColor: MetacatUI.appModel.get("portalDefaults").accentColor || "#f89406",
                     primaryColorRGB: null,
                     secondaryColorRGB: null,
                     accentColorRGB: null,
-                    primaryColorTransparent: "rgba(0, 102, 153, .7)",
-                    secondaryColorTransparent: "rgba(0, 146, 153, .7)",
-                    accentColorTransparent: "rgba(248, 148, 6, .7)"
-                }, MetacatUI.appModel.get("portalDefaultColors"));
+                    primaryColorTransparent: MetacatUI.appModel.get("portalDefaults").primaryColorTransparent || "rgba(0, 102, 153, .7)",
+                    secondaryColorTransparent: MetacatUI.appModel.get("portalDefaults").secondaryColorTransparent || "rgba(0, 146, 153, .7)",
+                    accentColorTransparent: MetacatUI.appModel.get("portalDefaults").accentColorTransparent || "rgba(248, 148, 6, .7)"
+                });
             },
 
             /**
@@ -116,11 +116,37 @@ define(["jquery",
 
               //Call the super class initialize function
               CollectionModel.prototype.initialize.call(this, attrs);
+              
+              // Generate transparent colours from the primary, secondary, and accent colors
+              // TODO
 
               if( attrs.isNew ){
                 this.set("synced", true);
                 //Create an isPartOf filter for this new Portal
                 this.addIsPartOfFilter();
+                
+                var model = this;
+                
+                // Insert new sections if any are set in the appModel
+                
+                var portalDefaults = MetacatUI.appModel.get("portalDefaults"),
+                    defaultSections = portalDefaults ? portalDefaults.sections : [];
+              
+                if(defaultSections && defaultSections.length && Array.isArray(defaultSections)){
+                  defaultSections.forEach(function(section, index){
+                    // If there is at least one section default set...
+                    if(section.title || section.label){
+                      var newDefaultSection = new PortalSectionModel({
+                        title: section.title || "",
+                        label: section.label || this.newSectionLabel,
+                        // Set a default image on new markdown sections
+                        image: model.getRandomSectionImage(),
+                        portalModel: model
+                      });
+                      model.addSection(newDefaultSection);
+                    }
+                  });
+                }
               }
 
               // check for info received from Bookkeeper
@@ -139,6 +165,90 @@ define(["jquery",
               // Cache this model for later use
               this.cachePortal();
 
+            },
+            
+            /**            
+             * getRandomSectionImage - Using the list of image identifiers set
+             * in the app config, select an image to use for a portal section.
+             * The function will not return the same image until all the images
+             * have been returned at least once. If an image would return a 404
+             * error, it is skipped. If all images give 404s, an empty string
+             * is returned.
+             *              
+             * @return {PortalImage}  A portal image model to use in a section model
+             */             
+            getRandomSectionImage: function(){
+              
+              // This variable will hold the section image to return, if any
+              var newSectionImage = "",
+                  // The default portal values set in the config
+                  portalDefaults = MetacatUI.appModel.get("portalDefaults"),
+                  // Check if default images are set on the model already
+                  defaultImageIds = this.get("defaultSectionImageIds"),
+                  // Get the list of default section image IDs from the appModel
+                  defaultImageIds = portalDefaults ? portalDefaults.sectionImageIdentifiers : false,
+                  // Keep track of where we are in the list of default images,
+                  // so there's not too much repetition
+                  runningNumber = this.get("defaultImageRunningNumber") || 0;
+              
+              // If none are set, get the configured default image IDs,
+              // shuffle them, and set them on the model.
+              if(!defaultImageIds || !defaultImageIds.length){
+                // If some are configured...
+                if(defaultImageIds && defaultImageIds.length){
+                  // ...Shuffle the images...
+                  for (let i = defaultImageIds.length - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [defaultImageIds[i], defaultImageIds[j]] = [defaultImageIds[j], defaultImageIds[i]];
+                  }
+                  // ... and save the shuffled list to the portal model
+                  this.set("defaultSectionImageIds", defaultImageIds);
+                }
+              }
+              
+              // Can't get a random image if none are configured
+              if(!defaultImageIds){
+                console.log("Can't set a default image on new markdown sections because there are no default image IDs set. Check portalDefaults.sectionImageIdentifiers in the config file.");
+                return
+              }
+              
+              // Select one of the image IDs
+              if(defaultImageIds && defaultImageIds.length > 0){
+                
+                if(runningNumber >= defaultImageIds.length){
+                  runningNumber = 0
+                }
+                
+                // Go through the shuffled array of image IDs in order
+                for (i = runningNumber; i < defaultImageIds.length; i++) {
+                  
+                  // Skip images that have already returned 404 errors
+                  if(defaultImageIds[i] == "NOT FOUND"){
+                    continue;
+                  }
+                  
+                  // Section images are PortalImage models
+                  var newSectionImage = new PortalImage({
+                    identifier: defaultImageIds[i],
+                    portalModel: this.get("portalModel")
+                  });
+                  
+                  // Skip adding an image if it doesn't exist given the identifer and baseUrl found in the image model
+                  if(newSectionImage.imageExists()){
+                    break;
+                  // If the image doesn't exist, mark it so we don't have to
+                  // check again next time
+                  } else {
+                    defaultImageIds[i] = "NOT FOUND";
+                    newSectionImage = "";
+                  }
+                }
+              }
+              
+              this.set("defaultImageRunningNumber", i + 1);
+              this.set("defaultSectionImageIds", defaultImageIds);
+              
+              return newSectionImage
             },
 
             /**
@@ -1821,19 +1931,15 @@ define(["jquery",
                       this.set("hideMembers", null);
                       break;
                     case "freeform":
-                      // Add a new, blank markdown section
+                    
+                      // Add a new, blank markdown section with a default image
                       var sectionModels = _.clone(this.get("sections")),
                           newSection = new PortalSectionModel({
-                            portalModel: this
+                            portalModel: this,
+                            // Include a default image if some are configured.
+                            image: this.getRandomSectionImage()
                           });
-
-                      // Set default temp values on the new markdown section.
-                      newSection.set({
-                        content: new EMLText({
-                                      type: "content",
-                                      parentModel: newSection
-                                  })
-                      });
+                          
                       sectionModels.push( newSection );
                       this.set("sections", sectionModels);
                       // Trigger event manually so we can just pass newSection
