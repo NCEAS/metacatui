@@ -300,6 +300,10 @@ input[type=search], textarea {
 
 /* PORTALS
 -------------------------------------------------- */
+.PortalView {
+    display: grid;
+    grid-template-rows: 50px 0px 1fr 50px;
+}
 .Portal #Content,
 .PortalView #Content{
   background-color: #FFF;
@@ -2160,22 +2164,15 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"] {
 }
 
 #search_btn_main {
-  float: left;
-  height: 98px;
-  margin-left: -20px;
   border-radius: 0 15px 15px 0;
   -webkit-border-radius: 0 15px 15px 0;
   -moz-border-radius: 0 15px 15px 0;
-  border: 3px solid #EEEEEE;
   border-left: 0px;
   background-color: #FFFFFF;
   background-color: rgba(255, 255, 255, 0.8);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
   -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-  padding: 0px;
-  width: 100px;
-  line-height: 90px;
 }
 
 #search_btn_main>i {

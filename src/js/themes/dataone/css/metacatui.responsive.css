@@ -25,6 +25,9 @@
   .mapMode #Footer{
     bottom: -525px;
   }
+  .PortalView{
+    grid-template-rows: 30px 0px 1fr 50px;
+  }
 
   .PortalView .d1_nav__minimal-nav, .Portal .d1_nav__minimal-nav{
     grid-template-columns: 30px 1fr;
