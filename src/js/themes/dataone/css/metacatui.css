@@ -322,17 +322,20 @@ input[type=search], textarea {
 .PortalView .d1_nav__minimal-nav,
 .Portal .d1_nav__minimal-nav{
   display: grid;
-  grid-template-columns: 187px 1fr;
+  grid-template-columns: 145px 1fr;
 }
 .PortalView .d1_nav__button--logo,
 .Portal .d1_nav__button--logo {
     fill: #429ca8;
-    margin-top: 10px;
+    margin-top: 5px;
     grid-area: unset;
+    fill: var(--c-foreground-subtle-on-default);
+    transform: scale(80%);
 }
 .PortalView .d1_nav__minimal-nav .d1_menu-item__top-item-name,
 .Portal .d1_nav__minimal-nav .d1_menu-item__top-item-name{
   color: #666;
+  font-size: 1em;
 }
 .Portal .d1_nav__minmal-items,
 .PortalView .d1_nav__minmal-items{
