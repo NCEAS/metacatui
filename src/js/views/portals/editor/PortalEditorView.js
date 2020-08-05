@@ -806,8 +806,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     renderSubscriptionInfo: function(){
       if( MetacatUI.appModel.get("enableBookkeeperServices") ){
 
-        this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", function(){
-
+        if( MetacatUI.appUserModel.get("loggedIn") && MetacatUI.appUserModel.get("dataoneSubscription") ){
           //Show the free trial message for this portal, if the subscription is in a free trial
           var subscription = MetacatUI.appUserModel.get("dataoneSubscription"),
               isFreeTrial  = false;
@@ -837,12 +836,24 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
               // And disable the input
               var labelEL = $('.label-input-text');
               labelEL.val(this.model.get("label"));
+
+              //When the Portal Model label is changed, update the input
+              this.listenTo(this.model, "change:label", function(){
+                $('.label-input-text').val(this.model.get("label"));
+              });
+
               labelEL.attr("disabled", "disabled");
+              //Remove the "Change URL" button that toggles the label input
+              this.$(".btn.change-label").remove();
 
               // Show edit label message if the edit button is disabled
               var editLabelMessage = "Create a custom " + MetacatUI.appModel.get("portalTermSingular") + " name for the URL when your free preview of " +
                                       "<i class='dataone-plus-icon-container'></i>" + MetacatUI.appModel.get("dataonePlusName") + " ends.";
-              this.$(".label-container .notification").html(editLabelMessage).addClass("free-trial");
+              var messageContainer = this.$(".label-container .notification").html(editLabelMessage).addClass("free-trial");
+
+              if( !messageContainer.is(":visible") ){
+                messageContainer.detach().appendTo( this.$(".change-label-container") );
+              }
 
               //Insert the DataONE Plus icon
               var viewRef = this;
@@ -850,11 +861,12 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
                 viewRef.$(".dataone-plus-icon-container").html(iconTemplate);
               });
 
-
             }
           }
-
-        });
+        }
+        else{
+            this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", this.renderSubscriptionInfo );
+        }
 
       }
     },

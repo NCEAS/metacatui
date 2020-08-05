@@ -288,7 +288,7 @@ input[type=search], textarea {
   background-color: var(--c-success-subtle-on-default);
   text-shadow: none;
 }
-.portal-editor .label-container .notification.free-trial{
+.portal-editor .notification.free-trial{
   color: var(--c-rare-accent-6);
 }
 #editor-footer .free-trial-message{
