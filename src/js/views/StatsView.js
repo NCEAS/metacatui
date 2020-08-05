@@ -57,20 +57,35 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
 			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
 			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
-			
+
 
 			this.model = options.model || null;
 		},
 
 		render: function (options) {
 
+      //The Node info needs to be fetched first since a lot of this code requires info about MNs
+      if( !MetacatUI.nodeModel.get("checked") && !MetacatUI.nodeModel.get("error") ){
+        this.listenToOnce( MetacatUI.nodeModel, "change:checked error", function(){
+          //Remove listeners and render the view, even if there was an error fetching the NodeModel
+          this.stopListening(MetacatUI.nodeModel);
+          this.render(options);
+        });
+
+        this.$el.html(this.loadingTemplate);
+
+        return;
+      }
+
 			if ( !options )
 				options = {};
 
-			var view = this;
+			var view = this,
+          userIsCN = false,
+          nodeId,
+          isHostedRepo = false;
 
 			// Check if the node is a coordinating node
-			var userIsCN= false;
 			this.userIsCN = userIsCN;
 			if( this.userType !== undefined && this.userLabel !== undefined) {
 				if (this.userType === "repository") {
@@ -82,29 +97,33 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			if ( options.nodeSummaryView ) {
 				this.nodeSummaryView = true;
-				var nodeId = MetacatUI.appModel.get("nodeId");
+				nodeId = MetacatUI.appModel.get("nodeId");
 				userIsCN = MetacatUI.nodeModel.isCN(nodeId);
-				if (userIsCN && typeof userIsCN !== 'undefined')
+
+        //Save whether this profile is for a CN
+				if (userIsCN && typeof userIsCN !== 'undefined'){
 					this.userIsCN = true;
+        }
+        //Figure out if this profile is for a hosted repo
+        else if( nodeId ){
+          isHostedRepo = _.contains(MetacatUI.appModel.get("dataoneHostedRepos"), nodeId);
+        }
 
-				// Overwrite the metrics display flags as set in the AppModel
-        this.hideMetadataAssessment = false;
-				this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
-				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
-				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
-
-				// Disable the metrics of the nodeId is not available
-				if (nodeId === "undefined" || nodeId === null) {
+				// Disable the metrics if the nodeId is not available or if it is not a DataONE Hosted Repo
+				if (!this.userIsCN && (nodeId === "undefined" || nodeId === null || !isHostedRepo) ) {
 					this.hideCitationsChart = true;
 					this.hideDownloadsChart = true;
 					this.hideViewsChart = true;
+          this.hideMetadataAssessment = true;
 				}
+        else{
+          // Overwrite the metrics display flags as set in the AppModel
+          this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
+          this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
+          this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
+          this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
+        }
 			}
-
-          //If the metadata summery charts are turned off in the entire app, then they should be turned off here too
-          if( MetacatUI.appModel.get("hideSummaryMetadataAssessment") === true ){
-            this.hideMetadataAssessment = true;
-          }
 
 			if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
 
@@ -126,7 +145,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			if( !this.model ){
 				this.model = new StatsModel({
-          hideMetadataAssessment: this.hideMetadataAssessment
+          hideMetadataAssessment: this.hideMetadataAssessment,
+          mdqImageId: nodeId
         });
 			}
 
@@ -147,9 +167,9 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
         //Render the total number of datasets in this collection
 				this.listenTo(this.model, 'change:metadataCount', this.displayTotalCount);
-        
+
         // Display replicas only for member nodes
-				if (this.userType === "repository" && !this.userIsCN) 
+				if (this.userType === "repository" && !this.userIsCN)
 					this.listenTo(this.model, "change:totalReplicas", this.displayTotalReplicas);
 
         //Draw charts that show the breakdown of format IDs for metadata and data files
@@ -238,7 +258,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(nodeId));
 				this.model.getTotalReplicas(identifier);
 			}
-			
+
 		}
 
 		return this;
@@ -632,7 +652,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			if( !this.model.get("metadataCount") && !this.model.get("dataCount") )
 				className += " no-activity";
-							
+
 			var countEl = $(document.createElement("p"))
 							.addClass(className)
 							.text(MetacatUI.appView.commaSeparateNumber(this.model.get("metadataCount")));
@@ -661,7 +681,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			else{
 				count = this.bytesToSize( this.model.get("totalSize") );
 			}
-							
+
 			var countEl = $(document.createElement("p"))
 							.addClass(className)
 							.text(count);
@@ -761,7 +781,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
       //Render the LineChart and insert it into the container element
       this.$('.data-updates-chart').html(dataLineChart.render().el);
 
-			// redraw the charts to avoid overlap at different widths 
+			// redraw the charts to avoid overlap at different widths
 			$(window).on("resize", function(){
 
 				if(!view.hideUpdatesChart)
@@ -937,7 +957,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				var titleEl = $(document.createElement("p"))
 								.addClass("chart-title")
 								.text("replicas");
-	
+
 				// display the totals
 				this.$('#total-replicas').html(countEl);
 				this.$('#total-replicas').append(titleEl);
@@ -949,7 +969,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 
 
-			
+
 		}
 
 	});
