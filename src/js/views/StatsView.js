@@ -170,7 +170,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			// Loading template for the FAIR chart
 			var fairLoadingHtml = this.metricsLoadingTemplate({
-				message: "Measuring metadata and running some models...",
+				message: "Running an assessment report...",
 				character: "none",
 				type: "FAIR"
 			});
@@ -279,44 +279,44 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
      * drawMetadataAssessment - Insert the metadata assessment image into the view
      */
     drawMetadataAssessment: function(){
-      try {
-        var scoresImage = this.model.get("mdqScoresImage");
-        if( scoresImage ){
-          // Replace the preloader figure with the assessment chart
-        	this.$("#metadata-assessment-graphic").html(scoresImage);
-        }
-        // If there was no image received from the MDQ scores service,
-				// then show a warning message
-        else {
-					this.renderMetadataAssessmentError();
-        }
-      } catch (e) {
-        // If there's an error inserting the image, log an error message
-        console.log("Error displaying the metadata assessment figure. Error message: " + e);
-				this.renderMetadataAssessmentError();
-      }
+      // try {
+      //   var scoresImage = this.model.get("mdqScoresImage");
+      //   if( scoresImage ){
+      //     // Replace the preloader figure with the assessment chart
+      //   	this.$("#metadata-assessment-graphic").html(scoresImage);
+      //   }
+      //   // If there was no image received from the MDQ scores service,
+			// 	// then show a warning message
+      //   else {
+			// 		this.renderMetadataAssessmentError();
+      //   }
+      // } catch (e) {
+      //   // If there's an error inserting the image, log an error message
+      //   console.log("Error displaying the metadata assessment figure. Error message: " + e);
+			// 	this.renderMetadataAssessmentError();
+      // }
     },
 
 		renderMetrics: function(){
-			if(!this.hideCitationsChart)
-				this.renderCitationMetric();
-
-			if(!this.hideDownloadsChart)
-				this.renderDownloadMetric();
-
-			if(!this.hideViewsChart)
-				this.renderViewMetric();
-
-			var self = this;
-			$(window).on("resize", function(){
-
-				if(!self.hideDownloadsChart)
-					self.renderDownloadMetric();
-
-				if(!self.hideViewsChart)
-					self.renderViewMetric();
-
-			});
+			// if(!this.hideCitationsChart)
+			// 	this.renderCitationMetric();
+			// 
+			// if(!this.hideDownloadsChart)
+			// 	this.renderDownloadMetric();
+			// 
+			// if(!this.hideViewsChart)
+			// 	this.renderViewMetric();
+			// 
+			// var self = this;
+			// $(window).on("resize", function(){
+			// 
+			// 	if(!self.hideDownloadsChart)
+			// 		self.renderDownloadMetric();
+			// 
+			// 	if(!self.hideViewsChart)
+			// 		self.renderViewMetric();
+			// 
+			// });
 		},
 
 		renderCitationMetric: function() {

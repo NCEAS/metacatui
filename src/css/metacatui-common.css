@@ -2073,10 +2073,9 @@ i.catalog-metric-icon {
 }
 .metric-chart-loading {
     display: flex;
-      box-sizing: border-box;
-      position: relative;
-      max-height: 350px;
-      height: 350px
+    box-sizing: border-box;
+    position: relative;
+    max-height: 390px;
 }
 .metric-chart-loading .message{
 	text-align: center;
@@ -4425,6 +4424,9 @@ i.toc-sub-item {
 }
 .portal-view .profile .profile-title{
   font-size: 1.5em;
+}
+.profile h4 {
+	margin-top: 2rem;
 }
 .portal-view #Members .row-fluid{
   padding: 20px;
