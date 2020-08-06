@@ -388,9 +388,9 @@ input[type=search], textarea {
 .PortalView .d1_footer__plus-message{
   color: #fff;
   display: flex;
-justify-content: end;
-align-self: center;
-color: #FFF;
+  justify-content: flex-end;
+  align-self: center;
+  color: #FFF;
 }
 .Portal .d1_footer__plus-message a,
 .PortalView .d1_footer__plus-message a{

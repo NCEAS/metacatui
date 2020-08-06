@@ -781,11 +781,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     showSignIn: function(){
 
-      var signInButtons = new SignInView().render().el;
-      $(signInButtons).find(".login.btn").addClass("btn-primary btn-large");
-
-      // Message to create a portal if the portal is new
+      // Messsage if the user is trying to edit an existing portal
       var title = "Sign in with your ORCID to edit this portal"
+      // Message to create a portal if the portal is new
       if (this.model.get("isNew")) {
         title = "<strong>You're one step away from the portal builder</strong><br>Start by signing in with your ORCID"
       }
@@ -796,9 +794,6 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         portalImageSrc: MetacatUI.root + "/img/portals/portal-data-page-example.png",
         altText: "Screen shot of a portal data page for a climate research lab. The page shows a search bar, customized filters, and a map of the the geographic area the data covers."
       }));
-
-      this.$(".portal-login-button").html(signInButtons);
-
 
     },
 

@@ -3555,14 +3555,20 @@ add font awesome close icon */
 	margin: auto;
 }
 
-.portal-login-page .portal-login-title{
+.portal-login-page .portal-login-title {
 	margin-top: 3rem;
 	font-weight: 300;
 	line-height: 1.4;
 }
-.portal-login-page .portal-login-title strong{
+.portal-login-page .portal-login-title strong {
 	font-weight: 600;
-
+}
+.portal-login-page .portal-login-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+	justify-content: center;
+	max-width: 230px; /* for firefox */
 }
 
 /* Editor navigation (tabs) */
