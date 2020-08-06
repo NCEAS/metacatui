@@ -3198,6 +3198,7 @@ textarea.markdown {
   color: #555;
   padding: 0px;
   margin: 0 auto;
+	display: table; /* works like width:fit-content in firefox */
 }
 /* The close button is an empty link (a.wk-prompt-close),
 add font awesome close icon */
@@ -3404,6 +3405,7 @@ add font awesome close icon */
 	display: inline-block;
 	margin-left: 0;
 	line-height: 120%;
+	color: #555;
 }
 
 .table-editor .spreadsheet-controls {
