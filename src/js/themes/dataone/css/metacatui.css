@@ -345,7 +345,7 @@ input[type=search], textarea {
 .Portal .d1_nav__minmal-items,
 .PortalView .d1_nav__minmal-items{
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   margin-top: 10px;
 }
 .PortalView #Navbar,
