@@ -4463,9 +4463,14 @@ i.toc-sub-item {
 }
 .portal-editor #portal-section-tabs{
   display: block;
-	border-bottom: 1px solid #333;
+	border-bottom: 1px solid #CCC;
 	max-width: 100%;
 	box-sizing: border-box;
+}
+
+.portal-editor #portal-section-tabs,
+.portal-editor #portal-section-tabs li:not(.active) {
+	box-shadow: inset 0 -10px 10px -10px rgba(0,0,0,0.05);
 }
 
 /* hide black border below active tabs */
