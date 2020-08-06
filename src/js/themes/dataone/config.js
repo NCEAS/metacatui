@@ -47,7 +47,7 @@ MetacatUI.AppConfig = Object.assign({
       }
     ],
     newPortalActiveSectionLabel: "About",
-    sectionImageIdentifiers: ["urn:uuid:2ae933df-27fc-4f26-9dab-7c55dd073e00", "urn:uuid:eaf0d87a-7ba1-4bd1-8895-6f6163df0f28", "urn:uuid:4514ef43-a0a3-4d21-a428-ba38ae706bad", "urn:uuid:241afa07-82a0-4522-abf5-e7614fc8dfb6", "urn:uuid:dbd8645e-9200-431e-8e46-350984730cc2"],
+    sectionImageIdentifiers: ["urn:uuid:2cf173b9-4d95-4832-b1c0-bcc6b467343a", "urn:uuid:5669b72e-1124-4afa-9b44-3ebd61801753", "urn:uuid:4514ef43-a0a3-4d21-a428-ba38ae706bad", "urn:uuid:241afa07-82a0-4522-abf5-e7614fc8dfb6", "urn:uuid:dbd8645e-9200-431e-8e46-350984730cc2"],
     primaryColor: "#16acc0",
     primaryColorTransparent: "rgba(22, 172, 192, .7)",
     secondaryColor: "#18556e",
