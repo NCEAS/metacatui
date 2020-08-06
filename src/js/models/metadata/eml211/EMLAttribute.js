@@ -1,7 +1,8 @@
-define(["jquery", "underscore", "backbone",
-        "models/metadata/eml211/EMLMeasurementScale",
+define(["jquery", "underscore", "backbone", "uuid",
+        "models/metadata/eml211/EMLMeasurementScale", "models/metadata/eml211/EMLAnnotation",
         "models/DataONEObject"],
-    function($, _, Backbone, EMLMeasurementScale, DataONEObject) {
+    function($, _, Backbone, uuid, EMLMeasurementScale, EMLAnnotation,
+        DataONEObject) {
 
         /**
          * @class EMLAttribute
@@ -28,7 +29,8 @@ define(["jquery", "underscore", "backbone",
 	                accuracy: null, // An EMLAccuracy object
 	                coverage: null, // an EMLCoverage object
 	                methods: [], // Zero or more EMLMethods objects
-	                references: null, // A reference to another EMLAttribute by id (needs work)
+                    references: null, // A reference to another EMLAttribute by id (needs work)
+                    annotation: [], // Zero or more EMLAnnotation objects
 
 	                /* Attributes not from EML */
 	                type: "attribute", // The element type in the DOM
@@ -134,6 +136,20 @@ define(["jquery", "underscore", "backbone",
                         EMLMeasurementScale.getInstance(measurementScale.outerHTML);
                     attributes.measurementScale.set("parentModel", this);
                 }
+
+                // Add annotations
+                var annotations = $objectDOM.children("annotation");
+                attributes.annotation = [];
+
+                _.each(annotations, function(anno) {
+                    annotation = new EMLAnnotation({
+                            objectDOM: anno,
+                            objectXML: anno.outerHTML
+                    }, { parse: true });
+
+                    attributes.annotation.push(annotation);
+                }, this);
+
                 attributes.objectDOM = $objectDOM[0];
 
                 return attributes;
@@ -357,6 +373,22 @@ define(["jquery", "underscore", "backbone",
                 } else {
                     console.log("No measurementScale object has been defined.");
                 }
+
+                // Update annotations
+                var annotation = this.get("annotation");
+
+                // Always remove all annotations to start with
+                $(objectDOM).children("annotation").remove();
+
+                _.each(annotation, function(anno) {
+                    if (anno.isEmpty()) {
+                        return;
+                    }
+
+                    var after = this.getEMLPosition(objectDOM, "annotation");
+                    $(after).after(anno.updateDOM());
+                }, this);
+
                 return objectDOM;
             },
 
@@ -406,27 +438,46 @@ define(["jquery", "underscore", "backbone",
             	if( !measurementScaleModel ){
             		errors.measurementScale = "Choose a category.";
             	}
-            	else{
-            		var measurementScaleIsValid = measurementScaleModel.isValid();
+            	else if( !measurementScaleModel.isValid() ){
+                    errors.measurementScale = "More information is needed.";
+                  }
 
-            		// If there is a measurement scale model and it is valid and there are no other
-            		// errors, then trigger this model as valid and exit.
-                	if( measurementScaleIsValid && !Object.keys(errors).length ){
 
-            			this.trigger("valid", this);
-            			return;
+                // Validate annotations
+                var annotationErrors = this.validateAnnotations();
 
-                	}
-                	else if( !measurementScaleIsValid ){
-                		errors.measurementScale = "More information is needed.";
-                	}
-            	}
+                if (annotationErrors.length) {
+                    errors.annotation = annotationErrors;
+                }
 
             	//If there is at least one error, then return the errors object
-            	if(Object.keys(errors).length)
-            		return errors;
+            	if(Object.keys(errors).length) {
+                    console.log("Attribute is invalid", errors);
+                    return errors;
+                }
 
+                this.trigger("valid", this);
             },
+
+            /*
+            * Validates each of the EMLAnnotation models on this model
+            *
+            * @return {Array} - Returns an array of error messages for all the EMLAnnotation models
+            */
+           validateAnnotations: function(){
+             var errors = [];
+
+             //Validate each of the EMLAttributes
+             _.each(this.get("annotation"), function (anno) {
+               if (anno.isValid()) {
+                 return;
+               }
+
+               errors.push(anno.validationError);
+             });
+
+             return errors;
+           },
 
             /*
             * Climbs up the model heirarchy until it finds the EML model
@@ -454,6 +505,9 @@ define(["jquery", "underscore", "backbone",
                 MetacatUI.rootDataPackage.packageModel.set("changed", true);
             },
 
+            createID: function() {
+                this.set("xmlID", uuid.v4());
+            }
         });
 
         return EMLAttribute;

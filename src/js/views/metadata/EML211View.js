@@ -85,7 +85,10 @@ define(['underscore', 'jquery', 'backbone',
           "click .eml-party .move-up": "movePersonUp",
           "click .eml-party .move-down": "movePersonDown",
 
-          "click  .remove": "handleRemove"
+          "click  .remove": "handleRemove",
+
+          "click .remove-annotation": "removeAnnotation",
+					"change .eml-annotation input": "updateAnnotations"
         },
 
         /* A list of the subviews */
@@ -432,7 +435,7 @@ define(['underscore', 'jquery', 'backbone',
 
         /**
          * Render the information provided for a given EML party in the party section.
-         * 
+         *
          * @param  {EMLParty} emlParty - the EMLParty model to render. If set to null, a new EML party will be created for the given party type.
          * @param  {string} partyType - The party type for which to render a new EML party. E.g. "creator", "coPrincipalInvestigator", etc.
          */
@@ -635,7 +638,7 @@ define(['underscore', 'jquery', 'backbone',
           // Container element to hold all parties of this type
           var outerContainer = $(document.createElement("div")).addClass("party-type-container");
 
-          // Add a new header for the party type, 
+          // Add a new header for the party type,
           // plus an icon and spot for validation messages
           var header = $(document.createElement("h4"))
             .text(partyTypeProperties.label)
@@ -1286,8 +1289,135 @@ define(['underscore', 'jquery', 'backbone',
         /*
          * Update the funding info when the form is changed
          */
-        updateFunding: function (e) {
-          if (!e) return;
+	    renderOverview: function(){
+	    	//Get the overall view mode
+	    	var edit = this.edit;
+
+	    	var view = this;
+
+	    	//Append the empty layout
+	    	var overviewEl = this.$container.find(".overview");
+	    	$(overviewEl).html(this.overviewTemplate());
+
+			  //Title
+		    this.renderTitle();
+		    this.listenTo(this.model, "change:title", this.renderTitle);
+
+	    	//Abstract
+	    	_.each(this.model.get("abstract"), function(abs){
+		    	var abstractEl = this.createEMLText(abs, edit, "abstract");
+
+		    	//Add the abstract element to the view
+		    	$(overviewEl).find(".abstract").append(abstractEl);
+	    	}, this);
+
+	    	if(!this.model.get("abstract").length){
+	    		var abstractEl = this.createEMLText(null, edit, "abstract");
+
+	    		//Add the abstract element to the view
+		    	$(overviewEl).find(".abstract").append(abstractEl);
+	    	}
+
+	    	//Keywords
+	    	//Iterate over each keyword and add a text input for the keyword value and a dropdown menu for the thesaurus
+	    	_.each(this.model.get("keywordSets"), function(keywordSetModel){
+	    		_.each(keywordSetModel.get("keywords"), function(keyword){
+		    		this.addKeyword(keyword, keywordSetModel.get("thesaurus"));
+	    		}, this);
+	    	}, this);
+
+	    	//Add a new keyword row
+	    	this.addKeyword();
+
+	    	//Alternate Ids
+		    var altIdsEls = this.createBasicTextFields("alternateIdentifier", "Add a new alternate identifier");
+		    $(overviewEl).find(".altids").append(altIdsEls);
+
+		    //Usage
+		    //Find the model value that matches a radio button and check it
+			  // Note the replace() call removing newlines and replacing them with a single space
+			  // character. This is a temporary hack to fix https://github.com/NCEAS/metacatui/issues/128
+		    if(this.model.get("intellectualRights"))
+		    	this.$(".checkbox .usage[value='" + this.model.get("intellectualRights").replace(/\r?\n|\r/g, ' ') + "']").prop("checked", true);
+
+		    //Funding
+		    this.renderFunding();
+
+  			// pubDate
+  			// BDM: This isn't a createBasicText call because that helper
+  			// assumes multiple values for the category
+  			// TODO: Consider a re-factor of createBasicText
+  			var pubDateInput = $(overviewEl).find("input.pubDate").val(this.model.get("pubDate"));
+
+					// Create EMLAnnotation views as needed
+					var annotations = this.model.get("annotation");
+
+					_.each(annotations, function (anno) {
+						var view = new EMLAnnotationView({
+							model: anno,
+							isNew: anno.get("isNew")
+						});
+
+						view.render();
+						this.$(".dataset-annotation-list").append(view.el);
+					}, this);
+
+					// Add a new blank annotation
+					this.addAnnotation();
+
+  			//Initialize all the tooltips
+  			this.$(".tooltip-this").tooltip();
+
+	    },
+
+	    renderTitle: function(){
+	    	var titleEl = this.createBasicTextFields("title", "Example: Greater Yellowstone Rivers from 1:126,700 U.S. Forest Service Visitor Maps (1961-1983)", false);
+	    	this.$container.find(".overview").find(".title-container").html(titleEl);
+	    },
+
+	    /*
+       * Renders the People section of the page
+       */
+	    renderPeople: function(){
+	    	this.$(".section.people").empty().append("<h2>People</h2>");
+
+	    	var PIs      = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("principalInvestigator") }),
+	    		coPIs      = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("coPrincipalInvestigator") }),
+	    		collbalPIs = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("collaboratingPrincipalInvestigator") }),
+	    		custodian  = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("custodianSteward") }),
+	    		user       = _.filter(this.model.get("associatedParty"), function(party){ return party.get("roles").includes("user") });
+
+	    	var emptyTypes = [];
+
+	    	this.partyTypeMap = {
+	    			"collaboratingPrincipalInvestigator" : "Collaborating-Principal Investigators",
+	    			"coPrincipalInvestigator" : "Co-Principal Investigators",
+	    			"principalInvestigator" : "Principal Investigators",
+	    			"creator" : "Dataset Creators (Authors/Owners/Originators)",
+	    			"contact" : "Contacts",
+	    			"metadataProvider" : "Metadata Provider",
+	    			"custodianSteward" : "Custodians/Stewards",
+	    			"publisher" : "Publisher",
+	    			"user" : "Users"
+	    	}
+
+        //Insert the people template
+        this.$(".section[data-section='people']").html(this.peopleTemplate());
+
+        if( this.model.get("creator").length ){
+  	    	//Creators
+  	    	_.each(this.model.get("creator"), function(creator){
+            this.renderPerson(creator, "creator")
+          }, this);
+  	    	this.renderPerson(null, "creator");
+        }
+        else{
+          var creator = new EMLParty({ type: "creator", parentModel: this.model });
+          this.model.get("creator").push(creator);
+          creator.createFromUser();
+          this.renderPerson(creator);
+          this.renderPerson(null, "creator");
+        }
 
           var row = $(e.target).parent(".funding-row").first(),
             rowNum = this.$(".funding-row").index(row),
@@ -1892,11 +2022,11 @@ define(['underscore', 'jquery', 'backbone',
         section. This method handles updating the underlying TaxonomicCoverage
         models when the user changes form fields as well as inserting new
         form fields automatically when the user needs them.
-    
+
         Since a dataset has multiple TaxonomicCoverage elements at the dataset
         level, each Taxonomic Coverage is represented by a table element and
         all taxonomicClassifications within are rows in that table.
-    
+
         TODO: Finish this function
         TODO: Link this function into the DOM
         */
@@ -2386,6 +2516,137 @@ define(['underscore', 'jquery', 'backbone',
           for (var i = 0; i < tableNums.length; i++) {
             $(tableNums[i]).text(i + 1);
           }
+        },
+
+        /**
+         * addAnnotation
+         *
+         * Adds a new dataset-level annotation to the view and the backing EML
+         * model.
+         */
+        addAnnotation: function () {
+          console.log("EML211View.addAnnotation");
+
+          // Don't add a new annotation if there's already a "new" one
+          if (this.$(".dataset-annotation-list .new").length > 0) {
+            console.log("  not adding a new annotation...");
+            return;
+          }
+
+          var annotationListEl = this.$(".dataset-annotation-list");
+
+          if (annotationListEl.length !== 1) {
+            return;
+          }
+
+          var model = new EMLAnnotation({ isNew: true });
+          var view = new EMLAnnotationView({
+            model: model,
+            isNew: true
+          });
+
+          view.render();
+          annotationListEl.append(view.el);
+
+          this.model.get("annotation").push(model);
+
+          // Ensure the entity has an `id` because annotations require it
+          if (!this.model.get("xmlID")) {
+            this.model.createID();
+          }
+
+          // Update
+          this.model.trickleUpChange();
+        },
+
+        /**
+         * removeAnnotation
+         *
+         * Click event handler that removes the view and model corresponding
+         * to the annotation the user clicked.
+         *
+         * @param {MouseEvent} e - Event handler
+         */
+        removeAnnotation: function (e) {
+          // Don't allow removal of the last view
+          if ($(".dataset-annotation-list .eml-annotation").length <= 1) {
+            return;
+          }
+
+          var annoEl = $(e.target).parents(".eml-annotation").first();
+
+          if (annoEl.length === 0) {
+            return;
+          }
+
+          var index = $(".dataset-annotation-list .eml-annotation").index(annoEl);
+
+          if (index < 0) {
+            return;
+          }
+
+          // Remove view
+          var annotationViews = $(".dataset-annotation-list .eml-annotation");
+
+          if (annotationViews.length < index) {
+            return;
+          }
+
+          // Don't remove view if it's a new view
+          if ($(annotationViews[index]).hasClass("new")) {
+            return;
+          }
+
+          annotationViews[index].remove();
+
+          // Remove model
+          var current = this.model.get("annotation");
+          current.splice(index, 1);
+          this.model.set("annotation", current);
+
+          // Update
+          this.model.trickleUpChange();
+        },
+
+        /**
+         * updateAnnotations
+         *
+         * Event handler responsible for managing the 'new' class on
+         * AnnotationViews which is used to decide when to add a new, blank
+         * view.
+         *
+         * @param {Event} e - Event handler
+         */
+        updateAnnotations: function (e) {
+          console.log("EML211View.updateAnnotations");
+
+          var annoEl = $(e.target).parents(".eml-annotation").first();
+
+          if (annoEl.length === 0) {
+            return;
+          }
+
+          var index = $(".dataset-annotation-list .eml-annotation").index(annoEl);
+
+          if (index < 0) {
+            return;
+          }
+
+          // Find the view that triggered the event
+          var annotationViews = $(".dataset-annotation-list .eml-annotation");
+
+          if (annotationViews.length < index) {
+            return;
+          }
+
+          // Stop now if we aren't updating an annotation that was previously
+          // new (blank)
+          if (!$(annotationViews[index]).hasClass("new")) {
+            return;
+          }
+
+          $(annotationViews[index]).removeClass("new");
+          this.addAnnotation();
         },
 
         /* Close the view and its sub views */
