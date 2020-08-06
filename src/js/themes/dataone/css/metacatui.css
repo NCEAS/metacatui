@@ -549,6 +549,20 @@ input[type="text"][disabled="disabled"] {
   color: #FFF;
 }
 
+.btn-danger, .btn-danger:hover {
+  background-color: var(--c-error-on-default);
+  color: var(--c-error-subtle-on-default);
+  border: 0px;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.05);
+}
+
+.btn-danger,.btn-info,.btn-inverse,.btn-primary,.btn-success,.btn-warning,.navbar .btn-navbar {
+    text-shadow: none;
+}
+
 .btn-group>.dropdown-toggle {
   -webkit-border-top-right-radius: 4px;
   -moz-border-top-right-radius: 4px;

@@ -745,6 +745,10 @@ function(_, $, Backbone, Portal, PortalSection,
     handleSwitchSection: function(e){
 
       e.preventDefault();
+      
+      // Make sure any markdown editor toolbar modals are closed
+      // (otherwise they persist in new tab)
+      $("body").find(".wk-prompt").remove();
 
       var sectionView = $(e.target).parents(this.sectionLinkContainer).first().data("view");
 
