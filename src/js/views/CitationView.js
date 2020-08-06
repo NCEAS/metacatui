@@ -342,16 +342,60 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 
             var commaSeperator = (citationMetadataCounter < Object.keys(citationMetadata).length) ? "," : ".";
 
-            var additionalAuthors = citationMetadata[key]["origin"].length > 1 ? " et al." : "";
+            var mdPID = key, mdAuthorText = "", additionalAuthors = "", mdText = "", mdDateText = "";
 
-            var targetLinkEl = $(document.createElement("a"))
+            // Display first author in the dataset link
+            if (citationMetadata[key]["origin"] != undefined) {
+              mdAuthorText = citationMetadata[key]["origin"][0];
+              additionalAuthors = citationMetadata[key]["origin"].length > 1 ? " et al." : "";
+
+              mdText = "(" + mdAuthorText + additionalAuthors + " ";
+            }
+
+            // save the date
+            if (citationMetadata[key]["datePublished"] != undefined) {
+              mdDateText = (citationMetadata[key]["datePublished"]).slice(0,4);
+              if (mdText.length == 0) {
+                mdText = "(";
+              }
+              mdText += mdDateText;
+            }
+            else if (citationMetadata[key]["dateUpdated"] != undefined) {
+              mdDateText = (citationMetadata[key]["dateUpdated"]).slice(0,4);
+              if (mdText.length == 0) {
+                mdText = "(";
+              }
+              mdText += mdDateText;
+            }
+            else if (citationMetadata[key]["dateModified"] != undefined) {
+              mdDateText = (citationMetadata[key]["dateModified"]).slice(0,4);
+              if (mdText.length == 0) {
+                mdText = "(";
+              }
+              mdText += mdDateText;
+            }
+
+            // retrieve the PID
+            if (citationMetadata[key]["id"] != undefined) {
+              mdPID = citationMetadata[key]["id"];
+            }
+            else if (key.startsWith("10."))
+            {
+              mdPID = "doi:" + key
+            }
+
+            if (mdText.length > 0) {
+              mdText += ")" + commaSeperator + " ";
+
+              var targetLinkEl = $(document.createElement("a"))
                         .addClass("metrics-route-to-metadata")
                         .attr("data-id", key)
-                        .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(key))
+                        .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(mdPID))
                         .attr("target", "_blank")
-                        .text("(" + citationMetadata[key]["origin"][0].split(" ")[0] + additionalAuthors + " "  + (citationMetadata[key]["datePublished"]).slice(0,4) + ")" + commaSeperator + " " );
+                        .text(mdText);
 
-            datasetLinkEl.append(targetLinkEl);
+              datasetLinkEl.append(targetLinkEl);
+            }
 
           }
 
