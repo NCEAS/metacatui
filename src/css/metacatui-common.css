@@ -5431,6 +5431,7 @@ svg .default,
 	width: 100%;
 	max-width: 950px;
 	min-width: 600px;
+  max-height: 350px;
 	padding-top: 30px;
 	padding-left: 10px;
 	overflow-x: scroll;
