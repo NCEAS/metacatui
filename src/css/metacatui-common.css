@@ -3431,9 +3431,8 @@ add font awesome close icon */
 /******************************************
 ** AccessPolicy editor view ***
 ******************************************/
-.access-rule .subject{
-  display: flex;
-  min-height: 30px;
+.access-rule .subject .orcid.icon{
+  vertical-align: top;
 }
 .access-policy-view-container.modal{
   width: 80%;
