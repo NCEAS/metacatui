@@ -36,7 +36,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		alertTemplate: _.template(AlertTemplate),
 
 		loadingTemplate: _.template(LoadingTemplate),
-		
+
 		metricsLoadingTemplate: _.template(MetricsLoadingTemplate),
 
 		initialize: function(options){
@@ -66,13 +66,28 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 		render: function (options) {
 
+      //The Node info needs to be fetched first since a lot of this code requires info about MNs
+      if( !MetacatUI.nodeModel.get("checked") && !MetacatUI.nodeModel.get("error") ){
+        this.listenToOnce( MetacatUI.nodeModel, "change:checked error", function(){
+          //Remove listeners and render the view, even if there was an error fetching the NodeModel
+          this.stopListening(MetacatUI.nodeModel);
+          this.render(options);
+        });
+
+        this.$el.html(this.loadingTemplate);
+
+        return;
+      }
+
 			if ( !options )
 				options = {};
 
-			var view = this;
+			var view = this,
+          userIsCN = false,
+          nodeId,
+          isHostedRepo = false;
 
 			// Check if the node is a coordinating node
-			var userIsCN= false;
 			this.userIsCN = userIsCN;
 			if( this.userType !== undefined && this.userLabel !== undefined) {
 				if (this.userType === "repository") {
@@ -84,29 +99,33 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			if ( options.nodeSummaryView ) {
 				this.nodeSummaryView = true;
-				var nodeId = MetacatUI.appModel.get("nodeId");
+				nodeId = MetacatUI.appModel.get("nodeId");
 				userIsCN = MetacatUI.nodeModel.isCN(nodeId);
-				if (userIsCN && typeof userIsCN !== 'undefined')
+
+        //Save whether this profile is for a CN
+				if (userIsCN && typeof userIsCN !== 'undefined'){
 					this.userIsCN = true;
+        }
+        //Figure out if this profile is for a hosted repo
+        else if( nodeId ){
+          isHostedRepo = _.contains(MetacatUI.appModel.get("dataoneHostedRepos"), nodeId);
+        }
 
-				// Overwrite the metrics display flags as set in the AppModel
-        this.hideMetadataAssessment = false;
-				this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
-				this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
-				this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
-
-				// Disable the metrics of the nodeId is not available
-				if (nodeId === "undefined" || nodeId === null) {
+				// Disable the metrics if the nodeId is not available or if it is not a DataONE Hosted Repo
+				if (!this.userIsCN && (nodeId === "undefined" || nodeId === null || !isHostedRepo) ) {
 					this.hideCitationsChart = true;
 					this.hideDownloadsChart = true;
 					this.hideViewsChart = true;
+          this.hideMetadataAssessment = true;
 				}
+        else{
+          // Overwrite the metrics display flags as set in the AppModel
+          this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
+          this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
+          this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
+          this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
+        }
 			}
-
-          //If the metadata summery charts are turned off in the entire app, then they should be turned off here too
-          if( MetacatUI.appModel.get("hideSummaryMetadataAssessment") === true ){
-            this.hideMetadataAssessment = true;
-          }
 
 			if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
 
@@ -128,7 +147,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			if( !this.model ){
 				this.model = new StatsModel({
-          hideMetadataAssessment: this.hideMetadataAssessment
+          hideMetadataAssessment: this.hideMetadataAssessment,
+          mdqImageId: nodeId
         });
 			}
 
@@ -164,31 +184,31 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
       //When the total count is updated, check if there if the count is 0, so we can show there is no "activity" for this collection
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
-			
+
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
 
 			// Loading template for the FAIR chart
 			var fairLoadingHtml = this.metricsLoadingTemplate({
-				message: "Measuring metadata and running some models...",
+				message: "Running an assessment report...",
 				character: "none",
 				type: "FAIR"
 			});
-			
+
 			// Loading template for the citations section
 			var citationsLoadingHtml = this.metricsLoadingTemplate({
 				message: "Scouring our records for publications that cited these datasets...",
 				character: "none",
 				type: "citations"
 			});
-			
+
 			// Loading template for the downloads bar chart
 			var downloadsLoadingHtml = this.metricsLoadingTemplate({
 				message: "Crunching some numbers...",
 				character: "developer",
 				type: "barchart"
 			});
-			
+
 			// Loading template for the views bar chart
 			var viewsLoadingHtml = this.metricsLoadingTemplate({
 				message: "Just doing a few more calculations...",
@@ -300,22 +320,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		renderMetrics: function(){
 			if(!this.hideCitationsChart)
 				this.renderCitationMetric();
-
+			
 			if(!this.hideDownloadsChart)
 				this.renderDownloadMetric();
-
+			
 			if(!this.hideViewsChart)
 				this.renderViewMetric();
-
+			
 			var self = this;
 			$(window).on("resize", function(){
-
+			
 				if(!self.hideDownloadsChart)
 					self.renderDownloadMetric();
-
+			
 				if(!self.hideViewsChart)
 					self.renderViewMetric();
-
+			
 			});
 		},
 
@@ -364,7 +384,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var metricCount = this.metricsModel.get("totalDownloads");
 			var downloadCountEl = this.$('.download-count');
 			downloadCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
-			
+
 			downloadEl.html(this.drawMetricsChart(metricName));
 		},
 
@@ -374,7 +394,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var metricCount = this.metricsModel.get("totalViews");
 			var viewCountEl = this.$('.view-count');
 			viewCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
-			
+
 			viewEl.html(this.drawMetricsChart(metricName));
 		},
 
@@ -841,7 +861,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 * Shows that this person/group/node has no activity
 		 */
 		showNoActivity: function(){
-			
+
       if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
   			this.$(".show-loading .loading").remove();
   			this.$(".stripe").addClass("no-activity");
@@ -850,7 +870,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 					$(messageEl).html("No metrics to show")
 				});
       }
-			
+
 		},
 
 				/**
@@ -893,12 +913,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 				$(metricEl).find(".message").append("<br><strong>This might take some time. Check back in 24 hours to see these results.</strong>")
 			});
 		},
-		
-		/**		
+
+		/**
 		 * renderMetadataAssessmentError - update the metadata assessment
 		 * pre-loading figure to indicate to the user that the assessment is not
 		 * available at the moment.
-		 */		 
+		 */
 		renderMetadataAssessmentError: function(){
 			try {
 				$("#metadata-assessment-graphic .message").append("<br><strong>This might take some time. Check back in 24 hours to see these results.</strong>")
@@ -938,7 +958,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			}
 
 		},
-		
+
 		onClose: function () {
 			//Clear the template
 			this.$el.html("");

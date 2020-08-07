@@ -19,6 +19,7 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryCitationsChart: false,
   hideSummaryDownloadsChart: false,
   hideSummaryViewsChart: false,
+  hideSummaryMetadataAssessment: false,
   portalInfoURL: "https://arcticdata.io/data-portals/",
 
   //Editor

@@ -43,28 +43,28 @@ define(["jquery",
         * Aggregated Quality Metrics flag
         * @type {boolean}
         */
-        hideMetadataAssessment: false,
+        hideMetadataAssessment: MetacatUI.appModel.get("hideSummaryMetadataAssessment"),
 
 
         /**
         * Aggregated Citation Metrics flag
         * @type {boolean}
         */
-        hideCitationsChart: false,
+        hideCitationsChart: MetacatUI.appModel.get("hideSummaryCitationsChart"),
 
 
         /**
         * Aggregated Download Metrics flag
         * @type {boolean}
         */
-        hideDownloadsChart: false,
+        hideDownloadsChart: MetacatUI.appModel.get("hideSummaryDownloadsChart"),
 
 
         /**
         * Aggregated View Metrics flag
         * @type {boolean}
         */
-        hideViewsChart: false,
+        hideViewsChart: MetacatUI.appModel.get("hideSummaryViewsChart"),
 
         /**
         A template for displaying a loading message
@@ -101,7 +101,7 @@ define(["jquery",
             }
 
             // If the search results haven't been fetched yet, wait.
-            if( !this.model.get("searchResults").header ){
+            if( !MetacatUI.appModel.get("enableSolrJoins") && !this.model.get("searchResults").header ){
               this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetrics );
               return;
             }
@@ -172,16 +172,16 @@ define(["jquery",
               if ((typeof dataoneHostedRepos !== 'undefined') && Array.isArray(dataoneHostedRepos) &&
                   dataoneHostedRepos.includes(this.model.get("seriesId"))){
 
-                if( MetacatUI.appModel.get("hideSummaryMetadataAssessments") !== false )
+                if( MetacatUI.appModel.get("hideSummaryMetadataAssessment") !== true )
                   this.hideMetadataAssessment = false;
 
-                if( MetacatUI.appModel.get("hideSummaryCitationsChart") !== false )
+                if( MetacatUI.appModel.get("hideSummaryCitationsChart") !== true )
                   this.hideCitationsChart = false;
 
-                if( MetacatUI.appModel.get("hideSummaryDownloadsChart") !== false )
+                if( MetacatUI.appModel.get("hideSummaryDownloadsChart") !== true )
                   this.hideDownloadsChart = false;
 
-                if( MetacatUI.appModel.get("hideSummaryViewsChart") !== false )
+                if( MetacatUI.appModel.get("hideSummaryViewsChart") !== true )
                   this.hideViewsChart = false;
               }
               //Hide all of the metrics charts

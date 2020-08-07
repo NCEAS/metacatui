@@ -111,8 +111,14 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           previewPlaceholder: this.previewPlaceholder || "",
           cid: this.cid
         })).data("view", this);
+        
         // The textarea element that the markdown editor buttons & functions will edit
-        var textarea = this.$(this.textarea)[0];
+        var textarea = this.$el.find(this.textarea);
+        
+        if(textarea && textarea.length){
+          textarea = textarea[0]
+        }
+        
         if(!textarea){
           console.log("error: the markdown editor view was not rendered because no textarea element was found.");
           return
@@ -226,7 +232,6 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           table: {
             icon: "table",
             function: view.addTable,
-            shortcut: "Ctrl+T",
             insertDividerAfter: true
           }
         }
@@ -240,8 +245,14 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         _.each(buttonKeys, function(key, i) {
           var options = buttonOptions[key],
               title = options.title || key.charAt(0).toUpperCase() + key.slice(1),
-              presetShortcut = Woofmark.strings.titles[key] ? Woofmark.strings.titles[key].match(/Ctrl\+.*$/)[0] : "",
-              shortcut = options.shortcut || presetShortcut;
+              presetShortcut = "";
+              
+              if(Woofmark.strings.titles[key] && Woofmark.strings.titles[key].match(/Ctrl\+.*$/) ){
+                presetShortcut = Woofmark.strings.titles[key].match(/Ctrl\+.*$/)[0];
+              }
+              
+              var shortcut = options.shortcut || presetShortcut;
+              
           if(title){
             Woofmark.strings.titles[key] = [title, shortcut].join(" ")
           }
@@ -252,7 +263,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
 
         // RENDER WOOFMARK
         // Initialize the woofmark markdown editor
-        this.markdownEditor = Woofmark(textarea, woofmarkOptions);
+        this.markdownEditor = new Woofmark(textarea, woofmarkOptions);
 
         // POST-RENDER WOOFMARK
         // After the markdown editor is initialized..
@@ -592,8 +603,11 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         // instructions in the image upload dialog box.
         mdImageUploader.render();
         // The instructions for uploading in image that displays in the prompt/dialog
-        imageDialogDescription.text("Upload an image or enter an image URL")
+        imageDialogDescription.text("Click or drag & drop to upload an image")
         $(mdImageUploader.el).insertAfter(imageDialogDescription);
+        // Hide the input box for now, to keep the uploader simple
+        imageDialogInput.hide();
+        
       } catch (e) {
         console.log("Failed to load the UI for adding markdown images. Error: " + e);
       }

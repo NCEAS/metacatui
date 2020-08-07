@@ -392,13 +392,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
           uploadFile: object
         }
 
-        if( !this.model ){
-          this.model = new DataONEObject(modelAttributes);
-        }
-        else{
-          this.model.set(modelAttributes)
-        }
-
+        // Each file upload must be a new DataONE object
+        this.model = new DataONEObject(modelAttributes);
         this.model.updateID();
         this.model.set("obsoletes", null);
         this.model.get("accessPolicy").makePublic();

@@ -94,7 +94,7 @@ define(['jquery', 'underscore', 'backbone'],
           this.metricRequest.filterBy[1].values.push(this.getCurrentDate());
 
           // HTTP GET
-          fetchOptions = _.extend({data:"metricsRequest="+JSON.stringify(this.metricRequest), timeout:120000});
+          fetchOptions = _.extend({data:"metricsRequest="+JSON.stringify(this.metricRequest), timeout:300000});
           // Uncomment to set it as a HTTP POST
           // fetchOptions = _.extend({data:JSON.stringify(this.metricRequest), type="POST"});
 

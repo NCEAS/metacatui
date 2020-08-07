@@ -623,7 +623,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
         var myImage = new Image();
         var model = this;
         myImage.crossOrigin = ""; // or "anonymous"
-        if(MetacatUI.appView.currentView === null) return;
 
         // Call the function with the URL we want to load, but then chain the
         // promise then() method on to the end of it. This contains two callbacks
@@ -643,7 +642,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
           if( this.get("mdqImageId") && typeof this.get("mdqImageId") == "string" ){
             id = this.get("mdqImageId");
           }
-          else{
+          else if( MetacatUI.appView.currentView ){
             id = MetacatUI.appView.currentView.model.get("seriesId");
           }
 

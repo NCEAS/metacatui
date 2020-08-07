@@ -2073,10 +2073,9 @@ i.catalog-metric-icon {
 }
 .metric-chart-loading {
     display: flex;
-      box-sizing: border-box;
-      position: relative;
-      max-height: 350px;
-      height: 350px
+    box-sizing: border-box;
+    position: relative;
+    max-height: 390px;
 }
 .metric-chart-loading .message{
 	text-align: center;
@@ -3215,6 +3214,7 @@ textarea.markdown {
   color: #555;
   padding: 0px;
   margin: 0 auto;
+	display: table; /* works like width:fit-content in firefox */
 }
 /* The close button is an empty link (a.wk-prompt-close),
 add font awesome close icon */
@@ -3421,6 +3421,7 @@ add font awesome close icon */
 	display: inline-block;
 	margin-left: 0;
 	line-height: 120%;
+	color: #555;
 }
 
 .table-editor .spreadsheet-controls {
@@ -3556,14 +3557,20 @@ add font awesome close icon */
 	margin: auto;
 }
 
-.portal-login-page .portal-login-title{
+.portal-login-page .portal-login-title {
 	margin-top: 3rem;
 	font-weight: 300;
 	line-height: 1.4;
 }
-.portal-login-page .portal-login-title strong{
+.portal-login-page .portal-login-title strong {
 	font-weight: 600;
-
+}
+.portal-login-page .portal-login-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+	justify-content: center;
+	max-width: 230px; /* for firefox */
 }
 
 /* Editor navigation (tabs) */
@@ -4426,6 +4433,9 @@ i.toc-sub-item {
 .portal-view .profile .profile-title{
   font-size: 1.5em;
 }
+.profile h4 {
+	margin-top: 2rem;
+}
 .portal-view #Members .row-fluid{
   padding: 20px;
   box-sizing: border-box;
@@ -4453,9 +4463,14 @@ i.toc-sub-item {
 }
 .portal-editor #portal-section-tabs{
   display: block;
-	border-bottom: 1px solid #333;
+	border-bottom: 1px solid #CCC;
 	max-width: 100%;
 	box-sizing: border-box;
+}
+
+.portal-editor #portal-section-tabs,
+.portal-editor #portal-section-tabs li:not(.active) {
+	box-shadow: inset 0 -10px 10px -10px rgba(0,0,0,0.05);
 }
 
 /* hide black border below active tabs */

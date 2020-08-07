@@ -835,8 +835,7 @@
 }
 
 /* Smartphones (portrait) ----------- */
-@media only screen
-and (max-width : 420px) {
+@media only screen and (max-width : 420px) {
 
   .modal,
   .access-policy-view-container.modal{
@@ -892,6 +891,13 @@ and (max-width : 420px) {
     display: inline-block;
     box-sizing: border-box;
     padding-top: 0px;
+  }
+
+  #mainContent .form-input{
+    grid-template-columns: 80% 20%;
+  }
+  #mainContent input{
+    font-size: 1.5em;
   }
 
 }
