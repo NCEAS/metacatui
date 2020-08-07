@@ -31,6 +31,17 @@ MetacatUI.AppConfig = Object.assign({
   displayDatasetControls: false,
   enablePublishDOI: false,
   allowChangeRightsHolder: false,
+  defaultAccessPolicy: [{
+    subject: "CN=DataONE-Support,DC=dataone,DC=org",
+    read: true,
+    write: true,
+    changePermission: true
+  },
+  {
+    subject: "public",
+    read: true
+  }],
+  hiddenSubjectsInAccessPolicy: ["CN=DataONE-Support,DC=dataone,DC=org"],
 
   //Portals
   hideSummaryCitationsChart: false,
@@ -55,6 +66,7 @@ MetacatUI.AppConfig = Object.assign({
     accentColor: "#EED268",
     accentColorTransparent: "rgba(238, 210, 104, .7)"
   },
+
   //Dataset landing pages
   displayDatasetEditButton: false,
   displayDatasetControls: false,
