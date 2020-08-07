@@ -139,7 +139,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
         this.activeSectionLabel = options.activeSectionLabel || "";
       }
-      
+
       this.activeSectionLabel = "About"
 
     },
@@ -735,7 +735,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       }, this);
 
       if(errors){
-        MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.",
+        MetacatUI.appView.showAlert("Provide the content flagged below before submitting.",
             "alert-error",
             this.$el,
             null,
