@@ -43,7 +43,7 @@ define(["jquery",
         * Aggregated Quality Metrics flag
         * @type {boolean}
         */
-        hideMetadataAssessment: MetacatUI.appModel.get("hideMetadataAssessment"),
+        hideMetadataAssessment: MetacatUI.appModel.get("hideSummaryMetadataAssessment"),
 
 
         /**
