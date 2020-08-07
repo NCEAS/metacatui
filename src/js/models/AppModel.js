@@ -658,27 +658,27 @@ define(['jquery', 'underscore', 'backbone'],
       /**
       * Metadata Assessment Suite IDs for the dataset assessment reports.
       * @type {string[]}
-      * @default ["FAIR.suite.1"]
+      * @default ["FAIR-suite-0.3.1"]
       */
-      mdqSuiteIds: ["FAIR.suite.1"],
+      mdqSuiteIds: ["FAIR-suite-0.3.1"],
       /**
       * Metadata Assessment Suite labels for the dataset assessment reports
       * @type {string[]}
-      * @default ["FAIR Suite v1.0"]
+      * @default ["FAIR Suite v0.3.1"]
       */
-      mdqSuiteLabels: ["FAIR Suite v1.0"],
+      mdqSuiteLabels: ["FAIR Suite v0.3.1"],
       /**
       * Metadata Assessment Suite IDs for the aggregated assessment charts
       * @type {string[]}
-      * @default ["FAIR.suite.1"]
+      * @default ["FAIR-suite-0.3.1"]
       */
-      mdqAggregatedSuiteIds: ["FAIR.suite.1"],
+      mdqAggregatedSuiteIds: ["FAIR-suite-0.3.1"],
       /**
       * Metadata Assessment Suite labels for the aggregated assessment charts
       * @type {string[]}
-      * @default ["FAIR.suite.1"]
+      * @default ["FAIR Suite v0.3.1"]
       */
-      mdqAggregatedSuiteLabels: ["FAIR Suite v1.0"],
+      mdqAggregatedSuiteLabels: ["FAIR Suite v0.3.1"],
       /**
       * The metadata formats for which to display metadata assessment reports
       * @type {string[]}
@@ -1180,8 +1180,8 @@ define(['jquery', 'underscore', 'backbone'],
         'urn:node:IEDA_MGDL', 'IEDA_MGDL', 'IEDA MGDL',
         'urn:node:METAGRIL', 'METAGRIL', 'metaGRIL',
         'urn:node:ARM', 'ARM', 'ARM - Atmospheric Radiation Measurement Research Facility',
-        "urn:node:OPC", "OPC",
-        "urn:node:TNC_DANGERMOND", "dangermond", "TNC_DANGERMOND"
+        "urn:node:CA_OPC", "CA_OPC", "OPC",
+        "urn:node:TNC_DANGERMOND", "dangermond", "TNC_DANGERMOND", "dangermondpreserve"
       ],
 
       /**
@@ -1351,6 +1351,19 @@ define(['jquery', 'underscore', 'backbone'],
       * @example [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
       */
       unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/],
+
+      /*
+      * List of Repositories that are DataONE Hosted Repos.
+      * DataONE Hosted Repo features are displayed only for these members.
+      * @type {string[]}
+      * @readonly
+      * @since 2.13.0
+      * ------------------------------------
+      * This config will not be displayed in the JSDoc documentation since it is
+      * temporary and only useful for internal DataONE purposes. This functionality will be replaced
+      * with the DataONE Bookkeeper service, eventually.
+      */
+      dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
 
       /**
       * A list of alternate repositories to use for fetching and saving DataONEObjects.
