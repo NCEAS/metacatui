@@ -101,7 +101,7 @@ define(["jquery",
             }
 
             // If the search results haven't been fetched yet, wait.
-            if( !this.model.get("searchResults").header ){
+            if( !MetacatUI.appModel.get("enableSolrJoins") && !this.model.get("searchResults").header ){
               this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetrics );
               return;
             }
