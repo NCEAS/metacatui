@@ -216,7 +216,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       //If a message string was created, display it
       if( msg ){
         //Show the message
-        MetacatUI.appView.showAlert(msg, "alert-info", this.$(this.helpTextContainer));
+        MetacatUI.appView.showAlert(msg, "alert-warning", this.$(this.helpTextContainer));
       }
       else{
         //Remove the message

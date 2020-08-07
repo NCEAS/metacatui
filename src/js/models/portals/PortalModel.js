@@ -185,8 +185,6 @@ define(["jquery",
                   portalDefaults = MetacatUI.appModel.get("portalDefaults"),
                   // Check if default images are set on the model already
                   defaultImageIds = this.get("defaultSectionImageIds"),
-                  // Get the list of default section image IDs from the appModel
-                  defaultImageIds = portalDefaults ? portalDefaults.sectionImageIdentifiers : false,
                   // Keep track of where we are in the list of default images,
                   // so there's not too much repetition
                   runningNumber = this.get("defaultImageRunningNumber") || 0;
@@ -194,6 +192,10 @@ define(["jquery",
               // If none are set, get the configured default image IDs,
               // shuffle them, and set them on the model.
               if(!defaultImageIds || !defaultImageIds.length){
+                
+                // Get the list of default section image IDs from the appModel
+                defaultImageIds = portalDefaults ? portalDefaults.sectionImageIdentifiers : false;
+                
                 // If some are configured...
                 if(defaultImageIds && defaultImageIds.length){
                   // ...Shuffle the images...

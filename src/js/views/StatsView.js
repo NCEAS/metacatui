@@ -190,7 +190,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			// Loading template for the FAIR chart
 			var fairLoadingHtml = this.metricsLoadingTemplate({
-				message: "Measuring metadata and running some models...",
+				message: "Running an assessment report...",
 				character: "none",
 				type: "FAIR"
 			});
@@ -320,22 +320,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		renderMetrics: function(){
 			if(!this.hideCitationsChart)
 				this.renderCitationMetric();
-
+			
 			if(!this.hideDownloadsChart)
 				this.renderDownloadMetric();
-
+			
 			if(!this.hideViewsChart)
 				this.renderViewMetric();
-
+			
 			var self = this;
 			$(window).on("resize", function(){
-
+			
 				if(!self.hideDownloadsChart)
 					self.renderDownloadMetric();
-
+			
 				if(!self.hideViewsChart)
 					self.renderViewMetric();
-
+			
 			});
 		},
 

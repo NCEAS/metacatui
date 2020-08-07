@@ -345,7 +345,7 @@ input[type=search], textarea {
 .Portal .d1_nav__minmal-items,
 .PortalView .d1_nav__minmal-items{
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   margin-top: 10px;
 }
 .PortalView #Navbar,
@@ -388,9 +388,9 @@ input[type=search], textarea {
 .PortalView .d1_footer__plus-message{
   color: #fff;
   display: flex;
-justify-content: end;
-align-self: center;
-color: #FFF;
+  justify-content: flex-end;
+  align-self: center;
+  color: #FFF;
 }
 .Portal .d1_footer__plus-message a,
 .PortalView .d1_footer__plus-message a{
@@ -547,6 +547,20 @@ input[type="text"][disabled="disabled"] {
 .filter.btn:hover,
 .btn.subtle:hover {
   color: #FFF;
+}
+
+.btn-danger, .btn-danger:hover {
+  background-color: var(--c-error-on-default);
+  color: var(--c-error-subtle-on-default);
+  border: 0px;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.05);
+}
+
+.btn-danger,.btn-info,.btn-inverse,.btn-primary,.btn-success,.btn-warning,.navbar .btn-navbar {
+    text-shadow: none;
 }
 
 .btn-group>.dropdown-toggle {
