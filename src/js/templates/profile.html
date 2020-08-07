@@ -68,7 +68,9 @@
 						<%= fairLoadingHtml %>
 					</div>
 			</section>
-      <p class="center"><span class="pill">Coming soon</span> Improved metadata assessment graphs are coming soon as we get feedback on this feature.</p>
+      <% if( MetacatUI.appModel.get("theme") == "dataone" ){ %>
+        <p class="center"><span class="pill">Coming soon</span> Improved metadata assessment graphs are coming soon as we <a href="https://forms.gle/Hn5YPqrZ12mLUyAf7" target="_blank">get feedback</a> on this feature.</p>
+      <% } %>
 		</section>
 	<% } %>
 
