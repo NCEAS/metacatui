@@ -1192,7 +1192,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.14.0
       */
       portalLimit: 1,
-      
+
       /**
       * The default values to use in portals. Default sections are applied when a portal is new.
       * Default images are used in new freeform pages in the portal builder.
@@ -1202,7 +1202,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @property {object[]} sections The default sections for a new portal. Each object within the section array can have a title property and a label property
       * @property {string} label The name of the section that will appear in the tab
       * @property {string} title A longer title for the section that will appear in the section header
-      * @property {string} newPortalActiveSectionLabel When a user start the portal builder for a brand new portal, the label for the section that the builder should start on. Can be set to "Data", "Metrics", "Settings", or one of the labels from the default sections described above. 
+      * @property {string} newPortalActiveSectionLabel When a user start the portal builder for a brand new portal, the label for the section that the builder should start on. Can be set to "Data", "Metrics", "Settings", or one of the labels from the default sections described above.
       * @property {string[]} sectionImageIdentifiers A list of image pids to use as default images for new markdown sections
       * @property {string} primaryColor The color that is used most frequently in the portal view
       * @property {string} secondaryColor The color that is used second-most frequently in the portal view
@@ -1229,7 +1229,7 @@ define(['jquery', 'underscore', 'backbone'],
       *   accentColorTransparent: "rgba(15, 80, 88, .7)"
       *  }
       * @since 2.14.0
-      */     
+      */
       portalDefaults: {
       },
 
@@ -1351,19 +1351,6 @@ define(['jquery', 'underscore', 'backbone'],
       * @example [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/]
       */
       unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/],
-
-      /*
-      * List of Repositories that are DataONE Hosted Repos.
-      * DataONE Hosted Repo features are displayed only for these members.
-      * @type {string[]}
-      * @readonly
-      * @since 2.13.0
-      * ------------------------------------
-      * This config will not be displayed in the JSDoc documentation since it is
-      * temporary and only useful for internal DataONE purposes. This functionality will be replaced
-      * with the DataONE Bookkeeper service, eventually.
-      */
-      dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
 
       /**
       * A list of alternate repositories to use for fetching and saving DataONEObjects.
