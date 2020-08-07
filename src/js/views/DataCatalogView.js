@@ -3062,11 +3062,11 @@ define(["jquery",
               try{
                 errorMessage = $(response.responseText).text();
               }
-              catch{
+              catch(e){
                 try{
                   errorMessage = JSON.parse(response.responseText).error.msg;
                 }
-                catch{
+                catch(e){
                   errorMessage = "";
                 }
               }
