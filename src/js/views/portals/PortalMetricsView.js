@@ -211,6 +211,14 @@ define(["jquery",
               // create a metrics query for portal object
               this.metricsModel.set("pid_list", label_list);
               this.metricsModel.set("filterType", "portal");
+
+              // creating additional filters for portal Metrics
+              var portalQueryFilter = {};
+              var portalCollectionQuery = statsModel.get("query");
+              portalQueryFilter["filterType"] = "query";
+              portalQueryFilter["values"] = [portalCollectionQuery];
+              portalQueryFilter["interpretAs"] = "list";
+              this.metricsModel.set("filterQueryObject", portalQueryFilter);
             }
 
             this.metricsModel.fetch();

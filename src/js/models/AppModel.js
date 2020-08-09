@@ -693,6 +693,13 @@ define(['jquery', 'underscore', 'backbone'],
       metricsUrl: 'https://logproc-stage-ucsb-1.test.dataone.org/metrics',
 
       /**
+      * Forwards collection Query to Metrics Service if enabled
+      * @type {boolean}
+      * @default false
+      */
+     forwardCollectionQuery: true,
+
+      /**
       * DataONE Citation reporting endpoint url
       * @type {string}
       */

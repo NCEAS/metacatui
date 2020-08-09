@@ -34,13 +34,19 @@ define(['jquery', 'underscore', 'backbone'],
             totalViews: null,
             totalDownloads: null,
 
+            // flag to send POST request to the metrics service
+            useMetricsPost: false,
+
+            // colelctionQuery for Portal Objects
+            filterQueryObject: null,
+            forwardCollectionQuery: false,
 
             metricsRequiredFields: {
                 metricName: true,
                 pid_list: true
             }
-        },
 
+        },
 
         metricRequest: {
             "metricsPage": {
@@ -77,6 +83,10 @@ define(['jquery', 'underscore', 'backbone'],
                 this.set("filterType", options.type);
             }
             this.set("startDate", "01/01/2012");
+
+            // overwrite forwardCollectionQuery flag
+            this.set("forwardCollectionQuery", MetacatUI.appModel.get("forwardCollectionQuery"));
+
             // url for the model that is used to for the fetch() call
             this.url = MetacatUI.appModel.get("metricsUrl");
         },
@@ -93,11 +103,72 @@ define(['jquery', 'underscore', 'backbone'],
           this.metricRequest.filterBy[1].values.push(this.get("startDate"));
           this.metricRequest.filterBy[1].values.push(this.getCurrentDate());
 
-          // HTTP GET
-          fetchOptions = _.extend({data:"metricsRequest="+JSON.stringify(this.metricRequest), timeout:300000});
-          // Uncomment to set it as a HTTP POST
-          // fetchOptions = _.extend({data:JSON.stringify(this.metricRequest), type="POST"});
+          // set custom request settings if we're forwarding a CollectionQuery for a portal
+          if ( this.get("forwardCollectionQuery") && this.get("filterType") === "portal" 
+                                        &&  this.get("filterQueryObject") != undefined
+                                        && typeof this.get("filterQueryObject") === "object") {
+            var filterQueryObject = this.get("filterQueryObject");
+            if (filterQueryObject.filterType != undefined 
+                                        && filterQueryObject.filterType == "query") {
+                if (Array.isArray(filterQueryObject.values) 
+                                        && filterQueryObject.values.length > 0 ) {
 
+                    // check if query object exists
+                    var queryInserted = this.metricRequest.filterBy.indexOf(filterQueryObject);
+
+                    // Performing HTTP POST?
+                    if(this.get("useMetricsPost")) {
+                        // insert query object
+                        if (queryInserted < 0) {
+                            this.metricRequest.filterBy.push(filterQueryObject);
+                        }
+
+                        fetchOptions = _.extend({
+                            data:JSON.stringify(this.metricRequest), 
+                            type:"POST", 
+                            timeout:300000
+                        });
+                    }
+                    else {
+                        // insert query object
+                        var collectionQuery = filterQueryObject.values[0];
+                        if (collectionQuery.length < 1000 && queryInserted < 0) {
+                            this.metricRequest.filterBy.push(filterQueryObject);
+                        }
+
+                        // set the fetch options for 
+                        var model = this;
+                        fetchOptions = _.extend({
+                            data:"metricsRequest="+JSON.stringify(this.metricRequest), 
+                            timeout:300000, 
+                            // on error recursively call fetch, but this time use POST
+                            error: function(response){
+                                model.set("useMetricsPost", "true");
+                                model.fetch();
+                            }
+                        });
+                    }
+                }
+            }   
+          }
+        
+          // check if we need to set fetchOptions
+          if (Object.keys(fetchOptions).length === 0) {
+            if ( this.get("useMetricsPost") ) {
+                fetchOptions = _.extend({
+                    data:JSON.stringify(this.metricRequest), 
+                    type:"POST", 
+                    timeout:300000
+                });
+            }
+            else {
+                fetchOptions = _.extend({
+                    data:"metricsRequest="+JSON.stringify(this.metricRequest), 
+                    timeout:300000, 
+                });
+            }
+          }
+          
           //This calls the Backbone fetch() function but with our custom fetch options.
           return Backbone.Model.prototype.fetch.call(this, fetchOptions);
         },
