@@ -488,9 +488,11 @@ MetacatUI.preventCompatibilityIssues = function(){
 
 	// Polyfill
 	// This Polyfill emulates the Math.log2 function.
-	if (!Math.log2) Math.log2 = function(x) {
-		return Math.log(x) * Math.LOG2E;
-	}
+	if (!Math.log2){
+    Math.log2 = function(x) {
+  		return Math.log(x) * Math.LOG2E;
+  	}
+  }
 
   //Add a function to parse ISO date strings for IE8 and other older browsers
   (function(){

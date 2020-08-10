@@ -210,8 +210,8 @@ function(_, $, Backbone, AccessRule){
               this.$el.append($(document.createElement("td")).addClass("subject").append(orcidImg, orcid) );
             }
             else{
-              //For other subject types, don't display anything
-              this.$el.append($(document.createElement("td")).addClass("subject"));
+              //For other subject types, don't show an ORCID icon
+              this.$el.append($(document.createElement("td")).addClass("subject").text( this.model.get("subject") ));
             }
           }
           catch(e){
