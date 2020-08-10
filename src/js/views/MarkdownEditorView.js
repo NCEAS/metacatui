@@ -171,7 +171,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
           strike: {
             title: "Strikethrough",
             icon: "strikethrough",
-            shortcut: "Ctrl+X",
+            shortcut: "Ctrl+Shift+X",
             function: view.strikethrough,
             insertDividerAfter: true
           },
