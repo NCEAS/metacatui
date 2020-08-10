@@ -43,28 +43,28 @@ define(["jquery",
         * Aggregated Quality Metrics flag
         * @type {boolean}
         */
-        hideMetadataAssessment: false,
+        hideMetadataAssessment: MetacatUI.appModel.get("hideSummaryMetadataAssessment"),
 
 
         /**
         * Aggregated Citation Metrics flag
         * @type {boolean}
         */
-        hideCitationsChart: false,
+        hideCitationsChart: MetacatUI.appModel.get("hideSummaryCitationsChart"),
 
 
         /**
         * Aggregated Download Metrics flag
         * @type {boolean}
         */
-        hideDownloadsChart: false,
+        hideDownloadsChart: MetacatUI.appModel.get("hideSummaryDownloadsChart"),
 
 
         /**
         * Aggregated View Metrics flag
         * @type {boolean}
         */
-        hideViewsChart: false,
+        hideViewsChart: MetacatUI.appModel.get("hideSummaryViewsChart"),
 
         /**
         A template for displaying a loading message
@@ -173,7 +173,7 @@ define(["jquery",
               //Save a reference to the Search Model on the Stats model
               statsModel.set("searchModel", statsSearchModel);
             }
-            
+
             var userType = "portal";
 
             var label_list = [];
@@ -188,19 +188,29 @@ define(["jquery",
 
               // TODO: replace the following logic with dataone bookkeeper service
               // check if the repository is a dataone member
-              var dataONEPlusMembers = MetacatUI.appModel.get("dataonePlusMembers");
-                
-              if ((typeof dataONEPlusMembers !== 'undefined') && Array.isArray(dataONEPlusMembers) && dataONEPlusMembers.includes(this.model.get("seriesId"))){
-                this.hideMetadataAssessment = false || MetacatUI.appModel.get("hideSummaryMetadataAssessments");
-                this.hideCitationsChart = false || MetacatUI.appModel.get("hideSummaryCitationsChart");
-                this.hideDownloadsChart = false || MetacatUI.appModel.get("hideSummaryDownloadsChart");
-                this.hideViewsChart = false || MetacatUI.appModel.get("hideSummaryViewsChart");
+              var dataoneHostedRepos = MetacatUI.appModel.get("dataoneHostedRepos");
+
+              if ((typeof dataoneHostedRepos !== 'undefined') && Array.isArray(dataoneHostedRepos) &&
+                  dataoneHostedRepos.includes(this.model.get("seriesId"))){
+
+                if( MetacatUI.appModel.get("hideSummaryMetadataAssessment") !== true )
+                  this.hideMetadataAssessment = false;
+
+                if( MetacatUI.appModel.get("hideSummaryCitationsChart") !== true )
+                  this.hideCitationsChart = false;
+
+                if( MetacatUI.appModel.get("hideSummaryDownloadsChart") !== true )
+                  this.hideDownloadsChart = false;
+
+                if( MetacatUI.appModel.get("hideSummaryViewsChart") !== true )
+                  this.hideViewsChart = false;
               }
+              //Hide all of the metrics charts
               else{
                 this.hideMetadataAssessment = true;
                 this.hideCitationsChart = true;
                 this.hideDownloadsChart = true;
-                this.hideViewsChart = true;
+                this.hideViewsChart     = true;
               }
 
               // set the statsModel
@@ -222,6 +232,14 @@ define(["jquery",
               // create a metrics query for portal object
               this.metricsModel.set("pid_list", label_list);
               this.metricsModel.set("filterType", "portal");
+
+              // creating additional filters for portal Metrics
+              var portalQueryFilter = {};
+              var portalCollectionQuery = statsModel.get("query");
+              portalQueryFilter["filterType"] = "query";
+              portalQueryFilter["values"] = [portalCollectionQuery];
+              portalQueryFilter["interpretAs"] = "list";
+              this.metricsModel.set("filterQueryObject", portalQueryFilter);
             }
 
             this.metricsModel.fetch();
@@ -256,7 +274,7 @@ define(["jquery",
 
         },
 
-        /** 
+        /**
          * Handles error display if something went wrong while displaying metrics
         */
        handlePortalMetricsError: function(error, errorDisplayMessage){
@@ -273,7 +291,7 @@ define(["jquery",
             this.$el
           );
           this.$(".loading").remove();
-          
+
           console.log("Failed to render the metrics view. Error message: " + error);
        },
 

@@ -39,6 +39,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
     * @property {boolean} hideMetadataAssessment - If true, metadata assessment scores will not be retrieved
     * @property {Image} mdqScoresImage - The Image objet of an aggregated metadata assessment chart
     * @property {number} maxQueryLength - The maximum query length that will be sent via GET to the query service. Queries that go beyond this length will be sent via POST, if POST is enabled in the AppModel
+    * @property {string} mdqImageId - The identifier to use in the request for the metadata assessment chart
     */
     defaults: function(){
       return{
@@ -77,6 +78,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
       hideMetadataAssessment: false,
       mdqScoresImage: null,
+      mdqImageId: null,
 
       //HTTP GET requests are typically limited to 2,083 characters. So query lengths
       // should have this maximum before switching over to HTTP POST
@@ -621,7 +623,6 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
         var myImage = new Image();
         var model = this;
         myImage.crossOrigin = ""; // or "anonymous"
-        if(MetacatUI.appView.currentView === null) return;
 
         // Call the function with the URL we want to load, but then chain the
         // promise then() method on to the end of it. This contains two callbacks
@@ -635,9 +636,23 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
 
         if( Array.isArray(MetacatUI.appModel.get('mdqAggregatedSuiteIds')) && MetacatUI.appModel.get('mdqAggregatedSuiteIds').length ){
           var suite = MetacatUI.appModel.get('mdqAggregatedSuiteIds')[0];
-          var id = MetacatUI.appView.currentView.model.get("seriesId");
-          var url = serviceUrl + "?id=" + id + "&suite=" + suite; 
-          
+
+          var id;
+
+          if( this.get("mdqImageId") && typeof this.get("mdqImageId") == "string" ){
+            id = this.get("mdqImageId");
+          }
+          else if( MetacatUI.appView.currentView ){
+            id = MetacatUI.appView.currentView.model.get("seriesId");
+          }
+
+          //If no ID was found, exit without getting the image
+          if( !id ){
+            return;
+          }
+
+          var url = serviceUrl + "?id=" + id + "&suite=" + suite;
+
           this.imgLoad(url).then(function (response) {
               // The first runs when the promise resolves, with the request.reponse specified within the resolve() method.
               var imageURL = window.URL.createObjectURL(response);
@@ -830,7 +845,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
       //Send the query
       $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
     },
-    
+
     // Getting total number of replicas for repository profiles
     getTotalReplicas: function(memberNodeID) {
 

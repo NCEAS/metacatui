@@ -63,6 +63,7 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryCitationsChart: false,
   hideSummaryDownloadsChart: false,
   hideSummaryViewsChart: false,
+  hideSummaryMetadataAssessment: false,
   limitPortalsToSubjects: ["CN=knb-data-admins,DC=dataone,DC=org"],
   portalEditNotAuthCreateMessage: "Creating new portals is a feature currently only available to a select group of Beta testers. You should still be able to access your existing portals. Please contact us with any questions at the email address below."
 }, MetacatUI.AppConfig);

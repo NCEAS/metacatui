@@ -260,6 +260,10 @@ define(["jquery",
               MetacatUI.statsModel.set("query", statsSearchModel.getQuery());
               MetacatUI.statsModel.set("searchModel", statsSearchModel);
 
+              if( _.contains(MetacatUI.appModel.get("dataoneHostedRepos"), this.nodeInfo.identifier) ){
+                MetacatUI.statsModel.set("mdqImageId", this.nodeInfo.identifier);
+              }
+
               // render repository view as portal view
               this.renderPortal();
             },
@@ -784,6 +788,8 @@ define(["jquery",
                   hiddenHeight = (menuHeight * -1);
               var currentScrollPos = window.pageYOffset;
               if(MetacatUI.appView.prevScrollpos > currentScrollPos) {
+                //Get the height of any menu that may be displayed at the bottom of the page, too
+
                 menu.style.bottom = "0px";
               } else {
                 menu.style.bottom = hiddenHeight +"px";
