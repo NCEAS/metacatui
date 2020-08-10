@@ -917,8 +917,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		},
 
 		renderUsageMetricsError: function() {
+      var message = "<p class='check-back-message'><strong>This might take some time. Check back in 24 hours to see these results.</strong></p>";
+
 			$.each($('.views-metrics, .downloads-metrics, #user-citations'), function(i,metricEl){
-				$(metricEl).find(".message").append("<br><strong>This might take some time. Check back in 24 hours to see these results.</strong>")
+        $(metricEl).find(".check-back-message").remove();
+        $(metricEl).find(".message").append(message);
 			});
 		},
 
