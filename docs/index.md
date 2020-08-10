@@ -5,7 +5,7 @@
 [See more screenshots](screenshots/index.html)
 
 ## Latest release
-Download the latest release on Github: [MetacatUI 2.13.0](https://github.com/NCEAS/metacatui/releases/tag/2.13.0)
+Download the latest release on Github: [MetacatUI 2.13.2](https://github.com/NCEAS/metacatui/releases/tag/2.13.2)
 
 ## Documentation
 
