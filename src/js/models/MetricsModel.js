@@ -85,7 +85,7 @@ define(['jquery', 'underscore', 'backbone'],
             this.set("startDate", "01/01/2012");
 
             // overwrite forwardCollectionQuery flag
-            this.set("forwardCollectionQuery", MetacatUI.appModel.get("forwardCollectionQuery"));
+            this.set("forwardCollectionQuery", MetacatUI.appModel.get("metricsForwardCollectionQuery"));
 
             // url for the model that is used to for the fetch() call
             this.url = MetacatUI.appModel.get("metricsUrl");
@@ -104,13 +104,13 @@ define(['jquery', 'underscore', 'backbone'],
           this.metricRequest.filterBy[1].values.push(this.getCurrentDate());
 
           // set custom request settings if we're forwarding a CollectionQuery for a portal
-          if ( this.get("forwardCollectionQuery") && this.get("filterType") === "portal" 
+          if ( this.get("forwardCollectionQuery") && this.get("filterType") === "portal"
                                         &&  this.get("filterQueryObject") != undefined
                                         && typeof this.get("filterQueryObject") === "object") {
             var filterQueryObject = this.get("filterQueryObject");
-            if (filterQueryObject.filterType != undefined 
+            if (filterQueryObject.filterType != undefined
                                         && filterQueryObject.filterType == "query") {
-                if (Array.isArray(filterQueryObject.values) 
+                if (Array.isArray(filterQueryObject.values)
                                         && filterQueryObject.values.length > 0 ) {
 
                     // check if query object exists
@@ -124,8 +124,8 @@ define(['jquery', 'underscore', 'backbone'],
                         }
 
                         fetchOptions = _.extend({
-                            data:JSON.stringify(this.metricRequest), 
-                            type:"POST", 
+                            data:JSON.stringify(this.metricRequest),
+                            type:"POST",
                             timeout:300000
                         });
                     }
@@ -136,11 +136,11 @@ define(['jquery', 'underscore', 'backbone'],
                             this.metricRequest.filterBy.push(filterQueryObject);
                         }
 
-                        // set the fetch options for 
+                        // set the fetch options for
                         var model = this;
                         fetchOptions = _.extend({
-                            data:"metricsRequest="+JSON.stringify(this.metricRequest), 
-                            timeout:300000, 
+                            data:"metricsRequest="+JSON.stringify(this.metricRequest),
+                            timeout:300000,
                             // on error recursively call fetch, but this time use POST
                             error: function(response){
                                 model.set("useMetricsPost", "true");
@@ -149,26 +149,26 @@ define(['jquery', 'underscore', 'backbone'],
                         });
                     }
                 }
-            }   
+            }
           }
-        
+
           // check if we need to set fetchOptions
           if (Object.keys(fetchOptions).length === 0) {
             if ( this.get("useMetricsPost") ) {
                 fetchOptions = _.extend({
-                    data:JSON.stringify(this.metricRequest), 
-                    type:"POST", 
+                    data:JSON.stringify(this.metricRequest),
+                    type:"POST",
                     timeout:300000
                 });
             }
             else {
                 fetchOptions = _.extend({
-                    data:"metricsRequest="+JSON.stringify(this.metricRequest), 
-                    timeout:300000, 
+                    data:"metricsRequest="+JSON.stringify(this.metricRequest),
+                    timeout:300000,
                 });
             }
           }
-          
+
           //This calls the Backbone fetch() function but with our custom fetch options.
           return Backbone.Model.prototype.fetch.call(this, fetchOptions);
         },
@@ -201,21 +201,21 @@ define(['jquery', 'underscore', 'backbone'],
                 "resultDetails": response.resultDetails,
                 "datasets": response.results.datasets
             }
-            
+
             if (response.results.citations != null) {
                 metricsObject["totalCitations"] =  response.results.citations.reduce(function(acc, val) { return acc + val; }, 0)
             }
             else {
                 metricsObject["totalCitations"] =  0
             }
-            
+
             if (response.results.downloads != null) {
                 metricsObject["totalDownloads"] =  response.results.downloads.reduce(function(acc, val) { return acc + val; }, 0)
             }
             else {
                 metricsObject["totalDownloads"] =  0
             }
-            
+
             if (response.results.views != null) {
                 metricsObject["totalViews"] =  response.results.views.reduce(function(acc, val) { return acc + val; }, 0)
             }
@@ -225,38 +225,38 @@ define(['jquery', 'underscore', 'backbone'],
 
             //trim off the leading zeros and their corresponding months
             if (response.results.months != null) {
-                
+
                 // iterate all the metrics objects and remove the entry if the counts are 0
                 for (var i = 0 ; i < metricsObject["months"].length; i++) {
 
                     if ( metricsObject["citations"] != null &&
                         metricsObject["views"]     != null &&
                         metricsObject["downloads"] != null ) {
-                            
+
                         if (( metricsObject["citations"][i] == 0 ) &&
                             ( metricsObject["views"][i]     == 0 ) &&
                             ( metricsObject["downloads"][i] == 0 )) {
-                        
+
                             metricsObject["months"].splice(i,1);
                             metricsObject["citations"].splice(i,1);
                             metricsObject["views"].splice(i,1);
                             metricsObject["downloads"].splice(i,1);
-                            
+
                             // if country facet was part of the request; update object;
                             if ( metricsObject["country"] != null) {
                                 metricsObject["country"].splice(i,1)
                             }
-                            
+
                             // modified array size; decrement the counter;
                             i--;
                         }
                         else {
                             break;
-                        }	
+                        }
                     }
                 }
             }
-            
+
             return metricsObject;
         },
 
