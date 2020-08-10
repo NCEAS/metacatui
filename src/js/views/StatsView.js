@@ -270,6 +270,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 						// in case when there is an error for the fetch call.
 						this.listenTo(view.metricsModel, "error", this.renderUsageMetricsError);
+
+            var view = this;
+            setTimeout(function(){
+              if( view.$('.views-metrics, .downloads-metrics, #user-citations').find(".metric-chart-loading").length ){
+                view.renderUsageMetricsError();
+                view.stopListening(view.metricsModel, "error", view.renderUsageMetricsError);
+              }
+            }, 6000);
 					}
 				}
 			}
@@ -320,22 +328,22 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		renderMetrics: function(){
 			if(!this.hideCitationsChart)
 				this.renderCitationMetric();
-			
+
 			if(!this.hideDownloadsChart)
 				this.renderDownloadMetric();
-			
+
 			if(!this.hideViewsChart)
 				this.renderViewMetric();
-			
+
 			var self = this;
 			$(window).on("resize", function(){
-			
+
 				if(!self.hideDownloadsChart)
 					self.renderDownloadMetric();
-			
+
 				if(!self.hideViewsChart)
 					self.renderViewMetric();
-			
+
 			});
 		},
 
