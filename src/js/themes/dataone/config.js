@@ -50,6 +50,8 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryViewsChart: false,
   enableCreatePortals: true,
   enableBookkeeperServices: true,
+  dataonePlusPreviewMode: true,
+  portalLimit: 5,
   portalInfoURL: "https://dataone.org/plus",
   portalDefaults: {
     sections: [
@@ -66,11 +68,48 @@ MetacatUI.AppConfig = Object.assign({
     accentColor: "#EED268",
     accentColorTransparent: "rgba(238, 210, 104, .7)"
   },
+  activeAlternateRepositoryId: "urn:node:mnUCSB1",
+  defaultAlternateRepositoryId: "urn:node:mnUCSB1",
+  alternateRepositories: [{
+      name: "DataONE UCSB Dedicated Replica Server",
+      identifier: "urn:node:mnUCSB1",
+      baseURL: "https://mn-ucsb-1.dataone.org/knb/d1/mn"
+   },
+   {
+       name: "NSF Arctic Data Center Repository",
+       identifier: "urn:node:ARCTIC",
+       baseURL: "https://arcticdata.io/metacat/d1/mn"
+    },
+    {
+        name: "KNB",
+        identifier: "urn:node:KNB",
+        baseURL: "https://knb.ecoinformatics.org/knb/d1/mn"
+     }],
+  dataonePlusPreviewPortals: [{
+    seriesId: "urn:uuid:a9fccce6-80f7-4937-b3dc-3cf76280d4f7",
+    datasource: "urn:node:KNB",
+    label: "SASAP"
+  },
+  {
+    seriesId: "urn:uuid:d6d8fc1f-a4d9-4c44-8305-a8c0c35f387e",
+    datasource: "urn:node:ARCTIC",
+    label: "toolik"
+  },
+  {
+    seriesId: "urn:uuid:8cdb22c6-cb33-4553-93ca-acb6f5d53ee4",
+    datasource: "urn:node:ARCTIC",
+    label: "dbo"
+  },
+  {
+    seriesId: "urn:uuid:06a249da-f9c8-4946-8be4-ac80883bbd22",
+    datasource: "urn:node:KNB",
+    label: "ecoblender"
+  }],
 
   //Dataset landing pages
   displayDatasetEditButton: false,
   displayDatasetControls: false,
-  displayDatasetQualityMetric: false
+  displayDatasetQualityMetric: true
 }, (MetacatUI.AppConfig || {}));
 
 MetacatUI.themeMap =
