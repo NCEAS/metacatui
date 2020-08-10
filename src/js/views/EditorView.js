@@ -318,6 +318,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
       //Mark the disabled inputs so we can re-disable them later
       allInputs.filter(":disabled")
+               .not(".label-container .label-input-text")
                .addClass("disabled-saving");
 
       //Remove the latest success or error alert
@@ -333,9 +334,11 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     */
     hideSaving: function(){
       this.$("input, textarea, select, button")
+          .not(".label-container .label-input-text")
           .prop("disabled", false);
 
       this.$(".disabled-saving, input.disabled")
+          .not(".label-container .label-input-text")
           .prop("disabled", true)
           .removeClass("disabled-saving");
 
