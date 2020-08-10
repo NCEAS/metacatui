@@ -3589,7 +3589,7 @@ add font awesome close icon */
 	margin-top: 0px;
 	margin-left: -1px;
 	box-shadow: inset 0 5px 7px -6px rgba(0,0,0,0.3);
-	border-top: 1px solid #333;
+	border-top: 1px solid #CCC;
 }
 .port-editor-sections .portal-section-link{
   display: inline-block;
@@ -4222,8 +4222,6 @@ font-size: 1.1em;
   padding-right: 20px;
   margin: 0px;
 }
-
-
 .toc-ul a{
   line-height: 2em;
 }
@@ -4241,10 +4239,6 @@ font-size: 1.1em;
   border:0px;
   border-radius: 0px;
   text-shadow: none;
-}
-.portal-view .toc li.active > a {
-  background-color: #2c7e90; /* Back-up color for IE */
-	background-color: var(--portal-secondary-color);
 }
 .toc-ul a:hover {
   color: #FFF;
@@ -4443,12 +4437,34 @@ i.toc-sub-item {
     background-color: #EEE;
 }
 
-/*** Colors used in the Portal View ***/
+/*** Colors used in the TOC in the portal view & portal editor view ***/
 .portal-view .toc .icon,
 .portal-editor .toc .icon{
   color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 }
+.portal-view .toc li.active > a,
+.portal-editor .toc li.active > a {
+  background-color: #2c7e90; /* Back-up color for IE */
+	background-color: var(--portal-secondary-color);
+}
+.portal-editor .toc-ul,
+.portal-view .toc-ul {
+  background-color: #2c6f90; /* Back-up color for IE */
+  background-color: var(--portal-primary-color);
+}
+.portal-view .toc-ul li > a:hover,
+.portal-editor .toc-ul li > a:hover{
+  background-color: #2c7e90; /* Back-up color for IE */
+  background-color: var(--portal-secondary-color);
+	color: white;
+}
+.portal-editor .toc-view a,
+.portal-view .toc-view a {
+  color: #FFF;
+}
+
+/*** Colors used in the Portal View ***/
 .portal-view a:not(.btn):hover,
 .portal-editor a:not(.btn):hover{
   color: #2c7e90; /* Back-up color for IE */
@@ -4630,16 +4646,6 @@ i.toc-sub-item {
   border-bottom: 1px solid #2c7e90; /* Back-up color for IE */
 	border-bottom: 1px solid var(--portal-secondary-color);
 }
-.portal-view .toc-ul {
-  background-color: #2c6f90; /* Back-up color for IE */
-  background-color: var(--portal-primary-color);
-}
-.portal-view .toc-ul li > a:hover,
-.portal-editor .toc-ul li > a:hover{
-  background-color: #2c7e90; /* Back-up color for IE */
-  background-color: var(--portal-secondary-color);
-	color: white;
-}
 .portal-view .result-row .citation .title,
 .portal-editor .result-row .citation .title{
   color: #2c6f90; /* Back-up color for IE */
@@ -4780,9 +4786,7 @@ i.toc-sub-item {
 .portal-section-content a {
   color: var(--portal-primary-color);
 }
-.portal-view .toc-view a {
-  color: #FFF;
-}
+
 .portal-section-view a {
   color: var(--portal-primary-color);
 }
