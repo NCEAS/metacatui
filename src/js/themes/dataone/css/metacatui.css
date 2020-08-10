@@ -300,10 +300,7 @@ input[type=search], textarea {
 
 /* PORTALS
 -------------------------------------------------- */
-.PortalView {
-    display: grid;
-    grid-template-rows: 50px 0px 1fr 50px;
-}
+
 .Portal #Content,
 .PortalView #Content{
   background-color: #FFF;
@@ -411,6 +408,9 @@ input[type=search], textarea {
 .Portal .d1_footer{
   margin: 0px;
   padding: 0px;
+  position: absolute;
+bottom: 0px;
+width: 100%;
 }
 .PortalView .d1_menu-item__sub-menu[aria-hidden="false"],
 .Portal .d1_menu-item__sub-menu[aria-hidden="false"]{
