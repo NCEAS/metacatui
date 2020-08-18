@@ -1684,8 +1684,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
           // If the EML file name matches the DataONEObject file name
           if( fileNameFromEML &&
-            ((fileNameFromEML == dataONEObj.get("fileName")) ||
-              (fileNameFromEML.replace(/ /g, "_") == dataONEObj.get("fileName"))) ){
+            ((fileNameFromEML.toLowerCase() == dataONEObj.get("fileName").toLowerCase()) ||
+              (fileNameFromEML.replace(/ /g, "_").toLowerCase() == dataONEObj.get("fileName").toLowerCase())) ){
 
             //Get an array of all the other entities in this EML
             var otherEntities = _.without(this.get("entities"), e);
