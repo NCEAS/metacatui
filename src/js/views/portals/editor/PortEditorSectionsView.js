@@ -232,7 +232,8 @@ function(_, $, Backbone, Portal, PortalSection,
       var addSectionView = new PortEditorSectionView({
         model: this.model,
         uniqueSectionLabel: "AddPage",
-        sectionType: "addpage"
+        sectionType: "addpage",
+        editorView: this.editorView
       });
 
       addSectionView.$el.addClass("tab-pane")
@@ -466,7 +467,8 @@ function(_, $, Backbone, Portal, PortalSection,
           model: this.model,
           uniqueSectionLabel: "Metrics",
           template: this.metricsSectionTemplate,
-          sectionType: "metrics"
+          sectionType: "metrics",
+          editorView: this.editorView
         });
 
         this.metricsView.$el.attr("id", "Metrics");
@@ -1056,6 +1058,8 @@ function(_, $, Backbone, Portal, PortalSection,
           // the hide/delete button on the other section link.
           this.toggleRemoveSectionOption();
 
+          this.editorView.showControls();
+
         }
         else{
           return;
@@ -1129,6 +1133,7 @@ function(_, $, Backbone, Portal, PortalSection,
             }
           }
 
+
         } catch (error) {
           console.error(error);
         }
@@ -1136,6 +1141,8 @@ function(_, $, Backbone, Portal, PortalSection,
         // If the section just removed was the second-to-last section, disable
         // the hide/delete button on the last section link.
         this.toggleRemoveSectionOption();
+
+        this.editorView.showControls();
 
       }
       catch(e){

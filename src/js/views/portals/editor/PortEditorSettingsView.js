@@ -118,6 +118,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         if (this.model.get("isNew")) {
           this.changeLabel();
         }
+
       } catch (e) {
         console.log("Error rendering the portal editor settings view. Error message: "+ e);
       }

@@ -46,7 +46,8 @@ function(_, $, Backbone, PortalImage, ImageEdit){
     * @type {Object}
     */
     events: {
-      "keyup .edit-image.new .basic-text" : "handleNewInput"
+      "keyup .edit-image.new .basic-text" : "handleNewInput",
+      "click .remove" : "handleRemove"
     },
 
     /**
@@ -193,6 +194,8 @@ function(_, $, Backbone, PortalImage, ImageEdit){
         // Show the new EditImage view
         this.renderAckLogoInput(newLogo);
 
+        this.editorView.showControls();
+
       } catch (e) {
         console.log("Failed to handle user input in an acknowledgments logo imageEdit view. Error message: " + e);
       }
@@ -211,6 +214,15 @@ function(_, $, Backbone, PortalImage, ImageEdit){
         $(logoView).data("view").showValidation();
       });
 
+    },
+
+    /**
+    * This function is called when a logo is removed. The logo removal itself is done
+    * by the PortEditorImageView. This function performs additional functionality that
+    * should happen after the removal.
+    */
+    handleRemove: function(){
+      this.editorView.showControls();
     }
 
   });

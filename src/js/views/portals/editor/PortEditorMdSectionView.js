@@ -51,27 +51,27 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
     * @type {Underscore.Template}
     */
     template: _.template(Template),
-    
+
     /**
     * A jQuery selector for the element that will contain the ImageUploader view
     * @type {string}
     */
     imageUploaderContainer: ".portal-display-image",
-    
+
     /**
     * A jQuery selector for the element that will contain the markdown section
     * title text
     * @type {string}
     */
     titleEl: ".title",
-    
+
     /**
     * A jQuery selector for the element that will contain the markdown section
     * introduction text
     * @type {string}
     */
     introEl: ".introduction",
-    
+
     /**
     * A jQuery selector for the element that will contain the markdown editor
     * @type {string}
@@ -127,7 +127,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
           // breaks when targeting two + components with the same ID
           cid: this.model.cid
         })).data("view", this);
-        
+
         // Get the markdown from the SectionModel
         var markdown = "";
         if( this.model.get("content") ){
@@ -136,7 +136,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
             markdown = this.model.get("content").get("markdownExample");
           }
         }
-        
+
         // Render the Markdown Editor View
         var mdEditor = new MarkdownEditor({
           markdown: markdown,
@@ -146,7 +146,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
         });
         mdEditor.render();
         this.$(this.markdownEditorContainer).html(mdEditor.el);
-        
+
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
         mdEditor.$(mdEditor.textarea).data({ model: this.model.get("content") });
@@ -161,7 +161,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
 
         // Add the edit image view (incl. uploader) for the section image
         this.sectionImageUploader = new ImageEdit({
-          
+
           model: this.model.get("image"),
           editorView: this.editorView,
           imageUploadInstructions: ["Drag & drop a high quality image here or click to upload",
@@ -176,7 +176,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
           minHeight: 300,
           maxHeight: 4000,
           maxWidth: 9000
-          
+
         });
         this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
         this.sectionImageUploader.render();
@@ -193,12 +193,19 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
         this.$("textarea.auto-resize").on('input textareaResize', function(e){
           view.resizeTextarea($(e.target));
         });
-        
+
         // Make sure the textareas are the right size with their pre-filled
         // content the first time the section is viewed, because scrollHeight
         // is 0px when the element is not displayed.
         this.listenToOnce(this, "active", function(){
           view.resizeTextarea(view.$("textarea.auto-resize"));
+        });
+
+        this.listenTo(this.model.get("content"), "change", function(){
+          this.editorView.showControls();
+        });
+        this.listenTo(this.model.get("image"), "change", function(){
+          this.editorView.showControls();
         });
 
       }

@@ -50,6 +50,12 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
     model: undefined,
 
     /**
+    * A reference to the PortalEditorView
+    * @type {PortalEditorView}
+    */
+    editorView: null,
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -157,6 +163,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
 
         //Save a reference to this view
         this.$el.data("view", this);
+
       }
       catch(e){
         console.log("Section view cannot be rendered, error message: " + e);

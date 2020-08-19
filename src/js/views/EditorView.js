@@ -64,7 +64,10 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       "click .access-policy-control" : "showAccessPolicyModal",
       "keypress input" : "showControls",
       "keypress textarea" : "showControls",
-      "keypress [contenteditable]" : "showControls"
+      "keypress [contenteditable]" : "showControls",
+      "click .image-uploader" : "showControls",
+      "change .access-policy-view" : "showControls",
+      "click .access-policy-view .remove" : "showControls"
     },
 
     /**
@@ -264,6 +267,8 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
             accessPolicyView.render();
 
             thisView.trigger("accessPolicyViewRendered");
+
+            thisView.listenTo(accessPolicyView.collection, "add remove", thisView.showControls);
         });
       }
       catch(e){
