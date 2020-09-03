@@ -5,9 +5,10 @@ define(['underscore',
         "models/CollectionModel",
         "models/Search",
         "views/DataCatalogViewWithFilters",
+        "views/QueryBuilderView",
         "text!templates/editCollection.html"],
 function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilters,
-         Template){
+          QueryBuilder, Template){
 
   /**
   * @class EditCollectionView
@@ -58,6 +59,11 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     */
     collectionControlsContainer: ".applied-filters-container",
     /**
+    * A jQuery selector for the element that the QueryBuilder should be inserted into
+    * @type {string}
+    */
+    queryBuilderViewContainer: ".query-builder-view-container",
+    /**
     * A jQuery selector for the element that contains the filter help text
     * @type {string}
     */
@@ -102,9 +108,24 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         this.listenToOnce(this.model, "change:seriesId",    this.renderDataCatalog);
         this.listenToOnce(this.model, "latestVersionFound", this.renderDataCatalog);
       }
-
+      
+      this.renderQueryBuilder();
       //this.renderCollectionControls();
 
+    },
+    
+    /**    
+     * renderQueryBuilder - Render the QueryBuilder and insert it into this view
+     *      
+     * @return {type}  description     
+     */     
+    renderQueryBuilder: function(){
+      var queryBuilder = new QueryBuilder({
+        model: this.model.get("definitionFilters")
+      });
+      // Render the query builder and insert it into this view
+      this.$(this.queryBuilderViewContainer).html(queryBuilder.el);
+      queryBuilder.render();
     },
 
     /**
@@ -148,7 +169,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         else{
           //Create an isPartOf filter
           isPartOfFilter = this.model.createIsPartOfFilter();
-          //Set the value as a trueValue, so it can bbe used as a Toggle
+          //Set the value as a trueValue, so it can be used as a Toggle
           isPartOfFilter.set("trueValue", isPartOfFilter.get("values")[0]);
           //Reset the values
           isPartOfFilter.set("values", []);
