@@ -33,6 +33,20 @@ define(
           multivalued: null
         };
       },
+      
+      /**      
+       * isType - Checks if this field is a certian type
+       *        
+       * @param  {string} type the solr field type
+       * @return {boolean}     returns true of the field exactly matches
+       */       
+      isType: function(type){
+        try {
+          return this.get('type') === type
+        } catch (e) {
+          console.log("Failed to check if query field is a type, error message: " + e);
+        }
+      },
 
       /**    
        * Overwrites the Backbone save function because query fields are read only

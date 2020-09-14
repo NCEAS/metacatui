@@ -1,0 +1,28 @@
+<p class="subtle searchable-select-label"> <%= inputLabel %></p>
+
+<div class="ui fluid <% if(allowMulti){ %> multiple <% } %> search selection dropdown">
+  <% // Do not pre-select options by providing a value to the hidden input field. %>
+  <% // This causes errors in some situations. Pre-select in the view JS instead. %>
+  <input name="search-select-<%= cid %>" type="hidden">
+  <i class="dropdown icon icon icon-on-right icon-chevron-down"></i>
+  <div class="default text"><%= placeholderText %></div>
+  <div class="menu">
+    <% // If the list of options doesn't have category headings, put it in the %>
+    <% // same format as options that do have headings. %>
+    <% if (Array.isArray(options)) { options = { "" : options } } %>
+    
+    <% for (const [header, values] of Object.entries(options)) { %>
+      <% if (header) { %><h6 class="header"><%= header %></h6><% } %>
+        <% for (option of values) { %>
+          <div class="item" data-value="<%= option.value ? option.value : option.label %>" <% if (option.description) { %> data-toggle="tooltip" title="<%= option.description %>" data-placement="bottom" data-container="body" data-delay='{"show":"200", "hide":"50"}' <% } %>>
+            <% if (option.icon) { %>
+              <i class="icon icon-on-left icon-<%= option.icon %>"></i>
+            <% } else if (option.image) { %>
+              <img src="<%= option.image %>" style="width: 100%; height: 100%; max-width:<%= imageWidth || 30 %>px; max-height:<%= imageHeight || 30 %>px">
+            <% } %>
+            <%= option.label %>
+          </div>
+        <% } %>
+    <% } %>
+  </div>
+</div>
