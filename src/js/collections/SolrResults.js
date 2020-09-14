@@ -96,6 +96,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			//Is this our latest query? If not, use our last set of docs from the latest query
 			if((decodeURIComponent(this.currentquery).replace(/\+/g, " ") != solr.responseHeader.params.q) && this.docsCache)
 				return this.docsCache;
+				
+			if(!solr.response){
+				if(solr.error && solr.error.msg){
+					console.log("Solr error: " + solr.error.msg);
+				}
+				return
+			}
 
 			//Save some stats
 			this.header = new SolrHeader(solr.responseHeader);

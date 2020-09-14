@@ -81,11 +81,10 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
             modelJSON.values = [parseFloat(valueNode[0].textContent)];
           }
         }
-
         //If a range min and max was given, or if a min and max value was given,
         // then this NumericFilter should be presented as a numeric range (rather than
        // an exact numeric value).
-        if( rangeMinNode.length || rangeMinNode.length || minNode || maxNode ){
+        if( rangeMinNode.length || rangeMaxNode.length || (minNode.length && maxNode.length) ){
           //Set the range attribute on the JSON
           modelJSON.range = true;
         }
@@ -129,8 +128,12 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         //Iterate over each filter field and add to the query string
         _.each(this.get("fields"), function(field, i, allFields){
 
-          //Construct a query string for ranges
-          if( this.get("range") ){
+          //Construct a query string for ranges, min, or max
+          if(
+            this.get("range") ||
+            (this.get("max") || this.get("max") === 0) ||
+            (this.get("min") || this.get("min") === 0)
+          ){
 
             //Get the minimum and maximum values
             var max = this.get("max"),
@@ -167,6 +170,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
           }
           //If there is a value set, construct an exact numeric match query
           else if( this.get("values")[0] || this.get("values")[0] === 0 ){
+            console.debug( "~~~If there is a value set, construct an exact numeric match query~~~" );
             queryString += field + ":" + this.get("values")[0];
           }
 
@@ -183,7 +187,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
         }
 
       }
-
+      
       return queryString;
 
     },

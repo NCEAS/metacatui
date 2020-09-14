@@ -212,13 +212,20 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       // Get min and max dates
       var dateData = {
         min: this.get("min"),
-        max: this.get("max")
+        max: this.get("max"),
+        value: this.get("values") ? this.get("values")[0] : null
       };
 
       var isRange = false;
 
       // Make subnodes <min> and <max> and append to DOM
       _.map(dateData, function(value, nodeName){
+        
+        // dateFilters don't have a min or max when the values should range from
+        // a min to infinity, or from a max to infinity (e.g. "date is before...") 
+        if(!value){
+          return
+        }
 
         if( nodeName == "min" ){
           var dateTime = "-01-01T00:00:00Z";

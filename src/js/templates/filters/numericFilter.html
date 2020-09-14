@@ -7,9 +7,9 @@
   </label>
   <div class="slider numeric-slider"></div>
   <div class="clear"></div>
-  <input class="min" type="number" value="<%=min%>">
+  <input class="range min" type="number" value="<%=min%>">
   <span class="to">to</span>
-  <input class="max" type="number" value="<%=max%>">
+  <input class="range max" type="number" value="<%=max%>">
   <div class="clear"></div>
 <% } else { %>
   <label>
@@ -19,7 +19,9 @@
     <%=label%>
   </label>
   <input type="number" value="" class="single-number"></input>
+  <% if(showButton){ %>
   <button class="btn">
-    <i class="icon icon-search"></i>
+    <i class="icon icon-search icon-no-margin"></i>
   </button>
+  <% } %>
 <% } %>
