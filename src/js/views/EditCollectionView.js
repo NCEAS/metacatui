@@ -121,7 +121,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      */     
     renderQueryBuilder: function(){
       var queryBuilder = new QueryBuilder({
-        model: this.model.get("definitionFilters")
+        collection: this.model.get("definitionFilters")
       });
       // Render the query builder and insert it into this view
       this.$(this.queryBuilderViewContainer).html(queryBuilder.el);

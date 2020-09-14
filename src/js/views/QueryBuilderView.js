@@ -2,10 +2,11 @@ define(["jquery",
     "underscore",
     "backbone",
     "collections/Filters",
+    "collections/QueryFields",
     "views/QueryRuleView",
     "text!templates/queryBuilder.html", 'collections/ObjectFormats', "collections/QueryFields",
   ],
-  function($, _, Backbone, Filters, QueryRule, Template,  ObjectFormats, QueryFields) {
+  function($, _, Backbone, Filters, QueryFields, QueryRule, Template,  ObjectFormats, QueryFields) {
 
     /**
      * @class QueryBuilder
@@ -36,7 +37,6 @@ define(["jquery",
          */
         rulesContainerSelector: ".rules-container",
         
-        
         /**
          * A jquery selector for the element in the template that a user should click to
          * add a new rule
@@ -48,14 +48,13 @@ define(["jquery",
         * A Filters collection that stores definition filters for a collection (or portal)
         * @type {Filters} 
         */
-        model: undefined,
+        collection: undefined,
 
         /**
          * The primary HTML template for this view
          * @type {Underscore.template}
          */
         template: _.template(Template),
-
         
         /**        
          * events - A function that specifies a set of DOM events that will be
@@ -65,15 +64,19 @@ define(["jquery",
          * @return {Object}  The events hash
          */         
         events: function(){
-          var events = {};
-          var addRuleAction = "click " + this.addRuleButtonSelector;
-          events[addRuleAction] = "addQueryRule"
-          return events
+          try {
+            var events = {};
+            var addRuleAction = "click " + this.addRuleButtonSelector;
+            events[addRuleAction] = "addQueryRule"
+            return events
+          } catch (e) {
+            console.log("Failed to specify events for  the Query Builder View, error message: " + e);
+          }
         },
         
         /**
          * The list of QueryRuleViews that are contained within this queryBuilder
-         * @type {[QueryRule]}        
+         * @type {QueryRuleView[]}        
          */         
         rules: [],
 
@@ -85,7 +88,7 @@ define(["jquery",
           
           try {
             
-            // Ensure the query fields are cached for the Query Rule View to use
+            // Ensure the query fields are cached for the Query Field Select View to use
             if ( typeof MetacatUI.queryFields === "undefined" ) {
               MetacatUI.queryFields = new QueryFields();
               MetacatUI.queryFields.fetch();
@@ -99,10 +102,11 @@ define(["jquery",
               }, this);
             }
             
-            // If no model is provided in the options, then set a new Filters model
-            if(!this.model || typeof this.model === 'undefined'){
+            // If no filters collection is provided in the options, then set a
+            // new Filters collection
+            if(!this.collection || typeof this.collection === 'undefined'){
               // TODO: Which properties to set?
-              this.model = new Filters()
+              this.collection = new Filters()
             }
 
           } catch (e) {
@@ -116,13 +120,14 @@ define(["jquery",
          * @return {QueryBuilder}  Returns the view
          */
         render: function() {
+          
           try {
             // Insert the template into the view
             this.$el.html(this.template());
             
             // Add a row for each rule that exists already in the model
-            if(this.model && this.model.models && this.model.models.length){
-              this.model.models.forEach(function(model){
+            if(this.collection && this.collection.models && this.collection.models.length){
+              this.collection.models.forEach(function(model){
                 this.addQueryRule(model)
               }, this);
             }
@@ -163,7 +168,7 @@ define(["jquery",
             // Add the rule to the list of rule sub-views
             this.rules.push(rule)
             
-            // TODO: add listener for when this rule is complete, changed, or deleted?
+            // TODO: Add listeners
             
           } catch (e) {
             console.log("Error adding a query rule, error message:", e);
@@ -179,7 +184,7 @@ define(["jquery",
           try {
             // TODO
             // Remove rule from the view
-            // Remove rule from the parent model
+            // Remove rule collection
           } catch (e) {
             console.log("Error removing a query rule, error message:", e);
           }

@@ -452,6 +452,9 @@ h4 > .icon{
 .icon-on-left{
 	margin-right: 5px;
 }
+.icon-no-margin{
+	margin: 0 !important;
+}
 .filter-contain img.icon{
 	float: left;
 	height: 20px;
@@ -6019,7 +6022,7 @@ body.mapMode{
     text-align: left;
     padding-left: 0px;
 }
-.filter-group .filter .ui-slider{
+.filter .ui-slider{
 	position: relative;
 	height: 5px;
 	margin-top: 20px;
@@ -6027,7 +6030,7 @@ body.mapMode{
 	width: 90%;
 	width: calc(100% - 20px);
 }
-.filter-group .filter .ui-slider-handle{
+.filter .ui-slider-handle{
   width: 7px;
   height: 16px;
 }
@@ -6623,6 +6626,87 @@ input.subtle:focus
 .text-container input,
 .text-container textarea{
     width: 100%;
+}
+
+/*******************************************
+Query builder & query rule view
+******************************************/
+
+.query-builder {
+	box-shadow: 0 1px 6px rgba(0,0,0,0.16), 0 1px 8px -3px rgba(0,0,0,0.23);
+	padding: 0;
+	margin: 2.5rem 1rem 4rem;
+	width: 100%;
+	max-width: 1400px;
+	border-radius: 3px;
+	box-sizing: border-box;
+}
+
+.query-builder-title {
+	font-weight: 500;
+	font-size: 1.3rem;
+	width: 100%;
+	margin: 0 0 2rem 0;
+	border-bottom: 1px solid #eee;
+	padding: 1.6rem 2rem 1.2rem;
+	box-sizing: border-box;
+}
+
+.btn.add-rule {
+	margin-left: 2rem;
+	padding: 0.2rem 0.7rem;
+}
+
+.rules-container {
+	display: grid;
+	grid-template-rows: auto;
+	grid-template-columns: 100%;
+	grid-gap: 1.5rem;
+	padding: 1.9rem 2rem;
+}
+
+.query-rule {
+	display: grid;
+	grid-template-columns: 1fr 0.5fr 1fr;
+	grid-template-rows: 1fr;
+	grid-gap: 2rem;
+	align-items: top;
+}
+
+.searchable-select-label {
+  margin: 0 0 3px 2px;
+  font-size: 0.8rem;
+}
+
+.query-rule .filter label {
+	display: none;
+}
+
+.query-rule .filter input {
+	margin: 0;
+}
+
+.query-rule .filter .ui-slider {
+	margin: 0.6rem 0 1rem;
+}
+
+/* ---- Icons for the operator options not included in font-awesome ---- */
+.icon-equal, .icon-not-equal, .icon-less-than, .icon-greater-than {
+	font-family: serif;
+	font-weight: 900;
+	font-size: larger;
+}
+.icon-equal:before{
+	content: "="
+}
+.icon-not-equal:before{
+	content: "\2260"
+}
+.icon-less-than:before{
+	content: "<"
+}
+.icon-greater-than:before{
+	content: ">"
 }
 /*******************************************
 Editor View
