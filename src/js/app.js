@@ -74,6 +74,9 @@ require.config({
 	markdownTableToJson: MetacatUI.root + '/components/markdown-table-to-json',
 	// Polyfill required for using dropzone with older browsers
 	corejs: MetacatUI.root + '/components/core-js',
+	// Searchable multi-select dropdown component
+	semanticUItransition: MetacatUI.root + '/components/semanticUI/transition.min',
+	semanticUIdropdown: MetacatUI.root + '/components/semanticUI/dropdown.min',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
