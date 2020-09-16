@@ -5,7 +5,7 @@
         <div id="breadcrumb-container"></div>
 		<div class="heading"></div>
 		<div class="body"></div>
-	</div>		
+	</div>
 
 <% } %>
 
@@ -16,8 +16,8 @@
 <header class="page-header">
     <div id="report-alert-container"></div>
     <div id="breadcrumb-container"></div>
-	<h1>Metadata Quality Report</h1>
-	<cite id="mdqCitation"></cite>
+	<h1>Metadata Assessment Report</h1>
+	<h3><cite id="mdqCitation"></cite></h3>
 </header>
 
 <div class="mdq">
@@ -25,19 +25,19 @@
 		<!-- <p>Date: <em><%= timestamp %></em></p> -->
 		<!--  Run ID: <%= id %>	-->
 		<p>
-		After running your metadata against our standard set of metadata, data, and congruency checks, 
-		we have found the following potential issues. 
+		After running your metadata against our standard set of metadata, data, and congruency checks,
+		we have found the following potential issues.
 		Please assist us in improving the discoverability and reusability of your research data by addressing the issues below.
 		</p>
 	</div>
-	
-	<div id="mdqDonut" class="format-charts-data"></div>		
-	
-	<div id="mdqTypeSummary">			
-        
+
+	<div id="mdqDonut" class="format-charts-data"></div>
+
+	<div id="mdqTypeSummary">
+
 		<div id="suites">
             <p>
-                <strong>Quality suite: </strong> 
+                <strong>Assessment suite: </strong>
                 <select id="suiteId" name="suiteId">
 	                <%
                     var zipped = _.zip(suiteIdList, suiteLabels);
@@ -52,7 +52,7 @@
                 </select>
             </p>
         </div>
-		
+
 		<%
 		var types = _.keys(groupedByType);
 		_.each(types, function(type) {
@@ -66,53 +66,53 @@
 			});
 			var width = (success/total) * 100;
 			width = width.toFixed(0);
-			
-		%>			
+
+		%>
 			<span class="strong" style="text-transform: capitalize;"><%=type%></span>: <%=width%>% complete
 			<div class="progress">
-				<div class="progress-bar progress-bar-success" 
-				role="progressbar" 
-				aria-valuenow="<%=success%>" 
-				aria-valuemin="0" aria-valuemax="<%=total%>" 
+				<div class="progress-bar progress-bar-success"
+				role="progressbar"
+				aria-valuenow="<%=success%>"
+				aria-valuemin="0" aria-valuemax="<%=total%>"
 				style="width: <%=width%>%;">
-				
+
 				</div>
 			</div>
-		<% }); %>		
+		<% }); %>
 	</div>
-	<div class="clear"></div>	
-			
+	<div class="clear"></div>
+
 		<%
-		
+
 		var total = checkCount;
 		if (groupedResults.BLUE) {
 			total = total - groupedResults.BLUE.length;
 		}
-		
-	%>	
+
+	%>
 	<ul class="list-group">
 		<% if (groupedResults.GREEN) { %>
-		
+
 			<li class="list-group-item success row-fluid collapsed"  data-toggle="collapse" data-target=".list-group-item.pass">
 				<h4>
 					<i class="icon icon-caret-right"></i>
 					<i class="icon icon-caret-down"></i>
 					Passed <%=groupedResults.GREEN.length%> checks out of <%= total %> (informational checks not included).
-				</h4>				
+				</h4>
 			</li>
-			
+
 		<!-- <div class="collapse" id="collapseSuccess"> -->
-		
+
 		<%
 		_.each(groupedResults.GREEN, function(result) {
 		%>
-		
+
 	  		<li class="list-group-item check pass collapse row-fluid">
-	  			<i class="icon icon-check-sign success span1"></i>	  			
+	  			<i class="icon icon-check-sign success span1"></i>
 	  			<span class="span6">
 		  			<%
 					_.each(result.get("output"), function(output) {
-					%>				
+					%>
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
@@ -126,7 +126,7 @@
 				<span class="span1">
 					<a  tabindex="0"
 						role="button"
-						class="popover-this" 
+						class="popover-this"
 						data-trigger="hover focus"
 						data-container="body"
 						data-html="true"
@@ -134,38 +134,38 @@
 						data-content="<%= result.get("check").description %>">
 						<i class="icon icon-question-sign subtle"></i>
 					</a>
-				</span>	  			
+				</span>
 	  			<span class="span4">
 		  			<span class="badge pull-right"><%= result.get("status") %></span>
 					<span class="badge pull-right"><%= result.get("check").level %></span>
 					<span class="badge pull-right"><%= result.get("check").type %></span>
 				</span>
 	  		</li>
-		<% }); %>			
-	<% } %>	
-	
-	<% if (groupedResults.ORANGE) { %>	
+		<% }); %>
+	<% } %>
+
+	<% if (groupedResults.ORANGE) { %>
 		<li class="list-group-item warning collapsed" data-toggle="collapse" data-target=".list-group-item.warn.check">
 			<h4>
 				<i class="icon icon-caret-right"></i>
 				<i class="icon icon-caret-down"></i>
-				Warning for <%=groupedResults.ORANGE.length%> check<% if (groupedResults.ORANGE.length != 1) {print('s')}%>. <% if (groupedResults.ORANGE.length > 0) {print('Please review these warnings.')}%>			
+				Warning for <%=groupedResults.ORANGE.length%> check<% if (groupedResults.ORANGE.length != 1) {print('s')}%>. <% if (groupedResults.ORANGE.length > 0) {print('Please review these warnings.')}%>
 			</h4>
-		</li>	
+		</li>
 		<%
 		_.each(groupedResults.ORANGE, function(result) {
 		%>
-		
+
 	  		<li class="list-group-item check warn collapse row-fluid">
 	  			<span class="icon-stack span1">
 	  				<i class="icon icon-exclamation"></i>
 	  				<i class="icon icon-check-empty"></i>
 	  			</span>
-	  			
+
 	  			<span class="span6">
 		  			<%
 					_.each(result.get("output"), function(output) {
-					%>				
+					%>
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
@@ -179,7 +179,7 @@
 				<span class="span1">
 					<a tabindex="0"
 						role="button"
-						class="popover-this" 
+						class="popover-this"
 						data-container="body"
 						data-trigger="hover focus"
 						data-html="true"
@@ -192,24 +192,24 @@
 		  			<span class="badge pull-right"><%= result.get("status") %></span>
 					<span class="badge pull-right"><%= result.get("check").level %></span>
 					<span class="badge pull-right"><%= result.get("check").type %></span>
-				</span>			
+				</span>
 	  		</li>
-		<% }); %>		
-	<% } %>	
-	
+		<% }); %>
+	<% } %>
+
 	<% if (groupedResults.RED) { %>
 		<li class="list-group-item danger" data-toggle="collapse" data-target=".list-group-item.fail">
 			<h4>
-				<i class="icon icon-caret-down"></i>	
+				<i class="icon icon-caret-down"></i>
 				<i class="icon icon-caret-right"></i>
-				Failed <%=groupedResults.RED.length%> check<% if (groupedResults.RED.length != 1) {print('s')}%>. <% if (groupedResults.RED.length > 0) {print('Please correct these issues.')}%>			
+				Failed <%=groupedResults.RED.length%> check<% if (groupedResults.RED.length != 1) {print('s')}%>. <% if (groupedResults.RED.length > 0) {print('Please correct these issues.')}%>
 			</h4>
 		</li>
-	
+
 		<%
 		_.each(groupedResults.RED, function(result) {
 		%>
-		
+
 	  		<li class="list-group-item check fail in collapse row-fluid">
 	  			<span class="icon-stack span1">
 		  			<i class="icon icon-sign-blank"></i>
@@ -218,7 +218,7 @@
 	  			<span class="span6">
 		  			<%
 					_.each(result.get("output"), function(output) {
-					%>				
+					%>
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
@@ -229,10 +229,10 @@
 					});
 					%>
 				</span>
-	  			<span class="span1">					
+	  			<span class="span1">
 					<a  tabindex="0"
 						role="button"
-						class="popover-this" 
+						class="popover-this"
 						data-container="body"
 						data-trigger="hover focus"
 						data-html="true"
@@ -245,11 +245,11 @@
 		  			<span class="badge pull-right"><%= result.get("status") %></span>
 					<span class="badge pull-right"><%= result.get("check").level %></span>
 					<span class="badge pull-right"><%= result.get("check").type %></span>
-				</span>			
+				</span>
 	  		</li>
-		<% }); %>		
-	<% } %>	
-	
+		<% }); %>
+	<% } %>
+
 	<% if (groupedResults.BLUE) { %>
 		<li class="list-group-item info collapsed" data-toggle="collapse" data-target=".list-group-item.info-check">
 			<h4>
@@ -270,7 +270,7 @@
 	  			<span class="span6">
 					<%
 					_.each(result.get("output"), function(output) {
-					%>				
+					%>
 						<% if (output.type && output.type.includes('image')) { %>
 							<!-- render the image -->
 							<img src="data:<%- output.type %>;base64, <%- output.value %>"/>
@@ -281,12 +281,12 @@
 					});
 					%>
 				</span>
-	  			<span class="span1">					
+	  			<span class="span1">
 					<a  tabindex="0"
 						role="button"
 						class="popover-this"
 						data-container="body"
-						data-trigger="hover focus" 
+						data-trigger="hover focus"
 						data-html="true"
 						data-title="<%= result.get("check").name %>"
 						data-content="<%= result.get("check").description %>">
@@ -297,13 +297,13 @@
 					<span class="badge pull-right"><%= result.get("status") %></span>
 					<span class="badge pull-right"><%= result.get("check").level %></span>
 					<span class="badge pull-right"><%= result.get("check").type %></span>
-				</span>				
+				</span>
 	  		</li>
-		<% }); %>		
+		<% }); %>
 	<% } %>
 	</ul>
   </div>
-  
+
 </div>
 
 <% } %>

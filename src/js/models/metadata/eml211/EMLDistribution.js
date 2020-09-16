@@ -29,6 +29,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		nodeNameMap: function(){
 			return{
 				"authsystem" : "authSystem",
+        "connectiondefinition" : "connectionDefinition",
+        "mediumdensity" : "mediumDensity",
+        "mediumdensityunits" : "mediumDensityUnits",
 				"mediumformat" : "mediumFormat",
 				"mediumname" : "mediumName",
 				"mediumnote" : "mediumNote",

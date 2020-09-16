@@ -1,4 +1,5 @@
 <% if((typeof node !== "undefined") && (typeof node.logo !== "undefined")){ %>
-	<a href="https://search.dataone.org/profile/<%=node.shortIdentifier%>" target="_blank" class="logo data-source">
-		<img src="<%=node.logo%>" class="<%=node.shortIdentifier%> logo popover-this data-source" data-trigger="hover" data-placement="bottom" data-container=".citation-container"/></a>
+  <a href="<%=profileURL%>" class="logo data-source">
+    <img src="<%=node.logo%>" class="<%=node.shortIdentifier%> logo popover-this data-source" data-trigger="hover" data-placement="bottom" data-container=".citation-container"/>
+  </a>
 <% } %>

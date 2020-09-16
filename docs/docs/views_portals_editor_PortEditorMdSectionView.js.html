@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: views/portals/editor/PortEditorMdSectionView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: views/portals/editor/PortEditorMdSectionView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(['underscore',
+        'jquery',
+        'backbone',
+        "models/portals/PortalSectionModel",
+        "models/portals/PortalImage",
+        "views/portals/editor/PortEditorSectionView",
+        "views/portals/editor/PortEditorImageView",
+        "views/portals/PortalSectionView",
+        "text!templates/portals/editor/portEditorMdSection.html"],
+function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView, ImageEdit, PortalSectionView, Template){
+
+  /**
+  * @class PortEditorMdSectionView
+  * @classdesc A section of the Portal Editor for adding/editing a Markdown page to a Portal
+  * @extends PortEditorSectionView
+  * @constructor
+  */
+  var PortEditorMdSectionView = PortEditorSectionView.extend(
+    /** @lends PortEditorMdSectionView.prototype */{
+
+    /**
+    * The type of View this is
+    * @type {string}
+    * @readonly
+    */
+    type: "PortEditorMdSection",
+
+    /**
+    * The HTML classes to use for this view's element
+    * @type {string}
+    */
+    className: PortEditorSectionView.prototype.className + " port-editor-md",
+
+    /**
+    * The HTML attributes to set on this view's element
+    * @type {object}
+    */
+    attributes: {
+      "data-category": "sections"
+    },
+
+    /**
+    * The PortalSectionModel that is being edited
+    * @type {PortalSection}
+    */
+    model: undefined,
+
+    /**
+    * References to templates for this view. HTML files are converted to Underscore.js templates
+    */
+    template: _.template(Template),
+
+    /**
+    * A jQuery selector for the element that the ImageUploader view should be inserted into
+    * @type {string}
+    */
+    imageUploaderContainer: ".portal-display-image",
+
+    /**
+    * A reference to the PortalEditorView
+    * @type {PortalEditorView}
+    */
+    editorView: undefined,
+
+    /**
+    * The type of section view this is
+    * @type {string}
+    * @readonly
+    */
+    sectionType: "freeform",
+
+    /**
+    * The events this view will listen to and the associated function to call.
+    * @type {Object}
+    */
+    events: {
+      // update the markdown preview each time the preview tab is clicked.
+      "click #markdown-preview-link"   :     "previewMarkdown"
+    },
+
+    /**
+    * Is executed when a new PortEditorMdSectionView is created
+    * @param {Object} options - A literal object with options to pass to the view
+    */
+    initialize: function(options){
+
+      //Call the superclass initialize() function
+      //Passing the parameters to the super class constructor
+      PortEditorSectionView.prototype.initialize(options);
+
+    },
+
+    /**
+    * Renders this view
+    */
+    render: function(){
+
+      try{
+
+        // Get the markdown
+        var markdown;
+
+        //Get the markdown from the SectionModel
+        if( this.model.get("content") ){
+          markdown = this.model.get("content").get("markdown");
+          if( !markdown ){
+            markdown = this.model.get("content").get("markdownExample");
+          }
+        }
+
+        if( !markdown ){
+          markdown = "";
+        }
+
+        // Insert the template into the view
+        this.$el.html(this.template({
+          title: this.model.get("title"),
+          titlePlaceholder: "Add a page title",
+          introduction: this.model.get("introduction"),
+          introPlaceholder: "Add a sub-title or an introductory blurb about the content on this page.",
+          markdown: markdown,
+          markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
+          // unique ID to use for the bootstrap accordion component, which
+          // breaks when targeting two + components with the same ID
+          cid: this.model.cid
+        })).data("view", this);
+
+        // Attach the appropriate models to the textarea elements,
+        // so that PortalEditorView.updateBasicText(e) can access them
+        this.$(".markdown"    ).data({ model: this.model.get("content") });
+        this.$(".title"       ).data({ model: this.model });
+        this.$(".introduction").data({ model: this.model });
+
+        // Add an ImageEdit view for the sectionImage
+        // If the section has no image yet, add the default PortalImage model
+        if( !this.model.get("image") ){
+          this.model.set("image", new PortalImage({ nodeName: "image" }) );
+        };
+
+        // Add the edit image view (incl. uploader) for the section image
+        this.sectionImageUploader = new ImageEdit({
+          model: this.model.get("image"),
+          editorView: this.editorView,
+          imageUploadInstructions: ["Drag &amp; drop a high quality image here or click to upload",
+                                    "Suggested image size: 1200 x 1000 pixels"],
+          nameLabel: false,
+          urlLabel: false,
+          imageTagName: "div",
+          removeButton: false,
+          imageWidth: false, // set to 100% in metacatui-common.css
+          imageHeight: 300,
+          minWidth: 800,
+          minHeight: 300,
+          maxHeight: 4000,
+          maxWidth: 9000,
+        });
+        this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
+        this.sectionImageUploader.render();
+        this.$(this.imageUploaderContainer).data("view", this.sectionImageUploader);
+
+        // Set listeners to auto-resize the height of the intoduction and title
+        // textareas on user-input and on window resize events. This way the
+        // fields appear more closely to how they will look on the portal view.
+        var view = this;
+        $( window ).resize(function() {
+          view.$("textarea.auto-resize").trigger("textareaResize");
+        });
+        this.$("textarea.auto-resize").off('input textareaResize');
+        this.$("textarea.auto-resize").on('input textareaResize', function(e){
+          view.resizeTextarea($(e.target));
+        });
+        // Make sure the textareas are the right size with their pre-filled
+        // content the first time the section is viewed, because scrollHeight
+        // is 0px when the element is not displayed.
+        this.listenToOnce(this, "active", function(){
+          view.resizeTextarea(view.$("textarea.auto-resize"));
+        });
+
+      }
+      catch(e){
+        console.log("The markdown view could not be rendered, error message: " + e);
+      }
+
+    },
+
+
+    /**
+     * resizeTextarea - Set the height of a textarea element based on its
+     * scrollHeight.
+     *
+     * @param  {jQuery} textareas The textarea element or elements to be resized.
+     */
+    resizeTextarea: function(textareas){
+      try {
+        if(textareas){
+          _.each(textareas, function(textarea){
+            if(textarea.style){
+              textarea.style.height = '0px'; // note: textfield MUST have a min-height set
+              textarea.style.height = (textarea.scrollHeight) + 'px';
+            }
+          })
+        }
+      } catch (e) {
+        console.log("failed to resize textarea element. Error message: " + r);
+      }
+    },
+
+    /**
+     * previewMarkdown - render the markdown preview.
+     */
+    previewMarkdown: function(){
+
+      try{
+        var markdownPreview = new PortalSectionView({
+          model: this.model,
+          template: _.template('&lt;div class="portal-section-content">&lt;/div>')
+        });
+        //Render the section
+        markdownPreview.render();
+        //Add the section view to this portal view
+        this.$("#markdown-preview-"+this.model.cid).html(markdownPreview.el);
+      }
+      catch(e){
+        console.log("Failed to preview markdown content. Error message: " + e);
+      }
+
+    },
+
+    /**
+     * showValidation - Display validation errors if any are retuned by the PortalSection model
+     */
+    showValidation: function(){
+      try{
+        var errors = this.model.validate();
+
+        _.each(errors, function(errorMsg, category){
+          var categoryEls = this.$("[data-category='" + category + "']");
+
+          //Use the showValidationMessage function from the parent view
+          if( this.editorView &amp;&amp; this.editorView.showValidationMessage ){
+            this.editorView.showValidationMessage(categoryEls, errorMsg);
+          }
+
+        }, this);
+      }
+      catch(e){
+        console.error(e);
+      }
+    }
+
+  });
+
+  return PortEditorMdSectionView;
+
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addKeyword">addKeyword</a></li><li><a href="global.html#addNewKeyword">addNewKeyword</a></li><li><a href="global.html#checkIncompatibility">checkIncompatibility</a></li><li><a href="global.html#clearOldDrafts">clearOldDrafts</a></li><li><a href="global.html#friendlyTimeDiff">friendlyTimeDiff</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#hideTemporaryMessage">hideTemporaryMessage</a></li><li><a href="global.html#listenForActivity">listenForActivity</a></li><li><a href="global.html#listenForTimeout">listenForTimeout</a></li><li><a href="global.html#movePartyDown">movePartyDown</a></li><li><a href="global.html#movePartyUp">movePartyUp</a></li><li><a href="global.html#movePersonDown">movePersonDown</a></li><li><a href="global.html#movePersonUp">movePersonUp</a></li><li><a href="global.html#renderSupport">renderSupport</a></li><li><a href="global.html#saveDraft">saveDraft</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showTemporaryMessage">showTemporaryMessage</a></li><li><a href="global.html#showTimeoutSignIn">showTimeoutSignIn</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jun 03 2020 12:45:11 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

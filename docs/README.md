@@ -1,73 +1,40 @@
-MetacatUI Themes
------------------
-All the default models, collections, views, routers, and templates required to run a default 
-Metacat UI are in the 'js/' directory.
-The "default" theme is included in the 'js/themes/' directory and is used to style the default 
-resources with CSS and images.
+# MetacatUI Documentation
+This folder of the MetacatUI repository contains the documentation for MetacatUI. This documentation includes:
+- Basic information about MetacatUI
+- Installation instructions
+- Developer documentation for the MetacatUI application
 
-Additional themes (e.g., "knb") provide alternative resources for 
-items that will override the default theme. Each theme is a subdirectory in 'js/themes'
-named to match the theme name and mimics the structure of the default resources in 'js/'.
+## Building the documentation website
+This directory is also built into a simple HTML website, using Jekyll, that is hosted on Github Pages. You can view the last published version of the Github site here: https://nceas.github.io/metacatui/
 
-To switch themes:
--Edit the top-level 'loader.js' file and specify the name of the theme to use.
-That's it!
+To build a local version of the MetacatUI Github pages site, make sure `Bundler` is installed:
 
-Required items for a theme:
-	'js/themes/<theme>/config.js'
-	'js/themes/<theme>/css/metacatui.css'
+  ```
+  gem install bundler
+  ```
 
-About CSS:
-Each theme uses a 'js/themes/<theme>/css/metacatui.css' file that is pulled in during the initial
-application loading. A copy of the default can be used and modified as needed.
+Then serve the Jekyll site from the `docs` directory:
 
-To override html templates (or any other resource, like a Model or View):
--Copy the resource into the same child location, but in the new theme subdirectory.
--Edit that resource as needed.
--Add an entry to the theme's config.js file specifying that new resource.
+  ```
+  bundle exec jekyll serve
+  ```
 
-Example (using navbar):
--Copy 'js/templates/navbar.html' to 'js/themes/<theme>/templates/navbar.html'
--Edit 'js/themes/<theme>/config.js' to include:
-	'templates/navbar.html' : 'themes/' + MetacatUI.theme + '/templates/navbar.html',
-	
-## Configuring MetacatUI
+[See the Github Pages documentation for additional help](https://help.github.com/en/enterprise/2.14/user/articles/setting-up-your-github-pages-site-locally-with-jekyll#step-4-build-your-local-jekyll-site)
 
-### Setting a default access policy for uploads
-In the `AppModel.js`, set the default access policy via the `defaultAccessPolicy` attribute. The default access policy is an array of literal objects 
-with the following attributes:
-`subject`, `read`, `write`, and `changePermission`.
+## Building Developer documentation
+MetacatUI uses [JSDoc](https://github.com/jsdoc/jsdoc) comments to provide inline documentation of classes, methods, and variables. A JSDoc documentation generator will collect all those comments and generate HTML webpages for easier reading and navigation.
 
-The values of these attributes will be serialized to the system metadata of each object uploaded via the MetacatUI editor.
-Example access policy that makes all objects publicly readable:
-```Javascript
-[{
-	subject: "public",
-	read: true,
-	write: false,
-	changePermission: false
-}]
-```
+The MetacatUI git repository already contains these generated HTML pages in the `docs/docs` directory. However, if you have made changes to the MetacatUI code and documentation and want to update the HTML doc pages, you will need to run the JSDoc generator.
 
-This access policy will be serialized into the system metadata as:
-```xml
-	<accessPolicy>
-		<allow>
-			<subject>public</subject>
-			<permission>read</permission>
-		</allow>
-	</accessPolicy>
-```
-	
-### Configuring project views
-1. Create a project XML document to describe the project using the [MetacatUI project schema](https://github.com/NCEAS/project-papers/blob/master/schemas/metacatui-project.xsd).
-2. Upload the XML document to Metacat and assign it a `seriesId` in the system metadata. Any images referenced in the project document should also be uploaded to Metacat.
-3. Add the project name and `seriesId` to the MetacatUI [`projectsMap` setting](https://github.com/NCEAS/metacatui/blob/master/src/js/models/AppModel.js#L152). Example:
-``` JS
-// A lookup map of project names to project seriesIds
-projectsMap: {
-  "Project-Name" : "urn:uuid:xxxxxxxx"
-},
-```
-4. Navigate to `/projects/Project-Name` to view the project in MetacatUI. 
-	
+To build a fresh version of the MetacatUI developer docs, simply run the `docs/build.sh` script. This script must be run from the root directory of MetacatUI (`datadepot`) or from the first `docs` directory (`datadepot/docs`)
+
+To view the JSDoc documentation, you can navigate to the file in your web browser. E.g. file:///Users/walker/git/datadepot/docs/docs/index.html
+
+Once your changes to the JSDocs are merged into the `master` branch, they will go live on the Github pages site at https://nceas.github.io/metacatui/docs/index.html
+
+## Adding to this site
+Feel free to add pages to the MetacatUI docs website by adding markdown files to this `docs` directory. Use subdirectories
+as much as possible to keep things organized. Use relative links with `.html` suffixes instead of `.md` so that the links work on the Github Pages site.
+
+## Anything missing?
+We maintain a list of questions about MetacatUI that are reviewed and worked into this documentation. If you have a question that was not answered by these docs, or want to make a suggestion for these docs, please add to the list by commenting on [the FAQ Github issue](https://github.com/NCEAS/metacatui/issues/1389)

@@ -3,7 +3,7 @@
 	<div class="border-image" role="img"></div>
 
 		<div id="inner-header" class="wrap cf">
-			<a href="<%= MetacatUI.appModel.get("baseUrl") %>" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
+			<a href="<%= MetacatUI.root %>/" rel="nofollow" id="logo" class="h1 brand" itemscope="" itemtype="http://schema.org/Organization" alt="NSF Arctic Data Center"></a>
 
 			<a id="nav-trigger"><i class="icon-reorder icon"></i><i class="icon-remove icon hidden"></i></a>
 
@@ -21,10 +21,8 @@
 						<a>Support</a>
 						<ul class="dropdown-menu sub-menu">
 							<li><a href="/support">Support Info</a></li>
-			        		<li><a href="/submit">Data Submission Guidelines</a></li>
+			        		<li><a href="/working-with-data/">Working with data</a></li>
 			        		<li><a href="/q-and-a">Frequently Asked Questions</a></li>
-			        		<li><a href="/data-plans">Data Plans</a></li>
-									<li><a href="/preservation">Data Preservations</a></li>
 									<li><a href="/training">Training</a></li>
 			        	</ul>
 			        </li>
@@ -34,19 +32,26 @@
 							<li><a href="/about">Arctic Data Center</a></li>
 			        		<li><a href="/category/news">News</a></li>
 			        		<li><a href="/team">Team</a></li>
-									<li><a href="/uncategorized/2017/08/data-science-opportunities/">Employment Opportunities</a></li>
-									<li><a href="/proposals">Call for proposals</a></li>
+                  <li><a href="/team/#science-advisory-board-identifier">Science Advisory Board</a></li>
+									<li><a href="/employment-opportunities/">Employment Opportunities</a></li>
 			        		<li><a href="/history">History</a></li>
 			        	</ul>
 					</li>
 					<li class="dropdown">
 						<a>Community</a>
 						<ul class="dropdown-menu sub-menu">
-							<li><a href="/dataset-highlights">Dataset Highlights</a></li>
+							<li><a href="/category/blog/">Blog</a></li>
+              <li><a href="/social-scientific-data-workshop/">Arctic Social Science Data Workshop</a></li>
 			        <li><a href="/synthesis-working-groups">Synthesis Working Groups</a></li>
 			       </ul>
 					</li>
 			    <li><a href="<%= MetacatUI.root %>/submit">Submit Data</a></li>
+
+          <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
+            <li>
+              <a href="<%= MetacatUI.root %>/edit/<%= MetacatUI.appModel.get('portalTermPlural')%>">Create Portal<span class="new-icon"><i class="icon icon-star icon-on-right"></i>NEW</span></a>
+            </li>
+          <% } %>
 
 					<% if (loggedIn) { %>
         		<li class="dropdown minimal-nav">
@@ -58,13 +63,7 @@
 								<li><a href="<%= MetacatUI.root %>/data/my-data">My data sets</a></li>
                 <% if(MetacatUI.appModel.get("showMyPortals") !== false){ %>
                   <li>
-                    <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">
-                      My <%= MetacatUI.appModel.get("portalTermPlural") %>
-                      <span class="new-icon">
-                        <i class="icon icon-star icon-on-right"></i>
-                        NEW
-                      </span>
-                    </a>
+                    <a href="<%= MetacatUI.root %>/profile/<%=username%>/s=settings/s=portals">My <%= MetacatUI.appModel.get("portalTermPlural") %><span class="new-icon"><i class="icon icon-star icon-on-right"></i>NEW</span></a>
                   </li>
                 <% } %>
 								<li><a href="<%= MetacatUI.root %>/signout">Sign out</a></li>
@@ -73,8 +72,8 @@
             <li class="edit-portal-link-container minimal-nav">
             </li>
 			        <% } else { %>
-			        		<li class="minimal-nav">
-			        			<a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="login btn redirect"><img src="<%= MetacatUI.root %>/img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>
+			        		<li class="minimal-nav login-container">
+			        		<!--	<a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="login btn redirect"><img src="<%= MetacatUI.root %>/img/orcid_64x64.png"  class="icon icon-on-left" />Sign in with Orcid</a>-->
 			        		</li>
 			       <%  } %>
 				</ul>

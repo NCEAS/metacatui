@@ -1,4 +1,4 @@
-﻿	<title><%=MetacatUI.themeTitle%></title>
+﻿	<title><%=MetacatUI.appModel.get("repositoryName")%></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <meta name="description" content="Metacat UI">
@@ -21,12 +21,6 @@
       <script src="<%= MetacatUI.root %>/components/html5shiv.js"></script>
     <![endif]-->
 
-    <!-- Fav and touch icons -->
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%= MetacatUI.root %>/img/knb-144.png?v=<%=MetacatUI.metacatUIVersion%>">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%= MetacatUI.root %>/img/knb-114.png?v=<%=MetacatUI.metacatUIVersion%>">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%= MetacatUI.root %>/img/knb-72.png?v=<%=MetacatUI.metacatUIVersion%>">
-    <link rel="apple-touch-icon-precomposed" href="<%= MetacatUI.root %>/img/knb-57.png?v=<%=MetacatUI.metacatUIVersion%>">
-
     <% if(MetacatUI.appModel.get("annotatorUrl")){ %>
       <link href="<%= MetacatUI.root %>/components/annotator/v1.2.10/annotator.min.css" rel="stylesheet" type="text/css">
     <% } %>
@@ -35,6 +29,23 @@
       <link href="<%= MetacatUI.root %>/components/bioportal/jquery.ncbo.tree.min.css" rel="stylesheet" type="text/css">
     <% } %>
 
+    <!-- Imported from the dataone website -->
+    <% const d1WebsiteDir = MetacatUI.root + "/js/themes/" + MetacatUI.theme + "/components/d1website" %>
+    <script src="<%= d1WebsiteDir %>/d1website.min.js"></script>
+    <link href="<%= d1WebsiteDir %>/css/d1website.min.css?v=<%=MetacatUI.metacatUIVersion%>" type="text/css" rel="stylesheet">
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="<%= d1WebsiteDir %>/apple-touch-icon.png?v=<%=MetacatUI.metacatUIVersion%>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<%= d1WebsiteDir %>/favicon-32x32.png?v=<%=MetacatUI.metacatUIVersion%>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<%= d1WebsiteDir %>/favicon-16x16.png?v=<%=MetacatUI.metacatUIVersion%>">
+    <link rel="manifest" href="<%= d1WebsiteDir %>/site.webmanifest?v=<%=MetacatUI.metacatUIVersion%>">
+    <link rel="mask-icon" href="<%= d1WebsiteDir %>/safari-pinned-tab.svg?v=<%=MetacatUI.metacatUIVersion%>" color="#16acc0">
+    <link rel="shortcut icon" href="<%= d1WebsiteDir %>/favicon.ico?v=<%=MetacatUI.metacatUIVersion%>">
+    <meta name="apple-mobile-web-app-title" content="DataONE">
+    <meta name="application-name" content="DataONE">
+    <meta name="msapplication-TileColor" content="#7aeefd">
+    <meta name="msapplication-config" content="<%= d1WebsiteDir %>/browserconfig.xml?v=<%=MetacatUI.metacatUIVersion%>">
+    <meta name="theme-color" content="#7aeefd">
+    
     <script>
 	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),

@@ -18,10 +18,12 @@ define(['jquery',
 
 	var app = app || {};
 
-	var theme = document.getElementById("loader").getAttribute("data-theme");
-
-	// Our overall **AppView** is the top-level piece of UI.
-	var AppView = Backbone.View.extend({
+	/**
+  * @class AppView
+  * @classdesc The top-level view of the UI that contains and coordinates all other views of the UI
+  */
+	var AppView = Backbone.View.extend(
+    /** @lends AppView.prototype */{
 
 		// Instead of generating a new element, bind to the existing skeleton of
 		// the App already present in the HTML.
@@ -46,7 +48,8 @@ define(['jquery',
 					 		 	  "click .open-chat" : "openChatWithMessage",
 					 		 "click .login.redirect" : "sendToLogin",
 					 	   "focus .jump-width-input" : "widenInput",
-					 	"focusout .jump-width-input" : "narrowInput"
+					 	"focusout .jump-width-input" : "narrowInput",
+            "click .temporary-message .close" : "hideTemporaryMessage"
 		},
 
 		initialize: function () {
@@ -60,9 +63,8 @@ define(['jquery',
 			MetacatUI.appUserModel.checkStatus();
 
 			// set up the head - make sure to prepend, otherwise the CSS may be out of order!
-			$("head").prepend(this.appHeadTemplate({
+			$("head").append(this.appHeadTemplate({
 				theme: MetacatUI.theme,
-				themeTitle: MetacatUI.themeTitle,
 				googleAnalyticsKey: MetacatUI.appModel.get("googleAnalyticsKey")
       }))
       //Add the JSON-LD to the head element
@@ -83,6 +85,8 @@ define(['jquery',
 			MetacatUI.footerView = new FooterView();
 			MetacatUI.footerView.setElement($('#Footer')).render();
 
+      this.showTemporaryMessage();
+
 			//Load the Slaask chat widget if it is enabled in this theme
 			if(MetacatUI.appModel.get("slaaskKey") && window._slaask)
 		    	_slaask.init(MetacatUI.appModel.get("slaaskKey"));
@@ -94,6 +98,8 @@ define(['jquery',
 			this.listenForTimeout();
 
 			this.initializeWidgets();
+
+      this.checkIncompatibility();
 		},
 
 		//Changes the web document's title
@@ -156,10 +162,10 @@ define(['jquery',
 					if (oldView.onClose)
 						oldView.onClose();
 
-					// render the new view
-					view.$el.hide();
-					view.render(viewOptions);
 					view.$el.fadeIn('slow', function() {
+
+						// render the new view
+						view.render(viewOptions);
 
 						// after fade in, do postRender()
 						if (view.postRender)
@@ -234,9 +240,9 @@ define(['jquery',
 		resetSearch: function(){
 			// Clear the search and map model to start a fresh search
 			MetacatUI.appSearchModel.clear();
-			MetacatUI.appSearchModel.set(MetacatUI.appSearchModel.defaults);
+			MetacatUI.appSearchModel.set(MetacatUI.appSearchModel.defaults());
 			MetacatUI.mapModel.clear();
-			MetacatUI.mapModel.set(MetacatUI.mapModel.defaults);
+			MetacatUI.mapModel.set(MetacatUI.mapModel.defaults());
 
 			//Clear the search history
 			MetacatUI.appModel.set("searchHistory", new Array());
@@ -266,7 +272,24 @@ define(['jquery',
 			});
 		},
 
+    /**
+    * Displays the given message to the user in a Bootstrap "alert" style.
+    * @param {string|Element} msg
+    * @param {string} [classes]
+    * @param {string|Element} [container]
+    * @param {boolean} [delay]
+    * @param {object} [options]
+    * @param {boolean} [options.includeEmail]
+    * @param {string} [options.emailBody]
+    * @param {boolean} [options.remove]
+    * @param {boolean} [options.replaceContents]
+    */
 		showAlert: function(msg, classes, container, delay, options) {
+
+      if(typeof options == "undefined"){
+        var options = {}
+      }
+
 			if(!classes)
 				var classes = 'alert-success';
 			if(!container || !$(container).length)
@@ -283,11 +306,11 @@ define(['jquery',
 			var emailOptions = "";
 
 			//Check for more options
-			if(typeof options != "undefined" && options.emailBody)
+			if(options.emailBody)
 				emailOptions += "?body=" + options.emailBody;
 
 			//Allow error messages to be removed
-			var remove = options? options.remove : false;
+			var remove = options.remove || false;
 
 			var alert = $.parseHTML(this.alertTemplate({
 				msg: msg,
@@ -298,15 +321,30 @@ define(['jquery',
 
 			if(delay){
 				$(alert).hide();
-				$(container).prepend(alert);
-				$(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
-			}
-			else
-				$(container).prepend(alert);
+
+        if( options.replaceContents ){
+          $(container).html(alert);
+        }
+        else{
+          $(container).prepend(alert);
+        }
+
+        $(alert).show().delay(typeof delay == "number"? delay : 3000).fadeOut();
+     }
+     else{
+        if( options.replaceContents ){
+          $(container).html(alert);
+        }
+        else{
+          $(container).prepend(alert);
+        }
+      }
 		},
 
-		// Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
-		// When a user checks back, we want to check for log-in status
+		/**
+    * Listens to the focus event on the window to detect when a user switches back to this browser tab from somewhere else
+		* When a user checks back, we want to check for log-in status
+    */
 		listenForActivity: function(){
 			MetacatUI.appUserModel.on("change:loggedIn", function(){
 				if(!MetacatUI.appUserModel.get("loggedIn")) return;
@@ -325,7 +363,7 @@ define(['jquery',
 			});
 		},
 
-		/*
+		/**
 		* Will determine the length of time until the user's current token expires,
 		* and will set a window timeout for that length of time. When the timeout
 		* is triggered, the sign in modal window will be displayed so that the user
@@ -377,7 +415,7 @@ define(['jquery',
 			}
 		},
 
-		/*
+		/**
 		* If the user's auth token has expired, a new SignInView model window is
 		* displayed so the user can sign back in. A listener is set on the appUserModel
 		* so that when they do successfully sign back in, we set another timeout listener
@@ -454,6 +492,106 @@ define(['jquery',
  		        }
  		    });
 		},
+
+    /**
+    * Checks if the user's browser is an outdated version that won't work with
+    * MetacatUI well, and displays a warning message to the user..
+    * The user agent is checked against the `unsupportedBrowsers` list in the AppModel.
+    */
+    checkIncompatibility: function(){
+      //Check if this browser is incompatible with this app. i.e. It is an old browser version
+      var isUnsupportedBrowser = _.some( MetacatUI.appModel.get("unsupportedBrowsers"), function(browserRegEx){
+        var matches = navigator.userAgent.match(browserRegEx);
+        return (matches && matches.length > 0);
+      });
+
+      if( !isUnsupportedBrowser ){
+        return;
+      }
+      else{
+        //Show a warning message to the user about their browser.
+        this.showAlert("Your web browser is out of date. Update your browser for more security, " +
+                       "speed and the best experience on this site.", "alert-warning", this.$el,
+                       false, { remove: true });
+        this.$el.children(".alert-container").addClass("important-app-message");
+      }
+    },
+
+    /**
+    * Shows a temporary message at the top of the view
+    */
+    showTemporaryMessage: function(){
+      try{
+        //Is there a temporary message to display throughout the app?
+        if( MetacatUI.appModel.get("temporaryMessage") ){
+        var startTime = MetacatUI.appModel.get("temporaryMessageStartTime"),
+            endTime   = MetacatUI.appModel.get("temporaryMessageEndTime"),
+            today     = new Date(),
+            isDisplayed = false;
+
+        //Find cases where we should display the message
+        //If there is a date range and today is in the range
+        if( startTime && endTime && (today > startTime) && (today < endTime) ){
+          isDisplayed = true;
+        }
+        //If there's just a start time and today is after it
+        else if( startTime && !endTime && (today > startTime) ){
+          isDisplayed = true;
+        }
+        //If there's just an end time and today is before it
+        else if( !startTime && endTime && (today < endTime) ){
+          isDisplayed = true;
+        }
+        //If there's no start or end time
+        else if( !startTime && !endTime ){
+          isDisplayed = true;
+        }
+
+        if( isDisplayed ){
+          require(["text!templates/alert.html"], function(alertTemplate){
+          //Get classes for the message
+          var classes = MetacatUI.appModel.get("temporaryMessageClasses") || "";
+          classes += " temporary-message";
+
+          var container = MetacatUI.appModel.get("temporaryMessageContainer") || "#Navbar";
+
+          //If the message exists already, return
+          if( $(container + " .temporary-message").length ){
+            return;
+          }
+
+          //Insert the message using the Alert template
+          $(container).prepend( _.template(alertTemplate)({
+            classes: classes,
+            msg: MetacatUI.appModel.get("temporaryMessage"),
+            includeEmail: true,
+            remove: true
+          }) );
+
+          //Add a class to the body in case we need to adjust other elements on the page
+          $("body").addClass("has-temporary-message");
+
+        });
+        }
+      }
+      }
+      catch(e){
+        console.error("Couldn't display the temporary message: ", e);
+      }
+    },
+
+    /**
+    * Hides the temporary message
+    */
+    hideTemporaryMessage: function(){
+      try{
+        this.$(".temporary-message").remove();
+        $("body").removeClass("has-temporary-message");
+      }
+      catch(e){
+        console.error("Couldn't hide the temporary message: ", e);
+      }
+    },
 
 		/********************** Utilities ********************************/
 		// Various utility functions to use across the app //

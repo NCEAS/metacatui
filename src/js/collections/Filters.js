@@ -142,6 +142,10 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               if( completeQuery.length && idFilterQuery.length ){
                 completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
               }
+              //If the query is ONLY made of id filters, then the id filter query is the complete query
+              else if( !completeQuery.length && idFilterQuery.length ){
+                completeQuery = idFilterQuery;
+              }
 
               //Return the completed query
               return completeQuery;
@@ -233,7 +237,8 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                 //Find all the filters in this collection that are related to geohashes
                 this.each(function(filterModel) {
                     if (!filterModel.get("isInvisible") &&
-                        _.intersection(filterModel.fields, ["geohashes", "geohashLevel", "geohashGroups"]).length) {
+                        ( filterModel.type == "SpatialFilter" ||
+                          _.intersection(filterModel.fields, ["geohashes", "geohashLevel", "geohashGroups"]).length )) {
                         filterModel.resetValue();
                     }
                 });

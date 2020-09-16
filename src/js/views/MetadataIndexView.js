@@ -158,7 +158,7 @@ define(['jquery',
 			if(this.parentView && this.parentView.model){
 				var formatId = this.parentView.model.get("formatId");
 				if(formatId.indexOf("eml://") >= 0){
-					var url = MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get("context") + MetacatUI.appModel.get("d1Service") + "/object/" + this.parentView.model.get("id");
+					var url = MetacatUI.appModel.get("baseUrl") + MetacatUI.appModel.get("context") + MetacatUI.appModel.get("d1Service") + "/object/" + encodeURIComponent(this.parentView.model.get("id"));
 
 					var requestSettings = {
 						url: url,

@@ -1,12 +1,4 @@
 
-/* Import font families */
-@import url(https://fonts.googleapis.com/css?family=Oswald:400,300,700);
-/* Oswald weights:
-Light 300
-Normal 400
-Bold 700
-*/
-
 /* Body CSS
 -------------------------------------------------- */
     html {
@@ -58,15 +50,12 @@ Bold 700
 		font-weight: 600;
 	}
 
-	p:empty{ display: none; }
+  #search_btn_main{
+    background-color: #166194;
+    border-color: #166194;
+  }
 
-    /*.bold-header{
-    	background-color: #333;
-    	color: #DDD;
-    	font: 400 20px/30px "Oswald", Arial, sans-serif;
-    	text-transform: uppercase;
-    	text-shadow: none;
-    }*/
+	p:empty{ display: none; }
 
     .pointer{
     	cursor: pointer;
@@ -246,7 +235,6 @@ Bold 700
 	.expand-collapse.expanded .teaser{
 		color: #597F99;
 	}
-
   /* Portal Views
   -------------------------------------------------- */
 .PortalView #Navbar .nav .minimal-nav .btn-primary{
@@ -255,6 +243,21 @@ Bold 700
 .PortalView #Navbar .nav .minimal-nav .btn-primary:hover{
   background-color: #0377DD;
   color: #FFF;
+}
+.Portal.Editor #Navbar .nav .minimal-nav,
+.PortalView #Navbar .nav .minimal-nav{
+  margin-right: 20px;
+}
+.Portal.Editor #Navbar .nav .minimal-nav > a,
+.PortalView #Navbar .nav .minimal-nav > a{
+  color: #888;
+  font-weight: normal;
+}
+.PortalView #Navbar .nav .minimal-nav > .btn{
+  padding: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  line-height: .9em;
 }
 
 /* Portal editor
@@ -311,7 +314,7 @@ select{
  /* EDITOR
 -------------------------------------------------- */
 .Editor #Content{
-	padding-top: 45px;
+	padding-top: 57px;
 }
 .data-package-item.message-row button {
     height: 50px;
@@ -338,30 +341,6 @@ select{
 
 /* NOTIFICATION AREA CSS
  * -------------------------------------------------- */
-  /*.notification {
-    position: relative;
-    top: 95px;
-    margin: 50px auto;
-    font-size: 40px;
-  }*/
-
-  .notification i{
-  	font-size: 40px;
-  	margin-left: 43%;
-  }
-
-  .notification i.loading{
-  	font-size: 2em;
-  	color: #FFFFFF;
-  }
-
-  .notification p{
-  	font-size: 20px;
-  	width: 350px;
-  	margin: 20px auto;
-  	display: block;
-  	color: #FFFFFF;
-  }
   .filter-contain .notification i{
   	color: #999;
   	font-size: .5em;
@@ -384,7 +363,7 @@ select{
 		background-color: rgba(0,0,0,0.8);
 		padding: 5px 2%;
 		width: 96%;
-		height: 100px;
+		height: 120px;
 		color: #DDD;
 		display: block;
     }
@@ -519,7 +498,8 @@ select{
   	margin-left: 10px;
 }
 #downloadPackage .dropdown-toggle {
-	font: 400 20px/20px "Oswald", Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
 }
 .btn-group.open .btn.dropdown-toggle{
   	color: #166194;
@@ -527,7 +507,7 @@ select{
 }
 .dropdown-menu > li > a.btn{
   	background-color: #FFFFFF;
-  	font: 300 18px/18px "Oswald", Arial, sans-serif;
+    font-size: 18px;
 }
 
 
@@ -593,6 +573,10 @@ select{
 
     /* Depending on the headerType, these classes apply */
 
+    #Navbar a .title{
+      color: #FFF;
+      vertical-align: middle;
+    }
     .navbar {
       position: relative;
       border: none;
@@ -633,7 +617,6 @@ select{
       color: #FFFFFF; /*IE fallback */
       color: rgba(255, 255, 255, 0.8);
       text-shadow: none;
-      font: normal normal 400 25px/20px "Oswald", Arial, sans-serif;
       text-transform: uppercase;
     }
 
@@ -693,7 +676,7 @@ select{
     }
 
     #Navbar .dropdown-menu{
-    	left: -90px;
+    	width: 100%;
     }
 
     #Navbar .dropdown-menu:before,
@@ -1047,31 +1030,6 @@ select{
  		margin-bottom: 10px;
  	}
 
-    .subset-choice{
-    background-color: #190000;
-    background-color: rgba(23, 97, 146, 0.46);
-	color: white;
-	font-size: 20px;
-	font-family: "Oswald";
-	padding: 2px 0px 0px 30%;
-	position: relative;
-	border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	}
-
-	.subset-choice:hover,
-	.subset-choice:hover > i{
-		color: #166194;
-	}
-
-	.subset-choice > i{
-		position:absolute;
-		right: 0;
-		margin-right: 10px;
-		top: 20%;
-	}
-
  /***Filters ***/
 #sidebar{
   	background-color: rgba(255, 255, 255, 0.8);
@@ -1412,7 +1370,7 @@ li.ui-menu-item > a:hover,
 -------------------------------------------------- */
 	.mapMode #Content{
 		max-width: 100%;
-		padding-top: 44px;
+		padding-top: 57px;
 		padding-left: 0px;
 	}
 
@@ -1636,8 +1594,6 @@ li.ui-menu-item > a:hover,
   -------------------------------------------------- */
 
   #Profile{
-  	max-width: 1200px;
-  	margin: auto;
   	background-color: transparent;
   }
 #user-profile #data-list {
@@ -1670,8 +1626,9 @@ section.user-view-section > .section.active {
 .profile .charts{
   	margin-left: auto;
   	margin-right: auto;
-  	width: 900px;
-  	clear: both;
+	clear: both;
+	display: flex;
+	justify-content: center;
 }
 .stripe{
 	min-height: 350px;
@@ -1704,10 +1661,6 @@ section.user-view-section > .section.active {
   	margin-right: auto;
   	display: block;
   }
-
-.profile .chart-title{
-	float: left;
-}
 
 .profile .chart-title h2{
 	font-size: 31px;
@@ -2008,65 +1961,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	background-color: transparent;
 }
 
-/* MAIN CONTENT
---------------------------------- */
-#mainContent{
-	height: 0px;
-	padding: 0px;
-	margin-top: 50px;
-}
-
-#mainContent h1{
-	font: 400 60px/60px "Oswald", Arial, sans-serif;
-	color: #375796;
-	text-transform: uppercase;
-	width: 300px;
-	margin-bottom: 20px;
-}
-
-#mainContent input{
-	height: 90px;
-    border-radius: 8px 0px 0px 8px;
-    -moz-border-radius: 20px 0px 0px 20px;
-    font-size: 30px;
-    border: 2px solid #cacde2;
-    padding-left: 20px;
-    margin-right: 20px;
-    float: left;
-}
-
-#mainContent input::-webkit-input-placeholder{
-	padding-top: 7px;
-}
-#mainContent input:-moz-placeholder{ /* Firefox 18- */
-	padding-top: 7px;
-}
-#mainContent input::-moz-placeholder{ /* Firefox 19+ */
-	padding-top: 7px;
-}
-#mainContent input:-ms-input-placeholder{
-	padding-top: 7px;
-}
-
-#search_btn_main{
-	height: 100px;
-    margin-left: -20px;
-    -webkit-border-radius: 0 8px 8px 0;
-    -moz-border-radius: 0 15px 15px 0;
-    border-left: 0px;
-    background-color: #375796;
-    -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-    padding: 0px;
-    width: 100px;
-    background-image: none;
-}
-
-#search_btn_main > i{
-	color: #FFF;
-	font-size: 2em;
-    line-height: 3.1em;
-}
-
 /*-------------- DOCUMENTATION CSS -----------------------------*/
 /* ---------------------------------------------------- */
 
@@ -2091,7 +1985,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #metacatDocs > .banner > .title{
-	font: 400 18px/18px "Oswald", Arial, sans-serif;
+	font-size: 18px;
 	color: #FFFFFF;
 	float: left;
 	margin: 38px 10px;
@@ -2117,7 +2011,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .related > ul > li.right > a{
 	color: #FFFFFF;
-	font: 400 30px/30px "Oswald", sans-serif;
+	font-size: 30px;
 	text-decoration: none;
 	text-transform: uppercase;
 }
@@ -2144,7 +2038,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	-webkit-border-radius: 0 4px 4px 0;
 	-moz-border-radius: 0 4px 4px 0;
 	border-left: 1px solid #CCCCCC;
-	font: 300 16px/16px "Oswald", sans-serif;
+	font-size: 16px;
 }
 
 #metacatDocs .related > ul input[type="submit"]:hover{	/*"Go" button on navigation search bar */
@@ -2172,7 +2066,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metacatDocs .related .breadcrumb,
 #metacatDocs .related .breadcrumb > a{
-	font: 300 16px/16px "Oswald", Arial, sans-serif;
+	font-size: 16px;
 	color: #FFFFFF;
 }
 
@@ -2228,7 +2122,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 }
 
 #metacatDocs .sidebar .sidebar-title{
-	font: 300 24px/24px "Oswald", Arial, sans-serif;
+	font-size: 24px;
 	margin-top: 0;
 }
 
@@ -2390,7 +2284,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  }
 
  #metacatDocs .topic-title{
- 	font: 300 24px/24px "Oswald", sans-serif;
+ 	font-size: 24px;
 	margin-top: 0;
  }
 
@@ -2404,7 +2298,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
  }
 
     dt{
-   		font: 300 18px/24px "Oswald", sans-serif;
+   		font-size: 18px;
    }
 
    #metacatDocs input {
@@ -2425,11 +2319,11 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	}
 
 	#metacatDocs h2{
-		font: 400 27.5px/40px "Oswald", sans-serif;
+		font-size: 27.5;
 	}
 
 	#metacatDocs h1{
-		font: 400 32px/40px "Oswald", sans-serif;
+		font-size: 32px;
 	}
 
 	#metacatDocs h1 > a,
@@ -2488,4 +2382,8 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 #metric-modal .metric-chart .bar {
 	stroke: #0E69A1;
+}
+/** Temporary Message */
+.has-temporary-message #Content {
+    padding-top: 114px;
 }

@@ -42,7 +42,7 @@ define(["jquery",
         name: null,
         label: null,
         originalLabel: null,
-        labelBlacklist: ["new"],
+        labelBlockList: ["new"],
         description: null,
         formatId: "https://purl.dataone.org/collections-1.0.0",
         formatType: "METADATA",
@@ -76,6 +76,12 @@ define(["jquery",
 
       //Create a Filters collection to store the definition filters
       this.set("definitionFilters", new Filters());
+
+      // Update the blocklist with the node/repository labels
+      var nodeBlockList = MetacatUI.appModel.get("portalLabelBlockList");
+      if (nodeBlockList !== undefined && Array.isArray(nodeBlockList)) {
+        this.set("labelBlockList", this.get("labelBlockList").concat(nodeBlockList));
+      }
 
       //When this Collection has been saved, re-save the collection definition
       this.on("successSaving", function(){
@@ -123,7 +129,7 @@ define(["jquery",
 
       var model = this,
         fetchOptions = _.extend({
-          url: MetacatUI.appModel.get("metaServiceUrl") + (this.get("id") || this.get("seriesId")),
+          url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id") || this.get("seriesId")),
           dataType: "text",
           success: function(response){
             model.set(DataONEObject.prototype.parse.call(model, response));
@@ -489,6 +495,18 @@ define(["jquery",
     },
 
     /**
+    * This is a shortcut function that returns the query for the datasets in this portal,
+    *  using the Search model for this portal. This is the full query that includes the filters not
+    *  serialized to the portal XML, such as the filters used for the DataCatalogView.
+    *
+    */
+    getQuery: function(){
+
+      return this.get("searchModel").get("filters").getQuery();
+
+    },
+
+    /**
      * Creates a copy of the SolrResults collection and saves it in this
      * model so that there is always access to the unfiltered list of datasets
      *
@@ -582,9 +600,9 @@ define(["jquery",
         }
 
         // If the label is a restricted string
-        var blacklist = this.get("labelBlacklist");
-        if( blacklist && Array.isArray(blacklist) ){
-          if(blacklist.includes(label)){
+        var blockList = this.get("labelBlockList");
+        if( blockList && Array.isArray(blockList) ){
+          if(blockList.includes(label)){
             return "This URL is already taken, please try something else";
           }
         }

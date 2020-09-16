@@ -16,8 +16,8 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       this.model     = options.model    || null;
       this.metadata   = options.metadata   || null;
       this.title      = options.title      || null;
-      this.createLink = (options.createLink == false) ? false : true;
-      this.createTitleLink = (options.createLink == false) ? false : true;
+      this.createLink = (options.createLink === false) ? false : true;
+      this.createTitleLink = (options.createTitleLink === false) ? false : true;
 
       //If a metadata doc was passed but no data or package model, then save the metadata as our model, too
       if(!this.model && this.metadata) this.model = this.metadata;
@@ -73,7 +73,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
           title = this.model.get("title"),
           journal =this.model.get("publisher"),
           volume =this.model.get("volume"),
-          page =this.model.get("page");
+          page =this.model.get("page"),
+          citationMetadata =this.model.get("citationMetadata");
+
 
         // Format the Author textarea        else if (this.model.type == "CitationModel") {
         if (authorText.length > 0) {
@@ -99,6 +101,21 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
               if (authors.length > 1) authorText += " ";
             }
 
+            // Checking for incorrectly escaped characters
+            if (/&amp;[A-Za-z0-9]/.test(author)) {
+
+              // initializing the DOM parser
+              var parser = new DOMParser();
+
+              // parsing the incorrectly escaped `&amp;`
+              var unescapeAmpersand = parser.parseFromString(author, 'text/html');
+
+              // unescaping the & and retrieving the actual character
+              var unescapedString =  parser.parseFromString(unescapeAmpersand.body.textContent, 'text/html');
+
+              // saving the correct author text before displaying
+              author = unescapedString.body.textContent;
+            }
             authorText += author;
 
             if (count == authors.length) authorText += ". ";
@@ -254,8 +271,9 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       }
 
       if(this.model.type == "CitationModel") {
-        var idEl = $(document.createElement("span")).addClass("id");
-        idEl.append(sourceUrl, $(document.createElement("span")).text(". "));
+        // displaying decoded source url
+        var idEl = $(document.createElement("span")).addClass("publisher-id");
+        idEl.append(decodeURIComponent(sourceUrl), $(document.createElement("span")).text(". "));
       }
       else {
         //The ID
@@ -273,10 +291,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
           title = title.trim() + " ";
 
         if(this.model.type == "CitationModel") {
-          var titleEl = $(document.createElement("span"))
-                        .addClass("title")
-                        .attr("data-id", sourceId)
-                        .text(title);
+          // Appending the title as a link
+          var titleEl = $(document.createElement("a"))
+                        .addClass("metrics-route-to-metadata")
+                        .attr("data-id", id)
+                        .attr("href", sourceUrl)
+                        .attr("target", "_blank")
+                        .append(title);
         }
         else {
           var titleEl = $(document.createElement("span"))
@@ -311,12 +332,79 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
           }
           var pageEl = $(document.createElement("span")).addClass("publisher").text(pageText);
 
-          var linkEl = $(document.createElement("a"))
-                  .addClass("metrics-route-to-metadata")
-                  .attr("data-id", id)
-                  .attr("href", sourceUrl)
-                  .attr("target", "_blank")
+          var datasetLinkEl = $(document.createElement("span"))
+                              .text("Cites Data: ");
+
+          // Generate links for the cited datasets
+          var citationMetadataCounter = 0;
+          if (citationMetadata != undefined) {
+            for (var key in citationMetadata) {
+              citationMetadataCounter += 1;
+  
+              var commaSeperator = (citationMetadataCounter < Object.keys(citationMetadata).length) ? "," : ".";
+  
+              var mdPID = key, mdAuthorText = "", additionalAuthors = "", mdText = "", mdDateText = "";
+  
+              // Display first author in the dataset link
+              if (citationMetadata[key]["origin"] != undefined && Array.isArray(citationMetadata[key]["origin"])) {
+                mdAuthorText = citationMetadata[key]["origin"][0];
+                additionalAuthors = citationMetadata[key]["origin"].length > 1 ? " et al." : "";
+  
+                mdText = "(" + mdAuthorText + additionalAuthors + " ";
+              }
+  
+              // save the date
+              if (citationMetadata[key]["datePublished"] != undefined) {
+                mdDateText = (citationMetadata[key]["datePublished"]).slice(0,4);
+                if (mdText.length == 0) {
+                  mdText = "(";
+                }
+                mdText += mdDateText;
+              }
+              else if (citationMetadata[key]["dateUpdated"] != undefined) {
+                mdDateText = (citationMetadata[key]["dateUpdated"]).slice(0,4);
+                if (mdText.length == 0) {
+                  mdText = "(";
+                }
+                mdText += mdDateText;
+              }
+              else if (citationMetadata[key]["dateModified"] != undefined) {
+                mdDateText = (citationMetadata[key]["dateModified"]).slice(0,4);
+                if (mdText.length == 0) {
+                  mdText = "(";
+                }
+                mdText += mdDateText;
+              }
+  
+              // retrieve the PID
+              if (citationMetadata[key]["id"] != undefined) {
+                mdPID = citationMetadata[key]["id"];
+              }
+              else if (key.startsWith("10."))
+              {
+                mdPID = "doi:" + key
+              }
+  
+              if (mdText.length > 0) {
+                mdText += ")" + commaSeperator + " ";
+  
+                var targetLinkEl = $(document.createElement("a"))
+                          .addClass("metrics-route-to-metadata")
+                          .attr("data-id", key)
+                          .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(mdPID))
+                          .attr("target", "_blank")
+                          .text(mdText);
+  
+                datasetLinkEl.append(targetLinkEl);
+              }
+  
+            }
+          }
+
+          // creating citation display string
+          var linkEl = $(document.createElement("span"))
                   .append(authorEl, pubDateEl, titleEl, publisherEl, volumeEl, pageEl, idEl);
+                            
         }
         else {
 
@@ -328,6 +416,14 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
         }
 
         this.$el.append(linkEl);
+
+        // Only append the citation link when we have non-zero datasets
+        // Append the cited dataset text to the link element
+        if ( datasetLinkEl !== "undefined" && citationMetadataCounter > 0) {
+          // Displaying the cites data on the new line
+          this.$el.append("<br>");
+          this.$el.append(datasetLinkEl);
+        }
       }
       else if(this.createTitleLink){
 
@@ -448,7 +544,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
       if ($(e.target).hasClass('stop-route') || (typeof id === "undefined") || !id)
         return;
 
-      MetacatUI.uiRouter.navigate('view/'+id, {trigger: true});
+      MetacatUI.uiRouter.navigate('view/' + encodeURIComponent(id), {trigger: true});
     }
   });
 

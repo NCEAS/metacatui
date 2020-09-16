@@ -1,7 +1,8 @@
-﻿/* global define */
+/* global define */
 define(['underscore',
         'jquery',
         'backbone',
+        'localforage',
         'collections/DataPackage',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLOtherEntity',
@@ -15,7 +16,7 @@ define(['underscore',
         'text!templates/editor.html',
         'collections/ObjectFormats',
         'text!templates/editorSubmitMessage.html'],
-        function(_, $, Backbone,
+        function(_, $, Backbone, LocalForage,
             DataPackage, EML, EMLOtherEntity, ScienceMetadata,
             EditorView, CitationView, DataPackageView, EMLView, EMLEntityView, SignInView,
             EditorTemplate, ObjectFormats, EditorSubmitMessageTemplate){
@@ -48,6 +49,7 @@ define(['underscore',
         * @type {Object}
         */
         events:  _.extend(EditorView.prototype.events, {
+          "change" : "saveDraft",
           "click .data-package-item .edit" : "showEntity"
         }),
 
@@ -419,7 +421,10 @@ define(['underscore',
 
             // render metadata as the collection is updated, but only EML passed from the event
             if ( typeof model.get === "undefined" ||
-                        model.get("formatId") !== "eml://ecoinformatics.org/eml-2.1.1" ) {
+                        !(
+                                model.get("formatId") === "eml://ecoinformatics.org/eml-2.1.1" ||
+                                model.get("formatId") === "https://eml.ecoinformatics.org/eml-2.2.0"
+                        )  ) {
                 console.log("Not EML. TODO: Render generic ScienceMetadata.");
                 return;
 
@@ -515,6 +520,9 @@ define(['underscore',
             // Register a listener for any attribute change
             this.model.on("change", this.model.handleChange, this.model);
 
+            // Register a listener to save drafts on change
+            this.model.on("change", this.model.saveDraft, this.model);
+
             // If any attributes have changed (including nested objects), show the controls
             if ( typeof MetacatUI.rootDataPackage.packageModel !== "undefined" ) {
                 this.stopListening(MetacatUI.rootDataPackage.packageModel, "change:changed");
@@ -530,16 +538,17 @@ define(['underscore',
 
             }
 
-          if( MetacatUI.rootDataPackage )
-          // If the Data Package failed saving, display an error message
-          this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
+          if( MetacatUI.rootDataPackage && DataPackage.prototype.isPrototypeOf(MetacatUI.rootDataPackage) ){
+            // If the Data Package failed saving, display an error message
+            this.listenTo(MetacatUI.rootDataPackage, "errorSaving", this.saveError);
 
-          // Listen for when the package has been successfully saved
-          this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
+            // Listen for when the package has been successfully saved
+            this.listenTo(MetacatUI.rootDataPackage, "successSaving", this.saveSuccess);
 
-          //When the Data Package cancels saving, hide the saving styling
-          this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.hideSaving);
-          this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.handleSaveCancel);
+            //When the Data Package cancels saving, hide the saving styling
+            this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.hideSaving);
+            this.listenTo(MetacatUI.rootDataPackage, "cancelSave", this.handleSaveCancel);
+          }
 
           //When the model is invalid, show the required fields
           this.listenTo(this.model, "invalid", this.showValidation);
@@ -593,14 +602,14 @@ define(['underscore',
           if(savedObject.type != "DataPackage") return;
 
           //Change the URL to the new id
-          MetacatUI.uiRouter.navigate("submit/" + this.model.get("id"), { trigger: false, replace: true });
+          MetacatUI.uiRouter.navigate("submit/" + encodeURIComponent(this.model.get("id")), { trigger: false, replace: true });
 
           this.toggleControls();
 
           // Construct the save message
           var message = this.editorSubmitMessageTemplate({
             messageText: "Your changes have been submitted.",
-            viewURL: MetacatUI.root + "/view/" + this.model.get("id"),
+            viewURL: MetacatUI.root + "/view/" + encodeURIComponent(this.model.get("id")),
             buttonText: "View your dataset"
           });
 
@@ -717,7 +726,7 @@ define(['underscore',
               view.model = null;
 
               //Update the URL
-              MetacatUI.uiRouter.navigate("submit/" + view.pid, { trigger: false, replace: true });
+              MetacatUI.uiRouter.navigate("submit/" + encodeURIComponent(view.pid), { trigger: false, replace: true });
 
               //Render the new model
               view.render();
@@ -966,6 +975,8 @@ define(['underscore',
 
           this.subviews = [];
 
+          this.undelegateEvents();
+
         },
 
         /*
@@ -1018,8 +1029,71 @@ define(['underscore',
                       "The file has not been added.";
               }
               MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
-          }
+          },
+          /**
+           * Save a draft of the parent EML model
+           */
+          saveDraft: function() {
+            var view = this;
 
+            try {
+              var title = this.model.get("title") || "No title";
+
+              LocalForage.setItem(this.model.get("id"), {
+                id: this.model.get("id"),
+                datetime: (new Date()).toISOString(),
+                title: Array.isArray(title) ? title[0] : title,
+                draft: this.model.serialize()
+              }).then(function() {
+                view.clearOldDrafts();
+              });
+            } catch (ex) {
+              console.log("Error saving draft:", ex);
+            }
+          },
+
+          /**
+           * Clear older drafts by iterating over the sorted list of drafts
+           * stored by LocalForage and removing any beyond a hardcoded limit.
+           */
+          clearOldDrafts: function() {
+            var drafts = [];
+
+            try {
+              LocalForage.iterate(function(value, key, iterationNumber) {
+                // Extract each draft
+                drafts.push({
+                    key: key,
+                    value: value
+                  });
+                }).then(function(){
+                  // Sort by datetime
+                  drafts = _.sortBy(drafts, function(draft) {
+                    return draft.value.datetime.toString();
+                  }).reverse();
+                }).then(function() {
+                  _.each(drafts, function(draft, i) {
+                    var age = (new Date()) - new Date(draft.value.datetime);
+                    var isOld = (age / 2678400000) > 1; // ~31days
+
+                    // Delete this draft is not in the most recent 100 or
+                    // if older than 31 days
+                    var shouldDelete = i > 100 || isOld;
+
+                    if (!shouldDelete) {
+                      return;
+                    }
+
+                    LocalForage.removeItem(draft.key).then(function() {
+                      // Item should be removed
+                    });
+                  })
+                });
+            }
+            catch (ex) {
+              console.log("Failed to clear old drafts: ", ex);
+            }
+          }
     });
     return EML211EditorView;
 });

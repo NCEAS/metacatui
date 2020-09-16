@@ -4,10 +4,8 @@ define(['underscore',
         'models/portals/PortalSectionModel',
         "views/portals/editor/PortEditorSectionView",
         "views/portals/editor/PortEditorLogosView",
-        "views/AccessPolicyView",
         "text!templates/portals/editor/portEditorSettings.html"],
 function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosView,
-  AccessPolicyView,
   Template){
 
   /**
@@ -104,12 +102,6 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
           portalTermSingular: MetacatUI.appModel.get("portalTermSingular")
         }));
 
-        //Render the AccessPolicyView
-        //TODO: Get the AccessPolicy collection for this PortalModel and send it to the view
-        var accessPolicyView = new AccessPolicyView();
-        accessPolicyView.render();
-        this.$(".permissions-container").html(accessPolicyView.el);
-
         //Render the PortEditorLogosView
         var logosView = new PortEditorLogosView({
           model: this.model,
@@ -197,7 +189,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
         var container = this.$(".label-container"),
             input = container.find('input'),
             messageEl = container.find('.notification'),
-            value = input.val(),
+            value = this.model.cleanXMLText(input.val()),
             model = this.model;
 
         //If the label is unchanged, remove the validation messaging and exit
@@ -257,14 +249,14 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
           }
         });
 
-        // Check label availability
-        this.model.checkLabelAvailability(value);
-
         // Show 'checking URL' message
         messageEl.html(
           "<i class='icon-spinner icon-spin icon-large loading icon'></i> "+
           "Checking if URL is available"
         );
+
+        // Check label availability
+        this.model.checkLabelAvailability(value);
       }
       catch(error){
         console.log("Error validating the label, error message: " + error);

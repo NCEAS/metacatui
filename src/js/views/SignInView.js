@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 		ldapTemplate: _.template(LdapLoginTemplate),
 
 		tagName: "div",
-		className: "inline-buttons sign-in-btns",
+		className: "sign-in-btns",
 
 		ldapError: false,
 
@@ -42,8 +42,12 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 		render: function(){
 			//Don't render a SignIn view if there are no Sign In URLs configured
-			if(!MetacatUI.appModel.get("signInUrl") && !MetacatUI.appModel.get("signInUrlOrcid"))
+			if(!MetacatUI.appModel.get("signInUrlOrcid"))
 				return this;
+
+      //Check if this browser is incompatible with third-party cookies, which are required for Sign In
+      var safari13Match = navigator.userAgent.match(/.*Version\/13\.[1-9].* Safari/);
+      var isIncompatileBrowser = safari13Match && safari13Match.length > 0;
 
 			var view = this;
 
@@ -177,6 +181,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 					else{
 						$(container).append(this.buttonsTemplate());
 						this.$el.append(container);
+
+            //Display login help for browsers that block third-party cookies
+            if( isIncompatileBrowser ){
+              require(['text!templates/loginWarning.html'], function(loginWarningTemplate){
+                view.$el.append( _.template(loginWarningTemplate)() );
+              });
+            }
 					}
 
 				}
@@ -193,6 +204,13 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 					}
 					else{
 						this.$el.append(this.buttonsTemplate());
+
+            if( isIncompatileBrowser ){
+              var signInLink = this.$("a.login").attr("href", "signin");
+              if( signInLink.attr("data-toggle") == "modal" ){
+                signInLink.removeAttr("data-toggle");
+              }
+            }
 					}
 
 				}
@@ -221,10 +239,11 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 
 					this.setUpPopup();
 				}
-
-				//Open the Sign In modal window
-				if(this.fullPage && !this.ldapOnly)
-					$("#signinPopup").modal("show");
+        else{
+          if( (this.el == MetacatUI.appView.el || this.fullPage) && (!isIncompatileBrowser) ){
+            $("#signinPopup").modal("show");
+          }
+        }
 
 				//If there is an error message in the URL, it means authentication has failed
 				if(this.ldapError){
@@ -267,7 +286,9 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 				shown: function(){
 
 					//Update the sign-in URLs so we are redirected back to the previous page after authentication
-					$("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
+          if( MetacatUI.appModel.get("enableCILogonSignIn") ){
+            $("a.update-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrl") + encodeURIComponent(window.location.href));
+          }
 					$("a.update-orcid-sign-in-url").attr("href", MetacatUI.appModel.get("signInUrlOrcid") + encodeURIComponent(window.location.href));
 
 				}

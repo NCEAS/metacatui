@@ -204,7 +204,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Renders the section of the view that will display the currently-applied filters
     */
     renderAppliedFiltersSection: function(){
@@ -276,9 +276,10 @@ define(['jquery', 'underscore', 'backbone',
         }
       }, this);
 
+      //When a Filter has been removed from the Filters collection, remove it's DOM element from the page
       this.listenTo(this.filters, "remove", function(removedFilter){
         this.removeAppliedFilterElByModel(removedFilter);
-      })
+      });
 
     },
 
@@ -631,7 +632,7 @@ define(['jquery', 'underscore', 'backbone',
     },
 
 
-    /*
+    /**
     * Adds a custom filter that likely exists outside of the FilterGroups but needs
     * to be displayed with these other applied fitlers.
     *
@@ -678,7 +679,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Removes the custom applied filter from the UI.
     *
     * @param {Filter} filterModel - The Filter Model to display
@@ -697,7 +698,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * When a remove button is clicked, get the filter model associated with it
     /* and remove the filter from the filter group
     *
@@ -729,11 +730,23 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Remove the filter from the UI and the Search collection
-    *
+    * @param {Filter} filterModel The Filter to remove from the Filters collection
+    * @param {Element} appliedFilterEl The DOM Element for the applied filter on the page
+    * @param {object} options Additional options for this function
+    * @param {boolean} options.removeSilently If true, the Filter model will be removed siltently from the Filters collection.
+    *  This is useful when removing multiple Filters at once, and triggering a remove/change/reset event after all have
+    *  been removed.
     */
-    removeFilter: function(filterModel, appliedFilterEl){
+    removeFilter: function(filterModel, appliedFilterEl, options){
+
+      var removeSilently = false;
+
+      //Parse all the additional options for this function
+      if( typeof options == "object" ){
+        removeSilently = typeof options.removeSilently != "undefined"? options.removeSilently : false;
+      }
 
 
       if( filterModel ){
@@ -748,8 +761,10 @@ define(['jquery', 'underscore', 'backbone',
             values: filterModel.defaults().values
           });
 
-          //Trigger the reset event
-          filterModel.trigger("rangeReset");
+          if( !removeSilently ){
+            //Trigger the reset event
+            filterModel.trigger("rangeReset");
+          }
 
         }
         //For all other filter types
@@ -758,18 +773,30 @@ define(['jquery', 'underscore', 'backbone',
           var modelValues = filterModel.get("values"),
               thisValue   = $(appliedFilterEl).data("value");
 
+          //Numbers that are set on the element `data` are stored as type `number`, but when `number`s are
+          // set on Backbone models, they are converted to `string`s. So we need to check for this use case.
+          if( typeof thisValue == "number" ){
+            //Convert the number to a string
+            thisValue = thisValue.toString();
+          }
+
           //Remove the value that was in this applied filter
-          var newValues = _.without(modelValues, thisValue);
+          var newValues = _.without(modelValues, thisValue),
+              setOptions = {};
+
+          if( removeSilently ){
+            setOptions.silent = true;
+          }
 
           //Updates the values on the model
-          filterModel.set("values", newValues);
+          filterModel.set("values", newValues, setOptions);
         }
 
       }
 
     },
 
-    /*
+    /**
     * Gets all the applied filters in this view and their associated filter models
     *   and removes them.
     */
@@ -786,11 +813,21 @@ define(['jquery', 'underscore', 'backbone',
         else{
 
           //Remove the filter from the fitler group
-          this.removeFilter( $appliedFilterEl.data("model"), appliedFilterEl );
+          this.removeFilter( $appliedFilterEl.data("model"), appliedFilterEl, { removeSilently: true } );
 
         }
 
+        //Remove the applied filter element from the page
+        $appliedFilterEl.remove();
+
       }, this);
+
+      //Trigger the reset event on the Filters collection
+      this.filters.trigger("reset");
+
+      //Toggle the applied filters header
+      this.toggleAppliedFiltersHeader();
+
     },
 
     /**

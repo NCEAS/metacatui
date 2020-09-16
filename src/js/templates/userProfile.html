@@ -1,103 +1,100 @@
 <section class="section" data-section="profile" data-username="<%=user.username%>">
-	<section class="row-fluid" id="user-profile">
-		<div class="span3">
-			<hgroup class="hgroup user-info">
-				<% if(logo){ %>
-					<img src="<%=logo%>" class="logo center"/>
-				<% } %>
-				<h2 class="center insert-fullname"></h2>
-				<% if(type == "group") { %>
-					<h5 class="center subtle user-type">
-						<i class="icon icon-on-left icon-group"></i>
-						Group
-					</h5>
-				<% } else if(type == "node"){ %>
-					<h5 class="center subtle user-type">
-						<i class="icon icon-on-left icon-group"></i>
-						Member Node
-					</h5>
-					
-					<% if(user.nodeInfo.status == "upcoming"){ %>
-						<h5 class="center text-warning">Status: Upcoming</h5>
-					<% } else if(user.nodeInfo.status == "developing"){ %>
-						<h5 class="center text-warning">Status: Developing</h5>
-					<% } else if(user.nodeInfo.status == "deprecated"){ %>
-						<h5 class="center text-error">Status: Deprecated</h5>
-					<% } %>
-				<% } %>
-				<h6 class="center subtle" id="username-wrapper">
-					<span>
-						<% if(type == "group") { %> Group Id: <% }
-						   else{ %> Username: <% } %> 
-					</span> 
-					<span class="show-orcid hidden"><a href="https://orcid.org" > <img src="<%= MetacatUI.root %>/img/orcid_64x64.png" class="orcid-logo"/> ORCID </a></span>
-					<span class="insert-username"></span>
-				</h6>
-				<h5 class="email-wrapper hidden center">
-					<i class="icon icon-on-left icon-envelope"></i>
-					<address class="email-container" data-user="" data-domain="">@</address>
-				</h5>
-				
-				<% if(description){ %>
-					<p>
-						<%=description%>
-					</p>
-				<% } %>
-				
-				<h5 class="divided">
-					<i id="first-upload-year-container" class="icon icon-circle-badge icon-text icon-on-left"></i>
-					<span id="first-upload-container" class="span7"></span>
-					<div class='clear'></div>
-				</h5>
-				<h5>	
-					<i id="total-upload-container" class="icon icon-on-left icon-circle-badge icon-text"></i>	
-					contributions
-				</h5>
-				<h5 id="total-download-wrapper">	
-					<i id="total-download-container" class="icon icon-on-left icon-circle-badge icon-text"></i>	
-					downloads
-				</h5>
-				<h5 id="total-replicas-wrapper">
-					<i id="total-replicas-container" class="icon icon-on-left icon-circle-badge icon-text"></i>
-					data replicas hosted
-				</h5>
-				<div id="quality-score">
-					<h5 class="divided">
-						Metadata quality score
-						<i id="mdq-info-container" 
-						class="icon-question-sign more-info popover-this" 
-						data-trigger="hover" 
-						data-content="A suite of metadata quality and completeness checks has been run on these packages to identify areas for improvement." 
-						data-placement="right" ></i>	
-					</h5>
-					
-					<!-- the simplified boxplot for MDQ -->
-					<h5 id="mdq-stats-wrapper-0">	
-						<div id="mdq-score">
-							<div id="mdq-score-num" class="popover-this" data-trigger="hover" data-placement="top" data-content="Your average score"></div>
-							<i class="icon-caret-down icon-large icon"></i>
-						</div>
-						<div id="mdq-box-plot" class="progress">
-							<div id="mdq-box" class="progress-bar popover-this" data-trigger="hover"></div>
-						</div>
-						<div id="mdq-repo-score">
-							<i class="icon-caret-up icon"></i>					
-							<div id="mdq-repo-score-num" class="popover-this" data-trigger="hover" data-placement="bottom" data-content="Average score for Repository"></div> 
-						</div>
-					</h5>
-					
-					<h5>
-						<span id="mdq-percentile-container"></span>	
-						<i id="mdq-percentile-icon" class="icon icon-on-right"></i>
-					</h5>
-				</div>
-			</hgroup>
-			<div id="user-membership-container"></div>
-		</div>
-		<div id="data-list" class="span9">
-		</div>
-		<div class="clearfix"></div>
-	</section>
-	<section id="user-stats">
-	</section>
-</section>
+        <section class="row-fluid" id="user-profile">
+            <div class="span3">
+                <hgroup class="hgroup user-info">
+                    <% if(logo){ %>
+                        <img src="<%=logo%>" class="logo center"/>
+                    <% } %>
+                    <h2 class="center insert-fullname"></h2>
+                    <% if(type == "group") { %>
+                        <h5 class="center subtle user-type">
+                            <i class="icon icon-on-left icon-group"></i>
+                            Group
+                        </h5>
+                    <% } else if(type == "node"){ %>
+                        <h5 class="center subtle user-type">
+                            <i class="icon icon-on-left icon-group"></i>
+                            Member Node
+                        </h5>
+                        
+                        <% if(user.nodeInfo.status == "upcoming"){ %>
+                            <h5 class="center text-warning">Status: Upcoming</h5>
+                        <% } else if(user.nodeInfo.status == "developing"){ %>
+                            <h5 class="center text-warning">Status: Developing</h5>
+                        <% } else if(user.nodeInfo.status == "deprecated"){ %>
+                            <h5 class="center text-error">Status: Deprecated</h5>
+                        <% } %>
+                    <% } %>
+                    <h6 class="center subtle" id="username-wrapper">
+                        <span>
+                            <% if(type == "group") { %> Group Id: <% }
+                               else{ %> Username: <% } %> 
+                        </span> 
+                        <span class="show-orcid hidden"><a href="https://orcid.org" > <img src="<%= MetacatUI.root %>/img/orcid_64x64.png" class="orcid-logo"/> ORCID </a></span>
+                        <span class="insert-username"></span>
+                    </h6>
+                    <h5 class="email-wrapper hidden center">
+                        <i class="icon icon-on-left icon-envelope"></i>
+                        <address class="email-container" data-user="" data-domain="">@</address>
+                    </h5>
+                    
+                    <% if(description){ %>
+                        <p>
+                            <%=description%>
+                        </p>
+                    <% } %>
+                    
+                    <h5 class="divided">
+                        <i id="first-upload-year-container" class="icon icon-circle-badge icon-text icon-on-left"></i>
+                        <span id="first-upload-container" class="span7"></span>
+                        <div class='clear'></div>
+                    </h5>
+                    <h5>	
+                        <i id="total-upload-container" class="icon icon-on-left icon-circle-badge icon-text"></i>	
+                        contributions
+                    </h5>
+                    <h5 id="total-download-wrapper">	
+                        <i id="total-download-container" class="icon icon-on-left icon-circle-badge icon-text"></i>	
+                        downloads
+                    </h5>
+
+                    <div id="quality-score">
+                        <h5 class="divided">
+                            Metadata assessment score
+                            <i id="mdq-info-container"
+                            class="icon-question-sign more-info popover-this"
+                            data-trigger="hover"
+                            data-content="A suite of metadata assessment and completeness checks has been run on these packages to identify areas for improvement."
+                            data-placement="right" ></i>
+                        </h5>
+                        
+                        <!-- the simplified boxplot for MDQ -->
+                        <h5 id="mdq-stats-wrapper-0">	
+                            <div id="mdq-score">
+                                <div id="mdq-score-num" class="popover-this" data-trigger="hover" data-placement="top" data-content="Your average score"></div>
+                                <i class="icon-caret-down icon-large icon"></i>
+                            </div>
+                            <div id="mdq-box-plot" class="progress">
+                                <div id="mdq-box" class="progress-bar popover-this" data-trigger="hover"></div>
+                            </div>
+                            <div id="mdq-repo-score">
+                                <i class="icon-caret-up icon"></i>					
+                                <div id="mdq-repo-score-num" class="popover-this" data-trigger="hover" data-placement="bottom" data-content="Average score for Repository"></div> 
+                            </div>
+                        </h5>
+                        
+                        <h5>
+                            <span id="mdq-percentile-container"></span>	
+                            <i id="mdq-percentile-icon" class="icon icon-on-right"></i>
+                        </h5>
+                    </div>
+                </hgroup>
+                <div id="user-membership-container"></div>
+            </div>
+            <div id="data-list" class="span9">
+            </div>
+            <div class="clearfix"></div>
+        </section>
+        <section id="user-stats">
+        </section>
+    </section>

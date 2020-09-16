@@ -129,7 +129,8 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 					verified   = $(userNode).find("verified").first().text(),
 					memberOf   = this.get("isMemberOf"),
 					ownerOf	   = this.get("isOwnerOf"),
-					identities = this.get("identities");
+					identities = this.get("identities"),
+          equivUsernames = [];
 
 				//Sometimes names are saved as "NA" when they are not available - translate these to false values
 				if(firstName == "NA")
@@ -167,6 +168,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
 						var equivalentUser = new UserModel({ username: username, basicUser: true, rawData: equivUserNode });
 						identities.push(equivalentUser);
+            equivUsernames.push(username);
 					});
 				}
 
@@ -190,7 +192,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
       var allSubjects = _.pluck( this.get("isMemberOf"), "groupId" );
       allSubjects.push(this.get("username"));
-      allSubjects.push(this.get("identities"));
+      allSubjects = allSubjects.concat(equivUsernames);
 
 			return {
 				isMemberOf: memberOf,
@@ -405,15 +407,22 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 		},
 
 		isNode: function(){
-			var node = _.where(MetacatUI.nodeModel.get("members"), { shortIdentifier: this.get("username") });
-			return (node && node.length)
+			var model = this;
+			var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+				return nodeModel.shortIdentifier.toLowerCase() == (model.get("username")).toLowerCase();
+			  });
+
+			return (node && (node !== undefined))
 		},
 
 		// Will check if this user is a Member Node. If so, it will save the MN info to the model
 		saveAsNode: function(){
 			if(!this.isNode()) return;
 
-			var node = _.where(MetacatUI.nodeModel.get("members"), { shortIdentifier: this.get("username") })[0];
+			var model = this;
+			var node = _.find(MetacatUI.nodeModel.get("members"), function(nodeModel) {
+				return nodeModel.shortIdentifier.toLowerCase() == (model.get("username")).toLowerCase();
+			  });
 
 			this.set({
 				type: "node",
@@ -609,6 +618,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			var requestSettings = {
 					type: "GET",
 					url: url,
+          headers: {
+			      "Cache-Control": "no-cache"
+				  },
 					success: function(data, textStatus, xhr){
 						if(data){
 							// the response should have the token
@@ -897,7 +909,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
       return;
       //End of temporary code
 
-      var model = this;
+    /*  var model = this;
 
       var requestSettings = {
         url: "",
@@ -911,7 +923,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
       }
 
       $.ajax(_.extend(requestSettings, this.createAjaxSettings()));
-
+*/
     },
 
     /**
@@ -928,7 +940,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         return;
       }
 
-      //If creating portals has bbeen disabled app-wide, then set to false
+      //If creating portals has been disabled app-wide, then set to false
       if( MetacatUI.appModel.get("enableCreatePortals") === false ){
         this.set("isAuthorizedCreatePortal", false);
         return;
@@ -968,6 +980,35 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         //Check the quota
         this.checkQuota("createPortal");
         return;
+      }
+
+    },
+
+    /**
+    * Given a list of user and/or group subjects, this function checks if this user
+    * has an equivalent identity in that list, or is a member of a group in the list.
+    * A single subject string can be passed instead of an array of subjects.
+    * TODO: This needs to support nested group membership.
+    * @param {string|string[]} subjects
+    * @returns {boolean}
+    */
+    hasIdentityOverlap: function(subjects){
+
+      try{
+        //If only a single subject is given, put it in an array
+        if( typeof subjects == "string" ){
+          subjects = [subjects];
+        }
+        //If the subjects are not a string or an array, or if it's an empty array, exit this function.
+        else if( !Array.isArray(subjects) || !subjects.length ){
+          return false;
+        }
+
+        return _.intersection(this.get("allIdentitiesAndGroups"), subjects).length;
+      }
+      catch(e){
+        console.error(e);
+        return false;
       }
 
     },

@@ -49,6 +49,7 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
 	                    "coverage",
 	                    "methods",
 	                    "additionalInfo",
+	                    "annotation",
 	                    "attributeList",
 	                    "constraint"
 	                ],

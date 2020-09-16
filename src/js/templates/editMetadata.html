@@ -1,4 +1,4 @@
-<% 
+<%
    if( typeof supported == "undefined"){
         var supported = true;
    }
@@ -9,12 +9,12 @@
             classes = " tooltip-this";
    }
    else{
-        var attributes = ' href="' + MetacatUI.root + "/submit/" + identifier + '" ', 
+        var attributes = ' href="' + MetacatUI.root + "/submit/" + encodeURIComponent(identifier) + '" ',
             title = "",
             classes = "";
    }
 %>
 
 <a id="editMetadata" class="share-feature btn btn-primary <%=classes%>" <%=attributes%> title="<%=title%>">
-       Edit <i class="icon-edit icon-white icon-large"></i>
+       Edit <i class="icon-pencil icon-white icon-large"></i>
 </a>

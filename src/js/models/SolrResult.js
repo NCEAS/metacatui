@@ -386,6 +386,13 @@ define(['jquery', 'underscore', 'backbone'],
 				url: MetacatUI.appModel.get("queryServiceUrl") + query,
 				type: "GET",
 				success: function(data, response, xhr){
+          //If the Solr response was not as expected, trigger and error and exit
+          if( !data || typeof data.response == "undefined" ){
+            model.set("indexed", false);
+            model.trigger("getInfoError");
+            return;
+          }
+
 					var docs = data.response.docs;
 
 					if(docs.length == 1){
@@ -476,7 +483,7 @@ define(['jquery', 'underscore', 'backbone'],
 		 * Get the system metadata for this object
 		 */
 		getSysMeta: function(){
-			var url = MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+			var url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
 				model = this;
 
 			var requestSettings = {
@@ -743,8 +750,8 @@ define(['jquery', 'underscore', 'backbone'],
     */
     createViewURL: function(){
       return (this.getType() == "portal" || this.getType() == "collection") ?
-              MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + (this.get("label") || this.get("seriesId") || this.get("id")) :
-              MetacatUI.root + "/view/" + (this.get("seriesId") || this.get("id"));
+              MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") + "/" + encodeURIComponent((this.get("label") || this.get("seriesId") || this.get("id"))) :
+              MetacatUI.root + "/view/" + encodeURIComponent((this.get("seriesId") || this.get("id")));
     },
 
 		/****************************/

@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/views/EditorView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/views/EditorView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(['underscore',
+        'jquery',
+        'backbone',
+        "views/SignInView",
+        "text!templates/editorSubmitMessage.html"],
+function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
+
+  /**
+  * @class EditorView
+  * @classdesc A basic shell of a view, primarily meant to be extended for views that allow editing capabilities.
+  * @name EditorView
+  * @extends Backbone.View
+  * @constructs
+  */
+  var EditorView = Backbone.View.extend(
+    /** @lends EditorView.prototype */{
+
+
+    /**
+    * References to templates for this view. HTML files are converted to Underscore.js templates
+    */
+    editorSubmitMessageTemplate: _.template(EditorSubmitMessageTemplate),
+
+    /**
+    * The element this view is contained in. A jQuery selector or the element itself.
+    * @type {string|DOMElement}
+    */
+    el: "#Content",
+
+    /**
+    * The text to use in the editor submit button
+    * @type {string}
+    */
+    submitButtonText: "Save",
+
+    /**
+    * The text to use in the editor submit button
+    * @type {string}
+    */
+    accessPolicyModalID: "editor-access-policy-modal",
+
+    /**
+    * The selector for the HTML element that will contain a button/link/control for
+    * opening the AccessPolicyView modal window. If this element doesn't exist on the page,
+    * then the AccessPolicyView will be inserted into the `accessPolicyViewContainer` directly, rather than a modal window.
+    * @type {string}
+    */
+    accessPolicyControlContainer: ".access-policy-control-container",
+
+    /**
+    * The selector for the HTML element that will contain the AccessPolicyView.
+    * If this element doesn't exist on the page, then the AccessPolicyView will not be inserted into the page.
+    * If a `accessPolicyControlContainer` element is on the page, then this element will
+    * contain the modal window element.
+    * @type {string}
+    */
+    accessPolicyViewContainer: ".access-policy-view-container",
+    /**
+    * The events this view will listen to and the associated function to call
+    * @type {Object}
+    */
+    events: {
+      "click #save-editor" : "save",
+      "click .access-policy-control" : "showAccessPolicyModal",
+      "keypress input" : "showControls",
+      "keypress textarea" : "showControls",
+      "keypress [contenteditable]" : "showControls"
+    },
+
+    /**
+    * Renders this view
+    */
+    render: function(){
+      //Style the body as an Editor
+      $("body").addClass("Editor rendering");
+
+      this.delegateEvents();
+    },
+
+    /**
+     * Set listeners on the view's model.
+     * This function centralizes all the listeners so that when/if the view's
+     * model is replaced, the listeners can be reset.
+     */
+    setListeners: function() {
+
+      //Stop listening first
+      this.stopListening(this.model, "errorSaving", this.saveError);
+      this.stopListening(this.model, "successSaving", this.saveSuccess);
+      this.stopListening(this.model, "invalid", this.showValidation);
+
+      //Set listeners
+      this.listenTo(this.model, "errorSaving", this.saveError);
+      this.listenTo(this.model, "successSaving", this.saveSuccess);
+      this.listenTo(this.model, "invalid", this.showValidation);
+
+      // //Set a beforeunload event only if there isn't one already
+      // if( !this.beforeunloadCallback ){
+      //   var view = this;
+      //   //When the Window is about to be closed, show a confirmation message
+      //   this.beforeunloadCallback = function(e){
+      //     if( !view.canClose() ){
+      //       //Browsers don't support custom confirmation messages anymore,
+      //       // so preventDefault() needs to be called or the return value has to be set
+      //       e.preventDefault();
+      //       e.returnValue = "";
+      //     }
+      //     return;
+      //   }
+      //   window.addEventListener("beforeunload", this.beforeunloadCallback);
+      // }
+    },
+
+    /**
+    * Show Sign In buttons
+    */
+    showSignIn: function(){
+      var container = $(document.createElement("div")).addClass("container center");
+      this.$el.html(container);
+      var signInButtons = new SignInView().render().el;
+      $(container).append('&lt;h1>Sign in to submit data&lt;/h1>', signInButtons);
+    },
+
+    /**
+    * Saves the model
+    */
+    save: function(){
+      this.showSaving();
+      this.model.save();
+    },
+
+    /**
+     * Cancel all edits in the editor by simply re-rendering the view
+     */
+    cancel: function(){
+      this.render();
+    },
+
+    /**
+    * Trigger a save error with a message that the save was cancelled
+    */
+    handleSaveCancel: function(){
+      if(this.model.get("uploadStatus") == "e"){
+        this.saveError("Your submission was cancelled due to an error.");
+      }
+    },
+
+    /**
+    * Adds top-level control elements to this editor.
+    */
+    renderEditorControls: function(){
+      //If the AccessPolicy editor is enabled, add a button for opening it
+      if( MetacatUI.appModel.get("allowAccessPolicyChanges")){
+        this.renderAccessPolicyControl();
+      }
+    },
+
+    /**
+    * Adds a Share button for editing the access policy
+    */
+    renderAccessPolicyControl: function(){
+      //If the AccessPolicy editor is enabled, add a button for opening it
+      if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){
+
+        var isHiddenBehindControl = (this.$(this.accessPolicyControlContainer).length > 0);
+
+        //Render the AccessPolicy control, if the container element is on the page
+        if( isHiddenBehindControl ){
+          //If it isn't, then add it to the page.
+          //Create an anchor tag with an icon and the text "Share" and add it to the editor controls container
+          this.$(this.accessPolicyControlContainer).prepend( $(document.createElement("a"))
+                                                    .attr("href", "#")
+                                                    .addClass("access-policy-control btn")
+                                                    .append(
+                                                      $(document.createElement("i")).addClass("icon-group icon icon-on-left"),
+                                                      "Share") );
+        }
+
+        //When the user's changePermission authority has been checked, edit their
+        //  access to the AccessPolicyView
+        this.listenToOnce(this.model, "change:isAuthorized_changePermission", function(){
+          //If there is an AccessPolicy control, disable it
+          if( isHiddenBehindControl ){
+
+            if( this.model.get("isAuthorized_changePermission") === false ){
+              //Disable the button for the AccessPolicyView if the user is not authorized
+              this.$(".access-policy-control").attr("disabled", "disabled")
+                                              .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
+                                              .addClass("disabled");
+            }
+          }
+          else{
+            //Render the AccessPolicyView
+            this.renderAccessPolicy();
+          }
+        });
+
+        //Check the user's authority to change permissions on this object
+        this.model.checkAuthority("changePermission");
+      }
+    },
+
+    /**
+    * Shows the AccessPolicyView for the object being edited.
+    * @param {Event} e - The event that triggered this function as a callback
+    */
+    showAccessPolicyModal: function(e){
+
+      try{
+
+        //If the AccessPolicy editor is disabled in this app, then exit now
+        if( !MetacatUI.appModel.get("allowAccessPolicyChanges") || this.$(".access-policy-control").attr("disabled") == "disabled" ){
+          return;
+        }
+
+       //If the AccessPolicyView hasn't been rendered yet, then render it now
+       if( !this.$(".access-policy-view").length ){
+         this.renderAccessPolicy();
+
+         this.on("accessPolicyViewRendered", function(){
+           //Add modal classes to the access policy view
+           this.$(".access-policy-view").addClass("access-policy-view-modal modal")
+                                        .modal()
+                                        .modal("show");
+         });
+       }
+       else{
+         //Open the modal window
+         this.$("access-policy-view-modal").modal("show");
+       }
+
+      }
+      catch(e){
+        console.error("Error trying to show the AccessPolicyView: ", e);
+      }
+    },
+
+    /**
+    * Renders the AccessPolicyView
+    * @param {Event} e - The event that triggered this function as a callback
+    */
+    renderAccessPolicy: function(){
+      try{
+
+        //If the AccessPolicy editor is disabled in this app, then exit now
+        if( !MetacatUI.appModel.get("allowAccessPolicyChanges")){
+          return;
+        }
+
+        var thisView = this;
+        require(['views/AccessPolicyView'], function(AccessPolicyView){
+
+            //If not, create a new AccessPolicyView using the AccessPolicy collection
+            var accessPolicyView = new AccessPolicyView();
+            accessPolicyView.collection = thisView.model.get("accessPolicy");
+
+            //Store a reference to the AccessPolicyView on this view
+            thisView.accessPolicyView = accessPolicyView;
+
+            //Add the view to the page
+            thisView.$(thisView.accessPolicyViewContainer).html(accessPolicyView.el);
+
+            //Render the AccessPolicyView
+            accessPolicyView.render();
+
+            thisView.trigger("accessPolicyViewRendered");
+        });
+      }
+      catch(e){
+        console.error("Error trying to render the AccessPolicyView: ", e);
+      }
+    },
+
+    /**
+    * Show the editor footer controls (Save bar)
+    */
+    showControls: function(){
+      this.$(".editor-controls").removeClass("hidden").slideDown();
+    },
+
+    /**
+    * Hide the editor footer controls (Save bar)
+    */
+    hideControls: function(){
+        this.hideSaving();
+
+      this.$(".editor-controls").slideUp();
+    },
+
+    /**
+    * Change the styling of this view to show that the object is in the process of saving
+    */
+    showSaving: function(){
+
+      //Change the style of the save button
+      this.$("#save-editor")
+        .html('&lt;i class="icon icon-spinner icon-spin">&lt;/i> Submitting ...')
+        .addClass("btn-disabled");
+
+      //Remove all the validation messaging
+      this.removeValidation();
+
+      //Get all the inputs in the Editor
+      var allInputs = this.$("input, textarea, select, button");
+
+      //Mark the disabled inputs so we can re-disable them later
+      allInputs.filter(":disabled")
+               .addClass("disabled-saving");
+
+      //Remove the latest success or error alert
+      this.$el.children(".alert-container").remove();
+
+      //Disable all the inputs
+      allInputs.prop("disabled", true);
+
+    },
+
+    /**
+    *  Remove the styles set in showSaving()
+    */
+    hideSaving: function(){
+      this.$("input, textarea, select, button")
+          .prop("disabled", false);
+
+      this.$(".disabled-saving, input.disabled")
+          .prop("disabled", true)
+          .removeClass("disabled-saving");
+
+        //When the package is saved, revert the Save button back to normal
+        this.$("#save-editor").html(this.submitButtonText).removeClass("btn-disabled");
+
+    },
+
+    /**
+    * Style the view to show that it is loading
+    * @param {string|DOMElement} container - The element to put the loading styling in. Either a jQuery selector or the element itself.
+    * @param {string|DOMElement} message - The message to display next to the loading icon. Either a jQuery selector or the element itself.
+    */
+    showLoading: function(container, message){
+      if(typeof container == "undefined" || !container)
+        var container = this.$el;
+
+      $(container).html(MetacatUI.appView.loadingTemplate({ msg: message }));
+    },
+
+    /**
+    * Remove the styles set in showLoading()
+    * @param {string|DOMElement} container - The element the loading message is conttained in. Either a jQuery selector or the element itself.
+    */
+    hideLoading: function(container){
+      if(typeof container == "undefined" || !container)
+        var container = this.$el;
+
+      $(container).find(".loading").remove();
+    },
+
+    /**
+     * Called when there is no object found with this ID
+     */
+    showNotFound: function(){
+        //If we haven't checked the logged-in status of the user yet, wait a bit until we show a 404 msg, in case this content is their private content
+        if(!MetacatUI.appUserModel.get("checked")){
+          this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.showNotFound);
+          return;
+        }
+        //If the user is not logged in
+        else if(!MetacatUI.appUserModel.get("loggedIn")){
+          this.showSignIn();
+          return;
+        }
+
+        if(!this.model.get("notFound")) return;
+
+        var msg = "&lt;h4>Nothing was found for one of the following reasons:&lt;/h4>" +
+          "&lt;ul class='indent'>" +
+              "&lt;li>The ID '" + this.pid  + "' does not exist.&lt;/li>" +
+            '&lt;li>This may be private content. (Are you &lt;a href="&lt;%= MetacatUI.root %>/signin">signed in?&lt;/a>)&lt;/li>' +
+            "&lt;li>The content was removed because it was invalid.&lt;/li>" +
+          "&lt;/ul>";
+
+        //Remove the loading messaging
+        this.hideLoading();
+
+        //Show the not found message
+        MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
+
+    },
+
+    /**
+    * Check the validity of this view's model
+    */
+    checkValidity: function(){
+      if(this.model.isValid())
+        this.model.trigger("valid");
+    },
+
+    /**
+     * Show validation errors, if there are any
+     */
+    showValidation: function(){
+      this.saveError("Unable to save. Either required information is missing or isn't filled out correctly.");
+    },
+
+    /**
+    * Removes all the validation error styling and messaging from this view
+    */
+    removeValidation: function(){
+      this.$(".notification.error").removeClass("error").empty();
+      this.$(".validation-error-icon").hide();
+    },
+
+    /**
+     * When the object is saved successfully, tell the user
+     * @param {object} savedObject - the object that was successfully saved
+     */
+    saveSuccess: function(savedObject){
+
+      var message = this.editorSubmitMessageTemplate({
+            messageText: "Your changes have been submitted.",
+            viewURL: MetacatUI.appModel.get("baseUrl"),
+            buttonText: "Return home"
+        });
+
+      MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
+
+      this.hideSaving();
+
+    },
+
+    /**
+     * When the object fails to save, tell the user
+     * @param {string} errorMsg - The error message resulting from a failed attempt to save
+     */
+    saveError: function(errorMsg){
+
+      var messageContainer = $(document.createElement("div")).append(document.createElement("p")),
+          messageParagraph = messageContainer.find("p"),
+          messageClasses = "alert-error";
+
+      messageParagraph.append(errorMsg);
+
+      //If the model has an error message set on it, show it in a collapseable technical details section
+      if( this.model.get("errorMessage") ){
+        var errorId = "error" + Math.round(Math.random()*100);
+        messageParagraph.after($(document.createElement("p")).append($(document.createElement("a"))
+                  .text("See technical details")
+                  .attr("data-toggle", "collapse")
+                  .attr("data-target", "#" + errorId)
+                  .addClass("pointer")),
+                $(document.createElement("div"))
+                  .addClass("collapse")
+                  .attr("id", errorId)
+                  .append($(document.createElement("pre")).text(this.model.get("errorMessage"))));
+      }
+
+      MetacatUI.appView.showAlert(messageContainer, messageClasses, this.$el, null, {
+        emailBody: errorMsg,
+        remove: true
+      });
+
+      this.hideSaving();
+    },
+
+    /**
+    * Shows the required icons for the sections and fields that must be completed in this editor.
+    * @param {object} requiredFields - A literal object that specified which fields should be required.
+    *  The keys on the object map to model attributes, and the value is true if required, false if optional.
+    */
+    renderRequiredIcons: function(requiredFields){
+
+      //If no required fields are given, exit now
+      if( typeof requiredFields == "undefined" ){
+        return;
+      }
+
+      _.each( Object.keys(requiredFields), function(field){
+
+        if(requiredFields[field]){
+          var reqEl = this.$(".required-icon[data-category='" + field + "']");
+
+          //Show the required icon for this category/field
+          reqEl.show();
+
+          //Show the required icon for the section
+          var sectionName = reqEl.parents(".section[data-section]").attr("data-section");
+          this.$(".required-icon[data-section='" + sectionName + "']").show();
+        }
+
+      }, this);
+    },
+
+    /**
+    * Checks if there are unsaved changes in this Editor that should prevent closing of this view.
+    * This function is also executed by the AppView, which controls the top-level navigation.
+    * @returns {boolean} Returns true if this view should be closed. False if it should remain opened and active.
+    */
+    canClose: function(){
+
+      //If the user isn't logged in, we can leave this view without confirmation
+      if( !MetacatUI.appUserModel.get("loggedIn") )
+        return true;
+
+      //If there are no unsaved changes, we can leave this view without confirmation
+      if( !this.hasUnsavedChanges() ){
+        return true;
+      }
+
+      return false;
+
+    },
+
+    /**
+    * This function is called whenever the user is about to leave this view.
+    * @returns {string} The message that asks the user if they are sure they want to close this view
+    */
+    getConfirmCloseMessage: function(){
+
+      //Return a confirmation message
+      return "Leave this page? All of your unsaved changes will be lost.";
+
+    },
+
+    /**
+    * Returns true if there are unsaved changes in this Editor
+    * This function should be exended by each subclass of EditorView to check for unsaved changes for that model type
+    * @returns {boolean}
+    */
+    hasUnsavedChanges: function(){
+      return true;
+    },
+
+    /**
+    *  Perform clean-up functions when this view is about to be removed from the page or navigated away from.
+    */
+    onClose: function(){
+
+      //Remove the listener on the Window
+      if( this.beforeunloadCallback ){
+        window.removeEventListener("beforeunload", this.beforeunloadCallback);
+        delete this.beforeunloadCallback;
+      }
+
+      //Remove the class from the body element
+      $("body").removeClass("Editor rendering");
+
+      //Remove listeners
+      this.stopListening();
+      this.undelegateEvents();
+
+    }
+
+  });
+
+  return EditorView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Aug 10 2020 17:22:16 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

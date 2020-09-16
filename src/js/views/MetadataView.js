@@ -133,9 +133,16 @@ define(['jquery',
 
       this.listenTo(MetacatUI.appUserModel, "change:loggedIn", this.render);
 
+      //Listen to when the metadata has been rendered
       this.once("metadataLoaded", function(){
         this.createAnnotationViews();
         this.insertMarkdownViews();
+      });
+
+      //Listen to when the package table has been rendered
+      this.once("packageTableRendered", function(){
+        //Scroll to the element on the page that is in the hash fragment (if there is one)
+        this.scrollToFragment();
       });
 
       this.getModel();
@@ -194,9 +201,81 @@ define(['jquery',
           this.renderMetadata();
         }
         else if(this.model.get("formatType") == "DATA"){
-          if(this.model.get("isDocumentedBy")){
-            this.pid = _.first(this.model.get("isDocumentedBy"));
+
+          //Get the metadata pids that document this data object
+          var isDocBy = this.model.get("isDocumentedBy");
+
+          //If there is only one metadata pid that documents this data object, then
+          // get that metadata model for this view.
+          if(isDocBy && isDocBy.length == 1){
+            this.pid = _.first(isDocBy);
             this.getModel(this.pid);
+            return;
+          }
+          //If more than one metadata doc documents this data object, it is most likely
+          // multiple versions of the same metadata. So we need to find the latest version.
+          else if( isDocBy && isDocBy.length > 1 ){
+
+            var view = this;
+
+            require(["collections/Filters", "collections/SolrResults"], function(Filters, SolrResults){
+              //Create a search for the metadata docs that document this data object
+              var searchFilters = new Filters([{
+                    values: isDocBy,
+                    fields: ["id", "seriesId"],
+                    operator: "OR",
+                    matchSubstring: false
+                  }]),
+                  //Create a list of search results
+                  searchResults = new SolrResults([], {
+                    rows: isDocBy.length,
+                    query: searchFilters.getQuery(),
+                    fields: "obsoletes,obsoletedBy,id"
+                  });
+
+              //When the search results are returned, process those results
+              view.listenToOnce(searchResults, "sync", function(searchResults){
+
+                //Keep track of the latest version of the metadata doc(s)
+                var latestVersions = [];
+
+                //Iterate over each search result and find the latest version of each metadata version chain
+                searchResults.each( function(searchResult){
+
+                  //If this metadata isn't obsoleted by another object, it is the latest version
+                  if( !searchResult.get("obsoletedBy") ){
+                    latestVersions.push( searchResult.get("id") );
+                  }
+                  //If it is obsoleted by another object but that newer object does not document this data, then this is the latest version
+                  else if( !_.contains(isDocBy, searchResult.get("obsoletedBy")) ){
+                    latestVersions.push( searchResult.get("id") );
+                  }
+
+                }, view);
+
+                //If at least one latest version was found (should always be the case),
+                if( latestVersions.length ){
+                  //Set that metadata pid as this view's pid and get that metadata model.
+                  // TODO: Support navigation to multiple metadata docs. This should be a rare occurence, but
+                  // it is possible that more than one metadata version chain documents a data object, and we need
+                  // to show the user that the data is involved in multiple datasets.
+                  view.pid = latestVersions[0];
+                  view.getModel(latestVersions[0]);
+                }
+                //If a latest version wasn't found, which should never happen, but just in case, default to the
+                // last metadata pid in the isDocumentedBy field (most liekly to be the most recent since it was indexed last).
+                else{
+                  var fallbackPid =  _.last(isDocBy);
+                  view.pid = fallbackPid;
+                  view.getModel(fallbackPid);
+                }
+
+              });
+
+              //Send the query to the Solr search service
+              searchResults.query();
+            });
+
             return;
           }
           else{
@@ -222,6 +301,7 @@ define(['jquery',
           packageModel.getMembers();
           return;
         }
+
         //Get the package information
         this.getPackageDetails(model.get("resourceMap"));
 
@@ -431,7 +511,7 @@ define(['jquery',
                           .text("Search")))
                   .append($(document.createElement("li"))
                       .append($(document.createElement("a"))
-                          .attr("href", MetacatUI.root + "/view/" + this.pid)
+                          .attr("href", MetacatUI.root + "/view/" + encodeURIComponent(this.pid))
                           .addClass("inactive")
                           .text("Metadata")));
 
@@ -635,7 +715,7 @@ define(['jquery',
               var title = 'Nested Data Set (' + (i+2) + ' of ' +
                           (list.length+1) + ') <span class="subtle">Package: ' +
                           nestedPackage.get("id") + '</span> <a href="'+ MetacatUI.root +
-                          '/view/' + nestedPackage.get("id") +
+                          '/view/' + encodeURIComponent(nestedPackage.get("id")) +
                           '" class="table-header-link">(View <i class="icon icon-external-link-sign icon-on-right"></i> ) </a>';
 
               this.insertPackageTable(nestedPackage, { title: title, nested: true });
@@ -746,6 +826,9 @@ define(['jquery',
       $(tableContainer).find(".tooltip-this").tooltip();
 
       this.subviews.push(tableView);
+
+      //Trigger a custom event in this view that indicates the package table has been rendered
+      this.trigger("packageTableRendered");
     },
 
     insertParentLink: function(packageModel){
@@ -755,7 +838,7 @@ define(['jquery',
       _.each(parentPackageMetadata, function(m, i){
         var title = m.get("title"),
           icon = $(document.createElement("i")).addClass("icon icon-on-left icon-level-up"),
-          link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + m.get("id"))
+          link = $(document.createElement("a")).attr("href", MetacatUI.root + "/view/" + encodeURIComponent(m.get("id")))
                              .addClass("parent-link")
                              .text("Parent dataset: " + title)
                              .prepend(icon);
@@ -834,10 +917,43 @@ define(['jquery',
         var bounds = new gmaps.LatLngBounds(latLngSW, latLngNE);
         var latLngCEN = bounds.getCenter();
 
+        //If there isn't a center point found, don't draw the map.
+        if( typeof latLngCEN == "undefined" ){
+          return;
+        }
+
         var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() +
               "&spn=0.003833,0.010568" +
               "&t=m" +
               "&z=10";
+
+        //Get the dataset map zoom level
+        var zoomLevel = MetacatUI.appModel.get("datasetMapZoomLevel");
+        if(typeof zoomLevel !== "number"){
+          zoomLevel = parseInt(zoomLevel);
+        }
+        if( !zoomLevel > 0){
+          zoomLevel = 6;
+        }
+
+        //Get the map path color
+        var pathColor = MetacatUI.appModel.get("datasetMapPathColor");
+        if( pathColor ){
+          pathColor = "color:" + pathColor + "|";
+        }
+        else{
+          pathColor = "";
+        }
+
+        //Get the map path fill color
+        var fillColor = MetacatUI.appModel.get("datasetMapFillColor");
+        if( fillColor ){
+          fillColor = "fillcolor:" + fillColor + "|";
+        }
+        else{
+          fillColor = "";
+        }
+
         //Create a google map image
         var mapHTML = "<img class='georegion-map' " +
                 "src='https://maps.googleapis.com/maps/api/staticmap?" +
@@ -845,9 +961,9 @@ define(['jquery',
                 "&size=800x350" +
                 "&maptype=terrain" +
                 "&markers=size:mid|color:0xDA4D3Aff|"+latLngCEN.lat()+","+latLngCEN.lng() +
-                "&path=color:0xDA4D3Aff|weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
+                "&path=" + fillColor + pathColor + "weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
                 "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
-                "&zoom=4" +
+                "&zoom=" + zoomLevel +
                 "&sensor=false" +
                 "&key=" + MetacatUI.mapKey + "'/>";
 
@@ -897,9 +1013,15 @@ define(['jquery',
       if(dataSource && dataSource.logo){
         this.$("img.data-source").remove();
 
+        //Construct a URL to the profile of this repository
+        var profileURL = (dataSource.identifier == MetacatUI.appModel.get("nodeId"))?
+                           MetacatUI.root + "/profile" :
+                           MetacatUI.appModel.get("dataoneSearchUrl") + "/portals/" + dataSource.shortIdentifier;
+
         //Insert the data source template
         this.$(this.dataSourceContainer).html(this.dataSourceTemplate({
-          node : dataSource
+          node : dataSource,
+          profileURL: profileURL
         })).addClass("has-data-source");
 
         this.$(this.citationContainer).addClass("has-data-source");
@@ -916,7 +1038,7 @@ define(['jquery',
                 content += '<h5>Exact copies hosted by ' + replicaMNs.length + ' repositories: </h5><ul class="unstyled">';
 
                 _.each(replicaMNs, function(node){
-                  content += '<li><a href="https://search.dataone.org/profile/' +
+                  content += '<li><a href="' + MetacatUI.appModel.get("dataoneSearchUrl") + '/portals/' +
                         node.shortIdentifier +
                         '" class="pointer">' +
                         node.name +
@@ -953,8 +1075,6 @@ define(['jquery',
      * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
      */
     insertOwnerControls: function(){
-      if( !MetacatUI.appModel.get("publishServiceUrl") )
-        return false;
 
       //Do not show user controls for older versions of data sets
       if(this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
@@ -968,7 +1088,8 @@ define(['jquery',
         viewRef = this;
 
       this.listenToOnce(this.model, "change:isAuthorized", function(){
-        if(!model.get("isAuthorized") || model.get("archived")) return false;
+        if(!model.get("isAuthorized") || model.get("archived"))
+          return false;
 
         //Insert an Edit button
         if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
@@ -984,19 +1105,46 @@ define(['jquery',
           }));
         }
 
-        //Insert a Publish button if its not already published with a DOI
-        if(!model.isDOI()){
-          //Insert the template
-          container.append(
-            viewRef.doiTemplate({
-              isAuthorized: true,
-              identifier: pid
-            }));
+        try{
+          //Determine if this metadata can be published.
+          // The Publish feature has to be enabled in the app.
+          // The model cannot already have a DOI
+          var canBePublished = MetacatUI.appModel.get("enablePublishDOI") && !model.isDOI();
+
+          //If publishing is enabled, check if only certain users and groups can publish metadata
+          if( canBePublished ){
+            //Get the list of authorized publishers from the AppModel
+            var authorizedPublishers = MetacatUI.appModel.get("enablePublishDOIForSubjects");
+            //If the logged-in user is one of the subjects in the list or is in a group that is
+            // in the list, then this metadata can be published. Otherwise, it cannot.
+            if( Array.isArray(authorizedPublishers) && authorizedPublishers.length ){
+              if( MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers) ){
+                canBePublished = true;
+              }
+              else{
+                canBePublished = false;
+              }
+            }
+          }
+
+          //If this metadata can be published, then insert the Publish button template
+          if( canBePublished ){
+            //Insert a Publish button template
+            container.append(
+              viewRef.doiTemplate({
+                isAuthorized: true,
+                identifier: pid
+              }));
+          }
+        }
+        catch(e){
+          console.error("Cannot display the publish button: ", e);
         }
 
         //Check the authority on the package models
         //If there is no package, then exit now
-        if(!viewRef.packageModels || !viewRef.packageModels.length) return;
+        if(!viewRef.packageModels || !viewRef.packageModels.length)
+          return;
 
         //Check for authorization on the resource map
         var packageModel = this.packageModels[0];
@@ -1004,14 +1152,12 @@ define(['jquery',
         //if there is no package, then exit now
         if(!packageModel.get("id")) return;
 
-        //Listen for changes to the authorization flag
-        //packageModel.once("change:isAuthorized", viewRef.createProvEditor, viewRef);
-        //packageModel.once("sync", viewRef.createProvEditor, viewRef);
-
         //Now get the RDF XML and check for the user's authority on this resource map
         packageModel.fetch();
         packageModel.checkAuthority();
       });
+
+      //Check if the current user has authority to `changePermission` on this metadata
       this.model.checkAuthority();
     },
 
@@ -1057,11 +1203,35 @@ define(['jquery',
      */
     insertControls: function(){
 
+      // Convert the support mdq formatId list to a version
+      // that JS regex likes (with special characters double
+      RegExp.escape = function(s) {
+       return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\\\$&');
+      };
+      var mdqFormatIds = MetacatUI.appModel.get("mdqFormatIds");
+
+      // Check of the current formatId is supported by the current
+      // metadata quality suite. If not, the 'Assessment Report' button
+      // will not be displacyed in the metadata controls panel.
+      var thisFormatId = this.model.get("formatId");
+      var mdqFormatSupported = false;
+      var formatFound = false;
+      if(mdqFormatIds !== null) {
+          for (var ifmt = 0; ifmt < mdqFormatIds.length; ++ifmt) {
+              var currentFormatId = RegExp.escape(mdqFormatIds[ifmt]);
+              var re = new RegExp(currentFormatId);
+              formatFound = re.test(thisFormatId);
+              if(formatFound) {
+                  break;
+              }
+          }
+      }
+
       //Get template
       var controlsContainer = this.controlsTemplate({
           citation: $(this.citationContainer).text(),
           url: window.location,
-          mdqUrl: MetacatUI.appModel.get("mdqBaseUrl"),
+          displayQualtyReport: MetacatUI.appModel.get("mdqBaseUrl") && formatFound && MetacatUI.appModel.get("displayDatasetQualityMetric"),
           showWholetale: MetacatUI.appModel.get("showWholeTaleFeatures"),
           model: this.model.toJSON()
         });
@@ -1143,9 +1313,10 @@ define(['jquery',
     let self=this;
     MetacatUI.appModel.get('taleEnvironments').forEach(function(environment){
       var queryParams=
-      '?uri='+ self.model.id +
+      '?uri='+ window.location.href+
       '&title='+encodeURIComponent(self.model.get("title"))+
-      '&environment='+environment;
+      '&environment='+environment+
+      '&api='+MetacatUI.appModel.get("d1CNBaseUrl")+MetacatUI.appModel.get("d1CNService");
       var composeUrl = MetacatUI.appModel.get('dashboardUrl')+queryParams;
       var anchor = $('<a>');
       anchor.attr('href',composeUrl).append(
@@ -1177,17 +1348,17 @@ define(['jquery',
         var buttonToolbar = this.$(".metrics-container");
 
         if (MetacatUI.appModel.get("displayDatasetCitationMetric")) {
-          var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel});
+          var citationsMetricView = new MetricView({metricName: 'Citations', model: metricsModel, pid: this.pid});
           buttonToolbar.append(citationsMetricView.render().el);
         }
 
         if (MetacatUI.appModel.get("displayDatasetDownloadMetric")) {
-          var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel});
+          var downloadsMetricView = new MetricView({metricName: 'Downloads', model: metricsModel, pid: this.pid});
           buttonToolbar.append(downloadsMetricView.render().el);
         }
 
         if (MetacatUI.appModel.get("displayDatasetViewMetric")) {
-          var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel});
+          var viewsMetricView = new MetricView({metricName: 'Views', model: metricsModel, pid: this.pid});
           buttonToolbar.append(viewsMetricView.render().el);
         }
 
@@ -2156,7 +2327,7 @@ define(['jquery',
 
               if (identifier) {
                 viewRef.hideLoading();
-                var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetacatUI.root + "/view/" + identifier + "'>published data package here</a>";
+                var msg = "Published data package '" + identifier + "'. If you are not redirected soon, you can view your <a href='" + MetacatUI.root + "/view/" + encodeURIComponent(identifier) + "'>published data package here</a>";
                 viewRef.$el.find('.container').prepend(
                     viewRef.alertTemplate({
                       msg: msg,
@@ -2317,10 +2488,38 @@ define(['jquery',
       else
         return false;
 
-      //If we are on the Metadata view, then let's scroll to the anchor
+      // If we are on the Metadata view, update the  URL and scroll to the
+      // anchor
+      window.location.hash = encodeURIComponent(id);
       MetacatUI.appView.scrollTo( this.findEntityDetailsContainer(id) );
 
       return true;
+    },
+
+    /**
+     * Try to scroll to the section on a page describing the identifier in the
+     * fragment/hash portion of the current page.
+     *
+     * This function depends on there being an `id` dataset attribute on an
+     * element on the page set to an XML-safe version of the value in the
+     * fragment/hash. Used to provide direct links to sub-resources on a page.
+     */
+    scrollToFragment: function() {
+      var hash = window.location.hash;
+
+      if (!hash || hash.length <= 1) {
+          return;
+      }
+
+      //Get the id from the URL hash and decode it
+      var idFragment = decodeURIComponent(hash.substring(1));
+
+      //Find the corresponding entity details section for this id
+      var entityDetailsEl = this.findEntityDetailsContainer(idFragment);
+
+      if( entityDetailsEl || entityDetailsEl.length ){
+        MetacatUI.appView.scrollTo(entityDetailsEl);
+      }
     },
 
     closePopovers: function(e){
@@ -2478,7 +2677,7 @@ define(['jquery',
       // Add the rest in conditional on whether they are present.
       var elJSON = {
         "@context": {
-          "@vocab": "http://schema.org",
+          "@vocab": "https://schema.org/",
         },
         "@type": "Dataset",
         "@id": "https://dataone.org/datasets/" +
@@ -2489,10 +2688,22 @@ define(['jquery',
           "name": this.getPublisherText()
         },
         "identifier": model.get("id"),
+        "version": model.get("version"),
         "url": "https://dataone.org/datasets/" +
           encodeURIComponent(model.get("id")),
         "schemaVersion": model.get("formatId"),
+        "isAccessibleForFree": true
       };
+
+      // Attempt to add in a sameAs property of we have high confidence the
+      // identifier is a DOI
+      if (this.model.isDOI(model.get("id"))) {
+        var doi = this.getCanonicalDOIIRI(model.get("id"));
+
+        if (doi) {
+          elJSON["sameAs"] = doi;
+        }
+      }
 
       // Second: Add in optional fields
 
@@ -2711,6 +2922,30 @@ define(['jquery',
     },
 
     /**
+     * Create a canonical IRI for a DOI given a random DataONE identifier.
+     *
+     * @param {string} identifier: The identifier to (possibly) create the IRI
+     *   for.
+     * @return {string|null} Returns null when matching the identifier to a DOI
+     *   regex fails or a string when the match is successful
+     *
+     * Useful for describing resources identified by DOIs in linked open data
+     * contexts or possibly also useful for comparing two DOIs for equality.
+     *
+     * Note: Really could be generalized to more identifier schemes.
+     */
+    getCanonicalDOIIRI: function(identifier) {
+      var pattern = /(10\.\d{4,9}\/[-\._;()\/:A-Z0-9]+)$/,
+          match = identifier.match(pattern);
+
+      if (match === null || match.length !== 2 || match[1].length <= 0) {
+        return null;
+      }
+
+      return "https://doi.org/" + match[1];
+    },
+
+    /**
      * Insert citation information as meta tags into the head of the page
      *
      * Currently supports Highwire Press style tags (citation_) which is
@@ -2776,6 +3011,7 @@ define(['jquery',
         newView.render();
       });
     }
+
   });
 
   return MetadataView;

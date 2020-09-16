@@ -2,11 +2,12 @@ define(["jquery",
     "underscore",
     "backbone",
     "models/Search",
+    "models/MetricsModel",
     "models/Stats",
     "views/portals/PortalSectionView",
     "views/StatsView",
     "text!templates/loading.html"],
-    function($, _, Backbone, SearchModel, StatsModel, PortalSectionView, StatsView,
+    function($, _, Backbone, SearchModel, MetricsModel, StatsModel, PortalSectionView, StatsView,
       LoadingTemplate){
 
     /**
@@ -37,6 +38,33 @@ define(["jquery",
         * @type {Portal}
         */
         model: undefined,
+
+        /**
+        * Aggregated Quality Metrics flag
+        * @type {boolean}
+        */
+        hideMetadataAssessment: MetacatUI.appModel.get("hideSummaryMetadataAssessment"),
+
+
+        /**
+        * Aggregated Citation Metrics flag
+        * @type {boolean}
+        */
+        hideCitationsChart: MetacatUI.appModel.get("hideSummaryCitationsChart"),
+
+
+        /**
+        * Aggregated Download Metrics flag
+        * @type {boolean}
+        */
+        hideDownloadsChart: MetacatUI.appModel.get("hideSummaryDownloadsChart"),
+
+
+        /**
+        * Aggregated View Metrics flag
+        * @type {boolean}
+        */
+        hideViewsChart: MetacatUI.appModel.get("hideSummaryViewsChart"),
 
         /**
         A template for displaying a loading message
@@ -80,17 +108,39 @@ define(["jquery",
 
             // If there are no datasets in the portal collection
             if(this.model.get("searchResults").header.get("numFound") == 0 ){
-                  // The description for when there is no data in the collection
-              var description = "There are no datasets in " + this.model.get("label") + " yet.",
-                  // use a dummy-ID to create a 'no-activity' metrics view
-                  allIDs = "0";
+              // The description for when there is no data in the collection
+              var description = "There are no datasets in " + this.model.get("label") + " yet.";
+
+              // update to nodeName for repo profiles
+              if(this.nodeView && typeof this.nodeName !== 'undefined')
+                description = "There are no datasets in " + this.nodeName + " yet.";
+
             }
             // For portals with data in the collection
             else {
-                  // The description to use for a portal with data
-              var description = "A summary of all datasets from " + this.model.get("label"),
-                  // Get all the facet counts from the search results collection
-                  facetCounts = this.model.get("allSearchResults").facetCounts,
+              // The description to use for a portal with data
+              var description = "A summary of all datasets from " + this.model.get("label") + ".";
+
+              // update to nodeName for repo profiles
+              if(this.nodeView && typeof this.nodeName !== 'undefined')
+                description = "A summary of all datasets from " + this.nodeName + ".";
+
+            }
+
+            //Create a Stats Model for retrieving and storing all of the statistics
+            var statsModel = new StatsModel();
+
+            //If Solr Joins are enabled, set the query on the StatsModel using the Portal Filters
+            if( MetacatUI.appModel.get("enableSolrJoins") && this.model.get("definitionFilters") ){
+
+              statsModel.set("query", this.model.getQuery());
+
+            }
+            //Otherwise, construct a query using a Search model and all of the ID facet counts
+            else{
+
+              // Get all the facet counts from the search results collection
+              var facetCounts = this.model.get("allSearchResults").facetCounts,
                   //Get the id facet counts
                   idFacets = facetCounts? facetCounts.id : [],
                   //Get the documents facet counts
@@ -111,31 +161,104 @@ define(["jquery",
                 }
               }
 
+              // Create a search model that filters by all the data object Ids
+              var statsSearchModel = new SearchModel({
+                idOnly: allIDs,
+                formatType: [],
+                exclude: []
+              });
+
+              //Sett the query using the query constructing by the Search Model
+              statsModel.set("query", statsSearchModel.getQuery());
+              //Save a reference to the Search Model on the Stats model
+              statsModel.set("searchModel", statsSearchModel);
             }
 
-            // Create a search model that filters by all the data object Ids
-            var statsSearchModel = new SearchModel({
-              idOnly: allIDs,
-              formatType: [],
-              exclude: []
-            });
+            var userType = "portal";
 
-            // Create a StatsModel
-            var statsModel = new StatsModel({
-              query: statsSearchModel.getQuery(),
-              searchModel: statsSearchModel,
-              supportDownloads: false
-            });
+            var label_list = [];
+            label_list.push(this.model.get("label"));
+
+            var metricsModel = new MetricsModel();
+            this.metricsModel = metricsModel;
+
+            if (this.nodeView) {
+
+              userType = "repository";
+
+              // TODO: replace the following logic with dataone bookkeeper service
+              // check if the repository is a dataone member
+              var dataoneHostedRepos = MetacatUI.appModel.get("dataoneHostedRepos");
+
+              if ((typeof dataoneHostedRepos !== 'undefined') && Array.isArray(dataoneHostedRepos) &&
+                  dataoneHostedRepos.includes(this.model.get("seriesId"))){
+
+                if( MetacatUI.appModel.get("hideSummaryMetadataAssessment") !== true )
+                  this.hideMetadataAssessment = false;
+
+                if( MetacatUI.appModel.get("hideSummaryCitationsChart") !== true )
+                  this.hideCitationsChart = false;
+
+                if( MetacatUI.appModel.get("hideSummaryDownloadsChart") !== true )
+                  this.hideDownloadsChart = false;
+
+                if( MetacatUI.appModel.get("hideSummaryViewsChart") !== true )
+                  this.hideViewsChart = false;
+              }
+              //Hide all of the metrics charts
+              else{
+                this.hideMetadataAssessment = true;
+                this.hideCitationsChart = true;
+                this.hideDownloadsChart = true;
+                this.hideViewsChart     = true;
+              }
+
+              // set the statsModel
+              statsModel = MetacatUI.statsModel;
+
+              if (!this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart) {
+                // create a metrics query for repository object
+                var pid_list = new Array();
+                pid_list.push(this.model.get("seriesId"));
+                this.metricsModel.set("pid_list", pid_list);
+                this.metricsModel.set("filterType", "repository");
+              }
+              else{
+                this.metricsModel.set("pid_list", []);
+                this.metricsModel.set("filterType", "");
+              }
+            }
+            else {
+              // create a metrics query for portal object
+              this.metricsModel.set("pid_list", label_list);
+              this.metricsModel.set("filterType", "portal");
+
+              // creating additional filters for portal Metrics
+              var portalQueryFilter = {};
+              var portalCollectionQuery = statsModel.get("query");
+              portalQueryFilter["filterType"] = "query";
+              portalQueryFilter["values"] = [portalCollectionQuery];
+              portalQueryFilter["interpretAs"] = "list";
+              this.metricsModel.set("filterQueryObject", portalQueryFilter);
+            }
+
+            this.metricsModel.fetch();
 
             // Add a stats view
             this.statsView = new StatsView({
                 title: "Statistics and Figures",
                 description: description,
+                metricsModel: this.metricsModel,
                 el: document.createElement("div"),
                 model: statsModel,
-                // @Peter TODO: change the following to false when StatsView.js
-                // is ready to render the metadata assessment image:
-                hideMetadataAssessment: true
+                userType: userType,
+                userId: this.model.get("seriesId"),
+                userLabel: this.model.get("label"),
+                hideMetadataAssessment: this.hideMetadataAssessment,
+                // Rendering metrics on the portal
+                hideCitationsChart: this.hideCitationsChart,
+                hideDownloadsChart: this.hideDownloadsChart,
+                hideViewsChart: this.hideViewsChart,
             });
 
             //Insert the StatsView into this view
@@ -146,10 +269,31 @@ define(["jquery",
 
           }
           catch(e){
-            console.log("Failed to render the metrics view. Error message: " + e);
+            this.handlePortalMetricsError(e);
           }
 
         },
+
+        /**
+         * Handles error display if something went wrong while displaying metrics
+        */
+       handlePortalMetricsError: function(error, errorDisplayMessage){
+
+          if(!errorDisplayMessage) {
+            var errorDisplayMessage = "<p>Sorry, we couldn't retrieve metrics for the \"" + (this.model.get("label") || this.model.get("portalId")) +
+                "\" portal at this time.</p>"
+          }
+
+          //Show a warning message about the metrics error
+          MetacatUI.appView.showAlert(
+            errorDisplayMessage,
+            "alert-warning",
+            this.$el
+          );
+          this.$(".loading").remove();
+
+          console.log("Failed to render the metrics view. Error message: " + error);
+       },
 
         /**
          * Functionality to execute after the view has been created and rendered initially

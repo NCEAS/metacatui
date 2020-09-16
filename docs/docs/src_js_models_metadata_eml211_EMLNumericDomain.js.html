@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/models/metadata/eml211/EMLNumericDomain.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/models/metadata/eml211/EMLNumericDomain.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(["jquery", "underscore", "backbone",
+        "models/DataONEObject"],
+    function($, _, Backbone, DataONEObject) {
+
+        /**
+         * @class EMLNumericDomain
+         * @classdesc EMLNumericDomain represents the measurement scale of an interval
+         * or ratio measurement scale attribute, and is an extension of
+         * EMLMeasurementScale.
+         * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         */
+        var EMLNumericDomain = Backbone.Model.extend(
+            /** @lends EMLNumericDomain.prototype */{
+
+        	type: "EMLNumericDomain",
+
+            /* Attributes of an EMLNonNumericDomain object */
+            defaults: function(){
+              return {
+                /* Attributes from EML, extends attributes from EMLMeasurementScale */
+                measurementScale: null, // the required name of this measurement scale
+                unit: null, // the required standard or custom unit definition
+                precision: null, // the precision of the observed number
+                numericDomain: {} // a required numeric domain object or its reference
+              }
+            },
+
+            /**
+             * The map of lower case to camel case node names
+             * needed to deal with parsing issues with $.parseHTML().
+             * Use this until we can figure out issues with $.parseXML().
+             */
+            nodeNameMap: {
+                "standardunit": "standardUnit",
+                "customunit": "customUnit",
+                "numericdomain": "numericDomain",
+                "numbertype": "numberType"
+            },
+
+            /* Initialize an EMLNonNumericDomain object */
+            initialize: function(attributes, options) {
+
+                this.on("change:numericDomain", this.trickleUpChange);
+
+            },
+
+            /**
+             * Parse the incoming measurementScale's XML elements
+             */
+            parse: function(attributes, options) {
+
+                var $objectDOM;
+                var measurementScale;
+                var rootNodeName;
+
+                if ( attributes.objectDOM ) {
+                    rootNodeName = $(attributes.objectDOM)[0].localName;
+                    $objectDOM = $(attributes.objectDOM);
+                } else if ( attributes.objectXML ) {
+                    rootNodeName = $(attributes.objectXML)[0].localName;
+                    $objectDOM = $($(attributes.objectXML)[0]);
+                } else {
+                    return {};
+                }
+
+                // do we have an appropriate measurementScale tree?
+                var index = _.indexOf(["measurementscale","interval", "ratio"], rootNodeName);
+                if ( index == -1 ) {
+                    throw new Error("The measurement scale XML does not have a root " +
+                        "node of 'measurementScale', 'interval', or 'ratio'.");
+                }
+
+                // If measurementScale is present, add it
+                if ( rootNodeName == "measurementscale" ) {
+                    attributes.measurementScale = $objectDOM.children().first()[0].localName;
+                    $objectDOM = $objectDOM.children().first();
+                } else {
+                    attributes.measurementScale = $objectDOM.localName;
+                }
+
+
+                // Add the unit
+                var unitObject = {};
+                var unit = $objectDOM.children("unit");
+                var standardUnitNodes = unit.children("standardunit"),
+                    customUnitNodes   = unit.children("customunit"),
+                    standardUnit,
+                    customUnit;
+
+                if ( standardUnitNodes.length ) {
+                    standardUnit = standardUnitNodes.text();
+
+                    if( standardUnit )
+                      unitObject.standardUnit = standardUnit;
+                }
+                else if( customUnitNodes.length ){
+                    customUnit = customUnitNodes.text();
+
+                    if( customUnit )
+                      unitObject.customUnit = customUnit;
+                }
+
+                attributes.unit = unitObject;
+
+                // Add the precision
+                var precision = $objectDOM.children("precision").text();
+                if ( precision ) {
+                    attributes.precision = precision;
+                }
+
+                // Add the numericDomain
+                var numericDomainObject = {};
+                var numericDomain = $objectDOM.children("numericdomain");
+                var numberType;
+                var boundsArray = [];
+                var boundsObject;
+                var bounds;
+                var minimum;
+                var maximum;
+                var references;
+                if ( numericDomain ) {
+                    // Add the XML id of the numeric domain
+                    if ( $(numericDomain).attr("id") ) {
+                        numericDomainObject.xmlID = $(numericDomain).attr("id");
+                    }
+
+                    // Add the numberType
+                    numberType = $(numericDomain).children("numbertype");
+
+                    if ( numberType ) {
+                        numericDomainObject.numberType = numberType.text();
+
+                        // Add optional bounds
+                        bounds = $(numericDomain).children("bounds");
+                        if ( bounds.length ) {
+                            _.each(bounds, function(bound) {
+                                boundsObject = {}; // initialize on each
+                                minimum = $(bound).children("minimum").text();
+                                maximum = $(bound).children("maximum").text();
+                                if ( minimum &amp;&amp; maximum ) {
+                                    boundsObject.minimum = minimum;
+                                    boundsObject.maximum = maximum;
+                                } else if ( minimum ) {
+                                    boundsObject.minimum = minimum;
+                                } else if ( maximum ) {
+                                    boundsObject.maximum = maximum;
+                                }
+                                // If one of min or max is defined, add to the bounds array
+                                if ( boundsObject.minimum || boundsObject.maximum ) {
+                                    boundsArray.push(boundsObject);
+                                }
+                            });
+                        }
+                        numericDomainObject.bounds = boundsArray;
+
+                    } else {
+                        // Otherwise look for references
+                        references = $(numericDomain).children("references");
+                        if ( references ) {
+                            numericDomainObject.references = references.text();
+                        }
+                    }
+                    attributes.numericDomain = numericDomainObject;
+                }
+                attributes.objectDOM = $objectDOM[0];
+
+                return attributes;
+            },
+
+            /* Serialize the model to XML */
+            serialize: function() {
+                var objectDOM = this.updateDOM();
+                var xmlString = objectDOM.outerHTML;
+
+                // Camel-case the XML
+                xmlString = this.formatXML(xmlString);
+
+                return xmlString;
+            },
+
+            /* Copy the original XML DOM and update it with new values from the model */
+            updateDOM: function(objectDOM) {
+                var nodeToInsertAfter;
+                var type = this.get("measurementScale");
+                if ( typeof type === "undefined") {
+                    console.warn("Defaulting to an interval measurementScale.");
+                    type = "interval";
+                }
+                if ( ! objectDOM ) {
+                    objectDOM = this.get("objectDOM");
+                }
+                var objectXML = this.get("objectXML");
+
+                // If present, use the cached DOM
+                if ( objectDOM ) {
+                    objectDOM = objectDOM.cloneNode(true);
+
+                // otherwise, use the cached XML
+                } else if ( objectXML ){
+                    objectDOM = $(objectXML)[0].cloneNode(true);
+
+                // This is new, create it
+                } else {
+                    objectDOM = document.createElement(type);
+
+                }
+
+                // Update the unit
+                var unit = this.get("unit");
+                var unitNode;
+                var unitTypeNode;
+                if ( unit ) {
+                    // Remove any existing unit
+                    $(objectDOM).find("unit").remove();
+
+                    // Build a unit element, and populate a standard or custom child
+                    unitNode = document.createElement("unit");
+
+                    if ( typeof unit.standardUnit !== "undefined") {
+                        unitTypeNode = document.createElement("standardUnit");
+                        $(unitTypeNode).text(unit.standardUnit);
+                    } else if ( typeof unit.customUnit !== "undefined" ) {
+                        unitTypeNode = document.createElement("customUnit");
+                        $(unitTypeNode).text(unit.customUnit);
+                    } else {
+                        // Hmm, unit isn't an object?
+                        // Default to a standard unit
+                        unitTypeNode = document.createElement("standardUnit");
+                        if ( typeof unit === "string") {
+                            $(unitTypeNode).text(unit);
+                            console.warn("EMLNumericDomain.unit should be an object.");
+                        } else {
+                            // We're really striking out. Default to dimensionless.
+                            $(unitTypeNode).text("dimensionless");
+                            console.warn("Defaulting EMLNumericDomain.unit to dimensionless.");
+                        }
+                    }
+                    $(unitNode).append(unitTypeNode);
+
+                    // Add the unit to the DOM
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "unit");
+
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).prepend(unitNode);
+                    } else {
+                        $(nodeToInsertAfter).after(unitNode);
+                    }
+                }
+
+                // Update the precision
+                if ( this.get("precision") ) {
+                    if ( $(objectDOM).find("precision").length ) {
+                        $(objectDOM).find("precision").text(this.get("precision"));
+                    } else {
+                        nodeToInsertAfter = this.getEMLPosition(objectDOM, "precision");
+
+                        if( ! nodeToInsertAfter ) {
+                            $(objectDOM).append($(document.createElement("precision"))
+                                .text(this.get("precision"))[0]);
+                        } else {
+                            $(nodeToInsertAfter).after(
+                                $(document.createElement("precision"))
+                                    .text(this.get("precision"))[0]
+                            );
+                        }
+                    }
+                }
+
+                // Update the numericDomain
+                var numericDomain = this.get("numericDomain");
+                var numericDomainNode = $(objectDOM).find("numericdomain")[0];
+                var numberType;
+                var numberTypeNode;
+                var minBound;
+                var maxBound;
+                var boundsNode;
+                var minBoundNode;
+                var maxBoundNode;
+                if ( numericDomain ) {
+
+                	var oldNumericDomainNode = $(numericDomainNode).clone();
+
+                    // Remove the existing numericDomainNode node
+                    if ( typeof numericDomainNode !== "undefined" ) {
+                        numericDomainNode.remove();
+                    }
+
+                    // Build the new numericDomain node
+                    numericDomainNode = document.createElement("numericdomain");
+
+                    // Do we have numberType?
+                    if ( typeof numericDomain.numberType !== "undefined" ) {
+                        numberTypeNode = document.createElement("numbertype");
+                        $(numberTypeNode).text(numericDomain.numberType);
+                        $(numericDomainNode).append(numberTypeNode);
+                    }
+
+                    // Do we have bounds?
+                    if ( typeof numericDomain.bounds !== "undefined" &amp;&amp;
+                         numericDomain.bounds.length ) {
+
+                        _.each(numericDomain.bounds, function(bound) {
+                            minBound = bound.minimum;
+                            maxBound = bound.maximum;
+                            boundsNode = document.createElement("bounds");
+
+                            var hasBounds = typeof minBound !== "undefined" || typeof maxBound !== "undefined";
+
+                            if ( hasBounds ) {
+                                // Populate the minimum element
+                                if ( typeof minBound !== "undefined" ) {
+                                    minBoundNode = $(document.createElement("minimum"));
+                                    minBoundNode.text(minBound);
+
+                                    var existingExclusive = oldNumericDomainNode.find("minimum").attr("exclusive");
+
+                                    if( !existingExclusive || existingExclusive === "false" )
+                                    	minBoundNode.attr("exclusive", "false");
+                                    else
+                                    	minBoundNode.attr("exclusive", "true");
+                                }
+
+                                // Populate the maximum element
+                                if ( typeof maxBound !== "undefined" ) {
+                                    maxBoundNode = $(document.createElement("maximum"));
+                                    maxBoundNode.text(maxBound);
+
+                                    var existingExclusive = oldNumericDomainNode.find("maximum").attr("exclusive");
+
+                                    if( !existingExclusive || existingExclusive === "false" )
+                                    	maxBoundNode.attr("exclusive", "false");
+                                    else
+                                    	maxBoundNode.attr("exclusive", "true");
+                                }
+
+                                $(boundsNode).append(minBoundNode, maxBoundNode);
+                                $(numericDomainNode).append(boundsNode);
+
+                            } else {
+                                // Do nothing. Content is missing, don't append the node
+                            }
+                        });
+                    } else {
+                        // Basically do nothing. Don't append the numericDomain element
+                        // TODO: handle numericDomain.references
+
+                    }
+                    nodeToInsertAfter = this.getEMLPosition(objectDOM, "numericDomain");
+
+                    if( ! nodeToInsertAfter ) {
+                        $(objectDOM).append(numericDomainNode);
+                    } else {
+                        $(nodeToInsertAfter).after(numericDomainNode);
+                    }
+                }
+                return objectDOM;
+            },
+
+            formatXML: function(xmlString){
+                return DataONEObject.prototype.formatXML.call(this, xmlString);
+            },
+
+            /**/
+            getEMLPosition: function(objectDOM, nodeName) {
+                // TODO: set the node order
+                var nodeOrder = ["unit", "precision", "numericDomain"];
+
+                var position = _.indexOf(nodeOrder, nodeName);
+
+                // Append to the bottom if not found
+                if ( position == -1 ) {
+                    return $(objectDOM).children().last()[0];
+                }
+
+                // Otherwise, go through each node in the node list and find the
+                // position where this node will be inserted after
+                for ( var i = position - 1; i >= 0; i-- ) {
+                    if ( $(objectDOM).find(nodeOrder[i]).length ) {
+                        return $(objectDOM).find(nodeOrder[i]).last()[0];
+                    }
+                }
+            },
+
+            validate: function(){
+            	var errors = {};
+
+            	if(!this.get("unit"))
+            		errors.unit = "Choose a unit.";
+
+            	if( Object.keys(errors).length )
+            		return errors;
+            	else{
+
+            		this.trigger("valid");
+            		return;
+
+            	}
+
+            },
+
+            /*
+            * Climbs up the model heirarchy until it finds the EML model
+            *
+            * @return {EML211 or false} - Returns the EML 211 Model or false if not found
+            */
+            getParentEML: function(){
+              var emlModel = this.get("parentModel"),
+                  tries = 0;
+
+              while (emlModel.type !== "EML" &amp;&amp; tries &lt; 6){
+                emlModel = emlModel.get("parentModel");
+                tries++;
+              }
+
+              if( emlModel &amp;&amp; emlModel.type == "EML")
+                return emlModel;
+              else
+                return false;
+
+            },
+
+            /* Let the top level package know of attribute changes from this object */
+            trickleUpChange: function(){
+                MetacatUI.rootDataPackage.packageModel.set("changed", true);
+            }
+
+        });
+
+        return EMLNumericDomain;
+    }
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Aug 10 2020 17:22:16 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

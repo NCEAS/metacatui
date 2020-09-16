@@ -27,7 +27,8 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'           : 'renderAPI',       // API page
 			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
-      "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor"
+			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
+			'drafts' : 'renderDrafts'
 		},
 
 		helpPages: {
@@ -183,6 +184,8 @@ function ($, _, Backbone) {
 		},
 
 		renderMetadata: function (pid) {
+			pid = decodeURIComponent(pid);
+
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
 
@@ -221,20 +224,24 @@ function ($, _, Backbone) {
 		renderProfile: function(username, section, subsection){
 			this.closeLastView();
 
-			var viewChoice;
-
 			if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
 				this.routeHistory.push("summary");
 
-				if(!MetacatUI.appView.statsView){
-					require(["views/StatsView"], function(StatsView){
-						MetacatUI.appView.statsView = new StatsView();
+				// flag indicating /profile view
+				var viewOptions = { nodeSummaryView: true };
 
-						MetacatUI.appView.showView(MetacatUI.appView.statsView);
+				if(!MetacatUI.appView.statsView){
+
+					require(['views/StatsView'], function(StatsView){
+						MetacatUI.appView.statsView = new StatsView({
+							userType: "repository"
+						});
+
+						MetacatUI.appView.showView(MetacatUI.appView.statsView, viewOptions);
 					});
 				}
 				else
-					MetacatUI.appView.showView(MetacatUI.appView.statsView);
+					MetacatUI.appView.showView(MetacatUI.appView.statsView, viewOptions);
 			}
 			else{
 				this.routeHistory.push("profile");
@@ -316,6 +323,18 @@ function ($, _, Backbone) {
 			}
 		},
 
+		/**
+		 * Renders the Drafts view which is a simple view backed by LocalForage that
+		 * lists drafts created in the Editor so users can recover any failed
+		 * submissions.
+		 */
+		renderDrafts: function() {
+			require(['views/DraftsView'], function(DraftsView){
+				MetacatUI.appView.draftsView = new DraftsView();
+				MetacatUI.appView.showView(MetacatUI.appView.draftsView);
+			});
+		 },
+
     /**
     * Renders the PortalEditorView
     * @param {string} [portalTermPlural] - This should match the `portalTermPlural` configured in the AppModel.
@@ -338,7 +357,12 @@ function ($, _, Backbone) {
         this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);
       }
       else{
-        this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        if( !portalIdentifier ){
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural"));
+        }
+        else{
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        }
       }
 
       require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
@@ -442,9 +466,13 @@ function ($, _, Backbone) {
 			}
 		},
 
-    /**
-     * Render the portal view based on the given name, id, or section
-     */
+		/**		 
+		 * renderPortal - Render the portal view based on the given name or id, as
+		 * well as optional section	 
+		 * 			
+		 * @param  {string} label         The portal ID or name
+		 * @param  {string} portalSection A specific section within the portal 
+		 */
      renderPortal: function(label, portalSection) {
 			 // Add the overall class immediately so the navbar is styled correctly right away
  			 $("body").addClass("PortalView");

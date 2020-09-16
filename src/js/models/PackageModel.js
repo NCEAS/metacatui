@@ -724,7 +724,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			var query = "fl=title,id,obsoletedBy,resourceMap" +
 						"&wt=json" +
 						"&group=true&group.field=formatType&group.limit=-1" +
-						"&q=((formatType:METADATA+" + rMapQuery + ") OR " + idQuery + ")";
+						"&q=((formatType:METADATA AND " + rMapQuery + ") OR " + idQuery + ")";
 
 			var model = this;
 			var requestSettings = {
@@ -836,7 +836,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/Sol
 			if(!metadata) return false;
 
 			//Load the rendered metadata from the view service
-			var viewService = MetacatUI.appModel.get("viewServiceUrl") + metadata.get("id");
+			var viewService = MetacatUI.appModel.get("viewServiceUrl") + encodeURIComponent(metadata.get("id"));
 			var requestSettings = {
 					url: viewService,
 					success: function(data, response, xhr){

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: views/EditCollectionView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: views/EditCollectionView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define(['underscore',
+        'jquery',
+        'backbone',
+        "models/Map",
+        "models/CollectionModel",
+        "models/Search",
+        "views/DataCatalogViewWithFilters",
+        "text!templates/editCollection.html"],
+function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilters,
+         Template){
+
+  /**
+  * @class EditCollectionView
+  * @classdesc A view that allows the user to edit the search filters that define their dataset collection
+  * @extends Backbone.View
+  * @constructor
+  */
+  var EditCollectionView = Backbone.View.extend(
+    /** @lends EditCollectionView.prototype */{
+
+    /**
+    * The type of View this is
+    * @type {string}
+    */
+    type: "EditCollection",
+
+    /**
+    * The HTML tag name to use for this view's element
+    * @type {string}
+    */
+    tagName: "div",
+
+    /**
+    * The HTML classes to use for this view's element
+    * @type {string}
+    */
+    className: "edit-collection",
+
+    /**
+    * The Collection model that is being edited
+    * @type {CollectionModel}
+    */
+    model: undefined,
+
+    /**
+    * The template for this view. An HTML file is converted to an Underscore.js template
+    */
+    template: _.template(Template),
+
+    /**
+    * A jQuery selector for the element that the DataCatalogViewWithFilters should be inserted into
+    * @type {string}
+    */
+    dataCatalogViewContainer: ".data-catalog-view-container",
+    /**
+    * A jQuery selector for the element that the Save and Cancel buttons should be inserted into
+    * @type {string}
+    */
+    collectionControlsContainer: ".applied-filters-container",
+    /**
+    * A jQuery selector for the element that contains the filter help text
+    * @type {string}
+    */
+    helpTextContainer: "#filter-help-text",
+
+    /**
+    * The events this view will listen to and the associated function to call.
+    * @type {Object}
+    */
+    events: {
+    },
+
+    /**
+    * Is exexcuted when a new EditCollectionView is created
+    * @param {Object} options - A literal object with options to pass to the view
+    * @property {CollectionModel} options.model - The collection whose search results will be displayed and edited in this view
+    */
+    initialize: function(options){
+
+      if( typeof options == "object" ){
+        this.model = options.model || undefined;
+      }
+
+    },
+
+    /**
+    * Renders this view
+    */
+    render: function(){
+
+      this.$el.html(this.template());
+
+      // Make sure that we have a series ID before we render the Data Catalog
+      // View With Filters. For new portals, we generate and reserve a series ID
+      // and use it to add an isPartOf filter to the portal model. This takes time,
+      // and influences the search results shown in the data catalog.
+      if( this.model.get("seriesId") || this.model.get("latestVersion") ){
+        //Render the DataCatalog
+        this.renderDataCatalog();
+      } else {
+        //When the seriesId or latest pid version is found, render the DataCatalog
+        this.listenToOnce(this.model, "change:seriesId",    this.renderDataCatalog);
+        this.listenToOnce(this.model, "latestVersionFound", this.renderDataCatalog);
+      }
+
+      //this.renderCollectionControls();
+
+    },
+
+    /**
+     * Render the DataCatalogViewWithFilters
+     */
+    renderDataCatalog: function(){
+
+      var searchModel = this.model.get("searchModel");
+
+      //Create a DataCatalog view
+      var dataCatalogView = new DataCatalogViewWithFilters({
+        searchModel: searchModel,
+        searchResults: this.model.get("searchResults"),
+        mapModel: this.model.get("mapModel") || new Map(),
+        isSubView: true,
+        mode: "map",
+        filters: false
+      });
+
+      //Render the view and insert it into the page
+      this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
+      dataCatalogView.render();
+
+      //Add a filter input for the isPartOf filter
+      if( dataCatalogView.filterGroupsView &amp;&amp;
+          dataCatalogView.filterGroupsView.filterGroups &amp;&amp;
+          dataCatalogView.filterGroupsView.filterGroups.length ){
+
+        //Get the isPartOf filter in the search model
+        var isPartOfFilter = searchModel.get("filters").find(function(f){
+          return (f.get("fields").length == 1 &amp;&amp; f.get("fields").includes("isPartOf"));
+        });
+
+        //If an isPartOf filter already exists, add it to the filter groups
+        if( isPartOfFilter ){
+          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
+        }
+        //Otherwise, create a new isPartOf filter
+        else{
+          //Create an isPartOf filter
+          isPartOfFilter = this.model.createIsPartOfFilter();
+          //Set the value as a trueValue, so it can bbe used as a Toggle
+          isPartOfFilter.set("trueValue", isPartOfFilter.get("values")[0]);
+          //Reset the values
+          isPartOfFilter.set("values", []);
+          //Add the isPartOf filter to the filter collections
+          dataCatalogView.filterGroupsView.filters.unshift(isPartOfFilter);
+          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
+        }
+      }
+
+      this.listenTo(this.model.get("searchResults"), "reset", this.toggleHelpText);
+
+    },
+
+    /**
+    * Renders the edit collection controls - e.g. a Save and Cancel buttton
+    */
+    renderCollectionControls: function(){
+
+      //Create a Save button
+      var saveButton   = $(document.createElement("a"))
+                        .addClass("save btn btn-primary")
+                        .text("Save"),
+      //Create a Cancel button
+          cancelButton = $(document.createElement("a"))
+                        .addClass("cancel btn")
+                        .text("Cancel"),
+      //Create a container for the buttons
+          buttons      = $(document.createElement("div"))
+                        .addClass("collection-controls")
+                        .append(saveButton, cancelButton);
+
+      //Add the buttons to the view
+      this.$(this.collectionControlsContainer).append(buttons);
+
+    },
+
+    /**
+     * Either hides or shows the help message that lets the user know
+     * they can add filters when the collection is empty.
+     */
+    toggleHelpText: function() {
+
+      //Get the list of filters currently applied to the collection definition
+      var currentFilters = this.model.getAllDefinitionFilters(),
+          msg = "";
+
+      // If there are no filters set at all, the entire repository catalog will be listed as
+      // search results, so display a helpful message
+      if ( currentFilters.length == 0 &amp;&amp; this.model.get("searchResults").length ) {
+        msg = "&lt;h5>Your dataset collection hasn't been created yet.&lt;/h5>" +
+              "&lt;p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, search for data using the filters on the left.&lt;/p>";
+      }
+      //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
+      else if( currentFilters.length == 1 &amp;&amp;
+               currentFilters[0].get("fields")[0] == "isPartOf" &amp;&amp;
+               !this.model.get("searchResults").length){
+
+         msg = "&lt;h5>Your dataset collection is empty.&lt;/h5>" +
+               "&lt;p>To add datasets to your collection, search for data using the filters on the left.&lt;/p>";
+
+        //TODO: When the ability to add datasets to collection via the "isPartOf" relationship is added to MetacatUI
+        // then update this message with details on how to add datasets to the collection
+      }
+
+      //If a message string was created, display it
+      if( msg ){
+        //Show the message
+        MetacatUI.appView.showAlert(msg, "alert-info", this.$(this.helpTextContainer));
+      }
+      else{
+        //Remove the message
+        this.$(this.helpTextContainer).empty();
+        //Remove validation messaging, too
+        this.$(".notification.error[data-category='definition']").removeClass("error").empty();
+      }
+
+    }
+
+  });
+
+  return EditCollectionView;
+
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addKeyword">addKeyword</a></li><li><a href="global.html#addNewKeyword">addNewKeyword</a></li><li><a href="global.html#checkIncompatibility">checkIncompatibility</a></li><li><a href="global.html#clearOldDrafts">clearOldDrafts</a></li><li><a href="global.html#friendlyTimeDiff">friendlyTimeDiff</a></li><li><a href="global.html#getSizeOfIndexQueue">getSizeOfIndexQueue</a></li><li><a href="global.html#hideTemporaryMessage">hideTemporaryMessage</a></li><li><a href="global.html#listenForActivity">listenForActivity</a></li><li><a href="global.html#listenForTimeout">listenForTimeout</a></li><li><a href="global.html#movePartyDown">movePartyDown</a></li><li><a href="global.html#movePartyUp">movePartyUp</a></li><li><a href="global.html#movePersonDown">movePersonDown</a></li><li><a href="global.html#movePersonUp">movePersonUp</a></li><li><a href="global.html#renderSupport">renderSupport</a></li><li><a href="global.html#saveDraft">saveDraft</a></li><li><a href="global.html#showAlert">showAlert</a></li><li><a href="global.html#showTemporaryMessage">showTemporaryMessage</a></li><li><a href="global.html#showTimeoutSignIn">showTimeoutSignIn</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Jun 03 2020 12:45:11 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

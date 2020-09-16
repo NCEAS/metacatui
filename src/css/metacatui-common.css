@@ -116,7 +116,8 @@ article.container {
 	width: 96%;
 }
 #Content{
-    padding: 40px 40px 40px 40px;
+  padding: 40px 40px 40px 40px;
+  min-height: 200px;
 }
 .DataCatalog #Content{
 	box-sizing: border-box;
@@ -209,6 +210,28 @@ footer{
 .nav .right .dropdown-menu {
   left: -50%;
 }
+#nav-trigger{
+  color: white;
+    float: right;
+    margin-top: 15px;
+    font-size: 2em;
+    display: none;
+}
+#nav-trigger:hover{
+  text-decoration: none;
+}
+#Navbar .home{
+  display: inline-block;
+}
+#Navbar a .title{
+  color: #FFF;
+  vertical-align: middle;
+}
+#Navbar .logo{
+  max-height: 30px;
+  margin-right: 10px;
+  margin-top: 5px;
+}
 /******************************************
 ** Titles ***
 ******************************************/
@@ -253,14 +276,18 @@ header .citation {
 	margin-bottom: 0px;
 }
 #Content > .login{
-	max-width: 400px;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 100px;
+	max-width: 300px;
+  margin-top: 50px;
+  margin-bottom: 20px;
+  display: grid;
+  align-self: center;
 }
-#Content > .login > * {
-    font-size: 2em;
-    margin-right: 10px;
+#Content > .login .btn{
+  font-size: 1.5em;
+}
+.login > span {
+  top: -.2em;
+  position: relative;
 }
 #Content > .login > .alert-container{
 	font-size: inherit;
@@ -385,6 +412,26 @@ header .citation {
     max-width: 90%;
     margin-left: 5%;
 }
+body > .alert-container.important-app-message{
+  bottom: 0px;
+  top: auto;
+  width: 100%;
+}
+body > .alert-container.important-app-message > .alert{
+  margin-bottom: 0px;
+  display: grid;
+}
+.temporary-message{
+  margin-bottom: 0px;
+  position: relative;
+}
+.alert.subtle{
+  background-color: #f9f7f7;
+  border-color: #CCC;
+  color: #999;
+  border-width: 0px;
+}
+
 /******************************************
 ** Icons ***
 ******************************************/
@@ -411,6 +458,11 @@ h4 > .icon{
 }
 img.icon{
 	max-height: 1.4em;
+}
+svg.icon {
+	max-height: 19px;
+	max-width: 19px;
+	fill: #555;
 }
 .icon-positive{
 	color: green;
@@ -1439,6 +1491,61 @@ img.icon{
 	color: #FFF;
 	text-decoration: none;
 }
+/* MAIN CONTENT
+--------------------------------- */
+#mainContent{
+	padding: 20px;
+}
+
+#mainContent h1{
+	font-size: 2em;
+  text-align: center;
+  display: inline-block;
+	width: 100%;
+	margin-bottom: 20px;
+}
+#mainContent .form-input{
+  display: grid;
+  grid-template-columns: 90% 10%;
+  width: 100%;
+}
+#mainContent input{
+    border-radius: 8px 0px 0px 8px;
+    -moz-border-radius: 20px 0px 0px 20px;
+    font-size: 2em;
+    padding-left: 20px;
+    width: 100%;
+    height: 100%;
+}
+
+#mainContent input::-webkit-input-placeholder{
+	padding-top: 7px;
+}
+#mainContent input:-moz-placeholder{ /* Firefox 18- */
+	padding-top: 7px;
+}
+#mainContent input::-moz-placeholder{ /* Firefox 19+ */
+	padding-top: 7px;
+}
+#mainContent input:-ms-input-placeholder{
+	padding-top: 7px;
+}
+
+#search_btn_main{
+  	-webkit-border-radius: 0 8px 8px 0;
+  	-moz-border-radius: 0 15px 15px 0;
+  	border-left: 0px;
+  	-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+    height: 100%;
+    padding: 4px;
+    align-content: center;
+    display: grid;
+    font-size: 1.5em;
+}
+
+#search_btn_main > i{
+  color: #FFF;
+}
 /******************************************
 ** The Metadata and MetadataIndex View **
 ******************************************/
@@ -1580,6 +1687,7 @@ body > .alert-container {
   padding-bottom: 25px;
 }
 .attributeList > .row-fluid > .span2 {
+  max-width: 300px;
   max-height: 700px;
   overflow: scroll;
   width: 25%;
@@ -1688,8 +1796,8 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle{
 }
 .controls-container .info-icons .icon-stack{
 	width: 1.25em;
-  height: 1.25em;
-  vertical-align: top;
+	height: 1.25em;
+	vertical-align: top;
 }
 .controls-container .info-icons .icon-stack .icon {
 	margin-top: -15px;
@@ -1740,7 +1848,7 @@ div.analyze.dropdown.open button.dropdown.btn.btn-secondary.dropdown-toggle{
 Defult button styling for Metrics views
 ***********/
 a.btn.metrics {
-    width: 164px;
+    min-width: 164px;
 		margin-bottom: 0px;
 }
 .metric-value > .icon.metric-icon {
@@ -1750,6 +1858,7 @@ a.btn.metrics {
     float: right;
     background-color: #333;
     margin-top: 2px;
+    margin-left: 10px;
 }
 .metric-icon {
     margin-right: 10px;
@@ -1762,10 +1871,6 @@ a.btn.metrics {
 .metric-value {
     float: right;
 }
-
-
-
-
 i.icon.icon-cloud-download {
     font-size: 1.2em; !important;
 }
@@ -1798,6 +1903,9 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 /* Making the publish button consistent size as the downloads all*/
 #owner-controls-container > .btn {
     margin-right: 10px;
+}
+#owner-controls-container > .btn[disabled]{
+  cursor: not-allowed;
 }
 .edit-toolbar > #owner-controls-container #publish {
     width: 138px;
@@ -1869,7 +1977,63 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	padding-right: 18px;
 	padding-top: 22px;
 }
+.empty-citation-list-text {
+	font-size: 16px;
+    font-weight: 100;
+    color: #555555;
+    text-align: center;
+    margin-left: 10px;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+}
+.empty-citation-list {
+    width: 80%;
+    top: 22%;
+    left: 10%;
+    display: flex;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50%;
+    border-radius: 2px;
+    background-color: #f5f5f5;
+    box-shadow: 0 0 black;
+}
 
+.empty-citation-list > .register-citation {
+	top: 30%;
+    position: absolute;
+}
+
+.register-citation-modal-header{
+	height: 25px;
+}
+
+.register-citation-modal-header > .left-header-section{
+	width: 90%;
+	float: left;
+	margin-top: 3px;
+}
+
+.register-citation-modal-header > .right-header-section{
+	width: 10%;
+	float: right;
+	margin-top: 3px;
+}
+
+.register-citation-element > .register-citation {
+	position: fixed;
+    display: block;
+    margin-top: 60px;
+}
+
+.register-citation-element {
+	display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /******************************************
 * Search Page / Data Catalog Page Metrics
@@ -1889,100 +2053,145 @@ i.catalog-metric-icon {
 }
 
 /**********************************************************
-*	  Metric Modal Chart (Views, Downloads, Citations)	  *
+*	  Metric Modal / Profile Chart (Views, Downloads, Citations)	  *
 ***********************************************************/
 
+#user-views-chart,
+#user-downloads-chart {
+    width: 90%;
+}
+
+.metric-chart-loading {
+    font-size: 3em;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#user-views-chart > .metric-chart-loading,
+#user-downloads-chart > .metric-chart-loading {
+    font-size: 1em;
+    margin: 0 auto;
+    text-align: center;
+}
 
 /*
-============ GENERAL CHART TEXT STYLE ===========		[metric modal chart]
+============ GENERAL CHART TEXT STYLE ===========		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text {
+#metric-modal .metric-chart text,
+.views-metrics .metric-chart text,
+.downloads-metrics .metric-chart text {
 	fill: #565656;
-	font-size: 9px;
+	font-size: 10px;
 	font-family: Helvetica, Arial, "sans serif";
 }
 
 /*
-============ WHEN THERE IS NO DATA: ===========		[metric modal chart]
+============ WHEN THERE IS NO DATA: ===========		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text.no-data {
+#metric-modal .metric-chart text.no-data,
+.views-metrics .metric-chart text.no-data,
+.downloads-metrics .metric-chart text.no-data {
 	font-size: 16px;
 	font-weight: 100;
-	fill:#d0d0d0;
+	fill:#555555;
 }
 
-#metric-modal .metric-chart rect.no-data {
+#metric-modal .metric-chart rect.no-data,
+.views-metrics .metric-chart rect.no-data,
+.downloads-metrics .metric-chart rect.no-data {
 	fill: #f5f5f5;
 }
 
 /*
-	============ WHEN THERE IS DATA: ===========		[metric modal chart]
+	============ WHEN THERE IS DATA: ===========		[metric modal / profile chart]
 */
 
 /*
-	--- AXES ---		[metric modal chart]
+	--- AXES ---		[metric modal / profile chart]
 */
 
 /* --- x axis focus --- */
 
-#metric-modal .metric-chart .focus .axis {
+#metric-modal .metric-chart .focus .axis,
+.views-metrics .metric-chart .focus .axis,
+.downloads-metrics .metric-chart .focus .axis {
 	shape-rendering: crispEdges;
 }
 
-#metric-modal .metric-chart .focus .x.axis {
+#metric-modal .metric-chart .focus .x.axis,
+.views-metrics .metric-chart .focus .x.axis,
+.downloads-metrics .metric-chart .focus .x.axis {
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .focus .x.axis line {
+#metric-modal .metric-chart .focus .x.axis line,
+.views-metrics .metric-chart .focus .x.axis line,
+.downloads-metrics .metric-chart .focus .x.axis line  {
 	display: none;
 }
 
-#metric-modal .metric-chart .focus .x.axis .tick:hover {
+#metric-modal .metric-chart .focus .x.axis .tick:hover,
+.views-metrics .metric-chart .focus .x.axis .tick:hover,
+.downloads-metrics .metric-chart .focus .x.axis .tick:hover {
 	cursor: default;
 }
 
 
 /* --- x axis context --- */
 
-#metric-modal .metric-chart .context .x.axis line {
+#metric-modal .metric-chart .context .x.axis line,
+.views-metrics .metric-chart .context .x.axis line,
+.downloads-metrics .metric-chart .context .x.axis line {
 	display: none;
 }
 
-#metric-modal .metric-chart .context .x.axis {
+#metric-modal .metric-chart .context .x.axis,
+.views-metrics .metric-chart .context .x.axis,
+.downloads-metrics .metric-chart .context .x.axis {
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .context .x.axis .domain {
+#metric-modal .metric-chart .context .x.axis .domain,
+.views-metrics .metric-chart .context .x.axis .domain,
+.downloads-metrics .metric-chart .context .x.axis .domain {
 	display:none;
 }
 
 /* --- focus y-axis --- */
 
-#metric-modal .metric-chart .focus .y.axis .domain {
+#metric-modal .metric-chart .focus .y.axis .domain,
+.views-metrics .metric-chart .focus .y.axis .domain,
+.downloads-metrics .metric-chart .focus .y.axis .domain {
 	display: none;
 }
 
-#metric-modal .metric-chart .y.axis.title {
+#metric-modal .metric-chart .y.axis.title,
+.views-metrics .metric-chart .y.axis.title,
+.downloads-metrics .metric-chart .y.axis.title {
 	font-size: 13px;
 	font-weight: 100;
 }
 
 /* horizontal focus gridlines */
-#metric-modal .metric-chart .y.axis line {
+#metric-modal .metric-chart .y.axis line,
+.views-metrics .metric-chart .y.axis line,
+.downloads-metrics .metric-chart .y.axis line {
 	stroke: #565656;
 	stroke-dasharray: 2,2;
 	stroke-opacity: 0.3;
 }
 
 /*
-	--- BRUSH ---		[metric modal chart]
+	--- BRUSH ---		[metric modal / profile chart]
 */
 
 /* --- brush window --- */
 
-#metric-modal .metric-chart .brush .extent {
+#metric-modal .metric-chart .brush .extent,
+.views-metrics .metric-chart .brush .extent,
+.downloads-metrics .metric-chart .brush .extent {
   fill-opacity: .07;
   shape-rendering: crispEdges;
   clip-path: url(#clip);
@@ -1991,30 +2200,40 @@ i.catalog-metric-icon {
 
 /* --- brush handles --- */
 
-#metric-modal .metric-chart .resize .handle {
+#metric-modal .metric-chart .resize .handle,
+.views-metrics .metric-chart .resize .handle,
+.downloads-metrics .metric-chart .resize .handle {
 	fill: #555;
 }
 
-#metric-modal .metric-chart .resize .handle-mini {
+#metric-modal .metric-chart .resize .handle-mini,
+.views-metrics .metric-chart .resize .handle-mini,
+.downloads-metrics .metric-chart .resize .handle-mini {
 	fill: white;
     stroke-width: 1px;
     stroke: #555;
 }
 
 /*
-	--- ZOOM TO BUTTONS ---		[metric modal chart]
+	--- ZOOM TO BUTTONS ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart .scale_button rect {
+#metric-modal .metric-chart .scale_button rect,
+.views-metrics .metric-chart .scale_button rect,
+.downloads-metrics .metric-chart .scale_button rect {
 	fill: #eaeaea;
 }
 
-#metric-modal .metric-chart .scale_button:hover text {
+#metric-modal .metric-chart .scale_button:hover text,
+.views-metrics .metric-chart .scale_button:hover text,
+.downloads-metrics .metric-chart .scale_button:hover text  {
 	fill: white;
 	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
 }
 
-#metric-modal .metric-chart .scale_button:hover rect {
+#metric-modal .metric-chart .scale_button:hover rect,
+.views-metrics .metric-chart .scale_button:hover rect,
+.downloads-metrics .metric-chart .scale_button:hover rect {
 	fill: grey;	/* change for each theme */
 	transition: all 0.1s cubic-bezier(.25,.8,.25,1);
 }
@@ -2022,31 +2241,41 @@ i.catalog-metric-icon {
 
 
 /*
-	--- EXPLANATORY TEXT (# views/downloads) ---		[metric modal chart]
+	--- EXPLANATORY TEXT (# views/downloads) ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart text#totalCount  {
+#metric-modal .metric-chart text#totalCount,
+.views-metrics .metric-chart text#totalCount,
+.downloads-metrics .metric-chart text#totalCount  {
 	font-size: 15px;
 	font-weight: bold;
 }
 
-#metric-modal .metric-chart text#displayDates  {
+#metric-modal .metric-chart text#displayDates,
+.views-metrics .metric-chart text#displayDates,
+.downloads-metrics .metric-chart text#displayDates  {
 	font-weight: bold;
 }
 
 /*
-	--- BARS ---		[metric modal chart]
+	--- BARS ---		[metric modal / profile chart]
 */
 
 
 #metric-modal .metric-chart .bar,
-#metric-modal .metric-chart .bar_context {
+#metric-modal .metric-chart .bar_context,
+.views-metrics .metric-chart .bar,
+.views-metrics .metric-chart .bar_context,
+.downloads-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar_context {
 	fill: black;  /* change for each theme */
 	stroke-width: 0;
 	clip-path: url(#clip);
 }
 
-#metric-modal .metric-chart .bar {
+#metric-modal .metric-chart .bar,
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar {
 	stroke: black; /* change for each theme */
 	cursor: default;
 }
@@ -2055,43 +2284,55 @@ i.catalog-metric-icon {
 
 
 /*
-	--- PANE CURSORS ---		[metric modal chart]
+	--- PANE CURSORS ---		[metric modal / profile chart]
 */
 
-#metric-modal .metric-chart rect.pane {
+#metric-modal .metric-chart rect.pane,
+.views-metrics .metric-chart rect.pane,
+.downloads-metrics .metric-chart rect.pane {
 	cursor: move; /* fallback if grab cursor is unsupported */
 	cursor: grab;
 	fill: #FAFAFA;
 	pointer-events: all;
 }
 
-#metric-modal .metric-chart rect.pane:active {
+#metric-modal .metric-chart rect.pane:active,
+.views-metrics .metric-chart rect.pane:active,
+.downloads-metrics .metric-chart rect.pane:active {
 	cursor: move; /* fallback if grab cursor is unsupported */
 	cursor: grabbing;
 }
 
 /*
-	--- TOOLTIPS ---		[metric modal chart]
+	--- TOOLTIPS ---		[metric modal / profile chart]
 */
 
-#metric-modal div.metric_tooltip {
+#metric-modal div.metric_tooltip,
+.views-metrics div.metric_tooltip,
+.downloads-metrics div.metric_tooltip {
     position: fixed;
     text-align: center;
     height: 25px;
     padding: 2px;
     font: 10px sans-serif;
     background: white;
-	color: #565656;
+    color: #565656;
     border: 0px;
     border-radius: 2px;
     pointer-events: none;
-	box-shadow: 0 0px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    box-shadow: 0 0px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
 }
-/*  ====== END: Metrics modal chart ======  */
+
+.views-metrics div.metric_tooltip,
+.downloads-metrics div.metric_tooltip {
+  position: relative;
+}
+/*  ====== END: Metrics modal / profile chart ======  */
+
 
 .metric-table.table.table-striped.table-condensed {
-    width: 930px;
+    width: 100%;
 }
 .metric-table.table.table-striped.table-condensed td {
     padding: 5px 15px 5px 85px;
@@ -2121,20 +2362,20 @@ button.modal-btn.btn.btn-default {
 Non-clickable (Disabled) button styling for metrics views
 ***********/
 a.btn.metrics-button-disabled {
-	width: 164px;
-	margin-bottom: 0px;
-    color: #555;
-    background-color: #F3F3F3;
-    cursor: default;
-    border: none;
-    box-shadow: none;
-
+  width: 164px;
+  color: #777;
+  border-color: #CCC;
+  background-color: #efefef;
+  cursor: default;
+}
+a.btn.metrics-button-disabled:hover{
+  background-color: transparent;
 }
 .metrics-button-disabled> .metric-value.badge {
     float: right;
     color: #FFF;
     margin-left: 20px;
-    background-color: #555;
+    background-color: #777;
     margin-top: 2px;
 }
 .metrics-button-disabled.metric-icon {
@@ -2155,6 +2396,59 @@ a.btn.metrics-button-disabled {
 }
 
 /******************************************
+* Repository + User Profile Metrics
+********************************************/
+section#user-citations {
+    min-height: 300px;
+}
+#user-summary .charts{
+  display: flex;
+}
+#user-summary .summary-container{
+  flex: 1;
+}
+.metrics-title > h3 {
+	display: inline-block;
+  margin-bottom: 30px;
+}
+.metrics-title > p{
+  margin-bottom: 30px;
+}
+.views-metrics .metric-chart,
+.downloads-metrics .metric-chart {
+    margin: 0 auto;
+}
+.citations-metrics-list {
+    overflow-y: auto;
+    max-height: 300px;
+    content: " ";
+    display: block;
+    clear: both;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed {
+    width: 90%;
+    height: 5%;
+    max-height: 240px;
+    overflow-y: scroll;
+    top: unset;
+    margin: 0 auto;
+}
+.citations-metrics-list > .empty-citation-list {
+    width: 66%;
+    height: 5%;
+    top: unset;
+    left: 25%;
+    margin: 0 auto;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed td {
+	padding: 5px 15px 5px 85px;
+	background-color: #f9f9f9;
+}
+.citations-metrics-list > .metric-table.table.table-striped.table-condensed td > .citation {
+    margin-left: -70px;
+}
+
+/******************************************
 * The Data Details box in the Metadata View
 ********************************************/
 .entitydetails{
@@ -2167,7 +2461,7 @@ a.btn.metrics-button-disabled {
     	margin-left: 0px;
     	padding: 20px;
     	width: 85%;
-    	width: calc(100% - 180px);
+			width: calc(100% - 180px);
 }
 .entitydetails tr,
 .entitydetails table,
@@ -2595,7 +2889,6 @@ img[src*="googleapis.com/"].georegion-map{
 .media,
 .media-body {
   overflow: hidden;
-  zoom: 1;
 }
 .media-body {
   width: 10000px;
@@ -2644,8 +2937,6 @@ img[src*="googleapis.com/"].georegion-map{
 .eml-party .name{
   font-weight: bold;
 }
-
-
 
 /******************************************
 * Image Uploader
@@ -2717,7 +3008,7 @@ img[src*="googleapis.com/"].georegion-map{
 	white-space: nowrap;
 	text-align: center;
 	box-sizing: border-box;
-	padding-bottom: 4px; /* to account for a 2px top border and 2px bottom border*/
+	padding-bottom: 3px; /* to account for a 1.5px top border and 1.5px bottom border*/
 }
 
 .vertical-align-image-helper {
@@ -2774,7 +3065,7 @@ img[src*="googleapis.com/"].georegion-map{
 .dropzone,
 .dropzone.dz-started:hover,
 .dropzone.dz-started.dz-drag-hover {
-	border: dashed 2px #999;
+	border: dashed 1.5px #999;
 }
 
 .dz-message{
@@ -2814,6 +3105,413 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 /******************************************
+* Markdown Editor - Woofmark
+********************************************/
+/* The markdown editor is used in the portal editor markdown section.  */
+/* It uses the imageUploader view, and the woofdown component (prefixed with wk-). */
+/* See https://github.com/bevacqua/woofmark */
+/* and https://github.com/bevacqua/woofmark/blob/master/dist/woofmark.css */
+
+/* markdown editor container - contains editor buttons & markdown textarea */
+.wk-container {
+  position: relative;
+  margin: 5px 0;
+	border: 1px solid #e5e5e5;
+	border-radius: 2px;
+	display: flex;
+	flex-direction: column;
+}
+
+/* the markdown editor textarea field */
+textarea.markdown {
+	width: 100%;
+	height: 50vh;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	margin: 5px 0 10px;
+	line-height: 1.6em;
+	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+	/* so that the textarea is below any and all editor buttons/controls */
+	order: 99;
+}
+
+.wk-container textarea.markdown{
+	box-shadow: none;
+	border: none;
+	border-radius: 2px;
+	margin: 0;
+}
+
+.wk-hide {
+  display: none !important;
+}
+.wk-commands-divider{
+  display: inline-block;
+  width: 1px;
+  height: 21px;
+  background-color: #ddd;
+  margin: 10px 6px -7px 6px;
+}
+.wk-commands{
+	border-bottom: 1px solid #e5e5e5;
+  background: #fafafa;
+	padding-left: 0.5rem;
+}
+/* markdown editor button */
+.wk-command {
+  background-color: transparent;
+  color: #333;
+  border: 0;
+  padding: 7px 10px;
+  cursor: pointer;
+  outline: none;
+  margin: 2px;
+	border-radius: 6px;
+	transition: all 0.2s ease-in-out;
+}
+.wk-command svg {
+	transition: fill 0.2s ease-in-out;
+	fill: #333;
+}
+.wk-command:hover{
+  background-color: white;
+  color: #2c7e90;
+}
+.wk-command:hover svg {
+	fill: #2c7e90;
+}
+/* ---- Markdown editor modal ---- */
+/* The modal type dialogs to add image or link */
+.wk-prompt {
+  position: fixed;
+  top: 10%;
+  left: 2%;
+  right: 2%;
+  z-index: 1050;
+	width: fit-content;
+	max-width: 95vw;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  background-clip: padding-box;
+  color: #555;
+  padding: 0px;
+  margin: 0 auto;
+}
+/* The close button is an empty link (a.wk-prompt-close),
+add font awesome close icon */
+.wk-prompt-close::before {
+  content: "×";
+  font-size: 25px;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #000;
+  text-shadow: 0 1px 0 #fff;
+  opacity: .2;
+}
+.wk-prompt-close::before:hover {
+  opacity: .3;
+}
+.wk-prompt-header{
+  padding: 9px 15px;
+  border-bottom: 1px solid #eee;
+}
+.wk-prompt-title {
+  margin: 0;
+  line-height: 30px;
+  font-size: 24px;
+}
+.wk-prompt-body {
+  position: relative;
+  max-height: 400px;
+  padding: 15px;
+  overflow-y: auto;
+  color: #999;
+}
+.wk-prompt .image-uploader{
+  position: relative;
+  margin: 5px auto 15px;
+}
+.wk-prompt .dropzone .dz-message{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 0px;
+}
+.wk-prompt-input{
+  width: 100%;
+  max-width: 292px;
+  border: 1px solid #ccc;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+  display: inline-block;
+  height: 20px;
+  padding: 4px 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #555;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+.wk-prompt-buttons{
+  padding: 14px 15px 15px;
+  margin-bottom: 0;
+  text-align: right;
+  background-color: #f5f5f5;
+  border-top: 1px solid #ddd;
+  border-radius: 0 0 6px 6px;
+  box-shadow: inset 0 1px 0 #ffffff;
+  height: auto;
+  position: relative;
+  text-align: center;
+}
+.wk-prompt-buttons > button {
+  font-weight: 400;
+  border: 1px solid #CCC;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #333;
+  padding: 4px 12px;
+}
+.wk-prompt-buttons > .wk-prompt-ok {
+  background-color: #2c7e90;
+  background-color: var(--portal-secondary-color);
+  color: white;
+  margin-left: 10px;
+}
+.wk-container .tooltip{
+  /* ensure the tooltip is not hidden within markdown editor container */
+  position: fixed;
+}
+
+/******************************************
+* Table Editor View
+********************************************/
+
+.table-editor .spreadsheet {
+  margin: 1rem 2rem 2rem 0.5rem;
+}
+
+.table-editor .table {
+	/* undo bootstrap margin */
+	margin-bottom: 0;
+}
+
+.table-editor td {
+  min-width: 5rem;
+}
+
+.table-editor th {
+	background: #fafafa;
+  padding: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Row numbers */
+.table-editor tbody th {
+  min-width: 2.5rem;
+}
+
+/* Dropdown Button */
+.table-editor .dropbtn {
+  background-color: #e2e2e2d0;
+  color: rgba(0, 0, 0, 0.5);
+  padding: 0rem 0.3rem;
+  border: none;
+  cursor: pointer;
+  transition: ease 0.4s;
+	border-radius: 3px;
+}
+
+.table-editor .dropbtn .icon{
+	pointer-events: none;
+	margin: 0;
+}
+
+/* Dropdown button on hover & focus */
+.table-editor .dropbtn:hover,
+.table-editor .dropbtn:focus {
+  background-color: #d0d0d0;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.table-editor .dropdown {
+  position: relative;
+	float: right;
+	width: 1rem;
+}
+
+/* Dropdown Content (hidden by default) */
+.table-editor .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 7rem;
+  box-shadow: 0 0.5rem 0.8rem 0 rgba(0, 0, 0, 0.1);
+  z-index: 1;
+	border: 1px solid rgba(0,0,0,.05);
+}
+.table-editor .dropdown-content .icon {
+  pointer-events: none;
+}
+/* position row menus to the right of the row number */
+.table-editor .row-header .dropdown-content{
+    left: 1.2rem;
+    top: 0;
+}
+
+/* So the drop down doesn't go into overeflow space */
+.table-editor .column-header:last-of-type .dropdown-content {
+	right: 0;
+}
+
+/* Buttons inside the dropdown */
+.table-editor .row-dropdown-option,
+.table-editor .col-dropdown-option {
+	white-space: nowrap;
+	display: block;
+	width: 100%;
+	text-align: left;
+	background-color: transparent;
+	color: #2c6f90;
+	color: var(--portal-primary-color);
+  padding: 0.2rem 0.8rem;
+	margin: 0.2rem 0;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 100ms ease-in-out;
+}
+
+.table-editor .row-dropdown-option:hover,
+.table-editor .col-dropdown-option:hover {
+	background-color: #f7f7f7;
+	color: #555;
+}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.table-editor .show {
+  display: block;
+}
+
+.table-editor .column-header-span {
+	width: calc(100% - 1.1rem);
+	min-width: 1.5rem;
+	float: left;
+	display: inline-block;
+	margin-left: 0;
+	line-height: 120%;
+}
+
+.table-editor .spreadsheet-controls {
+  margin-left: 0.5rem;
+}
+
+/******************************************
+** AccessPolicy editor view ***
+******************************************/
+.access-rule .subject{
+  display: flex;
+  min-height: 30px;
+}
+.access-policy-view-container.modal{
+  width: 80%;
+  max-width: 1000px;
+  left: 10%;
+  margin-left: 0px;
+  display: none;
+}
+.access-policy-view:not(.modal) .modal-header{
+  border-bottom-width: 0px;
+  padding: 0px;
+}
+.access-policy-view:not(.modal) .modal-body{
+  padding: 0px;
+  max-height: none;
+}
+.access-policy-view:not(.modal) .modal-header .close{
+  display: none;
+}
+.access-policy-control.disabled,
+.replace.disabled {
+  cursor: not-allowed;
+}
+.access-policy-view.modal h4{
+  font-size: 1em;
+  font-weight: bold;
+}
+.access-policy-view:not(.modal) h4 .icon{
+  display: none;
+}
+.access-policy-view .popover li h5 {
+  display: inline;
+}
+.access-policy-view .popover{
+  min-width: 50%;
+}
+.access-rule td {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.access-rule select{
+  width: 100%;
+  min-width: 100px;
+  margin-bottom: 0px;
+}
+.access-rule.new input{
+  width: calc(100% - 16px);
+  margin-bottom: 0px;
+}
+.access-rule.new label{
+  font-size: .9em;
+}
+.access-rule.new select{
+  margin-top: 25px;
+}
+.access-rule .remove.icon{
+  font-size: 2em;
+  color: #CCC;
+}
+.access-rule .remove-rule{
+  width: 2em;
+}
+.access-policy-view .access-rule .add.icon{
+  margin-top: 25px;
+  display: block;
+  font-size: 2em;
+  cursor: pointer;
+}
+.access-rule .add.icon:hover{
+  color: #006699;
+}
+.access-rule .ui-autocomplete .ui-menu-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.access-policy-view .public-toggle-container{
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+}
+.access-policy-view .can-toggle{
+  width: 200px;
+}
+.access-policy-view p{
+  margin-bottom: 20px;
+}
+.access-policy-view:not(.modal) .modal-footer{
+  display: none;
+}
+.access-policy-view.unauthorized .alert{
+  margin-top: 20px;
+  min-height: 100px;
+  line-height: 100px;
+  text-align: center;
+}
+/******************************************
 * Portal Editor
 ********************************************/
 
@@ -2830,6 +3528,10 @@ img[src*="googleapis.com/"].georegion-map{
 /* Editor navigation (tabs) */
 .section-links-container{
   margin-bottom: 0px;
+}
+.section-links-toggle-container{
+  padding-left: 40px;
+  padding-right: 40px;
 }
 .port-editor-sections .section-link-container{
   border-right: 1px solid #CCC;
@@ -2899,11 +3601,10 @@ img[src*="googleapis.com/"].georegion-map{
   color: #960303;
 }
 
-#section-type-header{
-	margin: 35px 0 25px 0;
-}
-
 /* Portal editor sections */
+.port-editor-section{
+  padding: 20px 40px;
+}
 .port-editor-section.port-editor-md{
   padding: 0px;
 }
@@ -2924,7 +3625,6 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 .logo-editor-container {
-    margin-left: 20px;
     margin-right: 20px;
 }
 .logo-editor-container .dropzone .dz-message{
@@ -2938,25 +3638,29 @@ img[src*="googleapis.com/"].georegion-map{
     padding-top: 5px;
     font-size: 0.9em;
 }
-
-.portal-editor .title-container {
-	width: calc(100% - 150px);
-	min-width: 300px;
-	max-width: 1000px;
+.logo-editor-container p.notification.error:empty{
+  display: none;
 }
-
+.portal-editor .logo-editor-container > h5,
+.portal-editor .title-container > h5{
+  margin-top: 0px;
+}
+.portal-editor .title-container {
+  flex-grow: 2;
+}
 .portal-editor textarea.portal-title{
 	width: 100%;
   padding: 0px;
   background: transparent;
   border: none;
   border-radius: 0;
-  border-bottom: 1.5px solid #999;
+  border-bottom: 1px solid #ccc;
   box-shadow: none;
 	align-self: center;
 	font-size: 28px;
 	line-height: 40px;
 	min-height: 40px;
+  margin-top: 20px;
 }
 
 .portal-editor textarea.portal-title:focus{
@@ -2965,7 +3669,6 @@ img[src*="googleapis.com/"].georegion-map{
   -moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(82,168,236,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(82,168,236,.6);
 }
-
 /* Portal Editor settings */
 
 /* The width of each input element next to the remove button */
@@ -2977,14 +3680,16 @@ img[src*="googleapis.com/"].georegion-map{
 	display: flex;
 	width: 100%;
 	overflow-x: auto;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
-.edit-image .toggle-remove-preview{
+.image-uploader .toggle-remove-preview{
   display: none;
 }
-.edit-image.remove-preview{
+.image-uploader.remove-preview{
   opacity: .5;
 }
-.edit-image .dropzone .remove-message{
+.image-uploader .dropzone .remove-message{
   display: none;
 }
 .image-uploader.remove-preview{
@@ -3019,6 +3724,7 @@ img[src*="googleapis.com/"].georegion-map{
   padding: 10px;
   border-radius: 4px;
   position: relative;
+  background-color: #fafafa;
 }
 .port-editor-logos .edit-image .dropzone{
   height: 150px;
@@ -3040,6 +3746,7 @@ img[src*="googleapis.com/"].georegion-map{
   font-size: 1.5em;
   display: block;
 }
+/* hide the remove message for logo images since we can reemove the entire logo instead */
 .port-editor-settings .logos-container .edit-image .dropzone .remove-message,
 .port-editor-settings .logos-container .edit-image .dropzone .remove {
     display: none;
@@ -3054,14 +3761,19 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-settings .description-container textarea{
   width: 100%;
 }
-.port-editor-section  > h3{
-  margin-top: 20px;
-  margin-left: 40px;
+.port-editor-section.port-editor-data{
+  padding: 20px 40px;
 }
-.port-editor-section .edit-collection > h3,
-.port-editor-section .edit-collection > p{
-  margin-top: 20px;
-  margin-left: 10px;
+.port-editor-section.port-editor-data #sidebar > *{
+  padding-left: 0px;
+  padding-right: 0px;
+  box-sizing: border-box;
+  width: 100%;
+}
+.port-editor-section.port-editor-data .result-header{
+  padding-right: 0px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* Portal Editor markdown section
@@ -3089,6 +3801,7 @@ img[src*="googleapis.com/"].georegion-map{
   padding-bottom: 0px;
   margin-top: -1px;
 }
+.portal-editor h2,
 .portal-view h2 {
     font-size: 2em;
     font-weight: normal;
@@ -3112,13 +3825,10 @@ img[src*="googleapis.com/"].georegion-map{
 	box-sizing: border-box;
 	left: 0;
 	margin: 60px 0px 0px 3px;
+  padding: 20px 40px;
   z-index: 10; /* so it's above all the dropzone stuff */
 }
 
-.port-editor-markdown-container div.portal-display-image {
-	padding: 0;
-	min-height: 300px;
-}
 .port-editor-md > *{
   padding-left: 40px;
   padding-right: 40px;
@@ -3157,15 +3867,6 @@ img[src*="googleapis.com/"].georegion-map{
 .port-editor-md .introduction::placeholder {
 	color: white;
   opacity: 0.4;
-}
-
-/* the markdown editor textarea field */
-.port-editor-md textarea.markdown{
-	margin: 20px;
-	width: calc(100% - 40px);
-	line-height: 1.6em;
-	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-	padding: 0.5rem;
 }
 
 .port-editor-md .markdown-help{
@@ -3235,11 +3936,6 @@ img[src*="googleapis.com/"].georegion-map{
 }
 
 /* Portal editor metrics page */
-
-
-.editor-view.portal-editor div#Metrics p {
-  margin: 20px 40px;
-}
 
 .editor-view.portal-editor div#Metrics svg{
 	width: 100%;
@@ -3343,6 +4039,11 @@ img[src*="googleapis.com/"].georegion-map{
 
 .portal-editor #editor-header{
   border-bottom: 0px;
+  padding: 20px 40px;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
 }
 
 /* Top level app navigation in the PortalView and EditorView */
@@ -3363,7 +4064,10 @@ img[src*="googleapis.com/"].georegion-map{
 .PortalView .navbar-inner{
   background-image: none;
   box-shadow: none;
-  background-color: #FFF;
+  background-color: #f2f2f2;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  min-height: 0px;
 }
 
 .Portal.Editor .navbar .nav > li > a.brand,
@@ -3382,7 +4086,7 @@ img[src*="googleapis.com/"].georegion-map{
 
 .Portal.Editor #Navbar a.brand,
 .Portal.Editor #Navbar a.brand {
-	margin-left: 10px;
+	margin-left: 20px;
 }
 
 .Portal.Editor #Navbar .minimal-nav > a,
@@ -3403,17 +4107,20 @@ img[src*="googleapis.com/"].georegion-map{
 .PortalView #Navbar .nav .minimal-nav {
     display: block;
 }
-
+.Portal.Editor #Navbar .nav .minimal-nav:not(:last-child),
+.PortalView #Navbar .nav .minimal-nav:not(:last-child) {
+  margin-right: 20px;
+}
 .Portal.Editor #Navbar .nav .minimal-nav a,
 .PortalView #Navbar .nav .minimal-nav a {
-    font-size: 1em;
+    font-size: .9em;
     text-transform: none;
-    font-weight: 300;
     text-shadow: none;
 }
-.Portal.Editor #Navbar .nav .minimal-nav a:not(.btn),
-.PortalView #Navbar .nav .minimal-nav a:not(.btn){
-  padding-bottom: 0px;
+.Portal.Editor #Navbar .nav .minimal-nav > a:not(.btn),
+.PortalView #Navbar .nav .minimal-nav > a:not(.btn) {
+  margin-bottom: 0px;
+  padding: 0px;
 }
 .Portal.Editor #Navbar .nav .minimal-nav.subtle a,
 .PortalView #Navbar .nav .minimal-nav.subtle a {
@@ -3422,92 +4129,86 @@ img[src*="googleapis.com/"].georegion-map{
 
 .Portal.Editor #Navbar .nav,
 .PortalView #Navbar .nav {
-    float: right;
     margin-top: 0px;
 		display: flex;
 		flex-direction: row;
-		min-width: 300px;
 		justify-content: space-between;
 		align-items: center;
 }
-
-/* markdown section table of contents (portal and portal editor) */
-.Editor.Portal .toc-view.affix,
-.portal-section-content .toc-view.affix{
+.PortalView #Navbar #editPortal{
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 7px;
+}
+/******************************************
+* Table of Contents
+********************************************/
+/* The TOC is used optionally in both the markdown view and the preview portion
+ of the markdown editor view. Markdown & markdown editor views are used in the
+ portal editor and portal views. */
+.toc-view.affix{
   top: 20px;
 }
-.Editor.Portal .toc-view.affix-bottom,
-.portal-section-content .toc-view.affix-bottom{
+.toc-view.affix-bottom{
   top: 20px;
   position: fixed;
 }
-.Editor.Portal .toc-view.span3.affix + .span9,
-.Editor.Portal .toc-view.span3.affix-bottom + .span9,
-.portal-section-content .toc-view.span3.affix + .span9,
-.portal-section-content .toc-view.span3.affix-bottom + .span9{
+.toc-view.span3.affix + .span9,
+.toc-view.span3.affix-bottom + .span9 {
   margin-left: 26.5%;
 }
-.Editor.Portal .toc-ul,
-.portal-view .toc-ul{
+
+.toc-ul{
 	position: sticky;
 	position: -webkit-sticky;
   background-color: #2c6f90; /* Back-up color for IE */
   background-color: var(--portal-primary-color);
-  margin-left: -20px;
+
   padding: 0px;
 }
-.Editor.Portal .toc-ul > li > a,
-.portal-view .toc-ul > li > a{
+.toc-ul > li > a {
+	text-shadow: none;
   padding-left: 20px;
   padding-right: 20px;
   margin: 0px;
 }
-.Editor.Portal .toc-ul a,
-.portal-view .toc-ul a{
+
+
+.toc-ul a{
   line-height: 2em;
 }
-.Editor.Portal .toc-ul > li > ul,
-.portal-view .toc-ul > li > ul{
+.toc-ul > li > ul{
   margin-left: 0px;
   list-style: none;
 }
-.Editor.Portal .toc-ul > li > ul > li > a,
-.portal-view .toc-ul > li > ul > li > a{
+.toc-ul > li > ul > li > a{
   padding-left: 40px;
 }
-.Editor.Portal .toc-ul li,
-.Editor.Portal .toc-ul a,
-.portal-view .toc-ul li,
-.portal-view .toc-ul a{
+.toc-ul li,
+.toc-ul a {
   background-color: transparent;
   color: #FFF;
   border:0px;
   border-radius: 0px;
   text-shadow: none;
 }
-.Editor.Portal .toc li.active > a,
-.portal-view .toc li.active > a {
+.toc li.active > a {
   background-color: #2c7e90; /* Back-up color for IE */
 	background-color: var(--portal-secondary-color);
 }
-
-.Editor.Portal .toc-ul a:hover,
-.portal-view .toc-ul a:hover{
+.toc-ul a:hover {
   color: #FFF;
   background-color: transparent;
-}
-.toc a{
-	color: #555;
 }
 .toc .icon{
 	color: #069;
 }
-i.toc-sub-item{
+i.toc-sub-item {
 	margin-left: 18px;
 	visibility: hidden;
 }
 /* hide mobile TOC by default */
-.portal-section-content .toc .mobile {
+.toc .mobile {
 	display: none;
 }
 .submenu.hidden{
@@ -3518,16 +4219,6 @@ i.toc-sub-item{
 /******************************************
 * Portals
 ********************************************/
-
-/* edit portal button */
-#editPortal:hover {
-  border: 0px;
-}
-#editPortal {
-	border: 0px;
-  width: 110px;
-	margin: 10px 0;
-}
 
 .portal-view{
   width: calc(100% + 80px);
@@ -3569,6 +4260,9 @@ i.toc-sub-item{
 }
 .portal-section-content{
   padding: 20px;
+}
+.portal-section-content .toc-ul {
+	margin-left: -20px;
 }
 .portal-display-image{
   background-repeat: no-repeat;
@@ -3642,6 +4336,15 @@ i.toc-sub-item{
   font-size: 2em;
   display: inline-block;
 }
+.portal-view .portal-description{
+	margin-left: -20px;
+	margin-top: 10px;
+	margin-right: 20px;
+}
+.portal-view .portal-member-since {
+	margin-left: -20px;
+	margin-top: 10px;
+}
 .portal-logos-view{
   border-top: 1px solid #ededed;
   margin-top: 3em;
@@ -3650,11 +4353,13 @@ i.toc-sub-item{
   padding-right: 20px;
 }
 .portal-logos-view .img-logo{
-	max-width: 120px;
   margin: auto;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100px;
+  width: auto;
+  max-height: 125px;
 }
 .well.awards-info {
 	background: inherit;
@@ -3705,8 +4410,6 @@ i.toc-sub-item{
 .portal-editor #portal-section-tabs{
   display: block;
 	border-bottom: 1px solid #333;
-	padding-left: 3px;
-	padding-right: 3px;
 	max-width: 100%;
 	box-sizing: border-box;
 }
@@ -3747,11 +4450,10 @@ i.toc-sub-item{
 
 .portal-editor #portal-section-tabs .section-link-container{
   border-width: 1px 1px 0px 1px;
-  border-color: #333;
+  border-color: #FFF;
   border-style: solid;
-  border-top-right-radius: 3px;
-  border-top-left-radius: 3px;
-	margin-right: -1px;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
 	height: 36px;
 }
 .portal-editor #portal-section-tabs .section-link-container.hidden-section{
@@ -3764,6 +4466,7 @@ i.toc-sub-item{
 
 .portal-editor #portal-section-tabs .section-link-container.active{
   background-color: #FFF;
+  border-color: #CCC;
 }
 .portal-view #portal-section-tabs .section-link-container.active{
   background-color: #2c7e90; /* Back-up color for IE */
@@ -3939,8 +4642,10 @@ i.toc-sub-item{
 .portal-editor .chart-title .packages{
   color: #2c6f90; /* Back-up color for IE */
   fill: #2c6f90; /* Back-up color for IE */
+	stroke: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
+	stroke: var(--portal-secondary-color);
 }
 .portal-view svg circle.packages,
 .portal-editor svg circle.packages{
@@ -4011,6 +4716,26 @@ i.toc-sub-item{
   margin-bottom: 20px;
 }
 
+
+/******************************************
+* HTML converted from Markdown
+********************************************/
+
+/* images in markdown */
+.markdown img.thumbnail {
+	display: block;
+}
+
+/* the following two rules overwrite both:
+	i. the bootstrap `pre` rules
+	ii. individual theme `pre` rules
+*/
+div.markdown pre {
+	color: #383a42;
+	background: #fafafa;
+	border-radius: 3px;
+}
+
 /* markdown citations */
 .markdown .inlineCitation {
 
@@ -4025,19 +4750,6 @@ i.toc-sub-item{
 .markdown #bibliography {
 	margin-top: 40px;
 	margin-bottom: 20px;
-}
-/******************************************
-* HTML converted from Markdown
-********************************************/
-
-/* the following two rules overwrite both:
-	i. the bootstrap `pre` rules
-	ii. individual theme `pre` rules
-*/
-div.markdown pre {
-	color: #383a42;
-	background: #fafafa;
-	border-radius: 3px;
 }
 
 /******************************************
@@ -4295,23 +5007,24 @@ tfoot .control i{
 /******************************************
 ** User Profile ***
 ******************************************/
-#user-profile{
-	padding-top: 20px;
-}
-#user-profile #data-list{
-	padding-bottom: 20px;
-	padding-left: 25px;
-	margin-bottom: 20px;
-}
-#user-profile #clear-all{
-	display: none;
-}
+
 .user-view-section > section {
     max-width: 1200px;
     width: 90%;
     margin-left: auto;
     margin-right: auto;
 }
+#profile-content {
+    float: right;
+}
+#user-profile #data-list{
+	padding-bottom: 20px;
+	margin-bottom: 20px;
+}
+#user-profile #clear-all{
+	display: none;
+}
+
 .user-view-section > .section > .span12{
 	margin-left: 0px;
 }
@@ -4414,7 +5127,7 @@ textarea.token{
 #first-upload-container{
 	font-size: .9em;
 	width: 50%;
-	width: calc(97% - 125px);
+	width: calc(97% - 135px);
 }
 #total-replicas-wrapper{
 	display: none;
@@ -4459,10 +5172,17 @@ address.email-container:before{
 ******************************************/
 .no-activity *,
 .no-activity svg .title,
-.no-activity svg .bar-label{
+.no-activity svg .bar-label,
+.profile .no-activity .packages p{
     color: #CCC;
     stroke: #CCC;
     fill: #CCC;
+}
+
+/*Moving the circle badge at the center of the div*/
+.profile .circle-badge {
+	display: block;
+	margin: auto;
 }
 .profile .circle-badge circle.no-activity{
 	stroke: #CCC;
@@ -4471,31 +5191,24 @@ address.email-container:before{
 .profile .circle-badge text.no-activity{
 	fill: #CCC;
 }
-.profile .chart-title{
-	float: left;
-}
 .profile .charts{
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
 }
 .profile .chart{
 	float: left;
 	margin-left: 20px;
+  margin-right: 20px;
 	margin-top: 30px;
 }
 .profile .stripe{
 	clear: both;
 	min-height: 200px;
 }
-.profile .chart-title{
-	height: 100%;
-}
 .profile .chart-title.uploads{
 	width: 100%;
 }
-.profile .quick-stats,
-.profile .quick-stats .badge-container{
-	height: 280px;
-}s
 .profile .downloads .chart-title,
 .profile .uploads .chart-title{
 	width: 100%;
@@ -4514,8 +5227,7 @@ address.email-container:before{
 }
 .profile .stripe{
 	border-top: 1px dashed #CCC;
-    padding-bottom: 20px;
-    padding-top: 20px;
+    padding: 20px 20px 20px 20px;
 }
 .profile .packages p {
     color: #333;
@@ -4523,17 +5235,14 @@ address.email-container:before{
 .no-activity .profile .packages p{
 	color: inherit;
 }
-.temporal-coverage-chart{
-	width: calc(100% - 300px);
-}
 .profile .circle-badge circle{
 	fill: transparent;
 }
 .profile .quick-stats .circle-badge .count{
-	font-size: 27px;
+	font-size: 24px;
 }
 .profile .quick-stats .circle-badge .title{
-	font-size: 18px;
+	font-size: 16px;
 }
 
 /**** Bar Charts ******/
@@ -4549,6 +5258,9 @@ address.email-container:before{
 }
 .bar-chart.log-scale .tick line{
 	stroke: #EEE;
+}
+.profile .temporal-coverage-chart{
+  width: calc(100% - 40px);
 }
 
 
@@ -4680,10 +5392,25 @@ svg .no-activity,
   border: 1px solid #ddd;
 }
 .list-group-header.list-group-item{
-	background-color: #f5f5f5;
+	background-color: #ECF1F5;
 	min-width: auto;
-	padding: 10px;
 }
+#profile-group-list-container > ul > .list-group-header.list-group-item:hover,
+#profile-group-list-container > ul > .list-group-header.list-group-item.active{
+	background-color: #208095;
+	min-width: auto;
+}
+#profile-group-list-container > ul > li.list-group-item.member.current-page:hover{
+    background-color: #fff;
+}
+#profile-group-list-container > ul > .pager.list-group-item:hover {
+    background-color: #fff;
+}
+#profile-group-list-container > ul > .pager > .pager-link:hover {
+    background-color: #208095;
+    color: #fff;
+}
+
 .panel>.list-group .list-group-item.active{
 	border-left-width: 5px;
 }
@@ -4943,7 +5670,6 @@ body.mapMode{
 	margin-right: -3px;
 }
 .filter-input-contain input.filter{
-	min-width: 120px;
 	margin-right: -3px;
 	margin-left: 0px;
 	border-radius: 5px 0px 0px 5px;
@@ -5330,6 +6056,13 @@ body.mapMode{
 #portal-filters > .nav-tabs > li:last-child > a{
 	border-right: 0px;
 }
+/* Hide the Spatial Filter elements until we fully support spatial filters */
+.portal-editor .filter-groups.vertical .applied-filter.label.custom{
+  display: none;
+}
+.portal-editor .toggle-map-filter {
+  display: none !important;
+}
 
 /******** Toggle Widget ************/
 .can-toggle {
@@ -5393,6 +6126,8 @@ body.mapMode{
   z-index: 5;
   text-align: center;
   background: white;
+  -webkit-border-radius: 4px;
+          border-radius: 4px;
   -webkit-transform: translate3d(0, 0, 0);
           transform: translate3d(0, 0, 0);
 }
@@ -5485,8 +6220,8 @@ body.mapMode{
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
 }
 .can-toggle.can-toggle-small input[type="checkbox"]:checked ~ label .can-toggle-switch:after {
-  -webkit-transform: translate3d(44px, 0, 0);
-          transform: translate3d(44px, 0, 0);
+  -webkit-transform: translate3d(98px, 0, 0);
+          transform: translate3d(98px, 0, 0);
 }
 .can-toggle.can-toggle-small input[type="checkbox"]:checked:focus ~ label .can-toggle-switch:after, .can-toggle.can-toggle-small input[type="checkbox"]:checked:hover ~ label .can-toggle-switch:after {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
@@ -5495,24 +6230,25 @@ body.mapMode{
   font-size: 1em;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch {
-  height: 2em;
-  -webkit-flex: 0 0 90px;
-      -ms-flex: 0 0 90px;
-          flex: 0 0 90px;
-  border-radius: 2px;
+  height: 2.5em;
+  -webkit-flex: 0 0 200px;
+      -ms-flex: 0 0 200px;
+          flex: 0 0 200px;
+  border-radius: 4px;
+  -webkit-border-radius: 4px;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch:before {
-  left: 45px;
-  line-height: 2em;
-  width: 45px;
+  left: 100px;
+  line-height: 2.5em;
+  width: 100px;
   padding: 0 12px;
 }
 .can-toggle.can-toggle-small label .can-toggle-switch:after {
   top: 1px;
   left: 1px;
-  border-radius: 1px;
-  width: 44px;
-  line-height: calc(2em - 2px);;
+  border-radius: 4px;
+  width: 100px;
+  line-height: calc(2.5em - 2px);
 }
 .can-toggle.can-toggle-small label .can-toggle-switch:hover:after {
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
@@ -5535,6 +6271,7 @@ body.mapMode{
   white-space: nowrap;
   text-overflow: ellipsis;
   padding: 0px 5px;
+  width: 100%;
 }
 .ui-autocomplete .ui-menu-item:hover{
   background-color: #DDD;
@@ -5792,6 +6529,22 @@ Editor View
     font-size: 1.1em;
     line-height: 1.6em;
 }
+#editor-header .editor-controls{
+  min-height: 130px;
+  align-items: center;
+  display: flex;
+  margin-left: 40px;
+  height: 100%;
+}
+#editor-header .editor-controls:empty{
+  display: none;
+}
+#editor-header .editor-controls .btn{
+  align-self: center;
+  margin-top: 14px;
+  padding: 10px 15px;
+}
+
 .side-nav-item a {
     width: 100%;
     display: block;
@@ -5850,7 +6603,7 @@ ul.side-nav-items {
   width: 100%;
   box-sizing: border-box;
   bottom: 0px;
-  padding: 20px;
+  padding: 20px 40px;
   z-index: 13;
 	height: 74px;
 	box-sizing: border-box;
@@ -5858,6 +6611,11 @@ ul.side-nav-items {
 .metadata-view #editor-footer{
     display: none;
     left: 0px;
+}
+#editor-footer a:not(.btn){
+    color: #FFF;
+    font-weight: bold;
+    line-height: 40px;
 }
 #cancel-metadata-prov{
     margin-left: 30px;
@@ -5972,6 +6730,9 @@ ul.side-nav-items {
     border-style: solid;
     margin-top: 6px;
 }
+.data-package-item .dropdown-menu .muted {
+    color: #CCC;
+}
 .data-package-item.error-saving .disable-layer{
 	width: 100%;
 }
@@ -6046,6 +6807,13 @@ ul.side-nav-items {
 	opacity: .6;
 }
 
+.data-package-item .controls .btn.message{
+  font-size: 12px;
+}
+.data-package-item .controls .btn.message .icon{
+  margin-left: -5px;
+  margin-right: 5px;
+}
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     border-radius: 4px;
@@ -6076,15 +6844,20 @@ ul.side-nav-items {
 	cursor:ns-resize;
 }
 
-.editor-controls .btn{
+.editor-save-controls{
 	float: right;
+}
+.editor-save-controls > a{
 	margin-left: 10px;
-	color: #FFF;
     height: 1.5em;
     line-height: 1.5em;
     font-size: 1.1em;
     font-weight: bold;
 }
+.editor-save-controls > a:not(.btn){
+  color: #FFF;
+}
+.editor-save-controls
 .metadata-container textarea{
 	width: 100%;
 	margin-bottom: 20px;
@@ -6165,6 +6938,7 @@ textarea.medium{
 	box-sizing: border-box;
 	font-size: 1em;
   border-radius: 3px;
+  width: 100%;
 }
 .Editor .checkbox{
 	clear: both;
@@ -6373,9 +7147,9 @@ textarea.medium{
 }
 .Editor .funding-row .ui-autocomplete{
 	position: absolute !important;
-    font-size: 1.2em;
+  font-size: 1.2em;
 }
-.Editor .ui-autocomplete .ui-menu-item {
+.Editor .funding-container .ui-autocomplete .ui-menu-item {
     font-size: .7em;
 }
 .Editor .funding-container .ui-helper-hidden-accessible{
@@ -6915,4 +7689,58 @@ CSS library fixes
   background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
   background-image:      -o-linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
   background-image:         linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+}
+
+/* Portal Citations Metric Chart */
+#user-citations > .citations-metrics-list > .empty-citation-list {
+	width: 90%;
+	height: 5%;
+	top: unset;
+	left: 5%;
+	margin: 0 auto;
+}
+
+#user-citations > .citations-metrics-list > .alert-container {
+	width: 90%;
+	left: 5%;
+	margin: 0 auto;
+}
+
+/* Center Justify Metadata Assessment charts */
+#metadata-assessment-graphic {
+	display: flex;
+	justify-content: center;
+}
+
+
+/* New Summary of Holdings design */
+
+.summary-container {
+  flex: 1;
+  margin-right: 10px;
+  margin-left: 10px;
+  display: grid;
+}
+.summary-count-container {
+    width: 100%;
+    display: grid;
+    align-self: center;
+    ttext-ALIGN: center;
+    justify-self: center;
+}
+.summary-container.span3 > div {
+    margin-left: 17.02127659574468%;
+}
+
+.quick-stats-count{
+	color: #2c6f90; /* Back-up color for IE */
+	fill: #2c6f90; /* Back-up color for IE */
+	font-size: xx-large;
+}
+.portal-view .quick-stats-count{
+	color: #2c6f90; /* Back-up color for IE */
+	fill: #2c6f90; /* Back-up color for IE */
+	color: var(--portal-primary-color);
+	fill: var(--portal-primary-color);
+	font-size: xx-large;
 }

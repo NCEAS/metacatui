@@ -1,4 +1,4 @@
-﻿/* global define */
+/* global define */
 define(['jquery', 'underscore', 'backbone', 'uuid',
         'collections/Units',
         'models/metadata/ScienceMetadata',
@@ -20,18 +20,21 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         EMLDistribution, EMLEntity, EMLDataTable, EMLOtherEntity, EMLParty,
             EMLProject, EMLText, EMLMethods) {
 
-      /*
-      An EML211 object represents an Ecological Metadata Language
-      document, version 2.1.1
+      /**
+      * @class EML211
+      * @classdesc An EML211 object represents an Ecological Metadata Language
+      * document, version 2.1.1
+      * @extends ScienceMetadata
       */
-      var EML211 = ScienceMetadata.extend({
+      var EML211 = ScienceMetadata.extend(
+        /** @lends EML211.prototype */{
 
         type: "EML",
 
         defaults: function(){
           return _.extend(ScienceMetadata.prototype.defaults(), {
             id: "urn:uuid:" + uuid.v4(),
-            formatId: "eml://ecoinformatics.org/eml-2.1.1",
+            formatId: "https://eml.ecoinformatics.org/eml-2.2.0",
             objectXML: null,
               isEditable: false,
               alternateIdentifier: [],
@@ -58,7 +61,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               entities: [], //An array of EMLEntities
               pubplace: null,
               methods: null, // An EMLMethods objects
-              project: null // An EMLProject object
+              project: null, // An EMLProject object
+              nodeOrder: [
+                "alternateidentifier",
+                "shortname",
+                "title",
+                "creator",
+                "metadataprovider",
+                "associatedparty",
+                "pubdate",
+                "language",
+                "series",
+                "abstract",
+                "keywordset",
+                "additionalinfo",
+                "intellectualrights",
+                "licensed",
+                "distribution",
+                "coverage",
+                "annotation",
+                "purpose",
+                "introduction",
+                "gettingstarted",
+                "acknowledgements",
+                "maintenance",
+                "contact",
+                "publisher",
+                "pubplace",
+                "methods",
+                "project",
+                "datatable",
+                "spatialraster",
+                "spatialvector",
+                "storedprocedure",
+                "view",
+                "otherentity",
+                "referencepublications",
+                "usagecitations",
+                "literaturecited",
+              ]
           });
         },
 
@@ -107,12 +148,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
               EMLTemporalCoverage.prototype.nodeNameMap(),
               EMLMethods.prototype.nodeNameMap(),
               {
+                "accuracyreport" : "accuracyReport",
+                "actionlist" : "actionList",
                 "additionalclassifications" : "additionalClassifications",
                 "additionalinfo" : "additionalInfo",
                 "additionallinks" : "additionalLinks",
                 "additionalmetadata" : "additionalMetadata",
                 "allowfirst" : "allowFirst",
                 "alternateidentifier" : "alternateIdentifier",
+                "altitudedatumname" : "altitudeDatumName",
+                "altitudedistanceunits" : "altitudeDistanceUnits",
+                "altituderesolution" : "altitudeResolution",
+                "altitudeencodingmethod" : "altitudeEncodingMethod",
+                "altitudesysdef" : "altitudeSysDef",
                 "asneeded" : "asNeeded",
                 "associatedparty" : "associatedParty",
                 "attributeaccuracyexplanation" : "attributeAccuracyExplanation",
@@ -123,27 +171,72 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "attributelist" : "attributeList",
                 "attributename" : "attributeName",
                 "attributeorientation" : "attributeOrientation",
+                "attributereference" : "attributeReference",
+                "awardnumber" : "awardNumber",
+                "awardurl" : "awardUrl",
+                "audiovisual" : "audioVisual",
+                "authsystem" : "authSystem",
+                "banddescription" : "bandDescription",
+                "bilinearfit" : "bilinearFit",
+                "binaryrasterformat" : "binaryRasterFormat",
                 "blockedmembernode" : "blockedMemberNode",
+                "booktitle" : "bookTitle",
+                "cameracalibrationinformationavailability" : "cameraCalibrationInformationAvailability",
                 "casesensitive" : "caseSensitive",
+                "cellgeometry" : "cellGeometry",
+                "cellsizexdirection" : "cellSizeXDirection",
+                "cellsizeydirection" : "cellSizeYDirection",
                 "changehistory" : "changeHistory",
                 "changedate" : "changeDate",
                 "changescope" : "changeScope",
+                "chapternumber" : "chapterNumber",
                 "characterencoding" : "characterEncoding",
+                "checkcondition" : "checkCondition",
+                "checkconstraint" : "checkConstraint",
+                "childoccurences" : "childOccurences",
+                "citableclassificationsystem" : "citableClassificationSystem",
+                "cloudcoverpercentage" : "cloudCoverPercentage",
                 "codedefinition" : "codeDefinition",
                 "codeexplanation" : "codeExplanation",
                 "codesetname" : "codesetName",
                 "codeseturl" : "codesetURL",
                 "collapsedelimiters" : "collapseDelimiters",
+                "communicationtype" : "communicationType",
+                "compressiongenerationquality" : "compressionGenerationQuality",
+                "compressionmethod" : "compressionMethod",
+                "conferencedate" : "conferenceDate",
+                "conferencelocation" : "conferenceLocation",
+                "conferencename" : "conferenceName",
+                "conferenceproceedings" : "conferenceProceedings",
+                "constraintdescription" : "constraintDescription",
+                "constraintname" : "constraintName",
                 "constanttosi" : "constantToSI",
+                "controlpoint" : "controlPoint",
+                "cornerpoint" : "cornerPoint",
                 "customunit" : "customUnit",
                 "dataformat" : "dataFormat",
+                "datasetgpolygon" : "datasetGPolygon",
+                "datasetgpolygonoutergring" : "datasetGPolygonOuterGRing",
+                "datasetgpolygonexclusiongring" : "datasetGPolygonExclusionGRing",
                 "datatable" : "dataTable",
                 "datatype" : "dataType",
                 "datetime" : "dateTime",
                 "datetimedomain" : "dateTimeDomain",
                 "datetimeprecision" : "dateTimePrecision",
+                "defaultvalue" : "defaultValue",
                 "definitionattributereference" : "definitionAttributeReference",
+                "denomflatratio" : "denomFlatRatio",
+                "depthsysdef" : "depthSysDef",
+                "depthdatumname" : "depthDatumName",
+                "depthdistanceunits" : "depthDistanceUnits",
+                "depthencodingmethod" : "depthEncodingMethod",
+                "depthresolution" : "depthResolution",
+                "descriptorvalue" : "descriptorValue",
                 "dictref" : "dictRef",
+                "diskusage" : "diskUsage",
+                "domainDescription" : "domainDescription",
+                "editedbook" : "editedBook",
+                "encodingmethod" : "encodingMethod",
                 "endcondition" : "endCondition",
                 "entitycodelist" : "entityCodeList",
                 "entitydescription" : "entityDescription",
@@ -156,12 +249,51 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "externalcodeset" : "externalCodeSet",
                 "externallydefinedformat" : "externallyDefinedFormat",
                 "fielddelimiter" : "fieldDelimiter",
+                "fieldstartcolumn" : "fieldStartColumn",
+                "fieldwidth" : "fieldWidth",
+                "filmdistortioninformationavailability" : "filmDistortionInformationAvailability",
+                "foreignkey" : "foreignKey",
                 "formatname" : "formatName",
                 "formatstring" : "formatString",
+                "formatversion" : "formatVersion",
                 "fractiondigits" : "fractionDigits",
+                "fundername" : "funderName",
+                "funderidentifier" : "funderIdentifier",
+                "gettingstarted" : "gettingStarted",
+                "gring" : "gRing",
+                "gringpoint" : "gRingPoint",
+                "gringlatitude" : "gRingLatitude",
+                "gringlongitude" : "gRingLongitude",
+                "geogcoordsys" : "geogCoordSys",
+                "geometricobjectcount" : "geometricObjectCount",
+                "georeferenceinfo" : "georeferenceInfo",
+                "highwavelength" : "highWavelength",
+                "horizontalaccuracy" : "horizontalAccuracy",
+                "horizcoordsysdef" : "horizCoordSysDef",
+                "horizcoordsysname" : "horizCoordSysName",
+                "identifiername" : "identifierName",
+                "illuminationazimuthangle" : "illuminationAzimuthAngle",
+                "illuminationelevationangle" : "illuminationElevationAngle",
+                "imagingcondition" : "imagingCondition",
+                "imagequalitycode" : "imageQualityCode",
+                "imageorientationangle" : "imageOrientationAngle",
                 "intellectualrights" : "intellectualRights",
+                "imagedescription" : "imageDescription",
+                "isbn" : "ISBN",
+                "issn" : "ISSN",
+                "joincondition" : "joinCondition",
+                "keywordtype" : "keywordType",
+                "languagevalue" : "LanguageValue",
+                "languagecodestandard" : "LanguageCodeStandard",
+                "lensdistortioninformationavailability" : "lensDistortionInformationAvailability",
+                "licensename" : "licenseName",
+                "licenseurl" : "licenseURL",
+                "linenumber" : "lineNumber",
                 "literalcharacter" : "literalCharacter",
                 "literallayout" : "literalLayout",
+                "literaturecited" : "literatureCited",
+                "lowwavelength" : "lowWaveLength",
+                "machineprocessor" : "machineProcessor",
                 "maintenanceupdatefrequency" : "maintenanceUpdateFrequency",
                 "matrixtype" : "matrixType",
                 "maxexclusive" : "maxExclusive",
@@ -170,54 +302,126 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                 "maxrecordlength" : "maxRecordLength",
                 "maxvalues" : "maxValues",
                 "measurementscale" : "measurementScale",
+                "metadatalist" : "metadataList",
                 "methodstep" : "methodStep",
                 "minexclusive" : "minExclusive",
                 "mininclusive" : "minInclusive",
                 "minlength" : "minLength",
                 "minvalues" : "minValues",
                 "missingvaluecode" : "missingValueCode",
+                "moduledocs" : "moduleDocs",
+                "modulename" : "moduleName",
+                "moduledescription" : "moduleDescription",
+                "multiband" : "multiBand",
                 "multipliertosi" : "multiplierToSI",
                 "nonnumericdomain" : "nonNumericDomain",
+                "notnullconstraint" : "notNullConstraint",
                 "notplanned" : "notPlanned",
+                "numberofbands" : "numberOfBands",
                 "numbertype" : "numberType",
                 "numericdomain" : "numericDomain",
                 "numfooterlines" : "numFooterLines",
                 "numheaderlines" : "numHeaderLines",
                 "numberofrecords" : "numberOfRecords",
+                "numberofvolumes" : "numberOfVolumes",
                 "numphysicallinesperrecord" : "numPhysicalLinesPerRecord",
                 "objectname" : "objectName",
                 "oldvalue" : "oldValue",
+                "operatingsystem" : "operatingSystem",
                 "orderattributereference" : "orderAttributeReference",
+                "originalpublication" : "originalPublication",
                 "otherentity" : "otherEntity",
                 "othermaintenanceperiod" : "otherMaintenancePeriod",
+                "parameterdefinition" : "parameterDefinition",
                 "packageid" : "packageId",
+                "pagerange" : "pageRange",
+                "parentoccurences" : "parentOccurences",
                 "parentsi" : "parentSI",
+                "peakresponse" : "peakResponse",
+                "personalcommunication" : "personalCommunication",
                 "physicallinedelimiter" : "physicalLineDelimiter",
+                "pointinpixel" : "pointInPixel",
                 "preferredmembernode" : "preferredMemberNode",
+                "preprocessingtypecode" : "preProcessingTypeCode",
+                "primarykey" : "primaryKey",
+                "primemeridian" : "primeMeridian",
+                "proceduralstep" : "proceduralStep",
+                "programminglanguage" : "programmingLanguage",
+                "projcoordsys" : "projCoordSys",
+                "projectionlist" : "projectionList",
+                "propertyuri" : "propertyURI",
                 "pubdate" : "pubDate",
                 "pubplace" : "pubPlace",
+                "publicationplace" : "publicationPlace",
+                "quantitativeaccuracyreport" : "quantitativeAccuracyReport",
+                "quantitativeaccuracyvalue" : "quantitativeAccuracyValue",
+                "quantitativeaccuracymethod" : "quantitativeAccuracyMethod",
                 "quantitativeattributeaccuracyassessment" : "quantitativeAttributeAccuracyAssessment",
+                "querystatement" : "queryStatement",
                 "quotecharacter" : "quoteCharacter",
+                "radiometricdataavailability" : "radiometricDataAvailability",
+                "rasterorigin" : "rasterOrigin",
                 "recommendedunits" : "recommendedUnits",
+                "recommendedusage" : "recommendedUsage",
+                "referencedkey" : "referencedKey",
+                "referencetype" : "referenceType",
+                "relatedentry" : "relatedEntry",
+                "relationshiptype" : "relationshipType",
+                "reportnumber" : "reportNumber",
+                "reprintedition" : "reprintEdition",
+                "researchproject" : "researchProject",
                 "researchtopic" : "researchTopic",
                 "recorddelimiter" : "recordDelimiter",
+                "referencepublication" : "referencePublication",
+                "revieweditem" : "reviewedItem",
+                "rowcolumnorientation" : "rowColumnOrientation",
+                "runtimememoryusage" : "runtimeMemoryUsage",
                 "samplingdescription" : "samplingDescription",
+                "scalefactor" : "scaleFactor",
+                "sequenceidentifier" : "sequenceIdentifier",
+                "semiaxismajor" : "semiAxisMajor",
                 "shortname" : "shortName",
                 "simpledelimited" : "simpleDelimited",
+                "spatialraster" : "spatialRaster",
+                "spatialreference" : "spatialReference",
+                "spatialvector" : "spatialVector",
+                "standalone" : "standAlone",
                 "standardunit" : "standardUnit",
                 "startcondition" : "startCondition",
+                "studyareadescription" : "studyAreaDescription",
                 "storagetype" : "storageType",
                 "studyextent" : "studyExtent",
                 "studytype" : "studyType",
+                "textdelimited" : "textDelimited",
                 "textdomain" : "textDomain",
+                "textfixed" : "textFixed",
                 "textformat" : "textFormat",
+                "topologylevel" : "topologyLevel",
+                "tonegradation" : "toneGradation",
                 "totaldigits" : "totalDigits",
+                "totalfigures" : "totalFigures",
+                "totalpages" : "totalPages",
+                "totaltables" : "totalTables",
+                "triangulationindicator" : "triangulationIndicator",
                 "typesystem" : "typeSystem",
+                "uniquekey" : "uniqueKey",
                 "unittype" : "unitType",
                 "unitlist" : "unitList",
+                "usagecitation" : "usageCitation",
+                "valueuri" : "valueURI",
                 "valueattributereference" : "valueAttributeReference",
+                "verticalaccuracy" : "verticalAccuracy",
+                "vertcoordsys" : "vertCoordSys",
+                "virtualmachine" : "virtualMachine",
+                "wavelengthunits" : "waveLengthUnits",
                 "whitespace" : "whiteSpace",
-                "xsi:schemalocation" : "xsi:schemaLocation"
+                "xintercept" : "xIntercept",
+                "xcoordinate" : "xCoordinate",
+                "xsi:schemalocation" : "xsi:schemaLocation",
+                "xslope" : "xSlope",
+                "ycoordinate" : "yCoordinate",
+                "yintercept" : "yIntercept",
+                "yslope" : "ySlope"
               }
           );
         },
@@ -461,14 +665,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
        * Returns the EML XML as a string.
        */
       serialize: function(){
-
         //Get the EML document
         var xmlString   = this.get("objectXML"),
-            eml         = $.parseHTML(xmlString),
-            datasetNode = $(eml).filter("eml\\:eml").find("dataset");
+            html        = $.parseHTML(xmlString),
+            eml         = $(html).filter("eml\\:eml"),
+            datasetNode = $(eml).find("dataset");
 
         //Update the packageId on the eml node with the EML id
         $(eml).attr("packageId", this.get("id"));
+
+        // Set schema version
+        $(eml).attr("xmlns:eml", 
+          MetacatUI.appModel.get("editorSerializationFormat") || 
+          "https://eml.ecoinformatics.org/eml-2.2.0");
+
+        // Set formatID
+        this.set("formatId", 
+          MetacatUI.appModel.get("editorSerializationFormat") ||
+          "https://eml.ecoinformatics.org/eml-2.2.0");
+
+        // Ensure xsi:schemaLocation has a value for the current format
+        eml = this.setSchemaLocation(eml);
 
         var nodeNameMap = this.nodeNameMap();
 
@@ -481,7 +698,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           basicTextValues = [basicTextValues];
 
         // Remove existing nodes
-        datasetNode.find(fieldName.toLowerCase()).remove();
+        datasetNode.children(fieldName.toLowerCase()).remove();
 
         // Create new nodes
         var nodes = _.map(basicTextValues, function(value) {
@@ -506,7 +723,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         else{
           datasetNode.prepend(nodes);
         }
-
       }, this);
 
       // Serialize pubDate
@@ -841,7 +1057,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       //Camel-case the XML
       var emlString = "";
-      _.each(eml, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
+      _.each(html, function(rootEMLNode){ emlString += this.formatXML(rootEMLNode); }, this);
 
       return emlString;
     },
@@ -852,13 +1068,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
     serializeParties: function(eml, type){
 
       //Remove the nodes from the EML for this party type
-      $(eml).find(type.toLowerCase()).remove();
+      $(eml).children("dataset").children(type.toLowerCase()).remove();
 
       //Serialize each party of this type
        _.each(this.get(type), function(party, i){
 
          //Get the last node of this type to insert after
-         var insertAfter = $(eml).find(type.toLowerCase()).last();
+         var insertAfter = $(eml).children("dataset").children(type.toLowerCase()).last();
 
          //If there isn't a node found, find the EML position to insert after
          if( !insertAfter.length ) {
@@ -1071,6 +1287,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           model.set("numSaveAttempts", 0);
           model.set("uploadStatus", "c");
           model.set("sysMetaXML", model.serializeSysMeta());
+          model.set("oldPid", null);
           model.fetch({merge: true, sysMeta: true});
           model.trigger("successSaving", model);
 
@@ -1355,7 +1572,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         var model = this,
           fetchOptions = _.extend({
-            url: MetacatUI.appModel.get("metaServiceUrl") + this.get("id"),
+            url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
             dataType: "text",
             success: function(response){
               model.set(DataONEObject.prototype.parse.call(model, response));
@@ -1370,36 +1587,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
           $.ajax(fetchOptions);
       },
-
       /*
-       * Returns the node in the given EML document that the given node type should be inserted after
+       * Returns the nofde in the given EML document that the given node type
+       * should be inserted after
+       *
+       * Returns false if either the node is not found in the and this should
+       * be handled by the caller.
        */
       getEMLPosition: function(eml, nodeName) {
-        var nodeOrder = ["alternateidentifier", "shortname", "title", "creator", "metadataprovider", "associatedparty",
-                        "pubdate", "language", "series", "abstract", "keywordset", "additionalinfo", "intellectualrights",
-                        "distribution", "coverage", "purpose", "maintenance", "contact", "publisher", "pubplace",
-                        "methods", "project", "datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-          var entityNodes = ["datatable", "spatialraster", "spatialvector", "storedprocedure", "view", "otherentity"];
-          var isEntityNode = _.contains(entityNodes, nodeName);
-          var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
-          if ( position == -1 ) {
-              return false;
-          }
+        var nodeOrder = this.get("nodeOrder");
+        var position = _.indexOf(nodeOrder, nodeName.toLowerCase());
 
-          //Go through each node in the node list and find the position where this node will be inserted after
-          for (var i = position - 1; i >= 0; i--) {
-              if ( $(eml).find(nodeOrder[i]).length ) {
-                  // Handle non-entity nodes
-                  if ( ! isEntityNode ) {
-                      return $(eml).find("dataset").children(nodeOrder[i]).last();
-                  } else {
-                      // Handle entity nodes by returning the
-                      // last child of the parent <dataset> since
-                      // entities have a {0..n}+ model
-                      // (i.e optional, repeatable, no specific order)
-                      return $(eml).find("dataset").children().last();
-                  }
-              }
+        if (position == -1) {
+          return false;
+        }
+
+        // Go through each node in the node list and find the position where this
+        // node will be inserted after
+        for (var i = position - 1; i >= 0; i--) {
+          if ($(eml).find("dataset").find(nodeOrder[i]).length) {
+            return $(eml).find("dataset").children(nodeOrder[i]).last();
+          }
         }
 
         return false;
@@ -1506,7 +1714,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         if(entity){
 
           //If this entity has been matched to another DataONEObject already, then don't match it again
-          if( entity.get("dataONEObject") ){
+          if( entity.get("dataONEObject") == dataONEObj ){
+            return entity;
+          }
+          //If this entity has been matched to a different DataONEObject already, then don't match it again.
+          //i.e. We will not override existing entity<->DataONEObject pairings
+          else if( entity.get("dataONEObject") ){
             return;
           }
           else{
@@ -1619,6 +1832,82 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         }, this);
       },
 
+      /**
+       * Attempt to move a party one index forward within its sibling models
+       *
+       * @param {EMLParty} partyModel: The EMLParty model we're moving
+       */
+      movePartyUp: function(partyModel) {
+        var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+
+        // Iterate over each possible attribute
+        _.each(possibleAttr, function(attr){
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          var models = _.clone(this.get(attr));
+
+          // Find the index of the model we're moving
+          var index = _.findIndex(models, function(m) {
+            return m === partyModel;
+          });
+
+          if (index === 0) {
+            // Already first
+            return;
+          }
+
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
+
+          // Do the move using splice and update the model
+          models.splice(index - 1, 0, models.splice(index, 1)[0])
+          this.set(attr, models);
+          this.trigger("change:" + attr);
+        }, this);
+      },
+
+      /**
+       * Attempt to move a party one index forward within its sibling models
+       *
+       * @param {EMLParty} partyModel: The EMLParty model we're moving
+       */
+      movePartyDown: function(partyModel) {
+        var possibleAttr = ["creator", "contact", "metadataProvider", "publisher", "associatedParty"];
+
+        // Iterate over each possible attribute
+        _.each(possibleAttr, function(attr){
+          if (!_.contains(this.get(attr), partyModel)) {
+            return;
+          }
+          // Make a clone because we're going to use splice
+          var models = _.clone(this.get(attr));
+
+          // Find the index of the model we're moving
+          var index = _.findIndex(models, function(m) {
+            return m === partyModel;
+          });
+
+          if (index === -1) {
+            // Couldn't find the model
+            return;
+          }
+
+          // Figure out where to put the new model
+          //   Leave it in the same place if the next index doesn't exist
+          //   Move one forward if it does
+          var newIndex = (models.length <= index + 1) ? index : index + 1;
+
+          // Do the move using splice and update the model
+          models.splice(newIndex, 0, models.splice(index, 1)[0])
+          this.set(attr, models);
+          this.trigger("change:" + attr);
+        }, this);
+      },
+
       /*
       * Adds the given EMLParty model to this EML211 model in the
       * appropriate role array in the given position
@@ -1658,13 +1947,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
       /* Initialize the object XML for brand spankin' new EML objects */
       createXML: function() {
-          var xml = "<eml:eml xmlns:eml=\"eml://ecoinformatics.org/eml-2.1.1\"></eml:eml>",
+          var xml = "<eml:eml xmlns:eml=\"https://eml.ecoinformatics.org/eml-2.2.0\"></eml:eml>",
               eml = $($.parseHTML(xml));
 
               // Set base attributes
               eml.attr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
               eml.attr("xmlns:stmml", "http://www.xml-cml.org/schema/stmml-1.1");
-              eml.attr("xsi:schemaLocation", "eml://ecoinformatics.org/eml-2.1.1 eml.xsd");
+              eml.attr("xsi:schemaLocation", "https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd");
               eml.attr("packageId", this.get("id"));
               eml.attr("system", "knb"); // We could make this configurable at some point
 
@@ -1737,6 +2026,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
           textString = textString.replace(xmlNode, tagName);
 
         });
+
+        //Remove Unicode characters that are not valid XML characters
+        //Create a regular expression that matches any character that is not a valid XML character
+        // (see https://www.w3.org/TR/xml/#charsets)
+        var invalidCharsRegEx = /[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/g;
+        textString = textString.replace(invalidCharsRegEx, "");
 
         return textString;
 
@@ -1823,8 +2118,45 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
 
         //Mark the package as changed
         MetacatUI.rootDataPackage.packageModel.set("changed", true);
-      }
+      },
 
+      /**
+       * Sets the xsi:schemaLocation attribute on the passed-in Element 
+       * depending on the application configuration.
+       * 
+       * @param {Element} eml: The root eml:eml element to modify
+       * @return {Element} The element, possibly modified
+       */
+      setSchemaLocation: function(eml) {
+        if (!MetacatUI || !MetacatUI.appModel) {
+          return eml;
+        }
+
+        var current = $(eml).attr("xsi:schemaLocation"),
+            format = MetacatUI.appModel.get("editorSerializationFormat"),
+            location = MetacatUI.appModel.get("editorSchemaLocation");
+
+        // Return now if we can't do anything anyway
+        if (!format || !location) {
+          return eml;
+        }
+
+        // Simply add if the attribute isn't present to begin with
+        if (!current || typeof current !== "string") {
+          $(eml).attr("xsi:schemaLocation", format + " " + location);
+
+          return eml;
+        }
+
+        // Don't append if it's already present
+        if (current.indexOf(format) >= 0) {
+          return eml;
+        }
+
+        $(eml).attr("xsi:schemaLocation", current + " " + location);
+
+        return eml;
+      }
     });
 
     return EML211;

@@ -117,7 +117,7 @@ define(['jquery', 'underscore', 'backbone',
 			}
 
 			if(!this.title && metadata){
-				this.title = '<a href="<%= MetacatUI.root %>/view/' + metadata.get("id") +
+				this.title = '<a href="<%= MetacatUI.root %>/view/' + encodeURIComponent(metadata.get("id")) +
 					'">Files in this dataset';
 
 				if(this.model.get("id"))
@@ -324,7 +324,7 @@ define(['jquery', 'underscore', 'backbone',
 			}
 			else{
 				var moreInfo = $(document.createElement("a"))
-								.attr("href", "<%= MetacatUI.root %>/view/" + id)
+								.attr("href", "<%= MetacatUI.root %>/view/" + encodeURIComponent(id))
 								.addClass("preview")
 								.attr("data-id", id)
 								.text("More info");

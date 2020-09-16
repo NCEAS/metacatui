@@ -2,13 +2,6 @@
 /*jshint unused:false */
 'use strict';
 
-/* NOTE: The theme name and themeMap are specified in the loader.js file */
-
-/**
-* The global variable that stores all the top-level data for this application 
-* @type {object}
-*/
-var MetacatUI = MetacatUI || {};
 MetacatUI.recaptchaURL = 'https://www.google.com/recaptcha/api/js/recaptcha_ajax';
 if( MetacatUI.mapKey ){
 	var gmapsURL = 'https://maps.googleapis.com/maps/api/js?v=3&key=' + MetacatUI.mapKey;
@@ -22,13 +15,9 @@ if( MetacatUI.mapKey ){
 	define('gmaps', null);
 
 }
-if ( MetacatUI.useD3 ) {
-    MetacatUI.d3URL = '../components/d3.v3.min';
 
-} else {
-    MetacatUI.d3URL = null;
+MetacatUI.d3URL = '../components/d3.v3.min';
 
-}
 
 /* Configure the app to use requirejs, and map dependency aliases to their
    directory location (.js is ommitted). Shim libraries that don't natively
@@ -37,13 +26,14 @@ require.config({
   baseUrl: MetacatUI.root + '/js/',
   waitSeconds: 180, //wait 3 minutes before throwing a timeout error
   map: MetacatUI.themeMap,
-  urlArgs: "v=" + MetacatUI.metacatUIVersion,
+  urlArgs: "v=" + (MetacatUI.AppConfig.cachebuster || MetacatUI.metacatUIVersion),
   paths: {
     jquery: MetacatUI.root + '/components/jquery-1.9.1.min',
     jqueryui: MetacatUI.root + '/components/jquery-ui.min',
     jqueryform: MetacatUI.root + '/components/jquery.form',
     underscore: MetacatUI.root + '/components/underscore-min',
     backbone: MetacatUI.root + '/components/backbone-min',
+    localforage: MetacatUI.root + '/components/localforage.min',
     bootstrap: MetacatUI.root + '/components/bootstrap.min',
     text: MetacatUI.root + '/components/require-text',
     jws: MetacatUI.root + '/components/jws-3.2.min',
@@ -61,7 +51,8 @@ require.config({
     x2js: MetacatUI.root + '/components/xml2json',
     he: MetacatUI.root + '/components/he',
     citation: MetacatUI.root + '/components/citation.min',
-	// showdown + extensions (used in the markdownView to convert markdown to html)
+    promise: MetacatUI.root + '/components/es6-promise.min',
+	// showdown + extensions (used in the MarkdownView to convert markdown to html)
 	showdown: MetacatUI.root + '/components/showdown/showdown.min',
 	showdownHighlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/showdown-highlight',
 	highlight: MetacatUI.root + '/components/showdown/extensions/showdown-highlight/highlight.pack',
@@ -74,8 +65,15 @@ require.config({
 	showdownXssFilter: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/showdown-xss-filter',
 	xss: MetacatUI.root + '/components/showdown/extensions/showdown-xss-filter/xss.min',
 	showdownHtags: MetacatUI.root + '/components/showdown/extensions/showdown-htags',
+	// woofmark - markdown editor
+	woofmark: MetacatUI.root + '/components/woofmark.min',
 	// drop zone creates drag and drop areas
 	Dropzone: MetacatUI.root + '/components/dropzone-amd-module',
+	// Packages that convert between json data to markdown table
+	markdownTableFromJson: MetacatUI.root + '/components/markdown-table-from-json.min',
+	markdownTableToJson: MetacatUI.root + '/components/markdown-table-to-json',
+	// Polyfill required for using dropzone with older browsers
+	corejs: MetacatUI.root + '/components/core-js',
 	//Have a null fallback for our d3 components for browsers that don't support SVG
 	d3: MetacatUI.d3URL,
 	LineChart: ['views/LineChartView', null],
@@ -123,6 +121,9 @@ require.config({
 	},
 	citation: {
 		exports: 'citationRequire'
+	},
+	promise: {
+	 	exports: 'Promise'
 	}
   }
 });
@@ -144,8 +145,11 @@ require(['bootstrap', 'views/AppView', 'models/AppModel'],
 function(Bootstrap, AppView, AppModel) {
 	'use strict';
 
-	// initialize the application
-	MetacatUI.appModel = new AppModel({context: '/' + MetacatUI.metacatContext});
+	// Create an AppModel, which controls the global app configuration and app states
+  //  To be compatible with MetacatUI 2.11.X and earlier, we need to set the metacat context attribute here.
+  //  This supports the old way tof configuring the app via the index.html file.
+  //  As of MetacatUI 2.12.0, it is recommended that you configure MetacatUI via an AppConfig file.
+	MetacatUI.appModel = new AppModel({ context: MetacatUI.AppConfig.metacatContext });
 
 	//Check for custom settings in the theme config file
 	if(typeof MetacatUI.customAppConfig == "function") MetacatUI.customAppConfig();
@@ -265,7 +269,7 @@ function(Bootstrap, AppView, AppModel) {
 			root: historyRoot
 		});
 
-		$(document).on("click", "a:not([data-toggle])", function(evt) {
+		$(document).on("click", "a:not([data-toggle],[target])", function(evt) {
 			// Don't hijack the event if the user had Control or Command held down
 			if (evt.ctrlKey || evt.metaKey) {
 				return;

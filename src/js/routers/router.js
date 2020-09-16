@@ -26,7 +26,7 @@ function ($, _, Backbone) {
 			'external(/*url)(/)'                : 'renderExternal', // renders the content of the given url in our UI
 			'logout(/)'                         : 'logout', // logout the user
 			'signout(/)'                        : 'logout', // logout the user
-			'signin(/)'                         : 'renderSignIn', // logout the user
+			'signin(/)'                         : 'renderSignIn', // signin the user
 			"signinsuccess(/)"                  : "renderSignInSuccess",
 			"signinldaperror(/)"                : "renderLdapSignInError",
 			"signinLdap(/)"                     : "renderLdapSignIn",
@@ -36,7 +36,8 @@ function ($, _, Backbone) {
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
 			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
-      "edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor"
+			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
+			'drafts' : 'renderDrafts'
 		},
 
 		helpPages: {
@@ -203,6 +204,18 @@ function ($, _, Backbone) {
 			}
 		},
 
+		/**
+		 * Renders the Drafts view which is a simple view backed by LocalForage that
+		 * lists drafts created in the Editor so users can recover any failed
+		 * submissions.
+		 */
+		renderDrafts: function() {
+			require(['views/DraftsView'], function(DraftsView){
+				MetacatUI.appView.draftsView = new DraftsView();
+				MetacatUI.appView.showView(MetacatUI.appView.draftsView);
+			});
+		 },
+
 		renderMdqRun: function (suiteId, pid) {
 			this.routeHistory.push("quality");
 
@@ -353,7 +366,12 @@ function ($, _, Backbone) {
         this.routeHistory.push("edit/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier + "/" + portalSection);
       }
       else{
-        this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        if( !portalIdentifier ){
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural"));
+        }
+        else{
+          this.routeHistory.push("edit/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier);
+        }
       }
 
       require(['views/portals/editor/PortalEditorView'], function(PortalEditorView){
@@ -366,13 +384,15 @@ function ($, _, Backbone) {
     },
 
 		renderMetadata: function (pid) {
+			pid = decodeURIComponent(pid);
+
 			this.routeHistory.push("metadata");
 			MetacatUI.appModel.set('lastPid', MetacatUI.appModel.get("pid"));
 
 			var seriesId;
 
 			//Check for a seriesId
-			if(MetacatUI.appModel.get("useSeriesId") && (pid.indexOf("version:") > -1)){
+			if( pid.indexOf("version:") > -1 ){
 				seriesId = pid.substr(0, pid.indexOf(", version:"));
 
 				pid = pid.substr(pid.indexOf(", version: ") + ", version: ".length);
@@ -406,18 +426,31 @@ function ($, _, Backbone) {
 
 			var viewChoice;
 
-			if(!username || !MetacatUI.appModel.get("enableUserProfiles")){
+      //If there is a username specified and user profiles are disabled,
+      // forward to the entire repo profile view.
+      if( username && !MetacatUI.appModel.get("enableUserProfiles") ){
+        this.navigate("profile", { trigger: true, replace: true });
+        return;
+      }
+
+			if(!username){
 				this.routeHistory.push("summary");
 
-				if(!MetacatUI.appView.statsView){
-					require(["views/StatsView"], function(StatsView){
-						MetacatUI.appView.statsView = new StatsView();
+				// flag indicating /profile view
+				var viewOptions = { nodeSummaryView: true };
 
-						MetacatUI.appView.showView(MetacatUI.appView.statsView);
+				if(!MetacatUI.appView.statsView){
+
+					require(['views/StatsView'], function(StatsView){
+						MetacatUI.appView.statsView = new StatsView({
+							userType: "repository"
+						});
+
+						MetacatUI.appView.showView(MetacatUI.appView.statsView, viewOptions);
 					});
 				}
 				else
-					MetacatUI.appView.showView(MetacatUI.appView.statsView);
+					MetacatUI.appView.showView(MetacatUI.appView.statsView, viewOptions);
 			}
 			else{
 				this.routeHistory.push("profile");
@@ -502,11 +535,11 @@ function ($, _, Backbone) {
 			//If the user status has not been checked yet, wait for it
 			else if( !MetacatUI.appUserModel.get("checked") ){
 				this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.renderSignIn);
+        MetacatUI.appView.showView(MetacatUI.appView.signInView);
 			}
 		},
 
 		renderSignInSuccess: function(){
-
 			$("body").html("Sign-in successful.");
 			setTimeout(window.close, 1000);
 		},

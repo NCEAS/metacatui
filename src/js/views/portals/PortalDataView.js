@@ -48,8 +48,13 @@ define(["jquery",
 
           //Set some options on the searchResults
           searchResults = this.model.get("searchResults");
-          //Get the documents values as a facet so we can get all the data object IDs
-          searchResults.facet = ["documents", "id"];
+
+          //If Solr joins are disabled, get the documents and id facets for the PortalMetricsView
+          if( !MetacatUI.appModel.get("enableSolrJoins") ){
+            //Get the documents values as a facet so we can get all the data object IDs
+            searchResults.facet = ["documents", "id"];
+          }
+
           //Retrieve only 5 result rows
           searchResults.rows = 25;
 

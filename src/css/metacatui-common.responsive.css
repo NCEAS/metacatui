@@ -71,9 +71,6 @@
 		flex-direction: column;
     display: flex;
 	}
-	.navbar .home > a:after{
-		content: " Home";
-	}
 	.navbar li{
 		width: 100%;
 		text-align: center;
@@ -478,28 +475,30 @@
     padding: 0;
 	}
 
-	.portal-section-content .toc .mobile {
+	.toc .mobile {
 		display: flex;
 		flex-direction: row;
 		width: 100vw;
 		margin: 0;
+		background-color: #2c7e90;
 		background-color: var(--portal-secondary-color);
 		color: white;
 	}
 
-	.portal-section-content .toc .mobile a {
+	.toc .mobile a,
+	.toc .mobile a:hover {
 		color: white;
 	}
 
-	.portal-section-content .toc .desktop {
+	.toc .desktop {
 	  display: none;
 	}
 
-	.toc-ul li, .portal-view .toc-ul a {
-		background-color: none;
+	.toc-ul li, .toc-ul a {
+		background-color: transparent;
 	}
 
-	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul {
+	.mobile .toc-ul, .mobile  .toc-ul {
     position: sticky;
     position: -webkit-sticky;
     background-color: transparent;
@@ -507,13 +506,12 @@
     padding: 0px;
 	}
 
-	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul a {
+	.mobile .toc-ul, .mobile .toc-ul a {
 		color: #242424;
 	}
 
-	.Editor.Portal .mobile .toc-ul, .portal-view .mobile  .toc-ul li.active > a {
+	.mobile .toc-ul, .mobile .toc-ul li.active > a {
 		color: white;
-		background-color: var(--portal-secondary-color);
 	}
 
 	.toc .mobile > * {
@@ -567,13 +565,13 @@
 	}
 
 	/* affix the TOC to the top */
-	.Editor.Portal .toc-view.affix,
-	.portal-section-content .toc-view.affix {
+	.toc-view.affix,
+	.toc-view.affix {
     top: 0px;
 	}
 
 	/* make markdown content take full width */
-	.portal-section-content > .markdown {
+	.markdown.span9 {
     padding: 13px 10px;
     width: 100vw;
     box-sizing: border-box;
@@ -581,7 +579,7 @@
 		overflow-y: scroll; /* so that vw calculation includes space for scroll bar */
 	}
 
-	.portal-section-content .toc-view.span3.affix + .span9 {
+	.toc-view.span3.affix + .span9 {
 		margin-left: 0;
 	}
 
@@ -630,6 +628,10 @@
 		margin-right: 0;
 		width: 100%;
 		box-sizing: border-box;
+	}
+
+	.portal-editor .toc {
+		margin-left: -9px !important;
 	}
 
 	#Metrics metrics-figure-container {
@@ -728,20 +730,12 @@
 		width: 100%;
 	}
 
+  /************ Access Policy View *************/
+  .access-policy-view .public-toggle-container .can-toggle{
+    margin: auto;
+  }
 
-}
-@media only screen and (max-width : 1300px){
-  /*The attribute list in the MetadataView gets difficult to read at 1300px */
-  .attributeList > .row-fluid > .span2{
-    min-width: 130px;
-  }
-  .attributeList > .row-fluid > .span10{
-  	width: 76%;
-  	width: calc(97% - 165px);
-  }
-  .attributeList .tab-pane > .control-group{
-    min-width: 400px;
-  }
+
 }
 
 @media only screen and (max-width : 1000px){
@@ -827,8 +821,128 @@
 }
 
 /* Smartphones (portrait) ----------- */
-@media only screen
-and (max-width : 420px) {
+@media only screen and (max-width : 420px) {
+
+  .modal,
+  .access-policy-view-container.modal{
+    top: 5%;
+    width: 90%;
+    left: 5%;
+  }
+  .access-policy-view thead{
+    display: none;
+  }
+  .access-policy-view table,
+  .access-policy-view tbody,
+  .access-policy-view tr,
+  .access-policy-view td{
+    display: block;
+  }
+  .access-policy-view td{
+    border-top-width: 0px;
+  }
+  .access-policy-view .subject{
+    font-size: .8em;
+    color: #999;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    line-height: 1.5em;
+  }
+  .access-policy-view .access{
+    width: 80%;
+    display: inline-block;
+    box-sizing: border-box;
+    padding-top: 0px;
+  }
+  .access-policy-view .remove-rule{
+    width: 20%;
+    display: inline-block;
+    box-sizing: border-box;
+    padding-top: 0px;
+  }
+  .access-policy-view .access-rule{
+    border-bottom: 1px solid #CCC;
+  }
+  .access-policy-view .access-rule.new .access{
+    width: 80%;
+    display: inline-block;
+    box-sizing: border-box;
+  }
+  .access-policy-view .access-rule.new .access select,
+  .access-policy-view .access-rule.new .add-rule .add{
+    margin-top: 0px;
+  }
+  .access-policy-view .access-rule.new .add-rule{
+    width: 20%;
+    display: inline-block;
+    box-sizing: border-box;
+    padding-top: 0px;
+  }
+
+  #mainContent .form-input{
+    grid-template-columns: 80% 20%;
+  }
+  #mainContent input{
+    font-size: 1.5em;
+  }
+
+}
+
+/**********
+* These styles control the mobile navigation
+**********/
+@media only screen and (min-width : 900px) and (max-width : 1050px) {
+  /* Collapse the repo title into multiple lines, once we get to a certain window width */
+  .navbar .title{
+    display: inline-block;
+    max-width: 140px;
+    font-size: 1.1em;
+    line-height: 1em;
+  }
+  /* Make the nav links a bit smaller */
+  .navbar .nav > li > a{
+    font-size: 1.1em;
+  }
+}
+@media only screen and (max-width : 900px) {
+
+    /* At this window width, show the mobile nav hamburger menu and hide the non-mobile nav links */
+    #nav-trigger{
+      display: block;
+    }
+    #main-nav{
+      display: none;
+    }
+    /* Dropdown menus in mobile nav should change from popover-style dropdowns to listed links */
+    #main-nav .dropdown-menu {
+      display: block;
+      position: relative;
+      background-color: transparent;
+      border: 0px;
+      box-shadow: none;
+      margin-left: -5%;
+      width: auto;
+    }
+    /* Hide dropdown headers, dividers, borders, and the caret icon */
+    #main-nav .dropdown-header,
+    #main-nav .divider{
+      display: none;
+    }
+    #Navbar .dropdown-menu:before, #Navbar .dropdown-menu:after{
+      content: none;
+    }
+    #main-nav .dropdown-menu > li{
+      border-bottom: 0px;
+    }
+    /* Dropdown menu links should be white */
+    #main-nav .dropdown-menu > li > a{
+      color: #FFF;
+      text-align: left;
+    }
+    /* Set a height on input forms in the nav*/
+    #main-nav form{
+      height: 40px;
+    }
 }
 
 /* iPads (portrait and landscape) ----------- */
@@ -870,7 +984,10 @@ and (min-width : 1824px) {
 @media only screen
 and (min-width : 320px)
 and (max-width : 568px) {
-/* STYLES GO HERE */
+  .access-policy-view-container.modal .modal-body,
+  .modal .modal-body{
+    max-height: 350px;
+  }
 }
 
 /* iPhone 5 (landscape)----------- */

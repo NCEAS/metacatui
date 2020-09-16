@@ -48,7 +48,6 @@
 
     a:hover{
     	text-decoration:none;
-    	color: #660000;
     }
 
     h1 > a[name], h2 > a[name], h3 > a[name],
@@ -63,11 +62,6 @@
     h4 > a[name]:before, h5 > a[name]:before, h6 > a[name]:before {
 		content: "";
     	padding-top: 115px;
-    }
-
-    h4{
-    	font-size: 20px;
-    	font-weight: 400;
     }
 
     h1{
@@ -169,6 +163,13 @@
     }
 
 /*
+* Temp Message
+*/
+.has-temporary-message nav#Navbar {
+    margin-top: 72px;
+}
+
+/*
 * Portal View
 */
 .portal-view .toc-ul a{
@@ -214,7 +215,6 @@
 .Portal.Editor #Navbar .nav .minimal-nav a:hover,
 .PortalView #Navbar .nav .minimal-nav a:hover {
     background-color: transparent;
-    color: #660000;
 }
 
 .PortalView #Navbar .nav .minimal-nav .btn-primary{
@@ -224,7 +224,9 @@
   background-color: #0093DD;
   color: #FFF;
 }
-
+.PortalView #Navbar #editPortal{
+  padding: 5px;
+}
 /* Portal editor
 -------------------------------------------------- */
 
@@ -238,7 +240,7 @@
 }
 .port-editor-section svg .theme-accent-fill{
 	fill: #b90004
-},
+}
 
 /* Editor
 -------------------------------------------------- */
@@ -500,6 +502,9 @@
       font-weight: 400;
       background-image: none;
       background-repeat: none;
+      text-shadow: none;
+      box-shadow: none;
+      border-color: #CCC;
     }
 
     .btn-primary a, .btn-info a, .btn-success a, .btn-warning a, .btn-danger a, .btn-inverse a {
@@ -509,6 +514,7 @@
 
     .btn-primary {
        background-color: #007DBB;
+      border-color: #0070a8;
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;
@@ -892,6 +898,7 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 	   	margin-right: .5em;
 	   	font-size: 2em;
 	   	float: right;
+      color: #992222;
 		}
 
 		.navbar nav{
@@ -1174,13 +1181,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
       padding-top: 90px;
     }
 
-	.subset-choice.keyword-search-link {
-		background-color: #115E95;
-		color: white;
-		text-shadow: none;
-		margin-bottom: 10px;
-	}
-
 	.keyword-search-link.active{
 		background-color: #1981CC;
 	}
@@ -1197,7 +1197,9 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
   	margin-left: auto;
   	margin-right: auto;
   	clear: both;
-  	padding: 20px;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
   }
 
   .profile .stripe{
@@ -1230,7 +1232,6 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 .profile .chart-title{
 	width: 280px;
-	float: left;
 }
 
 .profile .chart-title h2{
@@ -1239,12 +1240,14 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
 
 .profile .chart{
 	float: left;
-	width: 650px;
 	margin-left: 20px;
 	margin-top: 30px;
 }
 .member-list .group {
     min-width: 100px;
+}
+.profile .static-img-container h4{
+  text-align: center;
 }
 
   /* The universal color for data */
@@ -1363,11 +1366,6 @@ svg .title{
 .donut.data > g:first-child .donut-arc-label{
 	fill: #42D2D2;
 }
-
-
-.profile .format-charts-container{
-	height: 400px;
-}
 .profile .format-charts-container .chart-title{
 	width: 100%;
 }
@@ -1380,8 +1378,7 @@ svg .title{
 }
 
 /* Line Chart */
-.upload-chart,
-.temporal-coverage-chart{
+.upload-chart{
 	width: 650px;
 	float: right;
 }
@@ -1408,7 +1405,6 @@ svg .domain{
 }
 .line-chart-label.bg{
 	stroke-width: 2px;
-	fill: #FFF;
 	stroke: #FFF;
 	opacity: 0.8;
 }
@@ -1460,10 +1456,6 @@ svg .domain{
 	fill: #0E69A1;
 	font-size: 14px;
 	font-weight: bold;
-}
-
-.bar-chart .x.axis .tick text{
-	font-size: 11px;
 }
 
 #data-coverage-year-range{
@@ -3102,11 +3094,19 @@ a {
 ********************************************/
 
 #metric-modal .metric-chart .scale_button:hover rect,
+.views-metrics .metric-chart .scale_button:hover rect,
+.downloads-metrics .metric-chart .scale_button:hover rect,
 #metric-modal .metric-chart .bar,
-#metric-modal .metric-chart .bar_context {
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar,
+#metric-modal .metric-chart .bar_context,
+.views-metrics .metric-chart .bar_context,
+.downloads-metrics .metric-chart .bar_context {
 	fill: #006699;
 }
 
-#metric-modal .metric-chart .bar {
+#metric-modal .metric-chart .bar,
+.views-metrics .metric-chart .bar,
+.downloads-metrics .metric-chart .bar {
 	stroke: #006699;
 }

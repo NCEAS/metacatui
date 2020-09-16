@@ -114,6 +114,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
 
       var searchModel = this.model.get("searchModel");
 
+      searchModel.set("useGeohash", false);
+
       //Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
         searchModel: searchModel,

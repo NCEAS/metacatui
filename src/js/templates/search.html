@@ -35,7 +35,7 @@
 		    </div>
     		<div class="filter-container collapsable">
 				<h5 id="filters-header">Filter by:</h5>
-				
+
 				<div class="filter-contain collapsable" data-category="attribute">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
@@ -51,7 +51,7 @@
 					</div>
 				    <div class="clear"></div>
 			    </div>
-							    
+
 			    <% if(searchModelRef.filterIsAvailable("annotation")){ %>
 			    <div class="filter-contain collapsable" data-category="annotation">
 					<label class="expand-collapse-control">
@@ -68,13 +68,13 @@
 					</div>
 				    <div class="clear"></div>
 			    </div>
-			    
+
 			    <% } %>
-			    
+
 			   <% if(searchModelRef.filterIsAvailable("documents")){ %>
 				   <div class="filter-contain collapsable" id="includes-files" data-category="documents">
 						<label class="expand-collapse-control">
-							<i class="icon icon-caret-right expand"></i>					
+							<i class="icon icon-caret-right expand"></i>
 							<i class="icon icon-caret-down collapse"></i>
 							<img src="<%= MetacatUI.root %>/img/data-table.png" class="icon" />
 							<span class="tooltip-this" data-trigger="hover" data-title="Check this to only view datasets that include downloadable data files" data-placement="top">
@@ -109,7 +109,7 @@
 						</div>
 					</div>
 				<% } %>
-				
+
 				<div class="filter-contain collapsable">
 					<label class="expand-collapse-control">
 						<i class="icon icon-caret-right expand"></i>
@@ -262,9 +262,8 @@
 			<div class="map-toggle-container">
 				<a class="toggle-map" href="<%= MetacatUI.root %>/data/mode=list">Hide Map <i class="icon icon-double-angle-right"></i></a>
 
-				<% var checked = useMapBounds ? 'checked="checked"' : ''; %>
 				<label class="toggle-map-filter">Limit my search to the map area</label>
-				<input type="checkbox" name="map" <%=checked%> class="toggle-map-filter" />
+				<input type="checkbox" name="map" checked="true" class="toggle-map-filter" />
 			</div>
 		</div>
 

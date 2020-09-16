@@ -17,6 +17,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				this.set(this.parse(attributes.objectDOM));
 
 			this.on("change:taxonomicClassification", this.trickleUpChange);
+			this.on("change:taxonomicClassification", this.updateDOM);
 		},
 
 		/*
@@ -37,7 +38,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 				"identificationreference": "identificationReference",
 				"identifiername": "identifierName",
 				"taxonomicprocedures": "taxonomicProcedures",
-				"taxonomiccompleteness":"taxonomicCompleteness"
+				"taxonomiccompleteness":"taxonomicCompleteness",
+				"taxonid": "taxonId",
+				"commonname": "commonName"
             };
         },
 
@@ -56,17 +59,26 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		},
 
 		parseTaxonomicClassification: function(classification) {
+			var id = $(classification).attr("id");
 			var rankName = $(classification).children("taxonrankname");
 			var rankValue = $(classification).children("taxonrankvalue");
 			var commonName = $(classification).children("commonname");
+			var taxonId = $(classification).children("taxonId");
 			var taxonomicClassification = $(classification).children("taxonomicclassification");
 
 			var model = this,
 			    modelJSON = {
+				id: id,
 				taxonRankName: $(rankName).text().trim(),
 				taxonRankValue: $(rankValue).text().trim(),
 				commonName: _.map(commonName, function(cn) {
 					return $(cn).text().trim();
+				}),
+				taxonId: _.map(taxonId, function(tid) {
+					return {
+						provider: $(tid).attr("provider").trim(),
+						value: $(tid).text().trim()
+					}
 				}),
 				taxonomicClassification: _.map(taxonomicClassification, function(tc) {
 					return model.parseTaxonomicClassification(tc);
@@ -104,7 +116,6 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			 }
 
 			 // taxonomicClassification(s)
-			 $(objectDOM).append()
 			 var classifications = this.get('taxonomicClassification');
 
 			 if (typeof classifications === "undefined" ||
@@ -127,14 +138,20 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 		This function is currently recursive!
 		*/
 		createTaxonomicClassificationDOM: function(classification) {
-			var taxonRankName = classification.taxonRankName || "",
+			var id = classification.id,
+				  taxonRankName = classification.taxonRankName || "",
 			    taxonRankValue = classification.taxonRankValue || "",
-			    commonName = classification.commonName || "",
-				finishedEl;
+					commonName = classification.commonName || "",
+					taxonId = classification.taxonId,
+  				finishedEl;
 
 			if(!taxonRankName || !taxonRankValue) return "";
 
 			finishedEl = $(document.createElement("taxonomicclassification"));
+
+			if (typeof id === "string" && id.length > 0) {
+				$(finishedEl).attr("id", id);
+			}
 
 			if (taxonRankName && taxonRankName.length > 0) {
 				$(finishedEl).append($(document.createElement("taxonrankname")).text(taxonRankName));
@@ -147,9 +164,25 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 			if (commonName && commonName.length > 0) {
 				$(finishedEl).append($(document.createElement("commonname")).text(commonName));
 			}
+			
+			if (taxonId && taxonId.length > 0) {
+				_.each(taxonId, function(el) {
+					var taxonIdEl = $(document.createElement("taxonId")).text(el.value);
+
+					if (el.provider) {
+						$(taxonIdEl).attr("provider", el.provider);
+					}
+
+					$(finishedEl).append(taxonIdEl);
+				});
+			}
+
 
 			if (classification.taxonomicClassification) {
-				$(finishedEl).append(this.createTaxonomicClassificationDOM(classification.taxonomicClassification));
+				_.each(classification.taxonomicClassification, function(tc) {
+				    $(finishedEl).append(this.createTaxonomicClassificationDOM(tc));
+				}, this);
+				
 			}
 
 			return finishedEl;

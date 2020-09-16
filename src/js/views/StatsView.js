@@ -1,26 +1,37 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
-  'LineChart', 'BarChart', 'DonutChart', 'CircleBadge', 'text!templates/profile.html', 'text!templates/alert.html', 'text!templates/loading.html'],
-	function($, _, Backbone, d3, StatsModel,
-    LineChart, BarChart, DonutChart, CircleBadge, profileTemplate, AlertTemplate, LoadingTemplate) {
+define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'DonutChart', 'CircleBadge',
+'collections/Citations', 'models/MetricsModel', 'models/Stats', 'MetricsChart', 'views/CitationListView',
+'text!templates/metricModalTemplate.html',  'text!templates/profile.html',
+'text!templates/alert.html', 'text!templates/loading.html'],
+	function($, _, Backbone, d3, LineChart, BarChart, DonutChart, CircleBadge, Citations, MetricsModel,
+    StatsModel, MetricsChart, CitationList, MetricModalTemplate, profileTemplate, AlertTemplate,
+    LoadingTemplate) {
 	'use strict';
 
 	var StatsView = Backbone.View.extend(
-  /** @lends StatsView.prototype */{
+  	/** @lends StatsView.prototype */{
 
 		el: '#Content',
 
-    model: null,
+		model: null,
 
-    hideUpdatesChart: false,
+		hideUpdatesChart: false,
 
-    /**
-     * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
-     * @type {boolean}
-     */
-    hideMetadataAssessment: false,
+		/*
+		* Flag to indicate whether the statsview is a node summary view
+		* @type {boolean}
+		*/
+		nodeSummaryView: false,
+
+		/**
+		 * Whether or not to show the graph that indicated the assessment score for all metadata in the query.
+		 * @type {boolean}
+		 */
+		hideMetadataAssessment: false,
 
 		template: _.template(profileTemplate),
+
+		metricTemplate: _.template(MetricModalTemplate),
 
 		alertTemplate: _.template(AlertTemplate),
 
@@ -32,20 +43,111 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			this.title = (typeof options.title === "undefined") ? "Summary of Holdings" : options.title;
 			this.description = (typeof options.description === "undefined") ?
 					"A summary of all datasets in our catalog." : options.description;
+			this.metricsModel = (typeof options.metricsModel === undefined) ? undefined : options.metricsModel;
+
+			this.userType = (typeof options.userType === undefined) ? undefined : options.userType;
+			this.userId = (typeof options.userId === undefined) ? undefined : options.userId;
+			this.userLabel = (typeof options.userLabel === undefined) ? undefined : options.userLabel;
+
 			if(typeof options.el === "undefined")
 				this.el = options.el;
 
-      this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
+			this.hideUpdatesChart = (options.hideUpdatesChart === true)? true : false;
+			this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
+			this.hideCitationsChart = (typeof options.hideCitationsChart === "undefined") ? true : options.hideCitationsChart;
+			this.hideDownloadsChart = (typeof options.hideDownloadsChart === "undefined") ? true : options.hideDownloadsChart;
+			this.hideViewsChart = (typeof options.hideViewsChart === "undefined") ? true : options.hideViewsChart;
 
-      this.hideMetadataAssessment = (typeof options.hideMetadataAssessment === "undefined") ? true : options.hideMetadataAssessment;
 
-      this.model = options.model || null;
+			this.model = options.model || null;
 		},
 
-		render: function () {
+		render: function (options) {
+
+      //The Node info needs to be fetched first since a lot of this code requires info about MNs
+      if( !MetacatUI.nodeModel.get("checked") && !MetacatUI.nodeModel.get("error") ){
+        this.listenToOnce( MetacatUI.nodeModel, "change:checked error", function(){
+          //Remove listeners and render the view, even if there was an error fetching the NodeModel
+          this.stopListening(MetacatUI.nodeModel);
+          this.render(options);
+        });
+
+        this.$el.html(this.loadingTemplate);
+
+        return;
+      }
+
+			if ( !options )
+				options = {};
+
+			var view = this,
+          userIsCN = false,
+          nodeId,
+          isHostedRepo = false;
+
+			// Check if the node is a coordinating node
+			this.userIsCN = userIsCN;
+			if( this.userType !== undefined && this.userLabel !== undefined) {
+				if (this.userType === "repository") {
+					userIsCN = MetacatUI.nodeModel.isCN(this.userId);
+					if (userIsCN && typeof isCN !== 'undefined')
+						this.userIsCN = true;
+				}
+			}
+
+			if ( options.nodeSummaryView ) {
+				this.nodeSummaryView = true;
+				nodeId = MetacatUI.appModel.get("nodeId");
+				userIsCN = MetacatUI.nodeModel.isCN(nodeId);
+
+        //Save whether this profile is for a CN
+				if (userIsCN && typeof userIsCN !== 'undefined'){
+					this.userIsCN = true;
+        }
+        //Figure out if this profile is for a hosted repo
+        else if( nodeId ){
+          isHostedRepo = _.contains(MetacatUI.appModel.get("dataoneHostedRepos"), nodeId);
+        }
+
+				// Disable the metrics if the nodeId is not available or if it is not a DataONE Hosted Repo
+				if (!this.userIsCN && (nodeId === "undefined" || nodeId === null || !isHostedRepo) ) {
+					this.hideCitationsChart = true;
+					this.hideDownloadsChart = true;
+					this.hideViewsChart = true;
+          this.hideMetadataAssessment = true;
+				}
+        else{
+          // Overwrite the metrics display flags as set in the AppModel
+          this.hideMetadataAssessment = MetacatUI.appModel.get("hideSummaryMetadataAssessment");
+          this.hideCitationsChart = MetacatUI.appModel.get("hideSummaryCitationsChart");
+          this.hideDownloadsChart = MetacatUI.appModel.get("hideSummaryDownloadsChart");
+          this.hideViewsChart = MetacatUI.appModel.get("hideSummaryViewsChart");
+        }
+			}
+
+			if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
+
+				if ( typeof this.metricsModel === "undefined" ) {
+					// Create a list with the repository ID
+					var pid_list = new Array();
+					pid_list.push(nodeId);
+
+					// Create a new object of the metrics model
+					var metricsModel = new MetricsModel({
+						pid_list: pid_list,
+						type: this.userType
+					});
+					metricsModel.fetch();
+					this.metricsModel = metricsModel;
+				}
+
+			}
 
 			if( !this.model ){
-				this.model = new StatsModel();
+				this.model = new StatsModel({
+          hideMetadataAssessment: this.hideMetadataAssessment,
+          mdqImageId: nodeId
+        });
 			}
 
 			//Clear the page
@@ -53,97 +155,251 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 
 			//Only trigger the functions that draw SVG charts if d3 loaded correctly
 			if(d3){
-				//this.listenTo(this.model, 'change:dataUploadDates',       this.drawUploadChart);
-				this.listenTo(this.model, 'change:temporalCoverage',      this.drawCoverageChart);
-				this.listenTo(this.model, 'change:metadataDownloadDates', this.drawDownloadsChart);
-				this.listenTo(this.model, 'change:dataDownloadDates',     this.drawDownloadsChart);
-				this.listenTo(this.model, 'change:downloadDates',     this.drawDownloadsChart);
-				this.listenTo(this.model, "change:dataUpdateDates",       this.drawUpdatesChart);
-				this.listenTo(this.model, "change:totalSize",             this.drawTotalSize);
-				this.listenTo(this.model, 'change:metadataCount', 	    this.drawTotalCount);
-				this.listenTo(this.model, 'change:dataFormatIDs', 	  this.drawDataCountChart);
-				this.listenTo(this.model, 'change:metadataFormatIDs', this.drawMetadataCountChart);
+        //Draw a chart that shows the temporal coverage of all datasets in this collection
+				this.listenTo(this.model, 'change:temporalCoverage', this.drawCoverageChart);
 
-				//this.listenTo(this.model, 'change:dataUploads', 	  this.drawUploadTitle);
+        //Draw charts that plot the latest updates of metadata and data files
+				this.listenTo(this.model, "change:dataUpdateDates",     this.drawDataUpdatesChart);
+        this.listenTo(this.model, "change:metadataUpdateDates", this.drawMetadataUpdatesChart);
+
+        //Render the total file size of all contents in this collection
+				this.listenTo(this.model, "change:totalSize", this.displayTotalSize);
+
+        //Render the total number of datasets in this collection
+				this.listenTo(this.model, 'change:metadataCount', this.displayTotalCount);
+
+        // Display replicas only for member nodes
+				if (this.userType === "repository" && !this.userIsCN)
+					this.listenTo(this.model, "change:totalReplicas", this.displayTotalReplicas);
+
+        //Draw charts that show the breakdown of format IDs for metadata and data files
+				this.listenTo(this.model, 'change:dataFormatIDs',     this.drawDataCountChart);
+				this.listenTo(this.model, 'change:metadataFormatIDs', this.drawMetadataCountChart);
 			}
 
-			this.listenTo(this.model, 'change:downloads', 	  this.drawDownloadTitle);
-			this.listenTo(this.model, 'change:lastEndDate',	  	  this.drawCoverageChartTitle);
+      //When the last coverage endDate is found, draw a title for the temporal coverage chart
+			this.listenTo(this.model, 'change:lastEndDate', this.drawCoverageChartTitle);
 
-			// mdq
-			this.listenTo(this.model, 'change:mdqStats',	  	  this.drawMdqStats);
-
+      //When the total count is updated, check if there if the count is 0, so we can show there is no "activity" for this collection
 			this.listenTo(this.model, "change:totalCount", this.showNoActivity);
-
 
 			// set the header type
 			MetacatUI.appModel.set('headerType', 'default');
+
+
 
 			//Insert the template
 			this.$el.html(this.template({
 				query: this.model.get('query'),
 				title: this.title,
 				description: this.description,
+				userType: this.userType,
+				userIsCN: this.userIsCN,
 				hideUpdatesChart: this.hideUpdatesChart,
-				hideDownloadsChart: !this.model.get("supportDownloads"),
+				hideCitationsChart: this.hideCitationsChart,
+				hideDownloadsChart: this.hideDownloadsChart,
+				hideViewsChart: this.hideViewsChart,
 				hideMetadataAssessment: this.hideMetadataAssessment
 			}));
 
-      // Insert the metadata assessment chart
-      if(!this.hideMetadataAssessment){
-        // @Peter TODO:
-        // this.listenTo(this.model, "change:???", this.drawMetadataAssessment);
-        // OR
-        this.drawMetadataAssessment();
-      }
+		// Insert the metadata assessment chart
+		if( this.hideMetadataAssessment !== true ){
+			this.listenTo(this.model, "change:mdqScoresImage", this.drawMetadataAssessment);
+			this.listenTo(this.model, "change:mdqScoresError", function () {
+					this.$("#metadata-assessment-loading").remove();
+					MetacatUI.appView.showAlert("Metadata assessment scores are not available for this collection. " + this.model.get("mdqScoresError"),
+						"alert-warning", this.$("#metadata-assessment-graphic"));
+				});
+		}
 
+		//Insert the loading template into the space where the charts will go
+		if(d3){
+			this.$(".chart").html(this.loadingTemplate);
+			this.$(".show-loading").html(this.loadingTemplate);
+		}
+		//If SVG isn't supported, insert an info warning
+		else{
+			this.$el.prepend(this.alertTemplate({
+				classes: "alert-info",
+				msg: "Please upgrade your browser or use a different browser to view graphs of these statistics.",
+				email: false
+			}));
+		}
 
-			//Insert the loading template into the space where the charts will go
-			if(d3){
-				this.$(".chart").html(this.loadingTemplate);
-				this.$(".show-loading").html(this.loadingTemplate);
+		this.$el.data("view", this);
+
+			if (this.userType == "portal" || this.userType === "repository") {
+				if ( !this.hideCitationsChart || !this.hideDownloadsChart || !this.hideViewsChart ) {
+					if (this.metricsModel.get("totalViews") !== null) {
+						this.renderMetrics();
+					}
+					else{
+						// render metrics on fetch success.
+						this.listenTo(view.metricsModel, "sync" , this.renderMetrics);
+
+						// in case when there is an error for the fetch call.
+						this.listenTo(view.metricsModel, "error", this.renderUsageMetricsError);
+					}
+				}
 			}
-			//If SVG isn't supported, insert an info warning
-			else{
-				this.$el.prepend(this.alertTemplate({
-					classes: "alert-info",
-					msg: "Please upgrade your browser or use a different browser to view graphs of these statistics.",
-					email: false
-				}));
+
+		//Start retrieving data from Solr
+		this.model.getAll();
+
+		// Only gather replication stats if the view is a repository view
+		if (this.userType === "repository") {
+			if (this.userLabel !== undefined)
+			{
+				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(this.userId));
+				this.model.getTotalReplicas(identifier);
+			}
+			else if (this.nodeSummaryView) {
+				var nodeId = MetacatUI.appModel.get("nodeId");
+				var identifier = MetacatUI.appSearchModel.escapeSpecialChar(encodeURIComponent(nodeId));
+				this.model.getTotalReplicas(identifier);
 			}
 
-      this.$el.data("view", this);
+		}
 
-			//Start retrieving data from Solr
-			this.model.getAll();
-
-			return this;
-		},
-
+		return this;
+	},
 
     /**
      * drawMetadataAssessment - Insert the metadata assessment image into the view
      */
     drawMetadataAssessment: function(){
-
       try {
-        // @Peter TODO:
-        // Example figure:
-        var imgSrc = "https://dev.nceas.ucsb.edu/knb/d1/mn/v2/object/urn:uuid:cce87580-1800-40cb-9e46-c52d6a3119a4";
-        if(typeof imgSrc === 'string' || imgSrc instanceof String){
-          // Hide the spinner
-          this.$("#metadata-assessment-loading").remove();
+        var scoresImage = this.model.get("mdqScoresImage");
+        // Hide the spinner
+        this.$("#metadata-assessment-loading").remove();
+
+        if( scoresImage ){
           // Show the figure
-          this.$("#metadata-assessment-graphic").attr('src', imgSrc);
+          this.$("#metadata-assessment-graphic").append(scoresImage);
+        }
+        //If there was no image received from the MDQ scores service, then show a warning message
+        else{
+          MetacatUI.appView.showAlert(
+            "Something went wrong while getting the metadata assessment scores. If changes were recently made " +
+              " to these dataset(s), the scores may still be calculating.",
+            "alert-warning",
+            this.$("#metadata-assessment-graphic")
+          );
         }
       } catch (e) {
         // If there's an error inserting the image, remove the entire section
         // that contains the image.
-        console.log("Error displaying the metadata assessment figure. Error message: " + e);
-        this.$el.find(".stripe.metadata-assessment").remove();
+        console.error("Error displaying the metadata assessment figure. Error message: " + e);
+        MetacatUI.appView.showAlert(
+          "Something went wrong while getting the metadata assessment scores.",
+          "alert-error",
+          this.$("#metadata-assessment-graphic")
+        );
       }
-
     },
+
+		renderMetrics: function(){
+			if(!this.hideCitationsChart)
+				this.renderCitationMetric();
+
+			if(!this.hideDownloadsChart)
+				this.renderDownloadMetric();
+
+			if(!this.hideViewsChart)
+				this.renderViewMetric();
+
+			var self = this;
+			$(window).on("resize", function(){
+
+				if(!self.hideDownloadsChart)
+					self.renderDownloadMetric();
+
+				if(!self.hideViewsChart)
+					self.renderViewMetric();
+
+			});
+		},
+
+		renderCitationMetric: function() {
+			var citationSectionEl = this.$('#user-citations');
+			var citationEl = this.$('.citations-metrics-list');
+			var citationCountEl = this.$('.citation-count');
+			var metricName = "Citations";
+			var metricCount = this.metricsModel.get("totalCitations");
+			citationCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
+
+			// Displaying Citations
+			var resultDetails = this.metricsModel.get("resultDetails");
+
+			// Creating a new collection object
+			// Parsing result-details with citation dictionary format
+			var resultDetailsCitationCollection = new Array();
+			for (var key in resultDetails["citations"]) {
+				resultDetailsCitationCollection.push(resultDetails["citations"][key]);
+			}
+
+			var citationCollection = new Citations(resultDetailsCitationCollection, {parse:true});
+
+			this.citationCollection = citationCollection;
+
+			// Checking if there are any citations available for the List display.
+			if(this.metricsModel.get("totalCitations") == 0) {
+				var citationList = new CitationList();
+
+				// reattaching the citations at the bottom when the counts are 0.
+				var detachCitationEl = this.$(citationSectionEl).detach();
+				this.$('.charts-container').append(detachCitationEl);
+			}
+			else {
+				var citationList = new CitationList({citations: this.citationCollection});
+			}
+
+			this.citationList = citationList;
+
+			citationEl.html(this.citationList.render().$el.html());
+		},
+
+		renderDownloadMetric: function() {
+			var downloadEl = this.$('.downloads-metrics > .metric-chart');
+			var metricName = "Downloads";
+			var metricCount = this.metricsModel.get("totalDownloads");
+			var downloadCountEl = this.$('.download-count');
+			downloadCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
+
+			downloadEl.html(this.drawMetricsChart(metricName));
+		},
+
+		renderViewMetric: function() {
+			var viewEl = this.$('.views-metrics > .metric-chart');
+			var metricName = "Views";
+			var metricCount = this.metricsModel.get("totalViews");
+			var viewCountEl = this.$('.view-count');
+			viewCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
+
+			viewEl.html(this.drawMetricsChart(metricName));
+		},
+
+		// Currently only being used for portals and profile views
+		drawMetricsChart: function(metricName){
+			var metricNameLemma = metricName.toLowerCase()
+			var metricMonths    = this.metricsModel.get("months");
+			var metricCount     = this.metricsModel.get(metricNameLemma);
+			var chartEl         = document.getElementById('user-'+metricNameLemma+'-chart' );
+			var width           = (chartEl && chartEl.offsetWidth)? chartEl.offsetWidth : 1080;
+			var viewType        = this.userType;
+
+			// Draw a metric chart
+			var modalMetricChart = new MetricsChart({
+														id: metricNameLemma + "-chart",
+														metricCount: metricCount,
+														metricMonths: metricMonths,
+														type: viewType,
+														metricName: metricName,
+														width: width
+			});
+
+			return modalMetricChart.render().el;
+		},
 
 		drawDataCountChart: function(){
 			var dataCount = this.model.get('dataCount');
@@ -224,18 +480,27 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 							height: 300,
               width: 380,
 							formatLabel: function(name){
-								if((name !== undefined) && (name.indexOf("//ecoinformatics.org") > -1)){
+								if((name !== undefined) && ((name.indexOf("//ecoinformatics.org") > -1) || (name.indexOf("//eml.ecoinformatics.org") > -1))){
 									//EML - extract the version only
-									if(name.substring(0,4) == "eml:") name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
+									if((name.substring(0,4) == "eml:") || (name.substring(0,6) == "https:")) name = name.substr(name.lastIndexOf("/")+1).toUpperCase().replace('-', ' ');
 
 									//EML modules
-									if(name.indexOf("-//ecoinformatics.org//eml-") > -1) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
+									if((name.indexOf("-//ecoinformatics.org//eml-") > -1) || (name.indexOf("-//eml.ecoinformatics.org//eml-") > -1)) name = "EML " + name.substring(name.indexOf("//eml-")+6, name.lastIndexOf("-")) + " " + name.substr(name.lastIndexOf("-")+1, 5);
 
 								}
 								//Dryad - shorten it
 								else if((name !== undefined) && (name == "http://datadryad.org/profile/v3.1")) name = "Dryad 3.1";
 								//FGDC - just display "FGDC {year}"
 								else if((name !== undefined) && (name.indexOf("FGDC") > -1)) name = "FGDC " + name.substring(name.length-4);
+
+								//Onedcx v1.0
+								else if((name !== undefined) && (name == "http://ns.dataone.org/metadata/schema/onedcx/v1.0")) name = "Onedcx v1.0";
+
+								//GMD-NOAA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-noaa")) name = "GMD-NOAA";
+
+								//GMD-PANGAEA
+								else if((name !== undefined) && (name == "http://www.isotc211.org/2005/gmd-pangaea")) name = "GMD-PANGAEA";
 
 								if(name === undefined) name = "";
 								return name;
@@ -245,41 +510,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			this.$('.format-charts-metadata').html(donut.render().el);
 		},
 
-		drawFirstUpload: function(){
-
-			var className = "";
-
-			if( !this.model.get("firstUpload") ){
-				var chartData = [{
-				              	  count: "N/A",
-				              	  className: "packages no-activity"
-	                			}];
-			}
-			else{
-				var firstUpload = new Date(this.model.get("firstUpload")),
-					readableDate = firstUpload.toDateString();
-
-				readableDate = readableDate.substring(readableDate.indexOf(" ") + 1);
-
-				var chartData = [{
-				              	  count: readableDate,
-				              	  className: "packages"
-	                			}];
-			}
-
-			//Create the circle badge
-			var dateBadge = new CircleBadge({
-				id: "first-upload-badge",
-				data: chartData,
-				title: "first upload",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 100
-			});
-
-			this.$("#first-upload").html(dateBadge.render().el);
-		},
-
 		//drawUploadChart will get the upload stats from the stats model and draw a time series cumulative chart
 		drawUploadChart: function(){
 			//Get the width of the chart by using the parent container width
@@ -287,7 +517,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			var width = parentEl.width() || null;
 
 			//If there was no first upload, draw a blank chart and exit
-			if(!this.model.get('firstUpload')){
+			if( (!this.model.get("metadataUploads") || !this.model.get("metadataUploads").length) && (!this.model.get("dataUploads") || !this.model.get("dataUploads").length) ){
 
 				var lineChartView = new LineChart(
 						{	  id: "upload-chart",
@@ -313,7 +543,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 				//Create the line chart and draw the metadata line
 				var lineChartView = new LineChart(
 						{	  data: this.model.get('metadataUploadDates'),
-			  formatFromSolrFacets: true,
+			  		formatFromSolrFacets: true,
 						cumulative: true,
 								id: "upload-chart",
 						 className: "metadata",
@@ -367,7 +597,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 
 			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
 			if(!d3){
-				this.$('#uploads-title').html("<h2 class='packages fallback'>" + MetacatUI.appView.commaSeparateNumber(this.model.get('totalUploads')) + "</h2>");
+				this.$('#uploads-title').html("<h2 class='packages fallback'>" + MetacatUI.appView.commaSeparateNumber(this.model.get('totalCount')) + "</h2>");
 
 				return;
 			}
@@ -414,246 +644,151 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 		},
 
 		/*
-		 * drawTotalCount - draws a simple count of total metadata files/datasets
+		 * displayTotalCount - renders a simple count of total metadata files/datasets
 		 */
-		drawTotalCount: function(){
+		displayTotalCount: function(){
 
-			var className = "";
+			var className = "quick-stats-count";
 
 			if( !this.model.get("metadataCount") && !this.model.get("dataCount") )
 				className += " no-activity";
 
-			var chartData = [{
-	                    	  count: this.model.get("metadataCount"),
-	                    	  className: "packages" + className
-			                }];
+			var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(MetacatUI.appView.commaSeparateNumber(this.model.get("metadataCount")));
 
-			//Create the circle badge
-			var countBadge = new CircleBadge({
-				id: "total-datasets-title",
-				data: chartData,
-				title: "datasets",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 100,
-				height: 220
-			});
+			var titleEl = $(document.createElement("p"))
+							.addClass("chart-title")
+							.text("datasets");
 
-			this.$('#total-datasets').html(countBadge.render().el);
+			this.$('#total-datasets').html(countEl);
+			this.$('#total-datasets').append(titleEl);
 		},
 
 		/*
-		 * drawTotalSize draws a CircleBadgeView with the total file size of
+		 * displayTotalSize renders a count of the total file size of
 		 * all current metadata and data files
 		 */
-		drawTotalSize: function(){
+		displayTotalSize: function(){
+
+			var className = "quick-stats-count";
+			var count = "";
 
 			if( !this.model.get("totalSize") ){
-				var chartData = [{
-              	  				  count: "0 bytes",
-				              	  className: "packages no-activity"
-	                			}];
-
+				count = "0 bytes";
+				className += " no-activity";
 			}
 			else{
-				var chartData = [{
-		                    	  count: this.bytesToSize( this.model.get("totalSize") ),
-		                    	  className: "packages"
-				                }];
+				count = this.bytesToSize( this.model.get("totalSize") );
 			}
 
-			//Create the circle badge
-			var sizeBadge = new CircleBadge({
-				id: "total-size-title",
-				data: chartData,
-				title: "of content",
-				titlePlacement: "inside",
-				useGlobalR: true,
-				globalR: 100,
-				height: 220
+			var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(count);
+
+			var titleEl = $(document.createElement("p"))
+							.addClass("chart-title")
+							.text("of content");
+
+			this.$('#total-size').html(countEl);
+			this.$('#total-size').append(titleEl);
+		},
+
+    /**
+     * Draws both the metadata and data update date charts.
+     * Note that this function may be deprecated in the future.
+     *  Views should directly call drawMetadataUpdatesChart() or drawDataUpdatesChart() directly,
+     *  since metadata and data dates are fetched via separate AJAX calls.
+     */
+    drawUpdatesChart: function(){
+
+      //Draw the metadata and data updates charts
+      this.drawMetadataUpdatesChart();
+      this.drawDataUpdatesChart();
+
+    },
+
+    /**
+     * Draws a line chart representing the latest metadata updates over time
+     */
+    drawMetadataUpdatesChart: function(){
+
+      //Set some configurations for the LineChart
+      var chartClasses = "data",
+          data;
+
+      //If the number of metadata objects in this data collection is 0, then set the data for the LineChart to null.
+      // And add a "no-activity" class to the chart.
+      if( !this.model.get("metadataUpdateDates") || !this.model.get("metadataUpdateDates").length ){
+        data = null;
+        chartClasses += " no-activity";
+      }
+      else{
+        //Use the metadata update dates for the LineChart
+        data = this.model.get('metadataUpdateDates');
+      }
+
+      //Create the line chart for metadata updates
+      var metadataLineChart = new LineChart({
+        data: data,
+        formatFromSolrFacets: true,
+        cumulative: false,
+        id: "updates-chart",
+        className: chartClasses,
+        yLabel: "metadata files updated",
+        radius: 2,
+        width: this.$('.metadata-updates-chart').width(),
+        labelDate: "M-y"
+      });
+
+      //Render the LineChart and insert it into the container element
+      this.$('.metadata-updates-chart').html(metadataLineChart.render().el);
+    },
+
+    /**
+    * Draws a line chart representing the latest metadata updates over time
+    */
+    drawDataUpdatesChart: function(){
+      //Set some configurations for the LineChart
+      var chartClasses = "data",
+          view = this,
+          data;
+
+      //Use the data update dates for the LineChart
+      if(this.model.get("dataCount")){
+        data = this.model.get('dataUpdateDates');
+      }
+      else{
+        //If the number of data objects in this data collection is 0, then set the data for the LineChart to null.
+        // And add a "no-activity" class to the chart.
+        data = null;
+        chartClasses += " no-activity";
+      }
+
+      //Create the line chart for data updates
+      var dataLineChart = new LineChart({
+        data: data,
+        formatFromSolrFacets: true,
+        cumulative: false,
+        id: "updates-chart",
+        className: chartClasses,
+        yLabel: "data files updated",
+        radius: 2,
+        width: this.$('.data-updates-chart').width(),
+        labelDate: "M-y"
+      });
+
+      //Render the LineChart and insert it into the container element
+      this.$('.data-updates-chart').html(dataLineChart.render().el);
+
+			// redraw the charts to avoid overlap at different widths
+			$(window).on("resize", function(){
+
+				if(!view.hideUpdatesChart)
+					view.drawUpdatesChart();
+
 			});
 
-			this.$('#total-size').html(sizeBadge.render().el);
-		},
-
-		/*
-		 * drawUpdatesChart - draws a line chart representing the latest updates over time
-		 */
-		drawUpdatesChart: function(){
-
-			//If there was no first upload, draw a blank chart and exit
-			if(!this.model.get('firstUpdate')){
-
-				var lineChartView = new LineChart(
-						{	  id: "updates-chart",
-						 	yLabel: "files updated",
-						 frequency: 0,
-						 cumulative: false,
-						 	 width: this.$('.metadata-updates-chart').width()
-						});
-
-				this.$('.metadata-updates-chart').html(lineChartView.render().el);
-
-				return;
-			}
-
-			//Set the frequency of our points
-			var frequency = 12;
-
-			//If there isn't a lot of points to graph, draw points more frequently on the line
-			if(this.model.get("metadataUpdateDates").length < 40) frequency = 1;
-
-			//Create the line chart for metadata updates
-			var metadataLineChart = new LineChart(
-					{	  data: this.model.get('metadataUpdateDates'),
-		  formatFromSolrFacets: true,
-					cumulative: false,
-							id: "updates-chart",
-					 className: "metadata",
-					 	yLabel: "metadata files updated",
-					// frequency: frequency,
-						radius: 2,
-						width: this.$('.metadata-updates-chart').width(),
-					    labelDate: "M-y"
-					});
-
-			this.$('.metadata-updates-chart').html(metadataLineChart.render().el);
-
-			//Only draw the data updates chart if there was at least one uploaded
-			if(this.model.get("dataCount")){
-				//Create the line chart for data updates
-				var dataLineChart = new LineChart(
-						{	  data: this.model.get('dataUpdateDates'),
-			  formatFromSolrFacets: true,
-						cumulative: false,
-								id: "updates-chart",
-						 className: "data",
-						 	yLabel: "data files updated",
-						// frequency: frequency,
-							radius: 2,
-							width: this.$('.data-updates-chart').width(),
-						    labelDate: "M-y"
-						});
-
-				this.$('.data-updates-chart').html(dataLineChart.render().el);
-
-			}
-			else{
-				//Create the line chart for data updates
-				var dataLineChart = new LineChart(
-						{	  data: null,
-			  formatFromSolrFacets: true,
-						cumulative: false,
-								id: "updates-chart",
-						 className: "data no-activity",
-						 	yLabel: "data files updated",
-						// frequency: frequency,
-							radius: 2,
-							width: this.$('.data-updates-chart').width(),
-						    labelDate: "M-y"
-						});
-
-				this.$('.data-updates-chart').html(dataLineChart.render().el);
-			}
-
-		},
-
-		/*
-		 * drawDownloadsChart - draws a line chart representing the downloads over time
-		 */
-		drawDownloadsChart: function(){
-			//Only draw the chart once both metadata and data dates have been retrieved
-			//if(!this.model.get("metadataDownloadDates") || !this.model.get("dataDownloadDates")) return;
-
-			if(!this.model.get("downloadDates")) return;
-
-			//Get the width of the chart by using the parent container width
-			var parentEl = this.$('.download-chart');
-			var width = parentEl.width() || null;
-
-			//If there are no download stats, show a message and exit
-			if(!this.model.get('downloads')){
-
-				var msg = "No one has downloaded any of this data or download statistics are not being reported";
-				parentEl.html("<p class='subtle center'>" + msg + ".</p>");
-
-				return;
-			}
-
-			//Set the frequency of our points
-			var frequency = 6;
-
-			//Check which line we should draw first since the scale will be based off the first line
-
-			var options = {
-					data: this.model.get('downloadDates'),
-					formatFromSolrFacetRanges: true,
-					id: "download-chart",
-					yLabel: "all downloads",
-					barClass: "packages",
-					roundedRect: true,
-					roundedRadius: 3,
-					barLabelClass: "packages",
-					width: width
-				};
-
-			var barChart = new BarChart(options);
-			parentEl.html(barChart.render().el);
-
-		},
-
-		//drawDownloadTitle will draw a circle badge title for the downloads time series chart
-		drawDownloadTitle: function(){
-
-			//If d3 isn't supported in this browser or didn't load correctly, insert a text title instead
-			if(!d3){
-				this.$('#downloads-title').html("<h2 class='packages fallback'>" + MetacatUI.appView.commaSeparateNumber(this.model.get('downloads')) + "</h2>");
-
-				return;
-			}
-
-			//If there are 0 downloads, draw a default/blank chart title
-			if(!this.model.get('downloads')){
-				var downloadChartTitle = new CircleBadge({
-					id: "download-chart-title",
-					className: this.model.get("totalUploads") ? "default" : "no-activity",
-					globalR: 60,
-					data: [{ count: 0, label: "downloads" }]
-				});
-
-				this.$('#downloads-title').html(downloadChartTitle.render().el);
-
-				this.listenToOnce(this.model, "change:totalUploads", this.drawDownloadTitle);
-
-				return;
-			}
-
-			//Get information for our download chart title
-			var titleChartData = [],
-				metadataDownloads = this.model.get("metadataDownloads"),
-				dataDownloads = this.model.get("dataDownloads"),
-				metadataClass = "metadata",
-				dataClass = "data";
-
-			if(metadataDownloads == 0) metadataClass = "default";
-			if(dataDownloads == 0) dataClass = "default";
-
-
-			var titleChartData = [
-			                      {count: this.model.get("metadataDownloads"), label: "metadata", className: metadataClass},
-							      {count: this.model.get("dataDownloads"), 	   label: "data", 	  className: dataClass}
-								 ];
-
-			//Draw the download chart title
-			var downloadChartTitle = new CircleBadge({
-				id: "download-chart-title",
-				data: titleChartData,
-				className: "chart-title",
-				useGlobalR: true,
-				globalR: 60
-			});
-
-			this.$('#downloads-title').html(downloadChartTitle.render().el);
 		},
 
 		//Draw a bar chart for the temporal coverage
@@ -661,10 +796,14 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 
 			//Get the width of the chart by using the parent container width
 			var parentEl = this.$('.temporal-coverage-chart');
+
+			if (this.userType == "repository") {
+				parentEl.addClass("repository-portal-view");
+			}
 			var width = parentEl.width() || null;
 
 			// If results were found but none have temporal coverage, draw a default chart
-			if(!this.model.get('firstBeginDate')){
+			if(!this.model.get('temporalCoverage')){
 
 				parentEl.html("<p class='subtle center'>There are no metadata documents that describe temporal coverage.</p>");
 
@@ -690,7 +829,7 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 		},
 
 		drawCoverageChartTitle: function(){
-			if((!this.model.get('firstBeginDate')) || (!this.model.get('lastEndDate'))) return;
+			if((!this.model.get('firstBeginDate')) || (!this.model.get('lastEndDate')) || !this.model.get("temporalCoverage") ) return;
 
 			//Create the range query
 			var yearRange = this.model.get('firstBeginDate').getUTCFullYear() + " - " + this.model.get('lastEndDate').getUTCFullYear();
@@ -699,125 +838,16 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			this.$('#data-coverage-year-range').text(yearRange);
 		},
 
-		drawMdqStats: function() {
-			if (!this.model.get("mdqStats")) {
-				return;
-			}
-			if (!this.model.get("mdqStatsTotal")) {
-				return;
-			}
-			var mdqCompositeStats= this.model.get("mdqStats").mdq_composite_d;
-
-			var mdqTotalStats = this.model.get("mdqStatsTotal").mdq_composite_d;
-
-			if (mdqTotalStats && mdqTotalStats.mean && mdqCompositeStats && mdqCompositeStats.mean) {
-				var diff = mdqCompositeStats.mean - mdqTotalStats.mean;
-				var repoAvg = (mdqTotalStats.mean*100).toFixed(0) + "%";
-
-				if (diff < 0) {
-					$("#mdq-percentile-container").text("Below repository average");
-					$("#mdq-percentile-icon").addClass("icon-thumbs-down");
-				}
-				if (diff > 0) {
-					$("#mdq-percentile-container").text("Above repository average");
-					$("#mdq-percentile-icon").addClass("icon-thumbs-up");
-				}
-				if (diff == 0) {
-					$("#mdq-percentile-container").text("At repository average");
-					$("#mdq-percentile-icon").addClass("icon-star");
-				}
-
-				// for the box plot
-				// top arrow for this view
-				$("#mdq-score-num").text((mdqCompositeStats.mean*100).toFixed(0) + "%");
-				$("#mdq-score").css(
-				{
-					  "margin-left": (mdqCompositeStats.mean*100).toFixed(0) + "%"
-				});
-				// the range
-				$("#mdq-box").css(
-				{
-					"width": ((mdqCompositeStats.max - mdqCompositeStats.min) * 100).toFixed(0) + "%",
-					"margin-left": (mdqCompositeStats.min*100).toFixed(0) + "%"
-				});
-				$("#mdq-box").attr("data-content", mdqCompositeStats.count + " scores range from " + (mdqCompositeStats.min*100).toFixed(0) + "%" + " to " + (mdqCompositeStats.max*100).toFixed(0) + "%");
-				// the bottom arrow for repo
-				$("#mdq-repo-score-num").text((mdqTotalStats.mean*100).toFixed(0) + "%");
-				$("#mdq-repo-score").css(
-				{
-					  "margin-left": (mdqTotalStats.mean*100).toFixed(0) + "%"
-				});
-
-			}
-
-			// now draw the chart
-			this.drawMdqFacets();
-
-		},
-
-		drawMdqFacets: function() {
-
-			var mdqCompositeStats= this.model.get("mdqStats").mdq_composite_d;
-
-			if (mdqCompositeStats) {
-				// keys are the facet values, values are the stats (min, max, mean, etc...)
-				var datasourceFacets = mdqCompositeStats.facets.mdq_metadata_datasource_s || {};
-				var formatIdFacets = mdqCompositeStats.facets.mdq_metadata_formatId_s || {};
-				var rightsHolderFacets = mdqCompositeStats.facets.mdq_metadata_rightsHolder_s || {};
-				var suiteIdFacets = mdqCompositeStats.facets.mdq_suiteId_s || {};
-				var funderFacets = mdqCompositeStats.facets.mdq_metadata_funder_sm || {};
-				var groupFacets = mdqCompositeStats.facets.mdq_metadata_group_sm || {};
-
-				if(!Object.keys(datasourceFacets).length &&
-						!Object.keys(formatIdFacets).length &&
-						!Object.keys(rightsHolderFacets).length &&
-						!Object.keys(suiteIdFacets).length &&
-						!Object.keys(funderFacets).length &&
-						!Object.keys(groupFacets).length)
-					return;
-
-				//this.drawMdqChart(datasourceFacets);
-				//this.drawMdqChart(rightsHolderFacets);
-				this.drawMdqChart(_.extend(formatIdFacets, datasourceFacets, suiteIdFacets, funderFacets, groupFacets));
-
-				//Unhide the quality chart
-				$("#quality-chart").show();
-			}
-		},
-
-		//Draw a bar chart for the slice
-		drawMdqChart: function(data){
-
-			//Get the width of the chart by using the parent container width
-			var parentEl = this.$('.mdq-chart');
-			var width = parentEl.width() || null;
-
-			var options = {
-					data: data,
-					formatFromSolrFacets: true,
-					solrFacetField: "mean",
-					id: "mdq-slice-chart",
-					yLabel: "mean score",
-					yFormat: d3.format(",%"),
-					barClass: "packages",
-					roundedRect: true,
-					roundedRadius: 3,
-					barLabelClass: "packages",
-					width: width
-				};
-
-			var barChart = new BarChart(options);
-			parentEl.html(barChart.render().el);
-
-		},
-
 		/*
 		 * Shows that this person/group/node has no activity
 		 */
 		showNoActivity: function(){
-			this.$(".show-loading .loading").remove();
 
-			this.$el.addClass("no-activity");
+      if( this.model.get("metadataCount") === 0 && this.model.get("dataCount") === 0 ){
+  			this.$(".show-loading .loading").remove();
+
+  			this.$(".stripe").addClass("no-activity");
+      }
 		},
 
 				/**
@@ -862,8 +892,84 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'models/Stats',
 			//Stop listening to changes in the model
 			this.stopListening(this.model);
 
+			//Stop listening to resize
+			$(window).off("resize");
+
 			//Reset the stats model
 			this.model = null;
+		},
+
+		renderUsageMetricsError: function() {
+			// Remove the Spinning icons and display error
+
+			var metricsEls = new Array();
+
+			metricsEls.push('.citations-metrics-list');
+			metricsEls.push('#user-downloads-chart');
+			metricsEls.push('#user-views-chart');
+
+			// for each of the usage metrics section
+			metricsEls.forEach(function(iconEl) {
+				var errorMessage = "";
+
+				if(iconEl === ".citations-metrics-list") {
+					errorMessage = "Something went wrong while getting the citation metrics.";
+				}
+				else if(iconEl === '#user-downloads-chart') {
+					errorMessage = "Something went wrong while getting the download metrics.";
+				}
+				else if(iconEl === "#user-views-chart") {
+					errorMessage = "Something went wrong while getting the view metrics.";
+				}
+				else {
+					errorMessage = "Something went wrong while getting the usage metrics.";
+				}
+
+				// remove the loading icon
+				$(iconEl).find('.metric-chart-loading').css("display", "none");
+
+				// display the error message
+				MetacatUI.appView.showAlert(
+					errorMessage,
+					"alert-error",
+					$(iconEl)
+				);
+			});
+
+		},
+
+		/*
+		 * getReplicas gets the number of replicas in this member node
+		 */
+		displayTotalReplicas: function(){
+
+			var view = this;
+			var className = "quick-stats-count";
+			var count;
+
+			if( this.model.get("totalReplicas") > 0 ){
+				count = MetacatUI.appView.commaSeparateNumber(view.model.get("totalReplicas"));
+
+				var countEl = $(document.createElement("p"))
+							.addClass(className)
+							.text(count);
+
+				var titleEl = $(document.createElement("p"))
+								.addClass("chart-title")
+								.text("replicas");
+
+				// display the totals
+				this.$('#total-replicas').html(countEl);
+				this.$('#total-replicas').append(titleEl);
+
+			}
+			else{
+				// hide the replicas container if the replica count is 0.
+				this.$('#replicas-container').hide()
+			}
+
+
+
 		}
 
 	});

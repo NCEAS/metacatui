@@ -9,10 +9,11 @@
   <textarea type="text" data-category="introduction" class="basic-text introduction auto-resize" placeholder="<%=introPlaceholder%>"><%=introduction%></textarea>
 </div>
 
-<div class="markdown-container">
+<!-- <div class="markdown-container"> -->
   <p class="subtle markdown-help-text">Communicate your science or project details on this page.
     <a data-toggle="collapse" data-target="#markdown-mini-cheatsheet-<%=cid%>">
-      Styling using markdown is supported <i class="icon-info-sign"></i>.
+      
+      Styling using markdown is supported <svg xmlns="http://www.w3.org/2000/svg" height="0.9em" viewBox="0 0 208 128" style="stroke:currentColor; fill:currentColor;"><rect width="198" height="118" x="5" y="5" ry="10" stroke-width="10" fill="none"/><path d="M30 98V30h20l20 25 20-25h20v68H90V59L70 84 50 59v39zm125 0l-30-33h20V30h20v35h20z"/></svg>.
     </a>
   </p>
   <div class="markdown-help subtle collapse" id="markdown-mini-cheatsheet-<%=cid%>">
@@ -123,20 +124,6 @@ block </pre></code></td>
       <p class="more-help">Get more markdown help <a href="https://commonmark.org/help/" target="_blank">here</a></p>
     </div>
   </div>
-
   <p class="error notification" data-category="markdown"></p>
-  <div class="tabbable">
-    <ul class="nav nav-tabs">
-      <li class="active"><a href="#markdown-edit-<%=cid%>" data-toggle="tab">Edit</a></li>
-      <li id="markdown-preview-link"><a href="#markdown-preview-<%=cid%>" data-toggle="tab">Preview</a></li>
-    </ul>
-    <div class="tab-content">
-      <div class="tab-pane active" id="markdown-edit-<%=cid%>">
-        <textarea rows="50" type="text" data-category="markdown" class="basic-text markdown" placeholder="<%=markdownPlaceholder%>" data-category="markdown"><%=markdown%></textarea>
-      </div>
-      <div class="tab-pane row-fluid" id="markdown-preview-<%=cid%>">
-        Preview will show here
-      </div>
-    </div>
-  </div>
-</div>
+  <div class="markdown-editor-container"></div>
+<!-- </div> -->

@@ -3,11 +3,12 @@ define(['underscore',
         'backbone',
         "models/portals/PortalSectionModel",
         "models/portals/PortalImage",
+        "views/ImageUploaderView",
+        "views/MarkdownEditorView",
         "views/portals/editor/PortEditorSectionView",
         "views/portals/editor/PortEditorImageView",
-        "views/portals/PortalSectionView",
         "text!templates/portals/editor/portEditorMdSection.html"],
-function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView, ImageEdit, PortalSectionView, Template){
+function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, MarkdownEditor, PortEditorSectionView, ImageEdit, Template){
 
   /**
   * @class PortEditorMdSectionView
@@ -47,14 +48,35 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
+    * @type {Underscore.Template}
     */
     template: _.template(Template),
-
+    
     /**
-    * A jQuery selector for the element that the ImageUploader view should be inserted into
+    * A jQuery selector for the element that will contain the ImageUploader view
     * @type {string}
     */
     imageUploaderContainer: ".portal-display-image",
+    
+    /**
+    * A jQuery selector for the element that will contain the markdown section
+    * title text
+    * @type {string}
+    */
+    titleEl: ".title",
+    
+    /**
+    * A jQuery selector for the element that will contain the markdown section
+    * introduction text
+    * @type {string}
+    */
+    introEl: ".introduction",
+    
+    /**
+    * A jQuery selector for the element that will contain the markdown editor
+    * @type {string}
+    */
+    markdownEditorContainer: ".markdown-editor-container",
 
     /**
     * A reference to the PortalEditorView
@@ -74,8 +96,6 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
     * @type {Object}
     */
     events: {
-      // update the markdown preview each time the preview tab is clicked.
-      "click #markdown-preview-link"   :     "previewMarkdown"
     },
 
     /**
@@ -97,39 +117,41 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
       try{
 
-        // Get the markdown
-        var markdown;
-
-        //Get the markdown from the SectionModel
-        if( this.model.get("content") ){
-          markdown = this.model.get("content").get("markdown");
-          if( !markdown ){
-            markdown = this.model.get("content").get("markdownExample");
-          }
-        }
-
-        if( !markdown ){
-          markdown = "";
-        }
-
         // Insert the template into the view
         this.$el.html(this.template({
           title: this.model.get("title"),
           titlePlaceholder: "Add a page title",
           introduction: this.model.get("introduction"),
           introPlaceholder: "Add a sub-title or an introductory blurb about the content on this page.",
-          markdown: markdown,
-          markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
           // unique ID to use for the bootstrap accordion component, which
           // breaks when targeting two + components with the same ID
           cid: this.model.cid
         })).data("view", this);
-
+        
+        // Get the markdown from the SectionModel
+        var markdown = "";
+        if( this.model.get("content") ){
+          markdown = this.model.get("content").get("markdown");
+          if( !markdown ){
+            markdown = this.model.get("content").get("markdownExample");
+          }
+        }
+        
+        // Render the Markdown Editor View
+        var mdEditor = new MarkdownEditor({
+          markdown: markdown,
+          markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
+          previewPlaceholder: "Add some text in the Edit tab to show a preview here",
+          showTOC: true
+        });
+        mdEditor.render();
+        this.$(this.markdownEditorContainer).html(mdEditor.el);
+        
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
-        this.$(".markdown"    ).data({ model: this.model.get("content") });
-        this.$(".title"       ).data({ model: this.model });
-        this.$(".introduction").data({ model: this.model });
+        mdEditor.$(mdEditor.textarea).data({ model: this.model.get("content") });
+        this.$(this.titleEl).data({ model: this.model });
+        this.$(this.introEl).data({ model: this.model });
 
         // Add an ImageEdit view for the sectionImage
         // If the section has no image yet, add the default PortalImage model
@@ -139,6 +161,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
         // Add the edit image view (incl. uploader) for the section image
         this.sectionImageUploader = new ImageEdit({
+          
           model: this.model.get("image"),
           editorView: this.editorView,
           imageUploadInstructions: ["Drag & drop a high quality image here or click to upload",
@@ -152,7 +175,8 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
           minWidth: 800,
           minHeight: 300,
           maxHeight: 4000,
-          maxWidth: 9000,
+          maxWidth: 9000
+          
         });
         this.$(this.imageUploaderContainer).append(this.sectionImageUploader.el);
         this.sectionImageUploader.render();
@@ -169,6 +193,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
         this.$("textarea.auto-resize").on('input textareaResize', function(e){
           view.resizeTextarea($(e.target));
         });
+        
         // Make sure the textareas are the right size with their pre-filled
         // content the first time the section is viewed, because scrollHeight
         // is 0px when the element is not displayed.
@@ -178,11 +203,10 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
 
       }
       catch(e){
-        console.log("The markdown view could not be rendered, error message: " + e);
+        console.log("The portal editor markdown section view could not be rendered, error message: " + e);
       }
 
     },
-
 
     /**
      * resizeTextarea - Set the height of a textarea element based on its
@@ -203,27 +227,6 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, PortEditorSectionView,
       } catch (e) {
         console.log("failed to resize textarea element. Error message: " + r);
       }
-    },
-
-    /**
-     * previewMarkdown - render the markdown preview.
-     */
-    previewMarkdown: function(){
-
-      try{
-        var markdownPreview = new PortalSectionView({
-          model: this.model,
-          template: _.template('<div class="portal-section-content"></div>')
-        });
-        //Render the section
-        markdownPreview.render();
-        //Add the section view to this portal view
-        this.$("#markdown-preview-"+this.model.cid).html(markdownPreview.el);
-      }
-      catch(e){
-        console.log("Failed to preview markdown content. Error message: " + e);
-      }
-
     },
 
     /**

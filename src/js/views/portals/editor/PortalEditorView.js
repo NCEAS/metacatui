@@ -51,6 +51,12 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     activeSectionLabel: "",
 
     /**
+    * When a new portal is being created, this is the label of the section that will be active when the editor first renders
+    * @type {string}
+    */
+    newPortalDefaultSectionLabel: "Settings",
+
+    /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
@@ -58,6 +64,18 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     // Over-ride the default editor submit message template (which is currently
     // used by the metadata editor) with the portal editor version
     editorSubmitMessageTemplate: _.template(portalEditorSubmitMessageTemplate),
+
+    /**
+    * An array of Backbone Views that are contained in this view.
+    * @type {Backbone.View[]}
+    */
+    subviews: [],
+
+    /**
+    * A reference to the PortEditorSectionsView for this instance of the PortEditorView
+    * @type {PortEditorSectionsView}
+    */
+    sectionsView: null,
 
     /**
     * The text to use in the editor submit button
@@ -77,6 +95,12 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * @type {string}
     */
     portEditLogoContainer: ".logo-editor-container",
+
+    /**
+    * A jQuery selector for links to view this portal
+    * @type {string}
+    */
+    viewPortalLinks: ".view-portal-link",
 
     /**
     * A temporary name to use for portals when they are first created but don't have a label yet.
@@ -102,11 +126,16 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     initialize: function(options){
 
+      //Reset arrays and objects set on this View, otherwise they will be shared across intances, causing errors
+      this.subviews = new Array();
+      this.sectionsView = null;
+
       if(typeof options == "object"){
         // initializing the PortalEditorView properties
         this.portalIdentifier = options.portalIdentifier ? options.portalIdentifier : undefined;
         this.activeSectionLabel = options.activeSectionLabel || "";
       }
+
     },
 
     /**
@@ -182,7 +211,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
             if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") ){
               // Start new portals on the settings tab
-              this.activeSectionLabel = "Settings";
+              this.activeSectionLabel = this.newPortalDefaultSectionLabel;
 
               // Render the default model if the portal is new
               this.renderPortalEditor();
@@ -250,6 +279,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         accentColorTransparent: this.model.get("accentColorTransparent")
       }));
 
+      //Render the editor controls
+      this.renderEditorControls();
+
       //Remove the rendering class from the body element
       $("body").removeClass("rendering");
 
@@ -280,6 +312,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         newPortalTempName: this.newPortalTempName
       });
 
+      //Save the PortEditorSectionsView as a subview
+      this.subviews.push(this.sectionsView);
+
       //Attach a reference to this view
       this.sectionsView.editorView = this;
 
@@ -308,6 +343,17 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       MetacatUI.appView.prevScrollpos = window.pageYOffset;
       $(window).on("scroll", "", undefined, this.handleScroll);
 
+      //Show a link to view the portal, if it is not a new portal
+      if( !this.model.isNew() ){
+        var viewURL = MetacatUI.root + "/" + MetacatUI.appModel.get("portalTermPlural") +"/" + portalIdentifier;
+        //Update the view URL in any other portal view links
+        this.$(this.viewPortalLinks).attr("href", viewURL).show();
+      }
+      else{
+        //Remove the href attribute and hide the link
+        this.$(this.viewPortalLinks).attr("href", "").hide();
+      }
+
     },
 
     /**
@@ -335,7 +381,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         // Create a new, default portal model
         this.model = new Portal({
           //Set the isNew attribute so the model will execute certain functions when a Portal is new
-          isNew: true
+          isNew: true,
+          rightsHolder: MetacatUI.appUserModel.get("username")
         });
 
       }
@@ -488,6 +535,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //We can't update anything without a category
       if(!category) return false;
 
+      //Clean up the value string so it's valid for XML
+      value = this.model.cleanXMLText(value);
+
       //If the value is an empty string,
       if( typeof value == "string" && !value.length ){
         //Remove the value from the input
@@ -542,15 +592,19 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
      */
     saveSuccess: function(savedObject){
 
-      var identifier = this.model.get("label") || this.model.get("seriesId") || this.model.get("id");
+      var identifier = this.model.get("label") || this.model.get("seriesId") || this.model.get("id"),
+          viewURL    = MetacatUI.root + "/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + identifier;
 
       var message = this.editorSubmitMessageTemplate({
             messageText: "Your changes have been submitted.",
-            viewURL: MetacatUI.root + "/"+ MetacatUI.appModel.get("portalTermPlural") +"/" + identifier,
+            viewURL: viewURL,
             buttonText: "View your " + MetacatUI.appModel.get("portalTermSingular")
         });
 
       MetacatUI.appView.showAlert(message, "alert-success", this.$el, null, {remove: true});
+
+      //Update the view URL in any other portal view links
+      this.$(this.viewPortalLinks).attr("href", viewURL).show();
 
       this.hideSaving();
 
@@ -580,6 +634,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         //The label category is unique, because it is duplicated in the PortalImage, which can cause bugs
         if( category == "label" ){
           categoryEls = this.$(".change-label-container [data-category='label']");
+          var settingsView = _.findWhere(this.sectionsView.subviews, {type: "PortEditorSettings"});
+          //Show the "change label" elements so the validation will appear
+          settingsView.changeLabel();
         }
 
         //Get the elements that have views attached to them
@@ -710,6 +767,15 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       //Remove the scroll listener
       $(window).off("scroll", "", this.handleScroll);
+
+      //Close and remove all of the subviews
+      _.invoke(this.subviews, "onClose");
+      _.invoke(this.subviews, "remove");
+      //Reset the subviews array
+      this.subviews = new Array();
+
+      //Reset the sectionsView reference
+      this.sectionsView = null;
     },
 
   });

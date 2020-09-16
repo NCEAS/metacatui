@@ -1,0 +1,40 @@
+<h2>Your Draft Submissions</h2>
+
+<p class="lead">Support staff may instruct you to visit this page in order to retrieve drafts of your submissions.</p>
+
+<% if (MetacatUI.appModel.get("emailContact")) { %>
+  <p>Find your draft below, download or copy it to your clipboard, and send an email to <a href="maito:<%= MetacatUI.appModel.get('emailContact') %>"><%= MetacatUI.appModel.get('emailContact') %></a> with the draft as an attachment or in the body of the email.</p>
+<% } %>
+
+<% if (drafts.length == 0) { %>
+  <p>No drafts to show. Drafts will automatically appear here when you use the editor and refesh this page.</p>
+<% } %>
+
+<div class="text-right" style="margin-bottom: 0.25rem;">
+  <button class="btn btn-info download-all">Download All</button>
+</div>
+<table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>ID</th>
+      <th>Date Created</th>
+      <th>Download or Copy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% _.each(drafts, function(draft, i) { %>
+    <tr>
+
+      <td><%= draft.value.title || "No title" %></td>
+      <td><code><%= draft.value.id || "No ID" %></code></td>
+      <td><%= draft.friendlyTimeDiff || "No datetime" %></td>
+      <td class="draft-download">
+        <a class="btn btn-primary download" data-filename="<%= draft.value.title.substr(0, 50).replace(/[^a-zA-Z0-9-]/, '_') %>.xml">Download</a>
+        <a class="btn copy-to-clipboard"><i class="icon icon-copy"></i> Copy to Clipboard</a>
+        <textarea id="draft-<%= i %>" style="display: none;" rows="6" cols="80"><%= draft.value.draft %></textarea>
+      </td>
+    </tr>
+  <% })%>
+  </tbody>
+</table>
