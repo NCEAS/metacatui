@@ -121,13 +121,16 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      */     
     renderQueryBuilder: function(){
       var queryBuilder = new QueryBuilder({
-        collection: this.model.get("definitionFilters")
+        // When the search model is deprecated, we will want to pass the
+        // definition filters instead. See also:
+        // DataCatalogViewWithFilters.searchModel
+        collection: this.model.get("searchModel").get("filters")
       });
       // Render the query builder and insert it into this view
       this.$(this.queryBuilderViewContainer).html(queryBuilder.el);
       queryBuilder.render();
     },
-
+    
     /**
      * Render the DataCatalogViewWithFilters
      */
@@ -137,14 +140,18 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
 
       searchModel.set("useGeohash", false);
 
-      //Create a DataCatalog view
+      // Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
         searchModel: searchModel,
         searchResults: this.model.get("searchResults"),
         mapModel: this.model.get("mapModel") || new Map(),
         isSubView: true,
         mode: "map",
-        filters: false
+        filters: false,
+        // Override the function that creates filter groups on the left of the
+        // data catalog view. With the query builder view, they are not needed.
+        // Otherwise, the defaultFilterGroups will be added to the query builder
+        createFilterGroups: function(){ return }
       });
 
       //Render the view and insert it into the page

@@ -324,6 +324,11 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
 
       //Validate most of the NumericFilter attributes using the parent validate function
       var errors = Filter.prototype.validate.call(this);
+      
+      //If everything is valid so far, then we have to create a new object to store errors
+      if( typeof errors != "object" ){
+        errors = {};
+      }
 
       //Delete error messages for the attributes that are going to be validated specially for the NumericFilter
       delete errors.values;
@@ -331,12 +336,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
       delete errors.max;
       delete errors.rangeMin;
       delete errors.rangeMax;
-
-      //If everything is valid so far, then we have to create a new object to store errors
-      if( typeof errors != "object" ){
-        errors = {};
-      }
-
+      
       //If there is an exact number set as the search term
       if( Array.isArray(this.get("values")) && this.get("values").length ){
         //Check that all the values are numbers

@@ -148,27 +148,34 @@ define(["jquery",
          */         
         addQueryRule: function(filterModel){
           
-          // Ensure that the object passed to this function is a filter.
-          // When the "add rule" button is clicked, the Event object is passed
-          // to this function.
-          if(filterModel && !/filter/i.test(filterModel.type)){
-            filterModel = null
-          }
-          
           try {
+            
+            var view = this;
+            
+            // Ensure that the object passed to this function is a filter.
+            // When the "add rule" button is clicked, the Event object is passed
+            // to this function instead.
+            if(!filterModel || (filterModel && !/filter/i.test(filterModel.type))){
+              filterModel = this.collection.add({nodeName: "filter"});
+            }
+            
+            // Don't show invisible rules
+            if(filterModel.get("isInvisible")){
+              return
+            }
+            
             // If no filter model is provided, assume that this is a new rule
             // insert QueryRuleView
             var rule = new QueryRule({
-              model: filterModel,
-              isNew: filterModel ? false : true
+              model: filterModel
             });
+            
             // Insert and render the rule
             this.$(this.rulesContainerSelector).append(rule.el);
             rule.render();
             // Add the rule to the list of rule sub-views
-            this.rules.push(rule)
+            this.rules.push(rule);
             
-            // TODO: Add listeners
             
           } catch (e) {
             console.log("Error adding a query rule, error message:", e);

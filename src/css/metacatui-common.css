@@ -6667,10 +6667,44 @@ Query builder & query rule view
 
 .query-rule {
 	display: grid;
-	grid-template-columns: 1fr 0.5fr 1fr;
+	grid-template-columns: 1fr 0.5fr 1fr 2rem;
 	grid-template-rows: 1fr;
+	grid-template-areas: "field operator value remove";
 	grid-gap: 2rem;
 	align-items: top;
+}
+
+.query-rule .field{
+	grid-area: field;
+}
+.query-rule .operator{
+	grid-area: operator;
+}
+.query-rule .value{
+	grid-area: value;
+}
+.query-rule .remove-rule{
+	font-size: 1.5rem;
+	grid-area: remove;
+	cursor: pointer;
+	opacity: 0.2;
+	display: grid;
+	align-content: center;
+}
+
+.query-rule .field,
+.query-rule .value,
+.query-rule .operator,
+.query-rule .remove-rule {
+	transition: opacity 0.2s ease-out;
+}
+.query-rule.remove-rule-preview .field,
+.query-rule.remove-rule-preview .value,
+.query-rule.remove-rule-preview .operator {
+	opacity: 0.5;
+}
+.query-rule.remove-rule-preview .remove-rule{
+	opacity: 1;
 }
 
 .searchable-select-label {

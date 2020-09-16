@@ -37,38 +37,55 @@ define([
          * @type {string}
          */
         className: "query-rule",
+        
+        /**
+         * The class to add to the field select element
+         * @type {string}
+         */
+        fieldsClass: "field",
+        
+        /**
+         * The class to add to the operator select element
+         * @type {string}
+         */
+        operatorClass: "operator",
+        
+        /**
+         * The class to add to the value select element
+         * @type {string}
+         */
+        valuesClass: "value",
+        
+        /**
+         * The class to add to the button that a user clicks to remove a rule
+         * @type {string}
+         */
+        removeClass: "remove-rule",
+        
+        /**
+         * The class to add to the view when a user hovers over the remove button
+         * @type {string}
+         */
+        removePreviewClass: "remove-rule-preview",
 
         /**
-         * A filter model that stores one filter that's part of a Filters
-         * definition for a collection or portal
-         * @type {Filter} 
+         * A filter model that is part of a Filters definition for a collection
+         * or portal
+         * @type {Filter|BooleanFilter|NumericFilter|DateFilter} 
          */
         model: undefined,
-
-        /**
-         * If true, this view represents a new QueryRule that is not yet complete
-         * @type {boolean}
-         */
-        isNew: false,
-
-        // /**
-        //  * The primary HTML template for this view
-        //  * @type {Underscore.template}
-        //  */
-        // template: _.template(Template),
 
         /**
          * The events this view will listen to and the associated function to call.
          * @type {Object}
          */
-        events: {
-          // "action selector": "functionName"
-          "blur .metadata-input": "addOperatorSelect",
-          "blur .operator-input": "handleOperatorSelection",
-          "click .remove-rule": "removeSelf",
-          "blur .value-input": "validateValue"
+        events: function() {
+          var events = {};
+          events["click ." + this.removeClass] = "removeSelf";
+          events["mouseover ." + this.removeClass] = "previewRemove";
+          events["mouseout ." + this.removeClass] = "previewRemove";
+          return events
         },
-        
         
         /**        
          * Maps the query field label to the filter model type. Keys in the 
@@ -249,8 +266,7 @@ define([
 
             // If no model is provided in the options, then set a new Filters model
             if (!this.model || typeof this.model === 'undefined') {
-              // TODO: Which properties to set?
-              this.model = new Filter()
+              this.model = new Filter();
             }
 
           } catch (e) {
@@ -279,18 +295,31 @@ define([
             // Add an operator input only for already existing filters
             // (For new filters, a metadata field needs to be selected first)
             if(
-              !this.isNew &&
               this.model.get("fields") &&
               this.model.get("fields").length
             ){
               this.addOperatorSelect();
               this.addValueSelect();
             }
+            
+            this.addRemoveButton();
 
             return this;
 
           } catch (e) {
             console.log("Error rendering the query Rule View, error message: ", e);
+          }
+        },
+        
+        /**        
+         * addRemoveButton - Create and insert the button to remove the query rule      
+         */         
+        addRemoveButton: function(){
+          try {
+            var removeButton = $("<i class='" + this.removeClass + " icon icon-remove' title='Remove this query rule'></i>");
+            this.el.append(removeButton[0]);
+          } catch (e) {
+            console.log("Failed to , error message: " + e);
           }
         },
 
@@ -305,6 +334,7 @@ define([
             this.fieldSelect = new QueryFieldSelect({
               selected: this.model.get("fields")
             });
+            this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);
             this.fieldSelect.render();
             
@@ -331,21 +361,24 @@ define([
             // Get the current type of filter
             var typeBefore = this.model.get("nodeName");
             var typeAfter = this.getRequiredFilterType(newFields);
-            
-            // TODO: This isn't working yet - WIP
-            // If the type has changed, then set a new model
+            // If the type has changed, then replace the model with one of the
+            // correct type
             if(typeBefore != typeAfter){
-              var newModel = this.model.collection.add({
-                nodeName: typeAfter,
-                fields: newFields,
-                label:"A new filter"
-              });
-              this.model = newModel;
-              this.removeInput("operator");
-              this.removeInput("value");
-              this.addOperatorSelect();
+              var filters = this.model.collection,
+                  index = filters.indexOf(this.model);
+              filters.remove(this.model);
+              this.model = filters.add(
+                { filterType: typeAfter, fields: newFields },
+                { at: index }
+              );
+              this.removeInput("value")
+              this.removeInput("operator")
+              this.addOperatorSelect("");
             } else {
               this.model.set("fields", newFields);
+              if(!this.operatorSelect){
+                this.addOperatorSelect("");
+              }
             }
           } catch (e) {
             console.log("Failed to handle query field change in the Query Rule View, error message: " + e);
@@ -401,13 +434,13 @@ define([
             console.log("Failed to detect the required filter type in the Query Rule View, error message: " + e);
           }
         },
-        
 
         /**        
          * Create and insert an input field where the user can select an operator
          * for the given rule. Operators will vary depending on filter model type.
+         * @param {string} selectedOperator - optional. The label of an operator to pre-select.
          */
-        addOperatorSelect: function() {
+        addOperatorSelect: function(selectedOperator) {
           try {
             
             var view = this;
@@ -421,7 +454,9 @@ define([
             });
             
             // Identify the selected operator for existing models
-            var selectedOperator = this.getSelectedOperator();
+            if(typeof selectedOperator !== "string"){
+              selectedOperator = this.getSelectedOperator();
+            }
             
             this.operatorSelect = new SearchableSelect({
               options: options,
@@ -429,6 +464,7 @@ define([
               inputLabel: "Select an operator",
               selected: [selectedOperator]
             });
+            this.operatorSelect.$el.addClass(this.operatorClass);
             this.el.append(this.operatorSelect.el);
             this.operatorSelect.render();
             
@@ -452,7 +488,7 @@ define([
             
             var view = this;
             
-            if(!newOperatorLabel || newOperatorLabel[0] ==""){
+            if(!newOperatorLabel || newOperatorLabel[0] == ""){
               this.removeInput("value");
               return;
             }
@@ -466,7 +502,6 @@ define([
           
             // Gather  information about which values are currently set on the model,
             // and which are required
-          
             var // Type
                 type            =   view.model.get("nodeName"),
                 isNumeric       =   ["dateFilter", "numericFilter"].includes(type),
@@ -734,6 +769,7 @@ define([
             
             // Append and render the choosen value selector
             this.el.append(view.valueSelect.el);
+            this.valueSelect.$el.addClass(this.valuesClass);
             view.valueSelect.render();
             if(label){
               view.valueSelect.$el.prepend(label)
@@ -752,7 +788,6 @@ define([
           }
         },
         
-        
         /**        
          * handleValueChange - Called when the select values for rule are changed.
          * Updates the model.
@@ -760,6 +795,7 @@ define([
          * @param  {string[]} newValues The new values that were selected
          */         
         handleValueChange: function(newValues){
+          
           try {
             // TODO:
             //  - validate values first?
@@ -791,18 +827,21 @@ define([
             switch (inputType) {
               case "value":
                   if(this.valueSelect){
+                    this.stopListening(this.valueSelect, 'changeSelection');
                     this.valueSelect.remove();
                     this.valueSelect = null;
                   }
                 break;
               case "operator":
                 if(this.operatorSelect){
+                  this.stopListening(this.operatorSelect, 'changeSelection');
                   this.operatorSelect.remove();
                   this.operatorSelect = null;
                 }
                 break;
               case "field":
                 if(this.fieldSelect){
+                  this.stopListening(this.fieldSelect, 'changeSelection');
                   this.fieldSelect.remove();
                   this.fieldSelect = null;
                 }
@@ -826,16 +865,20 @@ define([
           // TODO
           // validate
         },
+        
+        previewRemove: function() {
+          this.$el.toggleClass(this.removePreviewClass);
+        },
 
         /**        
          * removeSelf - When the delete button is clicked, remove this entire
-         * View and trigger an event (so that the parent can remove
-         * corresponding filter from the collection)
+         * View and associated model
          *          
          * @return {type}  description         
          */
         removeSelf: function() {
-          // TODO
+          this.model.collection.remove(this.model);
+          this.remove();
         },
 
 

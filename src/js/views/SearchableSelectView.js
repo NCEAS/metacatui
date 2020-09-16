@@ -321,7 +321,7 @@ define([
          */         
         disable: function(){
           try {
-            this.$el.find('.ui.dropdown').removeClass("disabled");
+            this.$el.find('.ui.dropdown').addClass("disabled");
           } catch (e) {
             console.log("Failed to enable the searchable select field, error message: " + e);
           }

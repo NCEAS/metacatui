@@ -45,15 +45,21 @@ define(['jquery', 'underscore', 'backbone',
     },
 
     render: function () {
-
+      
+      var templateVars = _.extend(
+        this.model.toJSON(),
+        { showButton: this.showButton }
+      );
+      
       this.$el.html(
-        this.template(
-          _.extend(this.model.toJSON(), { showButton:this.showButton })
-        )
+        this.template(templateVars)
       );
 
       //If a range of values is allowed, show the filter as a numeric slider
-      if( this.model.get("range") && (this.model.get("rangeMin") || this.model.get("rangeMax")) ){
+      if(
+        this.model.get("range") &&
+        ( this.model.get("rangeMin") || this.model.get("rangeMax") )
+      ){
 
         var view = this;
 
@@ -117,7 +123,7 @@ define(['jquery', 'underscore', 'backbone',
     * on the single value type.
     */
     updateModel: function(){
-      //Get the value of the number input
+      // Get the value of the number input
       var value = this.$("input.single-number").val(),
           value = parseInt(value);
           

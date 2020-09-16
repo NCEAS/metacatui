@@ -44,7 +44,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter}
             */
             model: function(attrs, options){
-
+              
               //If no filterType was specified, but an objectDOM exists (from parsing a Collection
               // or Portal document), get the filter type from the objectDOM node name
               if( !attrs.filterType && attrs.objectDOM ){
@@ -62,22 +62,29 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                     return new Filter(attrs, options);
                 }
               }
+              
+              if(!attrs.filterType){
+                attrs.filterType = ""
+              }
+              
+              // Ignoring the case of the typer type allows using either the
+              // filter type (e.g. BooleanFilter) or the nodeName value
+              // (e.g. "booleanFilter")
+              switch ( attrs.filterType.toLowerCase() ) {
 
-              switch ( attrs.filterType ) {
-
-                case "BooleanFilter":
+                case "booleanfilter":
                     return new BooleanFilter(attrs, options);
 
-                case "ChoiceFilter":
+                case "choicefilter":
                     return new ChoiceFilter(attrs, options);
 
-                case "DateFilter":
+                case "datefilter":
                     return new DateFilter(attrs, options);
 
-                case "NumericFilter":
+                case "numericfilter":
                     return new NumericFilter(attrs, options);
 
-                case "ToggleFilter":
+                case "togglefilter":
                     return new ToggleFilter(attrs, options);
 
                 default:
