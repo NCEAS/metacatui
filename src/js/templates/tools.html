@@ -12,6 +12,83 @@
 					retrieving data for synthetic analysis projects.</p>
 			</div>
 		</div>
+		<div class="row-fluid example">
+			<div class="text-left">
+				<h3>
+					<a name="rdataone"></a>
+					<i class="icon icon-code"></i>
+					rDataONE
+				</h3>
+				<p class="lead">An R package for accessing the KNB and other DataONE repositories.</p>
+				<img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 110px 0px" alt="rDataONE image" src="<%= MetacatUI.root %>/img/rDataONE-logo-256px.png?v=<%=MetacatUI.metacatUIVersion%>">
+				<p>
+							rDataONE provides the ability to seamlessly access and
+							contribute data from within the R programming language to
+							various DataONE repositories, including the KNB.  By accessing
+							data using a persistent DataONE identifier, R scripts become
+							significatly more portable -- any user with the script can run
+							it because all of the data is accessed directly from the KNB
+							or other repositories.  Also, as much data is generated within
+							R, we have made it seamless to upload data objects, assign
+							them an identifier (including a DOI), and provide metadata so
+							that others can use the data in their own analyses and models.
+				</p>
+					<p>Install rDataONE from CRAN:
+										<code>install.packages("rdataone")</code>
+				<p>
+					<a href="https://github.com/DataONEorg/rdataone" target="_external">More about rDataONE <i class="icon-double-angle-right"></i></a>
+				</p>
+
+			</div>
+		</div>
+		<hr/>
+		<div class="row-fluid example">
+			<div class="text-left">
+				<h3>
+					<a name="metacatUI"></a>
+					<i class="icon icon-cloud-upload"></i>
+					Metacat
+				</h3>
+				<p class="lead">A web interface for data repositories.</p>
+				<img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 0px 0px" alt="Metacat image" src="<%= MetacatUI.root %>/img/metacat-logo-256px.png?v=<%=MetacatUI.metacatUIVersion%>">
+				<p>MetacatUI is a client-side web interface for querying Metacat servers
+					 and other servers that implement the DataONE REST API. MetacatUI
+					 provides a user interface for search, display, and <a href="https://knb.ecoinformatics.org/submit">submission</a> of
+					 datasets to the KNB.
+				</p>
+
+				<p>
+					<a href="https://github.com/nceas/metacatui">More about MetacatUI <i class="icon-double-angle-right"></i></a>
+				</p>
+
+			</div>
+		</div>
+		<hr/>
+		<div class="row-fluid example">
+			<div class="text-left">
+				<h3>
+					<a name="metacat"></a>
+					<i class="icon icon-cloud-upload"></i>
+					Metacat
+				</h3>
+				<p class="lead">A flexible metadata database.</p>
+				<img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 0px 0px" alt="Metacat image" src="<%= MetacatUI.root %>/img/metacat-logo-256px.png?v=<%=MetacatUI.metacatUIVersion%>">
+				<p>As a repository for data and metadata (documentation
+					about data), Metacat helps scientists find, understand and effectively
+					use data sets they manage or that have been created by others.
+					Thousands of data sets are currently documented in a standardized
+					way and stored in Metacat systems around the world, providing the scientific
+					community with a broad range of science data that - because the data
+					are well and consistently described - can be easily searched,
+					compared, merged, or used in other ways.
+				</p>
+
+				<p>
+					<a href="https://knb.ecoinformatics.org/knb/docs">More about Metacat <i class="icon-double-angle-right"></i></a>
+				</p>
+
+			</div>
+		</div>
 		<hr/>
 		<div class="row-fluid example">
 			<div class="text-left">
@@ -22,22 +99,11 @@
 				</h3>
 				<p class="lead">Data management for earth, environmental and ecological scientists.</p>
         <img class="pull-right" style="height: auto;width: 150px; margin: 10px 40px 10px 20px" alt="Morpho image" src="<%= MetacatUI.root %>/img/morpho-image.png?v=<%=MetacatUI.metacatUIVersion%>">
-				<p>Morpho allows researchers to create metadata, (i.e. describe
-					their data in a standardized format), and create a catalog of data
-					&amp; metadata upon which to query, edit and view data collections. In
-					addition, it also provides the means to access network servers -
-					like the KNB - in order to query, view and retrieve all relevant,
-					public ecological data!
-					Check the <a href="https://knb.ecoinformatics.org/software/dist/MorphoUserGuide.pdf">Morpho User Guide</a> for complete details.
-					</p>
-					<ul>
-						<li>Create and Edit EML metadata</li>
-						<li>Search for existing data packages</li>
-						<li>View and download data packages</li>
-						<li>Verify and Edit your data</li>
-						<li>Specify Access Control rules for your data</li>
-						<li>Share and publish your data via the KNB</li>
-					</ul>
+				<p>Morpho is a desktop application that allows researchers to create
+					metadata, (i.e. describe their data in a standardized format), and create a catalog of data
+					&amp; metadata upon which to query, edit and view data collections. This software is no longer
+					maintained by our development team, however it is an open source applications and users are welcome
+					to make contributions to the code.
 
 				<p class="lead">Download the Morpho data management application.
 				</p>
@@ -63,63 +129,6 @@
 				</ul>
 			</div>
 		</div>
-		<hr/>
-		<div class="row-fluid example">
-			<div class="text-left">
-				<h3>
-					<a name="rdataone"></a>
-					<i class="icon icon-code"></i>
-					rDataONE
-				</h3>
-				<p class="lead">An R package for accessing the KNB and other DataONE repositories.</p>
-        <img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 110px 0px" alt="rDataONE image" src="<%= MetacatUI.root %>/img/rDataONE-logo-256px.png?v=<%=MetacatUI.metacatUIVersion%>">
-				<p>
-		          rDataONE provides the ability to seamlessly access and
-		          contribute data from within the R programming language to
-		          various DataONE repositories, including the KNB.  By accessing
-		          data using a persistent DataONE identifier, R scripts become
-		          significatly more portable -- any user with the script can run
-		          it because all of the data is accessed directly from the KNB
-		          or other repositories.  Also, as much data is generated within
-		          R, we have made it seamless to upload data objects, assign
-		          them an identifier (including a DOI), and provide metadata so
-		          that others can use the data in their own analyses and models.
-				</p>
-			    <p>Install rDataONE from CRAN:
-                    <code>install.packages("rdataone")</code>
-				<p>
-					<a href="https://github.com/DataONEorg/rdataone" target="_external">More about rDataONE <i class="icon-double-angle-right"></i></a>
-				</p>
-
-			</div>
-		</div>
-		<hr/>
-		<div class="row-fluid example">
-			<div class="text-left">
-				<h3>
-					<a name="metacat"></a>
-					<i class="icon icon-cloud-upload"></i>
-					Metacat
-				</h3>
-				<p class="lead">A flexible metadata database.</p>
-        <img class="pull-left" style="height: auto;width: 100px; margin: 10px 20px 0px 0px" alt="Metacat image" src="<%= MetacatUI.root %>/img/metacat-logo-256px.png?v=<%=MetacatUI.metacatUIVersion%>">
-				<p>As a repository for data and metadata (documentation
-					about data), Metacat helps scientists find, understand and effectively
-					use data sets they manage or that have been created by others.
-					Thousands of data sets are currently documented in a standardized
-					way and stored in Metacat systems around the world, providing the scientific
-					community with a broad range of science data that - because the data
-					are well and consistently described - can be easily searched,
-					compared, merged, or used in other ways.
-				</p>
-
-				<p>
-					<a href="https://knb.ecoinformatics.org/knb/docs">More about Metacat <i class="icon-double-angle-right"></i></a>
-				</p>
-
-			</div>
-		</div>
-
 		<hr/>
 		<div class="row-fluid example">
 			<div class="text-left">
