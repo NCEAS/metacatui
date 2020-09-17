@@ -116,19 +116,65 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     
     /**    
      * renderQueryBuilder - Render the QueryBuilder and insert it into this view
-     *      
-     * @return {type}  description     
      */     
     renderQueryBuilder: function(){
+      
+      var view = this;
+      
       var queryBuilder = new QueryBuilder({
-        // When the search model is deprecated, we will want to pass the
-        // definition filters instead. See also:
-        // DataCatalogViewWithFilters.searchModel
-        collection: this.model.get("searchModel").get("filters")
+        collection: this.model.get("definitionFilters")
       });
+      
+      // Update the search model when the definition filters are updated by the
+      // query builder
+      this.stopListening(this.model.get("definitionFilters"), "update change");
+      this.listenTo(
+        this.model.get("definitionFilters"),
+        "update change",
+        view.updateSearchModel
+      );
+      
+      // console.log(this.model.get("searchModel").get("filters"));
       // Render the query builder and insert it into this view
       this.$(this.queryBuilderViewContainer).html(queryBuilder.el);
       queryBuilder.render();
+    },  
+    
+    /**    
+     * updateSearchModel - This function is called when any changes are made to
+     * the definition filters. The function adds, removes, or updates models
+     * in the search model filters when models are changed in the collection
+     * definition filters.
+     *      
+     * @param  {Filter|Filters} model The model or collection that has been changed (filter models) or updated (filters collection). This is ignored.
+     * @param  {object} record     The data passed by backbone that indicates which models have been added, removed, or updated. If the only change was to a pre-existing model attribute, then the object will be empty.   
+     */     
+    updateSearchModel: function(model, record){
+      
+      var view = this;
+      
+      if(typeof record == "undefined" || !record){
+        record = {}
+      }
+      
+      // Remove models from the search model if models have been removed from
+      // the definition filters.
+      if(
+        record.changes &&
+        record.changes.removed &&
+        record.changes.removed.length
+      ){
+        view.model.get("searchModel").get("filters").remove(
+          record.changes.removed
+        )
+      }
+      
+      // Add or merge the definition filters with the search model filters.
+      view.model.get("searchModel").get("filters").add(
+        view.model.get("definitionFilters").models,
+        { merge: true }
+      );
+      
     },
     
     /**

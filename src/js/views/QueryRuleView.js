@@ -489,6 +489,12 @@ define([
             var view = this;
             
             if(!newOperatorLabel || newOperatorLabel[0] == ""){
+              var modelDefaults = this.model.defaults();
+              this.model.set({
+                min: modelDefaults.min,
+                max: modelDefaults.max,
+                values: modelDefaults.values
+              })
               this.removeInput("value");
               return;
             }
@@ -527,8 +533,8 @@ define([
             // If the operator has a value requirement (e.g. true, false, *),
             // then update the filter model value and remove the value select field.
             if(operator.values && operator.values.length){
-              this.model.set("values", operator.values);
               this.removeInput("value");
+              this.model.set("values", operator.values);
             // If the operator does not have a default value, then ensure that
             // there is a value select available.
             } else {
