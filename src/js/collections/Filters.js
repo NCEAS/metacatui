@@ -347,7 +347,25 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
 
               this.remove(toRemove);
 
-            }
+            },
+            
+            
+            /**            
+             * visibleIndexOf - Get the index of a given model, excluding any
+             * filters that are marked as invisible.
+             *              
+             * @param  {Filter|BooleanFilter|NumericFilter|DateFilter} model The filter model for which to get the visible index
+             * @return {number} An integer representing the filter model's position in the list of visible filters.
+             */             
+            visibleIndexOf: function(model){
+              // Don't count invisible filters in the index we display to the user
+              var visibleFilters = this.filter(function(filterModel){
+                var isInvisible = filterModel.get("isInvisible");
+                return typeof isInvisible == "undefined" || isInvisible === false
+              });
+              return _.indexOf(visibleFilters, model);
+            },
+            
             /*
             hasGeohashFilter: function() {
 

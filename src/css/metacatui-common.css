@@ -6667,11 +6667,27 @@ Query builder & query rule view
 
 .query-rule {
 	display: grid;
-	grid-template-columns: 1fr 0.5fr 1fr 2rem;
+	grid-template-columns: minmax(2.5rem, 4rem) 1fr 0.5fr 1fr 2rem;
 	grid-template-rows: 1fr;
-	grid-template-areas: "field operator value remove";
+	grid-template-areas: "info field operator value remove";
 	grid-gap: 2rem;
 	align-items: top;
+}
+
+.query-rule .rule-info{
+	grid-area: info;
+	font-weight: 700;
+	font-size: 0.9rem;
+	color: #00689d;
+}
+
+.query-rule .rule-info:after { 
+  content:""; 
+  float:right; 
+  background: #00689d; 
+  width:3px; 
+  height:110%; 
+  border-radius: 1.5px;
 }
 
 .query-rule .field{

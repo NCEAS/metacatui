@@ -39,6 +39,12 @@ define([
         className: "query-rule",
         
         /**
+         * The class to add to the rule number and other information on the left
+         * @type {string}
+         */
+        ruleInfoClass: "rule-info",
+        
+        /**
          * The class to add to the field select element
          * @type {string}
          */
@@ -69,8 +75,10 @@ define([
         removePreviewClass: "remove-rule-preview",
 
         /**
-         * A filter model that is part of a Filters definition for a collection
-         * or portal
+         * A single Filter model that is part of a Filters collection, such as
+         * the definition filters for a Collection or Portal or the filters for
+         * a Search model. The Filter model must be part of a Filters collection
+         * (i.e. there must be a model.collection property)
          * @type {Filter|BooleanFilter|NumericFilter|DateFilter} 
          */
         model: undefined,
@@ -266,6 +274,8 @@ define([
 
             // If no model is provided in the options, then set a new Filters model
             if (!this.model || typeof this.model === 'undefined') {
+              // TODO: Parts of the view won't work if there is no collection...
+              // Should we call an error if no model is provided?
               this.model = new Filter();
             }
 
@@ -285,6 +295,10 @@ define([
 
             // TODO:
             // How to indicate whether multiple fields/values are AND'ed or OR'ed together?
+            
+            // Add the Rule number, and the number of datasets related to rule (TODO)
+            this.addRuleInfo();
+            this.listenTo(this.model.collection, "remove", this.updateRuleInfo);
 
             // Metadata Selector field
             // Add a metadata selector field whether the rule is new or has
@@ -308,6 +322,26 @@ define([
 
           } catch (e) {
             console.log("Error rendering the query Rule View, error message: ", e);
+          }
+        },
+        
+        addRuleInfo: function(){
+          
+          this.indexEl = $(document.createElement("span"));
+          this.ruleInfoEl = $(document.createElement("div"))
+                            .addClass(this.ruleInfoClass);
+          this.ruleInfoEl.append(this.indexEl);
+          
+          this.$el.append(this.ruleInfoEl);
+          this.updateRuleInfo();
+        },
+        
+        updateRuleInfo: function(){
+          index = this.model.collection.visibleIndexOf(this.model);
+          if(typeof index === "number"){
+            this.ruleInfoEl.text("Rule " + (index + 1));
+          } else {
+            this.ruleInfoEl.text("");
           }
         },
         
@@ -358,6 +392,14 @@ define([
         handleFieldChange: function(newFields){
           
           try {
+            
+            if(!newFields || newFields.length === 0 || newFields[0] === ""){
+              if(this.operatorSelect){
+                this.operatorSelect.changeSelection([""]);
+              }
+              this.model.set("fields", this.model.defaults().fields);
+              return
+            }
             // Get the current type of filter
             var typeBefore = this.model.get("nodeName");
             var typeAfter = this.getRequiredFilterType(newFields);
@@ -374,11 +416,11 @@ define([
               this.removeInput("value")
               this.removeInput("operator")
               this.addOperatorSelect("");
-            } else {
-              this.model.set("fields", newFields);
-              if(!this.operatorSelect){
-                this.addOperatorSelect("");
-              }
+              return
+            }
+            this.model.set("fields", newFields);
+            if(!this.operatorSelect){
+              this.addOperatorSelect("");
             }
           } catch (e) {
             console.log("Failed to handle query field change in the Query Rule View, error message: " + e);
@@ -399,7 +441,13 @@ define([
         getRequiredFilterType(fields){
           try {
             var types = [],
-                nodeName = "";
+                nodeName = "",
+                // when fields is empty or are different types
+                defaultFilterType = this.queryCategoryToFilterMap["Text"];
+                
+            if(!fields || fields.length === 0 || fields[0] === ""){
+              return defaultFilterType
+            }
             
             fields.forEach((newField, i) => {
               // Get the type of the field from the Query Fields Collection
@@ -426,7 +474,7 @@ define([
             } else {
               // Default to a text filter if the types are mixed, but this might
               // cause issues. We probably want to restrict filters to the same type.
-              nodeName = this.queryCategoryToFilterMap["Text"]
+              nodeName = defaultFilterType
             }
             
             return nodeName

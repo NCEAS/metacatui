@@ -239,10 +239,12 @@ define([
                 clearable: true,
                 allowAdditions: view.allowAdditions,
                 hideAdditions: false,
+                allowReselection: true,
                 onChange: function(value, text, $choice){
                   if(!$(this).hasClass("disabled")){
                     var newValues = value.split(",");
                     view.trigger('changeSelection', newValues);
+                    view.selected = newValues;
                   }
                 }
               });
@@ -266,6 +268,22 @@ define([
           } catch (e) {
             console.log("Error rendering the search select, error message: ", e);
           }
+        },
+        
+        changeSelection: function(newValues) {
+          if(
+            !this.$selectUI ||
+            typeof newValues === "undefined" ||
+            !Array.isArray(newValues)
+          ){
+            return
+          }
+          
+          // this.disable(); // So an event is not triggered
+          var view = this;
+          this.selected = newValues;
+          this.$selectUI.dropdown('set exactly', view.selected);
+          // this.enable();
         },
         
         /**        
