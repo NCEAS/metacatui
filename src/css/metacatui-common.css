@@ -6670,23 +6670,25 @@ Query builder & query rule view
 	grid-template-columns: minmax(2.5rem, 4rem) 1fr 0.5fr 1fr 2rem;
 	grid-template-rows: 1fr;
 	grid-template-areas: "info field operator value remove";
-	grid-gap: 2rem;
+	grid-gap: 1.5rem;
 	align-items: top;
 }
 
-.query-rule .rule-info{
+.query-rule .rule-info {
 	grid-area: info;
 	font-weight: 700;
 	font-size: 0.9rem;
 	color: #00689d;
+	color: var(--rule-color);
 }
 
 .query-rule .rule-info:after { 
   content:""; 
   float:right; 
   background: #00689d; 
+	background: var(--rule-color);
   width:3px; 
-  height:110%; 
+  height: calc(100% + 0.5rem);
   border-radius: 1.5px;
 }
 
@@ -6699,6 +6701,13 @@ Query builder & query rule view
 .query-rule .value{
 	grid-area: value;
 }
+
+/* make the number filter inputs match the operator and field inputs */
+.query-rule .filter input {
+	padding: .60em 1em;
+	border: 1px solid rgba(34,36,38,.15);
+}
+
 .query-rule .remove-rule{
 	font-size: 1.5rem;
 	grid-area: remove;
@@ -6706,14 +6715,17 @@ Query builder & query rule view
 	opacity: 0.2;
 	display: grid;
 	align-content: center;
+	justify-self: flex-end;
 }
 
+.query-rule .rule-info,
 .query-rule .field,
 .query-rule .value,
 .query-rule .operator,
 .query-rule .remove-rule {
 	transition: opacity 0.2s ease-out;
 }
+.query-rule.remove-rule-preview .rule-info,
 .query-rule.remove-rule-preview .field,
 .query-rule.remove-rule-preview .value,
 .query-rule.remove-rule-preview .operator {
@@ -6745,6 +6757,7 @@ Query builder & query rule view
 	font-family: serif;
 	font-weight: 900;
 	font-size: larger;
+	line-height: 14px;
 }
 .icon-equal:before{
 	content: "="

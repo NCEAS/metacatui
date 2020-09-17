@@ -824,6 +824,25 @@
     #editMetadata {
         margin-right: none;
     }
+		
+		/* Query rules in the query builder */
+		.query-rule {
+			/* display: grid;
+			grid-template-columns: minmax(2.5rem, 4rem) 1fr 0.5fr 1fr 2rem;
+			grid-template-rows: 1fr;
+			grid-template-areas: "info field operator value remove";
+			grid-gap: 2rem;
+			align-items: top; */
+			
+			grid-template-columns: minmax(2.5rem, 4rem) 1fr 2rem;
+			grid-template-rows: 1fr 1fr 1fr;
+			gap: 1rem 1rem;
+			grid-template-areas:
+				"info field remove"
+				"info operator remove"
+				"info value remove";	
+		}
+
 }
 
 /* Smartphones (landscape) ----------- */

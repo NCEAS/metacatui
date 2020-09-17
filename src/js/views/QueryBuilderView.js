@@ -44,6 +44,12 @@ define(["jquery",
          */        
         addRuleButtonSelector: ".add-rule",
         
+        /**    
+         * An array of hex color codes used to help distinguish between different rules
+         * @type {string[]}    
+         */     
+        ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
+        
         /**
         * A Filters collection that stores definition filters for a collection (or portal)
         * @type {Filters} 
@@ -167,7 +173,8 @@ define(["jquery",
             // If no filter model is provided, assume that this is a new rule
             // insert QueryRuleView
             var rule = new QueryRule({
-              model: filterModel
+              model: filterModel,
+              ruleColorPalette: this.ruleColorPalette
             });
             
             // Insert and render the rule

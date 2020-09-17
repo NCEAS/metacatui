@@ -68,6 +68,12 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * @type {string}
     */
     helpTextContainer: "#filter-help-text",
+    
+    /**    
+     * An array of hex color codes used to help distinguish between different rules
+     * @type {string[]}    
+     */     
+    ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -122,7 +128,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       var view = this;
       
       var queryBuilder = new QueryBuilder({
-        collection: this.model.get("definitionFilters")
+        collection: this.model.get("definitionFilters"),
+        ruleColorPalette: this.ruleColorPalette
       });
       
       // Update the search model when the definition filters are updated by the
@@ -174,7 +181,6 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         view.model.get("definitionFilters").models,
         { merge: true }
       );
-      
     },
     
     /**

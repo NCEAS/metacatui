@@ -73,6 +73,12 @@ define([
          * @type {string}
          */
         removePreviewClass: "remove-rule-preview",
+        
+        /**    
+         * An array of hex color codes used to help distinguish between different rules
+         * @type {string[]}    
+         */     
+        ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
 
         /**
          * A single Filter model that is part of a Filters collection, such as
@@ -327,21 +333,38 @@ define([
         
         addRuleInfo: function(){
           
-          this.indexEl = $(document.createElement("span"));
-          this.ruleInfoEl = $(document.createElement("div"))
+          this.$indexEl = $(document.createElement("span"));
+          this.$ruleInfoEl = $(document.createElement("div"))
                             .addClass(this.ruleInfoClass);
-          this.ruleInfoEl.append(this.indexEl);
+          this.$ruleInfoEl.append(this.$indexEl);
           
-          this.$el.append(this.ruleInfoEl);
+          this.$el.append(this.$ruleInfoEl);
           this.updateRuleInfo();
         },
         
+        getPaletteColor: function(index){
+          if(!this.ruleColorPalette || !this.ruleColorPalette.length){
+            return
+          }
+          var numCols = this.ruleColorPalette.length;
+          if((index + 1) > numCols){
+            var n = Math.floor(index/numCols);
+            index = index - (numCols * n);
+          }
+          return this.ruleColorPalette[index];
+        },
+        
         updateRuleInfo: function(){
-          index = this.model.collection.visibleIndexOf(this.model);
+          var index = this.model.collection.visibleIndexOf(this.model);
           if(typeof index === "number"){
-            this.ruleInfoEl.text("Rule " + (index + 1));
+            this.$indexEl.text("Rule " + (index + 1));
           } else {
-            this.ruleInfoEl.text("");
+            this.$indexEl.text("");
+            return
+          }
+          var color = this.getPaletteColor(index);
+          if(color){
+            this.$ruleInfoEl[0].style.setProperty('--rule-color', color);
           }
         },
         
@@ -407,12 +430,13 @@ define([
             // correct type
             if(typeBefore != typeAfter){
               var filters = this.model.collection,
-                  index = filters.indexOf(this.model);
-              filters.remove(this.model);
+                  index = filters.indexOf(this.model),
+                  oldModelId = this.model.cid;
               this.model = filters.add(
                 { filterType: typeAfter, fields: newFields },
                 { at: index }
               );
+              filters.remove(oldModelId);
               this.removeInput("value")
               this.removeInput("operator")
               this.addOperatorSelect("");
@@ -798,7 +822,7 @@ define([
                 model: this.model,
                 showButton: false
               });
-              var label = $("<p class='subtle searchable-select-label'>Type a value</p>");
+              var label = $("<p class='subtle searchable-select-label'>Choose a value</p>");
             
             // Use a select input that lists the member nodes for fields that
             // require a member node ID for the value
