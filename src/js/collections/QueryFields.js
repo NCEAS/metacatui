@@ -25,36 +25,6 @@ define(
         model: QueryField,
         
         /**        
-         * Assigns a readable label and Font Awesome 3.2.1 icon to each query field type
-         * @type {Collection}        
-         * @property {string} label - A human readable label to use to categorize query field types
-         * @property {string} icon - The name of a Font Awesome 3.2.1 icon to represent the field type
-         * @property {string[]} queryTypes - An array of the possible query field types, as named in the QueryField models, that belong in the given category
-         */         
-        categories: new Backbone.Collection([
-          {
-            label: "Text",
-            icon: "font",
-            queryTypes: ["string", "alphaOnlySort", "text_en_splitting", "text_en_splitting_tight", "text_general", "text_case_insensitive"],
-          },
-          {
-            label: "Boolean",
-            icon: "asterisk",
-            queryTypes: ["boolean"],
-          },
-          {
-            label: "Numeric",
-            icon: "list-ol",
-            queryTypes: ["int", "tfloat", "tlong"],
-          },
-          {
-            label: "Date",
-            icon: "calendar",
-            queryTypes: ["tdate"],
-          }
-        ]),
-        
-        /**        
          * initialize - Creates a new QueryFields collection
          */         
         initialize: function(models, options) {
@@ -112,68 +82,6 @@ define(
             }
           } catch (e) {
             console.log("Failed to parse Query Fields response, error message: " + e);
-          }
-        },
-        
-        /**        
-         * getCategorized - Sorts the query fields by the more general field
-         * types specified in the QueryFields.categories attribute. Optionally
-         * filters out fields which are not searchable, fields which are not
-         * returnable, as well as additional specifiable fields. Returns the
-         * categorized fields formatted for the 
-         * (or SearchableSelectView)
-         * {@link SearchableSelect#options}
-         *          
-         * @param  {boolean} excludeNonSearchable = true  Set to false to keep query fields that are not seachable in the returned list   
-         * @param  {boolean} excludeNonReturnable = true  Set to false to keep query fields that are not returnable in the returned list          
-         * @param  {[string]} excludeFields = []    A list of query fields to exclude from the returned list       
-         * @return {Object}         Returns the query fields grouped by general field type, formatted for the QueryFieldSelectView {@link SearchableSelect#options}
-         */         
-        getCategorized: function(excludeNonSearchable = true, excludeNonReturnable = false, excludeFields = []){
-          
-          try {
-            if(!this.categories){
-              console.log("A categories attribute must be set on the Query " +
-                    "Fields collection in order to return categorized fields");
-              return
-            }
-            
-            var collection = this,
-                options = {};
-            
-            this.categories.each(function(category){
-              
-              options[category.get("label")] = [];
-              
-              _.each(category.get("queryTypes"), function(queryType){
-                var filterBy = {
-                  type: queryType
-                }
-                if(excludeNonSearchable){
-                  filterBy["searchable"] = "true"
-                }
-                if(excludeNonReturnable){
-                  filterBy["returnable"] = "true"
-                }
-                var matchingFields = collection.filter(filterBy)
-                
-                _.each(matchingFields, function(field){
-                  if(!excludeFields.includes(field.get("name"))){
-                    options[category.get("label")].push({
-                      label: field.get("name"),
-                      description: field.get("description"),
-                      icon: category.get("icon")
-                    })
-                  }
-                }, this);
-                
-              });
-              
-            }, this);
-            
-            return options;
-          } catch (e) {
-            console.log("Failed to categorize query fields, error message: " + e);
           }
         }
         

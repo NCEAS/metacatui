@@ -79,6 +79,12 @@ define([
          * @type {string[]}    
          */     
         ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
+        
+        /**        
+         * Search index fields to exclude in the metadata field selector        
+         * @type {string[]}
+         */         
+        excludeFields: [],
 
         /**
          * A single Filter model that is part of a Filters collection, such as
@@ -101,26 +107,7 @@ define([
           return events
         },
         
-        /**        
-         * Maps the query field label to the filter model type. Keys in the 
-         * object must match the labels that are provided in the Query Fields
-         * collection categories {@link QueryFields#categories}, and values must
-         * match the nodeNames of various filter types (e.g. "dateFilter")
-         * @type {object}
-         * @property {string} Text - the name of the filter to use with text fields
-         * @property {string} Boolean - the name of the filter to use with boolean fields
-         * @property {string} Numeric - the name of the filter to use with numeric fields
-         * @property {string} Date - the name of the filter to use with model fields
-         */         
-        queryCategoryToFilterMap: {
-          "Text" : "filter",
-          "Boolean" : "booleanFilter",
-          "Numeric" : "numericFilter",
-          "Date" : "dateFilter"
-        },
-        
-        /**        
-         * // TODO: should this go into the Filters collection?
+        /**   
          * Defined the user-friendly operators that will be available in the
          * dropdown list to connect the query fields to the query values.
          * Each operator must be unique. This definition is used to pre-select
@@ -387,9 +374,9 @@ define([
         addFieldSelect: function() {
           
           try {
-            
             this.fieldSelect = new QueryFieldSelect({
-              selected: this.model.get("fields")
+              selected: this.model.get("fields"),
+              excludeFields: this.excludeFields,
             });
             this.fieldSelect.$el.addClass(this.fieldsClass);
             this.el.append(this.fieldSelect.el);
@@ -465,43 +452,30 @@ define([
         getRequiredFilterType(fields){
           try {
             var types = [],
-                nodeName = "",
-                // when fields is empty or are different types
-                defaultFilterType = this.queryCategoryToFilterMap["Text"];
+                filterType = "",
+                // When fields is empty or are different types
+                defaultFilterType = MetacatUI.queryFields.models[0].defaults().filterType;
                 
             if(!fields || fields.length === 0 || fields[0] === ""){
               return defaultFilterType
             }
             
             fields.forEach((newField, i) => {
-              // Get the type of the field from the Query Fields Collection
-              var fieldModel = MetacatUI.queryFields.findWhere({ name:newField }),
-                  // The specific type of field this is (e.g. tdate)
-                  type = fieldModel.get("type"),
-                  // The more general category (e.g. "Date")
-                  generalType = MetacatUI.queryFields.categories.filter(
-                    function(category){
-                      return category.get("queryTypes").includes(type)
-                    }
-                  )
-              if(generalType.length === 1){
-                types.push(generalType[0].get("label"))
-              }
-              
+              // Get the type of the field from the matching filter model in the
+              // Query Fields Collection
+              var fieldModel = MetacatUI.queryFields.findWhere({ name:newField });
+              types.push(fieldModel.get("filterType"))
             });
             
             // Test of all the fields are of the same type
             var allEqual = types.every( (val, i, arr) => val === arr[0] );
             
             if(allEqual){
-              nodeName = this.queryCategoryToFilterMap[types[0]]
+              return types[0]
             } else {
-              // Default to a text filter if the types are mixed, but this might
-              // cause issues. We probably want to restrict filters to the same type.
-              nodeName = defaultFilterType
+              return defaultFilterType
             }
             
-            return nodeName
           } catch (e) {
             console.log("Failed to detect the required filter type in the Query Rule View, error message: " + e);
           }
@@ -805,7 +779,6 @@ define([
             // and the operator selected.
             
             // Some user-facing operators (e.g. "is true") don't require a value to be set
-            
             var selectedOperator = _.findWhere(
               this.operatorOptions,
               { label: this.getSelectedOperator() }
@@ -931,18 +904,6 @@ define([
             console.log("Error removing an input from the Query Rule View, error message:", e);
           }
         },
-
-        /**        
-         * completeRule - Trigger a rule completed event that the parent can
-         * listen to when a user has added all the information required for this
-         * rule
-         *          
-         * @return {type}  description         
-         */
-        completeRule: function() {
-          // TODO
-          // validate
-        },
         
         previewRemove: function() {
           this.$el.toggleClass(this.removePreviewClass);
@@ -958,7 +919,6 @@ define([
           this.model.collection.remove(this.model);
           this.remove();
         },
-
 
       });
   });

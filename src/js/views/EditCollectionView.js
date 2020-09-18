@@ -74,6 +74,12 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      * @type {string[]}    
      */     
     ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
+    
+    /**        
+     * Search index fields to exclude in the metadata field selector of each query rule        
+     * @type {string[]}
+     */         
+    queryBuilderExcludeFields: MetacatUI.appModel.get("collectionQueryExcludeFields"),
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -129,7 +135,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       
       var queryBuilder = new QueryBuilder({
         collection: this.model.get("definitionFilters"),
-        ruleColorPalette: this.ruleColorPalette
+        ruleColorPalette: this.ruleColorPalette,
+        excludeFields: this.queryBuilderExcludeFields,
       });
       
       // Update the search model when the definition filters are updated by the

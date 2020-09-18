@@ -50,6 +50,12 @@ define(["jquery",
          */     
         ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
         
+        /**        
+         * Search index fields to exclude in the metadata field selector of each query rule        
+         * @type {string[]}
+         */         
+        excludeFields: [],
+        
         /**
         * A Filters collection that stores definition filters for a collection (or portal)
         * @type {Filters} 
@@ -174,7 +180,8 @@ define(["jquery",
             // insert QueryRuleView
             var rule = new QueryRule({
               model: filterModel,
-              ruleColorPalette: this.ruleColorPalette
+              ruleColorPalette: this.ruleColorPalette,
+              excludeFields: this.excludeFields
             });
             
             // Insert and render the rule

@@ -1246,6 +1246,17 @@ define(['jquery', 'underscore', 'backbone'],
       * @default true
       */
       archivedContentIsIndexed: true,
+      
+      
+      /**      
+       * The metadata fields to hide when a user is creating a collection
+       * definition using the query builder displayed in the portal builder on
+       * the data page, or anywhere else the EditCollectionView is displayed.
+       * Strings listed here should exactly match the 'name' for
+       * each field provided by the DataONE search index API (i.e. should match
+       * the Solr field).
+       */       // TODO: remove this test field
+      collectionQueryExcludeFields: ["LTERSite"],
 
       /**
       * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)

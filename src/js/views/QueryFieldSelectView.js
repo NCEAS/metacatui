@@ -56,6 +56,20 @@ define([
          */         
         allowAdditions: false,
         
+        
+        /**        
+         * A list of query fields names to exclude from the list of options
+         * @type {string[]}
+         */         
+        excludeFields: [],
+        
+        /**        
+         * Whether or not to exclude fields which are not searchable. Set to
+         * false to keep query fields that are not seachable in the returned list      
+         * @type {boolean}
+         */         
+        excludeNonSearchable: true,
+        
         /**
          * Creates a new QueryFieldSelectView
          * @param {Object} options - A literal object with options to pass to the view
@@ -85,8 +99,49 @@ define([
               MetacatUI.queryFields.on('sync', this.render, this);
               return
             }
-            this.options = MetacatUI.queryFields.getCategorized();
+            
+            // Convert the queryFields collection to an object formatted for the
+            // SearchableSelect view.
+            
+            var fieldsJSON = MetacatUI.queryFields.toJSON();
+            
+            // Filter out non-searchable fields (if option is true),
+            // and fields should be excluded
+            var subsettedFields = _.filter(fieldsJSON, function(filter){
+                if(this.excludeNonSearchable){
+                  if(filter.searchable !== "true"){
+                    return false
+                  }
+                }
+                if(this.excludeFields && this.excludeFields.length){
+                  if(this.excludeFields.includes(filter.name)){
+                    return false
+                  }
+                }
+                return true
+              }, this);
+              
+            // Sort the fields alphabetically by label
+            var sortedFields = _.sortBy(subsettedFields, "label");
+            
+            // Rename the field attributes for the searchableSelect format
+            var renamedFields = sortedFields.map(function(field) {
+               return {
+                 label: field.label ? field.label : field.name,
+                 value: field.name,
+                 description: field.description,
+                 icon: field.icon,
+                 category: field.category
+               };
+            });
+            
+            var groupedFields =  _.groupBy(renamedFields, "category");
+            
+            // Set the formatted fields on the view
+            this.options = groupedFields;
+            
             SearchableSelect.prototype.render.call(this);
+            
           } catch (e) {
             console.log("Failed to render a Query Field Select View, error message: " + e);
           }
