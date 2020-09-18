@@ -797,15 +797,18 @@ define([
               });
               var label = $("<p class='subtle searchable-select-label'>Choose a value</p>");
             
+            
+            // TODO: apply this type of input to all "Repository Information"
+            // category fields that are also text filters.
+            // 
             // Use a select input that lists the member nodes for fields that
             // require a member node ID for the value
-            // TODO - identify all fields that require a node ID for value
-            // right now "authoritativeMN" is being used as the test field
-            } else if(view.model.get("fields")[0] === "authoritativeMN") {
-              
-              view.valueSelect = new NodeSelect({
-                selected: this.model.get("values")
-              });
+            // 
+            // } else if(view.model.get("fields")[0] === "authoritativeMN") {
+            // 
+            //   view.valueSelect = new NodeSelect({
+            //     selected: this.model.get("values")
+            //   });
             
             // In all other cases, use a regular text value entry field
             } else {

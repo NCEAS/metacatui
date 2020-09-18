@@ -178,15 +178,15 @@ define(
           
           // Otherwise, humanize the camel-cased field
           return name
-            // replace "MN" at the end of a name with "Repository"
+            // Replace "MN" at the end of a name with "Repository"
             .replace(/MN$/, "Repository")
-            // replace underscores with spaces
+            // Replace underscores with spaces
             .replace(/_/g, ' ')
-            // insert a space before all caps
+            // Insert a space before all caps
             .replace(/([A-Z])/g, ' $1')
-            // Remove white space from both end (e.g. when converting _root_)
+            // Remove white space from both ends (e.g. when converting _root_)
             .trim()
-            // uppercase the first character
+            // Uppercase the first character
             .replace(/^./, function(str){ return str.toUpperCase(); })
           
         } catch (e) {
