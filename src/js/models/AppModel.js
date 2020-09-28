@@ -1256,7 +1256,14 @@ define(['jquery', 'underscore', 'backbone'],
        * each field provided by the DataONE search index API (i.e. should match
        * the Solr field).
        */       // TODO: remove this test field
-      collectionQueryExcludeFields: ["LTERSite"],
+      collectionQueryExcludeFields: [
+        "LTERSite",
+        "_root_", "_text_", "_version_",
+        "geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5",
+        "geohash_6", "geohash_7", "geohash_8", "geohash_9",
+        "checksum", "checksumAlgorithm",
+        "collectionQuery", "label"
+      ],
 
       /**
       * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)

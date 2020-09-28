@@ -157,14 +157,6 @@ define([
          */
         template: _.template(Template),
 
-        // /**
-        //  * The events this view will listen to and the associated function to call.
-        //  * @type {Object}
-        //  */
-        // events: {
-        //   // "action selector": "functionName"
-        // },
-
         /**
          * Creates a new SearchableSelectView
          * @param {Object} options - A literal object with options to pass to the view
@@ -279,11 +271,9 @@ define([
             return
           }
           
-          // this.disable(); // So an event is not triggered
           var view = this;
           this.selected = newValues;
           this.$selectUI.dropdown('set exactly', view.selected);
-          // this.enable();
         },
         
         /**        

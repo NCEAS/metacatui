@@ -124,22 +124,74 @@ define(
             queryFields: [
               "author", "authorGivenName", "authorGivenNameSort", "authorLastName", "authorSurName",
               "authorSurNameSort", "contactOrganization", "contactOrganizationText", "investigator",
+              "investigatorText", "submitter", "originText", "origin", "originator", "originatorText",
+              "relatedOrganizations"
+            ],
+          },
+          {
+            label: "Taxon",
+            icon: "sitemap",
+            queryFields: [
+              "scientificName", "kingdom", "phylum", "class", "order", "family",
+              "genus", "species"
+            ],
+          },
+          {
+            label: "Geography",
+            icon: "globe",
+            queryFields: [
+              "eastBoundCoord", "northBoundCoord", "southBoundCoord", "westBoundCoord",
+              "noBoundingBox", "site", "siteText", "placeKey", "namedLocation"
+            ],
+          },
+          {
+            label: "Date & Time",
+            icon: "calendar",
+            queryFields: [
+              "decade", "beginDate", "dateModified", "datePublished",
+              "dateUploaded", "endDate", "pubDate", "replicaVerifiedDate",
+              "updateDate"
             ],
           },
           {
             label: "Repository information",
             icon: "archive",
-            queryFields: ["authoritativeMN", "blockedReplicationMN", "preferredReplicationMN", "replicaMN", "datasource"],
+            queryFields: [
+              "authoritativeMN", "blockedReplicationMN",
+              "preferredReplicationMN", "replicaMN", "datasource"
+            ],
+          },
+          {
+            label: "Awards & funding",
+            icon: "certificate",
+            queryFields: [
+              "awardTitle", "awardNumber", "funderIdentifier", "funderName",
+              "funding", "fundingText"
+            ],
+          },
+          {
+            label: "Data attributes",
+            icon: "table",
+            queryFields: [
+              "attribute", "attributeDescription", "attributeLabel",
+              "attributeName", "attributeUnit"
+            ],
           },
           {
             label: "Permissions",
             icon: "lock",
-            queryFields: ["changePermission", "rightsHolder", "isPublic", "readPermission", "writePermission"],
+            queryFields: [
+              "changePermission", "rightsHolder", "isPublic", "readPermission",
+              "writePermission"
+            ],
           },
           {
             label: "Text",
             icon: "font",
-            queryTypes: ["string", "alphaOnlySort", "text_en_splitting", "text_en_splitting_tight", "text_general", "text_case_insensitive"]
+            queryTypes: [
+              "string", "alphaOnlySort", "text_en_splitting",
+              "text_en_splitting_tight", "text_general", "text_case_insensitive"
+            ]
           },
           {
             label: "Boolean",
@@ -150,11 +202,6 @@ define(
             label: "Numeric",
             icon: "list-ol",
             queryTypes: ["int", "tfloat", "tlong", "long"]
-          },
-          {
-            label: "Date",
-            icon: "calendar",
-            queryTypes: ["tdate"]
           }
         ]
       },
@@ -167,9 +214,8 @@ define(
       getReadableName: function(){
         
         try {
-          var name = this.get("name"),
-              aliases = this.aliases(),
-              alias = aliases[name];
+          var name  =  this.get("name"),
+              alias =  this.aliases()[name];
           
           // First see if there's an alias
           if(alias){

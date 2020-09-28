@@ -93,6 +93,7 @@ define([
          * @return {SeachableSelect}  Returns the view
          */         
         render: function(){
+          
           try {
             // Need the query fields before a rule can be rendered
             if (!MetacatUI.queryFields || MetacatUI.queryFields.length === 0) {
@@ -104,6 +105,8 @@ define([
             // SearchableSelect view.
             
             var fieldsJSON = MetacatUI.queryFields.toJSON();
+            
+            console.log(fieldsJSON);
             
             // Filter out non-searchable fields (if option is true),
             // and fields should be excluded
@@ -121,6 +124,8 @@ define([
                 return true
               }, this);
               
+              console.log(subsettedFields);
+              
             // Sort the fields alphabetically by label
             var sortedFields = _.sortBy(subsettedFields, "label");
             
@@ -135,10 +140,12 @@ define([
                };
             });
             
-            var groupedFields =  _.groupBy(renamedFields, "category");
+            var groupedFields = _.groupBy(renamedFields, "category");
             
             // Set the formatted fields on the view
             this.options = groupedFields;
+            
+            console.log(groupedFields);
             
             SearchableSelect.prototype.render.call(this);
             
