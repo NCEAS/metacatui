@@ -33,6 +33,7 @@ define(
           multivalued: null,
           filterType: "filter",
           category: null,
+          categoryOrder: null,
           icon: null,
           label: null,
         };
@@ -59,6 +60,9 @@ define(
           }
           if(category.label){
             this.set("category", category.label);
+          }
+          if(category.index || category.index === 0){
+            this.set("categoryOrder", category.index);
           }
         }
       
@@ -186,14 +190,6 @@ define(
             ],
           },
           {
-            label: "Text",
-            icon: "font",
-            queryTypes: [
-              "string", "alphaOnlySort", "text_en_splitting",
-              "text_en_splitting_tight", "text_general", "text_case_insensitive"
-            ]
-          },
-          {
             label: "Boolean",
             icon: "asterisk",
             queryTypes: ["boolean"]
@@ -202,7 +198,15 @@ define(
             label: "Numeric",
             icon: "list-ol",
             queryTypes: ["int", "tfloat", "tlong", "long"]
-          }
+          },
+          {
+            label: "Text",
+            icon: "font",
+            queryTypes: [
+              "string", "alphaOnlySort", "text_en_splitting",
+              "text_en_splitting_tight", "text_general", "text_case_insensitive"
+            ]
+          },
         ]
       },
       
@@ -270,6 +274,10 @@ define(
                   return category.queryTypes.includes(fieldType);
                 }
               });
+            }
+            
+            if(match){
+              match.index = _.indexOf(categoriesMap, match);
             }
             
             return match

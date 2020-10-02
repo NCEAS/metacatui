@@ -58,6 +58,12 @@ define([
         allowAdditions: false,
         
         /**        
+         * Set to true to display list options as sub-menus of cateogories.
+         * @type {boolean}        
+         */         
+        collapseCategories: false,
+        
+        /**        
          * The maximum width of images used for each option, in pixels
          * @type {number}        
          */         
@@ -240,20 +246,18 @@ define([
                   }
                 }
               });
-              
-              // There must be a delay before setting the pre-selected values to
-              // avoid a semantic UI bug with transitions. The delay also
-              // creates a nice animation.
-              setTimeout(function () {
-                view.$selectUI.dropdown('set exactly', view.selected);
-                view.$selectUI.dropdown('save defaults');
-                view.enable();
-              }, 100);
-              
+            
             // Activate the tooltips (option descriptions, inserted in the template)
             this.$el.tooltip({
               selector: '[data-toggle=tooltip]'
             });
+            
+            // There must be a delay before setting the pre-selected values to
+            // avoid a semantic UI bug with transitions. The delay also
+            // creates a nice animation.
+            setTimeout(function () {
+              view.postRender()
+            }, 100);
             
             return this;
 
@@ -262,18 +266,116 @@ define([
           }
         },
         
-        changeSelection: function(newValues) {
-          if(
-            !this.$selectUI ||
-            typeof newValues === "undefined" ||
-            !Array.isArray(newValues)
-          ){
-            return
+        /**        
+         * postRender - Updates to the view once the dropdown UI has loaded
+         */         
+        postRender: function(){
+          try {
+            var view = this;
+            
+            this.$selectUI.dropdown('set exactly', view.selected);
+            this.$selectUI.dropdown('save defaults');
+            this.enable();
+            
+            if(this.collapseCategories){
+              this.convertToSubmenus();
+              this.$selectUI.find("input").on("keyup blur", function(e){
+                inputVal = e.target.value;
+                if(inputVal !== ""){
+                  view.revertToList();
+                } else {
+                  view.convertToSubmenus();
+                }
+              });
+            }
+          } catch (e) {
+            console.log("The searchable select post-render function failed, error message: " + e);
           }
-          
-          var view = this;
-          this.selected = newValues;
-          this.$selectUI.dropdown('set exactly', view.selected);
+        },
+        
+        /**        
+         * convertToSubmenus - Re-arrange the HTML to display category contents
+         * as sub-menus
+         */         
+        convertToSubmenus: function(){
+          try {
+            if(!this.$selectUI){
+              return
+            }
+            if(this.mode === "submenu"){
+              return
+            }
+            this.mode = "submenu";
+            this.$selectUI.addClass("submenu-mode");
+            var $headers = this.$selectUI.find(".header");
+            if(!$headers || $headers.length === 0){
+              return
+            }
+            $headers.each(function(i){
+              var $itemGroup = $().add($(this).nextUntil(".header"));
+              var $itemAndHeaderGroup = $(this).add($(this).nextUntil(".header"));
+              var $icon = $(this).next().find(".icon");
+              if($icon && $icon.length > 0){
+                var $headerIcon = $icon
+                  .clone()
+                  .addClass("submenu-mode-icon")
+                  .css({
+                    "opacity": "0.9",
+                    "margin-right" : "1rem"
+                  });
+                $(this).prepend($headerIcon[0])
+              }
+              $itemAndHeaderGroup.wrapAll("<div class='item submenu-mode'/>");
+              $itemGroup.wrapAll("<div class='menu submenu-mode'/>");
+              $(this).append("<i class='submenu-mode-icon dropdown icon icon icon-on-right icon-chevron-right'></i>")
+            });
+          } catch (e) {
+            console.log("Failed to convert a Searchable Select interface to sub-menu mode, error message: " + e);
+          }
+        },
+        
+        /**        
+         * revertToList - Re-arrange HTML to display the full list of options
+         * in one menu
+         */         
+        revertToList: function(){
+          try {
+            if(!this.$selectUI){
+              return
+            }
+            if(this.mode === "list"){
+              return
+            }
+            this.mode = "list";
+            this.$selectUI.removeClass("submenu-mode");
+            this.$selectUI.find(".submenu-mode > *").unwrap();
+            this.$selectUI.find(".submenu-mode-icon").remove();
+          } catch (e) {
+            console.log("Failed to revert a Searchable Select interface to list mode, error message: " + e);
+          }
+        },
+        
+        /**        
+         * changeSelection - Set selected values in the interface
+         *          
+         * @param  {string[]} newValues - An array of strings to select
+         */         
+        changeSelection: function(newValues) {
+          try {
+            if(
+              !this.$selectUI ||
+              typeof newValues === "undefined" ||
+              !Array.isArray(newValues)
+            ){
+              return
+            }
+            
+            var view = this;
+            this.selected = newValues;
+            this.$selectUI.dropdown('set exactly', view.selected);
+          } catch (e) {
+            console.log("Failed to change the selected values in a searchable select field, error message: " + e);
+          }
         },
         
         /**        

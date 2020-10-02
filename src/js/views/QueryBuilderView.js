@@ -48,7 +48,7 @@ define(["jquery",
          * An array of hex color codes used to help distinguish between different rules
          * @type {string[]}    
          */     
-        ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
+        ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
         
         /**        
          * Search index fields to exclude in the metadata field selector of each query rule        

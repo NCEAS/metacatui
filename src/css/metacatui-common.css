@@ -76,6 +76,7 @@ a:hover{
 }
 .tooltip{
 	font-size: 12px;
+	pointer-events: none;
 }
 [contenteditable]{
 	cursor: text;
@@ -3630,7 +3631,7 @@ add font awesome close icon */
 }
 
 /* 'Add new section' icon  */
-.port-editor-sections .icon.icon-plus {
+.portal-section-link > .icon.icon-plus {
 	margin: 0 1px 0 1px;
 }
 /* `Settings` link */
@@ -6428,14 +6429,39 @@ body.mapMode{
 
 /* Make the sidebar a bit wider since filters will be used a lot while editing a collection */
 .edit-collection #sidebar{
-  width: 250px;
+  width: 0px;
+	border-right: none;
+}
+.edit-collection .map-toggle-container {
+	background: #ededed;
+}
+.edit-collection .map-toggle-container > a {
+	color: #333;
+}
+.edit-collection #results-container{
+  width: 100%;
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+}
+.edit-collection .result-header-count {
+	font-size: 1rem;
+  font-weight: 500;
+	margin-bottom: 2rem;
 }
 .edit-collection .mapMode #results-container{
-  width: 60%;
-  width: calc((100% - 260px) / 2);
+  width: 49%;
 }
 .edit-collection .mapMode #map-container{
-  width: calc((100% - 260px) / 2);
+	width: 49%;
+}
+
+.edit-collection-description {
+	max-width: 1400px;
+	margin-left: 1rem;
+}
+.edit-collection-title {
+	margin-top: 1.5rem;
+	margin-left: 1rem;
 }
 /* The Save and Cancel buttons */
 .collection-controls{
@@ -6635,7 +6661,7 @@ Query builder & query rule view
 .query-builder {
 	box-shadow: 0 1px 6px rgba(0,0,0,0.16), 0 1px 8px -3px rgba(0,0,0,0.23);
 	padding: 0;
-	margin: 2.5rem 1rem 4rem;
+	margin: 2rem 1rem 2.5rem;
 	width: 100%;
 	max-width: 1400px;
 	border-radius: 3px;
@@ -6644,17 +6670,20 @@ Query builder & query rule view
 
 .query-builder-title {
 	font-weight: 500;
-	font-size: 1.3rem;
+  font-size: 1.1rem;
 	width: 100%;
-	margin: 0 0 2rem 0;
+	margin: 0 0 1.2rem 0;
 	border-bottom: 1px solid #eee;
-	padding: 1.6rem 2rem 1.2rem;
+	padding: 1.4rem 2rem 1.2rem;
 	box-sizing: border-box;
 }
-
+.query-builder-title .operator {
+	padding: 0 .3rem;
+	border-bottom: 2px solid #adadad;
+}
 .btn.add-rule {
 	margin-left: 2rem;
-	padding: 0.2rem 0.7rem;
+	padding: 0.3rem 0.9rem 0.3rem 0.5rem;
 }
 
 .rules-container {
@@ -6667,7 +6696,7 @@ Query builder & query rule view
 
 .query-rule {
 	display: grid;
-	grid-template-columns: minmax(2.5rem, 4rem) 1fr 0.5fr 1fr 2rem;
+	grid-template-columns: minmax(2.5rem, 4rem) 0.9fr 0.6fr 0.9fr 1.5rem;
 	grid-template-rows: 1fr;
 	grid-template-areas: "info field operator value remove";
 	grid-gap: 1.5rem;

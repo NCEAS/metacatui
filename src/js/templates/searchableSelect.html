@@ -1,6 +1,6 @@
 <p class="subtle searchable-select-label"> <%= inputLabel %></p>
 
-<div class="ui fluid <% if(allowMulti){ %> multiple <% } %> search selection dropdown">
+<div class="fluid ui dropdown <% if(allowMulti){ %> multiple <% } %> selection search">
   <% // Do not pre-select options by providing a value to the hidden input field. %>
   <% // This causes errors in some situations. Pre-select in the view JS instead. %>
   <input name="search-select-<%= cid %>" type="hidden">
@@ -12,7 +12,9 @@
     <% if (Array.isArray(options)) { options = { "" : options } } %>
     
     <% for (const [header, values] of Object.entries(options)) { %>
-      <% if (header) { %><h6 class="header"><%= header %></h6><% } %>
+      <% if (header) { %>
+        <h6 class="header"><%= header %></h6>
+      <% } %>
         <% for (option of values) { %>
           <div class="item" data-value="<%= option.value ? option.value : option.label %>" <% if (option.description) { %> data-toggle="tooltip" title="<%= option.description %>" data-placement="bottom" data-container="body" data-delay='{"show":"200", "hide":"50"}' <% } %>>
             <% if (option.icon) { %>

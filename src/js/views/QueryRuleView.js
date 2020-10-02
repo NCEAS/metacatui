@@ -78,7 +78,7 @@ define([
          * An array of hex color codes used to help distinguish between different rules
          * @type {string[]}    
          */     
-        ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
+        ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
         
         /**        
          * Search index fields to exclude in the metadata field selector        
@@ -126,6 +126,7 @@ define([
         operatorOptions: [
           {
             label: "equals",
+            description: "The text in the metadata field is an exact match to the selected value",
             icon: "equal",
             matchSubstring: false,
             exclude: false,
@@ -133,6 +134,7 @@ define([
           },
           {
             label: "does not equal",
+            description: "The text in the metadata field is anything except an exact match to the selected value",
             icon: "not-equal",
             matchSubstring: false,
             exclude: true,
@@ -140,6 +142,7 @@ define([
           },
           {
             label: "contains",
+            description: "The text in the metadata field matches or contains the words or phrase selected",
             icon: "ok-circle",
             matchSubstring: true,
             exclude: false,
@@ -147,6 +150,7 @@ define([
           },
           {
             label: "does not contain",
+            description: "The words or phrase selected are not contained within the metadata field",
             icon: "ban-circle",
             matchSubstring: true,
             exclude: true,
@@ -154,6 +158,7 @@ define([
           },
           {
             label: "is empty",
+            description: "The metadata field contains no text or value",
             icon: "circle-blank",
             matchSubstring: false,
             exclude: true,
@@ -162,6 +167,7 @@ define([
           },
           {
             label: "is not empty",
+            description: "The metadata field is filled in with any text at all",
             icon: "circle",
             matchSubstring: false,
             exclude: false,
@@ -170,6 +176,7 @@ define([
           },
           {
             label: "is true",
+            description: "The metadata field is set to true",
             icon: "ok-circle",
             matchSubstring: false,
             exclude: false,
@@ -178,6 +185,7 @@ define([
           },
           {
             label: "is false",
+            description: "The metadata field is set to false",
             icon: "ban-circle",
             matchSubstring: false,
             exclude: false,
@@ -186,6 +194,7 @@ define([
           },
           {
             label: "is between",
+            description: "The metadata field is a value between the range selected (inclusive of both values)",
             icon: "resize-horizontal",
             matchSubstring: false,
             exclude: false,
@@ -195,6 +204,7 @@ define([
           },
           {
             label: "is less than",
+            description: "The metadata field is a number less than the one selected",
             icon: "less-than",
             matchSubstring: false,
             exclude: false,
@@ -204,6 +214,7 @@ define([
           },
           {
             label: "is greater than",
+            description: "The metadata field is a number greater than the one selected",
             icon: "greater-than",
             matchSubstring: false,
             exclude: false,
@@ -213,6 +224,7 @@ define([
           },
           {
             label: "is exactly",
+            description: "The metadata field exactly equals the one selected",
             icon: "equal",
             matchSubstring: false,
             exclude: false,
@@ -508,6 +520,7 @@ define([
               options: options,
               allowMulti: false,
               inputLabel: "Select an operator",
+              placeholderText: "Select an operator",
               selected: [selectedOperator]
             });
             this.operatorSelect.$el.addClass(this.operatorClass);

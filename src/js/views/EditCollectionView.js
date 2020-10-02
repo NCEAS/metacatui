@@ -73,7 +73,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      * An array of hex color codes used to help distinguish between different rules
      * @type {string[]}    
      */     
-    ruleColorPalette: ["#44AA99", "#137733", "#999934", "#DDCC76", "#CC6677", "#882355", "#AA4499","#332288", "#88CCEE"],
+     ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
     
     /**        
      * Search index fields to exclude in the metadata field selector of each query rule        
@@ -105,8 +105,19 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * Renders this view
     */
     render: function(){
+      
+      var title = "Change the data in your collection"
+      if(this.model.isNew()){
+        title = "Add data to your collection"
+      }
 
-      this.$el.html(this.template());
+      this.$el.html(this.template({
+        title: title,
+        description: "Your collection can include any of the datasets that are available on the DataONE network. " +
+          "Build a query based on metadata to define which datasets should be included in your collection. " +
+          "Data added to the network in the future that match this query will also be added to your collection." +
+          "Click the save button when you're happy with the results."
+      }));
 
       // Make sure that we have a series ID before we render the Data Catalog
       // View With Filters. For new portals, we generate and reserve a series ID
@@ -286,7 +297,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       // search results, so display a helpful message
       if ( currentFilters.length == 0 && this.model.get("searchResults").length ) {
         msg = "<h5>Your dataset collection hasn't been created yet.</h5>" +
-              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, search for data using the filters on the left.</p>";
+              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection," +
+              " add rules in query builder above.</p>";
       }
       //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
       else if( currentFilters.length == 1 &&
@@ -294,7 +306,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
                !this.model.get("searchResults").length){
 
          msg = "<h5>Your dataset collection is empty.</h5>" +
-               "<p>To add datasets to your collection, search for data using the filters on the left.</p>";
+               "<p>To add datasets to your collection," + 
+               "add rules in query builder above.</p>";
 
         //TODO: When the ability to add datasets to collection via the "isPartOf" relationship is added to MetacatUI
         // then update this message with details on how to add datasets to the collection

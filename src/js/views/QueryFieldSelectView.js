@@ -34,13 +34,13 @@ define([
          * Text to show in the input field before any value has been entered
          * @type {string}        
          */ 
-        placeholderText: "Search for or select a metadata field",
+        placeholderText: "Search for or select a field",
         
         /**       
          * Label for the input element
          * @type {string}        
          */ 
-        inputLabel: "Select a metadata field to query",
+        inputLabel: "Select one or more metadata fields to query",
         
         /**        
          * Whether to allow users to select more than one value        
@@ -56,6 +56,12 @@ define([
          */         
         allowAdditions: false,
         
+        /**        
+         * Set to true to display list options as sub-menus of cateogories,
+         * rather than one long list.
+         * @type {boolean}        
+         */         
+        collapseCategories: true,
         
         /**        
          * A list of query fields names to exclude from the list of options
@@ -103,49 +109,53 @@ define([
             
             // Convert the queryFields collection to an object formatted for the
             // SearchableSelect view.
-            
+            // 
             var fieldsJSON = MetacatUI.queryFields.toJSON();
             
-            console.log(fieldsJSON);
-            
             // Filter out non-searchable fields (if option is true),
-            // and fields should be excluded
-            var subsettedFields = _.filter(fieldsJSON, function(filter){
-                if(this.excludeNonSearchable){
-                  if(filter.searchable !== "true"){
-                    return false
+            // and fields that should be excluded
+            var processedFields = _(fieldsJSON)
+              .chain()
+              .sortBy("categoryOrder")
+              .sortBy("label")
+              .filter(
+                function(filter){
+                  if(this.excludeNonSearchable){
+                    if(filter.searchable !== "true"){
+                      return false
+                    }
                   }
-                }
-                if(this.excludeFields && this.excludeFields.length){
-                  if(this.excludeFields.includes(filter.name)){
-                    return false
+                  if(this.excludeFields && this.excludeFields.length){
+                    if(this.excludeFields.includes(filter.name)){
+                      return false
+                    }
                   }
+                  return true
+                }, this
+              )
+              .map(
+                function(field) {
+                   return {
+                     label: field.label ? field.label : field.name,
+                     value: field.name,
+                     description: field.description,
+                     icon: field.icon,
+                     category: field.category,
+                     categoryOrder: field.categoryOrder,
+                   };
                 }
-                return true
-              }, this);
+              )
+              .groupBy("categoryOrder")
+              .value();
+            
+            // Rename the grouped categories
+            for (const [key, value] of Object.entries(processedFields)) {
+              processedFields[value[0].category] = value;
+              delete processedFields[key];
+            }
               
-              console.log(subsettedFields);
-              
-            // Sort the fields alphabetically by label
-            var sortedFields = _.sortBy(subsettedFields, "label");
-            
-            // Rename the field attributes for the searchableSelect format
-            var renamedFields = sortedFields.map(function(field) {
-               return {
-                 label: field.label ? field.label : field.name,
-                 value: field.name,
-                 description: field.description,
-                 icon: field.icon,
-                 category: field.category
-               };
-            });
-            
-            var groupedFields = _.groupBy(renamedFields, "category");
-            
             // Set the formatted fields on the view
-            this.options = groupedFields;
-            
-            console.log(groupedFields);
+            this.options = processedFields;
             
             SearchableSelect.prototype.render.call(this);
             
