@@ -115,7 +115,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         title: title,
         description: "Your collection can include any of the datasets that are available on the DataONE network. " +
           "Build a query based on metadata to define which datasets should be included in your collection. " +
-          "Data added to the network in the future that match this query will also be added to your collection." +
+          "Data added to the network in the future that match this query will also be added to your collection. " +
           "Click the save button when you're happy with the results."
       }));
 
@@ -133,6 +133,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       }
       
       this.renderQueryBuilder();
+    
       //this.renderCollectionControls();
 
     },
@@ -150,55 +151,9 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         excludeFields: this.queryBuilderExcludeFields,
       });
       
-      // Update the search model when the definition filters are updated by the
-      // query builder
-      this.stopListening(this.model.get("definitionFilters"), "update change");
-      this.listenTo(
-        this.model.get("definitionFilters"),
-        "update change",
-        view.updateSearchModel
-      );
-      
-      // console.log(this.model.get("searchModel").get("filters"));
       // Render the query builder and insert it into this view
       this.$(this.queryBuilderViewContainer).html(queryBuilder.el);
       queryBuilder.render();
-    },  
-    
-    /**    
-     * updateSearchModel - This function is called when any changes are made to
-     * the definition filters. The function adds, removes, or updates models
-     * in the search model filters when models are changed in the collection
-     * definition filters.
-     *      
-     * @param  {Filter|Filters} model The model or collection that has been changed (filter models) or updated (filters collection). This is ignored.
-     * @param  {object} record     The data passed by backbone that indicates which models have been added, removed, or updated. If the only change was to a pre-existing model attribute, then the object will be empty.   
-     */     
-    updateSearchModel: function(model, record){
-      
-      var view = this;
-      
-      if(typeof record == "undefined" || !record){
-        record = {}
-      }
-      
-      // Remove models from the search model if models have been removed from
-      // the definition filters.
-      if(
-        record.changes &&
-        record.changes.removed &&
-        record.changes.removed.length
-      ){
-        view.model.get("searchModel").get("filters").remove(
-          record.changes.removed
-        )
-      }
-      
-      // Add or merge the definition filters with the search model filters.
-      view.model.get("searchModel").get("filters").add(
-        view.model.get("definitionFilters").models,
-        { merge: true }
-      );
     },
     
     /**
@@ -227,34 +182,6 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       //Render the view and insert it into the page
       this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
       dataCatalogView.render();
-
-      //Add a filter input for the isPartOf filter
-      if( dataCatalogView.filterGroupsView &&
-          dataCatalogView.filterGroupsView.filterGroups &&
-          dataCatalogView.filterGroupsView.filterGroups.length ){
-
-        //Get the isPartOf filter in the search model
-        var isPartOfFilter = searchModel.get("filters").find(function(f){
-          return (f.get("fields").length == 1 && f.get("fields").includes("isPartOf"));
-        });
-
-        //If an isPartOf filter already exists, add it to the filter groups
-        if( isPartOfFilter ){
-          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
-        }
-        //Otherwise, create a new isPartOf filter
-        else{
-          //Create an isPartOf filter
-          isPartOfFilter = this.model.createIsPartOfFilter();
-          //Set the value as a trueValue, so it can be used as a Toggle
-          isPartOfFilter.set("trueValue", isPartOfFilter.get("values")[0]);
-          //Reset the values
-          isPartOfFilter.set("values", []);
-          //Add the isPartOf filter to the filter collections
-          dataCatalogView.filterGroupsView.filters.unshift(isPartOfFilter);
-          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
-        }
-      }
 
       this.listenTo(this.model.get("searchResults"), "reset", this.toggleHelpText);
 
@@ -297,16 +224,16 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       // search results, so display a helpful message
       if ( currentFilters.length == 0 && this.model.get("searchResults").length ) {
         msg = "<h5>Your dataset collection hasn't been created yet.</h5>" +
-              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection," +
-              " add rules in query builder above.</p>";
+              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, " +
+              "add rules in query builder above.</p>";
       }
       //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
       else if( currentFilters.length == 1 &&
                currentFilters[0].get("fields")[0] == "isPartOf" &&
                !this.model.get("searchResults").length){
 
-         msg = "<h5>Your dataset collection is empty.</h5>" +
-               "<p>To add datasets to your collection," + 
+         msg = "<h5>Your dataset collection is empty.</h5> " +
+               "<p>To add datasets to your collection, " + 
                "add rules in query builder above.</p>";
 
         //TODO: When the ability to add datasets to collection via the "isPartOf" relationship is added to MetacatUI
