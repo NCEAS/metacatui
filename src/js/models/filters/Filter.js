@@ -84,7 +84,8 @@ define(['jquery', 'underscore', 'backbone'],
       if( this.get("fields").length == 1 && this.get("fields").includes("isPartOf") ){
         this.set({
           label: "Datasets added manually",
-          description: "Datasets added to this collection manually by dataset owners"
+          description: "Datasets added to this collection manually by dataset owners",
+          isInvisible: true
         });
       }
     },
