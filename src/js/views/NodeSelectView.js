@@ -34,13 +34,13 @@ define([
          * Text to show in the input field before any value has been entered
          * @type {string}        
          */ 
-        placeholderText: "Search for or select a DataONE member repository",
+        placeholderText: "Select a DataONE repository",
         
         /**       
          * Label for the input element
          * @type {string}        
          */ 
-        inputLabel: "Select a member repository",
+        inputLabel: "Select a DataONE repository",
         
         /**        
          * Whether to allow users to select more than one value        

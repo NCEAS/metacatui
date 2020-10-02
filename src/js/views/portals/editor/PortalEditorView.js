@@ -140,8 +140,6 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.activeSectionLabel = options.activeSectionLabel || "";
       }
 
-      this.activeSectionLabel = "About"
-
     },
 
     /**

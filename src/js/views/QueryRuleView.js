@@ -261,7 +261,57 @@ define([
           //   types: ["dateFilter"]
           // }
         ],
-
+        
+        /**        
+         * The third input in each query rule is where the user enters a value,
+         * minimum, or maximum for the filter model. Different types of values
+         * are appropriate for different solr query fields, and so we display
+         * different interfaces depending on the type and category of the
+         * selected query fields. This object defines which type of interface
+         * to show depending on type and category. The list of interface requirements
+         * is ordered from most specific to least, since the first match will be
+         * selected. The query (metadata) fields must match both the filterTypes
+         * AND the categoes for a UI to be selected.
+         * @type {object[]}        
+         * @property {string[]} filterTypes - An array of one or more filter types that are allowed for this interface.  If none are provided then any filter type is allowed.
+         * @property {string[]} categories - An array of one or more categories that are allowed for this interface. These strings must exactly match the categories provided in QueryField.categoriesMap(). If none are provided then any category is allowed.
+         * @property {string} label - If the interface does not include a label (e.g. number filter), include a string to display here.
+         * @property {function} uiFunction - A function that returns the UI view to use with all appropriate options set. The function will be called with this view as the context.
+         */         
+        valueSelectUImap: [
+          {
+            filterTypes: ["filter"],
+            categories: ["Repository information"],
+            uiFunction: function(){
+              return new NodeSelect({
+                selected: this.model.get("values")
+              })
+            }
+          },
+          {
+            filterTypes: ["dateFilter", "numericFilter"],
+            label: "Choose a value",
+            uiFunction: function(){
+              return new NumericFilterView({
+                model: this.model,
+                showButton: false
+              })
+            }
+          },
+          // The last is the default value selection UI
+          {
+            uiFunction: function(){
+              return new SearchableSelect({
+                options: [],
+                allowMulti: true,
+                allowAdditions: true,
+                inputLabel: "Type a value",
+                selected: this.model.get("values")
+              })
+            }
+          }
+        ],
+        
         /**
          * Creates a new QueryRuleView
          * @param {Object} options - A literal object with options to pass to the view
@@ -442,8 +492,15 @@ define([
               return
             }
             this.model.set("fields", newFields);
+            // Add an empty operator input field, if there isn't one
             if(!this.operatorSelect){
               this.addOperatorSelect("");
+            }
+            // Refresh the value select in case the filter type or filter
+            // category has changed
+            if(this.valueSelect){
+              this.removeInput("value");
+              this.addValueSelect();
             }
           } catch (e) {
             console.log("Failed to handle query field change in the Query Rule View, error message: " + e);
@@ -461,10 +518,9 @@ define([
          * @param  {string[]} fields The list of selected fields
          * @return {string} The nodeName of the filter model to use
          */         
-        getRequiredFilterType(fields){
+        getRequiredFilterType: function(fields){
           try {
             var types = [],
-                filterType = "",
                 // When fields is empty or are different types
                 defaultFilterType = MetacatUI.queryFields.models[0].defaults().filterType;
                 
@@ -686,6 +742,7 @@ define([
          * @return {string} The operator label
          */         
         getSelectedOperator: function(){
+          
           try {
             if(this.model.get("fields")[0]=="numberReplicas"){
               var db = true
@@ -773,6 +830,45 @@ define([
             console.log("Failed to select an operator in the Query Rule View, error message: " + e);
           }
         },
+                
+        /**        
+         * getCategory - description        
+         *          
+         * @param  {type} fields description         
+         * @return {type}        description         
+         */         
+        getCategory: function(fields){
+          
+          try {
+            var categories = [],
+                // When fields is empty or are different types
+                defaultCategory = "Text";
+                
+            if(!fields || fields.length === 0 || fields[0] === ""){
+              return defaultCategory
+            }
+            
+            fields.forEach((field, i) => {
+              // Get the category of the field from the matching filter model in the
+              // Query Fields Collection
+              var fieldModel = MetacatUI.queryFields.findWhere({ name:field });
+              categories.push(fieldModel.get("category"))
+            });
+            
+            // Test of all the fields are of the same type
+            var allEqual = categories.every( (val, i, arr) => val === arr[0] );
+            
+            if(allEqual){
+              return categories[0]
+            } else {
+              return defaultCategory
+            }
+            
+          } catch (e) {
+            console.log("Failed to detect the category for a group of filters in the Query Rule View, error message: " + e);
+          }
+          
+        },
 
         /**        
          * Create and insert an input field where the user can provide a
@@ -781,11 +877,12 @@ define([
         addValueSelect: function() {
           try {
             
-            // TODO:
-            //  - lookahead with values that are available for each fields
-            //  - other specialized types of select fields
-            
-            var view = this;
+            var view        =   this
+                fields      =   this.model.get("fields"),
+                filterType  =   this.getRequiredFilterType(fields),
+                category    =   this.getCategory(fields),
+                interfaces  =   this.valueSelectUImap,
+                label       =   "";
             
             // To help guide users to create valid queries, the type of value
             // field will vary based on the type of field (i.e. filter nodeName),
@@ -802,36 +899,28 @@ define([
               }
             }
             
-            // Use a number slider for date and number filters
-            if(["dateFilter", "numericFilter"].includes(view.model.get("nodeName"))){
-              view.valueSelect = new NumericFilterView({
-                model: this.model,
-                showButton: false
-              });
-              var label = $("<p class='subtle searchable-select-label'>Choose a value</p>");
+            // Find the appropriate UI to use the the value select field.
+            // Find the first match in the valueSelectUImap according to
+            // the filter type and the categories associated with the metadata
+            // field.
+            var interfaceProperties = _.find(interfaces, function(interface){
+              var typesMatch = true,
+                  categoriesMatch = true;
+              if(interface.filterTypes && interface.filterTypes.length){
+                typesMatch = interface.filterTypes.includes(filterType)
+              }
+              if(interface.categories && interface.categories.length){
+                categoriesMatch = interface.categories.includes(category)
+              }
+              return typesMatch && categoriesMatch
+            });
             
-            
-            // TODO: apply this type of input to all "Repository Information"
-            // category fields that are also text filters.
-            // 
-            // Use a select input that lists the member nodes for fields that
-            // require a member node ID for the value
-            // 
-            // } else if(view.model.get("fields")[0] === "authoritativeMN") {
-            // 
-            //   view.valueSelect = new NodeSelect({
-            //     selected: this.model.get("values")
-            //   });
-            
-            // In all other cases, use a regular text value entry field
-            } else {
-              view.valueSelect = new SearchableSelect({
-                options: [],
-                allowMulti: true,
-                allowAdditions: true,
-                inputLabel: "Type a value",
-                selected: this.model.get("values")
-              });
+            this.valueSelect = interfaceProperties.uiFunction.call(this);
+            if(interfaceProperties.label && interfaceProperties.label.length){
+              label = $(
+                "<p class='subtle searchable-select-label'>" +
+                interfaceProperties.label + "</p>"
+              );
             }
             
             // Append and render the choosen value selector
