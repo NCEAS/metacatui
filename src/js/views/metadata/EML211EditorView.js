@@ -858,7 +858,7 @@ define(['underscore',
           this.$(".notification.error").empty();
           this.$(".side-nav-item .icon").hide();
           this.$("#metadata-container .error").removeClass("error");
-          $(".alert-container").remove();
+          $(".alert-container:not(:has(.temporary-message))").remove();
 
 
           var errors = this.model.validationError;
