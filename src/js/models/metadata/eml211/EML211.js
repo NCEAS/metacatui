@@ -1530,7 +1530,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                   errors.methods = "At least one method step is required.";
               }
               else if(key == "funding"){
-                if(!this.get("project") || !this.get("project").get("funding").length)
+                // Note: Checks for either the funding or award element. award
+                // element is checked by the project's objectDOM for now until
+                // EMLProject fully supports the award element
+                if(!this.get("project") ||
+                   !(this.get("project").get("funding").length ||
+                     (this.get("project").get("objectDOM") &&
+                      this.get("project").get("objectDOM").querySelectorAll &&
+                      this.get("project").get("objectDOM").querySelectorAll("award").length > 0)))
                   errors.funding = "Provide at least one project funding number or name.";
               }
               else if(key == "abstract"){
