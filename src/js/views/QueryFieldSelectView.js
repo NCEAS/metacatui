@@ -101,9 +101,13 @@ define([
         render: function(){
           
           try {
-            // Need the query fields before a rule can be rendered
-            if (!MetacatUI.queryFields || MetacatUI.queryFields.length === 0) {
-              MetacatUI.queryFields.on('sync', this.render, this);
+            
+            // Ensure the query fields are cached for the Query Field Select
+            // View and the Query Rule View
+            if ( typeof MetacatUI.queryFields === "undefined" || MetacatUI.queryFields.length === 0 ) {
+              MetacatUI.queryFields = new QueryFields();
+              this.listenToOnce(MetacatUI.queryFields, "sync", this.render)
+              MetacatUI.queryFields.fetch();
               return
             }
             

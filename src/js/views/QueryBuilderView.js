@@ -100,12 +100,6 @@ define(["jquery",
           
           try {
             
-            // Ensure the query fields are cached for the Query Field Select View to use
-            if ( typeof MetacatUI.queryFields === "undefined" ) {
-              MetacatUI.queryFields = new QueryFields();
-              MetacatUI.queryFields.fetch();
-            }
-            
             // Get all the options and apply them to this view
             if (typeof options == "object") {
               var optionKeys = Object.keys(options);
@@ -134,6 +128,16 @@ define(["jquery",
         render: function() {
           
           try {
+            
+            // Ensure the query fields are cached for the Query Field Select
+            // View and the Query Rule View
+            if ( typeof MetacatUI.queryFields === "undefined" || MetacatUI.queryFields.length === 0) {
+              MetacatUI.queryFields = new QueryFields();
+              this.listenToOnce(MetacatUI.queryFields, "sync", this.render)
+              MetacatUI.queryFields.fetch();
+              return
+            }
+            
             // Insert the template into the view
             this.$el.html(this.template());
             
@@ -168,7 +172,10 @@ define(["jquery",
             // When the "add rule" button is clicked, the Event object is passed
             // to this function instead.
             if(!filterModel || (filterModel && !/filter/i.test(filterModel.type))){
-              filterModel = this.collection.add({nodeName: "filter"});
+              filterModel = this.collection.add({
+                nodeName: "filter",
+                operator: "OR"
+              });
             }
             
             // Don't show invisible rules
