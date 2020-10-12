@@ -1247,7 +1247,6 @@ define(['jquery', 'underscore', 'backbone'],
       */
       archivedContentIsIndexed: true,
       
-      
       /**      
        * The metadata fields to hide when a user is creating a collection
        * definition using the query builder displayed in the portal builder on
@@ -1255,14 +1254,77 @@ define(['jquery', 'underscore', 'backbone'],
        * Strings listed here should exactly match the 'name' for
        * each field provided by the DataONE search index API (i.e. should match
        * the Solr field).
-       */       // TODO: remove this test field
+       */
       collectionQueryExcludeFields: [
         "LTERSite",
         "_root_", "_text_", "_version_",
         "geohash_1", "geohash_2", "geohash_3", "geohash_4", "geohash_5",
         "geohash_6", "geohash_7", "geohash_8", "geohash_9",
         "checksum", "checksumAlgorithm",
-        "collectionQuery", "label"
+        "collectionQuery", "label",
+        "topic",
+        "funding",
+        "replicationAllowed",
+        "replicaVerifiedDate",
+        "westBoundCoord",
+        "numberReplicas",
+        "origin",
+        "blockedReplicationMN",
+        "preferredReplicationMN",
+        "replicaMN",
+        "checksum",
+        "checksumAlgorithm",
+        "keywords",
+        "parameterText",
+        "project",
+        "topicText",
+        "relatedOrganizations",
+        "decade",
+        "noBoundingBox",
+        "hasPart",
+        "datePublished",
+        "siteText",
+        "sensorText",
+        "sourceText",
+        "termText",
+        "titlestr",
+        "updateDate",
+        "id",
+        "edition",
+        "gcmdKeyword",
+        "isSpatial",
+        "keyConcept",
+        "ogcUrl",
+        "parameter",
+        "sensor",
+        "source",
+        "term",
+        
+        // Service field?
+        "serviceCoupling",
+        "serviceDescription",
+        "serviceEndpoint",
+        "serviceInput",
+        "serviceOutput",
+        "serviceTitle",
+        "serviceType",
+        
+        // Provenance fields?
+        "prov_generated",
+        "prov_generatedByExecution",
+        "prov_generatedByProgram",
+        "prov_generatedByUser",
+        "prov_hasDerivations",
+        "prov_hasSources",
+        "prov_instanceOfClass",
+        "prov_used",
+        "prov_usedByExecution",
+        "prov_usedByProgram",
+        "prov_usedByUser",
+        "prov_wasDerivedFrom",
+        "prov_wasExecutedByExecution",
+        "prov_wasExecutedByUser",
+        "prov_wasInformedBy",
       ],
 
       /**

@@ -82,8 +82,26 @@ define(
        */       
       aliases: function(){
         return {
-          // TODO: Add more here
-          numberReplicas: "Number of Replicas"
+          numberReplicas: "Number of Replicas",
+          writePermission:  "Can Edit",
+          readPermission: "Can View",
+          isService:  "Data Available via Service",
+          dateModified: "Date Updated",
+          dateUploaded: "Date Uploaded",
+          text: "Full Text",
+          funderIdentifier: "Funder ID",
+          fundingText:  "Funding Description",
+          pubDate:  "Date Published",
+          changePermission: "Is Owner",
+          rightsHolder: "Is Owner",
+          datasource: "Original Member Repository",
+          isPublic: "Publicly available datasets only",
+          fileID: "File ID",
+          sem_annotated_by: "Annotated By",
+          sem_annotates: "Annotates",
+          sem_annotation: "Annotation",
+          sem_comment: "Comment"
+          
         }
       },
       
@@ -174,23 +192,40 @@ define(
             ],
           },
           {
+            label: "File details",
+            icon: "file",
+            queryFields: [
+              "size", "isService"
+            ],
+          },
+          {
             label: "Data attributes",
             icon: "table",
             queryFields: [
               "attribute", "attributeDescription", "attributeLabel",
-              "attributeName", "attributeUnit"
+              "attributeName", "attributeUnit",
             ],
+          },
+          {
+            label: "Annotations",
+            icon: "tag",
+            queryFields: [
+              "sem_annotated_by",
+              "sem_annotates",
+              "sem_annotation",
+              "sem_comment"
+            ]
           },
           {
             label: "Permissions",
             icon: "lock",
             queryFields: [
               "changePermission", "rightsHolder", "isPublic", "readPermission",
-              "writePermission"
+              "writePermission", "replicationAllowed"
             ],
           },
           {
-            label: "Boolean",
+            label: "True or False Fields",
             icon: "asterisk",
             queryTypes: ["boolean"]
           },
