@@ -140,13 +140,14 @@ define([
               .map(
                 function(field) {
                    return {
-                     label: field.label ? field.label : field.name,
-                     value: field.name,
-                     description: field.description,
-                     icon: field.icon,
-                     category: field.category,
-                     categoryOrder: field.categoryOrder,
-                   };
+                    label: field.label ? field.label : field.name,
+                    value: field.name,
+                    description: field.description,
+                    icon: field.icon,
+                    category: field.category,
+                    categoryOrder: field.categoryOrder,
+                    type: field.type
+                  };
                 }
               )
               .groupBy("categoryOrder")
@@ -166,7 +167,73 @@ define([
           } catch (e) {
             console.log("Failed to render a Query Field Select View, error message: " + e);
           }
-        }
+        },
+        
+        /**        
+         * addTooltip - Add a tooltip to a given element using the description
+         * in the options object that's set on the view.
+         * This overwrites the prototype addTooltip function so that we can use
+         * popovers with more details for query select fields.
+         *          
+         * @param  {HTMLElement} element The HTML element a tooltip should be added
+         * @param  {string} position how to position the tooltip - top | bottom | left | right
+         * @return {jQuery} The element with a tooltip wrapped by jQuery
+         */         
+        addTooltip: function(element, position = "bottom"){
+          
+          if(!element){
+            return
+          }
+          
+          // Find the description in the options object, using the data-value
+          // attribute set in the template. The data-value attribute is either
+          // the label, or the value, depending on if a value is provided.
+          var valueOrLabel = $(element).data("value"),
+              opt = _.chain(this.options)
+                          .values()
+                          .flatten()
+                          .find(function(option){
+                            return option.label == valueOrLabel || option.value == valueOrLabel
+                          })
+                          .value()
+              
+          if(!opt){
+            return
+          }
+          
+          var contentEl = $(document.createElement("div")),
+              titleEl = $("<div>" + opt.label + "</div>"),
+              valueEl = $("<code class='pull-right'>" + opt.value + "</code>"),
+              typeEl = $("<span class='muted pull-right'><b>Type: " + opt.type + "</b></span>"),
+              descriptionEl = $("<p>" + opt.description + "</p>");
+              
+            titleEl.append(valueEl);
+            contentEl.append(descriptionEl, typeEl)
+          
+          $(element).popover({
+            title: titleEl,
+            content: contentEl,
+            html: true,
+            trigger: "hover",
+            placement: position,
+            container: "body",
+            delay: {
+              show: 550,
+              hide: 50
+            }
+          })
+          .on("show.bs.popover",
+            function(){
+              var $el = $(this);
+              // Allow time for the popup to be added to the DOM
+              setTimeout(function () {
+                $el.data('popover').$tip.css("maxWidth", "400px");
+              }, 10);
+          });
+          
+          return $(element)
+        
+        },
 
       });
       return QueryFieldSelect;

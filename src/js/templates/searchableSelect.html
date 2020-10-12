@@ -16,7 +16,7 @@
         <h6 class="header"><%= header %></h6>
       <% } %>
         <% for (option of values) { %>
-          <div class="item" data-value="<%= option.value ? option.value : option.label %>" <% if (option.description) { %> data-toggle="tooltip" title="<%= option.description %>" data-placement="bottom" data-container="body" data-delay='{"show":"200", "hide":"50"}' <% } %>>
+          <div class="item" data-value="<%= option.value ? option.value : option.label %>">
             <% if (option.icon) { %>
               <i class="icon icon-on-left icon-<%= option.icon %>"></i>
             <% } else if (option.image) { %>

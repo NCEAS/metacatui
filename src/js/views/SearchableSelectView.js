@@ -238,19 +238,31 @@ define([
                 allowAdditions: view.allowAdditions,
                 hideAdditions: false,
                 allowReselection: true,
+                onLabelCreate: function(value, text){
+                  // Add tooltips to the selected label elements
+                  view.addTooltip.call(view, this, "top");
+                  return this
+                },
                 onChange: function(value, text, $choice){
+                  
+                  // Add tooltips to the selected fields that are not labels
+                  // (i.e. that are not in multi-select UIs).
+                  var textEl = view.$selectUI.find(".text")
+                  if(textEl){
+                    if(text == textEl.html()){
+                      view.addTooltip.call(view, textEl, "top");
+                    }
+                  }
+                  
+                  // Trigger an event if items are selected after the UI
+                  // has been rendered (It is set as disabled until fully rendered)
                   if(!$(this).hasClass("disabled")){
                     var newValues = value.split(",");
                     view.trigger('changeSelection', newValues);
                     view.selected = newValues;
                   }
-                }
+                },
               });
-            
-            // Activate the tooltips (option descriptions, inserted in the template)
-            this.$el.tooltip({
-              selector: '[data-toggle=tooltip]'
-            });
             
             // There must be a delay before setting the pre-selected values to
             // avoid a semantic UI bug with transitions. The delay also
@@ -273,6 +285,12 @@ define([
           try {
             var view = this;
             
+            // console.log(this.$el.$(".item"));
+            // Add tool tips for the description
+            this.$el.find(".item").each(function(){
+              view.addTooltip(this)
+            });
+            
             this.$selectUI.dropdown('set exactly', view.selected);
             this.$selectUI.dropdown('save defaults');
             this.enable();
@@ -291,6 +309,53 @@ define([
           } catch (e) {
             console.log("The searchable select post-render function failed, error message: " + e);
           }
+        },
+        
+        /**        
+         * addTooltip - Add a tooltip to a given element using the description
+         * in the options object that's set on the view.
+         *          
+         * @param  {HTMLElement} element The HTML element a tooltip should be added
+         * @param  {string} position how to position the tooltip - top | bottom | left | right
+         * @return {jQuery} The element with a tooltip wrapped by jQuery
+         */         
+        addTooltip: function(element, position = "bottom"){
+          
+          if(!element){
+            return
+          }
+          
+          // Find the description in the options object, using the data-value
+          // attribute set in the template. The data-value attribute is either
+          // the label, or the value, depending on if a value is provided.
+          var valueOrLabel = $(element).data("value"),
+              opt = _.chain(this.options)
+                          .values()
+                          .flatten()
+                          .find(function(option){
+                            return option.label == valueOrLabel || option.value == valueOrLabel
+                          })
+                          .value()
+              
+          if(!opt){
+            return
+          }
+          if(!opt.description){
+            return
+          }
+          
+          $(element).tooltip({
+            title: opt.description,
+            placement: position,
+            container: "body",
+            delay: {
+              show: 550,
+              hide: 50
+            }
+          })
+          
+          return $(element)
+        
         },
         
         /**        
