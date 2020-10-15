@@ -82,26 +82,60 @@ define(
        */       
       aliases: function(){
         return {
-          numberReplicas: "Number of Replicas",
-          writePermission:  "Can Edit",
-          readPermission: "Can View",
-          isService:  "Data Available via Service",
-          dateModified: "Date Updated",
-          dateUploaded: "Date Uploaded",
-          text: "Full Text",
-          funderIdentifier: "Funder ID",
-          fundingText:  "Funding Description",
-          pubDate:  "Date Published",
+          abstract: "Abstract",
+          author: "First Author Full Name",
+          authorGivenNameSort: "First Author First Name",
+          authorLastName: "All Author Last Names",
+          authorSurNameSort: "First Author Last Name",
+          beginDate: "Year of Data Collection",
+          blockedReplicationMN: "Blocked Replication Repository",
           changePermission: "Is Owner",
-          rightsHolder: "Is Owner",
+          contactOrganizationText: "Creator Organization Names",
           datasource: "Original Member Repository",
-          isPublic: "Publicly available datasets only",
-          fileID: "File ID",
+          dateModified: "Date Technical Details Last Modified",
+          datePublished: "Date Published",
+          dateUploaded: "Date Last Updated",
+          documents: "Identifier - Data Object",
+          eastBoundCoord: "Eastern Most Longitude",
+          endDate: "Year of Data Collection",
+          formatId: "Metadata Format",
+          funderIdentifier: "Funder Id",
+          fundingText: "Funding Description",
+          identifier: "Identifier",
+          investigatorText: "Creator People Names",
+          isPartOf: "Added to This Portal Manually",
+          isPublic: "Publicly Available Datasets",
+          isService: "Data Available via Service",
+          northBoundCoord: "Northern Most Latitude",
+          numberReplicas: "Number of Replicas",
+          originText: "Creator Full Names and Organization Names",
+          placeKey: "Place Keyword",
+          preferredReplicationMN: "Preferred Replication Repository",
+          projectText: "Project",
+          pubDate: "Date Published",
+          readPermission: "Can View",
+          replicaMN: "Replica Repository",
+          replicationAllowed: "Datasets Available for Replication",
+          replicaVerifiedDate: "Date of Replication",
+          resourceMap: "Identifier - Resource Map",
+          rightsHolder: "Is Owner",
           sem_annotated_by: "Annotated By",
           sem_annotates: "Annotates",
-          sem_annotation: "Annotation",
-          sem_comment: "Comment"
-          
+          sem_annotation: "Semantic Annotation",
+          sem_comment: "Comment",
+          seriesId: "Series Id",
+          serviceCoupling: "Data Service Coupling",
+          serviceDescription: "Data Service Description",
+          serviceEndpoint: "Data Service Endpoint",
+          serviceOutput: "Data Service Output",
+          serviceTitle: "Data Service Title",
+          serviceType: "Data Service Type",
+          size: "File Size",
+          southBoundCoord: "Southern Most Latitude",
+          submitter: "Submitter Username",
+          text: "All Search Fields",
+          westBoundCoord: "Western Most Longitude",
+          writePermission: "Can Edit"
         }
       },
       
@@ -141,13 +175,36 @@ define(
       categoriesMap: function(){
         return [
           {
+            label: "General",
+            icon: "list-ul",
+            queryFields: [
+              "abstract", "text", "isPartOf", "keywordsText", "seriesId",
+              "title", "purpose"
+            ],
+          },
+          {
             label: "People & organizations",
             icon: "group",
             queryFields: [
-              "author", "authorGivenName", "authorGivenNameSort", "authorLastName", "authorSurName",
-              "authorSurNameSort", "contactOrganization", "contactOrganizationText", "investigator",
-              "investigatorText", "submitter", "originText", "origin", "originator", "originatorText",
-              "relatedOrganizations"
+              "author", "authorGivenNameSort", "authorLastName",
+              "authorSurNameSort", "contactOrganization",
+              "contactOrganizationText", "investigator", "investigatorText",
+              "originator", "originatorText", "submitter", "originText",
+            ],
+          },
+          {
+            label: "Geography",
+            icon: "globe",
+            queryFields: [
+              "westBoundCoord", "geoform", "eastBoundCoord", "namedLocation",
+              "northBoundCoord", "placeKey", "site", "southBoundCoord",
+            ],
+          },
+          {
+            label: "Dates",
+            icon: "calendar",
+            queryFields: [
+              "dateModified", "dateUploaded", "beginDate", "endDate", "pubDate",
             ],
           },
           {
@@ -159,89 +216,85 @@ define(
             ],
           },
           {
-            label: "Geography",
-            icon: "globe",
+            label: "Awards & funding",
+            icon: "certificate",
             queryFields: [
-              "eastBoundCoord", "northBoundCoord", "southBoundCoord", "westBoundCoord",
-              "noBoundingBox", "site", "siteText", "placeKey", "namedLocation"
-            ],
-          },
-          {
-            label: "Date & Time",
-            icon: "calendar",
-            queryFields: [
-              "decade", "beginDate", "dateModified", "datePublished",
-              "dateUploaded", "endDate", "pubDate", "replicaVerifiedDate",
-              "updateDate"
+              "projectText", "awardNumber", "awardTitle", "funderIdentifier",
+              "funderName", "fundingText",
             ],
           },
           {
             label: "Repository information",
             icon: "archive",
             queryFields: [
-              "authoritativeMN", "blockedReplicationMN",
-              "preferredReplicationMN", "replicaMN", "datasource"
+              "authoritativeMN", "datasource"
             ],
           },
           {
-            label: "Awards & funding",
-            icon: "certificate",
+            label: "Permissions",
+            icon: "lock",
             queryFields: [
-              "awardTitle", "awardNumber", "funderIdentifier", "funderName",
-              "funding", "fundingText"
+              "writePermission", "readPermission", "changePermission",
+              "rightsHolder", "isPublic",
             ],
           },
           {
-            label: "File details",
-            icon: "file",
+            label: "Identifier",
+            icon: "tag",
             queryFields: [
-              "size", "isService"
+              "documents", "resourceMap", "identifier",
             ],
           },
           {
             label: "Data attributes",
             icon: "table",
             queryFields: [
-              "attribute", "attributeDescription", "attributeLabel",
-              "attributeName", "attributeUnit",
+              "sem_annotation", "attribute", "attributeDescription",
+              "attributeLabel", "attributeName", "attributeUnit",
             ],
           },
           {
-            label: "Annotations",
-            icon: "tag",
-            queryFields: [
-              "sem_annotated_by",
-              "sem_annotates",
-              "sem_annotation",
-              "sem_comment"
-            ]
-          },
-          {
-            label: "Permissions",
-            icon: "lock",
-            queryFields: [
-              "changePermission", "rightsHolder", "isPublic", "readPermission",
-              "writePermission", "replicationAllowed"
+            label: "File details",
+            icon: "file",
+            queryFields: [ 
+              "fileName", "formatId", "size",
             ],
           },
           {
-            label: "True or False Fields",
-            icon: "asterisk",
-            queryTypes: ["boolean"]
-          },
-          {
-            label: "Numeric",
-            icon: "list-ol",
-            queryTypes: ["int", "tfloat", "tlong", "long"]
-          },
-          {
-            label: "Text",
-            icon: "font",
-            queryTypes: [
-              "string", "alphaOnlySort", "text_en_splitting",
-              "text_en_splitting_tight", "text_general", "text_case_insensitive"
+            label: "DataONE replication",
+            icon: "copy",
+            queryFields: [
+              "replicationStatus", "blockedReplicationMN",
+              "preferredReplicationMN", "replicaMN", "replicaVerifiedDate",
+              "replicationAllowed", "numberReplicas",
             ]
           },
+          {
+            label: "Advanced",
+            icon: "code",
+            queryFields: [
+              "serviceCoupling", "serviceDescription", "serviceEndpoint",
+              "serviceOutput","serviceTitle","serviceType","isService",
+            ]
+          },
+          // {
+          //   label: "True or False Fields",
+          //   icon: "asterisk",
+          //   queryTypes: ["boolean"]
+          // },
+          // {
+          //   label: "Numeric",
+          //   icon: "list-ol",
+          //   queryTypes: ["int", "tfloat", "tlong", "long"]
+          // },
+          // {
+          //   label: "Text",
+          //   icon: "font",
+          //   queryTypes: [
+          //     "string", "alphaOnlySort", "text_en_splitting",
+          //     "text_en_splitting_tight", "text_general", "text_case_insensitive"
+          //   ]
+          // },
         ]
       },
       
