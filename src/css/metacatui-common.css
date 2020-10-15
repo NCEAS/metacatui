@@ -6782,7 +6782,8 @@ Query builder & query rule view
 }
 
 /* ---- Icons for the operator options not included in font-awesome ---- */
-.icon-equal, .icon-not-equal, .icon-less-than, .icon-greater-than {
+.icon-equal, .icon-not-equal, .icon-less-than, .icon-greater-than,
+.icon-less-than-or-eq, .icon-greater-than-or-eq {
 	font-family: serif;
 	font-weight: 900;
 	font-size: larger;
@@ -6799,6 +6800,12 @@ Query builder & query rule view
 }
 .icon-greater-than:before{
 	content: ">"
+}
+.icon-less-than-or-eq:before{
+	content: "≤"
+}
+.icon-greater-than-or-eq:before{
+	content: "≥"
 }
 /*******************************************
 Editor View

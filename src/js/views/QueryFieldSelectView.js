@@ -227,7 +227,10 @@ define([
               var $el = $(this);
               // Allow time for the popup to be added to the DOM
               setTimeout(function () {
-                $el.data('popover').$tip.css("maxWidth", "400px");
+                $el.data('popover').$tip.css({
+                  "maxWidth": "400px",
+                  "pointerEvents" : "none"
+                });
               }, 10);
           });
           

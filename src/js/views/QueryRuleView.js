@@ -203,9 +203,9 @@ define([
             types: ["numericFilter", "dateFilter"]
           },
           {
-            label: "is less than",
+            label: "is less than or equal to",
             description: "The metadata field is a number less than the one selected",
-            icon: "less-than",
+            icon: "less-than-or-eq",
             matchSubstring: false,
             exclude: false,
             hasMin: false,
@@ -213,9 +213,9 @@ define([
             types: ["numericFilter"]
           },
           {
-            label: "is greater than",
+            label: "is greater than or equal to",
             description: "The metadata field is a number greater than the one selected",
-            icon: "greater-than",
+            icon: "greater-than-or-eq",
             matchSubstring: false,
             exclude: false,
             hasMin: true,
@@ -234,8 +234,8 @@ define([
           },
           // TODO: The dateFilter model & view need to be updated for these to work:
           // {
-          //   label: "is before",
-          //   icon: "less-than",
+          //   label: "is during or before",
+          //   icon: "less-than-or-eq",
           //   matchSubstring: false,
           //   exclude: false,
           //   hasMin: false,
@@ -243,7 +243,7 @@ define([
           //   types: ["dateFilter"]
           // },
           // {
-          //   label: "is after",
+          //   label: "is during or after",
           //   icon: "greater-than",
           //   matchSubstring: false,
           //   exclude: false,
