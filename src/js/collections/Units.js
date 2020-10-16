@@ -17,7 +17,7 @@ define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLU
         /*
          * The URL of the EML unit Dictionary
          */
-        url: "https://raw.githubusercontent.com/NCEAS/eml/RELEASE_EML_2_1_1/eml-unitDictionary.xml",
+        url: "https://raw.githubusercontent.com/NCEAS/eml/RELEASE_EML_2_2_0/eml-unitDictionary.xml",
 
         /* Retrieve the units from the tagged EML Github Repository */
         fetch: function(options) {
