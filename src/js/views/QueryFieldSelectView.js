@@ -227,10 +227,14 @@ define([
               var $el = $(this);
               // Allow time for the popup to be added to the DOM
               setTimeout(function () {
-                $el.data('popover').$tip.css({
-                  "maxWidth": "400px",
-                  "pointerEvents" : "none"
-                });
+                // Then add some css rules, and a special class to identify
+                // these popups if they need to be removed.
+                $el.data('popover').$tip
+                  .css({
+                    "maxWidth": "400px",
+                    "pointerEvents" : "none"
+                  })
+                  .addClass("search-select-tooltip");
               }, 10);
           });
           

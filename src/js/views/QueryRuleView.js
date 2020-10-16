@@ -269,16 +269,42 @@ define([
          * different interfaces depending on the type and category of the
          * selected query fields. This object defines which type of interface
          * to show depending on type and category. The list of interface requirements
-         * is ordered from most specific to least, since the first match will be
+         * is ordered from *most* specific to *least*, since the first match will be
          * selected. The query (metadata) fields must match both the filterTypes
          * AND the categoes for a UI to be selected.
          * @type {object[]}        
          * @property {string[]} filterTypes - An array of one or more filter types that are allowed for this interface.  If none are provided then any filter type is allowed.
          * @property {string[]} categories - An array of one or more categories that are allowed for this interface. These strings must exactly match the categories provided in QueryField.categoriesMap(). If none are provided then any category is allowed.
+         * @property {string[]} queryFields - Specific names of fields that are allowed in this interface. If none are provided, then any query fields are allowed that match the other properties.
          * @property {string} label - If the interface does not include a label (e.g. number filter), include a string to display here.
          * @property {function} uiFunction - A function that returns the UI view to use with all appropriate options set. The function will be called with this view as the context.
          */         
         valueSelectUImap: [
+          {
+            queryFields: ["serviceCoupling"],
+            uiFunction: function(){
+              return new SearchableSelect({
+                options: [
+                  {
+                    label: "tight",
+                    description: "Tight coupled service work only on the data described by this metadata document."
+                  },
+                  {
+                    label: "mixed",
+                    description: "Loose coupling means service works on any data."
+                  },
+                  {
+                    label: "loose",
+                    description: "Mixed coupling means service works on data described by this metadata document but may work on other data."
+                  }
+                ],
+                allowMulti: true,
+                allowAdditions: false,
+                inputLabel: "Select a coupling",
+                selected: this.model.get("values")
+              })
+            }
+          },
           {
             filterTypes: ["filter"],
             categories: ["Repository information"],
@@ -905,14 +931,22 @@ define([
             // field.
             var interfaceProperties = _.find(interfaces, function(interface){
               var typesMatch = true,
-                  categoriesMatch = true;
+                  categoriesMatch = true,
+                  namesMatch = true;
+              if(interface.queryFields && interface.queryFields.length){
+                fields.forEach((field, i) => {
+                  if(interface.queryFields.includes(field) === false){
+                    namesMatch = false;
+                  }
+                });
+              }
               if(interface.filterTypes && interface.filterTypes.length){
                 typesMatch = interface.filterTypes.includes(filterType)
               }
               if(interface.categories && interface.categories.length){
                 categoriesMatch = interface.categories.includes(category)
               }
-              return typesMatch && categoriesMatch
+              return typesMatch && categoriesMatch && namesMatch
             });
             
             this.valueSelect = interfaceProperties.uiFunction.call(this);

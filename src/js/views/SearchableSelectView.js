@@ -64,6 +64,13 @@ define([
         collapseCategories: false,
         
         /**        
+         * Set to false to always display category headers in the dropdown,
+         * even if there are no results in that category when a user is searching.
+         * @type {boolean}        
+         */
+        hideEmptyCategoriesOnSearch: true,
+        
+        /**        
          * The maximum width of images used for each option, in pixels
          * @type {number}        
          */         
@@ -243,8 +250,11 @@ define([
                   view.addTooltip.call(view, this, "top");
                   return this
                 },
+                onLabelRemove: function(){
+                  // Ensure tooltips for labels are removed
+                  $(".search-select-tooltip").remove();
+                },
                 onChange: function(value, text, $choice){
-                  
                   // Add tooltips to the selected fields that are not labels
                   // (i.e. that are not in multi-select UIs).
                   var textEl = view.$selectUI.find(".text")
@@ -297,15 +307,29 @@ define([
             
             if(this.collapseCategories){
               this.convertToSubmenus();
+            }
+            
+            if(view.collapseCategories || view.hideEmptyCategoriesOnSearch){
               this.$selectUI.find("input").on("keyup blur", function(e){
                 inputVal = e.target.value;
                 if(inputVal !== ""){
-                  view.revertToList();
+                  if(view.collapseCategories){
+                    view.revertToList();
+                  }
+                  if(view.hideEmptyCategoriesOnSearch){
+                    view.hideEmptyCategories();
+                  }
                 } else {
-                  view.convertToSubmenus();
+                  if(view.collapseCategories){
+                    view.convertToSubmenus();
+                  }
+                  if(view.hideEmptyCategoriesOnSearch){
+                    view.showAllCategories();
+                  }
                 }
               });
             }
+            
           } catch (e) {
             console.log("The searchable select post-render function failed, error message: " + e);
           }
@@ -353,6 +377,16 @@ define([
               hide: 50
             }
           })
+          .on("show.bs.popover",
+            function(){
+              var $el = $(this);
+              // Allow time for the popup to be added to the DOM
+              setTimeout(function () {
+                // Then add a special class to identify
+                // these popups if they need to be removed.
+                $el.data('tooltip').$tip.addClass("search-select-tooltip")
+              }, 10);
+          });
           
           return $(element)
         
@@ -417,6 +451,45 @@ define([
             this.$selectUI.find(".submenu-mode-icon").remove();
           } catch (e) {
             console.log("Failed to revert a Searchable Select interface to list mode, error message: " + e);
+          }
+        },
+        
+        /**        
+         * hideEmptyCategories - In the searchable select interface, hide
+         * category headers that are empty, if any
+         */         
+        hideEmptyCategories: function(){
+          try {
+            var $headers = this.$selectUI.find(".header")
+            if(!$headers || $headers.length === 0){
+              return
+            }
+            $headers.each(function(i){
+              // this is the header
+              var $itemGroup = $().add($(this).nextUntil(".header"));
+              var $itemGroupFiltered = $().add($(this).nextUntil(".header", ".filtered"));
+              // If all items are filtered
+              if($itemGroup.length === $itemGroupFiltered.length){
+                // Then also hide the header
+                $(this).hide()
+              } else {
+                $(this).show()
+              }
+            });
+          } catch (e) {
+            console.log("Failed to hide empty categories in a dropdown, error message: " + e);
+          }
+        },
+        
+        /**        
+         * showAllCategories - In the searchable select interface, show all
+         * category headers that were previously empty
+         */         
+        showAllCategories: function(){
+          try {
+            this.$selectUI.find(".header:hidden").show();
+          } catch (e) {
+            console.log("Failed to show all categories in a dropdown, error message: " + e);
           }
         },
         
