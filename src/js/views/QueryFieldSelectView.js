@@ -142,7 +142,7 @@ define([
                    return {
                     label: field.label ? field.label : field.name,
                     value: field.name,
-                    description: field.description,
+                    description: field.friendlyDescription ? field.friendlyDescription : field.description,
                     icon: field.icon,
                     category: field.category,
                     categoryOrder: field.categoryOrder,

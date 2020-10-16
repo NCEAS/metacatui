@@ -279,7 +279,7 @@ define([
             // creates a nice animation.
             setTimeout(function () {
               view.postRender()
-            }, 100);
+            }, 200);
             
             return this;
 
@@ -535,7 +535,7 @@ define([
             });
             // If the semanticUI transition CSS was not found...
             if(transitionCSS.length < 1){
-              // ... check again in 20ms
+              // ... check again in 50ms
               setTimeout(function () {
                 view.checkIfReady(callback)
               }, 50);
@@ -546,7 +546,7 @@ define([
               view.ready = true;
               setTimeout(function () {
                 callback.call(view);
-              }, 20);
+              }, 100);
             }
           } catch (e) {
             console.log("Failed to check whether the searchable select field is ready, error message: " + e);

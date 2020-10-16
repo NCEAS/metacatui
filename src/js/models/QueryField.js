@@ -32,6 +32,8 @@ define(
           sortable: null,
           multivalued: null,
           filterType: "filter",
+          description: null,
+          friendlyDescription: null,
           category: null,
           categoryOrder: null,
           icon: null,
@@ -50,6 +52,12 @@ define(
         var label = this.getReadableName();
         if(label){
           this.set("label", label);
+        }
+        
+        // Set an easier to read description
+        var friendlyDescription = this.getFriendlyDescription();
+        if(friendlyDescription){
+          this.set("friendlyDescription", friendlyDescription);
         }
         
         // Set a category and icon
@@ -136,6 +144,78 @@ define(
           text: "All Search Fields",
           westBoundCoord: "Western Most Longitude",
           writePermission: "Can Edit"
+        }
+      },
+      
+      /**      
+       * descriptions - Returns a map that matches query field names (key) to a
+       * more understandable description to use for the field.
+       *        
+       * @return {object}  A map of field names as keys and descriptions (string) as values.
+       */       
+      descriptions: function(){
+        return {
+          serviceDescription: "A full description of the service that can be used to download the dataset",
+          placeKey: "A location name, as assigned by the dataset creator. (FGDC metadata only)",
+          serviceTitle: "A short title of the service that can be used to download the dataset",
+          awardNumber:  "A unique identifier used by a project funder to uniquely identify an award associated with the dataset.",
+          funderIdentifier: "An identifier that unqiuely identifies the organization that funded the dataset.",
+          eastBoundCoord: "Eastern most longitude of the spatial extent, in decimal degrees, WGS84",
+          serviceCoupling:  "Either 'tight', 'mixed', or 'loose'.  Tight coupled service work only on the data described by this metadata document.  Loose coupling means service works on any data.  Mixed coupling means service works on data described by this metadata document but may work on other data.",
+          fundingText:  "General information about the funding for a project",
+          isService:  "If true, the dataset is available by a download service hosted by the member repository.",
+          isPartOf: "Include datasets that have been added to this data collection by the portal or dataset owners",
+          isPublic: "Include or exclude datasets that are available for anyone to view",
+          northBoundCoord:  "Northern most latitude of the spatial extent, in decimal degrees, WGS84",
+          replicationAllowed: "Only include datasets that are allowed to be replicated to another member repo",
+          writePermission:  "People or groups who can view and edit a dataset",
+          readPermission: "People or groups who can view the dataset if it's still unpublished",
+          changePermission: "People or groups who have complete ownership of a dataset",
+          rightsHolder: "People or groups who have complete ownership of a dataset",
+          numberReplicas: "Requested number of replicas for the dataset",
+          text: "Search all of the fields listed here",
+          southBoundCoord:  "Southern most latitude of the spatial extent, in decimal degrees, WGS84",
+          projectText:  "The authorized name of a research effort for which data is collected. This name is often reduced to a convenient abbreviation or acronym. All investigators involved in a project should use a common, agreed-upon name.",
+          attributeLabel: "The data attribute description label",
+          attributeName:  "The data attribute description name",
+          attributeDescription: "The data attribute description text",
+          attributeUnit:  "The data attribute description unit",
+          serviceOutput:  "The data formats available for download from the data service",
+          dateUploaded: "The date that the content of the dataset was last updated",
+          pubDate:  "The date that the dataset was published, as specified in the metadata.",
+          replicaVerifiedDate:  "The date that the dataset was replicated to another member repository",
+          dateModified: "The date that the dataset's technical details were last updated (e.g. files renamed, file format changed)",
+          fileName: "The file name of the metadata file",
+          authorGivenNameSort:  "The first name of the first creator of the dataset",
+          attribute:  "The full attribute metadata, which may include a description, label, name, and unit",
+          originText: "The full name of all people and organizations who are responsible for creating a dataset",
+          author: "The full name of the first creator of the dataset",
+          abstract: "The full text of the abstract",
+          resourceMap:  "The identifier of the resource map of the dataset",
+          authorLastName: "The last name of every creator of the dataset",
+          authorSurNameSort:  "The last name of the first creator of the dataset",
+          investigatorText: "The last names of all people responsible for creating the dataset",
+          blockedReplicationMN: "The member repositories that are blocked from holding replicas of the dataset",
+          replicaMN:  "The member repositories that are holding copies of the dataset",
+          preferredReplicationMN: "The member repositories that are preferred replication targets of the dataset",
+          authoritativeMN:  "The member repository that currently holds this dataset, which may differ from the repository that the dataset is originally from.",
+          datasource: "The member repository that originally contributed the dataset.",
+          formatId: "The metadata standard or format type",
+          contactOrganizationText:  "The name of all organizations responsible for creating the dataset",
+          geoform:  "The name of the general form in which the item's geospatial data is presented",
+          funderName: "The name of the organization that funded the project or dataset.",
+          purpose:  "The purpose describes why the dataset was created. (Limited to FGDC metadata only)",
+          size: "The size of the metadata file, in bytes.",
+          replicationStatus:  "The status of the DataONE replication process for this dataset. (completed, failed, queued, requested)",
+          awardTitle: "The title of the award or grant that funded the dataset.",
+          serviceType:  "The type of service that is available to download the dataset from the member repository",
+          documents:  "The unique identifier of a data object in the dataset.",
+          seriesId: "The unique identifier of the dataset version chain",
+          identifier: "The unique identifier or DOI of the metadata",
+          sem_annotation: "The URI or identifier of the semantic annotation ",
+          serviceEndpoint:  "The URL of the service that can be used to download the dataset",
+          submitter:  "The username (e.g. ORCID) of the person who submitted or updated the dataset. This may differ from the person responsible for creating the data.",
+          westBoundCoord: "Western most longitude of the spatial extent, in decimal degrees, WGS84",
         }
       },
       
@@ -327,6 +407,15 @@ define(
             // Uppercase the first character
             .replace(/^./, function(str){ return str.toUpperCase(); })
           
+        } catch (e) {
+          console.log("Failed to create a readable name for a Query Field, error message: " + e);
+        }
+      },
+      
+      getFriendlyDescription: function(){
+        try {
+          var name  =  this.get("name");
+          return this.descriptions()[name];
         } catch (e) {
           console.log("Failed to create a readable name for a Query Field, error message: " + e);
         }
