@@ -11,10 +11,12 @@ define([
     "models/filters/BooleanFilter",
     "models/filters/NumericFilter",
     "models/filters/DateFilter",
+    "collections/ObjectFormats"
   ],
   function(
     $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect,
-    NumericFilterView, QueryFields, Filter, BooleanFilter, NumericFilter, DateFilter
+    NumericFilterView, QueryFields, Filter, BooleanFilter, NumericFilter,
+    DateFilter, ObjectFormats
   ) {
 
     /**
@@ -306,6 +308,36 @@ define([
             }
           },
           {
+            queryFields: ["formatId"],
+            uiFunction: function(){
+              
+              var formatIds = MetacatUI.objectFormats.toJSON();
+              var options = _.chain(formatIds)
+                // Since the query rules automatically include a rule for
+                // formatType = "METADATA", only allow filtering datasets
+                // by specific metadata type.
+                .where({formatType: "METADATA"})
+                .map(
+                  function(format){
+                    return {
+                      label: format.formatName,
+                      value: format.formatId,
+                      description: format.formatId
+                    }
+                  }
+                )
+                .value();
+              
+              return new SearchableSelect({
+                options: options,
+                allowMulti: true,
+                allowAdditions: false,
+                inputLabel: "Select one or more metadata type",
+                selected: this.model.get("values")
+              })
+            }
+          },
+          {
             filterTypes: ["filter"],
             categories: ["Repository information"],
             uiFunction: function(){
@@ -358,6 +390,13 @@ define([
               // TODO: Parts of the view won't work if there is no collection...
               // Should we call an error if no model is provided?
               this.model = new Filter();
+            }
+            
+            // Ensure the object formats are cached, for the special data format
+            // filter ID.
+            if(!MetacatUI.objectFormats){
+              MetacatUI.objectFormats = new ObjectFormats();
+              MetacatUI.objectFormats.fetch();
             }
 
           } catch (e) {
