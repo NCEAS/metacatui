@@ -1914,16 +1914,16 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 #metric-modal {
     z-index: 1050;
     top: 15%;
-    width: 930px;
+    width: 90%;
     height: 500px;
-    left: 40%;
+    left: 5%;
+    margin-left: 0px;
 }
 #metric-modal .modal-content {
     width: auto;
 }
 
 #metric-modal .modal-header {
-    width: 900px;
     height: 25px;
 }
 
@@ -1931,11 +1931,13 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     width: 100%;
     height: 400px;
     max-height: 400px;
-    padding: 0px;
+    padding: 1em;
+    padding-bottom: 100px;
+    background-color: #FFFFFF;
+    box-sizing: border-box;
 }
 
 #metric-modal .modal-footer {
-    width: 900px;
     height: 25px;
 	padding-top: 18px;
 }
@@ -2023,16 +2025,13 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	margin-top: 3px;
 }
 
-.register-citation-element > .register-citation {
-	position: fixed;
-    display: block;
-    margin-top: 60px;
-}
-
 .register-citation-element {
-	display: flex;
+	display: grid;
     align-items: center;
     justify-content: center;
+}
+.register-citation-element .btn{
+  justify-self: center;
 }
 
 /******************************************
@@ -2335,10 +2334,10 @@ i.catalog-metric-icon {
     width: 100%;
 }
 .metric-table.table.table-striped.table-condensed td {
-    padding: 5px 15px 5px 85px;
+    padding: 1em 1em 1em 2em;
 }
 .metric-table.table.table-striped.table-condensed td > .citation {
-    margin-left: -70px;
+    margin-left: -1em;
 }
 button.modal-btn.btn.btn-default {
     all: unset;

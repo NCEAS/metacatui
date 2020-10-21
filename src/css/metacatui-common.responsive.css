@@ -824,10 +824,12 @@
 @media only screen and (max-width : 420px) {
 
   .modal,
-  .access-policy-view-container.modal{
+  .access-policy-view-container.modal,
+  #metric-modal{
     top: 5%;
     width: 90%;
     left: 5%;
+    margin-left: 0px;
   }
   .access-policy-view thead{
     display: none;
