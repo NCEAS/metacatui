@@ -46,8 +46,8 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/login.html',
 				return this;
 
       //Check if this browser is incompatible with third-party cookies, which are required for Sign In
-      var safari13Match = navigator.userAgent.match(/.*Version\/13\.[1-9].* Safari/);
-      var isIncompatileBrowser = safari13Match && safari13Match.length > 0;
+      var safari13PlusMatch = navigator.userAgent.match(/.*Version\/1[3-9]\.[0-9].* Safari/);
+      var isIncompatileBrowser = safari13PlusMatch && safari13PlusMatch.length > 0;
 
 			var view = this;
 
