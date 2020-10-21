@@ -1937,8 +1937,8 @@ define(['underscore', 'jquery', 'backbone',
 
 					//After the first row, start nesting taxonomicClassification objectss
 					if(j > 0){
-						classification.taxonomicClassification = {};
-						classification = classification.taxonomicClassification;
+						classification.taxonomicClassification = [{}];
+						classification = classification.taxonomicClassification[0];
 					}
 
 					// Add it to the classification object
