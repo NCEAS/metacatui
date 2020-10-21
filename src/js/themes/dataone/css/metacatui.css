@@ -1826,8 +1826,6 @@ svg .point {
 }
 
 .line-chart-label.text {
-  fill: #555;
-  fill: var(--c-neutral-7);
   font-size: 13px;
 }
 

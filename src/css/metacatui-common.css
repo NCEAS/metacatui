@@ -7594,6 +7594,14 @@ Pager View
 	margin-top: 0px;
 }
 /*******************************************
+D3 old style charts
+*******************************************/
+.line-chart-label.text {
+    color: white;
+    stroke: white;
+    fill: white;
+}
+/*******************************************
 Documentation and Help Pages
 ******************************************/
 .documentation h5{

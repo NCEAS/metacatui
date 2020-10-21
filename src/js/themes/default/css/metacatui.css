@@ -1849,9 +1849,6 @@ svg .domain{
 	stroke-width: 0px;
 	display: none;
 }
-.line-chart-label.text{
-		fill: #555;
-}
 .line-chart-label.bg{
 	stroke-width: 2px;
 	fill: #FFF;

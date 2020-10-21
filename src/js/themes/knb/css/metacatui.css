@@ -1410,7 +1410,6 @@ svg .domain{
 }
 .line-chart-label.text{
 	font-weight: bold;
-	fill: #555;
 }
 .tick line{
 	stroke-width: 1px;
