@@ -200,9 +200,7 @@ define(["jquery",
                     $(".auto-height-member").resize(this.setAutoHeight);
                 }
 
-                if (MetacatUI.appModel.get("bioportalAPIKey")) {
-                    this.setUpTree();
-                }
+                this.addAnnotationFilter();
 
                 return this;
             },
