@@ -614,7 +614,7 @@ define(["jquery",
                     // make sure the browser knows where we are
                     var route = Backbone.history.fragment;
                     if (route.indexOf("data") < 0) {
-                        MetacatUI.uiRouter.navigate("data");
+                        MetacatUI.uiRouter.navigate("data", { trigger: false, replace: true });
                     } else {
                         MetacatUI.uiRouter.navigate(route);
                     }
