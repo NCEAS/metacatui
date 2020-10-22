@@ -29,6 +29,8 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 		 */
 		hideMetadataAssessment: false,
 
+    subviews: [],
+
 		template: _.template(profileTemplate),
 
 		metricTemplate: _.template(MetricModalTemplate),
@@ -308,16 +310,6 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			if(!this.hideViewsChart)
 				this.renderViewMetric();
 
-			var self = this;
-			$(window).on("resize", function(){
-
-				if(!self.hideDownloadsChart)
-					self.renderDownloadMetric();
-
-				if(!self.hideViewsChart)
-					self.renderViewMetric();
-
-			});
 		},
 
 		renderCitationMetric: function() {
@@ -366,7 +358,12 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var downloadCountEl = this.$('.download-count');
 			downloadCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
 
-			downloadEl.html(this.drawMetricsChart(metricName));
+      var metricChartView = this.createMetricsChart(metricName);
+
+			downloadEl.html(metricChartView.el);
+
+      metricChartView.render();
+
 		},
 
 		renderViewMetric: function() {
@@ -376,16 +373,19 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 			var viewCountEl = this.$('.view-count');
 			viewCountEl.text(MetacatUI.appView.numberAbbreviator(metricCount,1));
 
-			viewEl.html(this.drawMetricsChart(metricName));
+      var metricChartView = this.createMetricsChart(metricName);
+
+			viewEl.html(metricChartView.el);
+
+      metricChartView.render();
 		},
 
 		// Currently only being used for portals and profile views
-		drawMetricsChart: function(metricName){
+		createMetricsChart: function(metricName){
 			var metricNameLemma = metricName.toLowerCase()
 			var metricMonths    = this.metricsModel.get("months");
 			var metricCount     = this.metricsModel.get(metricNameLemma);
 			var chartEl         = document.getElementById('user-'+metricNameLemma+'-chart' );
-			var width           = (chartEl && chartEl.offsetWidth)? chartEl.offsetWidth : 1080;
 			var viewType        = this.userType;
 
 			// Draw a metric chart
@@ -395,10 +395,11 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 														metricMonths: metricMonths,
 														type: viewType,
 														metricName: metricName,
-														width: width
 			});
 
-			return modalMetricChart.render().el;
+      this.subviews.push(modalMetricChart);
+
+			return modalMetricChart;
 		},
 
 		drawDataCountChart: function(){
@@ -891,6 +892,10 @@ define(['jquery', 'underscore', 'backbone', 'd3', 'LineChart', 'BarChart', 'Donu
 
 			//Reset the stats model
 			this.model = null;
+
+      //Close and reset the subviews
+      _.invoke(this.subviews, "onClose");
+      this.subviews = [];
 		},
 
 		renderUsageMetricsError: function() {

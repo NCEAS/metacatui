@@ -46,6 +46,9 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
     render: function(){
 
+      //Clear out any view elements in case this is a re-render
+      this.$el.empty();
+
         /*
         * ========================================================================
         *  NAMING CONVENTIONS:
@@ -56,7 +59,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         * ========================================================================
         */
-        
+
         // check if there have been any views/citations
         var sumMetricCount = 0;
         for (var i = 0; i < this.metricCount.length; i++) {
@@ -75,8 +78,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
             }
 
             var margin	= {top: 25, right: 40, bottom: 40, left: 40},
-                width	= this.width - margin.left - margin.right,
                 height	= this.height - margin.top - margin.bottom;
+
+            //Set the chart width
+            this.$el.css("width", "100%");
+            var width = (this.$el.width() || this.width) - margin.left - margin.right;
+            this.width = width;
 
             var vis = d3.select(this.el)
                 .attr("width", width + margin.left + margin.right)
@@ -122,8 +129,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         // focus chart sizing
         var margin	= {top: 30, right: 30, bottom: 95, left: 20},
-            width	= this.width - margin.left - margin.right,
             height	= this.height - margin.top - margin.bottom;
+
+        //Set the chart width
+        this.$el.css("width", "100%");
+        var width = (this.$el.width() || this.width) - margin.left - margin.right;
+        this.width = width;
 
         // context chart sizing
         var margin_context = {top: 315, right: 30, bottom: 20, left: 20},
@@ -149,7 +160,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
         // change dates to milliseconds, to enable calculating the `d3.extent`
         var metricMonths_parsed = [];
         this.metricMonths.forEach(function(part, index, theArray) {
-            
+
             try {
                 metricMonths_parsed[index] = input_date_format.parse(part).getTime();
             }
@@ -162,7 +173,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
                 metricMonths_parsed[index] = input_date_format.parse(updatedPart).getTime();
             }
-            
+
         });
 
         // input data from model doesn't list months where there were 0 counts for all metrics (views/downloads/citations)
@@ -926,8 +937,38 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
         // that's it!
     }
+
+      //Re-render this view when the window is resized
+      this.listenToWindowResize();
+
         return this;
 
+    },
+
+    /**
+    * Adds a listener so when the window is resized, the chart is redrawn
+    */
+    listenToWindowResize: function(){
+
+      if( !this.resizeCallback ){
+        this.resizeCallback = this.render.bind(this);
+        window.addEventListener('resize', this.resizeCallback, false);
+      }
+    },
+
+    /**
+    * Removes the window resize listener set in {@link MetricsChartView#listenToWindowResize}
+    */
+    stopListenToWindowResize: function(){
+
+      //Remove the listener to window resize
+      window.removeEventListener("resize", this.resizeCallback, false);
+      delete this.resizeCallback;
+
+    },
+
+    onClose: function(){
+      this.stopListenToWindowResize();
     }
 
     });

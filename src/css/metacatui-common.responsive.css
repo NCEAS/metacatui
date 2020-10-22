@@ -818,6 +818,13 @@
 	.row-fluid .span6.pagination-left {
   		width: 100%;
 	}
+
+  /** Metrics **/
+  #metric-modal .modal-body {
+    grid-template-columns: 100fr;
+    row-gap: 40px;
+    column-gap: 0px;
+  }
 }
 
 /* Smartphones (portrait) ----------- */

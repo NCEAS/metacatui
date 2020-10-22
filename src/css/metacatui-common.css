@@ -1935,6 +1935,12 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     padding-bottom: 100px;
     background-color: #FFFFFF;
     box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 80fr 20fr;
+    column-gap: 40px;
+}
+#metrics-modal #metrics-chart{
+  width: 100%;
 }
 
 #metric-modal .modal-footer {
@@ -1957,28 +1963,11 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	width: 10%;
 }
 
-#metric-modal .modal-body .modal-description {
-	float: left;
-	width: 236px;
-	padding-left: 30px;
-	padding-top: 33px;
-}
 
 #metric-modal .modal-body .modal-description p {
 	margin: 0 0 25px;
 }
 
-#metric-modal .modal-body .modal-description p#slider-instructions {
-	margin-top: 109px;
-	margin-bottom: 0;
-}
-
-#metric-modal .modal-body .metric-chart {
-	float: right;
-	width: 600px;
-	padding-right: 18px;
-	padding-top: 22px;
-}
 .empty-citation-list-text {
 	font-size: 16px;
     font-weight: 100;
