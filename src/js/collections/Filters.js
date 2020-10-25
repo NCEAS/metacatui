@@ -105,9 +105,14 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               var allGroupsQueryFragments = [],
                   //The complete query string that eventually gets returned
                   completeQuery = "",
-                  //Get the list of filters that use the 'id' field, since these are used differently
+                  // Get the list of filters that use the 'id', 'seriesId', or
+                  // 'identifier' field, since these are used differently
                   idFilters = this.filter(function(filter){
-                    return (filter.get("fields").includes("id") || filter.get("fields").includes("seriesId"));
+                    return (
+                      filter.get("fields").includes("id") ||
+                      filter.get("fields").includes("identifier") ||
+                      filter.get("fields").includes("seriesId")
+                    );
                   }),
                   otherFilters = this.difference(idFilters),
                   //Separate the filter models in this collection by their query group.
