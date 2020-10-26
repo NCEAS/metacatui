@@ -182,10 +182,22 @@ define([
             
             // Given a path, check whether a CSS file was already added to the
             // head, and add it if not. Prevents adding the CSS file multiple
-            // times if the view is loaded more than once.
+            // times if the view is loaded more than once. The first time each
+            // CSS path is added, we need to cache a record of the event. It
+            // doesn't work to just search the document head for the file to
+            // determine if the CSS has already been added, because each instance
+            // of this view is initialized too quickly, before the previous
+            // instance has had a chance to add the stylesheet element.
             const addCSS = function(path){
-              if($("style:contains(" + path + ")").length <= 0 ){
-                $('<style>@import "' + path + '"</style>').appendTo('head');
+              if(!MetacatUI.loadedCSS){
+                MetacatUI.loadedCSS = []
+              }
+              if(!MetacatUI.loadedCSS.includes(path)){
+                MetacatUI.loadedCSS.push(path)
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = path;
+                document.querySelector("head").appendChild(link);
               }
             }
             
@@ -274,12 +286,7 @@ define([
                 },
               });
             
-            // There must be a delay before setting the pre-selected values to
-            // avoid a semantic UI bug with transitions. The delay also
-            // creates a nice animation.
-            setTimeout(function () {
-              view.postRender()
-            }, 200);
+            view.postRender();
             
             return this;
 
@@ -288,14 +295,24 @@ define([
           }
         },
         
+        
+        /**        
+         * updateMenu - Re-render the menu of options
+         */         
+        updateMenu: function(){
+          var menu = $(this.template(this)).find(".menu")[0].innerHTML;
+          this.$el.find(".menu").html(menu);
+        },
+        
         /**        
          * postRender - Updates to the view once the dropdown UI has loaded
          */         
         postRender: function(){
           try {
-            var view = this;
             
-            // console.log(this.$el.$(".item"));
+            var view = this;
+            view.trigger("postRender")
+            
             // Add tool tips for the description
             this.$el.find(".item").each(function(){
               view.addTooltip(this)
@@ -507,15 +524,14 @@ define([
             ){
               return
             }
-            
             var view = this;
             this.selected = newValues;
-            this.$selectUI.dropdown('set exactly', view.selected);
+            this.$selectUI.dropdown('set exactly', newValues);
           } catch (e) {
             console.log("Failed to change the selected values in a searchable select field, error message: " + e);
           }
         },
-        
+
         /**        
          * checkIfReady - Check if the searchable select field is ready to use.
          * If the transition UI CSS file isn't loaded in time, search fields
@@ -524,33 +540,54 @@ define([
          * @param  {function} callback The function to call when the UI is ready
          */         
         checkIfReady: function(callback){
+          
+          var view = this;
+          
+          // prevent flash of unstyled content
+          view.$el.css("display", "none");
+          
+          // Find the transition CSS in the head of the document.
+          var transitionCSS = _.find(
+            Array.from(document.styleSheets),
+            function(ss){
+              if(ss.href){
+                return ss.href.includes(view.transitionCSS)
+              }
+            }
+          );
+          
+          // What to do when the CSS isn't loaded yet
+          const notReady = function(){
+            view.ready = false;
+            // check again in 15ms
+            setTimeout(function () {
+              view.checkIfReady(callback)
+            }, 15);
+          }
+          
+          const ready = function(){
+            view.ready = true;
+            callback.call(view);
+            // prevent flash of unstyled content
+            setTimeout(function () {
+              view.$el.css("display", "block");
+            }, 10);
+          }
+          
+          if(view.ready){
+            ready();
+          }
+          
           try {
-            var view = this;
-            
-            // Search for the semanticUI transition CSS
-            var transitionCSS = _.filter(document.styleSheets, function(ss){
-              try {
-                return ss.cssRules[0].cssText.indexOf(view.transitionCSS) != -1
-              } catch {}
-            });
-            // If the semanticUI transition CSS was not found...
-            if(transitionCSS.length < 1){
-              // ... check again in 50ms
-              setTimeout(function () {
-                view.checkIfReady(callback)
-              }, 50);
-              return
-            // If the CSS was found, call the callback function and mark the
-            // view as ready
+            if ( transitionCSS.cssRules.length === 0 ) {
+              notReady();
             } else {
-              view.ready = true;
-              setTimeout(function () {
-                callback.call(view);
-              }, 100);
+              ready();
             }
           } catch (e) {
-            console.log("Failed to check whether the searchable select field is ready, error message: " + e);
+            notReady();
           }
+          
         },
         
         /**        

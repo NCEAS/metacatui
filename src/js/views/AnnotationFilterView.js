@@ -33,13 +33,22 @@ define(
         
         /**        
          * The selector for the element that will show/hide the annotation
-         * popover interface when clicked.
+         * popover interface when clicked. Searches within body.
          * @type {string}        
          */         
         popoverTriggerSelector: "",
         
         /**        
+         * If set to true, instead of showing the annotation tree interface in
+         * a popover, show it in a multi-select input interface, which allows
+         * the user to select multiple annotations.        
+         * @type {boolean}      
+         */         
+        multiselect: false,
+        
+        /**        
          * The URL that indicates the concept where the tree should start        
+         * @type {string}
          */         
         startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
 
@@ -75,12 +84,16 @@ define(
               console.log("A bioportal key is required for the Annotation Filter View. Please set a key in the MetacatUI config. The view will not render.");
               return
             }
-
-            this.$el.append('<div id="bioportal-tree"></div>');
-            this.popoverContainer = $('<div id="bioportal-popover" data-category="annotation"></div>');
-            $("body").append(this.popoverContainer);
-            this.setUpTree();
-            this.setListeners();
+            
+            var view = this;
+            
+            if(view.multiselect){
+              view.createMultiselect()
+            } else {
+              view.setUpTree()
+              view.createPopoverHTML()
+              view.setListeners()
+            }
 
             return this
 
@@ -95,28 +108,207 @@ define(
         setUpTree: function() {
 
           try {
+            
             var view = this;
 
-            this.treeEl = $("#bioportal-tree").NCBOTree({
+            view.treeEl = $('<div id="bioportal-tree"></div>').NCBOTree({
               apikey: MetacatUI.appModel.get("bioportalAPIKey"),
               ontology: "ECSO",
               width: "400",
               startingRoot: view.startingRoot
             });
 
-            // Make a container for the tree and nav buttons
-            var contentPlus = $("<div></div>");
-            this.jumpUpButton = $("<button class='icon icon-level-up tooltip-this' id='jumpUp' data-trigger='hover' data-title='Go up to parent' data-placement='top'></button>");
-            this.resetButton = $("<button class='icon icon-undo tooltip-this' id='resetTree' data-trigger='hover' data-title='Reset tree' data-placement='top'></button>");
-            $(contentPlus).append(view.jumpUpButton);
-            $(contentPlus).append(view.resetButton);
-            $(contentPlus).append(view.treeEl);
+            // Make an element that contains the tree and reset/jumpUp buttons
+            var buttonProps = "data-trigger='hover' data-placement='top' data-container='body' style='margin-right: 3px'"
+            view.treeContent = $("<div></div>");
+            view.jumpUpButton = $("<button class='icon icon-level-up tooltip-this btn' id='jumpUp' data-title='Go up to parent' " + buttonProps + " ></button>");
+            view.resetButton = $("<button class='icon icon-undo tooltip-this btn' id='resetTree' data-title='Reset tree' " + buttonProps + " ></button>");
+            $(view.treeContent).append(view.jumpUpButton);
+            $(view.treeContent).append(view.resetButton);
+            $(view.treeContent).append(view.treeEl);
 
-            $(this.popoverTriggerSelector).popover({
+          } catch (e) {
+            console.log("Failed to set up an annotation tree, error message: " + e);
+          }
+
+        },
+        
+        /**        
+         * createMultiselect - Create a searchable multi-select interface
+         * that includes an annotation filter tree.
+         */         
+        createMultiselect: function(){
+          
+          try {
+            var view = this;
+            
+            require(["views/SearchableSelectView"], function(SearchableSelect){
+              
+              view.multiSelectView = new SearchableSelect({
+                allowMulti: true,
+                allowAdditions: false,
+                inputLabel: "Add one or more concepts",
+              })
+              view.$el.append(view.multiSelectView.el);
+              view.multiSelectView.render();
+              // If there are pre-selected values, get the user-facing labels
+              // and then update the multiselect
+              if(view.selected && view.selected.length){
+                view.getClassLabels(view.updateMultiselect);
+              } else {
+                // Otherwise, update the multi-select right away with tree element
+                view.updateMultiselect.call(view)
+              }
+            })
+          } catch (e) {
+            console.log("Failed to create the multi-select interface for an Annotation Filter View, error message: " + e);
+          }
+        },
+        
+        /**        
+         * updateMultiselect - Functions to run once a SearchableSelect view has
+         * been rendered and inserted into this view, and the labels for any
+         * pre-selected annotation values have been fetched. Updates the
+         * hidden menu of items and the selected items.
+         */         
+        updateMultiselect: function(){
+          
+          try {
+            var view = this;
+            
+            if(!view.multiSelectView.ready){
+              view.listenToOnce(view.multiSelectView, "postRender", view.updateMultiselect);
+              return
+            }
+            
+            // Re-init the tree
+            view.setUpTree();
+            
+            // Re-render the multiselect menu with the new options. These options
+            // will be hidden from view, but they must be present in the DOM for
+            // the multi-select interface to function correctly.
+            // Add an empty item to the list of selected values, so that
+            // the dropdown menu is always expandable.
+            view.selected.push({value:""});
+            var vals = _.compact(_.pluck(view.selected, "value"));
+            view.multiSelectView.options = view.selected;
+            view.multiSelectView.updateMenu();
+            // Make sure the new menu is attached before updating list of selected
+            // annotations
+            setTimeout(function () {
+              view.multiSelectView.changeSelection(vals);
+            }, 25);
+            
+            // Add the annotation tree to the menu content
+            view.multiSelectView.$el.find(".menu").append(view.treeContent);
+            view.searchInput = view.multiSelectView.$selectUI.find("input");
+            
+            // Simulate a search in the annotation tree when the user
+            // searches in the multiSelect interface
+            view.searchInput.on("keyup", function(e){
+              var treeInput = view.treeContent.find("input.ncboAutocomplete");
+              treeInput.val(e.target.value).keydown();
+            });
+            
+            view.setListeners();
+          } catch (e) {
+            console.log("Failed to update an annotation filter with selected values, error message: " + e);
+          }
+            
+        },
+        
+        /**        
+         * getClassLabels - Given an array of bioontology IDs set in
+         * view.selected, query the bioontology API to find the user-friendly
+         * labels (prefLabels)
+         * 
+         * @param  {function} callback A function to call once the labels have
+         * been found (or not). The function will be called with the formatted
+         * response: an array with an object for each ID with the properties
+         * value (the original ID) and label (the user-friendly label, or the
+         * value again if no label was found)
+         */         
+        getClassLabels: function(callback){
+          
+          try {
+            var view = this;
+            
+            if(!view.selected || !view.selected.length){
+              return
+            }
+            
+            const ontologyCollection = _.map(view.selected, function(id){
+              return {
+                "class" : id,
+                "ontology": "http://data.bioontology.org/ontologies/ECSO"
+              }
+            });
+            
+            const bioData = JSON.stringify({
+              "http://www.w3.org/2002/07/owl#Class": {
+                "collection": ontologyCollection,
+                "display": "prefLabel"
+              }
+            });
+            
+            const formatResponse = function(response, success){
+              view.selected.forEach(function(item,index){
+                if(success){
+                  var match = _.findWhere(response[Object.keys(response)[0]], { "@id": item });
+                } else {
+                  var match = null;
+                }
+                view.selected[index] = {
+                  value: item,
+                  label: match ? match.prefLabel : item
+                }
+              })
+            }
+            
+            // Get the pre-selected values
+            $.ajax({
+              type: "POST",
+              url: "http://data.bioontology.org/batch?display_context=false",
+              headers: {
+                "Authorization" : "apikey token=" + MetacatUI.appModel.get("bioportalAPIKey"),
+                "Accept" : "application/json",
+                "Content-Type" : "application/json"
+              },
+              processData: false,
+              data: bioData,
+              crossDomain: true,
+              timeout: 5000,
+              success: function(response) {
+                formatResponse(response, true)
+                callback.call(view)
+              },
+              error: function(response) {
+                console.log("Error finding class labels for the Annotation Filter, error response:", response);
+                formatResponse(response, false)
+                callback.call(view)
+              }
+            });
+          } catch (e) {
+            console.log("Failed to fetch labels for bioontology IDs, error message: " + e);
+          }
+          
+        },
+        
+        /**        
+         * createPopoverHTML - Create the HTML for annotation filters that are
+         * displayed as a popup (e.g. in the search catalog)
+         *          
+         * @return {type}  description         
+         */         
+        createPopoverHTML: function(){
+          try {
+            var view = this;
+            $("body").append($('<div id="bioportal-popover" data-category="annotation"></div>'));
+            $(view.popoverTriggerSelector).popover({
               html: true,
               placement: "bottom",
               trigger: "manual",
-              content: contentPlus,
+              content: view.treeContent,
               container: "#bioportal-popover"
             }).on("click", function() {
               if ($($(this).data().popover.options.content).is(":visible")) {
@@ -139,14 +331,11 @@ define(
 
                 // Ensure tooltips are activated
                 $(".tooltip-this").tooltip();
-
               }
             });
-
           } catch (e) {
-            console.log("Failed to set up an annotation tree, error message: " + e);
+            console.log("Failed to create popover HTML for an annotation filter, error message: " + e);
           }
-
         },
         
         /**        
@@ -154,25 +343,39 @@ define(
          * after the tree HTML is created.
          */         
         setListeners: function(){
-          var view = this;
-          this.treeEl.off();
-          this.jumpUpButton.off();
-          this.resetButton.off();
-          this.treeEl.on("afterSelect", function(event, classId, prefLabel, selectedNode) {
-            view.selectConcept.call(view, event, classId, prefLabel, selectedNode)
-          });
-          this.treeEl.on("afterJumpToClass", function(event, classId) {
-            view.afterJumpToClass.call(view, event, classId);
-          });
-          this.treeEl.on("afterExpand", function() {
-            view.afterExpand.call(view)
-          });
-          this.jumpUpButton.on("click", function(){
-            view.jumpUp.call(view);
-          });
-          this.resetButton.on("click", function(){
-            view.resetTree.call(view);
-          });
+          try {
+            var view = this;
+            view.treeEl.off();
+            view.jumpUpButton.off();
+            view.resetButton.off();
+            view.treeEl.on("afterSelect", function(event, classId, prefLabel, selectedNode) {
+              view.selectConcept.call(view, event, classId, prefLabel, selectedNode)
+            });
+            view.treeEl.on("afterJumpToClass", function(event, classId) {
+              view.afterJumpToClass.call(view, event, classId);
+            });
+            view.treeEl.on("afterExpand", function() {
+              view.afterExpand.call(view)
+            });
+            view.jumpUpButton.on("click", function(){
+              view.jumpUp.call(view);
+            });
+            view.resetButton.on("click", function(){
+              view.resetTree.call(view);
+            });
+            if(view.multiselect){
+              view.treeEl.off("searchItemSelected");
+              view.treeEl.on("searchItemSelected", function(){
+                view.searchInput.val("")
+              });
+              view.stopListening(view.multiSelectView, "changeSelection");
+              view.listenTo(view.multiSelectView, "changeSelection", function(newValues){
+                view.trigger("changeSelection", newValues);
+              })
+            }
+          } catch (e) {
+            console.log("Failed to set listeners in an Annotation Filter View, error message: " + e);
+          }
         },
         
         /**        
@@ -200,22 +403,21 @@ define(
             }
 
             // Trigger an event so that the parent view can update filters, etc.
-            this.trigger("annotationSelected", event, item);
-
-            // Hide the hover
-            $(selectedNode).trigger("mouseout");
-
+            view.trigger("annotationSelected", event, item);
+            
             // Hide the popover
-            var annotationFilterEl = $(this.popoverTriggerSelector);
-            annotationFilterEl.trigger("click");
-
-            // Reset the tree for next search
-            var tree = this.treeEl.data("NCBOTree");
-            var options = tree.options();
-            $.extend(options, {
-              startingRoot: view.startingRoot
-            });
-            tree.changeOntology("ECSO");
+            if(!view.multiselect){
+              var annotationFilterEl = $(view.popoverTriggerSelector);
+              annotationFilterEl.trigger("click");
+              $(selectedNode).trigger("mouseout");
+              view.resetTree();
+            } else {
+              view.selected.push(item);
+              view.updateMultiselect();
+            }
+            
+            // Ensure tooltips are removed
+            $("body > .tooltip").remove();
 
             // Prevent default action
             return false;
@@ -251,7 +453,7 @@ define(
           try {
             var view = this;
             // Re-root the tree at this concept
-            var tree = this.treeEl.data("NCBOTree");
+            var tree = view.treeEl.data("NCBOTree");
             var options = tree.options();
             $.extend(options, {
               startingRoot: classId
@@ -279,7 +481,7 @@ define(
           try {
             // Re-root the tree at the parent concept of the root
             var view = this,
-                tree = this.treeEl.data("NCBOTree"),
+                tree = view.treeEl.data("NCBOTree"),
                 options = tree.options(),
                 startingRoot = options.startingRoot;
 
@@ -320,7 +522,8 @@ define(
             var view = this;
 
             // Re-root the tree at the original concept
-            var tree = this.treeEl.data("NCBOTree");
+            var tree = view.treeEl.data("NCBOTree");
+            
             var options = tree.options();
 
             // Re-root
@@ -328,12 +531,14 @@ define(
               startingRoot: view.startingRoot
             });
 
+            tree.changeOntology("ECSO");
+            
             // Force a re-render
             tree.init();
 
             // Ensure the tooltips are activated
             $(".tooltip-this").tooltip();
-
+            
             return false;
           } catch (e) {
             console.log("Failed to reset the annotation filter tree, error message: " + e);

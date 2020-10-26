@@ -2849,6 +2849,27 @@ section#user-citations {
 #resetTree {
 	float: right;
 }
+
+/* --- multiselect annotation filter */
+.annotation-filter .searchable-select #bioportal-tree {
+	display: block;
+	margin-top: 0.5rem;
+}
+.annotation-filter .searchable-select .menu {
+	min-height: 10rem;
+}
+/* We use the input in the semantic UI input interface to search */
+/* instead of the NCBO tree interface */
+.annotation-filter .searchable-select input.ncboAutocomplete {
+	display: none;
+}
+/* The contents of the dropdown menu is replaced with the annotation tree */
+/* Hide all of the menu items that semantic UI inserets */
+.annotation-filter .searchable-select .item,
+.annotation-filter .searchable-select .message {
+	display: none !important;
+}
+
 /******************************************
 * Images, Maps, and Media
 ********************************************/

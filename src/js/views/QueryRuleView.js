@@ -5,7 +5,8 @@ define([
     "views/SearchableSelectView",
     "views/QueryFieldSelectView",
     "views/NodeSelectView",
-    'views/filters/NumericFilterView',
+    "views/filters/NumericFilterView",
+    "views/AnnotationFilterView",
     "collections/QueryFields",
     "models/filters/Filter",
     "models/filters/BooleanFilter",
@@ -15,7 +16,8 @@ define([
   ],
   function(
     $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect,
-    NumericFilterView, QueryFields, Filter, BooleanFilter, NumericFilter,
+    NumericFilterView, AnnotationFilter, QueryFields, Filter, BooleanFilter,
+    NumericFilter,
     DateFilter, ObjectFormats
   ) {
 
@@ -287,16 +289,13 @@ define([
             uiFunction: function(){
               return new SearchableSelect({
                 options: [
-                  {
-                    label: "tight",
+                  { label: "tight",
                     description: "Tight coupled service work only on the data described by this metadata document."
                   },
-                  {
-                    label: "mixed",
+                  { label: "mixed",
                     description: "Loose coupling means service works on any data."
                   },
-                  {
-                    label: "loose",
+                  { label: "loose",
                     description: "Mixed coupling means service works on data described by this metadata document but may work on other data."
                   }
                 ],
@@ -335,6 +334,15 @@ define([
                 inputLabel: "Select one or more metadata type",
                 selected: this.model.get("values")
               })
+            }
+          },
+          {
+            queryFields: ["sem_annotation"],
+            uiFunction: function(){
+              return new AnnotationFilter({
+                selected: this.model.get("values"),
+                multiselect: true
+              });
             }
           },
           {
@@ -1006,7 +1014,7 @@ define([
             
             // Update model when the values change - note that the date &
             // numeric filter views do not trigger a 'changeSelection' event,
-            // (because they are not based on a SearchSelect View,)
+            // (because they are not based on a SearchSelect View)
             // but update the models directly
             this.stopListening(view.valueSelect, 'changeSelection', this.handleValueChange);
             this.listenTo(view.valueSelect, 'changeSelection', this.handleValueChange);
