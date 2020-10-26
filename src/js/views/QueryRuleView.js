@@ -538,13 +538,16 @@ define([
           
           try {
             
-            if(!newFields || newFields.length === 0 || newFields[0] === ""){
-              if(this.operatorSelect){
-                this.operatorSelect.changeSelection([""]);
-              }
-              this.model.set("fields", this.model.defaults().fields);
-              return
-            }
+            // Uncomment the following chunk to clear operator & values
+            // when the field input is cleared.
+            // if(!newFields || newFields.length === 0 || newFields[0] === ""){
+              // if(this.operatorSelect){
+              //   this.operatorSelect.changeSelection([""]);
+              // }
+              // this.model.set("fields", this.model.defaults().fields);
+              // return
+            // }
+            
             // Get the current type of filter
             var typeBefore = this.model.get("nodeName");
             var typeAfter = this.getRequiredFilterType(newFields);
@@ -575,6 +578,7 @@ define([
               this.removeInput("value");
               this.addValueSelect();
             }
+            
           } catch (e) {
             console.log("Failed to handle query field change in the Query Rule View, error message: " + e);
           } 
@@ -649,6 +653,7 @@ define([
               options: options,
               allowMulti: false,
               inputLabel: "Select an operator",
+              clearable: false,
               placeholderText: "Select an operator",
               selected: [selectedOperator]
             });
@@ -1037,6 +1042,9 @@ define([
             // TODO:
             //  - validate values first?
             //  - how to update the model when values is empty?
+            
+            // Don't add empty values to the model
+            newValues = _.reject(newValues, function(val){ return val === "" });
             this.model.set("values", newValues);
           } catch (e) {
             console.log("Failed to handle a change in select values in the Query Ryle View, error message: " + e);

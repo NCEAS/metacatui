@@ -58,6 +58,13 @@ define([
         allowAdditions: false,
         
         /**        
+         * Whether the dropdown value can be cleared by the user after being
+         * selected.
+         * @type {boolean}
+         */         
+        clearable: true,
+        
+        /**        
          * Set to true to display list options as sub-menus of cateogories.
          * @type {boolean}        
          */         
@@ -253,7 +260,7 @@ define([
               .dropdown({
                 fullTextSearch: true,
                 duration: 90,
-                clearable: true,
+                clearable: view.clearable,
                 allowAdditions: view.allowAdditions,
                 hideAdditions: false,
                 allowReselection: true,
@@ -515,7 +522,7 @@ define([
          *          
          * @param  {string[]} newValues - An array of strings to select
          */         
-        changeSelection: function(newValues) {
+        changeSelection: function(newValues, silent = false) {
           try {
             if(
               !this.$selectUI ||
@@ -526,7 +533,13 @@ define([
             }
             var view = this;
             this.selected = newValues;
+            if(silent === true){
+              view.disable();
+            }
             this.$selectUI.dropdown('set exactly', newValues);
+            if(silent === true){
+              view.enable();
+            }
           } catch (e) {
             console.log("Failed to change the selected values in a searchable select field, error message: " + e);
           }

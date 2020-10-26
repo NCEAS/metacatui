@@ -154,7 +154,7 @@ define(
               // If there are pre-selected values, get the user-facing labels
               // and then update the multiselect
               if(view.selected && view.selected.length){
-                view.getClassLabels(view.updateMultiselect);
+                view.getClassLabels.call(view, view.updateMultiselect);
               } else {
                 // Otherwise, update the multi-select right away with tree element
                 view.updateMultiselect.call(view)
@@ -181,6 +181,15 @@ define(
               return
             }
             
+            // Check if this is the first time we are updating this multiselect.
+            // If it is, then don't trigger the event that updates the model,
+            // because nothing has changed.
+            if(view.updateMultiselectTimes === undefined){
+              view.updateMultiselectTimes = 0
+            } else {
+              view.updateMultiselectTimes++
+            }
+            
             // Re-init the tree
             view.setUpTree();
             
@@ -189,14 +198,18 @@ define(
             // the multi-select interface to function correctly.
             // Add an empty item to the list of selected values, so that
             // the dropdown menu is always expandable.
-            view.selected.push({value:""});
-            var vals = _.compact(_.pluck(view.selected, "value"));
-            view.multiSelectView.options = view.selected;
+            if(view.options === undefined){
+              view.options = []
+            }
+            view.options.push({value:""});
+            view.multiSelectView.options = view.options;
             view.multiSelectView.updateMenu();
             // Make sure the new menu is attached before updating list of selected
             // annotations
             setTimeout(function () {
-              view.multiSelectView.changeSelection(vals);
+              var silent = view.updateMultiselectTimes === 0;
+              var newValues = _.reject(view.selected, function(val){ return val === "" });
+              view.multiSelectView.changeSelection(newValues, silent);
             }, 25);
             
             // Add the annotation tree to the menu content
@@ -211,6 +224,7 @@ define(
             });
             
             view.setListeners();
+            
           } catch (e) {
             console.log("Failed to update an annotation filter with selected values, error message: " + e);
           }
@@ -252,13 +266,16 @@ define(
             });
             
             const formatResponse = function(response, success){
+              if(view.options === undefined){
+                view.options = []
+              }
               view.selected.forEach(function(item,index){
                 if(success){
                   var match = _.findWhere(response[Object.keys(response)[0]], { "@id": item });
                 } else {
                   var match = null;
                 }
-                view.selected[index] = {
+                view.options[index] = {
                   value: item,
                   label: match ? match.prefLabel : item
                 }
@@ -370,6 +387,13 @@ define(
               });
               view.stopListening(view.multiSelectView, "changeSelection");
               view.listenTo(view.multiSelectView, "changeSelection", function(newValues){
+                // When values are removed, update the interface
+                if(newValues != view.selected){
+                  view.selected = newValues;
+                  // So that the function doesn't trigger an endless loop
+                  delete view.updateMultiselectTimes;
+                  view.updateMultiselect()
+                }
                 view.trigger("changeSelection", newValues);
               })
             }
@@ -411,8 +435,11 @@ define(
               annotationFilterEl.trigger("click");
               $(selectedNode).trigger("mouseout");
               view.resetTree();
+            
+            // Update the multi-select with the new options
             } else {
-              view.selected.push(item);
+              view.options.push(item);
+              view.selected.push(item.value);
               view.updateMultiselect();
             }
             
