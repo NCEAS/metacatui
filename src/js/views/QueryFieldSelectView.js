@@ -218,7 +218,7 @@ define([
             placement: position,
             container: "body",
             delay: {
-              show: 550,
+              show: 1100,
               hide: 50
             }
           })
