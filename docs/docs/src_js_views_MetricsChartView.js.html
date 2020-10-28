@@ -1,4 +1,33 @@
-/*global define */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/views/MetricsChartView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/views/MetricsChartView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*global define */
 define(['jquery', 'underscore', 'backbone', 'd3'],
     function($, _, Backbone, d3) {
     'use strict';
@@ -66,7 +95,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
           // check if there have been any views/citations
           var sumMetricCount = 0;
-          for (var i = 0; i < this.metricCount.length; i++) {
+          for (var i = 0; i &lt; this.metricCount.length; i++) {
               sumMetricCount += this.metricCount[i]
           }
 
@@ -203,7 +232,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           // for each month, check whether there is a count available,
           // if so append it, otherwise append zero.
           var dataset = [];
-          for(var i=0; i<all_months.length; i++){
+          for(var i=0; i&lt;all_months.length; i++){
           	var match_index = metricMonths_parsed.indexOf(all_months[i].getTime());
           	if (match_index == -1) { // no match in data
           		dataset.push({integer: i, month: all_months[i], count:0});
@@ -310,7 +339,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
               .attr("class", "focus")
               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-          // === current date range text & zoom buttons === //
+          // === current date range text &amp; zoom buttons === //
 
           var expl_text = vis.append("g")
               .attr("id", "buttons_group")
@@ -330,7 +359,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
           // === the zooming/scaling buttons === //
 
-          if ((x_full_extent[1] - x_full_extent[0]) < year_in_ms) {
+          if ((x_full_extent[1] - x_full_extent[0]) &lt; year_in_ms) {
               var button_data =["month","all"];
           } else {
              var button_data =["year","month","all"];
@@ -657,7 +686,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                 var modal_width = Math.round(Number(modal_width));
 
                 d3.select(".metric_tooltip")
-                    .html("<b>" + display_date_format(d.month) + "</b><br/>"  + d.count + " " + convert_metric_name(d.count))
+                    .html("&lt;b>" + display_date_format(d.month) + "&lt;/b>&lt;br/>"  + d.count + " " + convert_metric_name(d.count))
                     .style("left", (x(d.month) + (modal_width-(width + margin.left + margin.right)) + (bar_width_px/2) - (tooltip_width/2) + "px"))//) + 300 + ((width/dataset.length) * 0.5 * get_zoom_scale())) + "px")
                     .style("top", (y(d.count) + 19) + "px");
 
@@ -668,7 +697,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
               }
               else {
                 d3.select("#user-" + self.id + " > .metric_tooltip")
-                    .html("<b>" + display_date_format(d.month) + "</b><br/>"  + d.count + " " + convert_metric_name(d.count))
+                    .html("&lt;b>" + display_date_format(d.month) + "&lt;/b>&lt;br/>"  + d.count + " " + convert_metric_name(d.count))
                     .style("left", d3.event.pageX - 150 + "px")
                     .style("top", y(d.count) - y(0) - 150 + "px");
 
@@ -716,7 +745,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           		times = [],
           		monthFactors = [1,3,4,12];
 
-              while (time < t1) { times.push(new Date(+time)), step(time, 1)};
+              while (time &lt; t1) { times.push(new Date(+time)), step(time, 1)};
 
               var timesCopy = times;
               var i;
@@ -732,7 +761,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           function format_months(d){
           	add_tick_behaviour(); // add tick hover behaviour everytime ticks are re-formatted;
           	var test = (x.domain()[1] - x.domain()[0]) > 132167493818; // when to switch from yyyy to mm-yyyy
-          	if(d.getMonth()==0 & test){//if january
+          	if(d.getMonth()==0 &amp; test){//if january
           		var yearOnly = d3.time.format("%Y");
           		return(yearOnly(d));
           	} else {
@@ -741,7 +770,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
           }
 
           /*	------------------------------------------------------
-          		BRUSH & ZOOM BEHAVIOUR
+          		BRUSH &amp; ZOOM BEHAVIOUR
           	------------------------------------------------------  */
 
           function change_focus_brush() {
@@ -771,13 +800,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
               var bar_width_days = bar_width_factor*30.5;
 
           	var left_date = x.domain()[0];
-          	if(left_date.getDate() < bar_width_days){
+          	if(left_date.getDate() &lt; bar_width_days){
           		var left_date = d3.time.month.floor(left_date),
           			left_date = new Date(left_date.getTime())
           	};
 
           	var data_subset_focus = dataset.filter( function(d) {
-          		return d.month <= x.domain()[1] && d.month >= left_date
+          		return d.month &lt;= x.domain()[1] &amp;&amp; d.month >= left_date
           	});
 
           	var y_max_focus = d3.max(data_subset_focus, function(d) { return d.count; }) * 1.04 || 1.04;
@@ -835,13 +864,13 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                       return d.month
                   }
                   else {
-                      return d.month <= display_date_format.parse(end_month) && d.month >= left_date
+                      return d.month &lt;= display_date_format.parse(end_month) &amp;&amp; d.month >= left_date
                   };
           	});
 
           	// calcualte the total views/downloads within focus area
           	var total_count = 0;
-              for (var i = 0; i < data_subset_focus.length; i++) {
+              for (var i = 0; i &lt; data_subset_focus.length; i++) {
                       total_count += data_subset_focus[i].count;
               }
 
@@ -858,7 +887,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                       if (metricMonths_parsed.length == 1) {
                           return "1";
                       } else {
-                          return  d.month <= display_date_format.parse(end_month) && d.month >= left_date || brush.empty() ? "1" : ".3";
+                          return  d.month &lt;= display_date_format.parse(end_month) &amp;&amp; d.month >= left_date || brush.empty() ? "1" : ".3";
                       }
 
               });
@@ -870,7 +899,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
               // check whether chart was scrolled out of bounds and fix,
               var b = brush.extent();
-              var out_of_bounds = brush.extent().some(function(e) { return e < x_full_extent[0] | e > x_full_extent[1]; });
+              var out_of_bounds = brush.extent().some(function(e) { return e &lt; x_full_extent[0] | e > x_full_extent[1]; });
               if (out_of_bounds){ b = move_in_bounds(b) };
 
           };
@@ -882,12 +911,12 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
                   brush_start_new,
                   brush_end_new;
 
-              if       (b[0] < x_full_extent[0])   { brush_start_new = x_full_extent[0]; }
+              if       (b[0] &lt; x_full_extent[0])   { brush_start_new = x_full_extent[0]; }
               else if  (b[0] > x_full_extent[1])   { brush_start_new = x_full_extent[0]; }
               else                        { brush_start_new = b[0]; };
 
               if       (b[1] > x_full_extent[1])   { brush_end_new = x_full_extent[1]; }
-              else if  (b[1] < x_full_extent[0])   { brush_end_new = x_full_extent[1]; }
+              else if  (b[1] &lt; x_full_extent[0])   { brush_end_new = x_full_extent[1]; }
               else                        { brush_end_new = b[1]; };
 
               brush.extent([brush_start_new, brush_end_new]);
@@ -912,7 +941,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
 
               if ( d == "year" | d == "month" )  {
 
-                  if((x_full_extent[1].getTime() - b[1].getTime()) < interval_ms){
+                  if((x_full_extent[1].getTime() - b[1].getTime()) &lt; interval_ms){
                   // if brush is too far to the right that increasing the right-hand brush boundary would make the chart go out of bounds....
                       brush_start_new = new Date(x_full_extent[1].getTime() - interval_ms); // ...then decrease the left-hand brush boundary...
                       brush_end_new = x_full_extent[1]; //...and set the right-hand brush boundary to the maxiumum limit.
@@ -983,3 +1012,26 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
     return MetricsChartView;
 
 });
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Oct 28 2020 12:45:00 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

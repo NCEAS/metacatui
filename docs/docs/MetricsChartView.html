@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>MetacatUI Dev Docs: Class: EMLView</title>
+    <title>MetacatUI Dev Docs: Class: MetricsChartView</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -18,7 +18,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: EMLView</h1>
+    <h1 class="page-title">Class: MetricsChartView</h1>
 
     
 
@@ -29,11 +29,16 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>EMLView<span class="signature">()</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>MetricsChartView<span class="signature">()</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">An EMLView renders an editable view of an EML 2.1.1 document</div>
+            <div class="class-description">The MetricsChartView will render an SVG times-series chart using D3 that shows the number of metrics over time.</div>
         
 
+        
+            <div class="class-screenshot">
+              <h3>Screenshot</h3>
+              <img src="../screenshots/views/MetricsChartView.png" class="thumbnail"/>
+            </div>
         
 
     
@@ -49,7 +54,7 @@
     
 
     
-    <h4 class="name" id="EMLView"><span class="type-signature"></span>new EMLView<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="MetricsChartView"><span class="type-signature"></span>new MetricsChartView<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -97,7 +102,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211View.js.html">src/js/views/metadata/EML211View.js</a>, <a href="src_js_views_metadata_EML211View.js.html#line33">line 33</a>
+        <a href="src_js_views_MetricsChartView.js.html">src/js/views/MetricsChartView.js</a>, <a href="src_js_views_MetricsChartView.js.html#line6">line 6</a>
     </li></ul></dd>
     
 
@@ -131,17 +136,6 @@
     </div>
 
     
-        <h3 class="subsection-title">Extends</h3>
-
-        
-
-
-    <ul>
-        <li>ScienceMetadataView</li>
-    </ul>
-
-
-    
 
     
 
@@ -164,7 +158,7 @@
     
 
     
-    <h4 class="name" id=".movePersonDown"><span class="type-signature"></span>movePersonDown<span class="signature">(e:)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="listenToWindowResize"><span class="type-signature"></span>listenToWindowResize<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -172,7 +166,7 @@
 
 
 <div class="description">
-    Attempt to move the current person (Party) one index forward (down).
+    Adds a listener so when the window is resized, the chart is redrawn
 </div>
 
 
@@ -181,55 +175,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>e:</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">EventHandler</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The click event handler</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -265,7 +210,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211View.js.html">src/js/views/metadata/EML211View.js</a>, <a href="src_js_views_metadata_EML211View.js.html#line855">line 855</a>
+        <a href="src_js_views_MetricsChartView.js.html">src/js/views/MetricsChartView.js</a>, <a href="src_js_views_MetricsChartView.js.html#line955">line 955</a>
     </li></ul></dd>
     
 
@@ -301,7 +246,7 @@
     
 
     
-    <h4 class="name" id=".movePersonUp"><span class="type-signature"></span>movePersonUp<span class="signature">(e:)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="onClose"><span class="type-signature"></span>onClose<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
@@ -309,7 +254,7 @@
 
 
 <div class="description">
-    Attempt to move the current person (Party) one index backward (up).
+    Cleans up listeners and other artifacts from this view
 </div>
 
 
@@ -318,55 +263,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>e:</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">EventHandler</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">The click event handler</td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -402,7 +298,183 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="src_js_views_metadata_EML211View.js.html">src/js/views/metadata/EML211View.js</a>, <a href="src_js_views_metadata_EML211View.js.html#line823">line 823</a>
+        <a href="src_js_views_MetricsChartView.js.html">src/js/views/MetricsChartView.js</a>, <a href="src_js_views_MetricsChartView.js.html#line977">line 977</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="render"><span class="type-signature"></span>render<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Renders this Metric Chart view.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MetricsChartView.js.html">src/js/views/MetricsChartView.js</a>, <a href="src_js_views_MetricsChartView.js.html#line51">line 51</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="stopListenToWindowResize"><span class="type-signature"></span>stopListenToWindowResize<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Removes the window resize listener set in <a href="MetricsChartView.html#listenToWindowResize">MetricsChartView#listenToWindowResize</a>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="src_js_views_MetricsChartView.js.html">src/js/views/MetricsChartView.js</a>, <a href="src_js_views_MetricsChartView.js.html#line966">line 966</a>
     </li></ul></dd>
     
 
