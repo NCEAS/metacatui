@@ -8,6 +8,7 @@ MetacatUI.AppConfig = Object.assign({
   bioportalAPIKey: "",
   repositoryName: "Arctic Data Center",
   emailContact: "support@arcticdata.io",
+  nodeId: "urn:node:ARCTIC",
 
   //Metadata quality
   mdqSuiteIds: ["arctic.data.center.suite.1"],
@@ -55,6 +56,7 @@ MetacatUI.AppConfig = Object.assign({
   //Searching
   enableSolrJoins: true,
   mapKey: "AIzaSyCYoTkUEpMAiOoWx5M61ButwgNGX8fIHUs",
+  searchMapTileHue: "231",
   defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
   //Temp message
@@ -63,6 +65,12 @@ MetacatUI.AppConfig = Object.assign({
   temporaryMessageEndTime: new Date("2020-06-16T13:30:00"),
   temporaryMessageClasses: "warning",
   temporaryMessageContainer: "#Navbar",
+
+  //MetadataView
+  datasetMapFillColor: "",
+
+  //Google Analytics
+  googleAnalyticsKey: "UA-75482301-1"
 
 }, (MetacatUI.AppConfig || {}));
 
@@ -86,20 +94,3 @@ MetacatUI.themeMap =
 		'routers/router' : MetacatUI.root + '/js/themes/' + MetacatUI.theme + '/routers/router.js'
 		}
 };
-
-MetacatUI.customMapModelOptions = {
-	tileHue: "231"
-}
-
-MetacatUI.customAppConfig = function(){
-	//Gmaps key: AIzaSyCYoTkUEpMAiOoWx5M61ButwgNGX8fIHUs
-
-	if(MetacatUI.appModel.get("baseUrl").indexOf("arcticdata.io") > -1 &&
-	   MetacatUI.appModel.get("baseUrl").indexOf("test") == -1 &&
-	   MetacatUI.appModel.get("baseUrl").indexOf("demo") == -1){
-
-		MetacatUI.appModel.set("nodeId", "urn:node:ARCTIC");
-		MetacatUI.appModel.set("googleAnalyticsKey", "UA-75482301-1");
-
-	}
-}

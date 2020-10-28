@@ -826,17 +826,6 @@ define(['jquery', 'underscore', 'backbone'],
       hideMetricsWhen: null,
 
       /**
-      * The zoom level to use in the Google Static Map images on the dataset landing pages.
-      * The higher the zoom level, the more zoomed in the map will be. Set to 0 to show
-      * the entire world in the map, and 15+ to show fine details. The highest zoom level
-      * is about 20. For more information, see the Google Statis Maps API docs: https://developers.google.com/maps/documentation/maps-static/start#Zoomlevels
-      * @type {number}
-      * @default 6
-      * @since 2.13.0
-      */
-      datasetMapZoomLevel: 6,
-
-      /**
       * The bounding box path color to use in the Google Static Map images on the dataset landing pages.
       * Specify the color either as a 24-bit (example: color=0xFFFFCC) or 32-bit hexadecimal value
       * (example: color=0xFFFFCCFF), or from the set: black, brown, green, purple, yellow, blue, gray, orange, red, white.
@@ -858,6 +847,16 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.13.0
       */
       datasetMapFillColor: "0xFFFF0033",
+
+      /**
+      * The hue/color of the tiles drawn on the map when searching for data.
+      * This should be a three-digit hue degree between 0 and 360. (Try https://hslpicker.com)
+      * This is set on the {@link Map} model when it is initialized.
+      * @type {string}
+      * @default "192" (blue)
+      * @since 2.13.3
+      */
+      searchMapTileHue: "192",
 
       /**
       * If true, the dataset landing pages will generate Schema.org-compliant JSONLD

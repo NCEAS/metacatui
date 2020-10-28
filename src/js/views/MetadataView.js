@@ -925,16 +925,7 @@ define(['jquery',
         var url = "https://maps.google.com/?ll=" + latLngCEN.lat() + "," + latLngCEN.lng() +
               "&spn=0.003833,0.010568" +
               "&t=m" +
-              "&z=10";
-
-        //Get the dataset map zoom level
-        var zoomLevel = MetacatUI.appModel.get("datasetMapZoomLevel");
-        if(typeof zoomLevel !== "number"){
-          zoomLevel = parseInt(zoomLevel);
-        }
-        if( !zoomLevel > 0){
-          zoomLevel = 6;
-        }
+              "&z=5";
 
         //Get the map path color
         var pathColor = MetacatUI.appModel.get("datasetMapPathColor");
@@ -963,7 +954,6 @@ define(['jquery',
                 "&markers=size:mid|color:0xDA4D3Aff|"+latLngCEN.lat()+","+latLngCEN.lng() +
                 "&path=" + fillColor + pathColor + "weight:3|"+latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
                 "&visible=" + latLngSW.lat()+","+latLngSW.lng()+"|"+latLngNW.lat()+","+latLngNW.lng()+"|"+latLngNE.lat()+","+latLngNE.lng()+"|"+latLngSE.lat()+","+latLngSE.lng()+"|"+latLngSW.lat()+","+latLngSW.lng()+
-                "&zoom=" + zoomLevel +
                 "&sensor=false" +
                 "&key=" + MetacatUI.mapKey + "'/>";
 
