@@ -22,6 +22,7 @@ define(["jquery",
         * @class PortalView
         * @classdesc The PortalView is a generic view to render
          * portals, it will hold portal sections
+         * @classcategory Views/Portals
          * @extends Backbone.View
          * @constructor
          */

@@ -47,6 +47,7 @@ define(['jquery',
  /**
  * @class MetadataView
  * @classdesc A human-readable view of a science metadata file
+ * @classcategory Views
  * @extends Backbone.View
  * @constructor
  */

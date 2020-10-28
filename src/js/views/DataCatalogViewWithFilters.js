@@ -21,6 +21,7 @@ define(["jquery",
          * and the Filter models for managing queries rather than the
          * Search model and the filter literal objects used in the
          * parent DataCatalogView.  This accommodates custom portal filters.
+         * @classcategory Views
          * @extends DataCatalogView
          * @constructor
          */

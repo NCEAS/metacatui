@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
     * @class MetricModalView
     * @classdesc A Bootstrap Modal that displays a DataONE dataset usage metric,
     * such as downloads, views, or citations.
+    * @classcategory Views
     * @extends Backbone.View
     */
     var MetricModalView = Backbone.View.extend(

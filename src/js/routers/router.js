@@ -7,6 +7,7 @@ function ($, _, Backbone) {
 	/**
   * @class UIRouter
   * @classdesc MetacatUI Router
+  * @classcategory Router
   * @extends Backbone.Router
   * @constructor
   */

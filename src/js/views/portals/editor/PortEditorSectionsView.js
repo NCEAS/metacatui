@@ -20,6 +20,7 @@ function(_, $, Backbone, Portal, PortalSection,
   /**
   * @class PortEditorSectionsView
   * @classdesc A view of one or more Portal Editor sections
+  * @classcategory Views/Portals/Editor
   * @extends Backbone.View
   * @constructor
   */
@@ -747,7 +748,7 @@ function(_, $, Backbone, Portal, PortalSection,
     handleSwitchSection: function(e){
 
       e.preventDefault();
-      
+
       // Make sure any markdown editor toolbar modals are closed
       // (otherwise they persist in new tab)
       $("body").find(".wk-prompt").remove();

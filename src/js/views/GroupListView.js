@@ -3,11 +3,13 @@ define(['jquery', 'underscore', 'backbone', 'collections/UserGroup', 'models/Use
 	function($, _, Backbone, UserGroup, UserModel, PagerView) {
 	'use strict';
 
-	/*
-	 * GroupListView
-	 * Displays a list of UserModels of a UserGroup collection and allows owners to add/remove members from the group
+	/**
+	 * @class GroupListView
+	 * @classdesc Displays a list of UserModels of a UserGroup collection and allows owners to add/remove members from the group
+   * @classcategory Views
 	 */
-	var GroupListView = Backbone.View.extend({
+	var GroupListView = Backbone.View.extend(
+    /** @lends GroupListView.prototype */{
 
 		type: "GroupListView",
 

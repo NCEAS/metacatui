@@ -24,6 +24,7 @@ define(['underscore',
     /**
     * @class EML211EditorView
     * @classdesc A view of a form for creating and editing EML 2.1.1 documents
+    * @classcategory Views/Metadata
     * @name EML211EditorView
     * @extends EditorView
     * @constructs

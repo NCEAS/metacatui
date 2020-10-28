@@ -1,13 +1,16 @@
 define(["jquery", "underscore", "backbone", "models/metadata/eml211/EMLEntity"],
     function($, _, Backbone, EMLEntity) {
 
-        /*
-         * EMLOtherEntity represents a generic data entity, corresponding
+        /**
+        * @class EMLOtherEntity
+         * @classdesc EMLOtherEntity represents a generic data entity, corresponding
          * with the EML otherEntity module.
-         *
+         * @classcategory Models/Metadata/EML211
          * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
+         * @extends EMLEntity
          */
-        var EMLOtherEntity = EMLEntity.extend({
+        var EMLOtherEntity = EMLEntity.extend(
+          /** @lends EMLOtherEntity.prototype */{
 
         	//The class name for this model
         	type: "EMLOtherEntity",

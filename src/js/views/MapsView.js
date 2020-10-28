@@ -1,13 +1,16 @@
 define(["jquery",
     "underscore",
     "backbone",
-    'gmaps', //? <- used in dataCatalogView
-    'nGeohash', // ? <- used in dataCatalogView
-    "text!templates/maps.html"], // <- maps.html exists outside of portal folder
+    'gmaps',
+    'nGeohash',
+    "text!templates/maps.html"],
     function($, _, Backbone, gmaps, nGeohash, mapsTemplate){
 
-    /* The mapsView is the area where the the geographic coverage of the datasets that comprise the portal
+    /*
+     * @class MapsView
+     * @classdesc The mapsView is the area where the the geographic coverage of the datasets that comprise the portal
      * are displayed. The mapsView will update to match the search results when they are filtered.
+     * @classcategory Views
      */
     var mapsView = Backbone.View.extend({
 

@@ -11,6 +11,7 @@ define(["jquery",
      * @classdesc The PortalSectionView is a generic view to render
      * portal sections, with a default rendering of a
      * MarkdownView
+     * @classcategory Views/Portals
      * @module views/PortalSectionView
      * @name PortalSectionView
      * @extends Backbone.View
@@ -108,7 +109,7 @@ define(["jquery",
 
           //If there is Markdown, render it
           if( this.model.get("content").get("markdown") ){
-            
+
             //Create a MarkdownView
             this.markdownView = new MarkdownView({
               markdown: this.model.get("content").get("markdown"),
@@ -118,18 +119,18 @@ define(["jquery",
 
             // Listen to the markdown view and when it is rendered, format the rendered markdown
             this.listenTo(this.markdownView, "mdRendered", this.postMarkdownRender);
-            
+
             // Render the view
             this.markdownView.render();
 
             // Add the markdown view element to this view
             this.$(".portal-section-content").html(this.markdownView.el);
-            
+
           }
 
         },
 
-        
+
 
         /**
         * This funciton is called after this view has fully rendered and is
@@ -142,7 +143,7 @@ define(["jquery",
                 subview.postRender();
               }
           });
-          
+
           if(this.markdownView){
             this.markdownView.postRender();
           }
@@ -153,10 +154,10 @@ define(["jquery",
         * resulting HTML as needed for this view
         */
         postMarkdownRender: function(){
-          
-          
-        
-          
+
+
+
+
           // If the window location has a hash, scroll to it
           if( window.location.hash && this.$(window.location.hash).length ){
             var view = this;

@@ -24,6 +24,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       * @class EML211
       * @classdesc An EML211 object represents an Ecological Metadata Language
       * document, version 2.1.1
+      * @classcategory Models/Metadata/EML211
       * @extends ScienceMetadata
       */
       var EML211 = ScienceMetadata.extend(
@@ -675,12 +676,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         $(eml).attr("packageId", this.get("id"));
 
         // Set schema version
-        $(eml).attr("xmlns:eml", 
-          MetacatUI.appModel.get("editorSerializationFormat") || 
+        $(eml).attr("xmlns:eml",
+          MetacatUI.appModel.get("editorSerializationFormat") ||
           "https://eml.ecoinformatics.org/eml-2.2.0");
 
         // Set formatID
-        this.set("formatId", 
+        this.set("formatId",
           MetacatUI.appModel.get("editorSerializationFormat") ||
           "https://eml.ecoinformatics.org/eml-2.2.0");
 
@@ -2128,9 +2129,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       },
 
       /**
-       * Sets the xsi:schemaLocation attribute on the passed-in Element 
+       * Sets the xsi:schemaLocation attribute on the passed-in Element
        * depending on the application configuration.
-       * 
+       *
        * @param {Element} eml: The root eml:eml element to modify
        * @return {Element} The element, possibly modified
        */

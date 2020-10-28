@@ -3,13 +3,15 @@ define(["jquery", "underscore", "backbone",
         "models/DataONEObject"],
     function($, _, Backbone, EMLMeasurementScale, DataONEObject) {
 
-        /*
-         * EMLAttribute represents a data attribute within an entity, such as
+        /**
+         * @class EMLAttribute
+         * @classdesc EMLAttribute represents a data attribute within an entity, such as
          * a column variable in a data table, or a feature attribute in a shapefile.
-         *
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
+         * @classcategory Models/Metadata/EML211
          */
-        var EMLAttribute = Backbone.Model.extend({
+        var EMLAttribute = Backbone.Model.extend(
+          /** @lends EMLAttribute.prototype */{
 
             /* Attributes of an EML attribute object */
             defaults: function(){

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/views/DataPackageView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/views/DataPackageView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>﻿/* global define */
+define([
+    'jquery',
+    'underscore',
+    'backbone',
+    'localforage',
+    'collections/DataPackage',
+    'models/DataONEObject',
+    'models/metadata/ScienceMetadata',
+    'models/metadata/eml211/EML211', 'views/DataItemView',
+    'text!templates/dataPackage.html',
+    'text!templates/dataPackageStart.html'],
+    function($, _, Backbone, LocalForage, DataPackage, DataONEObject, ScienceMetadata, EML211, DataItemView,
+    		DataPackageTemplate, DataPackageStartTemplate) {
+        'use strict';
+
+        /**
+         * @class DataPackageView
+         * @classdesc The main view of a Data Package in the editor.  The view is
+         *  a file/folder browser
+         * @classcategory Views
+         */
+        var DataPackageView = Backbone.View.extend(
+          /** @lends DataPackageView.prototype */{
+
+            tagName: "table",
+
+            className: "table table-striped table-hover",
+
+            id: "data-package-table",
+
+            events: {
+                "click .toggle-rows" 		   : "toggleRows", // Show/hide rows associated with event's metadata row
+                "click .message-row .addFiles" : "handleAddFiles"
+            },
+
+            subviews: {},
+
+            template: _.template(DataPackageTemplate),
+            startMessageTemplate: _.template(DataPackageStartTemplate),
+
+            // Models waiting for their parent folder to be rendered, hashed by parent id:
+            // {'parentid': [model1, model2, ...]}
+            delayedModels: {},
+
+            /* Flag indicating the open or closed state of the package rows */
+            isOpen: true,
+
+            initialize: function(options) {
+            	//Get the options sent to this view
+            	if(typeof options == "object"){
+            		//The edit option will allow the user to edit the table
+            		this.edit = options.edit || false;
+
+            		//The data package to render
+            		this.dataPackage = options.dataPackage || new DataPackage();
+            	}
+            	//Create a new DataPackage collection if one wasn't sent
+            	else if(!this.dataPackage){
+            		this.dataPackage = new DataPackage();
+            	}
+
+                return this;
+
+            },
+
+            /**
+             *  Render the DataPackage HTML
+             */
+            render: function() {
+                this.$el.append(this.template({
+                	loading: MetacatUI.appView.loadingTemplate({msg: "Loading files table... "}),
+                	id: this.dataPackage.get("id")
+                }));
+
+                // Listen for  add events because models are being merged
+                this.listenTo(this.dataPackage, 'add', this.addOne);
+                this.listenTo(this.dataPackage, "fileAdded", this.addOne);
+
+                // Render the current set of models in the DataPackage
+                this.addAll();
+
+                //If this is a new data package, then display a message and button
+                if((this.dataPackage.length == 1 &amp;&amp; this.dataPackage.models[0].isNew()) || !this.dataPackage.length){
+
+                	var messageRow = this.startMessageTemplate();
+
+                	this.$("tbody").append(messageRow);
+
+                	this.listenTo(this.dataPackage, "add", function(){
+                		this.$(".message-row").remove();
+                	});
+                }
+
+                return this;
+            },
+
+            /**
+             * Add a single DataItemView row to the DataPackageView
+             */
+            addOne: function(item) {
+            	if(!item) return false;
+
+                //Don't add duplicate rows
+                if(this.$(".data-package-item[data-id='" + item.id + "']").length)
+                	return;
+
+                var dataItemView, scimetaParent, parentRow, delayed_models;
+
+                if ( _.contains(Object.keys(this.subviews), item.id) ) {
+                    return false; // Don't double render
+
+                }
+
+                dataItemView = new DataItemView({model: item});
+                this.subviews[item.id] = dataItemView; // keep track of all views
+
+                //Get the science metadata that documents this item
+                scimetaParent = item.get("isDocumentedBy");
+
+                //If this item is not documented by a science metadata object,
+                // and there is only one science metadata doc in the package, then assume it is
+                // documented by that science metadata doc
+                if( typeof scimetaParent == "undefined" || !scimetaParent ){
+
+                	//Get the science metadata models
+                	var metadataIds = this.dataPackage.sciMetaPids;
+
+                	//If there is only one science metadata model in the package, then use it
+                	if( metadataIds.length == 1 )
+                		scimetaParent = metadataIds[0];
+                }
+                //Otherwise, get the first science metadata doc that documents this object
+                else{
+                    scimetaParent = scimetaParent[0];
+                }
+
+                if((scimetaParent == item.get("id")) || (!scimetaParent &amp;&amp; item.get("type") == "Metadata")) {
+                	// This is a metadata folder row, append it to the table
+                    this.$el.append(dataItemView.render().el);
+
+                    // Render any delayed models if this is the parent
+                    if ( _.contains(Object.keys(this.delayedModels), dataItemView.id) ) {
+
+                        delayed_models = this.delayedModels[dataItemView.id];
+                        _.each(delayed_models, this.addOne, this);
+
+                    }
+                }
+                else{
+                    // Find the parent row by it's id, stored in a custom attribute
+                	if(scimetaParent)
+                		parentRow = this.$("[data-id='" + scimetaParent + "']");
+
+                    if ( typeof parentRow !== "undefined" &amp;&amp; parentRow.length ) {
+                        // This is a data row, insert below it's metadata parent folder
+                        parentRow.after(dataItemView.render().el);
+
+                        // Remove it from the delayedModels list if necessary
+                        if ( _.contains(Object.keys(this.delayedModels), scimetaParent) ) {
+                            delayed_models = this.delayedModels[scimetaParent];
+                            var index = _.indexOf(delayed_models, item);
+                            delayed_models = delayed_models.splice(index, 1);
+
+                            // Put the shortened array back if delayed models remains
+                            if ( delayed_models.length > 0 ) {
+                                this.delayedModels[scimetaParent] = delayed_models;
+
+                            } else {
+                                this.delayedModels[scimetaParent] = undefined;
+
+                            }
+                        }
+
+                        this.trigger("addOne");
+
+                    } else {
+                        console.log("Couldn't render " + item.id + ". Delayed until parent is rendered.");
+                        // Postpone the data row until the parent is rendered
+                        delayed_models = this.delayedModels[scimetaParent];
+
+                        // Delay the model rendering if it isn't already delayed
+                        if ( typeof delayed_models !== "undefined" ) {
+
+                            if ( ! _.contains(delayed_models, item) ) {
+                                delayed_models.push(item);
+                                this.delayedModels[scimetaParent] = delayed_models;
+
+                            }
+
+                        } else {
+                            delayed_models = [];
+                            delayed_models.push(item);
+                            this.delayedModels[scimetaParent] = delayed_models;
+                        }
+                    }
+
+                }
+
+            },
+
+            /**
+             * Add all rows to the DataPackageView
+             */
+            addAll: function() {
+                this.$el.find('#data-package-table-body').html(''); // clear the table first
+                this.dataPackage.sort();
+                this.dataPackage.each(this.addOne, this);
+
+            },
+
+            /**
+                Remove the subview represented by the given model item.
+
+                @param item The model representing the sub view to be removed
+            */
+            removeOne: function(item) {
+                if (_.contains(Object.keys(this.subviews), item.id)) {
+                    // Remove the view and the its reference in the subviews list
+                    this.subviews[item.id].remove();
+                    delete this.subviews[item.id];
+
+                }
+            },
+
+            handleAddFiles: function(e){
+            	//Pass this on to the DataItemView for the root data package
+            	this.$(".data-package-item.folder").first().data("view").handleAddFiles(e);
+            },
+
+            /**
+             * Close subviews as needed
+             */
+            onClose: function() {
+                // Close each subview
+                _.each(Object.keys(this.subviews), function(id) {
+    				var subview = this.subviews[id];
+                    subview.onClose();
+
+                }, this);
+
+                //Reset the subviews from the view completely (by removing it from the prototype)
+                this.__proto__.subviews = {};
+            },
+
+            /**
+             Show or hide the data rows associated with the event row science metadata
+             */
+            toggleRows: function(event) {
+
+                if ( this.isOpen ) {
+
+                    // Get the DataItemView associated with each id
+                    _.each(Object.keys(this.subviews), function(id) {
+
+                        var subview = this.subviews[id];
+
+                        if ( subview.model.get("type") === "Data" &amp;&amp; subview.remove ) {
+                            // Remove the view from the DOM
+                            subview.remove();
+                            // And from the subviews list
+                            delete this.subviews[id];
+
+                        }
+
+                    }, this);
+
+                    // And then close the folder
+                    this.$el.find(".open")
+                        .removeClass("open")
+                        .addClass("closed")
+                        .removeClass("icon-chevron-down")
+                        .addClass("icon-chevron-right");
+
+                    this.$el.find(".icon-folder-open")
+                        .removeClass("icon-folder-open")
+                        .addClass("icon-folder-close");
+
+                    this.isOpen = false;
+
+                } else {
+
+                    // Add sub rows to the view
+                    var dataModels =  this.dataPackage.where({type: "Data"});
+                    _.each(dataModels, function(model) {
+                            this.addOne(model);
+                    }, this);
+
+                    // And then open the folder
+                    this.$el.find(".closed")
+                        .removeClass("closed")
+                        .addClass("open")
+                        .removeClass("icon-folder-close")
+                        .addClass("icon-chevron-down");
+
+                    this.$el.find(".icon-folder-close")
+                        .removeClass("icon-folder-close")
+                        .addClass("icon-folder-open");
+
+                    this.isOpen = true;
+
+                }
+
+                event.stopPropagation();
+                event.preventDefault();
+            },
+
+        });
+        return DataPackageView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Oct 28 2020 16:09:57 GMT-0500 (Central Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
   /**
   * @class NumericFilter
   * @classdesc A search filter whose search term is always an exact number or numbber range
+  * @classcategory Models/Filters
   * @extends Filter
   * @constructs
   */

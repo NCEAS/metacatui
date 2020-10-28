@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
   /**
   * @class ChoiceFilter
   * @classdesc A Filter whose search term is one or more choices from a defined list
+  * @classcategory Models/Filters
   * @name ChoiceFilter
   * @constructs ChoiceFilter
   * @extends Filter

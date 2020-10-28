@@ -4,10 +4,14 @@ define(["jquery",
     "text!templates/portals/portalLogo.html"],
     function($, _, Backbone, PortalLogoTemplate){
 
-    /* The PortalLogosView is the area where the the logos of the organizations
+    /**
+     * @class PortalLogosView
+     * @classdesc The PortalLogosView is the area where the the logos of the organizations
      * associated with each portal will be displayed.
+     * @classcategory Views/Portals
      */
-    var PortalLogosView = Backbone.View.extend({
+    var PortalLogosView = Backbone.View.extend(
+      /** @lends PortalLogosView.prototype */{
 
         /* The Portal Logos Element */
         tagName: "div",

@@ -13,6 +13,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
   /**
   * @class PortEditorMdSectionView
   * @classdesc A section of the Portal Editor for adding/editing a Markdown page to a Portal
+  * @classcategory Views/Portals/Editor
   * @extends PortEditorSectionView
   * @constructor
   */

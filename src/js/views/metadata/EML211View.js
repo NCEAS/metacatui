@@ -33,6 +33,7 @@ define(['underscore', 'jquery', 'backbone',
     /**
     * @class EMLView
     * @classdesc An EMLView renders an editable view of an EML 2.1.1 document
+    * @classcategory Views/Metadata
     * @extends ScienceMetadataView
     */
     var EMLView = ScienceMetadataView.extend(

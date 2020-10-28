@@ -11,6 +11,7 @@ define(["jquery", "underscore", "backbone", "models/SolrResult", "collections/Fi
          * value - the value that will be included in the query
          * description - a longer text description of the filter value
          * Example: {filterLabel: "Creator", label: "Jared Kibele (16)", value: "Kibele", description: "Search for data creators"}
+         * @classcategory Models
          * @extends Backbone.Model
          * @constructor
          */

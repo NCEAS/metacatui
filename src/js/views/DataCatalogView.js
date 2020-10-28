@@ -25,6 +25,7 @@ define(["jquery",
 
         /**
         * @class DataCatalogView
+        * @classcategory Views
         * @extends Backbone.View
         * @constructor
         */
@@ -2310,7 +2311,6 @@ define(["jquery",
 
                 TextOverlay.prototype = new google.maps.OverlayView();
 
-                /** @constructor */
                 function TextOverlay(options) {
                     // Now initialize all properties.
                     this.bounds_ = options.bounds;

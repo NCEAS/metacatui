@@ -9,6 +9,7 @@ function(_, $, Backbone, PortalImage, ImageUploaderView, Template){
   /**
   * @class PortEditorImageView
   * @classdesc A view that allows the user to upload an image as a DataONEObject
+  * @classcategory Views/Portals/Editor
   */
   var PortEditorImageView = Backbone.View.extend(
       /** @lends PortEditorImageView.prototype */{

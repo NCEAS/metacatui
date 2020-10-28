@@ -6,10 +6,18 @@ define(['jquery', 'underscore', 'backbone',
   function($, _, Backbone, NumericFilter, FilterView, Template) {
   'use strict';
 
-  // Render a view of a single NumericFilter model
-  var NumericFilterView = FilterView.extend({
+  /**
+  * @class NumericFilterView
+  * @classdesc Render a view of a single NumericFilter model
+  * @classcategory Views/Filters
+  * @extends FilterView
+  */
+  var NumericFilterView = FilterView.extend(
+    /** @lends NumericFilterView.prototype */{
 
-    // @type {NumericFilter} - A NumericFilter model to be rendered in this view
+    /**
+    *  A NumericFilter model to be rendered in this view
+    * @type {NumericFilter} */
     model: null,
 
     className: "filter numeric",
@@ -90,7 +98,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Updates the value set on the Filter Model associated with this view.
     * The filter value is grabbed from the input element in this view.
     *
@@ -108,7 +116,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Gets the min and max years from the number inputs and updates the DateFilter
     *  model and the year UI slider.
     * @param {Event} e - The event that triggered this callback function
@@ -133,7 +141,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Resets the slider to the default values
     */
     resetSlider: function(){

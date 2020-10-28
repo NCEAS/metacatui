@@ -8,7 +8,10 @@ define(["jquery",
     function($, _, Backbone, PortalImage, EMLText) {
 
       /**
-       * A Portal Section model represents the ContentSectionType from the portal schema
+       * @class PortalSectionModel
+       * @classdesc A Portal Section model represents the ContentSectionType from the portal schema
+       * @classcategory Models/Portals
+       * @extends Backbone.Model
        */
       var PortalSectionModel = Backbone.Model.extend(
         /** @lends PortalSectionModel.prototype */{

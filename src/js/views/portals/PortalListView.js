@@ -9,6 +9,7 @@ define(["jquery",
       /**
       * @class PortalListView
       * @classdesc A view that shows a list of Portals
+      * @classcategory Views/Portals
       * @extends Backbone.View
       * @constructor
       */

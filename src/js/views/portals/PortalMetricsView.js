@@ -14,6 +14,7 @@ define(["jquery",
      * @class PortalMetricsView
      * @classdec The PortalMetricsView is a view to render the
      * portal metrics tab (within PortalSectionView)
+     * @classcategory Views/Portals
      * @extends PortalSectionView
      * @constructor
      */

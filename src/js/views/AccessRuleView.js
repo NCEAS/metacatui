@@ -4,6 +4,11 @@ define(['underscore',
         "models/AccessRule"],
 function(_, $, Backbone, AccessRule){
 
+  /**
+  * @class AccessRuleView
+  * @classdesc Renders a single access rule from an object's access policy
+  * @classcategory Views
+  */
   var AccessRuleView = Backbone.View.extend(
     /** @lends AccessRuleView.prototype */{
 

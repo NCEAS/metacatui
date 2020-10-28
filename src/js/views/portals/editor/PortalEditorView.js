@@ -19,6 +19,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
   /**
   * @class PortalEditorView
   * @classdesc A view of a form for creating and editing DataONE Portal documents
+  * @classcategory Views/Portals/Editor
   * @name PortalEditorView
   * @extends EditorView
   * @constructs

@@ -11,6 +11,7 @@ define(["jquery",
     * @class PortalDataView
     * @classdesc The PortalDataView is a view to render the
      * portal data tab (within PortalView) to display all the datasets related to this portal.
+     * @classcategory Views/Portals
      * @extends PortalSectionView
      * @constructor
      */

@@ -3,13 +3,16 @@
 define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLUnit"],
     function($, _, Backbone, X2JS, EMLUnit) {
 
-    /*
-     * Units represents the Ecological Metadata Language units list
+    /**
+     * @class Units
+     * @classdesc Units represents the Ecological Metadata Language units list
+     * @classcategory Collections
      */
-    var Units = Backbone.Collection.extend({
+    var Units = Backbone.Collection.extend(
+      /** @lends Units.prototype */{
 
         model: EMLUnit,
-        
+
         comparator: function(unit){
         	return unit.get("_name").charAt(0).toUpperCase() + unit.get("_name").slice(1);
         },
@@ -23,7 +26,7 @@ define(["jquery", "underscore", "backbone", "x2js", "models/metadata/eml211/EMLU
         fetch: function(options) {
         	if(typeof options != {})
         		var options = {};
-        	
+
             var fetchOptions = _.extend({dataType: "text"}, options);
 
             return Backbone.Model.prototype.fetch.call(this, fetchOptions);

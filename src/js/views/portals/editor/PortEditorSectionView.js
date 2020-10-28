@@ -12,6 +12,7 @@ function(_, $, Backbone, PortalSectionModel, Template, SectionOptionTemplate, Fr
   * @class PortEditorSectionView
   * @classdesc A view of a single section of the PortalEditorView.
   * This default section view displays a choice of which PortalSection to add to the Portal.
+  * @classcategory Views/Portals/Editor
   * @extends Backbone.View
   * @constructor
   */

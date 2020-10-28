@@ -11,6 +11,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
   /**
   * @class MarkdownEditorView
   * @classdesc A view of an HTML textarea with markdown editor UI and preview tab
+  * @classcategory Views
   * @extends Backbone.View
   * @constructor
   */

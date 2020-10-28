@@ -6,6 +6,7 @@ define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
   /**
   * @class Stats
   * @classdesc This model contains all a collection of statistics/metrics about a collection of DataONE objects
+  * @classcategory Models
   * @name Stats
   * @extends Backbone.Model
   * @constructor

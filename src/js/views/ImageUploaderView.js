@@ -10,6 +10,8 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
 
   /**
   * @class ImageUploaderView
+  * @classdesc A view that allows a person to upload an image to the repository
+  * @classcategory Views
   */
   var ImageUploaderView = Backbone.View.extend(
     /** @lends ImageUploaderView.prototype */{
@@ -256,7 +258,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
             } catch (e) {
               console.log("Error generating thumbnail image, error message: " + e);
             }
-            
+
           },
 
           // Dropzone will check filetype = options.acceptedFiles. Add functions
@@ -347,7 +349,7 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
               console.log("Issue initializing dropzone, error message: " + e);
             }
           }
-          
+
         });
 
         // Save the dropzone element for other functions to access later
@@ -514,11 +516,11 @@ function(_, $, Backbone, DataONEObject, ObjectFormats, Dropzone, Template, corej
         console.log("image could not be displayed, error message: " + error);
         // When the preview image fails to render, show some explanatory text
         this.showError($(this.imageDropzone.element));
-        
+
       }
 
     },
-    
+
     /**
      * showError - Indicates to the user that the image uploader may not work
      * due to browser issues.

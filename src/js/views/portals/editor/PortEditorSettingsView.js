@@ -10,6 +10,7 @@ function(_, $, Backbone, PortalSection, PortEditorSectionView, PortEditorLogosVi
 
   /**
   * @class PortEditorSettingsView
+  * @classcategory Views/Portals/Editor
   */
   var PortEditorSettingsView = PortEditorSectionView.extend(
     /** @lends PortEditorSettingsView.prototype */{

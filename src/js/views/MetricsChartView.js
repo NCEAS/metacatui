@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'd3'],
     * @class MetricsChartView
     * @classdesc The MetricsChartView will render an SVG times-series chart using D3 that shows the number of metrics over time.
     * @screenshot views/MetricsChartView.png
+    * @classcategory Views
     */
     var MetricsChartView = Backbone.View.extend(
       /** @lends MetricsChartView.prototype */{

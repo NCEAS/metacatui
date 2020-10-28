@@ -2,10 +2,13 @@
 
 define(["jquery", "underscore", "backbone"], function($, _, Backbone) {
 
-    /*
-     * An EMLUnit represents a single unit defined in the EML Unit Dictionary
+    /**
+     * @class EMLUnit
+     * @classdesc An EMLUnit represents a single unit defined in the EML Unit Dictionary
+     * @classcategory Models/Metadata/EML211
      */
-    var EMLUnit = Backbone.Model.extend({
+    var EMLUnit = Backbone.Model.extend(
+      /** @lends EMLUnit.prototype */{
 
         /* The default unit fields */
         defaults: function() {

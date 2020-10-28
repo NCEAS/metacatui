@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone',
   /**
   * @class FilterGroupsView
   * @classdesc Creates a view of one or more FilterGroupViews
-  * @module views/filters/FilterGroupsView
+  * @classcategory Views/Filters
   * @name FilterGroupsView
   * @extends Backbone.View
   * @constructor

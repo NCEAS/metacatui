@@ -22,13 +22,15 @@ define(["jquery",
     function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
-         * A PortalModel is a specialized collection that represents a portal,
+         * @classdesc A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
          * visualizations.  It also includes settings for customized filtering of the
          * associated data, and properties used to customized the map display and the
          * overall branding of the portal.
          *
          * @class PortalModel
+         * @classcategory Models/Portals
+         * @extends CollectionModel
          * @module models/PortalModel
          * @name PortalModel
          * @constructor
@@ -133,12 +135,12 @@ define(["jquery",
              * @return {string} The portal URL
             */
             url: function() {
-              
+
               // use the resolve service if there is no object service url
               // (e.g. in DataONE theme)
               var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
                 MetacatUI.appModel.get("resolveServiceUrl");
-              
+
               //If this object is being updated, use the old pid in the URL
               if ( !this.isNew() && this.get("oldPid") ) {
                 return urlBase +
@@ -1367,73 +1369,73 @@ define(["jquery",
               $.ajax(requestSettings);
             },
 
-            
+
 
             /**
              * Queries the CN Solr to retrieve the updated BlockList
              */
             updateNodeBlockList: function(){
               var model  = this;
-              
+
               $.ajax({
-                url: MetacatUI.appModel.get('nodeServiceUrl'),  
+                url: MetacatUI.appModel.get('nodeServiceUrl'),
                 dataType: "text",
-                error:  function(data, textStatus, xhr) { 
+                error:  function(data, textStatus, xhr) {
                   // if there is an error in retrieving the node list;
                   // proceed with the existing node list to perform the checks
                   model.checkPortalLabelAvailability()
                 },
-                success: function(data, textStatus, xhr) { 
-                  
+                success: function(data, textStatus, xhr) {
+
                   var xmlResponse = $.parseXML(data) || null;
                   if(!xmlResponse) return;
-                  
+
                   // update the node block list on success
                   model.saveNodeBlockList(xmlResponse);
-                }		
+                }
               });
             },
-            
+
             /**
              * Parses the retrieved XML document and saves the node information to the BlockList
-             * 
+             *
              * @param {XMLDocument} The XMLDocument returned from the fetch() AJAX call
              */
             saveNodeBlockList: function(xml){
               var model = this,
                 children   = xml.children || xml.childNodes;
-                
+
               //Traverse the XML response to get the MN info
               _.each(children, function(d1NodeList){
-                
+
                 var d1NodeListChildren = d1NodeList.children || d1NodeList.childNodes;
-                
+
                 //The first (and only) child should be the d1NodeList
                 _.each(d1NodeListChildren, function(thisNode){
-                  
+
                   //Ignore parts of the XML that is not MN info
                   if(!thisNode.attributes) return;
-                  
+
                   //'node' will be a single node
                   var node = {},
                     nodeProperties = thisNode.children || thisNode.childNodes;
-                  
+
                   //Grab information about this node from XML nodes
                   _.each(nodeProperties, function(nodeProperty){
-                    
+
                     if(nodeProperty.nodeName == "property")
                       node[$(nodeProperty).attr("key")] = nodeProperty.textContent;
                     else
                       node[nodeProperty.nodeName] = nodeProperty.textContent;
-                    
+
                     //Check if this member node has v2 read capabilities - important for the Package service
                     if((nodeProperty.nodeName == "services") && nodeProperty.childNodes.length){
                       var v2 = $(nodeProperty).find("service[name='MNRead'][version='v2'][available='true']").length;
                       node["readv2"] = v2;
                     }
                   });
-                  
-                  //Grab information about this node from XLM attributes 
+
+                  //Grab information about this node from XLM attributes
                   _.each(thisNode.attributes, function(attribute){
                     node[attribute.nodeName] = attribute.nodeValue;
                   });
@@ -1451,13 +1453,13 @@ define(["jquery",
                       model.get("labelBlockList").push(node.name);
                     }
                   }
-        
+
                   // node short identifier
                   node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
                   if (Array.isArray(model.get("labelBlockList")) && ((model.get("labelBlockList")).indexOf(node.shortIdentifier) < 0)) {
                     model.get("labelBlockList").push(node.shortIdentifier);
                   }
-                
+
                 });
               });
 

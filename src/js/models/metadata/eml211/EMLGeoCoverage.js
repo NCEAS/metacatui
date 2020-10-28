@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
         /**
         * @class EMLGeoCoverage
         * @classdesc A description of geographic coverage of a dataset, per the EML 2.1.1 metadata standard
+        * @classcategory Models/Metadata/EML211
         * @extends Backbone.Model
         * @constructor
         */

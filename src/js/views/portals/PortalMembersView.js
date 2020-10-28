@@ -13,6 +13,7 @@ define(["jquery",
     * @class PortalMembersView
     * @classdesc The PortalMembersView is a view to render the
      * portal members tab (within PortalSectionView)
+     * @classcategory Views/Portals
      * @extends PortalSectionView
      * @constructor
      */

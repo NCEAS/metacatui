@@ -21,6 +21,7 @@ define(['jquery',
 	/**
   * @class AppView
   * @classdesc The top-level view of the UI that contains and coordinates all other views of the UI
+  * @classcategory Views
   */
 	var AppView = Backbone.View.extend(
     /** @lends AppView.prototype */{

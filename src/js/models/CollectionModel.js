@@ -14,6 +14,7 @@ define(["jquery",
   /**
   * @class CollectionModel
   * @classdesc A collection of datasets, defined by one or more search filters
+  * @classcategory Models
   * @name CollectionModel
   * @extends DataONEObject
   * @constructor

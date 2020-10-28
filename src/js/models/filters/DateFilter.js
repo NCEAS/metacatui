@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
   /**
   * @class DateFilter
   * @classdesc A search filter whose search term is an exact date or date range
+  * @classcategory Models/Filters
   * @constructs DateFilter
   * @extends Filter
   */

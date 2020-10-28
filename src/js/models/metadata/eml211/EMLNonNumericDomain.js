@@ -7,6 +7,7 @@ define(["jquery", "underscore", "backbone",
          * @classdesc EMLNonNumericDomain represents the measurement scale of a nominal
          * or ordinal measurement scale attribute, and is an extension of
          * EMLMeasurementScale.
+         * @classcategory Models/Metadata/EML211
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
          * @extends Backbone.Model
          * @constructor

@@ -6,6 +6,7 @@ function(_, $, Backbone){
   /**
   * @class ColorPaletteView
   * @classdesc A view that allows the user to select colors to form a color palette/scheme
+  * @classcategory Views
   * @extends Backbone.View
   * @constructor
   */

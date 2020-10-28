@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone'],
   /**
   * @class Filter
   * @classdesc A single search filter that is used in queries sent to the DataONE search service.
+  * @classcategory Models/Filters
   * @extends Backbone.Model
   * @constructs
   */

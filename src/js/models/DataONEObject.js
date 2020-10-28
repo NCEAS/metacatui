@@ -10,6 +10,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
          and other basic DataONE API functions. This model can be extended to provide
          specific functionality for different object types, such as the {@link ScienceMetadata}
          model and the {@link EML211} model.
+         * @classcategory Models
         * @augments Backbone.Model
         */
         var DataONEObject = Backbone.Model.extend(

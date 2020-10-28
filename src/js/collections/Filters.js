@@ -7,6 +7,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
         /**
          * @class Filters
          * @classdesc A collection of Filter models that represents a full search
+         * @classcategory Collections
          * @name Filters
          * @extends Backbone.Collection
         * @constructor

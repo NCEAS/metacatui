@@ -8,6 +8,7 @@ define(['jquery', 'underscore', 'backbone', 'views/SignInView', 'text!templates/
   * @class NavbarView
   * @classdesc Build the navbar view of the application
   * @extends Backbone.View
+  * @classcategory Views
   * @constructor
   */
 	var NavbarView = Backbone.View.extend(

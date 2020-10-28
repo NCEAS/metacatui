@@ -5,10 +5,14 @@ define(["jquery",
     "views/portals/PortalSectionView.js"],
     function($, _, Backbone, PortalVisualizationsTemplate, PortalSectionView){
 
-    /* The PortalVisualizationsView is a view to render the
+    /*
+     * @class PortalVisualizationsView
+     * @classdesc The PortalVisualizationsView is a view to render the
      * portal visualizations tab (within PortalSectionView)
+     * @classcategory Views/Portals
      */
-     var PortalVisualizationsView = PortalSectionView.extend({
+     var PortalVisualizationsView = PortalSectionView.extend(
+       /** @lends PortalVisualizationsView.prototype */{
 
         /* The Portal Visualizations Element*/
         el: "#portal-visualizations",

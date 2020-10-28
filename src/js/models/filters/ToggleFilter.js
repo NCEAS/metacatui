@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
   /**
   * @class ToggleFilter
   * @classdesc A search filter whose search term is only one of two opposing choices
+  * @classcategory Models/Filters
   * @constructs ToggleFilter
   * @extends Filter
   */

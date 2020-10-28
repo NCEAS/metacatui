@@ -9,6 +9,7 @@ define(["jquery", "underscore", "backbone", "collections/Filters", "models/filte
   /**
   * @class FilterGroup
   * @classdesc A group of multiple Filters, which may be combined to create a complex query
+  * @classcategory Models/Filters
   * @extends Backbone.Model
   * @constructs
   */

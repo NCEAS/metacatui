@@ -7,7 +7,9 @@ define(["jquery",
 
       /**
        * @class PortalImage
-       * A Portal Image model represents a single image used in a Portal
+       * @classdesc A Portal Image model represents a single image used in a Portal
+       * @classcategory Models/Portals
+       * @extends Backbone.Model
        */
       var PortalImageModel = Backbone.Model.extend(
         /** @lends PortalImage.prototype */{
@@ -51,12 +53,12 @@ define(["jquery",
           modelJSON.identifier = $objectDOM.children("identifier").text();
           if( modelJSON.identifier ){
             if( modelJSON.identifier.substring(0, 4) !== "http" ){
-              
+
               // use the resolve service if there is no object service url
               // (e.g. in DataONE theme)
               var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
                 MetacatUI.appModel.get("resolveServiceUrl");
-                
+
               modelJSON.imageURL = urlBase + modelJSON.identifier;
             }
             else{

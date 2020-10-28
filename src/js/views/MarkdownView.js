@@ -12,6 +12,7 @@ define([    "jquery", "underscore", "backbone",
     /**
     * @class MarkdownView
     * @classdesc A view of markdown content rendered into HTML with optional table of contents
+    * @classcategory Views
     * @extends Backbone.View
     * @constructor
     */
@@ -23,7 +24,7 @@ define([    "jquery", "underscore", "backbone",
         * @type {string}
         */
         className: "markdown",
-        
+
         /**
         * The type of View this is
         * @type {string}
@@ -33,23 +34,23 @@ define([    "jquery", "underscore", "backbone",
 
         /**
          * Renders the compiled template into HTML
-         * @type {UnderscoreTemplate}        
-         */         
+         * @type {UnderscoreTemplate}
+         */
         template: _.template(markdownTemplate),
         loadingTemplate: _.template(LoadingTemplate),
-        
+
         /**
         * Markdown to render into HTML
         * @type {string}
         */
         markdown: "",
-        
+
         /**
         * An array of literature cited
         * @type {Array}
         */
         citations: [],
-        
+
         /**
         * Indicates whether or not to render a table of contents for this view.
         * If set to true, a table of contents will be shown if there two or more
@@ -83,17 +84,17 @@ define([    "jquery", "underscore", "backbone",
             }
         },
 
-        /**    
+        /**
          * render - Renders the MarkdownView; converts markdown to HTML and
          * displays it.
-         */ 
+         */
         render: function() {
-          
+
             // Show a loading message while we render the markdown to HTML
             this.$el.html(this.loadingTemplate({
               msg: "Retrieving content..."
             }));
-          
+
             // Once required extensions are tested for and loaded, convert and
             // append markdown
             this.stopListening();
@@ -140,7 +141,7 @@ define([    "jquery", "underscore", "backbone",
                 }
 
                 this.$el.html(this.template({ markdown: htmlFromMD }));
-                
+
                 if( this.showTOC ){
                   this.listenToOnce(this, "TOCRendered", function(){
                     this.trigger("mdRendered");
@@ -151,16 +152,16 @@ define([    "jquery", "underscore", "backbone",
                   this.trigger("mdRendered");
                   this.postRender();
                 }
-                
+
             });
 
             // Detect which extensions we'll need
             this.listRequiredExtensions( this.markdown );
-            
+
             return this;
-            
+
         },
-        
+
         postRender: function(){
           if(this.tocView){
             this.tocView.postRender();
@@ -170,18 +171,18 @@ define([    "jquery", "underscore", "backbone",
             });
           }
         },
-        
-        /**        
+
+        /**
          * listRequiredExtensions - test which extensions are needed, then load
          * them
-         *          
+         *
          * @param  {string} markdown - The markdown string before it's converted
          * into HTML
-         */         
+         */
         listRequiredExtensions: function(markdown){
 
             var view = this;
-            
+
             // Given a path, check whether a CSS file was already added to the
             // head, and add it if not. Prevents adding the CSS file multiple
             // times if the view is loaded more than once.
@@ -194,14 +195,14 @@ define([    "jquery", "underscore", "backbone",
                 }).appendTo('head');
               }
             }
-            
+
             addCSS("/components/showdown/extensions/showdown-katex/katex.min.css");
 
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
             var SDextensions = ["xssfilter", "katex", "highlight", "docbook",
                                 "showdown-htags", "bootstrap", "footnotes",
                                 "showdown-citation", "showdown-images"];
-                                
+
             var numTestsTodo = SDextensions.length;
 
             // Each time an extension is tested for (and loaded if required),
@@ -362,9 +363,9 @@ define([    "jquery", "underscore", "backbone",
           }
 
           var view = this;
-          
+
           require(["views/TOCView"], function(TOCView){
-            
+
             //Create a table of contents view
             view.tocView = new TOCView({
               contentEl: view.el,
@@ -372,29 +373,29 @@ define([    "jquery", "underscore", "backbone",
               addScrollspy: true,
               affix: true
             });
-            
+
             view.tocView.render();
-            
+
             // If more than one link was created in the TOCView, add it to this
             // view. Limit to `.desktop` items (i.e. exclude .mobile items) so
-            // that the length isn't doubled 
+            // that the length isn't doubled
             if( view.tocView.$el.find(".desktop li").length > 1){
               ($(view.tocView.el)).insertBefore(view.$el);
               // Make a two-column layout
               view.tocView.$el.addClass("span3");
               view.$el.addClass("span9");
             }
-            
+
             view.trigger("TOCRendered");
-            
+
           });
 
         },
 
-        
-        /**        
-         * onClose - Close and destroy the view      
-         */         
+
+        /**
+         * onClose - Close and destroy the view
+         */
         onClose: function() {
             // Remove for the DOM, stop listening
             this.remove();

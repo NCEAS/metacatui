@@ -8,6 +8,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
   /**
   * @class EditorView
   * @classdesc A basic shell of a view, primarily meant to be extended for views that allow editing capabilities.
+  * @classcategory Views
   * @name EditorView
   * @extends Backbone.View
   * @constructs

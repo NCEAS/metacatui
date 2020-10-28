@@ -325,7 +325,7 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
             categoryNames  = [];
 
         for( var i=0; i<items.length; i++){
-          var category = items[i].classcategory || "other";
+          var category = items[i].classcategory || "Other";
 
           if( !organizedItems[category] ){
             organizedItems[category] = [items[i]];
@@ -334,7 +334,7 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
             organizedItems[category].push(items[i]);
           }
 
-          if( !categoryNames.includes(category) && category != "other" ){
+          if( !categoryNames.includes(category) && category != "Other" ){
             categoryNames.push(category);
           }
 
@@ -342,13 +342,22 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
 
         //Sort the category names alphabetically, with "other" placed last
         categoryNames.sort();
-        categoryNames.push("other");
+        //Add the Other category to the end
+        categoryNames.push("Other");
+
+        //Move the Deprecated category to the end
+        const index = categoryNames.indexOf("Deprecated");
+        if (index > -1) {
+          categoryNames.splice(index, 1);
+          categoryNames.push("Deprecated")
+        }
 
         categoryNames.forEach(category => {
 
-          //Add a heading for the category
-          if( categoryNames.length > 1 ){
-            itemsNav += "<li class='category-heading'>" + category + "</li>";
+          //Add a heading for the category, only if there is more than one category
+          // and there is at least one item in the category
+          if( categoryNames.length > 1 && category != "Other" ){
+            itemsNav += "<li class='category-heading' data-category='" + category + "'>" + category + "</li>";
           }
 
           organizedItems[category].forEach(item => {

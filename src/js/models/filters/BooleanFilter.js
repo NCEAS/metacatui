@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'models/filters/Filter'],
   /**
   * @class BooleanFilter
   * @classdesc A search filter that only has `true` or `false` as a search term
+  * @classcategory Models/Filters
   * @name BooleanFilter
   * @extends Filter
   * @constructs

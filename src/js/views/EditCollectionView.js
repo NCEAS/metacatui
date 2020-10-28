@@ -12,6 +12,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
   /**
   * @class EditCollectionView
   * @classdesc A view that allows the user to edit the search filters that define their dataset collection
+  * @classcategory Views
   * @extends Backbone.View
   * @constructor
   */

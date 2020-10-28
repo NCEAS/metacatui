@@ -2,13 +2,14 @@ define(["jquery", "underscore", "backbone",
         "models/DataONEObject"],
     function($, _, Backbone, DataONEObject) {
 
-        /*
-         * EMLDateTimeDomain represents the measurement scale of a date/time
+        /**
+         * @classdesc EMLDateTimeDomain represents the measurement scale of a date/time
          * attribute.
-         *
+         * @classcategory Models/Metadata/EML211
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
          */
-        var EMLDateTimeDomain = Backbone.Model.extend({
+        var EMLDateTimeDomain = Backbone.Model.extend(
+          /** @lends EMLDateTimeDomain.prototype */{
 
         	type: "EMLDateTimeDomain",
 

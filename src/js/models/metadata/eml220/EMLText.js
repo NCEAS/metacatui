@@ -3,6 +3,11 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText',
         "text!templates/portals/editor/MarkdownExample.md"],
     function($, _, Backbone, EMLText211, MarkdownExample) {
 
+      /**
+      * @class EMLText
+      * @classdesc A model that represents the EML 2.2.0 Text module
+      * @classcategory Models/Metadata/EML220
+      */
   var EMLText = EMLText211.extend(
     /** @lends EMLText.prototype */{
 

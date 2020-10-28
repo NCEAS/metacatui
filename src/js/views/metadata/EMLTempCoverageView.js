@@ -4,10 +4,13 @@ define(['underscore', 'jquery', 'backbone',
         'text!templates/metadata/dates.html'],
     function(_, $, Backbone, EMLTemporalCoverage, DatesTemplate){
 
-        /*
-            The EMLTempCoverage renders the content of an EMLTemporalCoverage model
+        /**
+        * @class EMLTempCoverageView
+        * @classdesc The EMLTempCoverage renders the content of an EMLTemporalCoverage model
+        * @classcategory Views/Metadata
         */
-        var EMLTempCoverageView = Backbone.View.extend({
+        var EMLTempCoverageView = Backbone.View.extend(
+          /** @lends EMLTempCoverageView.prototype */{
 
         	type: "EMLTempCoverageView",
 
@@ -55,7 +58,7 @@ define(['underscore', 'jquery', 'backbone',
         		return this;
         	},
 
-        	/*
+        	/**
         	 * Updates the model
         	 */
         	updateModel: function(e){
@@ -91,7 +94,7 @@ define(['underscore', 'jquery', 'backbone',
 
         	},
 
-        	/*
+        	/**
         	 * If the model isn't valid, show verification messages
         	 */
         	showValidation: function(e, options){
@@ -112,7 +115,7 @@ define(['underscore', 'jquery', 'backbone',
 
         	},
 
-        	/*
+        	/**
         	 * When the user is typing in an input with an error, check if they've fixed the error
         	 */
         	updateError : function(e){
@@ -129,14 +132,14 @@ define(['underscore', 'jquery', 'backbone',
         		}
         	},
 
-        	/*
+        	/**
         	 * Highlight what will be removed when the remove icon is hovered over
         	 */
         	toggleRemoveClass: function(){
         		this.$el.toggleClass("remove-preview");
         	},
 
-        	/*
+        	/**
         	 * Unmarks this view as new
         	 */
         	notNew: function(){

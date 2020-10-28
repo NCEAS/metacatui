@@ -6,6 +6,8 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLParty',
         /**
           @class EMLPartyView
           @classdesc  The EMLParty renders the content of an EMLParty model
+          @classcategory Views/Metadata
+          @extends Backbone.View
         */
         var EMLPartyView = Backbone.View.extend(
           /** @lends EMLPartyView.prototype */{

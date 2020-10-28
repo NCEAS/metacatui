@@ -6,8 +6,9 @@ define(["jquery",
     "text!templates/tableOfContents.html"],
     function($, _, Backbone, TOCTemplateLi, TOCTemplateUl, TOCTemplate){
 
-    /*
-        The Table of Contents View is a vertical navigation menu that links to other
+    /**
+     * @class TOCView
+     * @classdesc    The Table of Contents View is a vertical navigation menu that links to other
         sections within the same view.
 
         The TOC can have 2 levels of content. The top level is referred to as 'topLevelItem'.
@@ -15,6 +16,7 @@ define(["jquery",
         in when the TOC view is instantiated (see `PortalSectionView.js` for an example). If
         there are 'h2' tags within the 'topLevelItem' containers, these will be listed under
         the 'topLevelItem'.
+     * @classcategory Views
     */
     var TOCView = Backbone.View.extend(
         /** @lends TOCView.prototype */{
@@ -118,7 +120,7 @@ define(["jquery",
             }, this);
 
           }
-          
+
           var view = this;
           return this;
 
@@ -155,7 +157,7 @@ define(["jquery",
         },
 
         createLinksFromHeaders: function( contentEl, headerLevel ){
-          
+
           //If no content element is specified, use the one attached to this view
           if( !contentEl && this.contentEl ){
             var contentEl = this.contentEl;
@@ -252,15 +254,15 @@ define(["jquery",
          * anytime the DOM is updated.
          */
         renderScrollspy: function(){
-          
+
           try {
-            
+
             var view = this;
             var scrollSpyClass = "scrollspy-TOC-" + this.cid;
             var scrollSpyTarget = "." + scrollSpyClass;
-            
+
             this.$el.addClass(scrollSpyClass);
-              
+
             // Manually set scrollspy data,
             // see https://github.com/twbs/bootstrap/issues/20022#issuecomment-561376832
             var $spy = $("body").scrollspy({ target: scrollSpyTarget, offset: 35});
@@ -269,11 +271,11 @@ define(["jquery",
             $.fn.scrollspy.call($spy, newSpyData);
             $spy.scrollspy("process");
             $spy.scrollspy("refresh");
-            
+
             // Remove any active classes to start
             var activeEls = this.$(scrollSpyTarget + " .active");
             activeEls.removeClass("active");
-          
+
             // Add scroll spy
             $("body").off("activate");
             $("body").on("activate", function(e){
@@ -283,35 +285,35 @@ define(["jquery",
             $(window).on("resize", function(){
               $spy.scrollspy("refresh");
             });
-          
+
           } catch (e) {
             console.log("Error adding scrollspy! Error message: " + e);
           }
 
         },
-        
-        
-        /**        
-         * affixTOC - description             
-         */         
+
+
+        /**
+         * affixTOC - description
+         */
         postRender: function(){
-          
+
           try {
-            
+
             var isVisible = this.$el.find(":visible").length > 0;
-            
+
             if(this.affix === true && isVisible){
               this.$el.affix({ offset: this.$el.offset().top });
             }
-            
+
             if(this.addScrollspy && isVisible){
               this.renderScrollspy();
             }
-            
+
           } catch (e) {
             console.log("Error affixing the table of contents, error message: " + e);
           }
-          
+
         },
 
         /**

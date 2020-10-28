@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone'],
   * @name AppModel
   * @extends Backbone.Model
   * @constructor
+  * @classcategory Models
   */
   var AppModel = Backbone.Model.extend(
     /** @lends AppModel.prototype */ {

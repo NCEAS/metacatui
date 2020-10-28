@@ -7,6 +7,7 @@ function(_, $, Backbone, PortalImage, ImageEdit){
 
   /**
   * @class PortEditorLogosView
+  * @classcategory Views/Portals/Editor
   */
   var PortEditorLogosView = Backbone.View.extend(
     /** @lends PortEditorLogosView.prototype */{

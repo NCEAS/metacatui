@@ -3,8 +3,11 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 	function($, _, Backbone, gmaps) {
 	'use strict';
 
-	// Map Model
-	// ------------------
+  /**
+  * @class Map
+  * @classdesc The Map Model represents all of the settings and options for a Google Map.
+  * @classcategory Models
+  */
 	var Map = Backbone.Model.extend(
     /** @lends Map.prototype */{
 		// This model contains all of the map settings used for searching datasets

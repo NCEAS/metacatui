@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
 	/**
   * @class UserModel
+  * @classcategory Models
   * @extends Backbone.Model
   * @constructor
   */
