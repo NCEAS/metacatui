@@ -16,13 +16,23 @@ nav{
 nav h2{
   font-size: 1em;
 }
-nav h3{
-  font-size: 1.2em;
-  font-weight: bold;
+nav h3 {
+    color: #d0cfc5;
+    font-size: 1.5em;
+    margin-top: 20px;
+    margin-bottom: 0px;
 }
 nav ul a, nav ul a:visited, nav ul a:active, nav h3, nav a{
   font-family: inherit;
-  color: #FFF;
+  color: #DDDBD9;
+}
+.category-heading ~ li:not(.category-heading) {
+    margin-left: 10px;
+}
+.category-heading {
+  color: #d0cfc5;
+margin-top: 20px;
+font-weight: bold;
 }
 h1{
   font-family: inherit;
@@ -59,7 +69,7 @@ h2, h3.subsection-title{
 }
 .name{
   padding: 10px;
-background-color: #272727;
+background-color: #F7F7F7;
 border: 1px solid #dcdcdc;
 }
 h4.name {
@@ -105,4 +115,7 @@ td.name{
   margin: auto;
   display: flex;
   max-width: 600px;
+}
+section{
+  background-color: transparent;
 }

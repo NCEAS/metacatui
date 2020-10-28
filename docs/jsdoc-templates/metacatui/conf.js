@@ -5,7 +5,8 @@ module.exports = {
     "excludePattern": "js/themes/|components/|config/|css/|font/|img/",
     "include": ["docs/other/addtlDocs.jsdoc"]
   },
-  "plugins": ["./docs/jsdoc-templates/metacatui/plugins/screenshot"],
+  "plugins": ["./docs/jsdoc-templates/metacatui/plugins/screenshot",
+              "./docs/jsdoc-templates/metacatui/plugins/classcategory"],
   "screenshot": {
     "dir": "../screenshots"
   },

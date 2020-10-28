@@ -320,22 +320,54 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
     if (items.length) {
         let itemsNav = '';
 
-        items.forEach(item => {
-            let displayName;
+        //Organize the items into categories based on the 'classcategory' tag.
+        var organizedItems = {},
+            categoryNames  = [];
 
-            if ( !hasOwnProp.call(item, 'longname') ) {
-                itemsNav += `<li>${linktoFn('', item.name)}</li>`;
-            }
-            else if ( !hasOwnProp.call(itemsSeen, item.longname) ) {
-                if (env.conf.templates.default.useLongnameInNav) {
-                    displayName = item.longname;
-                } else {
-                    displayName = item.name;
-                }
-                itemsNav += `<li>${linktoFn(item.longname, displayName.replace(/\b(module|event):/g, ''))}</li>`;
+        for( var i=0; i<items.length; i++){
+          var category = items[i].classcategory || "other";
 
-                itemsSeen[item.longname] = true;
-            }
+          if( !organizedItems[category] ){
+            organizedItems[category] = [items[i]];
+          }
+          else{
+            organizedItems[category].push(items[i]);
+          }
+
+          if( !categoryNames.includes(category) && category != "other" ){
+            categoryNames.push(category);
+          }
+
+        }
+
+        //Sort the category names alphabetically, with "other" placed last
+        categoryNames.sort();
+        categoryNames.push("other");
+
+        categoryNames.forEach(category => {
+
+          //Add a heading for the category
+          if( categoryNames.length > 1 ){
+            itemsNav += "<li class='category-heading'>" + category + "</li>";
+          }
+
+          organizedItems[category].forEach(item => {
+              let displayName;
+
+              if ( !hasOwnProp.call(item, 'longname') ) {
+                  itemsNav += `<li>${linktoFn('', item.name)}</li>`;
+              }
+              else if ( !hasOwnProp.call(itemsSeen, item.longname) ) {
+                  if (env.conf.templates.default.useLongnameInNav) {
+                      displayName = item.longname;
+                  } else {
+                      displayName = item.name;
+                  }
+                  itemsNav += `<li>${linktoFn(item.longname, displayName.replace(/\b(module|event):/g, ''))}</li>`;
+
+                  itemsSeen[item.longname] = true;
+              }
+          });
         });
 
         if (itemsNav !== '') {
