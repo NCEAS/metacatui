@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/SolrResult', 'models/LogsSearch'],
-	function($, _, Backbone, uuid, md5, rdf, SolrResult, LogsSearch) {
+define(['jquery', 'underscore', 'backbone', 'uuid', 'md5', 'rdflib', 'models/SolrResult'],
+	function($, _, Backbone, uuid, md5, rdf, SolrResult) {
 
 	// Package Model
 	// ------------------

@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/LogsSearch', 'promise'],
-  function($, _, Backbone, LogsSearch, Promise) {
+define(['jquery', 'underscore', 'backbone', 'promise'],
+  function($, _, Backbone, Promise) {
   'use strict';
 
   /**

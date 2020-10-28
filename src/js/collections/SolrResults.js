@@ -1,6 +1,6 @@
 /*global define */
-define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult', 'models/LogsSearch'],
-	function($, _, Backbone, SolrHeader, SolrResult, LogsSearch) {
+define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrResult'],
+	function($, _, Backbone, SolrHeader, SolrResult) {
 	'use strict';
 
   /**
