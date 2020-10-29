@@ -1272,7 +1272,7 @@ define(['jquery', 'underscore', 'backbone'],
         "isDocumentedBy", "logo", "obsoletes", "origin", "funding", "formatType",
         "obsoletedBy", "presentationCat", "mediaType", "mediaTypeProperty",
         "relatedOrganizations", "noBoundingBox", "decade", "hasPart", "sensorText",
-        "sourceText", "termText", "titlestr", "siteText", "id", "updateDate",
+        "sourceText", "termText", "titlestr", "site", "id", "updateDate",
         "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
         "sensor", "source", "term", "investigatorText"
       ],

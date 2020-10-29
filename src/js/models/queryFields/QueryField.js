@@ -139,6 +139,7 @@ define(
           serviceTitle: "Data Service Title",
           serviceType: "Data Service Type",
           size: "File Size",
+          siteText: "Site",
           southBoundCoord: "Southern Most Latitude",
           submitter: "Submitter Username",
           text: "All Search Fields",
@@ -216,6 +217,7 @@ define(
           serviceEndpoint:  "The URL of the service that can be used to download the dataset",
           submitter:  "The username (e.g. ORCID) of the person who submitted or updated the dataset. This may differ from the person responsible for creating the data.",
           westBoundCoord: "Western most longitude of the spatial extent, in decimal degrees, WGS84",
+          siteText: "The name or description of the physical location where the data were collected"
         }
       },
       
@@ -277,7 +279,7 @@ define(
             icon: "globe",
             queryFields: [
               "westBoundCoord", "geoform", "eastBoundCoord", "namedLocation",
-              "northBoundCoord", "placeKey", "site", "southBoundCoord",
+              "northBoundCoord", "placeKey", "siteText", "southBoundCoord",
             ],
           },
           {
