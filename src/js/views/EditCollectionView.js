@@ -5,7 +5,7 @@ define(['underscore',
         "models/CollectionModel",
         "models/Search",
         "views/DataCatalogViewWithFilters",
-        "views/QueryBuilderView",
+        "views/queryBuilder/QueryBuilderView",
         "text!templates/editCollection.html"],
 function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilters,
           QueryBuilder, Template){

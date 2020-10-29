@@ -1,6 +1,6 @@
 /* global define */
 define(
-  ["jquery", "underscore", "backbone", "x2js", "models/QueryField"],
+  ["jquery", "underscore", "backbone", "x2js", "models/queryFields/QueryField"],
   function($, _, Backbone, X2JS, QueryField) {
     "use strict";
 

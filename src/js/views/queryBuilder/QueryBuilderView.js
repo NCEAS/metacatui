@@ -2,9 +2,9 @@ define(["jquery",
     "underscore",
     "backbone",
     "collections/Filters",
-    "collections/QueryFields",
-    "views/QueryRuleView",
-    "text!templates/queryBuilder.html", 'collections/ObjectFormats', "collections/QueryFields",
+    "collections/queryFields/QueryFields",
+    "views/queryBuilder/QueryRuleView",
+    "text!templates/queryBuilder.html", 'collections/ObjectFormats', "collections/queryFields/QueryFields",
   ],
   function($, _, Backbone, Filters, QueryFields, QueryRule, Template,  ObjectFormats, QueryFields) {
 

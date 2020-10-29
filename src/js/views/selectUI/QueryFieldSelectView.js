@@ -2,8 +2,8 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    "views/SearchableSelectView",
-    "collections/QueryFields"
+    "views/selectUI/SearchableSelectView",
+    "collections/queryFields/QueryFields"
   ],
   function($, _, Backbone, SearchableSelect, QueryFields) {
 

@@ -142,7 +142,7 @@ define(
           try {
             var view = this;
             
-            require(["views/SearchableSelectView"], function(SearchableSelect){
+            require(["views/selectUI/SearchableSelectView"], function(SearchableSelect){
               
               view.multiSelectView = new SearchableSelect({
                 allowMulti: true,

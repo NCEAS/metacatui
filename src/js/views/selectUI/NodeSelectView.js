@@ -2,7 +2,7 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    "views/SearchableSelectView",
+    "views/selectUI/SearchableSelectView",
     "models/NodeModel"
   ],
   function($, _, Backbone, SearchableSelect, NodeModel) {
