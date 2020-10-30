@@ -348,6 +348,13 @@ define(['jquery', 'underscore', 'backbone'],
       */
       editorSaveErrorMsgWithDraft: "Not all of your changes could be submitted, but a draft " +
         "has been saved which can be accessed by our support team. Please contact us.",
+      /**
+      * The text of the Save button in the dataset editor.
+      * @type {string}
+      * @default "Save dataset"
+      * @since 2.13.3
+      */
+      editorSaveButtonText: "Save dataset",
 
       /**
       * A list of keyword thesauri options for the user to choose from in the EML Editor.

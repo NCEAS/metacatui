@@ -42,7 +42,7 @@ define(['underscore',
         * The text to use in the editor submit button
         * @type {string}
         */
-        submitButtonText: "Submit Dataset",
+        submitButtonText: MetacatUI.appModel.get("editorSaveButtonText"),
 
         /**
         * The events this view will listen to and the associated function to call.
