@@ -825,6 +825,9 @@
     row-gap: 40px;
     column-gap: 0px;
   }
+  #metric-modal .empty-citation-list{
+    width: 90%;
+  }
 }
 
 /* Smartphones (portrait) ----------- */

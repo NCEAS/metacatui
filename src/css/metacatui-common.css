@@ -1968,34 +1968,18 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	margin: 0 0 25px;
 }
 
-.empty-citation-list-text {
-	font-size: 16px;
-    font-weight: 100;
-    color: #555555;
-    text-align: center;
-    margin-left: 10px;
-    position: absolute;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-}
-.empty-citation-list {
-    width: 80%;
-    top: 22%;
-    left: 10%;
-    display: flex;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50%;
-    border-radius: 2px;
-    background-color: #f5f5f5;
-    box-shadow: 0 0 black;
-}
 
-.empty-citation-list > .register-citation {
-	top: 30%;
-    position: absolute;
+.empty-citation-list {
+  grid-template-rows: 3em 100fr;
+  grid-template-columns: 100fr;
+  justify-items: center;
+  align-items: start;
+  justify-content: stretch;
+  padding: 1em;
+  grid-row-gap: 20px;
+  display: grid;
+  background-color: #f5f5f5;
+  width: calc(120% + 40px); /*Stretch across both columns in grid*/
 }
 
 .register-citation-modal-header{
