@@ -1219,7 +1219,7 @@ define(['jquery',
 
       //Get template
       var controlsContainer = this.controlsTemplate({
-          citation: $(this.citationContainer).text(),
+          citationTarget: this.citationContainer,
           url: window.location,
           displayQualtyReport: MetacatUI.appModel.get("mdqBaseUrl") && formatFound && MetacatUI.appModel.get("displayDatasetQualityMetric"),
           showWholetale: MetacatUI.appModel.get("showWholeTaleFeatures"),
