@@ -394,10 +394,9 @@ define([
             }
 
             // If no model is provided in the options, then set a new Filters model
-            if (!this.model || typeof this.model === 'undefined') {
-              // TODO: Parts of the view won't work if there is no collection...
-              // Should we call an error if no model is provided?
-              this.model = new Filter();
+            if (!this.model || !this.model.collection) {
+              console.log("error: A Filter model that's part of a Filters collection is required to initialize a Query Rule view.")
+              return
             }
             
             // Ensure the object formats are cached, for the special data format
@@ -406,6 +405,13 @@ define([
               MetacatUI.objectFormats = new ObjectFormats();
               MetacatUI.objectFormats.fetch();
             }
+            
+            // The model may be removed during the save process if it's empty.
+            // Remove this Rule Group view when that happens.
+            this.stopListening(this.model, "remove");
+            this.listenTo(this.model, "remove", function(){
+              this.removeSelf();
+            });
 
           } catch (e) {
             console.log("Failed to initialize a Query Builder View, error message:", e);
@@ -554,14 +560,10 @@ define([
             // If the type has changed, then replace the model with one of the
             // correct type
             if(typeBefore != typeAfter){
-              var filters = this.model.collection,
-                  index = filters.indexOf(this.model),
-                  oldModelId = this.model.cid;
-              this.model = filters.add(
-                { filterType: typeAfter, fields: newFields },
-                { at: index }
+              this.model = this.model.collection.replaceModel(
+                this.model,
+                { filterType: typeAfter, fields: newFields }
               );
-              filters.remove(oldModelId);
               this.removeInput("value")
               this.removeInput("operator")
               this.addOperatorSelect("");
@@ -1110,7 +1112,11 @@ define([
          * @return {type}  description         
          */
         removeSelf: function() {
-          this.model.collection.remove(this.model);
+          $("body .popover").remove();
+          $("body .tooltip").remove();
+          if(this.model && this.model.collection){
+            this.model.collection.remove(this.model);
+          }
           this.remove();
         },
 

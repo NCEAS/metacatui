@@ -354,6 +354,58 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
 
             },
             
+            /**            
+             * removeEmptyFilters - Remove filters from the collection that are
+             * lacking fields, values, and in the case of a numeric filter,
+             * a min and max value.        
+             */             
+            removeEmptyFilters: function(){
+              
+              try {
+                var toRemove = [];
+                
+                var noneEmpty = this.every(function(filter){ return !filter.isEmpty() });
+                if(noneEmpty){
+                  return
+                }
+                
+                this.each(function(filter){
+                  if(filter){
+                    if(filter.isEmpty()){
+                      toRemove.push(filter);
+                    }
+                  }
+                });
+
+                this.remove(toRemove);
+              } catch (e) {
+                console.log("Failed to remove empty Filter models from the Filters collection, error message: " + e);
+              }
+              
+            },
+            
+            /**            
+             * replaceModel - Remove a Filter from the Filters collection
+             * silently, and replace it with a new model.
+             *              
+             * @param  {Filter} model    The model to replace
+             * @param  {object} newAttrs Attributes for the replacement model. Use the filterType attribute to replace with a different type of Filter.
+             * @return {Filter}          Returns the replacement Filter model, which is already part of the Filters collection.
+             */             
+            replaceModel: function(model, newAttrs){
+              try {
+                var index = this.indexOf(model),
+                    oldModelId = model.cid;
+                var newModel = this.add(
+                  newAttrs,
+                  { at: index }
+                );
+                this.remove(oldModelId, {silent:true});
+                return newModel;
+              } catch (e) {
+                console.log("Failed to replace a Filter model in a Filters collection, error message: " + e);
+              }
+            },
             
             /**            
              * visibleIndexOf - Get the index of a given model, excluding any
@@ -363,12 +415,16 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
              * @return {number} An integer representing the filter model's position in the list of visible filters.
              */             
             visibleIndexOf: function(model){
-              // Don't count invisible filters in the index we display to the user
-              var visibleFilters = this.filter(function(filterModel){
-                var isInvisible = filterModel.get("isInvisible");
-                return typeof isInvisible == "undefined" || isInvisible === false
-              });
-              return _.indexOf(visibleFilters, model);
+              try {
+                // Don't count invisible filters in the index we display to the user
+                var visibleFilters = this.filter(function(filterModel){
+                  var isInvisible = filterModel.get("isInvisible");
+                  return typeof isInvisible == "undefined" || isInvisible === false
+                });
+                return _.indexOf(visibleFilters, model);
+              } catch (e) {
+                console.log("Failed to get the index of a Filter within the collection of visible Filters, error message: " + e);
+              }
             },
             
             /*

@@ -96,11 +96,6 @@ define(["jquery",
         this.set("labelBlockList", this.get("labelBlockList").concat(nodeBlockList));
       }
 
-      //When this Collection has been saved, re-save the collection definition
-      this.on("successSaving", function(){
-        this.get("definitionFilters").reset(this.getAllDefinitionFilters());
-      });
-
     },
     
     /**    
@@ -458,11 +453,11 @@ define(["jquery",
       // Create new definition element
       var definitionSerialized = objectDOM.ownerDocument.createElement("definition");
 
-      //Get the filters that are currently applied to the search.
-      var filtersToSerialize = this.getAllDefinitionFilters();
+      // Get the filters that are currently applied to the search.
+      var filtersToSerialize = this.get("definitionFilters");
 
       // Iterate through the filter models
-      _.each(filtersToSerialize, function(filterModel){
+      filtersToSerialize.each(function(filterModel){
 
         // updateDOM of portal definition filters, then append to <definition>
         var filterSerialized = filterModel.updateDOM({
@@ -475,7 +470,7 @@ define(["jquery",
         //Append the filter node to the definition node
         definitionSerialized.appendChild(filterSerialized);
 
-      }, this);
+      });
 
       //If at least one filter was serialized, add the <definition> node
       if( definitionSerialized.childNodes.length ){
@@ -545,21 +540,6 @@ define(["jquery",
     },
 
     /**
-    * Returns an array of the Filter models that have a value set
-    */
-    getAllDefinitionFilters: function(){
-
-      return this.get("searchModel").get("filters").filter(function(filterModel){
-
-        // If this filter has a value set by the user, and it's not in a query group
-        // marked to ignore, then include it
-        return( filterModel.hasChangedValues() &&
-                !this.get("ignoreQueryGroups").includes( filterModel.get("queryGroup") ));
-
-      }, this);
-    },
-
-    /**
     * This is a shortcut function that returns the query for the datasets in this portal,
     *  using the Search model for this portal. This is the full query that includes the filters not
     *  serialized to the portal XML, such as the filters used for the DataCatalogView.
@@ -612,20 +592,21 @@ define(["jquery",
         }
 
         // ---- Validate the definition filters ----
-        if( this.getAllDefinitionFilters().length == 0 ){
-          errors.definition = "Your dataset collection hasn't been created. Add at least one search " +
-                              "term below to find datasets for this " +
+        
+        if( this.get("definitionFilters").length == 0 ){
+          errors.definition = "Your dataset collection hasn't been created. Add at least one query " +
+                              "rule below to find datasets for this " +
                               this.type.toLowerCase() + ". For example, to create a " + this.type.toLowerCase() +
-                              " for datasets from a specific research project, try searching for the project name.";
+                              " for datasets from a specific research project, try using the project name field.";
         }
         else{
-          _.each( this.getAllDefinitionFilters(), function(filter){
+          this.get("definitionFilters").each(function(filter){
 
             if( !filter.isValid() ){
               errors.definition = "At least one filter is invalid.";
             }
 
-          }, this);
+          });
         }
 
         if( Object.keys(errors).length )

@@ -1742,34 +1742,19 @@ define(["jquery",
              * Saves the portal XML document to the server using the DataONE API
             */
             save: function(){
+              
+              var model = this;
 
-              //Validate before we try anything else
+              // Ensure empty filters (rule groups) are removed
+              this.get("definitionFilters").removeEmptyFilters();
+              
+              // Validate before we try anything else
               if(!this.isValid()){
-
-                //Check if there is a validation error on the definition filters
-                var invalidAttr = Object.keys(this.validationError || {});
-                if( invalidAttr.includes("definition") ){
-                  _.each( this.getAllDefinitionFilters(), function(filter){
-
-                    //Remove invalid filters from the Filters collection
-                    if( !filter.isValid() ){
-                      this.get("searchModel").get("filters").remove(filter);
-                    }
-
-                  }, this);
-                }
-
-                //Re-validate this model after possibly removing some invalid filters
-                if( !this.isValid() ){
-                  //Trigger the invalid and cancelSave events
-                  this.trigger("invalid");
-                  this.trigger("cancelSave");
-                  //Don't save the model since it's invalid
-                  return false;
-                }
-                else{
-                  this.trigger("valid");
-                }
+                //Trigger the invalid and cancelSave events
+                this.trigger("invalid");
+                this.trigger("cancelSave");
+                //Don't save the model since it's invalid
+                return false;
               }
               else{
 
@@ -1819,7 +1804,7 @@ define(["jquery",
                   // Check label availability
                   this.checkLabelAvailability(this.get("label"));
 
-                  console.log("Double checking label");
+                  // console.log("Double checking label");
 
                   //Don't proceed with the rest of the save
                   return;
@@ -2048,7 +2033,6 @@ define(["jquery",
                 matchSubstring: false,
                 operator: "OR"
               });
-
 
               // adding the filter in the node model
               this.get("definitionFilters").add(nodeFilterModel);

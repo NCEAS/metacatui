@@ -396,6 +396,33 @@ define(['jquery', 'underscore', 'backbone'],
       return (this.get("values").length > 0);
 
     },
+    
+    /**    
+     * isEmpty - Checks whether this Filter has any values or fields set
+     *      
+     * @return {boolean}  returns true if the Filter's values and fields are empty
+     */     
+    isEmpty: function(){
+      try {
+        var fields      =   this.get("fields"),
+            values      =   this.get("values"),
+            noFields    =   fields.length == 0;
+            fieldsEmpty =   _.every(fields, function(item) { return item == "" }),
+            noValues    =   values.length == 0;
+            valuesEmpty =   _.every(values, function(item) { return item == "" });
+            
+        var noMinNoMax = _.every(
+          [this.get("min"), this.get("max")],
+          function(num) {
+            return (typeof num === "undefined") || (!num && num !== 0);
+          }
+        );
+            
+        return noFields && fieldsEmpty && noValues && valuesEmpty && noMinNoMax
+      } catch (e) {
+        console.log("Failed to check if a Filter is empty, error message: " + e);
+      }
+    },
 
     /**
     * Escapes Solr query reserved characters so that search terms can include

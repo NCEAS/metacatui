@@ -132,8 +132,6 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         this.listenToOnce(this.model, "latestVersionFound", this.renderDataCatalog);
       }
       
-      this.renderQueryBuilder();
-    
       //this.renderCollectionControls();
 
     },
@@ -160,6 +158,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
      * Render the DataCatalogViewWithFilters
      */
     renderDataCatalog: function(){
+      
+      this.renderQueryBuilder();
 
       var searchModel = this.model.get("searchModel");
 
@@ -218,7 +218,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     toggleHelpText: function() {
 
       //Get the list of filters currently applied to the collection definition
-      var currentFilters = this.model.getAllDefinitionFilters(),
+      var currentFilters = this.model.get("definitionFilters"),
           msg = "";
 
       // If there are no filters set at all, the entire repository catalog will be listed as
@@ -230,7 +230,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       }
       //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
       else if( currentFilters.length == 1 &&
-               currentFilters[0].get("fields")[0] == "isPartOf" &&
+               currentFilters.models[0].get("fields")[0] == "isPartOf" &&
                !this.model.get("searchResults").length){
 
          msg = "<h5>Your dataset collection is empty.</h5> " +
