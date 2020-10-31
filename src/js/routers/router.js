@@ -32,6 +32,7 @@ function ($, _, Backbone) {
 			"signinldaperror(/)"                : "renderLdapSignInError",
 			"signinLdap(/)"                     : "renderLdapSignIn",
 			"signinSuccessLdap(/)"              : "renderLdapSignInSuccess",
+      "signin-help"                       : "renderSignInHelp", //The Sign In troubleshotting page
 			'share(/*pid)(/)'                   : 'renderEditor', // registry page
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
@@ -140,6 +141,11 @@ function ($, _, Backbone) {
 
 			this.renderText(options);
 		},
+
+    renderSignInHelp: function(){
+      this.routeHistory.push("signin-help");
+      this.renderText({ pageName: "signInHelp" });
+    },
 
 		renderAbout: function (anchorId) {
 			this.routeHistory.push("about");

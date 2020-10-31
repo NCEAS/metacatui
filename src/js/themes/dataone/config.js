@@ -14,6 +14,7 @@ MetacatUI.AppConfig = Object.assign({
   metacatContext: "",
   enableMonitorStatus: false,
   enableCILogonSignIn: true,
+  showSignInHelp: false,
 
   //Temp message
   temporaryMessageContainer: "#Navbar",

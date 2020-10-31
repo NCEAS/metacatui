@@ -29,7 +29,8 @@ function ($, _, Backbone) {
 			"signinsuccess(/)"                  : "renderSignInSuccess",
 			"signinldaperror(/)"                : "renderLdapSignInError",
 			"signinLdap(/)"                     : "renderLdapSignIn",
-			"signinSuccessLdap(/)"              : "renderLdapSignInSuccess"
+			"signinSuccessLdap(/)"              : "renderLdapSignInSuccess",
+      "signin-help"                       : "renderSignInHelp" //The Sign In troubleshotting page
 		},
 
 		helpPages: {
@@ -449,6 +450,12 @@ function ($, _, Backbone) {
 			}
 
 		},
+
+    renderSignInHelp: function(){
+      this.routeHistory.push("signin-help");
+      this.renderText({ pageName: "signInHelp" });
+    },
+    
 		renderExternal: function(url) {
 			// use this for rendering "external" content pulled in dynamically
 			this.routeHistory.push("external");

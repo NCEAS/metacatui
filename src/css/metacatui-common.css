@@ -1463,6 +1463,13 @@ svg.icon {
 .sign-in.modal .close {
     font-size: 2em;
 }
+.sign-in-btns .notification,
+.login .notification{
+  margin-top: 20px;
+}
+#Navbar .sign-in-btns .notification{
+  display: none;
+}
 /** The ORCID Sign In button **/
 .orcid-btn{
 	border: 1px solid #aacf14;

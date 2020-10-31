@@ -566,6 +566,13 @@ define(['jquery', 'underscore', 'backbone'],
       monitorStatusUrl: "",
 
       /**
+      * If true, users will see a page with sign-in troubleshooting tips
+      * @type {boolean}
+      * @default true
+      * @since 2.13.3
+      */
+      showSignInHelp: true,
+      /**
       * If true, users can sign in using CILogon as the identity provider.
       * ORCID is the only recommended identity provider. CILogon may be deprecated
       * in the future.
