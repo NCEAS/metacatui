@@ -38,10 +38,6 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryDownloadsChart: false,
   hideSummaryMetadataAssessment: false,
   hideSummaryViewsChart: false,
-
-  displayDatasetEditButton: false,
-  displayDatasetControls: false,
-  enablePublishDOI: false,
   showMyPortals: false,
   enableCreatePortals: false
 }, MetacatUI.AppConfig);

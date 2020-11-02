@@ -1082,18 +1082,23 @@ define(['jquery',
         if(!model.get("isAuthorized") || model.get("archived"))
           return false;
 
-        //Insert an Edit button
-        if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
-          container.append(
-            this.editMetadataTemplate({
-              identifier: pid,
-              supported: true
+        //Insert an Edit button if the Edit button is enabled
+        if(  MetacatUI.appModel.get("displayDatasetEditButton") ){
+          //Check that this is an editable metadata format
+          if( _.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId")) ){
+            //Insert the Edit Metadata template
+            container.append(
+              this.editMetadataTemplate({
+                identifier: pid,
+                supported: true
+              }));
+          }
+          //If this format is not editable, insert an unspported Edit Metadata template
+          else{
+            container.append(this.editMetadataTemplate({
+              supported: false
             }));
-        }
-        else{
-          container.append(this.editMetadataTemplate({
-            supported: false
-          }));
+          }
         }
 
         try{
