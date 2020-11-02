@@ -168,6 +168,15 @@ define(['jquery', 'underscore', 'backbone'],
       temporaryMessageContainer: "#Navbar",
 
       /**
+      * If true, the temporary message will include a "Need help? Email us at..." email link
+      * at the end of the message. The email address will be set to {@link AppConfig#emailContact}
+      * @type {boolean}
+      * @default true
+      * @since 2.13.3
+      */
+      temporaryMessageIncludeEmail: true,
+
+      /**
       * Show or hide the source repository logo in the search result rows
       * @type {boolean}
       * @default false

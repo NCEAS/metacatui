@@ -565,7 +565,7 @@ define(['jquery',
           $(container).prepend( _.template(alertTemplate)({
             classes: classes,
             msg: MetacatUI.appModel.get("temporaryMessage"),
-            includeEmail: true,
+            includeEmail: MetacatUI.appModel.get("temporaryMessageIncludeEmail"),
             remove: true
           }) );
 

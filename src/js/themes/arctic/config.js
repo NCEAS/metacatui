@@ -60,7 +60,7 @@ MetacatUI.AppConfig = Object.assign({
   defaultSearchFilters: ["all", "attribute", "annotation", "creator", "dataYear", "pubYear", "id", "taxon", "spatial"],
 
   //Temp message
-  temporaryMessage: "The Arctic Data Center will be unavailable between 11 p.m. PT on Monday, June 15 and 6:30 a.m. PT on Tuesday, June 16 due to upgrades. We apologize for the inconvenience.",
+  temporaryMessage: "",
   temporaryMessageStartTime: null,
   temporaryMessageEndTime: new Date("2020-06-16T13:30:00"),
   temporaryMessageClasses: "warning",
