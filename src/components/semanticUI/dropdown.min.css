@@ -10,6 +10,50 @@
  
  /* Customizations by RTB */
 
+ /* Warning */
+
+.ui.dropdown.warning,
+.ui.dropdown.warning > .text,
+.ui.dropdown.warning > .default.text {
+ color: #a88d07;
+}
+.ui.selection.dropdown.warning {
+ background: #fffcf6;
+ border-color: #e8e3ba;
+}
+.ui.selection.dropdown.warning:hover {
+ border-color: #e8e3ba;
+}
+.ui.dropdown.warning > .menu,
+.ui.dropdown.warning > .menu .menu {
+ border-color: #e8e3ba;
+}
+.ui.dropdown.warning > .menu > .item {
+ color: #a88d07;
+}
+.ui.multiple.selection.warning.dropdown > .label {
+ border-color: #e8e3ba;
+ background-color: white;
+}
+.ui.multiple.selection.error.dropdown > .label {
+ background-color: white;
+}
+
+/* Loading */
+.ui.loading.selection.dropdown>i.icon {
+  padding: 1.17em 1.29em!important;
+}
+
+ /* Item Hover */
+ .ui.dropdown.warning > .menu > .item:hover {
+   background-color: #fffcf2;
+ }
+
+ /* Item Active */
+ .ui.dropdown.warning > .menu .active.item {
+   background-color: #fdf1cf;
+ }
+ 
 .ui, .ui > * {
   box-sizing: border-box;
 }

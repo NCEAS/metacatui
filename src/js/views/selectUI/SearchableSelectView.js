@@ -318,7 +318,7 @@ define([
           try {
             
             var view = this;
-            view.trigger("postRender")
+            view.trigger("postRender");
             
             // Add tool tips for the description
             this.$el.find(".item").each(function(){
@@ -369,50 +369,54 @@ define([
          */         
         addTooltip: function(element, position = "bottom"){
           
-          if(!element){
-            return
-          }
-          
-          // Find the description in the options object, using the data-value
-          // attribute set in the template. The data-value attribute is either
-          // the label, or the value, depending on if a value is provided.
-          var valueOrLabel = $(element).data("value"),
-              opt = _.chain(this.options)
-                          .values()
-                          .flatten()
-                          .find(function(option){
-                            return option.label == valueOrLabel || option.value == valueOrLabel
-                          })
-                          .value()
-              
-          if(!opt){
-            return
-          }
-          if(!opt.description){
-            return
-          }
-          
-          $(element).tooltip({
-            title: opt.description,
-            placement: position,
-            container: "body",
-            delay: {
-              show: 900,
-              hide: 50
+          try {
+            if(!element){
+              return
             }
-          })
-          .on("show.bs.popover",
-            function(){
-              var $el = $(this);
-              // Allow time for the popup to be added to the DOM
-              setTimeout(function () {
-                // Then add a special class to identify
-                // these popups if they need to be removed.
-                $el.data('tooltip').$tip.addClass("search-select-tooltip")
-              }, 10);
-          });
-          
-          return $(element)
+            
+            // Find the description in the options object, using the data-value
+            // attribute set in the template. The data-value attribute is either
+            // the label, or the value, depending on if a value is provided.
+            var valueOrLabel = $(element).data("value"),
+                opt = _.chain(this.options)
+                            .values()
+                            .flatten()
+                            .find(function(option){
+                              return option.label == valueOrLabel || option.value == valueOrLabel
+                            })
+                            .value()
+                
+            if(!opt){
+              return
+            }
+            if(!opt.description){
+              return
+            }
+            
+            $(element).tooltip({
+              title: opt.description,
+              placement: position,
+              container: "body",
+              delay: {
+                show: 900,
+                hide: 50
+              }
+            })
+            .on("show.bs.popover",
+              function(){
+                var $el = $(this);
+                // Allow time for the popup to be added to the DOM
+                setTimeout(function () {
+                  // Then add a special class to identify
+                  // these popups if they need to be removed.
+                  $el.data('tooltip').$tip.addClass("search-select-tooltip")
+                }, 10);
+            });
+            
+            return $(element)
+          } catch (e) {
+            console.log("Failed to add tooltips in a searchable select view, error message: " + e);
+          }
         
         },
         
@@ -622,6 +626,114 @@ define([
             this.$el.find('.ui.dropdown').addClass("disabled");
           } catch (e) {
             console.log("Failed to enable the searchable select field, error message: " + e);
+          }
+        },
+        
+        /**        
+         * showMessage - Show an error, warning, or informational message, and
+         * highlight the select interface in an appropriate colour.
+         *          
+         * @param  {string} message The message to display. Use an empty string to only highlight the select interface without showing a messsage.
+         * @param  {string} type    one of "error", "warning", or "info"
+         */         
+        showMessage: function(message, type){
+          try {
+            
+            if(!this.$selectUI){
+              console.warn("A select UI element wasn't found, can't display error.");
+              return
+            }
+            
+            var messageTypes = {
+              error: {
+                messageClass: "text-error",
+                selectUIClass: "error"
+              },
+              warning: {
+                messageClass: "text-warning",
+                selectUIClass: "warning"
+              },
+              info: {
+                messageClass: "text-info",
+                selectUIClass: ""
+              }
+            };
+            
+            if(!messageTypes.hasOwnProperty(type)){
+              console.log(type + "is not a message type for Select UI interfaces. Showing message as info type");
+              type = "info"
+            }
+            
+            this.removeMessages();
+            this.$selectUI.addClass(messageTypes[type].selectUIClass);
+            
+            this.message = this.createMessage(message, );
+            if(this.message){
+              if(message && message.length && typeof message === "string"){
+                this.message = $(
+                  "<p style='margin:0.2rem' class='" +
+                  messageTypes[type].messageClass +
+                  "'><small>" + message +
+                  "</small></p>"
+                );
+              }
+              this.$el.append(this.message);
+            }
+            
+          } catch (e) {
+            console.log("Failed to show an error state in a Searchable Select View, error message: " + e);
+          }
+        },
+        
+        
+        /**        
+         * removeMessages - Remove all messages and classes set by the
+         * showMessage function.
+         */         
+        removeMessages: function(){
+          try {
+            if(!this.$selectUI){
+              console.warn("A select UI element wasn't found, can't remove error.");
+              return
+            }
+            
+            this.$selectUI.removeClass("error warning");
+            if(this.message){
+              this.message.remove();
+            }
+          } catch (e) {
+            console.log("Failed to hide an error state in a Searchable Select View, error message: " + e);
+          }
+        },
+        
+        /**        
+         * showLoading - Indicate that dropdown options are loading by showing
+         * a spinner in the select interface
+         */         
+        showLoading: function(){
+          try {
+            if(!this.$selectUI){
+              console.warn("A select UI element wasn't found, can't show loading state.");
+              return
+            }
+            this.$selectUI.addClass("loading");
+          } catch (e) {
+            console.log("Failed to show a loading state in a Searchable Select View, error message: " + e);
+          }
+        },
+        
+        /**        
+         * hideLoading - Remove the loading spinner set by the showLoading
+         */         
+        hideLoading: function(){
+          try {
+            if(!this.$selectUI){
+              console.warn("A select UI element wasn't found, can't hide loading state.");
+              return
+            }
+            this.$selectUI.removeClass("loading");
+          } catch (e) {
+            console.log("Failed to remove a loading state in a Searchable Select View, error message: " + e);
           }
         },
         

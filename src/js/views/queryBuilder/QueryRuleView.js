@@ -822,14 +822,9 @@ define([
          * @return {string} The operator label
          */         
         getSelectedOperator: function(){
-          
-          try {
-            if(this.model.get("fields")[0]=="numberReplicas"){
-              var db = true
-            } else {
-              var db = false
-            }
 
+          try{
+            
                 // This view
             var view = this,
                 // The options that we will filter down
@@ -899,7 +894,7 @@ define([
               }
             })
             
-            // --- Filter 3 - return value --- //
+            // --- Return value --- //
             
             if(options.length === 1){
               selectedOperator = options[0].label
