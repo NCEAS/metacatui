@@ -651,13 +651,19 @@ define([
               selectedOperator = this.getSelectedOperator();
             }
             
+            if(selectedOperator === ""){
+              selectedOperator = []
+            } else {
+              selectedOperator = [selectedOperator]
+            }
+            
             this.operatorSelect = new SearchableSelect({
               options: options,
               allowMulti: false,
               inputLabel: "Select an operator",
               clearable: false,
               placeholderText: "Select an operator",
-              selected: [selectedOperator]
+              selected: selectedOperator
             });
             this.operatorSelect.$el.addClass(this.operatorClass);
             this.el.append(this.operatorSelect.el);

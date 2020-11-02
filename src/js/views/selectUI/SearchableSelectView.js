@@ -4,7 +4,7 @@ define([
     "backbone",
     "semanticUItransition",
     "semanticUIdropdown",
-    "text!templates/searchableSelect.html",
+    "text!templates/selectUI/searchableSelect.html",
   ],
   function($, _, Backbone, Transition, Dropdown, Template) {
 
@@ -252,6 +252,7 @@ define([
             // This allows us to pre-select values without triggering a change
             // event.
             this.disable();
+            this.showLoading();
             
             // Initialize the dropdown interface
             // For explanations of settings, see:
@@ -274,6 +275,7 @@ define([
                   $(".search-select-tooltip").remove();
                 },
                 onChange: function(value, text, $choice){
+                  
                   // Add tooltips to the selected fields that are not labels
                   // (i.e. that are not in multi-select UIs).
                   var textEl = view.$selectUI.find(".text")
@@ -302,7 +304,6 @@ define([
           }
         },
         
-        
         /**        
          * updateMenu - Re-render the menu of options
          */         
@@ -325,14 +326,38 @@ define([
               view.addTooltip(this)
             });
             
+            // Show an error message if the pre-selected options are not in the
+            // list of available options (only if user additions are not allowed)
+            if(!view.allowAdditions){
+              if(view.selected && view.selected.length){
+                var invalidOptions = [];
+                view.selected.forEach(function(item){
+                  if(!view.isValidOption(item)){
+                    invalidOptions.push(item)
+                  }
+                });
+                if(invalidOptions.length){
+                  var optionsString = "\"" + invalidOptions.join(", ") + "\"";
+                  var phrase = (invalidOptions.length === 1) ? "is not a valid option" : "are not valid options";
+                  var ending = ". Please change selection."
+                  var message = optionsString + " " + phrase + ending;
+                  view.showMessage(message, "error", true);
+                }
+              }
+            }
+            
+            // Set the selected values in the dropdown
             this.$selectUI.dropdown('set exactly', view.selected);
             this.$selectUI.dropdown('save defaults');
             this.enable();
+            this.hideLoading();
             
+            // Make sub-menus if the option is configured in this view
             if(this.collapseCategories){
               this.convertToSubmenus();
             }
             
+            // Hide empty categories when the user searches for a term
             if(view.collapseCategories || view.hideEmptyCategoriesOnSearch){
               this.$selectUI.find("input").on("keyup blur", function(e){
                 inputVal = e.target.value;
@@ -357,6 +382,48 @@ define([
           } catch (e) {
             console.log("The searchable select post-render function failed, error message: " + e);
           }
+        },
+        
+        /**        
+         * isValidOption - Checks if a value is one of the values given in view.options
+         *          
+         * @param  {string} value The value to check
+         * @return {boolean}      returns true if the value is one of the values given in view.options
+         */         
+        isValidOption: function(value){
+          
+          try {
+            var view = this;
+            var options = view.options;
+            
+            // If there are no options set on the view, assume the value is invalid
+            if(!options || options.length === 0){
+              return false
+            }
+            
+            // If the list of options doesn't have category headings, put it in the
+            // same format as options that do have headings.
+            if (Array.isArray(options)) { options = { "" : options } };
+            
+            // Reduce the options object to just an Array of value and label strings
+            var validValues = _(options)
+              .chain()
+              .values()
+              .flatten()
+              .map(function(item){
+                var items = [];
+                if(item.value !== undefined ){ items.push(item.value) }
+                if(item.label !== undefined ){ items.push(item.label) }
+                return items
+              })
+              .flatten()
+              .value();
+              
+            return validValues.includes(value);
+          } catch (e) {
+            console.log("Failed to check if an option is valid in a Searchable Select View, error message: " + e);
+          }
+          
         },
         
         /**        
@@ -635,8 +702,10 @@ define([
          *          
          * @param  {string} message The message to display. Use an empty string to only highlight the select interface without showing a messsage.
          * @param  {string} type    one of "error", "warning", or "info"
+         * @param  {boolean} removeOnChange set to true to remove the message as soon as the user changes the selection
+         * 
          */         
-        showMessage: function(message, type){
+        showMessage: function(message, type = "info", removeOnChange = true){
           try {
             
             if(!this.$selectUI){
@@ -667,17 +736,19 @@ define([
             this.removeMessages();
             this.$selectUI.addClass(messageTypes[type].selectUIClass);
             
-            this.message = this.createMessage(message, );
-            if(this.message){
-              if(message && message.length && typeof message === "string"){
-                this.message = $(
-                  "<p style='margin:0.2rem' class='" +
-                  messageTypes[type].messageClass +
-                  "'><small>" + message +
-                  "</small></p>"
-                );
-              }
-              this.$el.append(this.message);
+            if(message && message.length && typeof message === "string"){
+              this.message = $(
+                "<p style='margin:0.2rem' class='" +
+                messageTypes[type].messageClass +
+                "'><small>" + message +
+                "</small></p>"
+              );
+            }
+            
+            this.$el.append(this.message);
+            
+            if(removeOnChange){
+              this.listenToOnce(this, "changeSelection", this.removeMessages);
             }
             
           } catch (e) {
@@ -712,11 +783,7 @@ define([
          */         
         showLoading: function(){
           try {
-            if(!this.$selectUI){
-              console.warn("A select UI element wasn't found, can't show loading state.");
-              return
-            }
-            this.$selectUI.addClass("loading");
+            this.$el.find('.ui.dropdown').addClass("loading");
           } catch (e) {
             console.log("Failed to show a loading state in a Searchable Select View, error message: " + e);
           }
@@ -727,11 +794,7 @@ define([
          */         
         hideLoading: function(){
           try {
-            if(!this.$selectUI){
-              console.warn("A select UI element wasn't found, can't hide loading state.");
-              return
-            }
-            this.$selectUI.removeClass("loading");
+            this.$el.find('.ui.dropdown').removeClass("loading");
           } catch (e) {
             console.log("Failed to remove a loading state in a Searchable Select View, error message: " + e);
           }

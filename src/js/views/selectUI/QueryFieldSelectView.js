@@ -102,6 +102,8 @@ define([
           
           try {
             
+            var view = this;
+            
             // Ensure the query fields are cached for the Query Field Select
             // View and the Query Rule View
             if ( typeof MetacatUI.queryFields === "undefined" || MetacatUI.queryFields.length === 0 ) {
@@ -137,19 +139,7 @@ define([
                   return true
                 }, this
               )
-              .map(
-                function(field) {
-                   return {
-                    label: field.label ? field.label : field.name,
-                    value: field.name,
-                    description: field.friendlyDescription ? field.friendlyDescription : field.description,
-                    icon: field.icon,
-                    category: field.category,
-                    categoryOrder: field.categoryOrder,
-                    type: field.type
-                  };
-                }
-              )
+              .map(view.fieldToOption)
               .groupBy("categoryOrder")
               .value();
             
@@ -167,6 +157,26 @@ define([
           } catch (e) {
             console.log("Failed to render a Query Field Select View, error message: " + e);
           }
+        },
+        
+        
+        /**        
+         * fieldToOption - Converts an object that represents a QueryField model
+         * in the format specified by the SearchableSelectView.options
+         *          
+         * @param  {object} field An object with properties corresponding to a QueryField model
+         * @return {object}       An object in the format specified by SearchableSelectView.options
+         */         
+        fieldToOption: function(field) {
+           return {
+            label: field.label ? field.label : field.name,
+            value: field.name,
+            description: field.friendlyDescription ? field.friendlyDescription : field.description,
+            icon: field.icon,
+            category: field.category,
+            categoryOrder: field.categoryOrder,
+            type: field.type
+          };
         },
         
         /**        
@@ -240,6 +250,43 @@ define([
           
           return $(element)
         
+        },
+        
+        /**        
+         * isValidOption - Checks if a value is one of the values given in view.options
+         *          
+         * @param  {string} value The value to check
+         * @return {boolean}      returns true if the value is one of the values given in view.options
+         */         
+        isValidOption: function(value){
+          
+          try {
+            var view = this;
+            
+            // First check if the value is one of the fields that's excluded.
+            if(view.excludeFields.includes(value)){
+              // If it is, then add it to the list of options
+              var newField = MetacatUI.queryFields.findWhere({
+                name: value
+              });
+              if(newField){
+                newField = view.fieldToOption(newField.toJSON());
+              }
+              view.options[newField.category].push(newField);
+              view.updateMenu();
+              // Make sure the new menu is attached before updating the selections
+              setTimeout(function () {
+                view.changeSelection(view.selected, silent = true);
+              }, 25);
+              return true
+            } else {
+              var isValid = SearchableSelect.prototype.isValidOption.call(view, value);
+              return isValid
+            }
+          } catch (e) {
+            console.log("Failed to check if option is valid in a Query Field Select View, error message: " + e);
+          }
+          
         },
 
       });

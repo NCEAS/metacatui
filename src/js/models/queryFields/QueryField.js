@@ -118,6 +118,7 @@ define(
           numberReplicas: "Number of Replicas",
           originText: "Creator Full Names and Organization Names",
           placeKey: "Place Keyword",
+          keywordsText: "Keywords",
           preferredReplicationMN: "Preferred Replication Repository",
           projectText: "Project",
           pubDate: "Date Published",
@@ -131,7 +132,7 @@ define(
           sem_annotates: "Annotates",
           sem_annotation: "Semantic Annotation",
           sem_comment: "Comment",
-          seriesId: "Series Id",
+          seriesId: "Series Identifier",
           serviceCoupling: "Data Service Coupling",
           serviceDescription: "Data Service Description",
           serviceEndpoint: "Data Service Endpoint",
@@ -246,6 +247,7 @@ define(
        * @property {string} icon - The name of a Font Awesome 3.2.1 icon to represent the field type
        * @property {string[]} queryTypes - An array of the possible query field types, as named in the type attribute, that belong in the given category. If a queryType array is provided, the queryFields array will be ignored.
        * @property {string[]} queryFields - As an alternative to grouping fields by type, they may also be grouped by field name. Use this property instead of queryTypes to list fields by their name attribute.
+       * @property {boolean} default - Set to true for one category. Any fields that don't match another category will be placed here.
        */
       /**      
        * categoriesMap - Returns an array of objects that can be used to
@@ -260,9 +262,10 @@ define(
             label: "General",
             icon: "list-ul",
             queryFields: [
-              "abstract", "text", "isPartOf", "keywordsText", "seriesId",
+              "abstract", "text", "isPartOf", "keywordsText",
               "title", "purpose"
             ],
+            default: true,
           },
           {
             label: "People & organizations",
@@ -324,7 +327,7 @@ define(
             label: "Identifier",
             icon: "tag",
             queryFields: [
-              "documents", "resourceMap", "identifier",
+              "documents", "resourceMap", "identifier", "seriesId",
             ],
           },
           {
@@ -358,7 +361,7 @@ define(
               "serviceCoupling", "serviceDescription", "serviceEndpoint",
               "serviceOutput","serviceTitle","serviceType","isService",
             ]
-          },
+          }
           // {
           //   label: "True or False Fields",
           //   icon: "asterisk",
@@ -452,6 +455,13 @@ define(
                 if(category.queryTypes){
                   return category.queryTypes.includes(fieldType);
                 }
+              });
+            }
+            
+            // If there's still no match, look for the default category
+            if(!match){
+              var match = _.find(categoriesMap, function(category){
+                return category.default
               });
             }
             
