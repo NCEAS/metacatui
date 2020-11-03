@@ -110,14 +110,27 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       if(this.model.isNew()){
         title = "Add data to your collection"
       }
+      
+      var helpText = "",
+          email = MetacatUI.appModel.get("emailContact");
+      
+      if (email) {
+        helpText = 'Need help building your data collection? <a href="maito:' + email + '">Get in touch.</a>'
+      }
 
       this.$el.html(this.template({
         title: title,
         description: "Your collection can include any of the datasets that are available on the DataONE network. " +
           "Build a query based on metadata to define which datasets should be included in your collection. " +
           "Data added to the network in the future that match this query will also be added to your collection. " +
-          "Click the save button when you're happy with the results."
+          "Click the save button when you're happy with the results.",
+        helpText: helpText
       }));
+      
+      // Remove this when the Query Builder is no longer new:
+      this.$el
+        .find(".edit-collection-title")
+        .append($('<span class="badge badge-info d1_pill d1_pill--primary" style="margin-left:10px">NEW!</span>'));
 
       // Make sure that we have a series ID before we render the Data Catalog
       // View With Filters. For new portals, we generate and reserve a series ID
