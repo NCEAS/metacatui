@@ -1276,6 +1276,16 @@ define(['jquery', 'underscore', 'backbone'],
         "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
         "sensor", "source", "term", "investigatorText"
       ],
+      
+      
+      /**      
+       * The isPartOf filter is added to all new portals built in the Portal
+       * Builder automatically. It is required for dataset owners to include
+       * their dataset in a specific portal collection. By default, this filter
+       * is hidden. Set to false to make this filter visible.
+       * @type {boolean}      
+       */       
+      hideIsPartOfFilter: true,
 
       /**
       * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)

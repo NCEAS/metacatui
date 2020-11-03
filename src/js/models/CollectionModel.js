@@ -371,6 +371,8 @@ define(["jquery",
           values: [seriesId],
           label: "Datasets added manually",
           matchSubstring: false,
+          description: "Datasets added to this collection manually by dataset owners",
+          isInvisible: MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false,
           operator: "OR"
         };
         
