@@ -339,10 +339,16 @@ define([
           {
             queryFields: ["sem_annotation"],
             uiFunction: function(){
-              return new AnnotationFilter({
-                selected: this.model.get("values"),
-                multiselect: true
-              });
+              // A bioportalAPIKey is required for the Annotation Filter UI
+              if(MetacatUI.appModel.get("bioportalAPIKey")){
+                return new AnnotationFilter({
+                  selected: this.model.get("values"),
+                  multiselect: true
+                });
+              // If there's no API key, render the default UI (the last in this list)
+              } else {
+                return this.valueSelectUImap.slice(-1)[0].uiFunction.call(this);
+              }
             }
           },
           {
