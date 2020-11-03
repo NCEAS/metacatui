@@ -412,6 +412,7 @@ header .citation {
 #Content > .alert-container {
     max-width: 90%;
     margin-left: 5%;
+		margin-top: 2rem;
 }
 body > .alert-container.important-app-message{
   bottom: 0px;

@@ -120,9 +120,9 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
 
       this.$el.html(this.template({
         title: title,
-        description: "Your collection can include any of the datasets that are available on the DataONE network. " +
-          "Build a query based on metadata to define which datasets should be included in your collection. " +
-          "Data added to the network in the future that match this query will also be added to your collection. " +
+        description: "Your collection can include any of the datasets that are available on the network. " +
+          "Build rules based on metadata to define which datasets should be included in your collection. " +
+          "Data added to the network in the future that match these rules will also be added to your collection. " +
           "Click the save button when you're happy with the results.",
         helpText: helpText
       }));
@@ -130,7 +130,8 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       // Remove this when the Query Builder is no longer new:
       this.$el
         .find(".edit-collection-title")
-        .append($('<span class="badge badge-info d1_pill d1_pill--primary" style="margin-left:10px">NEW!</span>'));
+        .append($('<span class="new-icon" style="margin-left:10px; font-size:1rem; line-height: 25px;"><i class="icon icon-star icon-on-right"></i> NEW </span>'));
+        // .append($('<span class="badge badge-info d1_pill d1_pill--primary" style="margin-left:10px">NEW!</span>'));
 
       // Make sure that we have a series ID before we render the Data Catalog
       // View With Filters. For new portals, we generate and reserve a series ID

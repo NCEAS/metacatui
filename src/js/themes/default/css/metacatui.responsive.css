@@ -23,6 +23,12 @@ and (max-width : 480px) {
   .has-temporary-message #Content {
       padding-top: 135px;
   }
+	.PortalView #main-nav .dropdown-menu > li > a,
+	.Portal.Editor #main-nav .dropdown-menu > li > a ,
+	.PortalView #nav-trigger,
+	.Portal.Editor #nav-trigger  {
+		color: #888;
+	}
 }
 @media only screen and (max-width : 500px) {
   /* At smaller widths, give more height for the temporary message */

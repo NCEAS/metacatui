@@ -4,9 +4,10 @@ define(["jquery",
     "collections/Filters",
     "collections/queryFields/QueryFields",
     "views/queryBuilder/QueryRuleView",
-    "text!templates/queryBuilder.html", 'collections/ObjectFormats', "collections/queryFields/QueryFields",
+    "text!templates/queryBuilder/queryBuilder.html",
+    "collections/queryFields/QueryFields",
   ],
-  function($, _, Backbone, Filters, QueryFields, QueryRule, Template,  ObjectFormats, QueryFields) {
+  function($, _, Backbone, Filters, QueryFields, QueryRule, Template, QueryFields) {
 
     /**
      * @class QueryBuilder
