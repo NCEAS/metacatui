@@ -79,6 +79,16 @@ define(['jquery', 'underscore', 'backbone'],
           this.get("fields").includes("seriesId") ){
         this.set("queryGroup", Math.floor(Math.random() * Math.floor(10000)).toString());
       }
+      
+      //If this is an isPartOf filter, then add a label and description
+      if( this.get("fields").length == 1 && this.get("fields").includes("isPartOf") ){
+        this.set({
+          label: "Datasets added manually",
+          description: "Datasets added to this collection manually by dataset owners",
+          isInvisible: MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false,
+        });
+      }
+    
     },
 
     /**

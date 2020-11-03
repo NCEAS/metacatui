@@ -157,6 +157,15 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       
       var view = this;
       
+      // If the isPartOf filter is hidden, then don't allow users to build
+      // a query rule usinig the isPartOf field. If they do, that rule will
+      // be hidden the next time they open the portal in the editor. Also,
+      // the filter they create will overwrite the isPartOf filter created by
+      // default.
+      if(MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false){
+        this.queryBuilderExcludeFields.push("isPartOf")
+      }
+      
       var queryBuilder = new QueryBuilder({
         collection: this.model.get("definitionFilters"),
         ruleColorPalette: this.ruleColorPalette,

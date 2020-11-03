@@ -366,13 +366,11 @@ define(["jquery",
         }
 
         // Create the new isPartOf filter attributes object
+        // NOTE: All other attributes are set in Filter.initialize();
         var isPartOfAttributes = {
           fields: ["isPartOf"],
           values: [seriesId],
-          label: "Datasets added manually",
           matchSubstring: false,
-          description: "Datasets added to this collection manually by dataset owners",
-          isInvisible: MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false,
           operator: "OR"
         };
         

@@ -179,7 +179,6 @@ define([
           }
         },
         
-        
         /**        
          * fieldToOption - Converts an object that represents a QueryField model
          * in the format specified by the SearchableSelectView.options

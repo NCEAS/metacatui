@@ -143,7 +143,7 @@ define(
           siteText: "Site",
           southBoundCoord: "Southern Most Latitude",
           submitter: "Submitter Username",
-          text: "All Search Fields",
+          text: "Any Metadata Field",
           westBoundCoord: "Western Most Longitude",
           writePermission: "Can Edit"
         }
