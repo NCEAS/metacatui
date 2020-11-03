@@ -466,7 +466,7 @@ define(
             }
             
             if(match){
-              match.index = _.indexOf(categoriesMap, match);
+              match.index = _.indexOf(categoriesMap, match) + 1;
             }
             
             return match

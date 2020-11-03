@@ -70,6 +70,12 @@ define([
         excludeFields: [],
         
         /**        
+         * A list of query fields names to display at the top of the menu, above
+         * all other category headers
+         */         
+        commonFields: ["text"],
+        
+        /**        
          * Whether or not to exclude fields which are not searchable. Set to
          * false to keep query fields that are not seachable in the returned list      
          * @type {boolean}
@@ -116,6 +122,22 @@ define([
             // Convert the queryFields collection to an object formatted for the
             // SearchableSelect view.
             var fieldsJSON = MetacatUI.queryFields.toJSON();
+            
+            // Move common fields to the top of the menu, outside of any
+            // category headers, so that they are easy to find
+            if(this.commonFields.length){
+              this.commonFields.forEach(function(commonFieldName){
+                var i = _.findIndex(fieldsJSON, { name: commonFieldName});
+                if(i>0){
+                  // If the category name is an empty string, no header will
+                  // be created in the menu
+                  fieldsJSON[i].category = ""
+                  // The min categoryOrder in the QueryFields collection is 1
+                  fieldsJSON[i].categoryOrder = 0
+                  fieldsJSON[i].icon = "star"
+                }
+              });
+            }
             
             // Filter out non-searchable fields (if option is true),
             // and fields that should be excluded
