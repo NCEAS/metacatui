@@ -631,7 +631,7 @@ define([
         /**        
          * Create and insert an input field where the user can select an operator
          * for the given rule. Operators will vary depending on filter model type.
-         * @param {string} selectedOperator - optional. The label of an operator to pre-select.
+         * @param {string} selectedOperator - optional. The label of an operator to pre-select. Set to an empty string to render an empty operator selector.
          */
         addOperatorSelect: function(selectedOperator) {
           try {
@@ -641,6 +641,8 @@ define([
             // Check which type of rule this is (boolean, numeric, text, date)
             var type = this.model.get("nodeName");
             
+            var operatorError = false;
+            
             // Get the list of options for a user to select from based on type
             var options = _.filter(this.operatorOptions, function(option){
               return option.types.includes(type)
@@ -649,6 +651,11 @@ define([
             // Identify the selected operator for existing models
             if(typeof selectedOperator !== "string"){
               selectedOperator = this.getSelectedOperator();
+              // If there was no operator found, then this is probably an
+              // unsupported combination of exclude + matchSubstring + filterType
+              if(selectedOperator === ""){
+                operatorError = true;
+              }
             }
             
             if(selectedOperator === ""){
@@ -667,6 +674,14 @@ define([
             });
             this.operatorSelect.$el.addClass(this.operatorClass);
             this.el.append(this.operatorSelect.el);
+            
+            
+            if(operatorError){
+              view.listenToOnce(view.operatorSelect, "postRender", function(){
+                view.operatorSelect.showMessage("Please select a valid operator", "error", true)
+              })
+            }
+            
             this.operatorSelect.render();
             
             // Update model when the values change
