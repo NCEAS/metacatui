@@ -296,8 +296,8 @@ define(
             label: "Taxon",
             icon: "sitemap",
             queryFields: [
-              "scientificName", "kingdom", "phylum", "class", "order", "family",
-              "genus", "species"
+              "kingdom", "phylum", "class", "order", "family", "genus",
+              "species", "scientificName"
             ],
           },
           {

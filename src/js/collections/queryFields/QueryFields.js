@@ -37,6 +37,28 @@ define(
           }
         },
         
+        /**        
+         * comparator - A sortBy function that returns the order of each Query
+         * Filter model based on its position in the categoriesMap object.
+         *          
+         * @param  {QueryFilter} model The individual Query Filter model
+         * @return {number}      A numeric value by which the model should be ordered relative to others.
+         */         
+        comparator: function(model){
+          try {
+            var categoriesMap = model.categoriesMap();
+            var order = _(categoriesMap)
+              .chain()
+              .pluck("queryFields")
+              .flatten()
+              .value();
+            return order.indexOf(model.get("name"));
+          } catch (e) {
+            console.log("Failed to sort the Query Fields Collection, error message: " + e);
+            return 0
+          }
+        },
+        
         /**
          * The constructed URL of the collection
          * 

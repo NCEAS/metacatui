@@ -115,7 +115,6 @@ define([
             
             // Convert the queryFields collection to an object formatted for the
             // SearchableSelect view.
-            // 
             var fieldsJSON = MetacatUI.queryFields.toJSON();
             
             // Filter out non-searchable fields (if option is true),
@@ -123,7 +122,6 @@ define([
             var processedFields = _(fieldsJSON)
               .chain()
               .sortBy("categoryOrder")
-              .sortBy("label")
               .filter(
                 function(filter){
                   if(this.excludeNonSearchable){
