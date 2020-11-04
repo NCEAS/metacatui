@@ -208,7 +208,7 @@ define([
           },
           {
             label: "is less than or equal to",
-            description: "The metadata field is a number less than the one selected",
+            description: "The metadata field is a number less than the value selected",
             icon: "less-than-or-eq",
             matchSubstring: false,
             exclude: false,
@@ -218,7 +218,7 @@ define([
           },
           {
             label: "is greater than or equal to",
-            description: "The metadata field is a number greater than the one selected",
+            description: "The metadata field is a number greater than the value selected",
             icon: "greater-than-or-eq",
             matchSubstring: false,
             exclude: false,
@@ -228,7 +228,7 @@ define([
           },
           {
             label: "is exactly",
-            description: "The metadata field exactly equals the one selected",
+            description: "The metadata field exactly equals the value selected",
             icon: "equal",
             matchSubstring: false,
             exclude: false,
@@ -898,29 +898,30 @@ define([
             
             var options = _.where(options, conditions);
             
-            // --- Filter 3 - filter based on the value --- //
+            // --- Filter 3 - filter based on the value, if there's > 1 option --- //
             
-            // Model values that determine the user-facing operator
-            // eg ["*"], [true], [false]
-            var specialValues = _.compact(
-                                    _.pluck(this.operatorOptions, "values")
-                                  ),
-                specialValues = specialValues.map(val => JSON.stringify(val)),
-                specialValues = _.uniq(specialValues);
-            
-            options = options.filter(function(option){
-              var modelValsStringified = JSON.stringify(view.model.get("values"));
-              if(specialValues.includes(modelValsStringified)){
-                if(JSON.stringify(option.values) === modelValsStringified){
-                  return true
+            if(options.length > 1){
+              // Model values that determine the user-facing operator
+              // eg ["*"], [true], [false]
+              var specialValues = _.compact(
+                                      _.pluck(this.operatorOptions, "values")
+                                    ),
+                  specialValues = specialValues.map(val => JSON.stringify(val)),
+                  specialValues = _.uniq(specialValues);
+              
+              options = options.filter(function(option){
+                var modelValsStringified = JSON.stringify(view.model.get("values"));
+                if(specialValues.includes(modelValsStringified)){
+                  if(JSON.stringify(option.values) === modelValsStringified){
+                    return true
+                  }
+                } else {
+                  if(!option.values){
+                    return true
+                  }
                 }
-              } else {
-                if(!option.values){
-                  return true
-                }
-              }
-            })
-            
+              })
+            }
             // --- Return value --- //
             
             if(options.length === 1){
