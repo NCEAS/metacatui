@@ -57,11 +57,20 @@ define([
         allowAdditions: false,
         
         /**        
-         * Set to true to display list options as sub-menus of cateogories,
-         * rather than one long list.
-         * @type {boolean}        
+         * When items are grouped within categories, how to display the items
+         * within each category? Select one of the following options:
+         *  list: display the items in a traditional, non-interactive list below
+         *        category titles
+         *  popout: initially show only a list of category titles, and popout
+         *          a submenu on the left or right when the user hovers over
+         *          or touches a category (can lead to the sub-menu being hidden
+         *          on mobile devices if the element is wide)
+         *  accordion: initially show only a list of category titles, and expand
+         *            the list of items below each category when a user clicks
+         *            on the category title, much like an "accordion" element.
+         * @type {string} set to "list", "popout", or "accordion"
          */         
-        collapseCategories: true,
+        submenuStyle: "accordion",
         
         /**        
          * A list of query fields names to exclude from the list of options

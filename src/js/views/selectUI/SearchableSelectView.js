@@ -65,10 +65,20 @@ define([
         clearable: true,
         
         /**        
-         * Set to true to display list options as sub-menus of cateogories.
-         * @type {boolean}        
+         * When items are grouped within categories, how to display the items
+         * within each category? Select one of the following options:
+         *  list: display the items in a traditional, non-interactive list below
+         *        category titles
+         *  popout: initially show only a list of category titles, and popout
+         *          a submenu on the left or right when the user hovers over
+         *          or touches a category (can lead to the sub-menu being hidden
+         *          on mobile devices if the element is wide)
+         *  accordion: initially show only a list of category titles, and expand
+         *            the list of items below each category when a user clicks
+         *            on the category title, much like an "accordion" element.
+         * @type {string} set to "list", "popout", or "accordion"
          */         
-        collapseCategories: false,
+        submenuStyle: "list",
         
         /**        
          * Set to false to always display category headers in the dropdown,
@@ -305,11 +315,16 @@ define([
         },
         
         /**        
-         * updateMenu - Re-render the menu of options
+         * updateMenu - Re-render the menu of options. Useful after changing
+         * the options that are set on the view.
          */         
         updateMenu: function(){
-          var menu = $(this.template(this)).find(".menu")[0].innerHTML;
-          this.$el.find(".menu").html(menu);
+          try {
+            var menu = $(this.template(this)).find(".menu")[0].innerHTML;
+            this.$el.find(".menu").html(menu);
+          } catch (e) {
+            console.log("Failed to update a searchable select menu, error message: " + e);
+          }
         },
         
         /**        
@@ -353,25 +368,44 @@ define([
             this.hideLoading();
             
             // Make sub-menus if the option is configured in this view
-            if(this.collapseCategories){
-              this.convertToSubmenus();
+            if(this.submenuStyle === "popout"){
+              this.convertToPopout();
+            }
+            else if (this.submenuStyle === "accordion"){
+              this.convertToAccordion();
             }
             
-            // Hide empty categories when the user searches for a term
-            if(view.collapseCategories || view.hideEmptyCategoriesOnSearch){
+            // Convert interactive submenus to lists and hide empty categories
+            // when the user is searching for a term
+            if(
+              ["popout", "accordion"].includes(view.submenuStyle) ||
+              view.hideEmptyCategoriesOnSearch
+            ){
               this.$selectUI.find("input").on("keyup blur", function(e){
+                
                 inputVal = e.target.value;
+                
+                // When the input is NOT empty
                 if(inputVal !== ""){
-                  if(view.collapseCategories){
-                    view.revertToList();
+                  // For interactive type submenus where items are sometimes
+                  // hidden, show all the matching items when a user is searching
+                  if(["popout", "accordion"].includes(view.submenuStyle)){
+                    view.convertToList();
                   }
                   if(view.hideEmptyCategoriesOnSearch){
                     view.hideEmptyCategories();
                   }
+                
+                // When the input is EMPTY
                 } else {
-                  if(view.collapseCategories){
-                    view.convertToSubmenus();
+                  // Convert back to sub-menus if the option is configured in this view
+                  if(view.submenuStyle === "popout"){
+                    view.convertToPopout();
                   }
+                  else if (view.submenuStyle === "accordion"){
+                    view.convertToAccordion();
+                  }
+                  // Show all the category titles again, in cases some where hidden
                   if(view.hideEmptyCategoriesOnSearch){
                     view.showAllCategories();
                   }
@@ -488,19 +522,19 @@ define([
         },
         
         /**        
-         * convertToSubmenus - Re-arrange the HTML to display category contents
-         * as sub-menus
+         * convertToPopout - Re-arrange the HTML to display category contents
+         * as sub-menus that popout to the left or right of category titles
          */         
-        convertToSubmenus: function(){
+        convertToPopout: function(){
           try {
             if(!this.$selectUI){
               return
             }
-            if(this.mode === "submenu"){
+            if(this.currentSubmenuMode === "popout"){
               return
             }
-            this.mode = "submenu";
-            this.$selectUI.addClass("submenu-mode");
+            this.currentSubmenuMode = "popout";
+            this.$selectUI.addClass("popout-mode");
             var $headers = this.$selectUI.find(".header");
             if(!$headers || $headers.length === 0){
               return
@@ -512,16 +546,16 @@ define([
               if($icon && $icon.length > 0){
                 var $headerIcon = $icon
                   .clone()
-                  .addClass("submenu-mode-icon")
+                  .addClass("popout-mode-icon")
                   .css({
                     "opacity": "0.9",
                     "margin-right" : "1rem"
                   });
                 $(this).prepend($headerIcon[0])
               }
-              $itemAndHeaderGroup.wrapAll("<div class='item submenu-mode'/>");
-              $itemGroup.wrapAll("<div class='menu submenu-mode'/>");
-              $(this).append("<i class='submenu-mode-icon dropdown icon icon icon-on-right icon-chevron-right'></i>")
+              $itemAndHeaderGroup.wrapAll("<div class='item popout-mode'/>");
+              $itemGroup.wrapAll("<div class='menu popout-mode'/>");
+              $(this).append("<i class='popout-mode-icon dropdown icon icon-on-right icon-chevron-right'></i>")
             });
           } catch (e) {
             console.log("Failed to convert a Searchable Select interface to sub-menu mode, error message: " + e);
@@ -529,23 +563,79 @@ define([
         },
         
         /**        
-         * revertToList - Re-arrange HTML to display the full list of options
-         * in one menu
+         * convertToList - Re-arrange HTML to display the full list of options
+         * in one static menu
          */         
-        revertToList: function(){
+        convertToList: function(){
           try {
             if(!this.$selectUI){
               return
             }
-            if(this.mode === "list"){
+            if(this.currentSubmenuMode === "list"){
               return
             }
-            this.mode = "list";
-            this.$selectUI.removeClass("submenu-mode");
-            this.$selectUI.find(".submenu-mode > *").unwrap();
-            this.$selectUI.find(".submenu-mode-icon").remove();
+            this.currentSubmenuMode = "list";
+            this.$selectUI.find(".popout-mode > *").unwrap();
+            this.$selectUI.find(".accordion-mode > *").unwrap();
+            this.$selectUI.find(".popout-mode-icon").remove();
+            this.$selectUI.find(".accordion-mode-icon").remove();
+            this.$selectUI.removeClass("popout-mode accordion-mode");
           } catch (e) {
-            console.log("Failed to revert a Searchable Select interface to list mode, error message: " + e);
+            console.log("Failed to convert a Searchable Select interface to list mode, error message: " + e);
+          }
+        },
+        
+      
+        /**      
+         * convertToAccordion - Re-arrange the HTML to display category items
+         * with expandable sections, similar to an accordion element.
+         */         
+        convertToAccordion: function(){
+          
+          try {
+            
+            if(!this.$selectUI){
+              return
+            }
+            if(this.currentSubmenuMode === "accordion"){
+              return
+            }
+            this.currentSubmenuMode = "accordion";
+            this.$selectUI.addClass("accordion-mode");
+            var $headers = this.$selectUI.find(".header");
+            if(!$headers || $headers.length === 0){
+              return
+            }
+            
+            // Id to match the header to the
+            $headers.each(function(i){
+              
+              // Create an ID
+              var randomNum = Math.floor((Math.random() * 100000) + 1),
+                  headerText = $(this).text().replace(/\W/g, ''),
+                  id = headerText + randomNum;
+              
+              var $itemGroup = $().add($(this).nextUntil(".header"));
+              var $icon = $(this).next().find(".icon");
+              if($icon && $icon.length > 0){
+                var $headerIcon = $icon
+                  .clone()
+                  .addClass("accordion-mode-icon")
+                  .css({
+                    "opacity": "0.9",
+                    "margin-right" : "1rem"
+                  });
+                $(this).prepend($headerIcon[0])
+                $(this).wrap("<a data-toggle='collapse' data-target='#" +
+                                id +
+                                "' class='accordion-mode collapsed'/>" )
+              }
+              $itemGroup.wrapAll("<div id='" + id + "' class='accordion-mode collapse'/>");
+              $(this).append("<i class='accordion-mode-icon dropdown icon icon-on-right icon-chevron-down'></i>");
+              
+            });
+          } catch (e) {
+            console.log("Failed to convert a Searchable Select interface to accordion mode, error message: " + e);
           }
         },
         
