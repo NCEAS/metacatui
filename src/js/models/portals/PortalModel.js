@@ -11,6 +11,7 @@ define(["jquery",
         "collections/SolrResults",
         "models/filters/Filter",
         "models/portals/PortalSectionModel",
+        "models/portals/PortalVizSectionModel",
         "models/portals/PortalImage",
         "models/metadata/eml211/EMLParty",
         "models/metadata/eml220/EMLText",
@@ -19,7 +20,7 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map"
     ],
-    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalImage,
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalVizSectionModel, PortalImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
          * @classdesc A PortalModel is a specialized collection that represents a portal,
@@ -346,11 +347,33 @@ define(["jquery",
                 // Parse the portal content sections
                 modelJSON.sections = [];
                 $(portalNode).children("section").each(function(i, section){
-                  // Create a new PortalSectionModel
-                  modelJSON.sections.push( new PortalSectionModel({
-                    objectDOM: section,
-                    literatureCited: modelJSON.literatureCited
-                  }) );
+
+                  //Get the section type, if there is one
+                  var sectionTypeNode = $(section).find("optionName:contains(sectionType)"),
+                      sectionType = "";
+
+                  if( sectionTypeNode.length ){
+                    var optionValueNode = sectionTypeNode.first().siblings("optionValue");
+                    if( optionValueNode.length ){
+                      sectionType = optionValueNode[0].textContent;
+                    }
+                  }
+
+                  if( sectionType == "visualization" ){
+                    // Create a new PortalVizSectionModel
+                    modelJSON.sections.push( new PortalVizSectionModel({
+                      objectDOM: section,
+                      literatureCited: modelJSON.literatureCited
+                    }) );
+                  }
+                  else{
+                    // Create a new PortalSectionModel
+                    modelJSON.sections.push( new PortalSectionModel({
+                      objectDOM: section,
+                      literatureCited: modelJSON.literatureCited
+                    }) );
+                  }
+
                   //Parse the PortalSectionModel
                   modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
                 });

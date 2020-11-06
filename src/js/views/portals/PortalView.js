@@ -12,10 +12,11 @@ define(["jquery",
         "views/portals/PortalSectionView",
         "views/portals/PortalMetricsView",
         "views/portals/PortalMembersView",
-        "views/portals/PortalLogosView"
+        "views/portals/PortalLogosView",
+        "views/portals/PortalVisualizationsView"
     ],
     function($, _, Backbone, Portal, User, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
-        PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView) {
+        PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView, PortalVisualizationsView) {
         "use_strict";
 
         /**
@@ -367,11 +368,13 @@ define(["jquery",
 
                 //Render the logos at the bottom of the portal page
                 var ackLogos = this.model.get("acknowledgmentsLogos") || [];
-                this.logosView = new PortalLogosView();
-                this.logosView.logos = ackLogos;
-                this.subviews.push(this.logosView);
-                this.logosView.render();
-                this.$(".portal-view").append(this.logosView.el);
+                if( ackLogos.length ){
+                  this.logosView = new PortalLogosView();
+                  this.logosView.logos = ackLogos;
+                  this.subviews.push(this.logosView);
+                  this.logosView.render();
+                  this.$(".portal-view").append(this.logosView.el);
+                }
 
                 //Scroll to an inner-page link if there is one specified
                 if( window.location.hash && this.$(window.location.hash).length ){
@@ -637,8 +640,46 @@ define(["jquery",
              */
             addSection: function(sectionModel){
 
+              //If this is a visualization Section, render it differently with PortalVizSectionView
+              if( sectionModel.get("sectionType") == "visualization" ){
+                this.addVizSection(sectionModel);
+                return;
+              }
+              //All other portal section types are rendered with the basic PortalSectionView
+              else{
+                //Create a new PortalSectionView
+                var sectionView = new PortalSectionView({
+                  model: sectionModel
+                });
+
+                //Render the section
+                sectionView.render();
+
+                //Add the section view to this portal view
+                this.$("#portal-sections").append(sectionView.el);
+
+                this.addSectionLink( sectionView );
+
+                //Create a unique label for this section and save it
+                var uniqueLabel = this.getUniqueSectionLabel(sectionModel);
+                //Set the unique section label for this view
+                sectionView.uniqueSectionLabel = uniqueLabel;
+
+                this.subviews.push(sectionView);
+              }
+
+            },
+
+            /**
+             * Creates a PortalSectionView to display the content in the given portal
+             * section. Also creates a navigation link to the section.
+             * @param {PortalVizSectionModel} sectionModel - The visualization section to render in this view
+             *
+             */
+            addVizSection: function(sectionModel){
+
               //Create a new PortalSectionView
-              var sectionView = new PortalSectionView({
+              var sectionView = new PortalVisualizationsView({
                 model: sectionModel
               });
 
@@ -652,6 +693,7 @@ define(["jquery",
 
               //Create a unique label for this section and save it
               var uniqueLabel = this.getUniqueSectionLabel(sectionModel);
+
               //Set the unique section label for this view
               sectionView.uniqueSectionLabel = uniqueLabel;
 

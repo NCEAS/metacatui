@@ -1,0 +1,124 @@
+/* global define */
+define(["jquery",
+        "underscore",
+        "backbone",
+        "models/portals/PortalSectionModel"
+    ],
+    function($, _, Backbone, PortalSectionModel) {
+
+      /**
+       * @class PortalVizSectionModel
+       * @classdesc A Portal Section for Data Visualizations. This is still an experimental feature and not recommended for general use.
+       * @classcategory Models/Portals
+       * @extends PortalSectionModel
+       * @private
+       */
+      var PortalVizSectionModel = PortalSectionModel.extend(
+        /** @lends PortalVizSectionModel.prototype */{
+        defaults: function(){
+          return _.extend(PortalSectionModel.prototype.defaults(), {
+            sectionType: "visualization",
+            visualizationType: ""
+          });
+        },
+
+        /**
+         * Parses a <section> element from a portal document
+         *
+         *  @param {XMLElement} objectDOM - A ContentSectionType XML element from a portal document
+         *  @return {JSON} The result of the parsed XML, in JSON. To be set directly on the model.
+        */
+        parse: function(objectDOM){
+
+          if(!objectDOM){
+            return {};
+          }
+
+          //Create a jQuery object of the XML DOM
+          var $objectDOM = $(objectDOM),
+          //Parse the XML using the parent class, PortalSectionModel.parse()
+              modelJSON  = this.constructor.__super__.parse(objectDOM);
+
+          //Parse the visualization type
+          var allOptions = $objectDOM.children("option"),
+              vizType = "";
+
+          var vizTypeNode = allOptions.find("optionName:contains(visualizationType)");
+          if( vizTypeNode.length ){
+            vizType = vizTypeNode.first().siblings("optionValue").text();
+
+            //Right now, only support "fever" as a visualization type, until this feature is expanded.
+            if(vizType == "fever"){
+              modelJSON.visualizationType = "fever";
+            }
+          }
+
+          return modelJSON;
+
+        },
+
+        /**
+         *  Makes a copy of the original XML DOM and updates it with the new values from the model.
+         *
+         *  @return {XMLElement} An updated ContentSectionType XML element from a portal document
+        */
+        updateDOM: function(){
+
+          var objectDOM = this.get("objectDOM");
+
+
+          //If nothing was serialized, return an empty string
+          if( !$(objectDOM).children().length ){
+            return "";
+          }
+
+          return objectDOM;
+
+        },
+
+        /**
+         * Overrides the default Backbone.Model.validate.function() to
+         * check if this PortalSection model has all the required values necessary
+         * to save to the server.
+         *
+         * @return {Object} If there are errors, an object comprising error
+         *                   messages. If no errors, returns nothing.
+        */
+        validate: function(){
+
+          try{
+
+            var errors = {};
+
+            //--Validate the label--
+            //Labels are always required
+            if( !this.get("label") ){
+              errors.label = "Please provide a page name.";
+            }
+
+            //---Validate the section content---
+            //Content is always required, but for visualizations, we can just input dummy content
+            if( !this.get("content") ){
+              this.set("content", "visualization");
+            }
+
+            //Return the errors object
+            if( Object.keys(errors).length )
+              return errors;
+            else{
+              return;
+            }
+
+          }
+          catch(e){
+            console.error(e);
+            return;
+          }
+
+        }
+
+
+      });
+
+      return PortalVizSectionModel;
+});

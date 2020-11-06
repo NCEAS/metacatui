@@ -1197,6 +1197,17 @@ define(['jquery', 'underscore', 'backbone'],
         "urn:node:TNC_DANGERMOND", "dangermond", "TNC_DANGERMOND", "dangermondpreserve"
       ],
 
+      /**
+      * The URL of the location where the Fluid Earth Viewer (FEVer) is deployed. This should be
+      * deployed at the same origin as MetacatUI, since your web server configuration may block iframes
+      * from different origins. (e.g. in Apache, ` Header always append X-Frame-Options SAMEORIGIN`).
+      * This config option is marked as `private` since this is an experimental feature.
+      * @type {string}
+      * @private
+      * @since 2.X
+      */
+      portalFEVUrl: "http://localhost:3003",
+
       /** If true, then archived content is available in the search index.
       * Set to false if this MetacatUI is using a Metacat version before 2.10.0
       * @type {boolean}

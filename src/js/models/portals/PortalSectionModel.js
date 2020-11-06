@@ -22,6 +22,7 @@ define(["jquery",
             title: "",
             introduction: "",
             content: null,
+            sectionType: "",
             literatureCited: null,
             objectDOM: null
           }

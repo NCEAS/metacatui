@@ -4762,6 +4762,15 @@ i.toc-sub-item {
   margin-bottom: 20px;
 }
 
+/** The Portal Visualization View **/
+.portal-viz-section-view{
+  background-color: black;
+}
+.portal-viz-section-view iframe{
+  box-sizing: border-box;
+  border: 0px;
+}
+
 
 /******************************************
 * HTML converted from Markdown

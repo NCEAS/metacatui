@@ -538,6 +538,13 @@ footer .logos a:hover, a:focus{
 
 /* PORTALS
 ------------------------ */
+.PortalView #Content{
+  padding-bottom: 0px;
+}
+.PortalView{
+  display: grid;
+  grid-template-rows: 40px 0px 100fr 320px;
+}
 .portal-view .portal-title{
   font-weight: 100;
 }
