@@ -6,6 +6,7 @@ define([
     "views/selectUI/QueryFieldSelectView",
     "views/selectUI/NodeSelectView",
     "views/filters/NumericFilterView",
+    "views/filters/DateFilterView",
     "views/selectUI/AnnotationFilterView",
     "collections/queryFields/QueryFields",
     "models/filters/Filter",
@@ -16,7 +17,7 @@ define([
   ],
   function(
     $, _, Backbone, SearchableSelect, QueryFieldSelect, NodeSelect,
-    NumericFilterView, AnnotationFilter, QueryFields, Filter, BooleanFilter,
+    NumericFilterView, DateFilterView, AnnotationFilter, QueryFields, Filter, BooleanFilter,
     NumericFilter,
     DateFilter, ObjectFormats
   ) {
@@ -309,7 +310,6 @@ define([
           {
             queryFields: ["formatId"],
             uiFunction: function(){
-              
               var formatIds = MetacatUI.objectFormats.toJSON();
               var options = _.chain(formatIds)
                 // Since the query rules automatically include a rule for
@@ -326,7 +326,6 @@ define([
                   }
                 )
                 .value();
-              
               return new SearchableSelect({
                 options: options,
                 allowMulti: true,
@@ -361,12 +360,21 @@ define([
             }
           },
           {
-            filterTypes: ["dateFilter", "numericFilter"],
+            filterTypes: ["numericFilter"],
             label: "Choose a value",
             uiFunction: function(){
               return new NumericFilterView({
                 model: this.model,
                 showButton: false
+              })
+            }
+          },
+          {
+            filterTypes: ["dateFilter"],
+            label: "Choose a year",
+            uiFunction: function(){
+              return new DateFilterView({
+                model: this.model
               })
             }
           },

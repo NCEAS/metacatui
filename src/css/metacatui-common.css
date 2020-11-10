@@ -6753,13 +6753,8 @@ Query builder & query rule view
 	grid-area: value;
 }
 
-/* make the number filter inputs match the operator and field inputs */
-.query-rule .filter input {
-	padding: .60em 1em;
-	border: 1px solid rgba(34,36,38,.15);
-}
-
-.query-rule .remove-rule{
+/* the button used to remove a rule */
+.query-rule .remove-rule {
 	font-size: 1.5rem;
 	grid-area: remove;
 	cursor: pointer;
@@ -6791,18 +6786,31 @@ Query builder & query rule view
   font-size: 0.8rem;
 }
 
-.query-rule .filter label {
-	display: none;
-}
+/* make the number & date filter inputs match the operator and field inputs */
 
 .query-rule .filter input {
+	padding: .60em 1em;
+	border: 1px solid rgba(34,36,38,.15);
 	margin: 0;
 }
 
+.query-rule .slider-container {
+	text-align: center;
+}
+.query-rule .filter label {
+	display: none;
+}
 .query-rule .filter .ui-slider {
 	margin: 0.6rem 0 1rem;
 }
 
+.query-rule .filter.date .to {
+	width: 10%;
+	text-align: center;
+}
+.query-rule .filter.date .max {
+  margin-left: 0;
+}
 /* ---- Icons for the operator options not included in font-awesome ---- */
 .icon-equal, .icon-not-equal, .icon-less-than, .icon-greater-than,
 .icon-less-than-or-eq, .icon-greater-than-or-eq {

@@ -1256,7 +1256,7 @@ define(['jquery', 'underscore', 'backbone'],
        * the Solr field).
        */
       collectionQueryExcludeFields: [
-        "sem_annotated_by", "sem_annotates", "sem_comment", "datePublished",
+        "sem_annotated_by", "sem_annotates", "sem_comment", "pubDate",
         "namedLocation", "contactOrganization", "investigator", "originator",
         "originatorText", "prov_generated", "prov_generatedByExecution",
         "prov_generatedByProgram", "prov_generatedByUser", "prov_hasDerivations",
