@@ -7812,3 +7812,8 @@ CSS library fixes
 	fill: var(--portal-primary-color);
 	font-size: xx-large;
 }
+
+/** Browser extension element fixes **/
+body > #extension-is-installed{
+  display: none;
+}
