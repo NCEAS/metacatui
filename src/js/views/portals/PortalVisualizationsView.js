@@ -54,7 +54,7 @@ define(["jquery",
           //Attach this view to the DOM element
           this.$el.data("view", this);
 
-          if( this.model.get("visualizationType") == "fever" ){
+          if( this.model.get("visualizationType") == "fever" && MetacatUI.appModel.get("enableFeverVisualizations") ){
             this.renderFEVer();
           }
 
@@ -63,7 +63,7 @@ define(["jquery",
         renderFEVer: function(){
           //Insert the FEVer visualization into the page
           var iframe = $(document.createElement("iframe"))
-                        .attr("src", MetacatUI.appModel.get("feverPath"))
+                        .attr("src", MetacatUI.appModel.get("feverUrl"))
                         .css("width", "100%");
           this.$el.html(iframe);
 

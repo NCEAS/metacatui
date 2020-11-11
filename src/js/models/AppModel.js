@@ -1198,6 +1198,14 @@ define(['jquery', 'underscore', 'backbone'],
       ],
 
       /**
+      * Enable or disable the use of Fluid Earth Viewer visualizations in portals.
+      * This config option is marked as `private` since this is an experimental feature.
+      * @type {boolean}
+      * @private
+      * @since 2.X
+      */
+      enableFeverVisualizations: false,
+      /**
       * The relative path to the location where the Fluid Earth Viewer (FEVer) is deployed. This should be
       * deployed at the same origin as MetacatUI, since your web server configuration and many browsers
       * may block iframes from different origins.
@@ -1207,6 +1215,17 @@ define(['jquery', 'underscore', 'backbone'],
       * @since 2.X
       */
       feverPath: "/fever",
+      /**
+      * The full URL to the location where the Fluid Earth Viewer (FEVer) is deployed.
+      * This URL is constructed during {@link AppModel#initialize} using the {@link AppConfig#baseUrl}
+      * and {@link AppConfig#feverPath}.
+      * This config option is marked as `private` since this is an experimental feature.
+      * @type {string}
+      * @readonly
+      * @private
+      * @since 2.X
+      */
+      feverUrl: "",
 
       /** If true, then archived content is available in the search index.
       * Set to false if this MetacatUI is using a Metacat version before 2.10.0
@@ -1484,6 +1503,11 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
       this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
+
+      //Construct the Fluid Earth Fever URL
+      if( this.get("enableFeverVisualizations") && this.get("feverPath") && !this.get("feverUrl") ){
+        this.set("feverUrl", this.get("baseUrl") + this.get("feverPath"));
+      }
 
       this.on("change:pid", this.changePid);
 

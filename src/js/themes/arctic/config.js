@@ -21,6 +21,7 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryDownloadsChart: false,
   hideSummaryViewsChart: false,
   hideSummaryMetadataAssessment: false,
+  enableFeverVisualizations: true,
 
   //Editor
   useNSFAwardAPI: true,
