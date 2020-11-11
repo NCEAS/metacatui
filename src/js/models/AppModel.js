@@ -1198,15 +1198,15 @@ define(['jquery', 'underscore', 'backbone'],
       ],
 
       /**
-      * The URL of the location where the Fluid Earth Viewer (FEVer) is deployed. This should be
-      * deployed at the same origin as MetacatUI, since your web server configuration may block iframes
-      * from different origins. (e.g. in Apache, ` Header always append X-Frame-Options SAMEORIGIN`).
+      * The relative path to the location where the Fluid Earth Viewer (FEVer) is deployed. This should be
+      * deployed at the same origin as MetacatUI, since your web server configuration and many browsers
+      * may block iframes from different origins.
       * This config option is marked as `private` since this is an experimental feature.
       * @type {string}
       * @private
       * @since 2.X
       */
-      portalFEVUrl: "http://localhost:3003",
+      feverPath: "/fever",
 
       /** If true, then archived content is available in the search index.
       * Set to false if this MetacatUI is using a Metacat version before 2.10.0

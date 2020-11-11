@@ -63,7 +63,7 @@ define(["jquery",
         renderFEVer: function(){
           //Insert the FEVer visualization into the page
           var iframe = $(document.createElement("iframe"))
-                        .attr("src", MetacatUI.appModel.get("portalFEVUrl"))
+                        .attr("src", MetacatUI.appModel.get("feverPath"))
                         .css("width", "100%");
           this.$el.html(iframe);
 
