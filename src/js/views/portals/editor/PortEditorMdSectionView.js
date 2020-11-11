@@ -118,6 +118,23 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
 
       try{
 
+        //Attach this view to the view Element
+        this.$el.data("view", this);
+
+        /**
+        * PortalVizSection models aren't editable yet, so show a message and exit.
+        * @todo Create a PortalVizSectionView for PortalVizSection models, rather than
+        * checking the section type here. */
+        if( this.model.type == "PortalVizSection" ){
+
+          MetacatUI.appView.showAlert("You're all set! A Fluid Earth Viewer data visualization will appear here.",
+                                      "alert-info",
+                                      this.$el);
+          this.$el.addClass("port-editor-viz");
+
+          return;
+        }
+
         // Insert the template into the view
         this.$el.html(this.template({
           title: this.model.get("title"),
@@ -127,7 +144,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
           // unique ID to use for the bootstrap accordion component, which
           // breaks when targeting two + components with the same ID
           cid: this.model.cid
-        })).data("view", this);
+        }));
 
         // Get the markdown from the SectionModel
         var markdown = "";

@@ -3916,6 +3916,11 @@ add font awesome close icon */
 	margin: 0;
 }
 
+/*** Portal Editor Data Visualization Sections **/
+.port-editor-section.port-editor-viz{
+  padding-top: 40px;
+}
+
 /* Portal editor metrics page */
 
 .editor-view.portal-editor div#Metrics svg{
