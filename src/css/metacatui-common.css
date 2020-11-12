@@ -418,6 +418,8 @@ body > .alert-container.important-app-message{
   bottom: 0px;
   top: auto;
   width: 100%;
+	/* required for IE11: */
+	z-index: 1000;
 }
 body > .alert-container.important-app-message > .alert{
   margin-bottom: 0px;
