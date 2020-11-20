@@ -72,6 +72,10 @@ define(["jquery",
                     hideData: null,
                     hideMembers: null,
                     hideMap: null,
+                    // List of section labels indicating the order in which to display the sections.
+                    // Labels must exactly match the labels set on sections, or the values set on the
+                    // metricsLabel, dataLabel, and membersLabel options.
+                    pageOrder: [],
                     //Options for the custom section labels
                     //NOTE: This are not fully supported yet.
                     metricsLabel: "Metrics",
@@ -86,7 +90,7 @@ define(["jquery",
                     mapModel: gmaps ? new MapModel() : null,
                     optionNames: ["primaryColor", "secondaryColor", "accentColor",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
-                            "mapShapeHue", "hideData", "hideMetrics", "hideMembers"],
+                            "mapShapeHue", "hideData", "hideMetrics", "hideMembers", "pageOrder"],
                     // Portal view colors, as specified in the portal document options
                     primaryColor: MetacatUI.appModel.get("portalDefaults").primaryColor || "#006699",
                     secondaryColor: MetacatUI.appModel.get("portalDefaults").secondaryColor || "#009299",
@@ -622,6 +626,11 @@ define(["jquery",
                     // custom options, we can serialize them in serialize()
                     // otherwise it's not saved in the model which attributes
                     // are <option></option>s
+
+                    // Convert the comma separated list of pages into an array
+                    if(optionValue && optionName === "pageOrder"){
+                      optionValue = optionValue.split(',');
+                    }
 
                     if( !_.has(modelJSON, optionName) ){
                       modelJSON[optionName] = optionValue;

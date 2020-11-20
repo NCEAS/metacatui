@@ -298,6 +298,11 @@ input[type=search], textarea {
   fill: var(--c-rare-accent-4);
 }
 
+.port-editor-sections .section-link-container.sortable-ghost,
+.port-editor-sections .section-link-container.sortable-chosen {
+  background-color: var(--c-minor-accent-5) !important;
+}
+
 /* PORTALS
 -------------------------------------------------- */
 

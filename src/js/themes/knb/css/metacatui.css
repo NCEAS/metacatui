@@ -242,6 +242,10 @@
 	fill: #b90004
 }
 
+.port-editor-sections .section-link-container.sortable-ghost {
+  background-color: #007DBB !important;
+}
+
 /* Editor
 -------------------------------------------------- */
 .Editor #Content {

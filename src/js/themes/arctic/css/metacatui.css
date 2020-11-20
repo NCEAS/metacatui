@@ -595,6 +595,12 @@ footer .logos a:hover, a:focus{
   font-family: inherit;
 }
 
+
+.port-editor-sections .section-link-container.sortable-ghost,
+.port-editor-sections .section-link-container.sortable-chosen {
+	background-color: #19B36A !important;
+}
+
 /* Portal editor
 -------------------------------------------------- */
 

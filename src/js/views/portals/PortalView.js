@@ -418,10 +418,7 @@ define(["jquery",
                     this.addSectionLink( this.sectionMembersView );
                 }
 
-                //Switch to the active section
-                this.switchSection();
-
-                //Render the logos at the bottom of the portal page
+                // Render the logos at the bottom of the portal page
                 var ackLogos = this.model.get("acknowledgmentsLogos") || [];
                 this.logosView = new PortalLogosView();
                 this.logosView.logos = ackLogos;
@@ -429,11 +426,46 @@ define(["jquery",
                 this.logosView.render();
                 this.$(".portal-view").append(this.logosView.el);
 
+                // Re-order the section tabs according the the portal editor's preference,
+                // if one has been set
+                try {
+                  var pageOrder = this.model.get("pageOrder");
+                  if(pageOrder && pageOrder.length){
+                    var linksContainer = this.el.querySelector("#portal-section-tabs"),
+                        sortableLinks = this.el.querySelectorAll("#portal-section-tabs .section-link-container"),
+                        sortableLinksArray = Array.prototype.slice.call(sortableLinks, 0);
+                    // sort the links according the pageOrder
+                    sortableLinksArray.sort(function(a,b){
+                      var aName = $(a).text();
+                      var bName = $(b).text();
+                      var aIndex = pageOrder.indexOf(aName);
+                      var bIndex = pageOrder.indexOf(bName);
+                      // If the label can't be found in the list of labels, place it at the end
+                      if(bIndex === -1){
+                        return +1
+                      }
+                      if(aIndex === -1){
+                        return -1
+                      }
+                      // Sort backwards, because we use preprend
+                      return bIndex - aIndex;
+                    })
+                    // Rearrange the links in the DOM
+                    for (i = 0; i < sortableLinksArray.length; ++i) {
+                      linksContainer.prepend(sortableLinksArray[i]);
+                    }
+                  }
+                } catch (error) {
+                  console.log("Error re-arranging tabs according to the pageOrder option. Error message: " + error)
+                }
+
+                //Switch to the active section
+                this.switchSection();
+                
                 //Scroll to an inner-page link if there is one specified
                 if( window.location.hash && this.$(window.location.hash).length ){
                   MetacatUI.appView.scrollTo(this.$(window.location.hash));
                 }
-
 
                 // Save reference to this view
                 var view = this;

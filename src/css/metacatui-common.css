@@ -3608,9 +3608,44 @@ add font awesome close icon */
   padding-left: 40px;
   padding-right: 40px;
 }
-.port-editor-sections .section-link-container{
+.port-editor-sections .section-link-container {
   border-right: 1px solid #CCC;
 }
+
+.port-editor-sections .section-link-container .handle {
+	color: #FFF;
+	float: left;
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 1px 3px 0 10px;
+	opacity: 0.7;
+	cursor: grab;
+}
+
+.port-editor-sections .section-link-container.sortable-chosen,
+.port-editor-sections .section-link-container.sortable-chosen .handle {
+	cursor: grabbing;
+}
+
+.port-editor-sections .section-link-container.sortable-ghost,
+.port-editor-sections .section-link-container.sortable-chosen {
+	background-color: #006dcc !important;
+}
+
+.port-editor-sections .section-link-container.sortable-ghost > * {
+	opacity: 0.3 !important;
+}
+
+.port-editor-sections .section-link-container .handle + .portal-section-link {
+	padding-left: 0;
+}
+
+.port-editor-sections .section-link-container .handle i:nth-of-type(2) {
+	margin-left: -3px;
+}
+
 .port-editor-sections .section-menu-link:hover ~ .menu,
 .port-editor-sections .section-link-container .menu:hover{
   display: block;
@@ -4611,7 +4646,8 @@ i.toc-sub-item {
 }
 #portal-section-tabs .section-link-container:hover .portal-section-link,
 #portal-section-tabs .section-link-container.active:hover .section-menu-link,
-#portal-section-tabs .section-link-container:hover .section-menu-link {
+#portal-section-tabs .section-link-container:hover .section-menu-link,
+#portal-section-tabs .section-link-container:hover .handle {
 	border-radius: 0;
 	color: #FFF !important;
 }
@@ -4658,7 +4694,8 @@ i.toc-sub-item {
   color: #2c7e90; /* Back-up color for IE */
   color: var(--portal-secondary-color);
 }
-#portal-section-tabs .section-link-container.active .portal-section-link{
+#portal-section-tabs .section-link-container.active .portal-section-link,
+#portal-section-tabs  .section-link-container.active .handle {
   color: #2c6f90; /* Back-up color for IE */
   color: var(--portal-primary-color);
 }
