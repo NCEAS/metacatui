@@ -8,6 +8,7 @@ define(["jquery",
         "models/Search",
         "models/Stats",
         "models/MetricsModel",
+        "models/Utilities",
         "views/SearchResultView",
         "text!templates/search.html",
         "text!templates/statCounts.html",
@@ -19,7 +20,7 @@ define(["jquery",
         "nGeohash"
     ],
     function($, $ui, _, Backbone, Bioportal, SearchResults, SearchModel, StatsModel,
-        MetricsModel, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate,
+        MetricsModel, Utilities, SearchResultView, CatalogTemplate, CountTemplate, PagerTemplate,
         MainContentTemplate, CurrentFilterTemplate, LoadingTemplate, gmaps, nGeohash) {
         "use strict";
 
@@ -107,7 +108,6 @@ define(["jquery",
                 "click .remove-filter": "removeFilter",
                 "click input[type='checkbox'].filter": "updateBooleanFilters",
                 "click #clear-all": "resetFilters",
-                "click a.keyword-search-link": "additionalCriteria",
                 "click .remove-addtl-criteria": "removeAdditionalCriteria",
                 "click .collapse-me": "collapse",
                 "click .filter-contain .expand-collapse-control": "toggleFilterCollapse",
@@ -291,9 +291,6 @@ define(["jquery",
                 _.each(_.contains(MetacatUI.appModel.get("defaultSearchFilters"), "dataSource"), function(source, i) {
                     view.showFilter("dataSource", source);
                 });
-
-                // the additional fields
-                this.showAdditionalCriteria();
 
                 // Add the custom query under the "Anything" filter
                 if (this.searchModel.get("customQuery")) {
@@ -1347,9 +1344,6 @@ define(["jquery",
                 this.resetMap();
                 this.renderMap();
 
-                // reset any filter links
-                this.showAdditionalCriteria();
-
                 // Route to page 1
                 this.updatePageNumber(0);
 
@@ -1454,10 +1448,10 @@ define(["jquery",
 
                 // Add a filter node to the DOM
                 var filterEl = viewRef.currentFilterTemplate({
-                    category: categoryLabel,
-                    value: value,
-                    label: label,
-                    description: desc
+                    category: Utilities.encodeHTML(categoryLabel),
+                    value: Utilities.encodeHTML(value),
+                    label: Utilities.encodeHTML(label),
+                    description: Utilities.encodeHTML(desc)
                 });
 
                 // Add the filter to the page - either replace or tack on
@@ -1632,31 +1626,6 @@ define(["jquery",
                 controls.toggleClass("hidden");
             },
 
-            // highlights anything additional that has been selected
-            showAdditionalCriteria: function() {
-                var model = this.searchModel;
-
-                // style the selection
-                $(".keyword-search-link").each(function(index, targetNode) {
-                    // Neutralize all keyword search links by 'deactivating'
-                    $(targetNode).removeClass("active");
-                    // Do this for the parent node as well for template flexibility
-                    $(targetNode).parent().removeClass("active");
-
-                    var dataCategory = $(targetNode).attr("data-category");
-                    var dataTerm = $(targetNode).attr("data-term");
-                    var terms = model.get(dataCategory);
-                    if (_.contains(terms, dataTerm)) {
-                        // Add the active class for styling
-                        $(targetNode).addClass("active");
-
-                        // Add the class to the parent node as well for template flexibility
-                        $(targetNode).parent().addClass("active");
-                    }
-
-                });
-
-            },
 
             // add additional criteria to the search model based on link click
             additionalCriteria: function(e) {

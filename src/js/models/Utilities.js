@@ -11,12 +11,23 @@ define(['jquery', 'underscore'],
 	var Utilities = {
 
     encodeHTML: function(s) {
-      return s.replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/'/g, "&apos;")
-              .replace(/\//g, "/")
-              .replace(/"/g, '&quot;');
+
+      try{
+        if( !s || typeof s !== "string" ){
+          return "";
+        }
+
+        return s.replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/'/g, "&apos;")
+                .replace(/\//g, "/")
+                .replace(/"/g, '&quot;');
+      }
+      catch(e){
+        console.error("Could not encode HTML: ", e);
+        return "";
+      }
     }
 
   }
