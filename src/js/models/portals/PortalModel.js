@@ -75,7 +75,7 @@ define(["jquery",
                     // List of section labels indicating the order in which to display the sections.
                     // Labels must exactly match the labels set on sections, or the values set on the
                     // metricsLabel, dataLabel, and membersLabel options.
-                    pageOrder: [],
+                    pageOrder: null,
                     //Options for the custom section labels
                     //NOTE: This are not fully supported yet.
                     metricsLabel: "Metrics",
@@ -628,7 +628,7 @@ define(["jquery",
                     // are <option></option>s
 
                     // Convert the comma separated list of pages into an array
-                    if(optionValue && optionName === "pageOrder"){
+                    if(optionName === "pageOrder" && optionValue && optionValue.length){
                       optionValue = optionValue.split(',');
                     }
 
