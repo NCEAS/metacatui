@@ -6881,6 +6881,12 @@ ul.side-nav-items {
   margin-left: -5px;
   margin-right: 5px;
 }
+.data-package-item .sharing button {
+  border: none;
+  background-color: inherit;
+  width: auto;
+}
+
 /* Editor package table button dropdown */
 .Editor #data-package-table td:last-of-type ul {
     border-radius: 4px;

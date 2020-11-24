@@ -195,7 +195,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                   //Get the AccessPolicy for this object
                   var accessPolicy = this.model.get("accessPolicy"),
-                      checkbox = this.$(".sharing input");
+                      checkbox = this.$(".publicprivatetoggle input"),
+                      shareButton = this.$(".sharing button");
 
                   //Check the public/private toggle if this object is private
                   if( accessPolicy && !accessPolicy.isPublic() ){
@@ -208,13 +209,21 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     checkbox.prop("disabled", "disabled")
                             .addClass("disabled");
 
-                    this.$(".sharing").tooltip({
+                    this.$(".publicprivatetoggle").tooltip({
                       title: "You are not authorized to edit the privacy of this data file",
                       placement: "top",
                       container: this.el,
                       trigger: "hover",
                       delay: { show: 800 }
                     });
+
+                    this.$(".sharing").tooltip({
+                        title: "You are not authorized to edit the privacy of this item",
+                        placement: "top",
+                        container: this.el,
+                        trigger: "hover",
+                        delay: { show: 800 }
+                      });
                   }
                   else{
                     checkbox.tooltip({
@@ -223,6 +232,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                       trigger: "hover",
                       delay: { show: 800 }
                     });
+
+                    shareButton.tooltip({
+                        title: "Share this item",
+                        placement: "top",
+                        trigger: "hover",
+                        delay: { show: 800 }
+                      });
                   }
 
                 }
@@ -1008,7 +1024,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
               }
 
               //Close the tooltips
-              this.$(".sharing").tooltip("hide");
+              this.$(".publicprivatetoggle").tooltip("hide");
 
             },
 

@@ -229,7 +229,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
        }
        else{
          //Open the modal window
-         this.$("access-policy-view-modal").modal("show");
+         this.$(".access-policy-view-modal").modal("show");
        }
 
       }

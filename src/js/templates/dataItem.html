@@ -49,13 +49,24 @@
 
 <!-- Privacy/Sharing column -->
 <% if( MetacatUI.appModel.get("allowAccessPolicyChanges") && (type && type != "Metadata") ){ %>
-  <td class="sharing">
+  <td class="publicprivatetoggle">
     <input type="checkbox" name="Make data private" value="true" class="private" />
   </td>
 <% }
    else if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
   <td></td>
 <% } %>
+
+<!-- Privacy/Sharing column -->
+<% if( MetacatUI.appModel.get("allowAccessPolicyChanges")){ %>
+<td class="sharing">
+	<button class="access-policy-control"><i class="icon-group"></i></button>
+</td>
+<% }
+	else if( MetacatUI.appModel.get("allowAccessPolicyChanges") ){ %>
+<td></td>
+<% } %>
+
 
 <!-- Guide or Status column -->
 <td class="status">
