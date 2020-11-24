@@ -12,6 +12,7 @@ define(['jquery',
     'models/SolrResult',
     'models/metadata/ScienceMetadata',
     'models/MetricsModel',
+    'models/Utilities',
     'views/DownloadButtonView',
     'views/ProvChartView',
     'views/MetadataIndexView',
@@ -38,7 +39,7 @@ define(['jquery',
     'views/MetricView',
     ],
   function($, $ui, _, Backbone, gmaps, fancybox, Clipboard, DataPackage, DataONEObject, Package, SolrResult, ScienceMetadata,
-       MetricsModel, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
+       MetricsModel, Utilities, DownloadButtonView, ProvChart, MetadataIndex, ExpandCollapseList, ProvStatement, PackageTable,
        CitationView, AnnotationView, MarkdownView, MetadataTemplate, DataSourceTemplate, PublishDoiTemplate,
        VersionTemplate, LoadingTemplate, ControlsTemplate, MetadataInfoIconsTemplate, AlertTemplate, EditMetadataTemplate, DataDisplayTemplate,
        MapTemplate, AnnotationTemplate, metaTagsHighwirePressTemplate, uuid, MetricView) {
@@ -542,16 +543,19 @@ define(['jquery',
 
       //Construct a message that shows this object doesn't exist
       var msg = "<h4>Nothing was found.</h4>" +
-            "<p>The dataset identifier '" + this.model.get("id") + "' " +
-            "does not exist or it may have been removed. <a href='" +
-            MetacatUI.root + "/data/query=" + encodeURIComponent(this.model.get("id")) + "'>Search for " +
-            "datasets that mention " + this.model.get("id") + "</a></p>";
+            "<p id='metadata-view-not-found-message'>The dataset identifier '" + Utilities.encodeHTML(this.model.get("id")) + "' " +
+            "does not exist or it may have been removed. <a>Search for " +
+            "datasets that mention " + Utilities.encodeHTML(this.model.get("id")) + "</a></p>";
+
 
       //Remove the loading message
       this.hideLoading();
 
       //Show the not found error message
       this.showError(msg);
+
+      //Add the pid to the link href. Add via JS so it is Attribute-encoded to prevent XSS attacks
+      this.$("#metadata-view-not-found-message a").attr("href", MetacatUI.root + "/data/query=" + encodeURIComponent(this.model.get("id")));
     },
 
     /*

@@ -379,7 +379,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
         var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
           "<ul class='indent'>" +
-              "<li>The ID '" + this.pid  + "' does not exist.</li>" +
+              "<li>The ID <span id='editor-view-not-found-pid'></span> does not exist.</li>" +
             '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
             "<li>The content was removed because it was invalid.</li>" +
           "</ul>";
@@ -389,6 +389,8 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
         //Show the not found message
         MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
+
+        this.$("#editor-view-not-found-pid").text(this.pid);
 
     },
 

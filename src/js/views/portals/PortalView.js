@@ -746,13 +746,15 @@ define(["jquery",
                     if( sizeOfQueue > 0 ){
                       //Show a warning message about the index queue
                       MetacatUI.appView.showAlert(
-                        "<p>We couldn't find a data portal named \"" + (view.label || view.portalId) +
+                        "<p>We couldn't find a data portal named \" <span id='portal-view-not-found-name'></span>" +
                           "\".</p><p><i class='icon icon-exclamation-sign'></i> If this portal was created in the last few minutes, it may still be processing, since there are currently <b>" + sizeOfQueue +
                           "</b> submissions in the queue.</p>",
                         "alert-warning",
                         view.$el
                       );
                       view.$(".loading").remove();
+
+                      view.$("#portal-view-not-found-name").text(view.label || view.portalId);
                     }
                     else{
                       //If the size of the queue is 0, then show the not-found message
@@ -783,7 +785,7 @@ define(["jquery",
              */
             showNotFound: function(){
 
-              var notFoundMessage = "The data portal \"" + (this.label || this.portalId) +
+              var notFoundMessage = "The data portal \"<span id='portal-view-not-found-name'></span>" +
                                     "\" doesn't exist.",
                   notification = this.alertTemplate({
                     classes: "alert-error",
@@ -792,6 +794,8 @@ define(["jquery",
                   });
 
               this.$el.html(notification);
+
+              this.$("#portal-view-not-found-name").text(this.label || this.portalId);
 
             },
 
