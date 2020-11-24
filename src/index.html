@@ -49,13 +49,17 @@
     //Catch errors when the config or loader file fails to load.
     // These are mainly helpful for developers/operators installing MetacatUI
     MetacatUI.onStartConfigError = function(){
-      console.error("The config file or loader.js file failed to load. Check the appConfigPath in index.html and the 'root' attribute in AppConfig.");
+      var message = "The config file or loader.js file failed to load. Check the appConfigPath in index.html and the 'root' attribute in AppConfig.";
+      document.getElementById("metacatui-app").innerHTML = message;
+      console.error(message);
     }
     MetacatUI.onStartLoaderError = function(){
       //Check for one of the functions created in the loader.js file. If it doesn't exist, then the script wasn't retrieved.
       // (the 'onerror' event isn't triggered if there is a FallbackResource set on the web server)
       if( typeof MetacatUI.initApp == "undefined" ){
-        console.error("The loader.js file failed to load. The MetacatUI `root` setting is probably incorrect. Set a `root` path for MetacatUI in the AppConfig.")
+        var message = "The loader.js file failed to load. The MetacatUI `root` setting is probably incorrect. Set a `root` path for MetacatUI in the AppConfig.";
+        document.getElementById("metacatui-app").innerHTML = message;
+        console.error(message);
       }
     }
 
