@@ -1,5 +1,7 @@
 # MetacatUI is a web interface for Metacat data repositories.
 
+[View on GitHub](https://github.com/NCEAS/metacatui)
+
 ![Data Search Page](https://raw.githubusercontent.com/NCEAS/metacatui/master/docs/screenshots/screenshot-search.png)
 
 [See more screenshots](screenshots/index.html)

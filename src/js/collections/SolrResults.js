@@ -32,6 +32,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 		    this.stats 		  = options.stats   || false;
 		    this.minYear 	  = options.minYear || 1900;
 		    this.maxYear 	  = options.maxYear || new Date().getFullYear();
+        this.queryServiceUrl = options.queryServiceUrl || MetacatUI.appModel.get('queryServiceUrl');
 
         //If POST queries are disabled in the whole app, don't use POSTs here
         if( MetacatUI.appModel.get("disableQueryPOSTs") ){
@@ -74,7 +75,7 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			}
 
 			//create the query url
-			var endpoint = MetacatUI.appModel.get('queryServiceUrl') + "q=" + this.currentquery;
+			var endpoint = (this.queryServiceUrl || MetatcatUI.appModel.get("queryServiceUrl")) + "q=" + this.currentquery;
 
       if(this.fields)
         endpoint += "&fl=" + this.fields;
@@ -97,6 +98,13 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrHeader', 'models/SolrRes
 			//Is this our latest query? If not, use our last set of docs from the latest query
 			if((decodeURIComponent(this.currentquery).replace(/\+/g, " ") != solr.responseHeader.params.q) && this.docsCache)
 				return this.docsCache;
+				
+			if(!solr.response){
+				if(solr.error && solr.error.msg){
+					console.log("Solr error: " + solr.error.msg);
+				}
+				return
+			}
 
 			//Save some stats
 			this.header = new SolrHeader(solr.responseHeader);

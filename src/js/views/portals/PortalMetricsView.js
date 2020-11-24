@@ -102,30 +102,9 @@ define(["jquery",
             }
 
             // If the search results haven't been fetched yet, wait.
-            if( !this.model.get("searchResults").header ){
+            if( !MetacatUI.appModel.get("enableSolrJoins") && !this.model.get("searchResults").header ){
               this.listenToOnce( this.model.get("searchResults"), "sync", this.renderMetrics );
               return;
-            }
-
-            // If there are no datasets in the portal collection
-            if(this.model.get("searchResults").header.get("numFound") == 0 ){
-              // The description for when there is no data in the collection
-              var description = "There are no datasets in " + this.model.get("label") + " yet.";
-
-              // update to nodeName for repo profiles
-              if(this.nodeView && typeof this.nodeName !== 'undefined')
-                description = "There are no datasets in " + this.nodeName + " yet.";
-
-            }
-            // For portals with data in the collection
-            else {
-              // The description to use for a portal with data
-              var description = "A summary of all datasets from " + this.model.get("label") + ".";
-
-              // update to nodeName for repo profiles
-              if(this.nodeView && typeof this.nodeName !== 'undefined')
-                description = "A summary of all datasets from " + this.nodeName + ".";
-
             }
 
             //Create a Stats Model for retrieving and storing all of the statistics
@@ -247,8 +226,8 @@ define(["jquery",
 
             // Add a stats view
             this.statsView = new StatsView({
-                title: "Statistics and Figures",
-                description: description,
+                title: null,
+                description: null,
                 metricsModel: this.metricsModel,
                 el: document.createElement("div"),
                 model: statsModel,

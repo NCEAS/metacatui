@@ -201,9 +201,7 @@ define(["jquery",
                     $(".auto-height-member").resize(this.setAutoHeight);
                 }
 
-                if (MetacatUI.appModel.get("bioportalAPIKey")) {
-                    this.setUpTree();
-                }
+                this.addAnnotationFilter();
 
                 return this;
             },
@@ -412,7 +410,6 @@ define(["jquery",
              * @param(Event)  the event passed by clicking the toggle-map class button
              */
             toggleMapMode: function(event) {
-                console.log(event);
 
                 // Block the event from bubbling
                 if (typeof event === "object") {

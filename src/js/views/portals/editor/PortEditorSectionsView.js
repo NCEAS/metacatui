@@ -1,6 +1,7 @@
 define(['underscore',
         'jquery',
         'backbone',
+        'sortable',
         'models/portals/PortalModel',
         'models/portals/PortalSectionModel',
         "views/portals/editor/PortEditorSectionView",
@@ -11,7 +12,7 @@ define(['underscore',
         "text!templates/portals/editor/portEditorMetrics.html",
         "text!templates/portals/editor/portEditorSectionLink.html",
         "text!templates/portals/editor/portEditorSectionOptionImgs/metrics.svg"],
-function(_, $, Backbone, Portal, PortalSection,
+function(_, $, Backbone, Sortable, Portal, PortalSection,
           PortEditorSectionView, PortEditorSettingsView, PortEditorDataView,
           PortEditorMdSectionView,
           Template, MetricsSectionTemplate, SectionLinkTemplate,
@@ -117,11 +118,31 @@ function(_, $, Backbone, Portal, PortalSection,
     * @type {string}
     */
     sectionsContainer: ".sections-container",
+
     /**
     * A jQuery selector for the section elements
     * @type {string}
     */
     sectionEls: ".port-editor-section",
+
+    /**
+    * A selector for link or tab elements that the user is allowed to re-order,
+    * starting from the sectionLinksContainer
+    * @type {string}
+    */
+    sortableLinksSelector: ">li:not(.unsortable)",
+
+    /**
+    * A classs name for the handles on tabs that the user can drag to re-order
+    * @type {string}
+    */
+    handleClass: "handle",
+
+    /**
+    * A label for the section used to add a new page
+    * @type {string}
+    */
+    addPageLabel: "AddPage",
 
     /**
     * Flag to add section name to URL. Enabled by default.
@@ -194,7 +215,60 @@ function(_, $, Backbone, Portal, PortalSection,
       //Render a Section View for each content section in the Portal
       this.renderContentSections();
 
-      //Switch to the active section, if there is one
+      // Disable the delete/hide section option if there is only one section
+      this.toggleRemoveSectionOption();
+
+      var view = this,
+          linksContainer = view.el.querySelector(view.sectionLinksContainer),
+          sortableLinksSelector = view.sortableLinksSelector,
+          sortableLinks = view.el.querySelectorAll(view.sectionLinksContainer + view.sortableLinksSelector),
+          sortableLinksArray = Array.prototype.slice.call(sortableLinks, 0),
+          pageOrder = this.model.get("pageOrder");
+
+      // Arrange tabs in the order the user has pre-selected
+      try {
+        if(pageOrder && pageOrder.length){
+          // sort the links according the pageOrder
+          sortableLinksArray.sort(function(a,b){
+            var aName = $(a).data("section-name");
+            var bName = $(b).data("section-name");
+            var aIndex = pageOrder.indexOf(aName);
+            var bIndex = pageOrder.indexOf(bName);
+            // If the label can't be found in the list of labels, place it at the end
+            if(bIndex === -1){
+              return +1
+            }
+            if(aIndex === -1){
+              return -1
+            }
+            // Sort backwards because we use preprend
+            return bIndex - aIndex;
+          })
+          // Rearrange the links in the DOM
+          for (i = 0; i < sortableLinksArray.length; ++i) {
+            // Use preprend so that Settings and AddPage tabs remain last in list
+            linksContainer.prepend(sortableLinksArray[i]);
+          }
+        }
+      } catch (error) {
+        console.log("Error re-arranging tabs according to the pageOrder option. Error message: " + error)
+      }
+
+      // Initialize usser-controlled tab re-ordering
+      var sortable = Sortable.create(linksContainer, {
+        direction: 'horizontal',
+        easing: "cubic-bezier(1, 0, 0, 1)",
+        animation: 200,
+        // Only tabs that have an element with this class will be draggable
+        handle: "." + view.handleClass,
+        draggable: sortableLinksSelector,
+        // When the tab order is changed, update the portal model option with new order
+        onUpdate: function (evt) {
+          view.updatePageOrder();
+        },
+      })
+
+      // Switch to the active section, if there is one
       if( this.activeSectionLabel ){
         this.activeSection = this.getSectionByLabel(this.activeSectionLabel);
 
@@ -209,10 +283,6 @@ function(_, $, Backbone, Portal, PortalSection,
         //Switch to the default section
         this.switchSection();
       }
-
-      // Disable the delete/hide section option if there is only one section
-      this.toggleRemoveSectionOption();
-
     },
 
     /**
@@ -221,25 +291,19 @@ function(_, $, Backbone, Portal, PortalSection,
     renderAddSection: function(){
 
       //Create a unique label for this section and save it
-      if( !this.sectionLabels ){
-        this.sectionLabels = [];
-        this.sectionLabels.push("AddPage");
-      }
-      else if( this.sectionLabels && Array.isArray(this.sectionLabels) ){
-        this.sectionLabels.push("AddPage");
-      }
+      this.updateSectionLabelsList(this.addPageLabel);
 
       // Add a "Add section" button/tab
       var addSectionView = new PortEditorSectionView({
         model: this.model,
-        uniqueSectionLabel: "AddPage",
+        uniqueSectionLabel: this.addPageLabel,
         sectionType: "addpage",
         editorView: this.editorView
       });
 
       addSectionView.$el.addClass("tab-pane")
         .addClass("port-editor-add-section-container")
-        .attr("id", "AddPage");
+        .attr("id", this.addPageLabel);
 
       //Add the section element to this view
       this.$(this.sectionsContainer).append(addSectionView.$el);
@@ -251,7 +315,7 @@ function(_, $, Backbone, Portal, PortalSection,
       this.addSectionLink(addSectionView);
 
       // Replace the name "AddSection" with fontawsome "+" icon
-      this.$el.find( this.sectionLinkContainer + "[data-section-name='AddPage'] a")
+      this.$el.find( this.sectionLinkContainer + "[data-section-name='" + this.addPageLabel + "'] a")
               .html("<i class='icon icon-plus'></i>")
               .attr("title", "Add a new page");
 
@@ -269,7 +333,7 @@ function(_, $, Backbone, Portal, PortalSection,
     */
     renderContentSections: function(){
 
-      //Get the sections from the Portal
+      // Get the sections from the Portal
       var sections = this.model.get("sections");
 
       // Render each markdown (aka "freeform") section already in the PortalModel
@@ -314,45 +378,11 @@ function(_, $, Backbone, Portal, PortalSection,
 
           //Create a unique label for this section and save it
           var uniqueLabel = this.getUniqueSectionLabel(section);
+
           //Set the unique section label for this view
           sectionView.uniqueSectionLabel = uniqueLabel;
 
-          if( this.sectionLabels && Array.isArray(this.sectionLabels) ){
-            this.sectionLabels.push(uniqueLabel);
-          }
-          else{
-            //Create an array to contain the section labels and save this label
-            this.sectionLabels = [];
-            this.sectionLabels.push(uniqueLabel);
-          }
-
-          //When the section is renamed, update the array of section labels
-          this.listenTo( section, "change:label", function(section){
-            //Get the position of the unique label in the list
-            var indexOfLabel = this.sectionLabels.indexOf(sectionView.uniqueSectionLabel),
-                newUniqueLabel = "";
-
-            if( indexOfLabel > -1 ){
-              //Replace the old unique label with a temporary label, so when a new unique label is created,
-              // we don't consider a label that's not in use
-              this.sectionLabels[indexOfLabel] = "temporarylabeltobereplaced";
-
-              //Get a new unique label using the new label on the section model
-              newUniqueLabel = this.getUniqueSectionLabel(section);
-
-              //Replace the temporary label with the new label
-              this.sectionLabels[indexOfLabel] = newUniqueLabel;
-            }
-            else{
-              //Get a new unique label using the new label on the section model
-              newUniqueLabel = this.getUniqueSectionLabel(section);
-              //Add the label to the list
-              this.sectionLabels.push(newUniqueLabel);
-            }
-
-            //Update the label set on the view
-            sectionView.uniqueSectionLabel = newUniqueLabel;
-          });
+          this.updateSectionLabelsList(uniqueLabel);
 
           //Attach the editor view to this view
           sectionView.editorView = this.editorView;
@@ -386,14 +416,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
       try{
 
-        //Create a unique label for this section and save it
-        if( !this.sectionLabels ){
-          this.sectionLabels = [];
-          this.sectionLabels.push("Data");
-        }
-        else if( Array.isArray(this.sectionLabels) && !this.sectionLabels.includes("Data") ){
-          this.sectionLabels.push("Data");
-        }
+        this.updateSectionLabelsList("Data");
 
         // Render a PortEditorDataView and corresponding tab
         var dataView = new PortEditorDataView({
@@ -455,13 +478,7 @@ function(_, $, Backbone, Portal, PortalSection,
       if(this.model.get("hideMetrics") !== true && !this.metricsView){
 
         //Create a unique label for this section and save it
-        if( !this.sectionLabels ){
-          this.sectionLabels = [];
-          this.sectionLabels.push("Metrics");
-        }
-        else if( Array.isArray(this.sectionLabels) && !this.sectionLabels.includes("Metrics") ){
-          this.sectionLabels.push("Metrics");
-        }
+        this.updateSectionLabelsList("Metrics");
 
         //Create a section view
         this.metricsView = new PortEditorSectionView({
@@ -541,13 +558,7 @@ function(_, $, Backbone, Portal, PortalSection,
     renderSettings: function(){
 
       //Create a unique label for this section and save it
-      if( !this.sectionLabels ){
-        this.sectionLabels = [];
-        this.sectionLabels.push("Settings");
-      }
-      else if( this.sectionLabels && Array.isArray(this.sectionLabels) ){
-        this.sectionLabels.push("Settings");
-      }
+      this.updateSectionLabelsList("Settings");
 
       //Create a PortEditorSettingsView
       var settingsView = new PortEditorSettingsView({
@@ -753,6 +764,10 @@ function(_, $, Backbone, Portal, PortalSection,
       // (otherwise they persist in new tab)
       $("body").find(".wk-prompt").remove();
 
+      // Make sure any markdown editor toolbar modals are closed
+      // (otherwise they persist in new tab)
+      $("body").find(".wk-prompt").remove();
+
       var sectionView = $(e.target).parents(this.sectionLinkContainer).first().data("view");
 
       if( sectionView ){
@@ -796,7 +811,7 @@ function(_, $, Backbone, Portal, PortalSection,
 
         // Find the "+" link to help determine the order in which we should add links
         var addSectionEl = this.$(this.sectionLinksContainer)
-                               .find(this.sectionLinkContainer + "[data-section-name='AddPage']")[0];
+                               .find(this.sectionLinkContainer + "[data-section-name='" + this.addPageLabel + "']")[0];
 
         // If the new link is for a markdown section
         if($(newLink).data("view").type == "PortEditorMdSection"){
@@ -922,15 +937,23 @@ function(_, $, Backbone, Portal, PortalSection,
         classes = "hidden-section";
       }
 
+      // Do not allow dragging/sorting of the Settings or Add Page sections
+      var sortable = true;
+      if(["addpage", "settings"].includes(sectionView.sectionType)){
+        sortable = false;
+      }
+
       //Create a section link
       var sectionLink = $(this.sectionLinkTemplate({
         menuOptions: menuOptions || [],
         uniqueLabel: sectionView.uniqueSectionLabel,
-        sectionLabel: PortalSection.prototype.isPrototypeOf(sectionView.model)?
+        sectionLabel: PortalSection.prototype.isPrototypeOf(sectionView.model) ?
                       sectionView.model.get("label") : sectionView.uniqueSectionLabel,
         sectionURL: this.model.get("label") + "/" + sectionView.uniqueSectionLabel,
         sectionType: sectionView.sectionType,
-        classes: classes
+        classes: classes,
+        handleClass: this.handleClass,
+        sortable: sortable
       }));
 
       //Attach the section model to the link
@@ -998,6 +1021,8 @@ function(_, $, Backbone, Portal, PortalSection,
       };
 
       try{
+
+        var view = this;
         //Find the section link associated with this section view
         this.$(this.sectionLinksContainer).children().each(function(i, link){
           if( $(link).data("view") == sectionView ){
@@ -1014,6 +1039,11 @@ function(_, $, Backbone, Portal, PortalSection,
               duration: 300,
               complete: function(){
                 this.remove();
+                // If there's a page order option set on the model, update it
+                var pageOrder = view.model.get("pageOrder");
+                if(pageOrder && pageOrder.length){
+                  view.updatePageOrder();
+                }
               }
             });
           }
@@ -1065,6 +1095,12 @@ function(_, $, Backbone, Portal, PortalSection,
 
           this.editorView.showControls();
 
+          // Add the item to the the pageOrder option on the model, if it exists
+          var pageOrder = this.model.get("pageOrder");
+          if(pageOrder && pageOrder.length){
+            this.updatePageOrder();
+          }
+
         }
         else{
           return;
@@ -1098,13 +1134,19 @@ function(_, $, Backbone, Portal, PortalSection,
         }
 
         //Get the section model and view
-        var sectionModel = sectionLink.data("model"),
-            sectionView  = sectionLink.data("view"),
-            sectionType  = sectionLink.data("section-type");
+        var sectionModel        = sectionLink.data("model"),
+            sectionView         = sectionLink.data("view"),
+            sectionType         = sectionLink.data("section-type"),
+            uniqueSectionLabel  = sectionView.uniqueSectionLabel,
+            sectionLabelIndex   = this.sectionLabels.indexOf(uniqueSectionLabel);
 
         if( PortalSection.prototype.isPrototypeOf(sectionModel) ){
-          //Remove this section from the Portal
+          // Remove this section from the Portal
           this.model.removeSection(sectionModel);
+          // Remove the section label from the list of unique section labels
+          if(sectionLabelIndex > -1){
+            this.sectionLabels.splice(sectionLabelIndex, 1);
+          }
         }
         else{
           //Remove this section type from the model
@@ -1169,9 +1211,9 @@ function(_, $, Backbone, Portal, PortalSection,
         var sectionLink = $(e.target).parents(this.sectionLinkContainer),
             section = sectionLink.data("model");
 
-        //If this section is not a PortalSection model, get the section name
+        //If this section is not a PortalSection model, get the section type
         if( !PortalSection.prototype.isPrototypeOf(section) ){
-          section = sectionLink.data("section-name");
+          section = sectionLink.data("section-type");
         }
 
         //If no section was found, exit now
@@ -1329,33 +1371,101 @@ function(_, $, Backbone, Portal, PortalSection,
      * @param e The event triggering this method
      */
     updateName: function(e) {
+
       // Remove tooltip incase one was set by limitLabelInput function
       $(e.delegateTarget).find(".tooltip").remove();
 
       try {
         //Get the PortalSection model for this rename button
-        var sectionLink = $(e.target).parents(this.sectionLinkContainer),
-            targetLink = sectionLink.find(this.sectionLinks),
-            section = sectionLink.data("model");
+        var sectionLink   =   $(e.target).parents(this.sectionLinkContainer),
+            targetLink    =   sectionLink.find(this.sectionLinks),
+            sectionModel  =   sectionLink.data("model"),
+            sectionView   =   sectionLink.data("view"),
+            // Clean up the typed in name so it's valid for XML
+            oldLabel      =   sectionModel.get("label"),
+            newLabel      =   this.model.cleanXMLText(targetLink.text().trim()),
+            pageOrder     =   this.model.get("pageOrder");
 
         // Remove the content editable attribute
         targetLink.attr("contenteditable", false);
 
-        //If this section is an object of PortalSection model, update the label.
-        if( section && PortalSection.prototype.isPrototypeOf(section) ){
-
-          //Clean up the typed in name so it's valid for XML
-          var label = this.model.cleanXMLText(targetLink.text().trim());
-
+        // If this section is an object of PortalSection model, update the label.
+        if( sectionModel && PortalSection.prototype.isPrototypeOf(sectionModel) ){
           // update the label on the model
-          section.set("label", label);
+          sectionModel.set("label", newLabel);
         }
         else {
           // TODO: handle the case for non-markdown sections
         }
 
+        // Update the name set on the link element, since it's used for setting the pageOrder option
+        sectionLink.data("section-name", newLabel);
+
+        // Update the name in the pageOrder option, if it exists
+        if(pageOrder && pageOrder.length){
+          this.updatePageOrder();
+        }
+
+        // Update the array of unique section labels
+
+        // Get the position of the unique label in the list
+        var indexIDs = this.sectionLabels.indexOf(sectionView.uniqueSectionLabel),
+            newUniqueLabel = "";
+
+        // Remove the old unique label so when we create a new unique label,
+        // we don't consider the label that we're replacing in determining uniqueness
+        if(indexIDs > -1){
+          this.sectionLabels.splice(indexIDs, 1);
+          newUniqueLabel = this.getUniqueSectionLabel(sectionModel);
+          this.sectionLabels.splice(indexIDs, 0, newUniqueLabel)
+        } else {
+          newUniqueLabel = this.getUniqueSectionLabel(sectionModel);
+          this.sectionLabels.push(newUniqueLabel);
+        }
+
+        // Update the label set on the view
+        sectionView.uniqueSectionLabel = newUniqueLabel;
+
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    /**
+     * Using the "section-name" data attribute set on each section link,
+     * and the order that the links are displayed in the DOM, update the
+     * pageOrder option in the portal model.
+     */
+    updatePageOrder: function(){
+      try {
+        var view = this;
+        // Get the links as they are ordered in the UI
+        var links = view.el.querySelectorAll(view.sectionLinksContainer + view.sortableLinksSelector),
+        pageOrder = [];
+        _.each(links, function(link){
+          // Use the value set on section-name to re-order pages
+          var label = $(link).data("section-name");
+          if(label){ pageOrder.push(label) }
+        });
+        view.model.set("pageOrder", pageOrder);
+      } catch (error) {
+        console.log("Error updating the portal page order, message: " + error)
+      }
+    },
+
+    /**
+    * Add a new unique label to the list of unique section labels
+    * (used the ensure that tab links and anchors are unique,
+    * otherwise, tab switching does not work)
+    */
+    updateSectionLabelsList: function(newLabel){
+      try {
+        if( !this.sectionLabels ){
+          this.sectionLabels = [];
+        }
+        this.sectionLabels.push(newLabel);
+      } catch (error) {
+        console.log("Error updating the list of unique section labels. Error message: " + error)
       }
     },
 

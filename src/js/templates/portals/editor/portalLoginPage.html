@@ -1,0 +1,16 @@
+<div class="container center portal-login-page">
+  <h1 class="portal-login-title"><%= title %></h1>
+  
+  <a href="<%=(MetacatUI.appModel.get('signInUrlOrcid') + window.location.href)%>" class="btn btn-primary btn-large portal-login-button">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" height="30px" fill="currentColor" class="icon-on-left">
+      <path d="M128 0a128 128 0 110 256 128 128 0 010-256zm23 79h-42v107h42c35 0 57-26 57-53 0-26-18-54-57-54zm-65 0H71v107h15V79zm62 14c30 0 44 18 44 40 0 13-8 39-43 39h-25V93zM79 47c-6 0-10 4-10 10 0 5 4 10 10 10 5 0 10-5 10-10 0-6-5-10-10-10z"/>
+    </svg>
+  <span>Sign in with ORCID</span>
+  </a>
+
+  <% if( typeof portalInfoLink == "string" && portalInfoLink.length ){ %>
+  <a class="portal-info-link" href="<%= portalInfoLink %>"><i class="icon icon-info-sign"></i> What is a portal?</a>
+  <% } %>
+  
+  <img class="portal-image" src="<%= portalImageSrc %>" alttext="<%= altText %>"/>
+</div>

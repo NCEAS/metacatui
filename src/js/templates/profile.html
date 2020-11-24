@@ -7,7 +7,9 @@
 	<%}%>
 
 <article id="Profile" class="profile">
-<h2 class="profile-title"><%=title%></h2>
+  <% if(title){ %>
+    <h2 class="profile-title"><%=title%></h2>
+  <% } %>
 <section class="charts-container">
 	<% if(typeof description == "string"){ %>
 		<p><%=description%></p>
@@ -56,15 +58,19 @@
 			<div class="metrics-title">
 				<h3><i class='icon icon-dashboard'></i></h3>
 				<h3>Metadata Assessment</h3>
-				<p>This graph shows the assessment score for all metadata in this <%= userTerm %>, based on the <a href="https://zenodo.org/record/3408466#.XdRe2jJKhTY" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
+				<p>This graph shows the assessment score for all metadata in this <%= userTerm %>, based on the <a href="https://dataone.org/fair/" target="_blank">DataONE FAIR Suite</a>. The FAIR suite evaluates metadata based on these criteria: <strong>F</strong>indable, <strong>A</strong>ccessible, <strong>I</strong>nteroperable, <strong>R</strong>eusable.</p>
+        <p>Each point represents the average score for that category across all the versions of datasets that were changed in that month.</p>
 			</div>
 			<section class="charts">
 				<div class = "static-img-container">
-					<div id="metadata-assessment-loading" class="show-loading"></div>
-			<h4>FAIR Assessment</h4>
+					<h4 class="center">DataONE FAIR Assessment</h4>
 					<div id="metadata-assessment-graphic">
-				</div>
+						<%= fairLoadingHtml %>
+					</div>
 			</section>
+      <% if( MetacatUI.appModel.get("theme") == "dataone" ){ %>
+        <p class="center"><span class="pill">Coming soon</span> Improved metadata assessment graphs are coming soon as we <a href="https://forms.gle/Hn5YPqrZ12mLUyAf7" target="_blank">get feedback</a> on this feature.</p>
+      <% } %>
 		</section>
 	<% } %>
 
@@ -79,31 +85,23 @@
 			<p>For all versions of the data sets in this <%= userTerm %>, the number of citations reported to DataONE. </p>
 		</div>
 		<div class="citations-metrics-list">
-			<div class="metric-chart-loading">
-                <i class="icon-spinner icon-spin icon-large loading icon"></i>
-            </div>
+			<%= citationsLoadingHtml %>
 		</div>
 		<div class="clear"></div>
-	</section>
-	<% } %>
-
-	<% if(!hideDownloadsChart){ %>
-		<section id="user-downloads" class="stripe metrics">
-			<div class="metrics-title">
-				<h3><i class='icon icon-cloud-download'></i></h3>
-				<h3 class="download-count"></h3>
-				<h3>Downloads</h3>
+	</section> <% } %> <% if(!hideDownloadsChart){ %> <section id="user-downloads" class="stripe metrics">
+		<div class="metrics-title">
+			<h3><i class='icon icon-cloud-download'></i></h3>
+			<h3 class="download-count"></h3>
+			<h3>Downloads</h3>
+		</div>
+		<div class="downloads-metrics">
+			<div class="metric-description">
+				<p>For all versions of the data sets in this <%= userTerm %>, the number of times that all or part of these data sets were downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning
+					that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
+				<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
 			</div>
-			<div class="downloads-metrics">
-				<div class="metric-description">
-					<p>For all versions of the data sets in this <%= userTerm %>, the number of times that all or part of these data sets were downloaded over time. These download counts are <a href="http://www.projectcounter.org/">COUNTER</a> compliant, meaning that downloads from some Internet robots and repeat downloads within a certain time window are excluded.</p>
-					<p id="slider-instructions">Drag the slider to visualize a specific time window for the download events.</p>
-				</div>
-				<div id="user-downloads-chart" class='metric-chart'>
-					<div class="metric-chart-loading">
-						<i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
-					</div>
-				</div>
+			<div id="user-downloads-chart" class='metric-chart'>
+				<%= downloadsLoadingHtml %>
 			</div>
 			<div class="clear"></div>
 		</section>
@@ -122,9 +120,7 @@
 				<p id="slider-instructions">Drag the slider to visualize a specific time window for the view events.</p>
 			</div>
 			<div id="user-views-chart" class='metric-chart'>
-                <div class="metric-chart-loading">
-	                <i class="icon-spinner icon-spin icon-large loading icon metric-chart-loading"></i>
-                </div>
+				<%= viewsLoadingHtml %>
 			</div>
 		</div>
 		<div class="clear"></div>

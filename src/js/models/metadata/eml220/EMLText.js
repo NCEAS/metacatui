@@ -91,7 +91,7 @@ define(['jquery', 'underscore', 'backbone', 'models/metadata/eml211/EMLText',
         _.each(markdown, function(markdownElement){
           // Create markdown element with content wrapped in CDATA tags
           var markdownSerialized = objectDOM.ownerDocument.createElement("markdown");
-          var cdataMarkdown = objectDOM.ownerDocument.createCDATASection(markdown);
+          var cdataMarkdown = objectDOM.ownerDocument.createCDATASection(markdownElement);
           $(markdownSerialized).append(cdataMarkdown);
           $(objectDOM).append(markdownSerialized)
         }, this);

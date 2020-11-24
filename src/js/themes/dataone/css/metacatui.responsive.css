@@ -25,4 +25,42 @@
   .mapMode #Footer{
     bottom: -525px;
   }
+  .PortalView{
+    grid-template-rows: 30px 0px 1fr 50px;
+  }
+
+  .PortalView .d1_nav__minimal-nav, .Portal .d1_nav__minimal-nav{
+    grid-template-columns: 30px 1fr;
+    grid-template-rows: 45px;
+    grid-gap: 10px;
+  }
+  .PortalView .d1_nav__button-text, .Portal .d1_nav__button-text{
+    display: none;
+  }
+  .PortalView #Navbar, .Portal #Navbar{
+    min-height: 35px;
+  }
+  .Portal .d1_nav, .PortalView .d1_nav{
+    position: relative;
+    top: 0px;
+  }
+  .PortalView .d1_nav__inner, .Portal .d1_nav__inner{
+    grid-template-rows: 35px;
+  }
+  .PortalView .d1_nav__button, .Portal .d1_nav__button{
+    padding: 0px;
+  }
+  .PortalView .d1_menu-item__top-item, .Portal .d1_menu-item__top-item{
+    line-height: 35px;
+  }
+  .Portal .d1_nav__minmal-items, .PortalView .d1_nav__minmal-items{
+    margin: 0px;
+  }
+}
+
+@media only screen and (max-width : 575px) {
+  .PortalView  .d1_menu-item--get-dataone-plus,
+  .Portal .d1_menu-item--get-dataone-plus{
+    display: none;
+  }
 }

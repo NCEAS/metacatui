@@ -93,6 +93,14 @@ define(['jquery', 'underscore', 'backbone'],
       nodeId: null,
 
       /**
+      * If true, this MetacatUI instance is pointing to a CN rather than a MN.
+      * This attribute is set during the AppModel initialization, based on the other configured attributes.
+      * @readonly
+      * @type {boolean}
+      */
+      isCN: false,
+
+      /**
       * Enable or disable the user profiles. If enabled, users will see a "My profile" link
       * and can view their datasets, metrics on those datasets, their groups, etc.
       * @type {boolean}
@@ -416,14 +424,14 @@ define(['jquery', 'underscore', 'backbone'],
       * The base URL of the DataONE Coordinating Node (CN). CHange this if you
       * are testing a deployment in a development environment.
       * @type {string}
-      * @default "https://cn.dataone.org/"
-      * @example "https://cn-stage.test.dataone.org/""
+      * @default "https://cn.dataone.org"
+      * @example "https://cn-stage.test.dataone.org"
       */
-      d1CNBaseUrl: "https://cn.dataone.org/",
+      d1CNBaseUrl: "https://cn.dataone.org",
       /**
       * The URL fragment for the DataONE Coordinating Node (CN) API.
       * @type {string}
-      * @default 'cn/v2'
+      * @default '/cn/v2'
       */
       d1CNService: "/cn/v2",
       /**
@@ -1064,6 +1072,15 @@ define(['jquery', 'underscore', 'backbone'],
       */
       portalTermPlural: "portals",
       /**
+      * A URL of a webpage for people to learn more about portals. If no URL is provided,
+      * links to more info about portals will be omitted.
+      * @since 2.14.0
+      * @type {string}
+      * @example "https://dataone.org/plus"
+      * @default null
+      */
+      portalInfoURL: null,
+      /**
       * Set to false to prevent ANYONE from creating a new portal.
       * @type {boolean}
       * @default true
@@ -1198,11 +1215,60 @@ define(['jquery', 'underscore', 'backbone'],
       ],
 
       /**
+      * Limit users to a certain number of portals. This limit will be ignored if {@link AppConfig#enableBookkeeperServices}
+      * is set to true, because the limit will be enforced by Bookkeeper Quotas instead.
+      * @type {number}
+      * @default 1
+      * @since 2.14.0
+      */
+      portalLimit: 1,
+
+      /**
+      * The default values to use in portals. Default sections are applied when a portal is new.
+      * Default images are used in new freeform pages in the portal builder.
+      * The default colors are used when colors haven't been saved to the portal document.
+      * Colors can be hex codes, rgb codes, or any other form supported by browsers in CSS
+      * @type {object}
+      * @property {object[]} sections The default sections for a new portal. Each object within the section array can have a title property and a label property
+      * @property {string} label The name of the section that will appear in the tab
+      * @property {string} title A longer title for the section that will appear in the section header
+      * @property {string} newPortalActiveSectionLabel When a user start the portal builder for a brand new portal, the label for the section that the builder should start on. Can be set to "Data", "Metrics", "Settings", or one of the labels from the default sections described above.
+      * @property {string[]} sectionImageIdentifiers A list of image pids to use as default images for new markdown sections
+      * @property {string} primaryColor The color that is used most frequently in the portal view
+      * @property {string} secondaryColor The color that is used second-most frequently in the portal view
+      * @property {string} accentColor The color that is rarely used in portal views as an accent color
+      * @property {string} primaryColorTransparent An rgba() version of the primaryColor that is semi-transparent
+      * @property {string} secondaryColorTransparent An rgba() version of the secondaryColor that is semi-transparent
+      * @property {string} accentColorTransparent An rgba() version of the accentColor that is semi-transparent
+      * @example {
+      *   sections: [
+      *     { label: "About",
+      *       title: "About our project"
+      *     },
+      *     { label: "Publications",
+      *       title: "Selected publications by our lab group"
+      *     }
+      *   ],
+      *   newPortalActiveSectionLabel: "About",
+      *   sectionImageIdentifiers: ["urn:uuid:d2f31a83-debf-4d78-bef7-6abe20962581", "urn:uuid:6ad37acd-d0ac-4142-9f42-e5f05ff55564", "urn:uuid:0b6be09f-2e6f-4e7b-a83c-2823495f9608", "urn:uuid:5b4e0347-07ed-4580-b039-6c4df57ed801", "urn:uuid:0cf62da9-a099-440e-9c1e-595a55c0d60d"],
+      *   primaryColor: "#16acc0",
+      *   primaryColorTransparent: "rgba(22, 172, 192, .7)",
+      *   secondaryColor: "#EED268",
+      *   secondaryColorTransparent: "rgba(238, 210, 104, .7)",
+      *   accentColor: "#0f5058",
+      *   accentColorTransparent: "rgba(15, 80, 88, .7)"
+      *  }
+      * @since 2.14.0
+      */
+      portalDefaults: {
+      },
+
+      /**
       * Enable or disable the use of Fluid Earth Viewer visualizations in portals.
       * This config option is marked as `private` since this is an experimental feature.
       * @type {boolean}
       * @private
-      * @since 2.X
+      * @since 2.13.4
       */
       enableFeverVisualizations: false,
       /**
@@ -1212,7 +1278,7 @@ define(['jquery', 'underscore', 'backbone'],
       * This config option is marked as `private` since this is an experimental feature.
       * @type {string}
       * @private
-      * @since 2.X
+      * @since 2.13.4
       */
       feverPath: "/fever",
       /**
@@ -1223,7 +1289,7 @@ define(['jquery', 'underscore', 'backbone'],
       * @type {string}
       * @readonly
       * @private
-      * @since 2.X
+      * @since 2.13.4
       */
       feverUrl: "",
 
@@ -1233,6 +1299,46 @@ define(['jquery', 'underscore', 'backbone'],
       * @default true
       */
       archivedContentIsIndexed: true,
+
+      /**
+       * The metadata fields to hide when a user is creating a collection
+       * definition using the query builder displayed in the portal builder on
+       * the data page, or anywhere else the EditCollectionView is displayed.
+       * Strings listed here should exactly match the 'name' for
+       * each field provided by the DataONE search index API (i.e. should match
+       * the Solr field).
+       */
+      collectionQueryExcludeFields: [
+        "sem_annotated_by", "sem_annotates", "sem_comment", "pubDate",
+        "namedLocation", "contactOrganization", "investigator", "originator",
+        "originatorText", "prov_generated", "prov_generatedByExecution",
+        "prov_generatedByProgram", "prov_generatedByUser", "prov_hasDerivations",
+        "prov_hasSources", "prov_instanceOfClass", "prov_used",
+        "prov_usedByExecution", "prov_usedByProgram", "prov_usedByUser",
+        "prov_wasDerivedFrom", "prov_wasExecutedByExecution",
+        "prov_wasExecutedByUser", "prov_wasInformedBy", "serviceInput",
+        "authorGivenName", "authorSurName", "topic", "webUrl", "_root_",
+        "collectionQuery", "geohash_1", "geohash_2", "geohash_3", "geohash_4",
+        "geohash_5", "geohash_6", "geohash_7", "geohash_8", "geohash_9", "label",
+        "LTERSite", "_version_", "checksum", "checksumAlgorithm", "keywords",
+        "parameterText", "project", "topicText", "dataUrl", "fileID",
+        "isDocumentedBy", "logo", "obsoletes", "origin", "funding", "formatType",
+        "obsoletedBy", "presentationCat", "mediaType", "mediaTypeProperty",
+        "relatedOrganizations", "noBoundingBox", "decade", "hasPart", "sensorText",
+        "sourceText", "termText", "titlestr", "site", "id", "updateDate",
+        "edition", "gcmdKeyword", "isSpatial", "keyConcept", "ogcUrl", "parameter",
+        "sensor", "source", "term", "investigatorText"
+      ],
+
+
+      /**
+       * The isPartOf filter is added to all new portals built in the Portal
+       * Builder automatically. It is required for dataset owners to include
+       * their dataset in a specific portal collection. By default, this filter
+       * is hidden. Set to false to make this filter visible.
+       * @type {boolean}
+       */
+      hideIsPartOfFilter: true,
 
       /**
       * The default FilterGroups to use in the data catalog search (DataCatalogViewWithFilters)
@@ -1287,11 +1393,12 @@ define(['jquery', 'underscore', 'backbone'],
               description: "Only show results with data collected within the year range"
             },
             {
-              fields: ["id", "identifier", "documents", "resourceMap", "seriesId"],
+              fields: ["identifier", "documents", "resourceMap", "seriesId"],
               label: "Identifier",
               placeholder: "DOI or ID",
               icon: "bullseye",
-              description: "Find datasets if you have all or part of its DOI or ID"
+              description: "Find datasets if you have all or part of its DOI or ID",
+              operator: "OR"
             },
             {
               fields: ["kingdom", "phylum", "class", "order", "family", "genus", "species"],
@@ -1345,6 +1452,104 @@ define(['jquery', 'underscore', 'backbone'],
       */
       unsupportedBrowsers: [/(?:\b(MS)?IE\s+|\bTrident\/7\.0;.*\s+rv:)(\d+)/],
 
+      /**
+      * A list of alternate repositories to use for fetching and saving DataONEObjects.
+      * In the AppConfig, this is an array of {@link NodeModel#members} attributes, in JSON form.
+      * These are the same attributes retireved from the Node Info document, via the d1/mn/v2/node API.
+      * The only required attributes are name, identifier, and baseURL.
+      * @type {object[]}
+      * @example [{
+      *    name: "Metacat MN",
+      *    identifier: "urn:node:METACAT",
+      *    baseURL: "https://my-metacat.org/metacat/d1/mn"
+      *  }]
+      *
+      * @since 2.14.0
+      */
+      alternateRepositories: [],
+
+      /**
+      * The node identifier of the alternate repository that is used for fetching and saving DataONEObjects.
+      * this attribute is dynamically set by MetacatUI to keep track of the currently active alt repo.
+      * To specify a repository that should be active by default, set {@link AppConfig#defaultAlternateRepositoryId}
+      * @type {string}
+      * @example "urn:node:METACAT"
+      * @since 2.14.0
+      * @readonly
+      */
+      activeAlternateRepositoryId: null,
+
+      /**
+      * The node identifier of the alternate repository that should be used for fetching and saving DataONEObjects.
+      * Since there can be multiple alternate repositories configured, this attribute can be used to specify which
+      * one is actively in use.
+      * @type {string}
+      * @example "urn:node:METACAT"
+      * @since 2.14.0
+      */
+      defaultAlternateRepositoryId: null,
+
+      /**
+      * Enable or disable the DataONE Bookkeeper services. If enabled, Portal Views will use the DataONE Plus
+      * paid features for active subscriptions. If disabled, the Portal Views will assume
+      * all portals are in inactive/free, and will only render free features.
+      * @type {boolean}
+      * @since 2.14.0
+      */
+      enableBookkeeperServices: false,
+      /**
+      * The base URL for the DataONE Bookkeeper services, which manage the DataONE membership plans, such as
+      * Hosted Repositories and Plus.
+      * See https://github.com/DataONEorg/bookkeeper for more info on this service.
+      * @type {string}
+      * @since 2.14.0
+      */
+      bookkeeperBaseUrl: "https://api.test.dataone.org:30443/bookkeeper/v1",
+      /**
+      * The URL for the DataONE Bookkeeper Quota API, e.g. listQuotas(), getQuota(), createQuota(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      * @since 2.14.0
+      */
+      bookkeeperQuotasUrl: null,
+      /**
+      * The URL for the DataONE Bookkeeper Usages API, e.g. listUsages(), getUsage(), createUsage(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      * @since 2.14.0
+      */
+      bookkeeperUsagesUrl: null,
+      /**
+      * The URL for the DataONE Bookkeeper Subscriptions API, e.g. listSubscriptions(), fetchSubscription(), createSubscription(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      * @since 2.14.0
+      */
+      bookkeeperSubscriptionsUrl: null,
+      /**
+      * The URL for the DataONE Bookkeeper Customers API, e.g. listCustomers(), getCustomer(), createCustomer(), etc.
+      * This full URL is contructed using {@link AppModel#bookkeeperBaseUrl} when the AppModel is initialized.
+      * @readonly
+      * @type {string}
+      * @since 2.14.0
+      */
+      bookkeeperCustomersUrl: null,
+
+      /**
+      * The name of the DataONE Plus membership plan, which is used in messaging throughout the UI.
+      * This is only used if the enableBookkeeperServices setting is set to true.
+      * @type {string}
+      * @default "DataONE Plus"
+      */
+      dataonePlusName: "DataONE Plus",
+
+      //These two DataONE Plus Preview attributes are for a special DataONE Plus tag of MetacatUI
+      // and won't be released in an offical MetacatUI version, since they will be replaced by bookkeeper
+      dataonePlusPreviewMode: false,
+      dataonePlusPreviewPortals: [],
       /*
       * List of Repositories that are DataONE Hosted Repos.
       * DataONE Hosted Repo features are displayed only for these members.
@@ -1357,6 +1562,15 @@ define(['jquery', 'underscore', 'backbone'],
       * with the DataONE Bookkeeper service, eventually.
       */
       dataoneHostedRepos: ["urn:node:KNB", "urn:node:ARCTIC", "urn:node:CA_OPC", "urn:node:TNC_DANGERMOND", "urn:node:ESS_DIVE"],
+
+      /**
+      * The length of random portal label generated during preview/trial mode of DataONE Plus
+      * @readonly
+      * @type {number}
+      * @default 7
+      * @since 2.14.0
+      */
+      randomLabelNumericLength: 7,
 
       /**
       * The following configuration options are deprecated or experimental and should only be changed by advanced users
@@ -1391,38 +1605,13 @@ define(['jquery', 'underscore', 'backbone'],
         this.set("d1Service", this.get("d1CNService"));
       }
 
+      //Set the DataONE MN API URLs
+      this.set( this.getDataONEMNAPIs() );
 
-      //Remove a forward slash to the end of the base URL if there is one
-      var baseUrl = this.get("baseUrl");
-      if( baseUrl.charAt( baseUrl.length-1 ) == "/" ){
-        baseUrl = baseUrl.substring(0, baseUrl.length-1);
-        this.set("baseUrl", baseUrl);
-      }
+      //Determine if this instance of MetacatUI is pointing to a CN, rather than a MN
+      this.set("isCN", (this.get("d1Service").indexOf("cn/v2") > 0));
 
-      //Make sure the Metacat context sttarts with a forward slash
-      var context = this.get("context");
-      if( context.length && context.charAt(0) != "/" ){
-        context = "/" + context;
-      }
-
-
-      // these are pretty standard, but can be customized if needed
-      this.set('viewServiceUrl',    baseUrl + context + this.get('d1Service') + '/views/metacatui/');
-      this.set('publishServiceUrl', baseUrl + context + this.get('d1Service') + '/publish/');
-      this.set('authServiceUrl',    baseUrl + context + this.get('d1Service') + '/isAuthorized/');
-      this.set('queryServiceUrl',   baseUrl + context + this.get('d1Service') + '/query/solr/?');
-      this.set('metaServiceUrl',    baseUrl + context + this.get('d1Service') + '/meta/');
-      this.set('packageServiceUrl', baseUrl + context + this.get('d1Service') + '/packages/application%2Fbagit-097/');
-
-      this.set('metacatServiceUrl', baseUrl + context + '/metacat');
-
-      if( this.get("d1Service") && this.get("d1Service").indexOf("cn/v2") == -1 ){
-        this.set('objectServiceUrl', baseUrl + context + this.get('d1Service') + '/object/');
-      }
-
-      if( this.get("enableMonitorStatus") ){
-        this.set("monitorStatusUrl", baseUrl + context + this.get('d1Service') + "/monitor/status");
-      }
+      this.set('metacatServiceUrl', this.get('baseUrl') + this.get('context') + '/metacat');
 
       // Metadata quality report services
       this.set('mdqSuitesServiceUrl', this.get("mdqBaseUrl") + "/suites/");
@@ -1504,6 +1693,14 @@ define(['jquery', 'underscore', 'backbone'],
       this.set('mdqRunsServiceUrl', this.get('mdqBaseUrl') + "/runs/");
       this.set('mdqScoresServiceUrl', this.get('mdqBaseUrl') + "/scores/");
 
+      //Construct the DataONE Bookkeeper service API URLs
+      if( this.get("enableBookkeeperServices") ){
+        this.set("bookkeeperSubscriptionsUrl", this.get("bookkeeperBaseUrl")  + "/subscriptions");
+        this.set("bookkeeperCustomersUrl",     this.get("bookkeeperBaseUrl")  + "/customers");
+        this.set("bookkeeperQuotasUrl",        this.get("bookkeeperBaseUrl")  + "/quotas");
+        this.set("bookkeeperUsagesUrl",        this.get("bookkeeperBaseUrl")  + "/usages");
+      }
+
       //Construct the Fluid Earth Fever URL
       if( this.get("enableFeverVisualizations") && this.get("feverPath") && !this.get("feverUrl") ){
         this.set("feverUrl", this.get("baseUrl") + this.get("feverPath"));
@@ -1516,10 +1713,133 @@ define(['jquery', 'underscore', 'backbone'],
       MetacatUI.theme = this.get("theme");
       MetacatUI.themeTitle = this.get("repositoryName");
 
+      //Set up the alternative repositories
+      _.map(this.get("alternateRepositories"), function(repo){
+        repo = _.extend(repo, this.getDataONEMNAPIs(repo.baseURL));
+      }, this);
+
+    },
+
+    /**
+    * Constructs the DataONE API URLs for the given baseUrl
+    * @param {string} [baseUrl] - The baseUrl to use in the URLs. If not specified, it uses the AppModel attributes.
+    * @returns {object}
+    */
+    getDataONEMNAPIs: function(baseUrl){
+
+      var urls = {};
+
+      //Get the baseUrl from this model if one isn't given
+      if( typeof baseUrl == "undefined" ){
+        var baseUrl = this.get("baseUrl");
+      }
+
+      //Remove a forward slash to the end of the base URL if there is one
+      if( baseUrl.charAt( baseUrl.length-1 ) == "/" ){
+        baseUrl = baseUrl.substring(0, baseUrl.length-1);
+      }
+
+      //If the baseUrl doesn't have the full DataONE MN API structure, then construct it
+      if( baseUrl.indexOf("/d1/mn") == -1 ){
+
+        //Get the Dataone API fragment, which is either "/d1/mn/v2" or "/cn/v2"
+        var d1Service = this.get('d1Service');
+        if( typeof d1Service != "string" || !d1Service.length ){
+          d1Service = "/d1/mn/v2";
+        }
+        else if( d1Service.charAt(0) != "/" ){
+          d1Service = "/" + d1Service;
+        }
+
+        //Get the Metacat context, and make sure it starts with a forward slash
+        var context = this.get("context");
+        if( typeof context != "string" || !context.length ){
+          context = "";
+        }
+        else if( context.charAt(0) != "/" ){
+          context = "/" + context;
+        }
+
+        //Construct the base URL
+        baseUrl = baseUrl + context + d1Service;
+      }
+      //Otherwise, just make sure the API version is appended to the base URL
+      else if( baseUrl.substring( baseUrl.length-3 ) != "/v2" ){
+        d1Service = "/d1/mn";
+        baseUrl = baseUrl + "/v2";
+      }
+
+      // these are pretty standard, but can be customized if needed
+      urls.viewServiceUrl    = baseUrl + '/views/metacatui/';
+      urls.publishServiceUrl = baseUrl + '/publish/';
+      urls.authServiceUrl    = baseUrl + '/isAuthorized/';
+      urls.queryServiceUrl   = baseUrl + '/query/solr/?';
+      urls.metaServiceUrl    = baseUrl + '/meta/';
+      urls.packageServiceUrl = baseUrl + '/packages/application%2Fbagit-097/';
+
+      if( d1Service.indexOf("mn") > 0 ){
+        urls.objectServiceUrl = baseUrl + '/object/';
+      }
+
+      if( this.get("enableMonitorStatus") ){
+        urls.monitorStatusUrl = baseUrl + "/monitor/status";
+      }
+
+      return urls;
+
     },
 
     changePid: function(model, name){
       this.set("previousPid", model.previous("pid"));
+    },
+
+    /**
+    * Gets the currently-active alternative repository that is configured in this AppModel.
+    * @returns {object}
+    */
+    getActiveAltRepo: function(){
+      //Get the alternative repositories to use for uploading objects
+      var altRepos = this.get("alternateRepositories"),
+          activeAltRepo;
+
+      //Get the active alt repo
+      if( altRepos.length && this.get("activeAlternateRepositoryId") ){
+        activeAltRepo = _.findWhere(altRepos, {identifier: this.get("activeAlternateRepositoryId") });
+
+        return activeAltRepo || null;
+      }
+      else{
+        return null;
+      }
+    },
+
+    /**
+    * Gets the default alternate repository and sets it as the active alternate repository.
+    * If a default alt repo ({@link AppConfig#defaultAlternateRepositoryId}) isn't configured,
+    * the first alt repo in the {@link AppConfig#alternateRepositories} list is used.
+    * @fires AppModel#change:activeAlternateRepositoryId
+    */
+    setActiveAltRepo: function(){
+      //Get the alternative repositories to use for uploading objects
+      var altRepos = this.get("alternateRepositories"),
+          defaultAltRepo;
+
+      if( !altRepos.length ){
+        return;
+      }
+
+      //If a default alt repo is configured, set that as the active alt repo
+      if( this.get("defaultAlternateRepositoryId") ){
+        defaultAltRepo = _.findWhere(altRepos, {identifier: this.get("defaultAlternateRepositoryId") });
+        if( defaultAltRepo ){
+          this.set("activeAlternateRepositoryId", defaultAltRepo.identifier);
+        }
+      }
+
+      //Otherwise, use the first alt repo in the list
+      if( !defaultAltRepo ){
+        this.set("activeAlternateRepositoryId", altRepos[0].identifier);
+      }
     }
   });
   return AppModel;

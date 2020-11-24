@@ -39,7 +39,6 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
          and other basic DataONE API functions. This model can be extended to provide
          specific functionality for different object types, such as the {@link ScienceMetadata}
          model and the {@link EML211} model.
-         * @classcategory Models
         * @augments Backbone.Model
         */
         var DataONEObject = Backbone.Model.extend(
@@ -77,6 +76,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     mediaType: null,
                     fileName: null,
                     // Non-system metadata attributes:
+                    isNew: null,
                     datasource: null,
                     insert_count_i: null,
                     read_count_i: null,
@@ -116,6 +116,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     isAuthorized_changePermission: null, //If the user has permission to changePermission
                     createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
+                    possibleAuthMNs: [], //A list of possible authoritative MNs of this object
                     provSources: [],
                     provDerivations: [],
                     prov_generated: [],
@@ -167,6 +168,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               this.set("synced", true);
             });
 
+            //Find Member Node object that might be the authoritative MN
+            //This is helpful when MetacatUI may be displaying content from multiple MNs
+            this.setPossibleAuthMNs();
+
           },
 
           /**
@@ -209,35 +214,73 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if( !this.get("id") &amp;&amp; !this.get("seriesid") )
               return "";
 
+            //Get the active alternative repository, if one is configured
+            var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+            //Start the base URL string
+            var baseUrl = "";
+
             // Determine if we're updating a new/existing object,
             // or just its system metadata
+            // New uploads use the object service URL
             if ( this.isNew() ) {
-                // This is a new upload, use MN.create()
-            return MetacatUI.appModel.get("objectServiceUrl") +
-                    (encodeURIComponent(this.get("id")));
+
+              //Use the object service URL from the alt repo
+              if( activeAltRepo ){
+                baseUrl = activeAltRepo.objectServiceUrl;
+              }
+              //If this MetacatUI deployment is pointing to a MN, use the object service URL from the AppModel
+              else{
+                baseUrl = MetacatUI.appModel.get("objectServiceUrl");
+              }
+
+              //Return the full URL
+              return baseUrl;
 
             }
             else {
-                if ( this.hasUpdates() ) {
-                    if ( this.get("hasContentChanges") ) {
-                        // Exists on the server, use MN.update()
-                    return MetacatUI.appModel.get("objectServiceUrl") +
-                        (encodeURIComponent(this.get("oldPid")));
+              if ( this.hasUpdates() ) {
+                if ( this.get("hasContentChanges") ) {
 
-                    } else {
-                        // Exists on the server, use MN.updateSystemMetadata()
-                    return MetacatUI.appModel.get("metaServiceUrl") +
-                            (encodeURIComponent(this.get("id")));
+                  //Use the object service URL from the alt repo
+                  if( activeAltRepo ){
+                    baseUrl = activeAltRepo.objectServiceUrl;
+                  }
+                  else{
+                    baseUrl = MetacatUI.appModel.get("objectServiceUrl");
+                  }
 
-                    }
+                  // Exists on the server, use MN.update()
+                  return baseUrl + (encodeURIComponent(this.get("oldPid")));
 
                 } else {
-                  // Use MN.getSystemMetadata()
-                  return MetacatUI.appModel.get("metaServiceUrl") +
-                          (encodeURIComponent(this.get("id")) ||
-                           encodeURIComponent(this.get("seriesid")));
+
+                  //Use the meta service URL from the alt repo
+                  if( activeAltRepo ){
+                    baseUrl = activeAltRepo.metaServiceUrl;
+                  }
+                  else{
+                    baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+                  }
+
+                  // Exists on the server, use MN.updateSystemMetadata()
+                  return baseUrl + (encodeURIComponent(this.get("id")));
+
+                }
+              } else {
+                //Use the meta service URL from the alt repo
+                if( activeAltRepo ){
+                  baseUrl = activeAltRepo.metaServiceUrl;
+                }
+                else{
+                  baseUrl = MetacatUI.appModel.get("metaServiceUrl");
                 }
 
+                // Use MN.getSystemMetadata()
+                return baseUrl +
+                        (encodeURIComponent(this.get("id")) ||
+                         encodeURIComponent(this.get("seriesid")));
+              }
             }
           },
 
@@ -249,8 +292,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if ( ! options ) var options = {};
             else var options = _.clone(options);
 
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
             // Default to GET /meta
-            options.url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id"));
+            options.url = baseUrl + encodeURIComponent(this.get("id"));
 
             //If we are using the Solr service to retrieve info about this object, then construct a query
             if((typeof options != "undefined") &amp;&amp; options.solrService){
@@ -608,31 +662,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                     return xhr;
                   },
-                  success: function(model, response, xhr){
-
-                      model.set("numSaveAttempts", 0);
-                      model.set("uploadStatus", "c");
-                      model.trigger("successSaving", model);
-
-                      // Get the newest sysmeta set by the MN
-                      model.fetch({
-                        merge: true,
-                        systemMetadataOnly: true
-                      });
-
-                      // Reset the content changes status
-                      model.set("hasContentChanges", false);
-
-                      //Reset the model isNew attribute
-                      model.set("isNew", false);
-
-                      // Reset oldPid so we can replace again
-                      model.set("oldPid", null);
-
-                      //Set the last-calculated checksum as the original checksum
-                      model.set("originalChecksum", model.get("checksum"));
-                      model.set("checksum", model.defaults().checksum);
-                  },
+                  success: this.onSuccessfulSave,
                   error: function(model, response, xhr){
 
                     //Reset the identifier changes
@@ -690,6 +720,44 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               Backbone.Model.prototype.save.call(this, null, requestSettings);
         },
 
+        /**
+        * This function is executed when the XHR that saves this DataONEObject has
+        * successfully completed. It can be called directly if a DataONEObject is saved
+        * without directly using the DataONEObject.save() function.
+        * @param {DataONEObject} [model] A reference to this DataONEObject model
+        * @param {XMLHttpRequest.response} [response] The XHR response object
+        * @param {XMLHttpRequest} [xhr] The XHR that was just completed successfully
+        */
+        onSuccessfulSave: function(model, response, xhr){
+
+          if(typeof model == "undefined"){
+            var model = this;
+          }
+
+          model.set("numSaveAttempts", 0);
+          model.set("uploadStatus", "c");
+          model.trigger("successSaving", model);
+
+          // Get the newest sysmeta set by the MN
+          model.fetch({
+            merge: true,
+            systemMetadataOnly: true
+          });
+
+          // Reset the content changes status
+          model.set("hasContentChanges", false);
+
+          //Reset the model isNew attribute
+          model.set("isNew", false);
+
+          // Reset oldPid so we can replace again
+          model.set("oldPid", null);
+
+          //Set the last-calculated checksum as the original checksum
+          model.set("originalChecksum", model.get("checksum"));
+          model.set("checksum", model.defaults().checksum);
+        },
+
           /**
             * Updates the DataONEObject System Metadata to the server
             */
@@ -715,8 +783,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             var model = this;
 
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
             var requestSettings = {
-                url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id"))),
+                url: baseUrl + (encodeURIComponent(this.get("id"))),
                 cache: false,
                 contentType: false,
                 dataType: "text",
@@ -794,51 +873,107 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            */
           checkAuthority: function(action, options){
 
-            // return false - if neither PID nor SID is present to check the authority
-            if ( (this.get("id") == null)  &amp;&amp; (this.get("seriesId") == null) ) {
+            try{
+              // return false - if neither PID nor SID is present to check the authority
+              if ( (this.get("id") == null)  &amp;&amp; (this.get("seriesId") == null) ) {
+                return false;
+              }
+
+              if( typeof options == "undefined" ){
+                var options = {};
+              }
+
+              // If PID is not present - check authority with seriesId
+              var identifier = this.get("id");
+              if ( (identifier == null) ) {
+                identifier = this.get("seriesId");
+              }
+
+              if(!action) var action = "changePermission";
+
+              //If there are alt repositories configured, find the possible authoritative
+              // Member Node for this DataONEObject.
+              if( MetacatUI.appModel.get("alternateRepositories").length ){
+
+                //Get the array of possible authoritative MNs
+                var possibleAuthMNs = this.get("possibleAuthMNs");
+
+                //If there are no possible authoritative MNs, use the auth service URL from the AppModel
+                if( !possibleAuthMNs.length ){
+                  baseUrl = MetacatUI.appModel.get("authServiceUrl");
+                }
+                else{
+                  //Use the auth service URL from the top possible auth MN
+                  baseUrl = possibleAuthMNs[0].authServiceUrl;
+                }
+
+              }
+              else{
+                //Get the auth service URL from the AppModel
+                baseUrl = MetacatUI.appModel.get("authServiceUrl");
+              }
+
+              if( !baseUrl ){
+                return false;
+              }
+
+              var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+                    model.set("isAuthorized_" + action, true);
+                    model.set("isAuthorized", true);
+                    model.trigger("change:isAuthorized");
+                  },
+                  onError = options.onError || function(xhr, textStatus, errorThrown){
+                    if(errorThrown == 404){
+                      var possibleAuthMNs = model.get("possibleAuthMNs");
+                      if( possibleAuthMNs.length ){
+                        //Remove the first MN from the array, since it didn't contain the object, so it's not the auth MN
+                        possibleAuthMNs.shift();
+                      }
+
+                      //If there are no other possible auth MNs to check, trigger this model as Not Found.
+                      if( possibleAuthMNs.length == 0 || !possibleAuthMNs ){
+                        model.set("notFound", true);
+                        model.trigger("notFound");
+                      }
+                      //If there's more MNs to check, try again
+                      else{
+                        model.checkAuthority(action, options);
+                      }
+                    }
+                    else{
+                      model.set("isAuthorized_" + action, false);
+                      model.set("isAuthorized", false);
+                    }
+                  };
+
+              var model = this;
+              var requestSettings = {
+                url: baseUrl + encodeURIComponent(identifier) + "?action=" + action,
+                type: "GET",
+                success: onSuccess,
+                error: onError
+              }
+              $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+            }
+            catch(e){
+              //Log an error to the console
+              console.error("Couldn't check the authority for this user: ", e);
+
+              //Send this exception to Google Analytics
+              if (MetacatUI.appModel.get("googleAnalyticsKey") &amp;&amp; (typeof ga !== "undefined")) {
+                  ga("send", "exception", {
+                      "exDescription": "Couldn't check the authority for the user " + MetacatUI.appModel.get("username") +
+                          " | Object Id: " + this.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                      "exFatal": true
+                  });
+              }
+
+              //Set the user as unauthorized
+              model.set("isAuthorized_" + action, false);
+              model.set("isAuthorized", false);
               return false;
+
             }
-
-            if( typeof options == "undefined" ){
-              var options = {};
-            }
-
-            // If PID is not present - check authority with seriesId
-            var identifier = this.get("id");
-            if ( (identifier == null) ) {
-              identifier = this.get("seriesId");
-            }
-
-            if(!action) var action = "changePermission";
-
-            var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
-            if(!authServiceUrl)
-              return false;
-
-            var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
-                  model.set("isAuthorized_" + action, true);
-                  model.set("isAuthorized", true);
-                  model.trigger("change:isAuthorized");
-                },
-                onError = options.onError || function(xhr, textStatus, errorThrown){
-                  if(errorThrown == 404){
-                    model.set("notFound", true);
-                    model.trigger("notFound");
-                  }
-                  else{
-                    model.set("isAuthorized_" + action, false);
-                    model.set("isAuthorized", false);
-                  }
-                };
-
-            var model = this;
-            var requestSettings = {
-              url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
-              type: "GET",
-              success: onSuccess,
-              error: onError
-            }
-            $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
           },
 
@@ -903,15 +1038,15 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               xml.find("size").text(this.get("size"));
             }
 
-            //Save the original checksum
+            //Update the checksum and checksum algorithm
             if( !this.get("checksum") &amp;&amp; this.get("originalChecksum") ){
               xml.find("checksum").text(this.get("originalChecksum"));
             }
-            //Update the checksum and checksum algorithm
             else{
               xml.find("checksum").text(this.get("checksum"));
-              xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
             }
+
+            xml.find("checksum").attr("algorithm", this.get("checksumAlgorithm"));
 
             //Update the rightsholder
             xml.find("rightsholder").text(this.get("rightsHolder") || MetacatUI.appUserModel.get("username"));
@@ -1019,7 +1154,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 return xmlString;
           },
 
-          /*
+          /**
            * Get the object format identifier for this object
            */
           getFormatId: function() {
@@ -1073,7 +1208,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           },
 
-          /*
+          /**
            * Build a fresh system metadata document for this object when it is new
            * Return it as a DOM object
            */
@@ -1334,6 +1469,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           * @return {boolean}
           */
           isNew: function(){
+
+            //If the model is explicitly marked as not new, return false
+            if( this.get("isNew") === false ){
+              return false;
+            }
+
             //Check if there is an upload date that was retrieved from the server
             return ( this.get("dateUploaded") === this.defaults().dateUploaded &amp;&amp;
                      this.get("synced") );
@@ -1412,15 +1553,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * @param {string} [possiblyNewer] - The identifier of the object that obsoletes the latestVersion. It's "possibly" newer, because it may be private/inaccessible
            */
           findLatestVersion: function(latestVersion, possiblyNewer){
-            // Make sure we have the /meta service configured
-            if(! MetacatUI.appModel.get('metaServiceUrl')) return;
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
+            if( !baseUrl ){
+              return;
+            }
 
             //If there is no system metadata, then retrieve it first
             if(!this.get("sysMetaXML")){
               this.once("sync", this.findLatestVersion);
               this.once("systemMetadataSync", this.findLatestVersion);
               this.fetch({
-                url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
+                url: baseUrl + encodeURIComponent(this.get("id")),
                 dataType: "text",
                 systemMetadataOnly: true
               });
@@ -1452,7 +1605,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             //Get the system metadata for the possibly newer version
             var requestSettings = {
-              url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer),
+              url: baseUrl + encodeURIComponent(possiblyNewer),
               type: "GET",
               success: function(data) {
 
@@ -1988,6 +2141,56 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           }
 
           return false;
+        },
+
+        /**
+        * Creates an array of objects that represent Member Nodes that could possibly be this
+        * object's authoritative MN. This function updates the `possibleAuthMNs` attribute on this model.
+        */
+        setPossibleAuthMNs: function(){
+
+          //Only do this for Coordinating Node MetacatUIs.
+          if( MetacatUI.appModel.get("alternateRepositories").length ){
+            //Set the possibleAuthMNs attribute
+            var possibleAuthMNs = [];
+
+            //If a datasource is already found for this Portal, move that to the top of the list of auth MNs
+            var datasource = this.get("datasource") || "";
+            if( datasource ){
+              //Find the MN object that matches the datasource node ID
+              var datasourceMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: datasource });
+              if( datasourceMN ){
+                //Clone the MN object and add it to the array
+                var clonedDatasourceMN = Object.assign({}, datasourceMN);
+                possibleAuthMNs.push(clonedDatasourceMN);
+              }
+            }
+
+            //If there is an active alternate repo, move that to the top of the list of auth MNs
+            var activeAltRepo = MetacatUI.appModel.get("activeAlternateRepositoryId") || "";
+            if( activeAltRepo ){
+              var activeAltRepoMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: activeAltRepo });
+              if( activeAltRepoMN ){
+                //Clone the MN object and add it to the array
+                var clonedActiveAltRepoMN = Object.assign({}, activeAltRepoMN);
+                possibleAuthMNs.push(clonedActiveAltRepoMN);
+              }
+            }
+
+            //Add all the other alternate repositories to the list of auth MNs
+            var otherPossibleAuthMNs = _.reject(MetacatUI.appModel.get("alternateRepositories"), function(mn){
+                                         return (mn.identifier == datasource || mn.identifier == activeAltRepo);
+                                       });
+            //Clone each MN object and add to the array
+            _.each(otherPossibleAuthMNs, function(mn){
+              var clonedMN = Object.assign({}, mn);
+              possibleAuthMNs.push(clonedMN);
+            });
+
+            //Update this model
+            this.set("possibleAuthMNs", possibleAuthMNs);
+
+          }
         }
     },
     /** @lends DataONEObject.prototype */
@@ -2020,13 +2223,13 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="Quota.html">Quota</a></li><li><a href="Quotas.html">Quotas</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="Usage.html">Usage</a></li><li><a href="Usages.html">Usages</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li><li><a href="global.html#className">className</a></li><li><a href="global.html#logos">logos</a></li><li><a href="global.html#onClose">onClose</a></li><li><a href="global.html#render">render</a></li><li><a href="global.html#tagName">tagName</a></li><li><a href="global.html#template">template</a></li><li><a href="global.html#type">type</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Nov 11 2020 14:33:29 GMT-0600 (Central Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Jul 31 2020 12:52:37 GMT-0400 (Eastern Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
