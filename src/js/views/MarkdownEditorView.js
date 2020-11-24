@@ -2,15 +2,16 @@ define(["underscore",
         "jquery",
         "backbone",
         "woofmark",
+        "models/metadata/eml220/EMLText",
         "views/ImageUploaderView",
         "views/MarkdownView",
         "views/TableEditorView",
         "text!templates/markdownEditor.html"],
-function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Template){
+function(_, $, Backbone, Woofmark, EMLText, ImageUploader, MarkdownView, TableEditor, Template){
 
   /**
   * @class MarkdownEditorView
-  * @classdesc A view of an HTML textarea with markdown editor UI and preview tab
+  * @classdesc A view of an HTML textarea with markdown editor UI and preview tab.
   * @extends Backbone.View
   * @constructor
   */
@@ -41,7 +42,17 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
     * Markdown to insert into the textarea when the view is first rendered
     * @type {string}
     */
-    markdown: "",
+    // markdown: "",
+
+    /**
+    * EMLText model that contains a markdown attribute to edit. The markdown is
+    * inserted into the textarea when the view is first rendered. If there's no markdown,
+    * then the view looks for markdown from the markdownExample attribute in the model.
+    * Note that if there are multiple markdown strings in the model, only the first
+    * is rendered/edited.
+    * @type {EMLText}
+    */
+    model: null,
 
     /**
     * The placeholder text to display in the textarea when it's empty
@@ -86,7 +97,7 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
     */
     initialize: function(options){
       if(typeof options !== "undefined"){
-          this.markdown            =  options.markdown            || "";
+          this.model               =  options.model               || new EMLText();
           this.markdownPlaceholder =  options.markdownPlaceholder || "";
           this.previewPlaceholder  =  options.previewPlaceholder  || "";
           this.showTOC             =  options.showTOC             || false;
@@ -104,9 +115,20 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
         // Save the view
         var view = this;
 
+        // The markdown attribute in the model may be a string or an array of strings.
+        // Although EML211 can comprise an array of markdown elements,
+        // this view will only render/edit the first if there are multiple.
+        var markdown = this.model.get("markdown");
+        if(Array.isArray(markdown) && markdown.length){
+          markdown = markdown[0]
+        }
+        if(!markdown || !markdown.length){
+          markdown = this.model.get("markdownExample")
+        }
+
         // Insert the template into the view
         this.$el.html(this.template({
-          markdown: this.markdown || "",
+          markdown: markdown || "",
           markdownPlaceholder: this.markdownPlaceholder || "",
           previewPlaceholder: this.previewPlaceholder || "",
           cid: this.cid
@@ -683,7 +705,22 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
      */
     updateMarkdown: function(){
       try {
-        this.markdown = this.$(this.textarea).val();
+
+        newMarkdown = this.$(this.textarea).val();
+
+        // The markdown attribute in the model may be a string or an array of strings.
+        // Although EML211 can comprise an array of markdown elements,
+        // this view will only edit the first if there are multiple.
+        if(Array.isArray(this.model.get("markdown")) && markdown.length){
+          // Clone then update arary before setting it on the model
+          // so that the backbone "change" event is fired.
+          // See https://stackoverflow.com/a/10240697
+          var newMarkdownArray = _.clone(this.model.get("markdown"));
+          newMarkdownArray[0] = newMarkdown;
+          this.model.set("markdown", newMarkdownArray);
+        } else {
+          this.model.set("markdown", newMarkdown)
+        }
       } catch (e) {
         console.log("Failed to the view's markdown attribute, error: " + e);
       }
@@ -696,9 +733,14 @@ function(_, $, Backbone, Woofmark, ImageUploader, MarkdownView, TableEditor, Tem
 
       try{
 
+        var markdown = this.model.get("markdown")
+        if(Array.isArray(markdown)){
+          markdown = markdown[0]
+        }
+
         var markdownPreview = new MarkdownView({
-            markdown: this.markdown || this.previewPlaceholder,
-            showTOC: this.showTOC || false
+          markdown: markdown || this.previewPlaceholder,
+          showTOC: this.showTOC || false
         });
 
         // Render the preview

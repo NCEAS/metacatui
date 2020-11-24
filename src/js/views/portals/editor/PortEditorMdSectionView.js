@@ -128,18 +128,9 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
           cid: this.model.cid
         })).data("view", this);
         
-        // Get the markdown from the SectionModel
-        var markdown = "";
-        if( this.model.get("content") ){
-          markdown = this.model.get("content").get("markdown");
-          if( !markdown ){
-            markdown = this.model.get("content").get("markdownExample");
-          }
-        }
-        
         // Render the Markdown Editor View
         var mdEditor = new MarkdownEditor({
-          markdown: markdown,
+          model: this.model.get("content"),
           markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
           previewPlaceholder: "Add some text in the Edit tab to show a preview here",
           showTOC: true
@@ -149,7 +140,8 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
         
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
-        mdEditor.$(mdEditor.textarea).data({ model: this.model.get("content") });
+        // Don't use the updateBasicText function on content/markdown sections,
+        // because we don't want to "cleanXMLText" for markdown
         this.$(this.titleEl).data({ model: this.model });
         this.$(this.introEl).data({ model: this.model });
 
