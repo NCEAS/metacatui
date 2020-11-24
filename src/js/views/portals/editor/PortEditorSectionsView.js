@@ -1448,6 +1448,7 @@ function(_, $, Backbone, Sortable, Portal, PortalSection,
           if(label){ pageOrder.push(label) }
         });
         view.model.set("pageOrder", pageOrder);
+        view.editorView.showControls();
       } catch (error) {
         console.log("Error updating the portal page order, message: " + error)
       }
