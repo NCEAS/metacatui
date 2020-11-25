@@ -399,6 +399,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       // Insert the logo editor
       this.renderLogoEditor();
 
+      //When the collection definition is changed, show the Save button
+      this.listenTo(this.model.get("definitionFilters"), "remove change", this.showControls);
+
       // On mobile, hide section tabs a moment after page loads so
       // users notice where they are
       var view= this;
