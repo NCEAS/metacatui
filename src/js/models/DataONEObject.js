@@ -68,7 +68,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
-                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, w=warning, no upload status=not in queue
                     uploadProgress: null,
                     sysMetaUploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
@@ -732,7 +732,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                                 "Make sure you are connected to a reliable internet connection.";
 
                         model.set("errorMessage", parsedResponse);
-                        model.set("uploadStatus", "e");
+
+                        if(statusCode == 401){
+                          model.set("uploadStatus", "w");
+                        } else {
+                          model.set("uploadStatus", "e");
+                        }
                         model.set("sysMetaUploadStatus", "e");
 
                         //Send this exception to Google Analytics

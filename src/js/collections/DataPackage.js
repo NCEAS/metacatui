@@ -1116,7 +1116,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                         m.get("uploadStatus") != "e" &&
                         m.get("uploadStatus") !== null))
                 });
-              //Get an array of data objects whose system metaata should be updated.
+              //Get an array of data objects whose system metadata should be updated.
               var sysMetaToUpdate = _.reject(dataModels, function(m){
                 //Find models that don't have any content changes to save,
                 // and whose system metadata is not already saving
