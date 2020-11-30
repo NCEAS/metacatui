@@ -1249,17 +1249,23 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Checks if this model has updates that need to be synced with the server.
+           * Checks if this system metadata XML has updates that need to be synced with the server.
            * @returns {boolean}
            */
           hasUpdates: function(){
             if(this.isNew()) return true;
 
-            //Compare the new system metadata XML to the old system metadata XML
-            var newSysMeta = this.serializeSysMeta(),
-              oldSysMeta = $(document.createElement("div")).append($(this.get("sysMetaXML"))).html();
+            // Compare the new system metadata XML to the old system metadata XML
+            
+            var newSysMetaCloned = this.clone();
+                oldSysMetaAttrs = newSysMetaCloned.parse(newSysMetaCloned.get("sysMetaXML"));
 
-                if ( oldSysMeta === "" ) return false;
+            newSysMetaCloned.set(oldSysMetaAttrs);
+            
+            var oldSysMeta = newSysMetaCloned.serializeSysMeta();
+            var newSysMeta = this.serializeSysMeta();
+
+            if ( oldSysMeta === "" ) return false;
 
             return !(newSysMeta == oldSysMeta);
           },

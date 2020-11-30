@@ -1118,10 +1118,16 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
                 });
               //Get an array of data objects whose system metadata should be updated.
               var sysMetaToUpdate = _.reject(dataModels, function(m){
-                //Find models that don't have any content changes to save,
+                // Find models that don't have any content changes to save,
                 // and whose system metadata is not already saving
-                return (m.get("hasContentChanges") || m.get("sysMetaUploadStatus") == "p" ||
-                        m.get("sysMetaUploadStatus") == "c" || m.get("sysMetaUploadStatus") == "e");
+                return (
+                  ( !m.hasUpdates() ||
+                    m.get("hasContentChanges") ||
+                    m.get("sysMetaUploadStatus") == "p" ||
+                    m.get("sysMetaUploadStatus") == "c" ||
+                    m.get("sysMetaUploadStatus") == "e"
+                  )
+                );
               });
 
               //First quickly validate all the models before attempting to save any
