@@ -68,7 +68,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     nodeLevel: 0, // Indicates hierarchy level in the view for indentation
                     sortOrder: null, // Metadata: 1, Data: 2, DataPackage: 3
                     synced: false, // True if the full model has been synced
-                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, w=warning, no upload status=not in queue
+                    uploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     uploadProgress: null,
                     sysMetaUploadStatus: null, //c=complete, p=in progress, q=queued, e=error, no upload status=not in queue
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
@@ -732,12 +732,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                                 "Make sure you are connected to a reliable internet connection.";
 
                         model.set("errorMessage", parsedResponse);
-
-                        if(statusCode == 401){
-                          model.set("uploadStatus", "w");
-                        } else {
-                          model.set("uploadStatus", "e");
-                        }
+                        model.set("uploadStatus", "e");
                         model.set("sysMetaUploadStatus", "e");
 
                         //Send this exception to Google Analytics
@@ -1249,23 +1244,17 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Checks if this system metadata XML has updates that need to be synced with the server.
+           * Checks if this model has updates that need to be synced with the server.
            * @returns {boolean}
            */
           hasUpdates: function(){
             if(this.isNew()) return true;
 
-            // Compare the new system metadata XML to the old system metadata XML
-            
-            var newSysMetaCloned = this.clone();
-                oldSysMetaAttrs = newSysMetaCloned.parse(newSysMetaCloned.get("sysMetaXML"));
+            //Compare the new system metadata XML to the old system metadata XML
+            var newSysMeta = this.serializeSysMeta(),
+              oldSysMeta = $(document.createElement("div")).append($(this.get("sysMetaXML"))).html();
 
-            newSysMetaCloned.set(oldSysMetaAttrs);
-            
-            var oldSysMeta = newSysMetaCloned.serializeSysMeta();
-            var newSysMeta = this.serializeSysMeta();
-
-            if ( oldSysMeta === "" ) return false;
+                if ( oldSysMeta === "" ) return false;
 
             return !(newSysMeta == oldSysMeta);
           },

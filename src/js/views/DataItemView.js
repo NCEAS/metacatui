@@ -241,25 +241,20 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 this.toggleSaving();
 
                 //Create tooltips based on the upload status
-                var uploadStatus = this.model.get("uploadStatus"),
-                    errorMessage = this.model.get("errorMessage");
-
-                // When there's an error or a warninig
-                if((uploadStatus == "e" || uploadStatus == "w") && errorMessage){
-                    
-                    var tooltipClass = uploadStatus == "e" ? "error" : "";
+                if(this.model.get("uploadStatus") == "e" && this.model.get("errorMessage")){
+                	var errorMsg = this.model.get("errorMessage");
 
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
                 		html: true,
-                		title: "<div class='status-tooltip " + tooltipClass + "'><h6>Issue saving:</h6><div>" + errorMessage + "</div></div>",
+                		title: "<div class='status-tooltip error'><h6>Error saving:</h6><div>" + errorMsg + "</div></div>",
                 		container: "body"
                 	});
 
                 	this.$el.removeClass("loading");
                 }
-                else if (( !uploadStatus || uploadStatus == "c" || uploadStatus == "q") && attributes.numAttributes == 0){
+                else if (( !this.model.get("uploadStatus") || this.model.get("uploadStatus") == "c" || this.model.get("uploadStatus") == "q") && attributes.numAttributes == 0){
 
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
@@ -285,7 +280,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 	this.$el.removeClass("loading");
 
                 }
-                else if(uploadStatus == "c"){
+                else if(this.model.get("uploadStatus") == "c"){
 
             		this.$(".status .icon").tooltip({
                 		placement: "top",
@@ -297,7 +292,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 	this.$el.removeClass("loading");
                 }
-                else if(uploadStatus == "l"){
+                else if(this.model.get("uploadStatus") == "l"){
                 	this.$(".status .icon").tooltip({
                 		placement: "top",
                 		trigger: "hover",
@@ -308,7 +303,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 	this.$el.addClass("loading");
                 }
-                else if(uploadStatus == "p"){
+                else if(this.model.get("uploadStatus") == "p"){
                 	var model = this.model;
 
                 	this.$(".status .progress").tooltip({
@@ -1065,10 +1060,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             		this.hideSaving();
 
             	if(this.model.get("uploadStatus") == "e")
-                    this.$el.addClass("error-saving");
-                    
-                if(this.model.get("uploadStatus") == "w")
-            		this.$el.addClass("warning-saving");
+            		this.$el.addClass("error-saving");
             },
 
             showUploadProgress: function(){
