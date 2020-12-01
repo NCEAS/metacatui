@@ -11,6 +11,8 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         emptyCitations: null,
         citationsForDataCatalogView: null,
 
+        displayRegisterCitationTool: MetacatUI.appModel.get("displayRegisterCitationTool"),
+
         events: {
 
         },
@@ -71,14 +73,18 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
                 // Dataset landing page - metadataview
                 if ( self.citationsForDataCatalogView ) {
-                    var emptyString = "We couldn't find any citations for this dataset. " +
-                        "If this dataset has been cited, you can register the citation to " + nodeName + ".";
+                    var emptyString = "We couldn't find any citations for this dataset.";
+
+                    if (self.displayRegisterCitationTool)
+                        emptyString += " If this dataset has been cited, you can register the citation to " + nodeName + ".";
 
                     var $emptyDataElement = $(document.createElement("p"))
                         .text(emptyString)
                         .addClass("empty-citation-list-text");
 
-                    $emptyList.append(this.registerCitationTemplate());
+                    if (self.displayRegisterCitationTool)
+                        $emptyList.append(this.registerCitationTemplate());
+
                     $emptyList.append($emptyDataElement);
 
                 }

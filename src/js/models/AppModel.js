@@ -809,6 +809,12 @@ define(['jquery', 'underscore', 'backbone'],
       */
       displayDatasetViewMetric: true,
       /**
+      * If true, displays the citation registration tool on the dataset landing page
+      * @type {boolean}
+      * @default true
+      */
+      displayRegisterCitationTool: true,
+      /**
       * If true, displays the "Edit" button on the dataset landing page
       * @type {boolean}
       * @default true
