@@ -365,7 +365,7 @@ define(['jquery', 'underscore', 'backbone'],
 			var model = this;
 
 			if(!fields)
-				var fields = "abstract,id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,keywords,attributeName,pubDate,eastBoundCoord,westBoundCoord,northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded,archived,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType";
+				var fields = "abstract,id,seriesId,fileName,resourceMap,formatType,formatId,obsoletedBy,isDocumentedBy,documents,title,origin,keywords,attributeName,pubDate,eastBoundCoord,westBoundCoord,northBoundCoord,southBoundCoord,beginDate,endDate,dateUploaded,archived,datasource,replicaMN,isAuthorized,isPublic,size,read_count_i,isService,serviceTitle,serviceEndpoint,serviceOutput,serviceDescription,serviceType,project";
 
 			var escapeSpecialChar = MetacatUI.appSearchModel.escapeSpecialChar;
 
@@ -479,7 +479,7 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		getCitationInfo: function(){
-			this.getInfo("id,seriesId,origin,pubDate,dateUploaded,title,datasource");
+			this.getInfo("id,seriesId,origin,pubDate,dateUploaded,title,datasource,project");
 		},
 
 		/*
