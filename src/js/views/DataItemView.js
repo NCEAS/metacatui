@@ -244,6 +244,11 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 var uploadStatus = this.model.get("uploadStatus"),
                     errorMessage = this.model.get("errorMessage");
 
+                // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
+                if(this.model.get("sysMetaErrorCode") == 401){
+                    errorMessage = "You do not have permission to update the system metadata for this file."
+                }
+
                 // When there's an error or a warninig
                 if((uploadStatus == "e" || uploadStatus == "w") && errorMessage){
                     

@@ -74,6 +74,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     percentLoaded: 0, // Percent the file is read before caclculating the md5 sum
                     uploadFile: null, // The file reference to be uploaded (JS object: File)
                     errorMessage: null,
+                    sysMetaErrorCode: null, // The status code given when there is an error updating the system metadata
                     numSaveAttempts: 0,
                     notFound: false, //Whether or not this object was found in the system
                     originalAttrs: [], // An array of original attributes in a DataONEObject
@@ -706,6 +707,8 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   model.set("uploadStatus", "c");
                   model.set("sysMetaUploadStatus", "c");
 
+                  model.set("sysMetaErrorCode", null);
+
                   //Trigger a custom event that the sys meta was updated
                   model.trigger("sysMetaUpdated");
                 },
@@ -733,7 +736,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                         model.set("errorMessage", parsedResponse);
 
-                        if(statusCode == 401){
+                        model.set("sysMetaErrorCode", statusCode);
+
+                        if(statusCode == "401"){
                           model.set("uploadStatus", "w");
                         } else {
                           model.set("uploadStatus", "e");
