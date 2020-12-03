@@ -28,8 +28,8 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
             /* Events this view listens to */
             events: {
-                "focusout .name"       : "updateName",
-                "click    .name"       : "emptyName",
+                "focusout .name.canRename"       : "updateName",
+                "click    .name.canRename"       : "emptyName",
                 "click .duplicate"     : "duplicate",         // Edit dropdown, duplicate scimeta/rdf
                 "click .addFolder"     : "handleAddFolder",   // Edit dropdown, add nested scimeta/rdf
                 "click .addFiles"      : "handleAddFiles",    // Edit dropdown, open file picker dialog
@@ -54,14 +54,14 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 this.model = options.model || new DataONEObject();
                 this.id = this.model.get("id");
-                this.canReplace = false; // Default. Updated in render()
+                this.canWrite = false; // Default. Updated in render()
             },
 
             /* Render the template into the DOM */
             render: function(model) {
 
-            	//Prevent duplicate listeners
-            	this.stopListening();
+                //Prevent duplicate listeners
+                this.stopListening();
 
               // Set the data-id for identifying events to model ids
               this.$el.attr("data-id", this.model.get("id"));
@@ -83,12 +83,13 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 // Restrict item replacement depending on access
                 //
-                // Note: .canReplace is set here (at render) instead of at init
+                // Note: .canWrite is set here (at render) instead of at init
                 // because render will get called a few times during page load
                 // as the app updates what it knows about the object
-                this.canReplace = this.model.get("accessPolicy") &&
+                this.canWrite = this.model.get("accessPolicy") &&
                     this.model.get("accessPolicy").isAuthorized("write");
-                attributes.canReplace = this.canReplace; // Copy to template
+
+                attributes.canWrite = this.canWrite; // Copy to template
 
                 //Get the number of attributes for this item
                 if(this.model.type != "EML"){
@@ -226,7 +227,27 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                     });
                   }
 
+                    if( !accessPolicy.isAuthorized("write") ){
+
+                        this.$(".name > div").tooltip({
+                        placement: "top",
+                        container: this.el,
+                        trigger: "hover",
+                        delay: { show: 800 }
+                        });
+                    }
+                    else{
+                        this.$(".name > div").tooltip({
+                            placement: "top",
+                            container: this.el,
+                            trigger: "hover",
+                            delay: { show: 800 }
+                        });
+                    }
+
                 }
+
+                
 
                 // Add tooltip to a disabled Replace link
                 $(this.$el).find(".replace.disabled").tooltip({
@@ -246,7 +267,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
 
                 // Use a friendlier message for 401 errors (the one returned is a little hard to understand)
                 if(this.model.get("sysMetaErrorCode") == 401){
-                    errorMessage = "You do not have permission to update the system metadata for this file."
+                    var accessPolicy = this.model.get("accessPolicy");
+                    
+                    // If the user at least has edit permission, assume the error was related to changing the access rules
+                    if(accessPolicy && accessPolicy.isAuthorized("edit")){
+                        errorMessage = "You don't have permission to change access rules, so we updated the object but did not change the access rules."
+                    // Otherwise, assume they only have read access
+                    } else {
+                        errorMessage = "We updated the object but could not update the access rules, or re-name or replace this file, because you're not authorized to make these changes."
+                    }
+                    
                 }
 
                 // When there's an error or a warninig
@@ -572,7 +602,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 event.stopPropagation();
 
                 // Stop immediately if we know the user doesn't have privs
-                if (!this.canReplace) {
+                if (!this.canWrite) {
                     event.preventDefault();
                     return;
                 }
@@ -613,7 +643,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 event.stopPropagation();
                 event.preventDefault();
 
-                if (!this.canReplace) {
+                if (!this.canWrite) {
                     return;
                 }
 
@@ -953,6 +983,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             previewRemove: function(){
             	this.$el.toggleClass("remove-preview");
             },
+
             /**
              * Clears the text in the cell if the text was the default. We add
              * an 'empty' class, and remove it when the user focuses back out.
@@ -960,7 +991,9 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
              */
             emptyName: function(e){
 
-            	var editableCell = this.$(".name [contenteditable]");
+                var editableCell = this.$(".canRename [contenteditable]");
+                
+                editableCell.tooltip('hide');
 
             	if(editableCell.text().indexOf("Untitled") > -1){
             		editableCell.attr("data-original-text", editableCell.text().trim())
@@ -1047,7 +1080,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             	if(this.model.get("type") != "Metadata")
             		this.$(".controls").prepend($(document.createElement("div")).addClass("disable-layer"));
 
-            	this.$(".name > div").prop("contenteditable", false);
+            	this.$(".canRename > div").prop("contenteditable", false);
             },
 
             hideSaving: function(){
@@ -1055,7 +1088,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             	this.$(".disable-layer").remove();
 
             	//Make the name cell editable again
-            	this.$(".name > div").prop("contenteditable", true);
+            	this.$(".canRename > div").prop("contenteditable", true);
 
             	this.$el.removeClass("error-saving");
             },

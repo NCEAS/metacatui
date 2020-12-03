@@ -765,43 +765,58 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           },
 
           /**
-           * Check if the current user is authorized to perform an action on this object
-           * @param {string} action - The action (read, write, or changePermission) to check
-           * if the current user has authorization to perform. This function doesn't return
+           * Check if the current user is authorized to perform an action on this object. This function doesn't return
            * the result of the check, but it sends an XHR, updates this model, and triggers a change event.
+           * @param {string} [action=changePermission] - The action (read, write, or changePermission) to check
+           * if the current user has authorization to perform. By default checks for the highest level of permission.
            * @param {object} [options] Additional options for this function. See the properties below.
            * @property {function} options.onSuccess - A function to execute when the checkAuthority API is successfully completed
-           * @property {function} options.onError - A function to execute when the checkAuthority API returns an error
+           * @property {function} options.onError - A function to execute when the checkAuthority API returns an error, or when no PID or SID can be found for this object.
+           * @return {boolean}
            */
-          checkAuthority: function(action, options){
-
-            // return false - if neither PID nor SID is present to check the authority
-            if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
-              return false;
-            }
+          checkAuthority: function(action = "changePermission", options){
 
             if( typeof options == "undefined" ){
               var options = {};
             }
 
-            // If PID is not present - check authority with seriesId
+            // If onError or onSuccess options were provided by the user,
+            // check that they are functions first, so we don't try to use
+            // some other type of variable as a function later on.
+            ["onError", "onSuccess"].forEach(function(userFunction){
+              if(typeof options[userFunction] !== "function"){
+                options[userFunction] = null;
+              }
+            });
+
+            // The Object's PID
             var identifier = this.get("id");
+            // The URL for the authentication service API
+            var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
+
+            // If PID is not present - check authority with seriesId
             if ( (identifier == null) ) {
               identifier = this.get("seriesId");
             }
 
-            if(!action) var action = "changePermission";
-
-            var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
-            if(!authServiceUrl)
+            // If neither PID nor SID is present to check the authority,
+            // or if we don't have a URL for the API, return false.
+            if ( identifier == null || !authServiceUrl) {
+              if(options.onError){
+                options.onError();
+              }
               return false;
+            }
 
-            var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+            var onSuccess = function(data, textStatus, xhr) {
                   model.set("isAuthorized_" + action, true);
                   model.set("isAuthorized", true);
                   model.trigger("change:isAuthorized");
+                  if(options.onSuccess){
+                    options.onSuccess(data, textStatus, xhr)
+                  }
                 },
-                onError = options.onError || function(xhr, textStatus, errorThrown){
+                onError = function(xhr, textStatus, errorThrown){
                   if(errorThrown == 404){
                     model.set("notFound", true);
                     model.trigger("notFound");
@@ -809,6 +824,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                   else{
                     model.set("isAuthorized_" + action, false);
                     model.set("isAuthorized", false);
+                  }
+                  if(options.onError){
+                    options.onError(data, textStatus, xhr)
                   }
                 };
 
