@@ -209,7 +209,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
 
           /*
            * The DataPackage collection stores DataPackages and
-           * DataONEObjects, including Metadata nad Data objects.
+           * DataONEObjects, including Metadata and Data objects.
            * Return the correct model based on the type
            */
           model: function (attrs, options) {

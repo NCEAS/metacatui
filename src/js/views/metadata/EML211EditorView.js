@@ -322,6 +322,19 @@ define(['underscore',
         },
 
         renderDataPackage: function(){
+
+          var resourceMap = MetacatUI.rootDataPackage.packageModel;
+
+          if(resourceMap.get("isAuthorized_changePermission") == null){
+            // Re-start the rendering of this data package once we know the user is authorized to edit it.
+            this.listenToOnce(resourceMap, "change:isAuthorized_changePermission", this.renderDataPackage);
+            // Let a user know when they are not authorized to edit this data package
+            this.listenToOnce(resourceMap, "change:isAuthorized_changePermission", this.notAuthorized);
+            // Check the authority of this user
+            resourceMap.checkAuthority("changePermission");
+            return
+          }
+
           var view = this;
 
           // As the root collection is updated with models, render the UI
@@ -829,7 +842,25 @@ define(['underscore',
          * Shows a message if the user is not authorized to edit this package
          */
         notAuthorized: function(){
-          if(this.model.get("isAuthorized") || this.model.get("notFound")) return;
+
+          // Don't show the not authorized message if the metadata was not found
+          if(this.model.get("notFound")){
+            return
+          }
+
+          // Don't show the not authorized message if the user is authorized to edit the EML and the resource map
+          if(MetacatUI.rootDataPackage && MetacatUI.rootDataPackage.packageModel){
+            if(
+              MetacatUI.rootDataPackage.packageModel.get("isAuthorized_changePermission") &&
+              this.model.get("isAuthorized")
+            ){
+              return
+            }
+          } else {
+            if(this.model.get("isAuthorized")){
+              return
+            }
+          }
 
           this.$("#editor-body").empty();
           MetacatUI.appView.showAlert("You are not authorized to edit this data set.",
