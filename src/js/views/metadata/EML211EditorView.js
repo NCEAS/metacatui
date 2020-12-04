@@ -1111,7 +1111,7 @@ define(['underscore',
             var id = null;
 
             try {
-              id = $(e.target).parents("tr").data("model-pid");
+              id = $(e.target).parents("tr").data("id");
             } catch (e) {
               console.log("Error determining the identifier to show an AccessPolicyView for:", e);
             }
