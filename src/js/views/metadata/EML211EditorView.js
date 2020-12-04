@@ -1093,6 +1093,34 @@ define(['underscore',
             catch (ex) {
               console.log("Failed to clear old drafts: ", ex);
             }
+          },
+
+          /**
+           * Show the AccessPolicy view in a modal dialog
+           *
+           * This method calls the superclass method, feeding it the identifier
+           * associated with the row in the package table that was clicked. The
+           * reason for this is so the AccessPolicyView can be used for single
+           * objects (like in the Portal editor) or an entire Collection of
+           * objects, like in the EML editor: The superclass impelements the
+           * generic behavior and the subclass tweaks it.
+           *
+           * @param {EventHandler} e: The click event
+           */
+          showAccessPolicyModal: function(e) {
+            var id = null;
+
+            try {
+              id = $(e.target).parents("tr").data("model-pid");
+            } catch (e) {
+              console.log("Error determining the identifier to show an AccessPolicyView for:", e);
+            }
+
+            var model = MetacatUI.rootDataPackage.find(function(model) {
+              return model.get("id") === id;
+            });
+
+            EditorView.prototype.showAccessPolicyModal.call(this, e, model);
           }
     });
     return EML211EditorView;

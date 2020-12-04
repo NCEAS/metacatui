@@ -205,10 +205,12 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
     /**
     * Shows the AccessPolicyView for the object being edited.
-    * @param {Event} e - The event that triggered this function as a callback
+    *
+    * @param {Event} e - The click event
+    * @param {Backbone.Model | null} model - The model to show the view for. If
+    *   null, defaults to the model set for the view.
     */
-    showAccessPolicyModal: function(e){
-
+    showAccessPolicyModal: function(e, model){
       try{
 
         //If the AccessPolicy editor is disabled in this app, then exit now
@@ -216,21 +218,15 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
           return;
         }
 
-       //If the AccessPolicyView hasn't been rendered yet, then render it now
-       if( !this.$(".access-policy-view").length ){
-         this.renderAccessPolicy();
 
-         this.on("accessPolicyViewRendered", function(){
-           //Add modal classes to the access policy view
-           this.$(".access-policy-view").addClass("access-policy-view-modal modal")
-                                        .modal()
-                                        .modal("show");
-         });
-       }
-       else{
-         //Open the modal window
-         this.$(".access-policy-view-modal").modal("show");
-       }
+        this.renderAccessPolicy(model);
+
+        this.on("accessPolicyViewRendered", function(){
+          //Add modal classes to the access policy view
+          this.$(".access-policy-view").addClass("access-policy-view-modal modal")
+                                      .modal()
+                                      .modal("show");
+        });
 
       }
       catch(e){
@@ -240,9 +236,13 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
     /**
     * Renders the AccessPolicyView
-    * @param {Event} e - The event that triggered this function as a callback
+    * @param {Backbone.Model} model - Optional. The Model to render the
+    *   AccessPolicy of. If not passed, method uses the Editor's model
     */
-    renderAccessPolicy: function(){
+    renderAccessPolicy: function(model){
+      // Use specified model or default to the editor's model
+      model = model || this.model;
+
       try{
 
         //If the AccessPolicy editor is disabled in this app, then exit now
@@ -255,7 +255,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
             //If not, create a new AccessPolicyView using the AccessPolicy collection
             var accessPolicyView = new AccessPolicyView();
-            accessPolicyView.collection = thisView.model.get("accessPolicy");
+            accessPolicyView.collection = model.get("accessPolicy");
 
             //Store a reference to the AccessPolicyView on this view
             thisView.accessPolicyView = accessPolicyView;

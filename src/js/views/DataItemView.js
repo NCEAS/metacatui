@@ -44,7 +44,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 "change: percentLoaded": "updateLoadProgress", // Update the file read progress bar
                 "mouseover .remove"    : "previewRemove",
                 "mouseout  .remove"    : "previewRemove",
-                "change .private"      : "changeAccessPolicy"
+                "change .public"       : "changeAccessPolicy"
             },
 
             /* Initialize the object - post constructor */
@@ -185,6 +185,16 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 //Initialize dropdowns
                 this.$el.find(".dropdown-toggle").dropdown();
 
+                //Get the AccessPolicy for this object
+                var accessPolicy = this.model.get("accessPolicy"),
+                    checkbox = this.$(".publicprivatetoggle input"),
+                    shareButton = this.$(".sharing button");
+
+                //Check the public/private toggle if this object is private
+                if( accessPolicy && accessPolicy.isPublic() ){
+                  checkbox.prop("checked", true);
+                }
+
                 if(this.model.get("type") == "Metadata"){
                   //Add the title data-attribute attribute to the name cell
                 	this.$el.find(".name").attr("data-attribute", "title");
@@ -192,16 +202,6 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
                 }
                 else{
                 	this.$el.addClass("data");
-
-                  //Get the AccessPolicy for this object
-                  var accessPolicy = this.model.get("accessPolicy"),
-                      checkbox = this.$(".publicprivatetoggle input"),
-                      shareButton = this.$(".sharing button");
-
-                  //Check the public/private toggle if this object is private
-                  if( accessPolicy && !accessPolicy.isPublic() ){
-                    checkbox.prop("checked", true);
-                  }
 
                   //If the user is not authorized to change the permissions of
                   // this object, then disable the checkbox
@@ -988,12 +988,10 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
               if( typeof e === "undefined" || !e )
                 return;
 
-              var dataModel   = this.model,
-                  makePrivate = $(e.target).prop("checked");
+              var makePublic = $(e.target).prop("checked");
 
               //If the user has chosen to make this object private
-              if(makePrivate){
-
+              if(!makePublic){
                 //Get the existing access policy
                 var accessPolicy = this.model.get("accessPolicy");
                 if( accessPolicy ){
