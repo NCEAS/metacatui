@@ -86,8 +86,11 @@ define(['underscore',
             return this;
         },
 
-        //Create a new EML model for this view
+        /**
+        * Create a new EML model for this view
+        */
         createModel: function(){
+
           //If no pid is given, create a new EML model
           if(!this.pid)
             var model = new EML({'synced' : true});
@@ -110,8 +113,12 @@ define(['underscore',
             this.setListeners();
         },
 
-        /* Render the view */
+        /**
+        * Render the view
+        */
         render: function() {
+
+          var view = this;
 
           //Execute the superclass render() function, which will add some basic Editor functionality
           EditorView.prototype.render.call(this);
@@ -123,27 +130,91 @@ define(['underscore',
 
           //Inert the basic template on the page
           this.$el.html(this.template({
-            loading: MetacatUI.appView.loadingTemplate({ msg: "Loading editor..."}),
+            loading: MetacatUI.appView.loadingTemplate({ msg: "Starting the editor..."}),
             submitButtonText: this.submitButtonText
           }));
 
           //If we don't have a model at this point, create one
           if(!this.model) this.createModel();
 
-          //When the basic Solr metadata are retrieved, get the associated package
-          this.listenToOnce(this.model, "sync", this.getDataPackage);
+          // Before rendering the editor, we must:
+          // 1. Make sure the user is signed in
+          // 2. Fetch the metadata
+          // 3. Use the metadata to identify and then fetch the resource map
+          // 4. Make sure the user has write permission on the metadata
+          // 5. Make sure the user has write permission on the resource map
 
-          //If no object is found with this ID, then tell the user
-          this.listenToOnce(this.model, "change:notFound", this.showNotFound);
+          // As soon as we have all of the metadata information (STEP 2 complete)...
+          this.listenToOnce(this.model, "sync", function(){
 
-          //If we checked for authentication already
-          if(MetacatUI.appUserModel.get("checked")){
-            this.fetchModel();
+            // Skip the remaining steps the metadata doesn't exist.
+            if(this.model.get("notFound") == true){
+              this.showNotFound();
+              return
+            }
+
+            // STEP 3
+            // Listen for a trigger from the getDataPackage function that indicates
+            // The data package (resource map) has been retrieved.
+            this.listenToOnce(this, "dataPackageFound", function(){
+
+              var resourceMap = MetacatUI.rootDataPackage.packageModel;
+
+              // STEP 5
+              // Once we have the resource map, then check that the user is authorized to edit this package.
+              this.listenToOnce(resourceMap, "change:isAuthorized_write", function(model, authorization){
+                // Render if authorized (will show not authorized if not)
+                this.renderEditorComponents();
+              });
+              // No need to check authorization for a new resource map
+              if(resourceMap.isNew()){
+                resourceMap.set("isAuthorized_write", true)
+              } else {
+                resourceMap.checkAuthority("write");
+                this.updateLoadingText("Loading metadata...");
+              }
+
+            });
+
+            this.getDataPackage();
+
+            // STEP 4
+            // Check the authority of this user to edit the metadata
+            this.listenToOnce(this.model, "change:isAuthorized_write", function(model, authorization){
+              // Render if authorized (will show not authorized if not)
+              this.renderEditorComponents();
+            });
+            // If the model is new, no need to check for authorization.
+            if(this.model.isNew()){
+              this.model.set("isAuthorized_write", true);
+            } else {
+              this.model.checkAuthority("write");
+              this.updateLoadingText("Checking authorization...");
+            }
+          });
+
+          // STEP 1
+          // Check that the user is signed in
+          var afterAccountChecked = function(){
+            if(MetacatUI.appUserModel.get("loggedIn") == false){
+              // If they are not signed in, then show the sign-in view
+              view.showSignIn();
+            } else {
+              // STEP 2
+              // If signed in, then fetch model
+              view.fetchModel();
+            }
           }
-          //If we haven't checked for authentication yet,
-          //wait until the user info is loaded before we request the Metadata
+          // If we've already checked the user account
+          if(MetacatUI.appUserModel.get("checked")){
+            afterAccountChecked();
+          }
+          // If we haven't checked for authentication yet,
+          // wait until the user info is loaded before we request the Metadata
           else{
-            this.listenToOnce(MetacatUI.appUserModel, "change:checked", this.fetchModel);
+            this.listenToOnce(MetacatUI.appUserModel, "change:checked", function(){
+              afterAccountChecked();
+            });
           }
 
           // When the user mistakenly drops a file into an area in the window
@@ -160,134 +231,177 @@ define(['underscore',
             e.preventDefault();
           }, false);
 
-            return this;
+          return this;
         },
 
-        fetchModel: function(){
-          //If we checked for authentication and the user is not logged in
-          if(!MetacatUI.appUserModel.get("loggedIn")){
-            this.showSignIn();
+        /**
+         * Render the editor components (data package view and metadata view),
+         * or, if not authorized, render the not authorized message.
+         */
+        renderEditorComponents: function(){
+
+          if(!MetacatUI.rootDataPackage.packageModel){
+            return
           }
-          else{
+          var resMapPermission = MetacatUI.rootDataPackage.packageModel.get("isAuthorized_write"),
+              metadataPermission = this.model.get("isAuthorized_write");
+
+          if(resMapPermission === true && metadataPermission === true){
+            var view = this;
+            // Render the Data Package table
+            view.renderDataPackage();
+            // Render the metadata
+            view.renderMetadata();
+          } else if (resMapPermission === false || metadataPermission === false) {
+            this.notAuthorized();
+          }
+          
+        },
+
+        /**
+        * Fetch the metadata model
+        */
+        fetchModel: function(){
 
             //If the user hasn't provided an id, then don't check the authority and mark as synced already
             if(!this.pid){
-              this.model.set("isAuthorized", true);
               this.model.trigger("sync");
             }
             else {
-              //Get the data package when we find out the user is authorized to edit it
-              this.listenToOnce(this.model, "change:isAuthorized", this.getDataPackage);
-              //Let a user know when they are not authorized to edit this data set
-              this.listenToOnce(this.model, "change:isAuthorized", this.notAuthorized);
-
               //Fetch the model
               this.model.fetch();
-
-              //Check the authority of this user
-              this.model.checkAuthority();
             }
+        },
+        
+        /**
+         * Update the text that is shown below the spinner while the editor is loading
+         * 
+         * @param {string} message - The message to display
+         */
+        updateLoadingText: function(message){
+          try {
+            if(!message || typeof message != "string"){
+              console.log("Was not able to update the loading message, left it as-is. A message must be provided to the updateLoadingText function");
+              return
+            }
+            var loadingPara = this.$el.find(".loading > p");
+            if(loadingPara){
+              loadingPara.text(message)
+            }
+          } catch (error) {
+            console.log("Was not able to update the loading message, left it as-is. Error details: " + error);
+          }
+        },
+
+        /**
+        * Get the data package (resource map) associated with the EML. Save it to MetacatUI.rootDataPackage.
+        * The metadata model must already be synced, and the user must be authorized to edit the EML before this function
+        * can run.
+        * @param {Model} scimetaModel - The science metadata model for which to find the associated data package
+        */
+        getDataPackage: function(scimetaModel) {
+
+          if(!scimetaModel)
+            var scimetaModel = this.model;
+
+          // Check if this package is obsoleted
+          if(this.model.get("obsoletedBy")){
+            this.showLatestVersion();
+            return;
+          }
+          
+          var resourceMapIds = scimetaModel.get("resourceMap");
+
+          // Case 1: No resource map PID found in the metadata
+          if ( typeof resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
+              
+              // 1A: Check if the rootDataPackage contains the metadata document the user is trying to edit.
+              // Ensure the resource map is not new. If it's a previously unsaved map, then getLatestVersion
+              // will result in a 404.
+              if(
+                MetacatUI.rootDataPackage &&
+                MetacatUI.rootDataPackage.pluck &&
+                !MetacatUI.rootDataPackage.packageModel.isNew() &&
+                _.contains(MetacatUI.rootDataPackage.pluck("id"), this.model.get("id"))
+              ){
+
+                // Remove the cached system metadata XML so we retrieve it again
+                MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
+                this.getLatestResouceMap();
+
+              }
+
+              // 1B. If the root data package does not contain the metadata the user is trying to edit,
+              // then create a new data package.
+              else {
+
+                console.log("Resource map ids could not be found for " + scimetaModel.id + ", creating a new resource map.");
+
+                // Create a new DataPackage collection for this view
+                this.createDataPackage();
+                this.trigger("dataPackageFound");
+                // Set the listeners
+                this.setListeners();
+              }
+
+          // Case 2: A resource map PID was found in the metadata
+          } else {
+
+              // Create a new data package with this id
+              MetacatUI.rootDataPackage = new DataPackage([this.model], {id: resourceMapIds[0]});
+
+              //Handle the add of the metadata model
+              MetacatUI.rootDataPackage.saveReference(this.model);
+
+              // 2A. If there is more than one resource map, we need to make sure we fetch the most recent one
+              if ( resourceMapIds.length > 1 ) {
+                this.getLatestResouceMap();
+
+              // 2B. Just one resource map found
+              } else {
+
+                this.listenToOnce(MetacatUI.rootDataPackage, "sync", function(){
+                  this.trigger("dataPackageFound");
+                })
+                // Fetch the data package
+                MetacatUI.rootDataPackage.fetch();
+              }
 
           }
 
         },
+ 
+        
+        /**
+         * Get the latest version of the resource map model stored in MetacatUI.rootDataPackage.packageModel.
+         * When the newest resource map is synced, the "dataPackageFound" event will be triggered.
+         */
+        getLatestResouceMap: function(){
 
-        /* Get the data package associated with the EML */
-        getDataPackage: function(scimetaModel) {
+          try {
 
-            if(!this.model.get("synced") || !this.model.get("isAuthorized")) return;
-
-            if(!scimetaModel)
-              var scimetaModel = this.model;
-
-            //Check if this package is obsoleted
-            if(this.model.get("obsoletedBy")){
-              this.showLatestVersion();
-              return;
+            if(!MetacatUI.rootDataPackage || !MetacatUI.rootDataPackage.packageModel){
+              console.log("Could not get the latest verion of the resource map because no resource map is saved.");
+              return
             }
-
-            var resourceMapIds = scimetaModel.get("resourceMap");
-
-            if ( typeof resourceMapIds === "undefined" || resourceMapIds === null || resourceMapIds.length <= 0 ) {
-                console.log("Resource map ids could not be found for " + scimetaModel.id);
-
-                //Check if the rootDataPackage contains the metadata document the user is trying to edit
-                if( MetacatUI.rootDataPackage && MetacatUI.rootDataPackage.pluck &&
-                  _.contains(MetacatUI.rootDataPackage.pluck("id"), this.model.get("id")) ){
-
-                    //Make sure we have the latest version of the resource map before we allow editing
-                    this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "latestVersionFound", function(model) {
-                      //Create a new data package for the latest version package
-                      MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
-
-                      //Handle the add of the metadata model
-                      MetacatUI.rootDataPackage.saveReference(this.model);
-
-                       //Fetch the data package
-                       MetacatUI.rootDataPackage.fetch();
-
-                       //Render the Data Package table
-                       this.renderDataPackage();
-                   });
-
-                   //Remove the cached system metadata XML so we retrieve it again
-                   MetacatUI.rootDataPackage.packageModel.set("sysMetaXML", null);
-                   //Find the latest version of the resource map
-                   MetacatUI.rootDataPackage.packageModel.findLatestVersion();
-
-                }
-                else{
-                  //Create a new DataPackage collection for this view
-                  this.createDataPackage();
-
-                  // Set the listeners
-                  this.setListeners();
-
-                  //Render the data package
-                  this.renderDataPackage();
-
-                  //Render the metadata
-                  this.renderMetadata();
-                }
-
-            } else {
-                // Create a new data package with this id
-                MetacatUI.rootDataPackage = new DataPackage([this.model], {id: resourceMapIds[0]});
-
-                //Handle the add of the metadata model
-                MetacatUI.rootDataPackage.saveReference(this.model);
-
-                // If there is more than one resource map, we need to make sure we fetch the most recent one
-                if ( resourceMapIds.length > 1 ) {
-
-                //Now, find the latest version
-                this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "change:latestVersion", function(model) {
-                        //Create a new data package for the latest version package
-                        MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
-
-                        //Handle the add of the metadata model
-                        MetacatUI.rootDataPackage.saveReference(this.model);
-
-                         //Fetch the data package
-                         MetacatUI.rootDataPackage.fetch();
-
-                         //Render the Data Package table
-                         this.renderDataPackage();
-                     });
-
-                     MetacatUI.rootDataPackage.packageModel.findLatestVersion();
-
-                    return;
-
-                }
-
-                //Fetch the data package
-                MetacatUI.rootDataPackage.fetch();
-
-                //Render the Data Package table
-                this.renderDataPackage();
-            }
-
+            // Make sure we have the latest version of the resource map before we allow editing
+            this.listenToOnce(MetacatUI.rootDataPackage.packageModel, "latestVersionFound", function(model) {
+              //Create a new data package for the latest version package
+              MetacatUI.rootDataPackage = new DataPackage([this.model], { id: model.get("latestVersion") });
+              //Handle the add of the metadata model
+              MetacatUI.rootDataPackage.saveReference(this.model);
+              this.listenToOnce(MetacatUI.rootDataPackage, "sync", function(){
+                this.trigger("dataPackageFound");
+              })
+              // Fetch the data package
+              MetacatUI.rootDataPackage.fetch();
+            });
+            
+            //Find the latest version of the resource map
+            MetacatUI.rootDataPackage.packageModel.findLatestVersion(); 
+          } catch (error) {
+            console.log("Error attempting to find the latest version of the resource map. Error details: " + error);
+          }
         },
 
         /*
@@ -321,19 +435,10 @@ define(['underscore',
 
         },
 
+        /**
+         * Render the Data Package View and insert it into this view
+         */
         renderDataPackage: function(){
-
-          var resourceMap = MetacatUI.rootDataPackage.packageModel;
-
-          if(resourceMap.get("isAuthorized_changePermission") == null){
-            // Re-start the rendering of this data package once we know the user is authorized to edit it.
-            this.listenToOnce(resourceMap, "change:isAuthorized_changePermission", this.renderDataPackage);
-            // Let a user know when they are not authorized to edit this data package
-            this.listenToOnce(resourceMap, "change:isAuthorized_changePermission", this.notAuthorized);
-            // Check the authority of this user
-            resourceMap.checkAuthority("changePermission");
-            return
-          }
 
           var view = this;
 
@@ -395,7 +500,10 @@ define(['underscore',
             this.listenTo(MetacatUI.rootDataPackage.packageModel, "change:childPackages", this.renderChildren);
         },
 
-        /* Calls the appropriate render method depending on the model type */
+        
+        /**
+         * Calls the appropriate render method depending on the model type
+         */
         renderMember: function(model, collection, options) {
 
             // Render metadata or package information, based on the type
@@ -425,7 +533,10 @@ define(['underscore',
             }
         },
 
-        /* Renders the metadata section of the EML211EditorView */
+        
+        /**
+         * Renders the metadata section of the EML211EditorView
+         */
         renderMetadata: function(model, collection, options){
 
           if(!model && this.model) var model = this.model;
@@ -503,7 +614,10 @@ define(['underscore',
 
         },
 
-        /* Renders the data package section of the EML211EditorView */
+        
+        /**
+         * Renders the data package section of the EML211EditorView
+         */
         renderDataPackageItem: function(model, collection, options) {
 
             var hasPackageSubView =
@@ -648,7 +762,6 @@ define(['underscore',
          */
         saveError: function(errorMsg){
 
-
           var errorId = "error" + Math.round(Math.random()*100),
               messageContainer = $(document.createElement("div")).append(document.createElement("p")),
               messageParagraph = messageContainer.find("p"),
@@ -725,6 +838,10 @@ define(['underscore',
           this.hideSaving();
         },
 
+        
+        /**
+         * Find the most recently updated version of the metadata
+         */
         showLatestVersion: function(){
           var view = this;
 
@@ -749,8 +866,10 @@ define(['underscore',
               MetacatUI.appView.showAlert("You've been forwarded to the newest version of your dataset for editing.",
                   "alert-warning", this.$el, 12000, { remove: true });
             }
-            else
+            else{
               view.getDataPackage();
+            }
+              
           });
 
           //Find the latest version of this metadata object
@@ -844,9 +963,7 @@ define(['underscore',
         notAuthorized: function(){
 
           // Don't show the not authorized message if the metadata was not found
-          if(this.model.get("notFound")){
-            return
-          }
+          if(this.model.get("isAuthorized") || this.model.get("notFound")) return;
 
           // Don't show the not authorized message if the user is authorized to edit the EML and the resource map
           if(MetacatUI.rootDataPackage && MetacatUI.rootDataPackage.packageModel){
@@ -871,7 +988,10 @@ define(['underscore',
           this.model.off();
         },
 
-        /* Toggle the editor footer controls (Save bar) */
+        
+        /**
+         * Toggle the editor footer controls (Save bar)
+         */
         toggleControls: function() {
             if ( MetacatUI.rootDataPackage &&
                  MetacatUI.rootDataPackage.packageModel &&
@@ -884,6 +1004,9 @@ define(['underscore',
             }
         },
 
+        /**
+         * Show any errors that occured when trying to save changes
+         */
         showValidation: function(){
 
           //First clear all the error messaging
@@ -1010,13 +1133,12 @@ define(['underscore',
           this.undelegateEvents();
 
         },
-
-        /*
-            Handle "fileLoadError" events by alerting the user
-            and removing the row from the data package table.
-
-            @param item The model item passed by the fileLoadError event
-         */
+        
+          /**
+           *  Handle "fileLoadError" events by alerting the user
+           * and removing the row from the data package table.
+           * @param  {DataONEObject} item The model item passed by the fileLoadError event
+           */
           handleFileLoadError: function(item) {
               var message;
               var fileName;
@@ -1035,12 +1157,11 @@ define(['underscore',
               MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
           },
 
-        /*
-            Handle "fileReadError" events by alerting the user
-            and removing the row from the data package table.
-
-            @param item The model item passed by the fileReadError event
-         */
+          /**
+           * Handle "fileReadError" events by alerting the user
+           * and removing the row from the data package table.
+           * @param  {DataONEObject} item The model item passed by the fileReadError event
+           */
           handleFileReadError: function(item) {
               var message;
               var fileName;
@@ -1062,6 +1183,7 @@ define(['underscore',
               }
               MetacatUI.appView.showAlert(message, "alert-info", this.el, 10000, {remove: true});
           },
+          
           /**
            * Save a draft of the parent EML model
            */
