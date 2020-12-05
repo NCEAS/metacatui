@@ -964,9 +964,6 @@ define(['underscore',
          */
         notAuthorized: function () {
 
-          // Don't show the not authorized message if the metadata was not found
-          if (this.model.get("isAuthorized") || this.model.get("notFound")) return;
-
           // Don't show the not authorized message if the user is authorized to edit the EML and the resource map
           if (MetacatUI.rootDataPackage && MetacatUI.rootDataPackage.packageModel) {
             if (
