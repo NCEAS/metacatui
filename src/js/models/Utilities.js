@@ -5,11 +5,17 @@ define(['jquery', 'underscore'],
 
 	/**
   * @namespace {object} Utilities
-  * A generic utility object that contains functions used throughout MetacatUI to perform useful functions,
+  * @description A generic utility object that contains functions used throughout MetacatUI to perform useful functions,
   * but not used to store or manipulate any state about the application.
   */
 	var Utilities = {
 
+    /**
+    * HTML-encodes the given string so it can be inserted into an HTML page without running
+    * any embedded Javascript.
+    * @param {string} s
+    * @returns {string}
+    */
     encodeHTML: function(s) {
 
       try{

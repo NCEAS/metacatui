@@ -8,6 +8,7 @@ define(["jquery", "underscore", "backbone", "models/bookkeeper/Quota"],
    * @classdesc Quotas are limits set for a particular DataONE Product, such as the number
    * of portals allowed, disk space allowed, etc. Quotas have a soft and hard limit
    * per unit to help with communicating limit warnings.
+   * @classcategory Collections/Bookkeeper
    */
   var Quotas = Backbone.Collection.extend(
     /** @lends Quotas.prototype */ {

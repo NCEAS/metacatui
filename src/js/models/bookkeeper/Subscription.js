@@ -10,7 +10,7 @@ define(["jquery",
      * and is paid for on a recurring basis or is in a free trial period.
      * See https://github.com/DataONEorg/bookkeeper for documentation on the
      * DataONE Bookkeeper service and data model.
-     *
+     * @classcategory Models/Bookkeeper
      * @class Subscription
      * @name Subscription
      * @constructor

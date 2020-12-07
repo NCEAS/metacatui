@@ -9,7 +9,7 @@ define(["jquery",
      * A Quota can be associated with multiple Usages.
      * See https://github.com/DataONEorg/bookkeeper for documentation on the
      * DataONE Bookkeeper service and data model.
-     *
+     * @classcategory Models/Bookkeeper
      * @class Usage
      * @name Usage
      * @constructor

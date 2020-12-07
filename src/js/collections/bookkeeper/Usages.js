@@ -9,6 +9,7 @@ define(["jquery", "underscore", "backbone", "models/bookkeeper/Usage", "models/b
    * objects that use a portion of a Quota. Each Quota is associated with one or more
    * Usage models, so this collection keeps all those associated Usages together in one collection.
    * This collection also stores a reference to the Quota model associated with these Usages.
+   * @classcategory Collections/Bookkeeper
    */
   var Usages = Backbone.Collection.extend(
     /** @lends Usages.prototype */ {

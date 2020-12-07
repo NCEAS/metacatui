@@ -25,6 +25,7 @@ define([
     /**
      * @class QueryRule
      * @classdesc A view that provides an UI for a user to construct a single filter that is part of a complex query
+     * @classcategory Views/QueryBuilder
      * @extends Backbone.View
      * @constructor
      */

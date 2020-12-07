@@ -1,10 +1,10 @@
 /**
- * @file Fix browser compatibility issues, especially with IE11 and earlier.
+ * Fix browser compatibility issues, especially with IE11 and earlier.
  */
 
 /**
  * String.trim() function for IE
- */ 
+ */
 if (typeof String.prototype.trim !== 'function') {
   String.prototype.trim = function() {
     return this.replace(/^\s+|\s+$/g, '');
@@ -13,7 +13,7 @@ if (typeof String.prototype.trim !== 'function') {
 
 /**
  * startsWith() - IE 8 and earlier
- */ 
+ */
 if (!String.prototype.startsWith) {
   String.prototype.startsWith = function(searchString, position) {
     position = position || 0;
@@ -23,7 +23,7 @@ if (!String.prototype.startsWith) {
 
 /**
  * String.endsWith() - IE 8 and earlier
- */ 
+ */
 if (!String.prototype.endsWith) {
   String.prototype.endsWith = function(searchString, position) {
     var subjectString = this.toString();
@@ -37,8 +37,8 @@ if (!String.prototype.endsWith) {
 }
 
 /**
- * Array.isArray() - IE 8 and earlier 
- */ 
+ * Array.isArray() - IE 8 and earlier
+ */
 if (!Array.isArray) {
   Array.isArray = function(arg) {
     return Object.prototype.toString.call(arg) === '[object Array]';
@@ -72,7 +72,7 @@ if (!Array.isArray) {
  * Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
  * Production steps of ECMA-262, Edition 5, 15.4.4.19
  * Reference: http://es5.github.io/#x15.4.4.19
- */ 
+ */
 if (!Array.prototype.map) {
 
   Array.prototype.map = function(callback, thisArg) {
@@ -166,7 +166,7 @@ if (!Array.prototype.map) {
  * from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach#Polyfill
  * Production steps of ECMA-262, Edition 5, 15.4.4.18
  * Reference: http://es5.github.io/#x15.4.4.18
- */ 
+ */
 if (!Array.prototype.forEach) {
 
   Array.prototype.forEach = function(callback, thisArg) {
@@ -227,7 +227,7 @@ if (!Array.prototype.forEach) {
 /**
  * Object.keys()
  * From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys
- */ 
+ */
 if (!Object.keys) {
   Object.keys = (function() {
     'use strict';
@@ -277,7 +277,7 @@ if (!Object.keys) {
  * Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf#Polyfill
  * Production steps of ECMA-262, Edition 5, 15.4.4.14
  * Reference: http://es5.github.io/#x15.4.4.14
- */ 
+ */
 if (!Array.prototype.indexOf) {
   Array.prototype.indexOf = function(searchElement, fromIndex) {
 
@@ -341,14 +341,14 @@ if (!Array.prototype.indexOf) {
 /**
  * NodeList.forEach, which isn't supported in IE at all, or Edge before v16.
  * https://developer.mozilla.org/en-US/docs/Web/API/NodeList/forEach#Polyfill
- */ 
+ */
 if (window.NodeList && !NodeList.prototype.forEach) {
   NodeList.prototype.forEach = Array.prototype.forEach;
 }
 
 /**
  * For Object.assign()
- */ 
+ */
 if (typeof Object.assign != 'function') {
   // Must be writable: true, enumerable: false, configurable: true
   Object.defineProperty(Object, "assign", {
@@ -382,7 +382,7 @@ if (typeof Object.assign != 'function') {
 /**
  * Array.includes()
  * Taken from https://github.com/kevlatus/polyfill-array-includes#readme
- */ 
+ */
  if (!Array.prototype.includes) {
    Object.defineProperty(Array.prototype, 'includes', {
      value: function (searchElement, fromIndex) {
@@ -445,7 +445,7 @@ if (!Math.log2) {
 
 /**
  * A function to parse ISO date strings for IE8 and other older browsers
- */ 
+ */
 (function() {
   var D = new Date('2011-06-02T09:34:29+02:00');
   if (!D || +D !== 1307000069000) {

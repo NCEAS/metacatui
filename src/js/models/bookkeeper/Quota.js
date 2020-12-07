@@ -10,7 +10,7 @@ define(["jquery",
      * allowed, etc. Quotas have a soft and hard limit per unit to help with communicating limit warnings.
      * See https://github.com/DataONEorg/bookkeeper for documentation on the
      * DataONE Bookkeeper service and data model.
-     *
+     * @classcategory Models/Bookkeeper
      * @class Quota
      * @name Quota
      * @constructor

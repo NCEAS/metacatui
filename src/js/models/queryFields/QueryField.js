@@ -11,16 +11,17 @@ define(
      * CNRead.getQueryEngineDescription() function. For more information, see:
      * https://indexer-documentation.readthedocs.io/en/latest/generated/solr_schema.html
      * https://dataone-architecture-documentation.readthedocs.io/en/latest/design/SearchMetadata.html
+     * @classcategory Models/QueryFields
      * @name QueryField
      * @extends Backbone.Model
      */
-    var QueryField = Backbone.Model.extend({
-      /** @lends QueryField */
-      
+    var QueryField = Backbone.Model.extend(
+      /** @lends QueryField.prototype */ {
+
       /**
        * Overrides the default Backbone.Model.defaults() function to
        * specify default attributes for the query fields model
-       * 
+       *
        * @return {object}
        */
       defaults: function() {
@@ -40,26 +41,26 @@ define(
           label: null,
         };
       },
-      
-      
-      /**      
+
+
+      /**
        * initialize - When a new query field is created, set the label, category,
-       * and filterType attributes   
-       */       
+       * and filterType attributes
+       */
       initialize: function(attrs, options){
-        
+
         // Set a human-readable label
         var label = this.getReadableName();
         if(label){
           this.set("label", label);
         }
-        
+
         // Set an easier to read description
         var friendlyDescription = this.getFriendlyDescription();
         if(friendlyDescription){
           this.set("friendlyDescription", friendlyDescription);
         }
-        
+
         // Set a category and icon
         var category = this.getCategory();
         if (category){
@@ -73,21 +74,21 @@ define(
             this.set("categoryOrder", category.index);
           }
         }
-      
+
         // Set a filter type
         var filterType = this.getFilterType();
         if (filterType){
           this.set("filterType", filterType)
         }
-        
+
       },
-      
-      /**      
+
+      /**
        * aliases - Returns a map that matches query field names (key) to a more
        * human readable alias (value).
-       *        
+       *
        * @return {object}  A map of field names as keys and aliases (string) as values.
-       */       
+       */
       aliases: function(){
         return {
           abstract: "Abstract",
@@ -146,13 +147,13 @@ define(
           writePermission: "Can Edit"
         }
       },
-      
-      /**      
+
+      /**
        * descriptions - Returns a map that matches query field names (key) to a
        * more understandable description to use for the field.
-       *        
+       *
        * @return {object}  A map of field names as keys and descriptions (string) as values.
-       */       
+       */
       descriptions: function(){
         return {
           serviceDescription: "A full description of the service that can be used to download the dataset",
@@ -219,12 +220,12 @@ define(
           siteText: "The name or description of the physical location where the data were collected"
         }
       },
-      
-      /**             
+
+      /**
        * filterTypesMap -  Returns a map that matches every type of query field
        * available in the index to the appropriate filter to use
        * @return {object}  Returns an object where the keys are the nodenames of
-       *  the filters to use and the values are an array of the associated query types. 
+       *  the filters to use and the values are an array of the associated query types.
        *  The query types in the array must exactly match the query types in the
        *  type attribute of a query field model.
        */
@@ -236,7 +237,7 @@ define(
           dateFilter : ["tdate"]
         }
       },
-      
+
       /**
        * @typedef {Object} CategoryMap - An object that defines a single category for each field.
        * In addition to a label and icon property, each CategoryMap should have a queryTypes
@@ -247,13 +248,13 @@ define(
        * @property {string[]} queryFields - As an alternative to grouping fields by type, they may also be grouped by field name. Use this property instead of queryTypes to list fields by their name attribute.
        * @property {boolean} default - Set to true for one category. Any fields that don't match another category will be placed here.
        */
-      /**      
+      /**
        * categoriesMap - Returns an array of objects that can be used to
        * add a general category and icon to a query field model. Each object
        * in the array comprises a label (string)
-       *        
+       *
        * @return {CategoryMap[]}  Returns an array of objects that define how to categorize fields.
-       */       
+       */
       categoriesMap: function(){
         return [
           {
@@ -339,7 +340,7 @@ define(
           {
             label: "File details",
             icon: "file",
-            queryFields: [ 
+            queryFields: [
               "fileName", "formatId", "size",
             ],
           },
@@ -380,23 +381,23 @@ define(
           // },
         ]
       },
-      
-      /**      
+
+      /**
        * getReadableName - Creates and returns a more human-friendly label for the field
-       *        
+       *
        * @return {string}  A humanized alias for the field
-       */       
+       */
       getReadableName: function(){
-        
+
         try {
           var name  =  this.get("name"),
               alias =  this.aliases()[name];
-          
+
           // First see if there's an alias
           if(alias){
             return alias;
           }
-          
+
           // Otherwise, humanize the camel-cased field
           return name
             // Replace "MN" at the end of a name with "Repository"
@@ -409,12 +410,12 @@ define(
             .trim()
             // Uppercase the first character
             .replace(/^./, function(str){ return str.toUpperCase(); })
-          
+
         } catch (e) {
           console.log("Failed to create a readable name for a Query Field, error message: " + e);
         }
       },
-      
+
       getFriendlyDescription: function(){
         try {
           var name  =  this.get("name");
@@ -423,30 +424,30 @@ define(
           console.log("Failed to create a readable name for a Query Field, error message: " + e);
         }
       },
-      
-      /**      
-       * getCategory - Finds the matching category for this field based on the 
+
+      /**
+       * getCategory - Finds the matching category for this field based on the
        * categoriesMap. The function will first check for a matching field name,
        * and if not found, will match by field type.
-       *        
+       *
        * @return {object}  returns an object with an icon and category property (both strings)
-       */       
+       */
       getCategory: function(){
         try {
-          
+
           var categoriesMap = this.categoriesMap(),
               fieldType = this.get("type"),
               fieldName = this.get("name"),
               match = null,
               category = {};
-            
+
             // First check for a matching field name.
             match = _.find(categoriesMap, function(category){
               if(category.queryFields){
                 return category.queryFields.includes(fieldName);
               }
             });
-            
+
             // If a matching field name wasn't found, then match by field type.
             if(!match){
               match = _.find(categoriesMap, function(category){
@@ -455,57 +456,57 @@ define(
                 }
               });
             }
-            
+
             // If there's still no match, look for the default category
             if(!match){
               var match = _.find(categoriesMap, function(category){
                 return category.default
               });
             }
-            
+
             if(match){
               match.index = _.indexOf(categoriesMap, match) + 1;
             }
-            
+
             return match
-          
+
         } catch (e) {
           console.log("Failed to categorize a Query Field, error message: " + e);
         }
       },
-      
-      
-      /**      
+
+
+      /**
        * getFilterType - Searches the filterTypesMap and returns the filter type
        * that is required for this query field
-       *        
+       *
        * @return {string}  The nodeName of the filter that should be used for this query field
-       */       
+       */
       getFilterType: function(){
         try {
           var filterMap = this.filterTypesMap(),
               fieldType = this.get("type"),
               filterType = null;
-          
+
           for (const [key, value] of Object.entries(filterMap)) {
             if (value.includes(fieldType)){
               filterType = key
             }
           }
-          
+
           return filterType;
-          
+
         } catch (e) {
           console.log("Failed to find a matching filter type for a Query Field, error message: " + e);
         }
       },
-      
-      /**      
+
+      /**
        * isType - Checks if this field is a certian type
-       *        
+       *
        * @param  {string} type the solr field type
        * @return {boolean}     returns true of the field exactly matches
-       */       
+       */
       isType: function(type){
         try {
           return this.get('type') === type
@@ -514,9 +515,9 @@ define(
         }
       },
 
-      /**    
+      /**
        * Overwrites the Backbone save function because query fields are read only
-       *      
+       *
        * @return {boolean}  always returns false
        */
       save: function() {

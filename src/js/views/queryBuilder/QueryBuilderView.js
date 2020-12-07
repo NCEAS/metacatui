@@ -12,6 +12,7 @@ define(["jquery",
      * @class QueryBuilder
      * @classdesc A view that provides a UI for users to construct a complex
      * search through the DataONE Solr index
+     * @classcategory Views/QueryBuilder
      * @extends Backbone.View
      * @constructor
      */
