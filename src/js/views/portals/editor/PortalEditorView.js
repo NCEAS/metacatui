@@ -885,8 +885,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       this.hideLoading();
 
-      var notFoundMessage = "The portal \"" + (this.model.get("label") || this.portalIdentifier) +
-                            "\" doesn't exist.";
+      var notFoundMessage = $(document.createElement("p")).text("The " + MetacatUI.appModel.get("portalTermSingular") + " ");
+      notFoundMessage.append( $(document.createElement("span")).text(this.model.get("label") || this.portalIdentifier) )
+                     .append( $(document.createElement("span")).text(" doesn't exist.") );
 
       MetacatUI.appView.showAlert(notFoundMessage, "alert-error non-fixed", this.$el, undefined, { remove: true });
     },
