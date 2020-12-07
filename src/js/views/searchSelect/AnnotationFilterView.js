@@ -13,6 +13,7 @@ define(
      * @class AnnotationFilter
      * @classdesc A view that renders an annotation filter interface, which uses
      * the bioportal tree search to select ontology terms.
+     * @classcategory Views/SearchSelect
      * @extends Backbone.View
      * @constructor
      */
@@ -30,26 +31,26 @@ define(
          * @type {string}
          */
         className: "annotation-filter",
-        
-        /**        
+
+        /**
          * The selector for the element that will show/hide the annotation
          * popover interface when clicked. Searches within body.
-         * @type {string}        
-         */         
+         * @type {string}
+         */
         popoverTriggerSelector: "",
-        
-        /**        
+
+        /**
          * If set to true, instead of showing the annotation tree interface in
          * a popover, show it in a multi-select input interface, which allows
-         * the user to select multiple annotations.        
-         * @type {boolean}      
-         */         
+         * the user to select multiple annotations.
+         * @type {boolean}
+         */
         multiselect: false,
-        
-        /**        
-         * The URL that indicates the concept where the tree should start        
+
+        /**
+         * The URL that indicates the concept where the tree should start
          * @type {string}
-         */         
+         */
         startingRoot: "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#MeasurementType",
 
         /**
@@ -72,21 +73,21 @@ define(
           }
         },
 
-        /**        
+        /**
          * render - Render the view
-         *          
+         *
          * @return {AnnotationFilter}  Returns the view
          */
         render: function() {
           try {
-            
+
             if(!MetacatUI.appModel.get("bioportalAPIKey")){
               console.log("A bioportal key is required for the Annotation Filter View. Please set a key in the MetacatUI config. The view will not render.");
               return
             }
-            
+
             var view = this;
-            
+
             if(view.multiselect){
               view.createMultiselect()
             } else {
@@ -102,13 +103,13 @@ define(
           }
         },
 
-        /**        
+        /**
          * setUpTree - Create the HTML for the annotation tree
          */
         setUpTree: function() {
 
           try {
-            
+
             var view = this;
 
             view.treeEl = $('<div id="bioportal-tree"></div>').NCBOTree({
@@ -132,18 +133,18 @@ define(
           }
 
         },
-        
-        /**        
+
+        /**
          * createMultiselect - Create a searchable multi-select interface
          * that includes an annotation filter tree.
-         */         
+         */
         createMultiselect: function(){
-          
+
           try {
             var view = this;
-            
-            require(["views/selectUI/SearchableSelectView"], function(SearchableSelect){
-              
+
+            require(["views/searchSelect/SearchableSelectView"], function(SearchableSelect){
+
               view.multiSelectView = new SearchableSelect({
                 allowMulti: true,
                 allowAdditions: false,
@@ -164,23 +165,23 @@ define(
             console.log("Failed to create the multi-select interface for an Annotation Filter View, error message: " + e);
           }
         },
-        
-        /**        
+
+        /**
          * updateMultiselect - Functions to run once a SearchableSelect view has
          * been rendered and inserted into this view, and the labels for any
          * pre-selected annotation values have been fetched. Updates the
          * hidden menu of items and the selected items.
-         */         
+         */
         updateMultiselect: function(){
-          
+
           try {
             var view = this;
-            
+
             if(!view.multiSelectView.ready){
               view.listenToOnce(view.multiSelectView, "postRender", view.updateMultiselect);
               return
             }
-            
+
             // Check if this is the first time we are updating this multiselect.
             // If it is, then don't trigger the event that updates the model,
             // because nothing has changed.
@@ -189,10 +190,10 @@ define(
             } else {
               view.updateMultiselectTimes++
             }
-            
+
             // Re-init the tree
             view.setUpTree();
-            
+
             // Re-render the multiselect menu with the new options. These options
             // will be hidden from view, but they must be present in the DOM for
             // the multi-select interface to function correctly.
@@ -211,60 +212,60 @@ define(
               var newValues = _.reject(view.selected, function(val){ return val === "" });
               view.multiSelectView.changeSelection(newValues, silent);
             }, 25);
-            
+
             // Add the annotation tree to the menu content
             view.multiSelectView.$el.find(".menu").append(view.treeContent);
             view.searchInput = view.multiSelectView.$selectUI.find("input");
-            
+
             // Simulate a search in the annotation tree when the user
             // searches in the multiSelect interface
             view.searchInput.on("keyup", function(e){
               var treeInput = view.treeContent.find("input.ncboAutocomplete");
               treeInput.val(e.target.value).keydown();
             });
-            
+
             view.setListeners();
-            
+
           } catch (e) {
             console.log("Failed to update an annotation filter with selected values, error message: " + e);
           }
-            
+
         },
-        
-        /**        
+
+        /**
          * getClassLabels - Given an array of bioontology IDs set in
          * view.selected, query the bioontology API to find the user-friendly
          * labels (prefLabels)
-         * 
+         *
          * @param  {function} callback A function to call once the labels have
          * been found (or not). The function will be called with the formatted
          * response: an array with an object for each ID with the properties
          * value (the original ID) and label (the user-friendly label, or the
          * value again if no label was found)
-         */         
+         */
         getClassLabels: function(callback){
-          
+
           try {
             var view = this;
-            
+
             if(!view.selected || !view.selected.length){
               return
             }
-            
+
             const ontologyCollection = _.map(view.selected, function(id){
               return {
                 "class" : id,
                 "ontology": "http://data.bioontology.org/ontologies/ECSO"
               }
             });
-            
+
             const bioData = JSON.stringify({
               "http://www.w3.org/2002/07/owl#Class": {
                 "collection": ontologyCollection,
                 "display": "prefLabel"
               }
             });
-            
+
             const formatResponse = function(response, success){
               if(view.options === undefined){
                 view.options = []
@@ -281,7 +282,7 @@ define(
                 }
               })
             }
-            
+
             // Get the pre-selected values
             $.ajax({
               type: "POST",
@@ -308,15 +309,15 @@ define(
           } catch (e) {
             console.log("Failed to fetch labels for bioontology IDs, error message: " + e);
           }
-          
+
         },
-        
-        /**        
+
+        /**
          * createPopoverHTML - Create the HTML for annotation filters that are
          * displayed as a popup (e.g. in the search catalog)
-         *          
-         * @return {type}  description         
-         */         
+         *
+         * @return {type}  description
+         */
         createPopoverHTML: function(){
           try {
             var view = this;
@@ -354,11 +355,11 @@ define(
             console.log("Failed to create popover HTML for an annotation filter, error message: " + e);
           }
         },
-        
-        /**        
+
+        /**
          * setListeners - Sets listeners on the tree elements. Must be run
          * after the tree HTML is created.
-         */         
+         */
         setListeners: function(){
           try {
             var view = this;
@@ -401,23 +402,23 @@ define(
             console.log("Failed to set listeners in an Annotation Filter View, error message: " + e);
           }
         },
-        
-        /**        
+
+        /**
          * selectConcept - Actions that are performed after the user selects
          * a concept from the annotation tree interface. Triggers an event for
          * any parent views, hides and resets the annotation popup.
-         *          
+         *
          * @param  {object} event        The "afterSelect" event
          * @param  {string} classId      The ID for the selected concept (a URL)
          * @param  {string} prefLabel    The label for the selected concept
          * @param  {jQuery} selectedNode The element that was clicked
-         */         
+         */
         selectConcept: function(event, classId, prefLabel, selectedNode) {
 
           try {
-            
+
             var view = this;
-            
+
             // Get the concept info
             var item = {
               value: classId,
@@ -428,37 +429,37 @@ define(
 
             // Trigger an event so that the parent view can update filters, etc.
             view.trigger("annotationSelected", event, item);
-            
+
             // Hide the popover
             if(!view.multiselect){
               var annotationFilterEl = $(view.popoverTriggerSelector);
               annotationFilterEl.trigger("click");
               $(selectedNode).trigger("mouseout");
               view.resetTree();
-            
+
             // Update the multi-select with the new options
             } else {
               view.options.push(item);
               view.selected.push(item.value);
               view.updateMultiselect();
             }
-            
+
             // Ensure tooltips are removed
             $("body > .tooltip").remove();
 
             // Prevent default action
             return false;
-            
+
           } catch (e) {
             console.log("Failed to select an annotation concept, error message: " + e);
           }
 
         },
-        
-        /**        
+
+        /**
          * afterExpand - Actions to perform when the user expands a concept in
          * the tree
-         */         
+         */
         afterExpand: function() {
           try {
             // Ensure tooltips are activated
@@ -467,16 +468,16 @@ define(
             console.log("Failed to initialize tooltips in the annotation filter, error message: " + e);
           }
         },
-        
-        /**        
+
+        /**
          * afterJumpToClass - Called when a user searches for and selects a
          * concept from the search results
-         *          
+         *
          * @param  {type} event   The jump to class event
          * @param  {type} classId The ID for the selected concept (a URL)
-         */         
+         */
         afterJumpToClass: function(event, classId) {
-          
+
           try {
             var view = this;
             // Re-root the tree at this concept
@@ -491,18 +492,18 @@ define(
 
             // Ensure the tooltips are activated
             $(".tooltip-this").tooltip();
-            
+
           } catch (e) {
             console.log("Failed to re-render the annotation filter after jump to class, error message: " + e);
           }
 
         },
-        
-        /**               
+
+        /**
          * jumpUp -  Jumps up to the parent concept in the UI
-         *          
-         * @return {boolean}  Returns false 
-         */         
+         *
+         * @return {boolean}  Returns false
+         */
         jumpUp: function() {
 
           try {
@@ -530,27 +531,27 @@ define(
             $(".tooltip-this").tooltip();
 
             return false;
-            
+
           } catch (e) {
             console.log("Failed to jump to parent concept in the annotation filter, error message: " + e);
           }
 
         },
 
-        /**        
+        /**
          * resetTree - Collapse all expanded concepts
-         *          
+         *
          * @return {boolean}  Returns false
-         */         
+         */
         resetTree: function() {
 
           try {
-            
+
             var view = this;
 
             // Re-root the tree at the original concept
             var tree = view.treeEl.data("NCBOTree");
-            
+
             var options = tree.options();
 
             // Re-root
@@ -559,13 +560,13 @@ define(
             });
 
             tree.changeOntology("ECSO");
-            
+
             // Force a re-render
             tree.init();
 
             // Ensure the tooltips are activated
             $(".tooltip-this").tooltip();
-            
+
             return false;
           } catch (e) {
             console.log("Failed to reset the annotation filter tree, error message: " + e);
