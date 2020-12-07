@@ -151,8 +151,7 @@
 
 	/* Offsets the anchor links by the same height as the fixed header */
 	#About a[name],
-	#Tools a[name],
-	#external .book a[name] { /*for eml parser docs */
+	#Tools a[name] { /*for eml parser docs */
 		position:relative;
 		top: -95px;
 		display: block;
@@ -2451,14 +2450,6 @@ svg .no-activity,
 
  /* MISC
  -----------------------------------------------*/
- #external > .container{
- 	width: 80%;
- }
-
- #external dt{
- 	line-height: 34px;
- 	font-size: 16px;
- }
 
  .align-center{
  	margin-left: auto;

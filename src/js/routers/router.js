@@ -24,7 +24,6 @@ function ($, _, Backbone) {
 			'data/my-data(/)'                   : 'renderMyData',
 			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
-			'external(/*url)(/)'                : 'renderExternal', // renders the content of the given url in our UI
 			'logout(/)'                         : 'logout', // logout the user
 			'signout(/)'                        : 'logout', // logout the user
 			'signin(/)'                         : 'renderSignIn', // signin the user
@@ -631,23 +630,6 @@ function ($, _, Backbone) {
 				MetacatUI.appView.showView(signInLdapView);
 			}
 
-		},
-
-		renderExternal: function(url) {
-			// use this for rendering "external" content pulled in dynamically
-			this.routeHistory.push("external");
-
-			if(!MetacatUI.appView.externalView){
-				require(['views/ExternalView'], function(ExternalView){
-					MetacatUI.appView.externalView = new ExternalView();
-					MetacatUI.appView.externalView.url = url;
-					MetacatUI.appView.showView(MetacatUI.appView.externalView);
-				});
-			}
-			else{
-				MetacatUI.appView.externalView.url = url;
-				MetacatUI.appView.showView(MetacatUI.appView.externalView);
-			}
 		},
 
 		navigateToDefault: function(){
