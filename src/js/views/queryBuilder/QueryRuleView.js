@@ -1014,22 +1014,22 @@ define([
             // Find the first match in the valueSelectUImap according to
             // the filter type and the categories associated with the metadata
             // field.
-            var interfaceProperties = _.find(interfaces, function(interface){
+            var interfaceProperties = _.find(interfaces, function(thisInterface){
               var typesMatch = true,
                   categoriesMatch = true,
                   namesMatch = true;
-              if(interface.queryFields && interface.queryFields.length){
+              if(thisInterface.queryFields && thisInterface.queryFields.length){
                 fields.forEach((field, i) => {
-                  if(interface.queryFields.includes(field) === false){
+                  if(thisInterface.queryFields.includes(field) === false){
                     namesMatch = false;
                   }
                 });
               }
-              if(interface.filterTypes && interface.filterTypes.length){
-                typesMatch = interface.filterTypes.includes(filterType)
+              if(thisInterface.filterTypes && thisInterface.filterTypes.length){
+                typesMatch = thisInterface.filterTypes.includes(filterType)
               }
-              if(interface.categories && interface.categories.length){
-                categoriesMatch = interface.categories.includes(category)
+              if(thisInterface.categories && thisInterface.categories.length){
+                categoriesMatch = thisInterface.categories.includes(category)
               }
               return typesMatch && categoriesMatch && namesMatch
             });
