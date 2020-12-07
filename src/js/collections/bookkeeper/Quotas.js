@@ -9,6 +9,7 @@ define(["jquery", "underscore", "backbone", "models/bookkeeper/Quota"],
    * of portals allowed, disk space allowed, etc. Quotas have a soft and hard limit
    * per unit to help with communicating limit warnings.
    * @classcategory Collections/Bookkeeper
+   * @since 2.14.0
    */
   var Quotas = Backbone.Collection.extend(
     /** @lends Quotas.prototype */ {

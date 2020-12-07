@@ -16,6 +16,7 @@ define(
      * @classcategory Views/SearchSelect
      * @extends Backbone.View
      * @constructor
+     * @since 2.14.0
      */
     return Backbone.View.extend(
       /** @lends AnnotationFilterView.prototype */

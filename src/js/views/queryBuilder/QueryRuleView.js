@@ -23,11 +23,13 @@ define([
   ) {
 
     /**
-     * @class QueryRule
+     * @class QueryRuleView
      * @classdesc A view that provides an UI for a user to construct a single filter that is part of a complex query
      * @classcategory Views/QueryBuilder
+     * @screenshot views/QueryRuleView.png
      * @extends Backbone.View
      * @constructor
+     * @since 2.14.0
      */
     return Backbone.View.extend(
       /** @lends QueryRuleView.prototype */

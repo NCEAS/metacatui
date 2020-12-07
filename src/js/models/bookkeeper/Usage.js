@@ -12,6 +12,7 @@ define(["jquery",
      * @classcategory Models/Bookkeeper
      * @class Usage
      * @name Usage
+     * @since 2.14.0
      * @constructor
     */
     var Usage = Backbone.Model.extend(

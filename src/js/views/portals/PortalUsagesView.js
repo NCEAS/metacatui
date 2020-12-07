@@ -13,6 +13,7 @@ define(["jquery",
     * @classdesc A view that shows a list of Portal Usages
     * @classcategory Views/Portals
     * @extends PortalListView
+    * @since 2.14.0
     * @constructor
     */
     return PortalListView.extend(

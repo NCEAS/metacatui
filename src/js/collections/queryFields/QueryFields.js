@@ -14,6 +14,7 @@ define(
      * @classcategory Collections/QueryFields
      * @name QueryFields
      * @extends Backbone.Collection
+     * @since 2.14.0
      * @constructor
      */
     var QueryFields = Backbone.Collection.extend(

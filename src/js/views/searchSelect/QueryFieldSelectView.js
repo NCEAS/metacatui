@@ -14,6 +14,7 @@ define([
      * @classcategory Views/SearchSelect
      * @extends SearchableSelect
      * @constructor
+     * @since 2.14.0
      */
     var QueryFieldSelectView = SearchableSelect.extend(
       /** @lends QueryFieldSelectView.prototype */

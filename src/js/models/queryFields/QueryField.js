@@ -13,6 +13,7 @@ define(
      * https://dataone-architecture-documentation.readthedocs.io/en/latest/design/SearchMetadata.html
      * @classcategory Models/QueryFields
      * @name QueryField
+     * @since 2.14.0
      * @extends Backbone.Model
      */
     var QueryField = Backbone.Model.extend(
