@@ -2,19 +2,20 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    "views/selectUI/SearchableSelectView",
+    "views/searchSelect/SearchableSelectView",
     "collections/queryFields/QueryFields"
   ],
   function($, _, Backbone, SearchableSelect, QueryFields) {
 
     /**
-     * @class QueryFieldSelect
+     * @class QueryFieldSelectView
      * @classdesc A select interface that allows the user to search for and
      * select metadata field(s).
+     * @classcategory Views/SearchSelect
      * @extends SearchableSelect
      * @constructor
      */
-    var QueryFieldSelect = SearchableSelect.extend(
+    var QueryFieldSelectView = SearchableSelect.extend(
       /** @lends QueryFieldSelectView.prototype */
       {
         /**
@@ -22,79 +23,55 @@ define([
          * @type {string}
          */
         type: "QueryFieldSelect",
-        
-        /**        
+
+        /**
          * className - Returns the class names for this view element
-         *          
+         *
          * @return {string}  class names
-         */         
+         */
         className: SearchableSelect.prototype.className + " query-field-select",
-        
-        /**       
+
+        /**
          * Text to show in the input field before any value has been entered
-         * @type {string}        
-         */ 
+         * @type {string}
+         */
         placeholderText: "Search for or select a field",
-        
-        /**       
+
+        /**
          * Label for the input element
-         * @type {string}        
-         */ 
+         * @type {string}
+         */
         inputLabel: "Select one or more metadata fields to query",
-        
-        /**        
-         * Whether to allow users to select more than one value        
-         * @type {boolean}
-         */         
-        allowMulti: true,
-        
-        /**        
-         * Setting to true gives users the ability to add their own options that
-         * are not listed in this.options. This can work with either single
-         * or multiple search select dropdowns        
-         * @type {boolean}
-         */         
-        allowAdditions: false,
-        
-        /**        
-         * When items are grouped within categories, how to display the items
-         * within each category? Select one of the following options:
-         *  list: display the items in a traditional, non-interactive list below
-         *        category titles
-         *  popout: initially show only a list of category titles, and popout
-         *          a submenu on the left or right when the user hovers over
-         *          or touches a category (can lead to the sub-menu being hidden
-         *          on mobile devices if the element is wide)
-         *  accordion: initially show only a list of category titles, and expand
-         *            the list of items below each category when a user clicks
-         *            on the category title, much like an "accordion" element.
-         * @type {string} set to "list", "popout", or "accordion"
-         */         
+
+        /**
+         * @see SearchableSelectView#submenuStyle
+         * @default "accordion"
+         */
         submenuStyle: "accordion",
-        
-        /**        
+
+        /**
          * A list of query fields names to exclude from the list of options
          * @type {string[]}
-         */         
+         */
         excludeFields: [],
-        
-        /**        
+
+        /**
          * A list of query fields names to display at the top of the menu, above
          * all other category headers
-         */         
+         */
         commonFields: ["text"],
-        
-        /**        
+
+        /**
          * Whether or not to exclude fields which are not searchable. Set to
-         * false to keep query fields that are not seachable in the returned list      
+         * false to keep query fields that are not seachable in the returned list
          * @type {boolean}
-         */         
+         */
         excludeNonSearchable: true,
-        
+
         /**
          * Creates a new QueryFieldSelectView
          * @param {Object} options - A literal object with options to pass to the view
-         */ 
+         */
         initialize: function(options){
           try {
             // Ensure the query fields are cached
@@ -107,18 +84,18 @@ define([
             console.log("Failed to initialize a Query Field Select View, error message: " + e);
           }
         },
-        
-        /**        
+
+        /**
          * Render the view
-         *          
+         *
          * @return {SeachableSelect}  Returns the view
-         */         
+         */
         render: function(){
-          
+
           try {
-            
+
             var view = this;
-            
+
             // Ensure the query fields are cached for the Query Field Select
             // View and the Query Rule View
             if ( typeof MetacatUI.queryFields === "undefined" || MetacatUI.queryFields.length === 0 ) {
@@ -127,11 +104,11 @@ define([
               MetacatUI.queryFields.fetch();
               return
             }
-            
+
             // Convert the queryFields collection to an object formatted for the
             // SearchableSelect view.
             var fieldsJSON = MetacatUI.queryFields.toJSON();
-            
+
             // Move common fields to the top of the menu, outside of any
             // category headers, so that they are easy to find
             if(this.commonFields.length){
@@ -147,7 +124,7 @@ define([
                 }
               });
             }
-            
+
             // Filter out non-searchable fields (if option is true),
             // and fields that should be excluded
             var processedFields = _(fieldsJSON)
@@ -171,30 +148,30 @@ define([
               .map(view.fieldToOption)
               .groupBy("categoryOrder")
               .value();
-            
+
             // Rename the grouped categories
             for (const [key, value] of Object.entries(processedFields)) {
               processedFields[value[0].category] = value;
               delete processedFields[key];
             }
-              
+
             // Set the formatted fields on the view
             this.options = processedFields;
-            
+
             SearchableSelect.prototype.render.call(this);
-            
+
           } catch (e) {
             console.log("Failed to render a Query Field Select View, error message: " + e);
           }
         },
-        
-        /**        
+
+        /**
          * fieldToOption - Converts an object that represents a QueryField model
          * in the format specified by the SearchableSelectView.options
-         *          
+         *
          * @param  {object} field An object with properties corresponding to a QueryField model
          * @return {object}       An object in the format specified by SearchableSelectView.options
-         */         
+         */
         fieldToOption: function(field) {
            return {
             label: field.label ? field.label : field.name,
@@ -206,23 +183,23 @@ define([
             type: field.type
           };
         },
-        
-        /**        
+
+        /**
          * addTooltip - Add a tooltip to a given element using the description
          * in the options object that's set on the view.
          * This overwrites the prototype addTooltip function so that we can use
          * popovers with more details for query select fields.
-         *          
+         *
          * @param  {HTMLElement} element The HTML element a tooltip should be added
          * @param  {string} position how to position the tooltip - top | bottom | left | right
          * @return {jQuery} The element with a tooltip wrapped by jQuery
-         */         
+         */
         addTooltip: function(element, position = "bottom"){
-          
+
           if(!element){
             return
           }
-          
+
           // Find the description in the options object, using the data-value
           // attribute set in the template. The data-value attribute is either
           // the label, or the value, depending on if a value is provided.
@@ -234,20 +211,20 @@ define([
                             return option.label == valueOrLabel || option.value == valueOrLabel
                           })
                           .value()
-              
+
           if(!opt){
             return
           }
-          
+
           var contentEl = $(document.createElement("div")),
               titleEl = $("<div>" + opt.label + "</div>"),
               valueEl = $("<code class='pull-right'>" + opt.value + "</code>"),
               typeEl = $("<span class='muted pull-right'><b>Type: " + opt.type + "</b></span>"),
               descriptionEl = $("<p>" + opt.description + "</p>");
-              
+
             titleEl.append(valueEl);
             contentEl.append(descriptionEl, typeEl)
-          
+
           $(element).popover({
             title: titleEl,
             content: contentEl,
@@ -275,22 +252,22 @@ define([
                   .addClass("search-select-tooltip");
               }, 10);
           });
-          
+
           return $(element)
-        
+
         },
-        
-        /**        
+
+        /**
          * isValidOption - Checks if a value is one of the values given in view.options
-         *          
+         *
          * @param  {string} value The value to check
          * @return {boolean}      returns true if the value is one of the values given in view.options
-         */         
+         */
         isValidOption: function(value){
-          
+
           try {
             var view = this;
-            
+
             // First check if the value is one of the fields that's excluded.
             if(view.excludeFields.includes(value)){
               // If it is, then add it to the list of options
@@ -314,9 +291,9 @@ define([
           } catch (e) {
             console.log("Failed to check if option is valid in a Query Field Select View, error message: " + e);
           }
-          
+
         },
 
       });
-      return QueryFieldSelect;
+      return QueryFieldSelectView;
   });
