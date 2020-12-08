@@ -7,7 +7,7 @@
 [See more screenshots](screenshots/index.html)
 
 ## Latest release
-Download the latest release on Github: [MetacatUI 2.13.4](https://github.com/NCEAS/metacatui/releases/tag/2.13.4)
+Download the latest release on Github: [MetacatUI 2.14.0](https://github.com/NCEAS/metacatui/releases/tag/2.14.0)
 
 ## Documentation
 
@@ -25,6 +25,7 @@ There are three separate installation instructions, depending on your use case:
 
 ### For developers
 - [MetacatUI Javascript documentation for developers](/metacatui/docs/index.html)
+- [Setting up a MetacatUI development environment](install/dev-env.html)
 
 #### Want to contribute to MetacatUI?
   - Join us on [Slack](https://slack.dataone.org/)
