@@ -196,7 +196,7 @@ define([    "jquery", "underscore", "backbone",
               }
             }
 
-            addCSS("/components/showdown/extensions/showdown-katex/katex.min.css");
+            addCSS(MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css");
 
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
             var SDextensions = ["xssfilter", "katex", "highlight", "docbook",
