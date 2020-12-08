@@ -2,16 +2,16 @@
 
 The first task is to get a development environment set up on your machine, which means:
 
-1. [Get familiar with MetacatUI](#get-familiar)
-2. [Fork the MetacatUI GitHub repository and have it ready to work with in your preferred code editor](#fork)
-3. [Install a local instance of MetacatUI](#install)
+1. [Get familiar with MetacatUI](#get-familiar-with-metacatui)
+2. [Fork the MetacatUI GitHub repository](#fork-the-MetacatUI-repository)
+3. [Install a local instance of MetacatUI](#install-a-local-instance-of-metacatui)
 
-## <a name="get-familiar"></a> Get familiar with MetacatUI
+## Get familiar with MetacatUI
 Read about the MetacatUI software on the MetacatUI Github (https://github.com/NCEAS/metacatui) and documentation website (https://nceas.github.io/metacatui/)
 
-## <a name="fork"></a> Fork the MetacatUI GitHub repository and have it ready to work with in your preferred code editor
+## Fork the MetacatUI repository
 
-Fork the MetacatUI Github repository by going to https://github.com/NCEAS/metacatui and clicking on the “Fork” button.
+Fork the MetacatUI Git repository by going to https://github.com/NCEAS/metacatui and clicking on the “Fork” button.
 
 Clone your fork to your local machine:
 
@@ -23,7 +23,7 @@ Open the forked repository (the `datadepot` folder) in your preferred code edito
 
 Test that your fork is ready to work with by making a small change to a file (e.g. add a space character) and committing and pushing the commit to your fork.
 
-##  <a name="install"></a> Install a local instance of MetacatUI
+## Install a local instance of MetacatUI
 Follow the [installation instructions](local.html) for using MetacatUI locally with a remote Metacat data repository.
 
 When you have MetacatUI running locally, you should be able to navigate in your web browser to the localhost path that you have your server running at, and you'll see MetacatUI running like this:
@@ -44,3 +44,7 @@ There are 7 different pipelines:
 **Closed** - These issues have code that is already merged into the `develop` branch and are completely reviewed and resolved.
 
 I would suggest looking at the issues in this Zenhub board and getting a basic familiarity with the new features we’d like to add to MetacatUI. (You might want to filter on the ‘enhancement’ label). We’re always looking for enhancements to the metadata editor, the portals, the metadata/dataset view, and the user and repository profiles.
+
+### Submit a Pull Request
+
+When you're ready to contribute the changes made on your fork to the main MetacatUI code base, follow the steps outlined in the [Contributing guidelines](https://github.com/NCEAS/metacatui/blob/master/CONTRIBUTING.md) for submitting a pull request to MetacatUI.
