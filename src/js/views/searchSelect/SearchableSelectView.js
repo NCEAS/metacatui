@@ -111,13 +111,13 @@ define([
          * The path to the semanticUI transition CSS (required for this view to work)
          * @type {string}
          */
-        transitionCSS: "/components/semanticUI/transition.min.css",
+        transitionCSS: MetacatUI.root + "/components/semanticUI/transition.min.css",
 
         /**
          * The path to the semanticUI dropdown CSS (required for this view to work)
          * @type {string}
          */
-        dropdownCSS: "/components/semanticUI/dropdown.min.css",
+        dropdownCSS: MetacatUI.root + "/components/semanticUI/dropdown.min.css",
 
         /**
          * The list of options that a user can select from in the dropdown menu.
