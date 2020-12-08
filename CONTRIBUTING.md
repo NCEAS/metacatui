@@ -54,38 +54,40 @@ Development is managed through the git repository at https://github.com/NCEAS/me
 
 **releases**. Releases are merged from the `master` branch to the `releases` branch, and the resulting commit is tagged with the release tag (e.g., `2.4.0`). The tip of the `releases` branch always reflects the most recent release of the software.
 
-**dev**. Development takes place on a series of development branches.  While there is some
-flexibility in how many development and feature branches are made, we typically
-create one `dev-x.y` branch for integrated development and testing of the set of features
-targeting a particular release.  Much of the development happens directly on these *dev*
-branches, but when needed a separate feature branch can be created to isolate development
-on a specific set of capabilities, especially if it may be disruptive to other developers
-working on the main `dev-*` branch.
+**develop**. Development takes place on a single branch for integrated development and testing of the set of features
+targeting a particular release. Commits should only be pushed to this branch once they are ready to be deployed to
+production immediately after being pushed.
 
-**feature**. Feature branches should be named with a prefix of `feature`
+**feature**. to isolate development
+on a specific set of capabilities, especially if it may be disruptive to other developers
+working on the main `develop` branch, feature branches should be created.
+
+Feature branches are named with a prefix of `feature`
 and should include a short descriptive label reflecting their purpose.  For example,
 `feature-new-search` may be a branch name for a feature related to a new search tool.
-You may also want to include the release version that you are targeting, such `feature-2.11.2-new-search`, or the branch you are targeting to merge into, such as `feature-dev-2.11-new-search`.
+
+You may also want to include the release version that you are targeting, such `feature-2.11.2-new-search`.
+
 You may also want to include the issue number that describes the feature, such as `feature-#1456-new-search`.
 
-All development branches should be frequently merged with changes from `master` to
-ensure that the development branch stays up to date with other features that have
+All feature branches should be frequently merged with changes from `develop` to
+ensure that the feature branch stays up to date with other features that have
 been tested and are awaiting release.  Thus, each `feature-*` branch represents an opportunity
 for integration testing of the set of features intended to work together for a
 particular release.
 
-### Development flow overview
-![](https://github.com/NCEAS/metacat/raw/master/docs/dev/images/nceas-dev-flow-full.png)
+**dev-X.X**. Development branches named after their minor version number can be used when a patch release
+needs to be created that is behind the main **develop** branch.
 
-### Development flow for a single release
-![](https://github.com/NCEAS/metacat/raw/master/docs/dev/images/nceas-single-release-flow.png)
+### Development flow overview
+![](https://github.com/NCEAS/metacat/raw/dev-2.14/docs/dev/images/nceas-dev-flow.png)
 
 ## Release process
 
-1. Our release process starts with integration testing in a `dev-*` branch. Once all
-changes that are desired in a release are merged into the `dev-` branch, we run
-the full set of tests on a clean checkout of the `dev-` branch.
-2. After testing, the `dev-` branch is merged to master.
+1. Our release process starts with integration testing in a `develop` branch. Once all
+changes that are desired in a release are merged into the `develop` branch, we run
+the full set of tests on a clean checkout of the `develop` branch.
+2. After testing, the `develop` branch is merged to master.
 3. Then the master branch can be merged to the `releases` branch, and tagged with
 the new version number (e.g. `2.11.2`). At
 this point, the tip of the `releases` branch will reflect the new release and
@@ -100,7 +102,7 @@ Any new code developed should include a robust set of unit tests for each public
 method, as well as integration tests from new feature sets.  Tests should fully
 exercise the feature to ensure that it responds correctly to both good data inputs
 as well as various classes of corrupt or bad data.  All tests should pass before
-a `dev-` branch is merged to master, and all tests should pass before the `master`
+the `develop` branch is merged to master, and all tests should pass before the `master`
 branch is merged to `releases` and tagged for a release.
 
 ## Code style
@@ -110,18 +112,36 @@ readable, and maintainable software.  While there has been significant variablil
 in the coding styles applied historically, new contributions should strive for
 clean code formatting.  Some of the guidelines we follow include:
 
-**JSDoc**. 
-All JavaScript code should be fully documented with JSDoc comments.  Special
-attention should be paid to documentation of Model attributes and functions, and View functions.  
+**Documentation**.
+All JavaScript code should be fully documented with [JSDoc](https://jsdoc.app/) comments.
 
-Documentation
-should explain both what the code does, but also why it does it in a particular
-way when appropriate.  Model and function documentation should be written to provide
-sufficient context for people that are not intimately familiar with the rest of the code.
+For Models and Views:
+- Gives a brief overview of what the class / file does and give a few short example of how you might use the class / file.
+- Create a screenshot of the View and use the `@screenshot` tag to include it in the built docs.
+- Use the `@classcategory` tag to organize the class file in the built docs navigational menu
 
-Model-level documentation often is strengthened through explaining the role of the
-model in the architecture.  Avoid using tautological definitions that reuse the name of
-a model or function in its definition.  And please be complete.
+For Model and View methods:
+- Say what each class method does and how to use it (use `@param` and `@returns`)
+- Use `@example` tags to give examples of parameters and return values
+- Use `@fires` to indicate Backbone Events that are fired by a method
+
+For Model and View attributes:
+- Describe the purpose of the attribute, its `@default` value, and one or more `@example`s
+
+For everything:
+- Use the `@since` tag to indicate the version the class/method/attribute was added
+- Use `@deprecated` for deprecated APIs and features
+- Use `@link` to link to other JSDoc pages when mentioning other classes, attributes, and methods (e.g. `{@link Model#method}`)
+
+Before merging a **feature** branch to the **develop** branch, [build the MetacatUI documentation](docs/README.md)
+website and make sure that your documentation is displaying correctly and is thorough.
+
+Things to check:
+
+- There are no JSDoc build errors or warnings
+- The class shows up in the right category in the class navigation menu
+- All class methods and attributes are documented and displaying correctly
+- Screenshots of views are displaying correctly
 
 ## Contributor license agreement
 
