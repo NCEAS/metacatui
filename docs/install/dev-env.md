@@ -3,7 +3,7 @@
 The first task is to get a development environment set up on your machine, which means:
 
 1. [Get familiar with MetacatUI](#get-familiar-with-metacatui)
-2. [Fork the MetacatUI GitHub repository](#fork-the-MetacatUI-repository)
+2. [Fork the MetacatUI GitHub repository](#fork-the-metacatui-repository)
 3. [Install a local instance of MetacatUI](#install-a-local-instance-of-metacatui)
 
 ## Get familiar with MetacatUI
@@ -30,7 +30,9 @@ When you have MetacatUI running locally, you should be able to navigate in your 
 
 ## Next: Contributing to MetacatUI
 
-Review our [Contributing guidelines](https://github.com/NCEAS/metacatui/blob/master/CONTRIBUTING.md).
+### Review our [Contributing guidelines](https://github.com/NCEAS/metacatui/blob/master/CONTRIBUTING.md).
+
+### Plug into the MetacatUI development pipeline
 
 It is probably helpful to look over the MetacatUI issue tracker to get an idea of what we are currently working on in MetacatUI. We track all of our issues in Zenhub, here: https://app.zenhub.com/workspaces/data-portal-infrastructure-5d057ceca88c9959aefd0159/board
 
@@ -40,10 +42,17 @@ There are 7 different pipelines:
 **Next** - Issues that are planned for the next release. They are not being actively worked on yet, but will be once the issues in the Current pipeline are closed.
 **Current** - Issues that are planned for the current release and will be worked on after all the In Progress issues are closed.
 **In Progress** - Issues currently being actively worked on by a developer. Once a developer begins coding for an issue, the issue is moved to this pipeline.
-**Review/QA** - Issues that have pushed commits which resolve the feature or bug described, but the commits need to be reviewed by another developer (e.g. Lauren).
+**Review/QA** - Issues that have pushed commits which resolve the feature or bug described, but the commits need to be reviewed by another developer (e.g. [Lauren](https://github.com/laurenwalker)).
 **Closed** - These issues have code that is already merged into the `develop` branch and are completely reviewed and resolved.
 
-I would suggest looking at the issues in this Zenhub board and getting a basic familiarity with the new features we’d like to add to MetacatUI. (You might want to filter on the ‘enhancement’ label). We’re always looking for enhancements to the metadata editor, the portals, the metadata/dataset view, and the user and repository profiles.
+We would suggest looking at the issues in this Zenhub board and getting a basic familiarity with the new features we’d like to add to MetacatUI. We’re always looking for enhancements to :
+
+- the metadata editor
+- portals
+- the metadata/dataset view
+- user and repository profiles
+- CSS and design
+- performance
 
 ### Submit a Pull Request
 
