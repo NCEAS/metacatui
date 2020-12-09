@@ -39,10 +39,23 @@ define(['jquery', 'underscore', 'backbone',
     },
 
     render: function () {
-
+      
       var templateVars = this.model.toJSON();
-      templateVars.min = this.model.get("rangeMin");
-      templateVars.max = this.model.get("rangeMax");
+      
+      if(!templateVars.min && templateVars.min !== 0){
+        templateVars.min = this.model.get("rangeMin");
+      }
+      if(!templateVars.max && templateVars.max !== 0){
+        templateVars.max = this.model.get("rangeMax");
+      }
+      
+      if(templateVars.min < this.model.get("rangeMin")){
+        templateVars.min = this.model.get("rangeMin")
+      }
+      
+      if(templateVars.max > this.model.get("rangeMax")){
+        templateVars.max = this.model.get("rangeMax")
+      }
 
       this.$el.html( this.template( templateVars ) );
 

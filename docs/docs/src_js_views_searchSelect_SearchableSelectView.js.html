@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/views/searchSelect/SearchableSelectView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/views/searchSelect/SearchableSelectView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>define([
+    "jquery",
+    "underscore",
+    "backbone",
+    "semanticUItransition",
+    "semanticUIdropdown",
+    "text!templates/selectUI/searchableSelect.html",
+  ],
+  function($, _, Backbone, Transition, Dropdown, Template) {
+
+    /**
+     * @class SearchableSelectView
+     * @classdesc A select interface that allows the user to search from within
+     * the options, and optionally select multiple items. Also allows the items
+     * to be grouped, and to display an icon or image for each item.
+     * @classcategory Views/SearchSelect
+     * @extends Backbone.View
+     * @constructor
+     * @since 2.14.0
+     */
+    return Backbone.View.extend(
+      /** @lends SearchableSelectView.prototype */
+      {
+        /**
+         * The type of View this is
+         * @type {string}
+         */
+        type: "SearchableSelect",
+
+        /**
+         * The HTML class names for this view element
+         * @type {string}
+         */
+        className: "searchable-select",
+
+        /**
+         * Text to show in the input field before any value has been entered
+         * @type {string}
+         */
+        placeholderText: "Search for or select a value",
+
+        /**
+         * Label for the input element
+         * @type {string}
+         */
+        inputLabel: "Select a value",
+
+        /**
+         * Whether to allow users to select more than one value
+         * @type {boolean}
+         */
+        allowMulti: true,
+
+        /**
+         * Setting to true gives users the ability to add their own options that
+         * are not listed in this.options. This can work with either single
+         * or multiple search select dropdowns
+         * @type {boolean}
+         */
+        allowAdditions: false,
+
+        /**
+         * Whether the dropdown value can be cleared by the user after being
+         * selected.
+         * @type {boolean}
+         */
+        clearable: true,
+
+        /**
+        * When items are grouped within categories, this attribute determines how to display the items
+        * within each category.
+        * @type {string}
+        * @example
+        * // display the items in a traditional, non-interactive list below category titles
+        * "list"
+        * @example
+        * // initially show only a list of category titles, and popout
+        * // a submenu on the left or right when the user hovers over
+        * // or touches a category (can lead to the sub-menu being hidden
+        * // on mobile devices if the element is wide)
+        * "popout"
+        * @example
+        * // initially show only a list of category titles, and expand
+        * // the list of items below each category when a user clicks
+        * // on the category title, much like an "accordion" element.
+        * "accordion"
+        * @default "list"
+         */
+        submenuStyle: "list",
+
+        /**
+         * Set to false to always display category headers in the dropdown,
+         * even if there are no results in that category when a user is searching.
+         * @type {boolean}
+         */
+        hideEmptyCategoriesOnSearch: true,
+
+        /**
+         * The maximum width of images used for each option, in pixels
+         * @type {number}
+         */
+        imageWidth: 30,
+
+        /**
+         * The maximum height of images used for each option, in pixels
+         * @type {number}
+         */
+        imageHeight: 30,
+
+        /**
+         * The path to the semanticUI transition CSS (required for this view to work)
+         * @type {string}
+         */
+        transitionCSS: "/components/semanticUI/transition.min.css",
+
+        /**
+         * The path to the semanticUI dropdown CSS (required for this view to work)
+         * @type {string}
+         */
+        dropdownCSS: "/components/semanticUI/dropdown.min.css",
+
+        /**
+         * The list of options that a user can select from in the dropdown menu.
+         * For uncategorized options, provide an array of objects, where each
+         * object is a single option. To create category headings, provide an
+         * object containing named objects, where the key for each object is
+         * the category title to display, and the value of each object comprises
+         * the option properties.
+         * @type {Object[]|Object}
+         * @property {string} icon - The name of a Font Awesome 3.2.1 icon to display to the left of the label (e.g. "lemon", "heart")
+         * @property {string} image - The complete path to an image to use instead of an icon. If both icon and image are provided, the icon will be used.
+         * @property {string} label - The label to show for the option
+         * @property {string} description - A description of the option, displayed as a tooltip when the user hovers over the label
+         * @property {string} value - If the value differs from the label, the value to return when this option is selected (otherwise label is returned)
+         * @example
+         * [
+         *   {
+         *     icon: "",
+         *     image: "https://www.dataone.org/uploads/member_node_logos/bcodmo_hu707c109c683d6da57b432522b4add783_33081_300x0_resize_box_2.png",
+         *     label: "BCO",
+         *     description: "The The Biological and Chemical Oceanography Data Management Office (BCO-DMO) serve data from research projects funded by the Biological and Chemical Oceanography Sections and the Division of Polar Programs Antarctic Organisms &amp; Ecosystems Program at the U.S. National Science Foundation.",
+         *     value: "urn:node:BCODMO"
+         *   },
+         *   {
+         *     icon: "",
+         *     image: "https://www.dataone.org/uploads/member_node_logos/arctic.png",
+         *     label: "ADC",
+         *     description: "The US National Science Foundation Arctic Data Center operates as the primary repository supporting the NSF Arctic community for data preservation and access.",
+         *     value: "urn:node:ARCTIC"
+         *   },
+         * ]
+         * @example
+         * {
+         *   "category A": [
+         *     {
+         *       icon: "flag",
+         *       label: "Flag",
+         *       description: "This is a flag"
+         *     },
+         *     {
+         *       icon: "gift",
+         *       label: "Gift",
+         *       description: "This is a gift"
+         *     }
+         *   ],
+         *   "category B": [
+         *     {
+         *       icon: "pencil",
+         *       label: "Pencil",
+         *       description: "This is a pencil"
+         *     },
+         *     {
+         *       icon: "hospital",
+         *       label: "Hospital",
+         *       description: "This is a hospital"
+         *     }
+         *   ]
+         * }
+         */
+        options: [],
+
+        /**
+         * The values that a user has selected. If provided to the view upon
+         * initialization, the values will be pre-selected. Selected values must
+         * exist as a label in the options {@link SearchableSelect#options}
+         * @type {string[]}
+         */
+        selected: [],
+
+        /**
+         * The primary HTML template for this view. The template follows the
+         * structure specified for the semanticUI dropdown module, see:
+         * https://semantic-ui.com/modules/dropdown.html#/definition
+         * @type {Underscore.template}
+         */
+        template: _.template(Template),
+
+        /**
+         * Creates a new SearchableSelectView
+         * @param {Object} options - A literal object with options to pass to the view
+         */
+        initialize: function(options) {
+
+          try {
+
+            var view = this;
+
+            // Given a path, check whether a CSS file was already added to the
+            // head, and add it if not. Prevents adding the CSS file multiple
+            // times if the view is loaded more than once. The first time each
+            // CSS path is added, we need to cache a record of the event. It
+            // doesn't work to just search the document head for the file to
+            // determine if the CSS has already been added, because each instance
+            // of this view is initialized too quickly, before the previous
+            // instance has had a chance to add the stylesheet element.
+            const addCSS = function(path){
+              if(!MetacatUI.loadedCSS){
+                MetacatUI.loadedCSS = []
+              }
+              if(!MetacatUI.loadedCSS.includes(path)){
+                MetacatUI.loadedCSS.push(path)
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = path;
+                document.querySelector("head").appendChild(link);
+              }
+            }
+
+            // Add the CSS required for semanticUI components
+            addCSS(view.transitionCSS);
+            addCSS(view.dropdownCSS);
+
+            // Get all the options and apply them to this view
+            if (typeof options == "object") {
+              var optionKeys = Object.keys(options);
+              _.each(optionKeys, function(key, i) {
+                this[key] = options[key];
+              }, this);
+            }
+
+          } catch (e) {
+            console.log("Failed to initialize a Searchable Select view, error message:", e);
+          }
+        },
+
+        /**
+         * Render the view
+         *
+         * @return {SeachableSelect}  Returns the view
+         */
+        render: function() {
+
+          try {
+
+            var view = this;
+
+            // The semantic UI dropdown module requires that the transition
+            // module CSS is loaded. If a user tries to select a value before
+            // this has a chance to load, semantic will throw an error.
+            // Don't render until the required CSS is loaded.
+            if(!this.ready){
+              this.checkIfReady(this.render);
+              return
+            }
+
+            // Render the template using the view attributes
+            this.$el.html(this.template(this));
+
+            // Start the dropdown in a disabled state.
+            // This allows us to pre-select values without triggering a change
+            // event.
+            this.disable();
+            this.showLoading();
+
+            // Initialize the dropdown interface
+            // For explanations of settings, see:
+            // https://semantic-ui.com/modules/dropdown.html#/settings
+            this.$selectUI = this.$el.find('.ui.dropdown')
+              .dropdown({
+                fullTextSearch: true,
+                duration: 90,
+                clearable: view.clearable,
+                allowAdditions: view.allowAdditions,
+                hideAdditions: false,
+                allowReselection: true,
+                onLabelCreate: function(value, text){
+                  // Add tooltips to the selected label elements
+                  view.addTooltip.call(view, this, "top");
+                  return this
+                },
+                onLabelRemove: function(){
+                  // Ensure tooltips for labels are removed
+                  $(".search-select-tooltip").remove();
+                },
+                onChange: function(value, text, $choice){
+
+                  // Add tooltips to the selected fields that are not labels
+                  // (i.e. that are not in multi-select UIs).
+                  var textEl = view.$selectUI.find(".text")
+                  if(textEl){
+                    if(text == textEl.html()){
+                      view.addTooltip.call(view, textEl, "top");
+                    }
+                  }
+
+                  // Trigger an event if items are selected after the UI
+                  // has been rendered (It is set as disabled until fully rendered)
+                  if(!$(this).hasClass("disabled")){
+                    var newValues = value.split(",");
+                    view.trigger('changeSelection', newValues);
+                    view.selected = newValues;
+                  }
+                },
+              });
+
+            view.postRender();
+
+            return this;
+
+          } catch (e) {
+            console.log("Error rendering the search select, error message: ", e);
+          }
+        },
+
+        /**
+         * updateMenu - Re-render the menu of options. Useful after changing
+         * the options that are set on the view.
+         */
+        updateMenu: function(){
+          try {
+            var menu = $(this.template(this)).find(".menu")[0].innerHTML;
+            this.$el.find(".menu").html(menu);
+          } catch (e) {
+            console.log("Failed to update a searchable select menu, error message: " + e);
+          }
+        },
+
+        /**
+         * postRender - Updates to the view once the dropdown UI has loaded
+         */
+        postRender: function(){
+          try {
+
+            var view = this;
+            view.trigger("postRender");
+
+            // Add tool tips for the description
+            this.$el.find(".item").each(function(){
+              view.addTooltip(this)
+            });
+
+            // Show an error message if the pre-selected options are not in the
+            // list of available options (only if user additions are not allowed)
+            if(!view.allowAdditions){
+              if(view.selected &amp;&amp; view.selected.length){
+                var invalidOptions = [];
+                view.selected.forEach(function(item){
+                  if(!view.isValidOption(item)){
+                    invalidOptions.push(item)
+                  }
+                });
+                if(invalidOptions.length){
+                  var optionsString = "\"" + invalidOptions.join(", ") + "\"";
+                  var phrase = (invalidOptions.length === 1) ? "is not a valid option" : "are not valid options";
+                  var ending = ". Please change selection."
+                  var message = optionsString + " " + phrase + ending;
+                  view.showMessage(message, "error", true);
+                }
+              }
+            }
+
+            // Set the selected values in the dropdown
+            this.$selectUI.dropdown('set exactly', view.selected);
+            this.$selectUI.dropdown('save defaults');
+            this.enable();
+            this.hideLoading();
+
+            // Make sub-menus if the option is configured in this view
+            if(this.submenuStyle === "popout"){
+              this.convertToPopout();
+            }
+            else if (this.submenuStyle === "accordion"){
+              this.convertToAccordion();
+            }
+
+            // Convert interactive submenus to lists and hide empty categories
+            // when the user is searching for a term
+            if(
+              ["popout", "accordion"].includes(view.submenuStyle) ||
+              view.hideEmptyCategoriesOnSearch
+            ){
+              this.$selectUI.find("input").on("keyup blur", function(e){
+
+                inputVal = e.target.value;
+
+                // When the input is NOT empty
+                if(inputVal !== ""){
+                  // For interactive type submenus where items are sometimes
+                  // hidden, show all the matching items when a user is searching
+                  if(["popout", "accordion"].includes(view.submenuStyle)){
+                    view.convertToList();
+                  }
+                  if(view.hideEmptyCategoriesOnSearch){
+                    view.hideEmptyCategories();
+                  }
+
+                // When the input is EMPTY
+                } else {
+                  // Convert back to sub-menus if the option is configured in this view
+                  if(view.submenuStyle === "popout"){
+                    view.convertToPopout();
+                  }
+                  else if (view.submenuStyle === "accordion"){
+                    view.convertToAccordion();
+                  }
+                  // Show all the category titles again, in cases some where hidden
+                  if(view.hideEmptyCategoriesOnSearch){
+                    view.showAllCategories();
+                  }
+                }
+              });
+            }
+
+          } catch (e) {
+            console.log("The searchable select post-render function failed, error message: " + e);
+          }
+        },
+
+        /**
+         * isValidOption - Checks if a value is one of the values given in view.options
+         *
+         * @param  {string} value The value to check
+         * @return {boolean}      returns true if the value is one of the values given in view.options
+         */
+        isValidOption: function(value){
+
+          try {
+            var view = this;
+            var options = view.options;
+
+            // If there are no options set on the view, assume the value is invalid
+            if(!options || options.length === 0){
+              return false
+            }
+
+            // If the list of options doesn't have category headings, put it in the
+            // same format as options that do have headings.
+            if (Array.isArray(options)) { options = { "" : options } };
+
+            // Reduce the options object to just an Array of value and label strings
+            var validValues = _(options)
+              .chain()
+              .values()
+              .flatten()
+              .map(function(item){
+                var items = [];
+                if(item.value !== undefined ){ items.push(item.value) }
+                if(item.label !== undefined ){ items.push(item.label) }
+                return items
+              })
+              .flatten()
+              .value();
+
+            return validValues.includes(value);
+          } catch (e) {
+            console.log("Failed to check if an option is valid in a Searchable Select View, error message: " + e);
+          }
+
+        },
+
+        /**
+         * addTooltip - Add a tooltip to a given element using the description
+         * in the options object that's set on the view.
+         *
+         * @param  {HTMLElement} element The HTML element a tooltip should be added
+         * @param  {string} position how to position the tooltip - top | bottom | left | right
+         * @return {jQuery} The element with a tooltip wrapped by jQuery
+         */
+        addTooltip: function(element, position = "bottom"){
+
+          try {
+            if(!element){
+              return
+            }
+
+            // Find the description in the options object, using the data-value
+            // attribute set in the template. The data-value attribute is either
+            // the label, or the value, depending on if a value is provided.
+            var valueOrLabel = $(element).data("value"),
+                opt = _.chain(this.options)
+                            .values()
+                            .flatten()
+                            .find(function(option){
+                              return option.label == valueOrLabel || option.value == valueOrLabel
+                            })
+                            .value()
+
+            if(!opt){
+              return
+            }
+            if(!opt.description){
+              return
+            }
+
+            $(element).tooltip({
+              title: opt.description,
+              placement: position,
+              container: "body",
+              delay: {
+                show: 900,
+                hide: 50
+              }
+            })
+            .on("show.bs.popover",
+              function(){
+                var $el = $(this);
+                // Allow time for the popup to be added to the DOM
+                setTimeout(function () {
+                  // Then add a special class to identify
+                  // these popups if they need to be removed.
+                  $el.data('tooltip').$tip.addClass("search-select-tooltip")
+                }, 10);
+            });
+
+            return $(element)
+          } catch (e) {
+            console.log("Failed to add tooltips in a searchable select view, error message: " + e);
+          }
+
+        },
+
+        /**
+         * convertToPopout - Re-arrange the HTML to display category contents
+         * as sub-menus that popout to the left or right of category titles
+         */
+        convertToPopout: function(){
+          try {
+            if(!this.$selectUI){
+              return
+            }
+            if(this.currentSubmenuMode === "popout"){
+              return
+            }
+            this.currentSubmenuMode = "popout";
+            this.$selectUI.addClass("popout-mode");
+            var $headers = this.$selectUI.find(".header");
+            if(!$headers || $headers.length === 0){
+              return
+            }
+            $headers.each(function(i){
+              var $itemGroup = $().add($(this).nextUntil(".header"));
+              var $itemAndHeaderGroup = $(this).add($(this).nextUntil(".header"));
+              var $icon = $(this).next().find(".icon");
+              if($icon &amp;&amp; $icon.length > 0){
+                var $headerIcon = $icon
+                  .clone()
+                  .addClass("popout-mode-icon")
+                  .css({
+                    "opacity": "0.9",
+                    "margin-right" : "1rem"
+                  });
+                $(this).prepend($headerIcon[0])
+              }
+              $itemAndHeaderGroup.wrapAll("&lt;div class='item popout-mode'/>");
+              $itemGroup.wrapAll("&lt;div class='menu popout-mode'/>");
+              $(this).append("&lt;i class='popout-mode-icon dropdown icon icon-on-right icon-chevron-right'>&lt;/i>")
+            });
+          } catch (e) {
+            console.log("Failed to convert a Searchable Select interface to sub-menu mode, error message: " + e);
+          }
+        },
+
+        /**
+         * convertToList - Re-arrange HTML to display the full list of options
+         * in one static menu
+         */
+        convertToList: function(){
+          try {
+            if(!this.$selectUI){
+              return
+            }
+            if(this.currentSubmenuMode === "list"){
+              return
+            }
+            this.currentSubmenuMode = "list";
+            this.$selectUI.find(".popout-mode > *").unwrap();
+            this.$selectUI.find(".accordion-mode > *").unwrap();
+            this.$selectUI.find(".popout-mode-icon").remove();
+            this.$selectUI.find(".accordion-mode-icon").remove();
+            this.$selectUI.removeClass("popout-mode accordion-mode");
+          } catch (e) {
+            console.log("Failed to convert a Searchable Select interface to list mode, error message: " + e);
+          }
+        },
+
+
+        /**
+         * convertToAccordion - Re-arrange the HTML to display category items
+         * with expandable sections, similar to an accordion element.
+         */
+        convertToAccordion: function(){
+
+          try {
+
+            if(!this.$selectUI){
+              return
+            }
+            if(this.currentSubmenuMode === "accordion"){
+              return
+            }
+            this.currentSubmenuMode = "accordion";
+            this.$selectUI.addClass("accordion-mode");
+            var $headers = this.$selectUI.find(".header");
+            if(!$headers || $headers.length === 0){
+              return
+            }
+
+            // Id to match the header to the
+            $headers.each(function(i){
+
+              // Create an ID
+              var randomNum = Math.floor((Math.random() * 100000) + 1),
+                  headerText = $(this).text().replace(/\W/g, ''),
+                  id = headerText + randomNum;
+
+              var $itemGroup = $().add($(this).nextUntil(".header"));
+              var $icon = $(this).next().find(".icon");
+              if($icon &amp;&amp; $icon.length > 0){
+                var $headerIcon = $icon
+                  .clone()
+                  .addClass("accordion-mode-icon")
+                  .css({
+                    "opacity": "0.9",
+                    "margin-right" : "1rem"
+                  });
+                $(this).prepend($headerIcon[0])
+                $(this).wrap("&lt;a data-toggle='collapse' data-target='#" +
+                                id +
+                                "' class='accordion-mode collapsed'/>" )
+              }
+              $itemGroup.wrapAll("&lt;div id='" + id + "' class='accordion-mode collapse'/>");
+              $(this).append("&lt;i class='accordion-mode-icon dropdown icon icon-on-right icon-chevron-down'>&lt;/i>");
+
+            });
+          } catch (e) {
+            console.log("Failed to convert a Searchable Select interface to accordion mode, error message: " + e);
+          }
+        },
+
+        /**
+         * hideEmptyCategories - In the searchable select interface, hide
+         * category headers that are empty, if any
+         */
+        hideEmptyCategories: function(){
+          try {
+            var $headers = this.$selectUI.find(".header")
+            if(!$headers || $headers.length === 0){
+              return
+            }
+            $headers.each(function(i){
+              // this is the header
+              var $itemGroup = $().add($(this).nextUntil(".header"));
+              var $itemGroupFiltered = $().add($(this).nextUntil(".header", ".filtered"));
+              // If all items are filtered
+              if($itemGroup.length === $itemGroupFiltered.length){
+                // Then also hide the header
+                $(this).hide()
+              } else {
+                $(this).show()
+              }
+            });
+          } catch (e) {
+            console.log("Failed to hide empty categories in a dropdown, error message: " + e);
+          }
+        },
+
+        /**
+         * showAllCategories - In the searchable select interface, show all
+         * category headers that were previously empty
+         */
+        showAllCategories: function(){
+          try {
+            this.$selectUI.find(".header:hidden").show();
+          } catch (e) {
+            console.log("Failed to show all categories in a dropdown, error message: " + e);
+          }
+        },
+
+        /**
+         * changeSelection - Set selected values in the interface
+         *
+         * @param  {string[]} newValues - An array of strings to select
+         */
+        changeSelection: function(newValues, silent = false) {
+          try {
+            if(
+              !this.$selectUI ||
+              typeof newValues === "undefined" ||
+              !Array.isArray(newValues)
+            ){
+              return
+            }
+            var view = this;
+            this.selected = newValues;
+            if(silent === true){
+              view.disable();
+            }
+            this.$selectUI.dropdown('set exactly', newValues);
+            if(silent === true){
+              view.enable();
+            }
+          } catch (e) {
+            console.log("Failed to change the selected values in a searchable select field, error message: " + e);
+          }
+        },
+
+        /**
+         * checkIfReady - Check if the searchable select field is ready to use.
+         * If the transition UI CSS file isn't loaded in time, search fields
+         * might give error when selecting (or pre-selecting) values.
+         *
+         * @param  {function} callback The function to call when the UI is ready
+         */
+        checkIfReady: function(callback){
+
+          var view = this;
+
+          // prevent flash of unstyled content
+          view.$el.css("display", "none");
+
+          // Find the transition CSS in the head of the document.
+          var transitionCSS = _.find(
+            Array.from(document.styleSheets),
+            function(ss){
+              if(ss.href){
+                return ss.href.includes(view.transitionCSS)
+              }
+            }
+          );
+
+          // What to do when the CSS isn't loaded yet
+          const notReady = function(){
+            view.ready = false;
+            // check again in 15ms
+            setTimeout(function () {
+              view.checkIfReady(callback)
+            }, 15);
+          }
+
+          const ready = function(){
+            view.ready = true;
+            callback.call(view);
+            // prevent flash of unstyled content
+            setTimeout(function () {
+              view.$el.css("display", "block");
+            }, 10);
+          }
+
+          if(view.ready){
+            ready();
+          }
+
+          try {
+            if ( transitionCSS.cssRules.length === 0 ) {
+              notReady();
+            } else {
+              ready();
+            }
+          } catch (e) {
+            notReady();
+          }
+
+        },
+
+        /**
+         * enable - Remove the class the makes the select UI appear disabled
+         */
+        enable: function(){
+          try {
+            this.$el.find('.ui.dropdown').removeClass("disabled");
+          } catch (e) {
+            console.log("Failed to enable the searchable select field, error message: " + e);
+          }
+        },
+
+        /**
+         * disable - Add the class the makes the select UI appear disabled
+         */
+        disable: function(){
+          try {
+            this.$el.find('.ui.dropdown').addClass("disabled");
+          } catch (e) {
+            console.log("Failed to enable the searchable select field, error message: " + e);
+          }
+        },
+
+        /**
+         * showMessage - Show an error, warning, or informational message, and
+         * highlight the select interface in an appropriate colour.
+         *
+         * @param  {string} message The message to display. Use an empty string to only highlight the select interface without showing a messsage.
+         * @param  {string} type    one of "error", "warning", or "info"
+         * @param  {boolean} removeOnChange set to true to remove the message as soon as the user changes the selection
+         *
+         */
+        showMessage: function(message, type = "info", removeOnChange = true){
+          try {
+
+            if(!this.$selectUI){
+              console.warn("A select UI element wasn't found, can't display error.");
+              return
+            }
+
+            var messageTypes = {
+              error: {
+                messageClass: "text-error",
+                selectUIClass: "error"
+              },
+              warning: {
+                messageClass: "text-warning",
+                selectUIClass: "warning"
+              },
+              info: {
+                messageClass: "text-info",
+                selectUIClass: ""
+              }
+            };
+
+            if(!messageTypes.hasOwnProperty(type)){
+              console.log(type + "is not a message type for Select UI interfaces. Showing message as info type");
+              type = "info"
+            }
+
+            this.removeMessages();
+            this.$selectUI.addClass(messageTypes[type].selectUIClass);
+
+            if(message &amp;&amp; message.length &amp;&amp; typeof message === "string"){
+              this.message = $(
+                "&lt;p style='margin:0.2rem' class='" +
+                messageTypes[type].messageClass +
+                "'>&lt;small>" + message +
+                "&lt;/small>&lt;/p>"
+              );
+            }
+
+            this.$el.append(this.message);
+
+            if(removeOnChange){
+              this.listenToOnce(this, "changeSelection", this.removeMessages);
+            }
+
+          } catch (e) {
+            console.log("Failed to show an error state in a Searchable Select View, error message: " + e);
+          }
+        },
+
+
+        /**
+         * removeMessages - Remove all messages and classes set by the
+         * showMessage function.
+         */
+        removeMessages: function(){
+          try {
+            if(!this.$selectUI){
+              console.warn("A select UI element wasn't found, can't remove error.");
+              return
+            }
+
+            this.$selectUI.removeClass("error warning");
+            if(this.message){
+              this.message.remove();
+            }
+          } catch (e) {
+            console.log("Failed to hide an error state in a Searchable Select View, error message: " + e);
+          }
+        },
+
+        /**
+         * showLoading - Indicate that dropdown options are loading by showing
+         * a spinner in the select interface
+         */
+        showLoading: function(){
+          try {
+            this.$el.find('.ui.dropdown').addClass("loading");
+          } catch (e) {
+            console.log("Failed to show a loading state in a Searchable Select View, error message: " + e);
+          }
+        },
+
+        /**
+         * hideLoading - Remove the loading spinner set by the showLoading
+         */
+        hideLoading: function(){
+          try {
+            this.$el.find('.ui.dropdown').removeClass("loading");
+          } catch (e) {
+            console.log("Failed to remove a loading state in a Searchable Select View, error message: " + e);
+          }
+        },
+
+      });
+  });
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Dec 07 2020 17:33:36 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

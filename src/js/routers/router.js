@@ -24,7 +24,6 @@ function ($, _, Backbone) {
 			'data/my-data(/)'                   : 'renderMyData',
 			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
-			'external(/*url)(/)'                : 'renderExternal', // renders the content of the given url in our UI
 			'logout(/)'                         : 'logout', // logout the user
 			'signout(/)'                        : 'logout', // logout the user
 			'signin(/)'                         : 'renderSignIn', // signin the user
@@ -37,7 +36,6 @@ function ($, _, Backbone) {
 			'submit(/*pid)(/)'                  : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)'    : 'renderMdqRun', // MDQ page
 			'api(/:anchorId)(/)'                : 'renderAPI',       // API page
-			'projects(/:portalId)(/:portalSection)(/)': 'renderPortal', // portal page
 			"edit/:portalTermPlural(/:portalIdentifier)(/:portalSection)(/)" : "renderPortalEditor",
 			'drafts' : 'renderDrafts'
 		},
@@ -326,9 +324,13 @@ function ($, _, Backbone) {
 			}
 		},
 
-        /*
-         * Render the portal view based on the given name, id, or section
-         */
+    /**
+     * renderPortal - Render the portal view based on the given name or id, as
+     * well as optional section
+     *
+     * @param  {string} label         The portal ID or name
+     * @param  {string} portalSection A specific section within the portal
+     */
 		renderPortal: function(label, portalSection) {
 			// Add the overall class immediately so the navbar is styled correctly right away
 			$("body").addClass("PortalView");
@@ -627,23 +629,6 @@ function ($, _, Backbone) {
 				MetacatUI.appView.showView(signInLdapView);
 			}
 
-		},
-
-		renderExternal: function(url) {
-			// use this for rendering "external" content pulled in dynamically
-			this.routeHistory.push("external");
-
-			if(!MetacatUI.appView.externalView){
-				require(['views/ExternalView'], function(ExternalView){
-					MetacatUI.appView.externalView = new ExternalView();
-					MetacatUI.appView.externalView.url = url;
-					MetacatUI.appView.showView(MetacatUI.appView.externalView);
-				});
-			}
-			else{
-				MetacatUI.appView.externalView.url = url;
-				MetacatUI.appView.showView(MetacatUI.appView.externalView);
-			}
 		},
 
 		navigateToDefault: function(){

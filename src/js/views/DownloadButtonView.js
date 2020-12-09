@@ -19,10 +19,17 @@ define(['jquery', 'underscore', 'backbone', 'models/SolrResult'],
 		},
 
 		render: function(){
+
+      var fileName = this.model.get("fileName") || "";
+
+      if( typeof fileName == "string" ){
+        fileName = fileName.trim();
+      }
+
 			//Add the href and id attributes
 			this.$el.attr("href", this.model.get("url"))
 					.attr("data-id", this.model.get("id"))
-          .attr("download", this.model.get("fileName") || "");
+          .attr("download", fileName);
 
       //Check for CORS downloads. For CORS, the 'download' attribute may not work,
       // so open in a new tab.

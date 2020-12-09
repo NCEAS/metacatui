@@ -142,6 +142,10 @@ table td{
 td.name{
   background-color: var(--neutral);
 }
+.class-screenshot{
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 .class-screenshot h3{
   text-align: center;
 }
@@ -149,6 +153,9 @@ td.name{
   margin: auto;
   display: flex;
   max-width: 600px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
 }
 section{
   background-color: transparent;

@@ -48,6 +48,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     mediaType: null,
                     fileName: null,
                     // Non-system metadata attributes:
+                    isNew: null,
                     datasource: null,
                     insert_count_i: null,
                     read_count_i: null,
@@ -87,6 +88,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                     isAuthorized_changePermission: null, //If the user has permission to changePermission
                     createSeriesId: false, //If true, a seriesId will be created when this object is saved.
                     collections: [], //References to collections that this model is in
+                    possibleAuthMNs: [], //A list of possible authoritative MNs of this object
                     provSources: [],
                     provDerivations: [],
                     prov_generated: [],
@@ -138,6 +140,10 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               this.set("synced", true);
             });
 
+            //Find Member Node object that might be the authoritative MN
+            //This is helpful when MetacatUI may be displaying content from multiple MNs
+            this.setPossibleAuthMNs();
+
           },
 
           /**
@@ -180,35 +186,73 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if( !this.get("id") && !this.get("seriesid") )
               return "";
 
+            //Get the active alternative repository, if one is configured
+            var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+            //Start the base URL string
+            var baseUrl = "";
+
             // Determine if we're updating a new/existing object,
             // or just its system metadata
+            // New uploads use the object service URL
             if ( this.isNew() ) {
-                // This is a new upload, use MN.create()
-            return MetacatUI.appModel.get("objectServiceUrl") +
-                    (encodeURIComponent(this.get("id")));
+
+              //Use the object service URL from the alt repo
+              if( activeAltRepo ){
+                baseUrl = activeAltRepo.objectServiceUrl;
+              }
+              //If this MetacatUI deployment is pointing to a MN, use the object service URL from the AppModel
+              else{
+                baseUrl = MetacatUI.appModel.get("objectServiceUrl");
+              }
+
+              //Return the full URL
+              return baseUrl;
 
             }
             else {
-                if ( this.hasUpdates() ) {
-                    if ( this.get("hasContentChanges") ) {
-                        // Exists on the server, use MN.update()
-                    return MetacatUI.appModel.get("objectServiceUrl") +
-                        (encodeURIComponent(this.get("oldPid")));
+              if ( this.hasUpdates() ) {
+                if ( this.get("hasContentChanges") ) {
 
-                    } else {
-                        // Exists on the server, use MN.updateSystemMetadata()
-                    return MetacatUI.appModel.get("metaServiceUrl") +
-                            (encodeURIComponent(this.get("id")));
+                  //Use the object service URL from the alt repo
+                  if( activeAltRepo ){
+                    baseUrl = activeAltRepo.objectServiceUrl;
+                  }
+                  else{
+                    baseUrl = MetacatUI.appModel.get("objectServiceUrl");
+                  }
 
-                    }
+                  // Exists on the server, use MN.update()
+                  return baseUrl + (encodeURIComponent(this.get("oldPid")));
 
                 } else {
-                  // Use MN.getSystemMetadata()
-                  return MetacatUI.appModel.get("metaServiceUrl") +
-                          (encodeURIComponent(this.get("id")) ||
-                           encodeURIComponent(this.get("seriesid")));
+
+                  //Use the meta service URL from the alt repo
+                  if( activeAltRepo ){
+                    baseUrl = activeAltRepo.metaServiceUrl;
+                  }
+                  else{
+                    baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+                  }
+
+                  // Exists on the server, use MN.updateSystemMetadata()
+                  return baseUrl + (encodeURIComponent(this.get("id")));
+
+                }
+              } else {
+                //Use the meta service URL from the alt repo
+                if( activeAltRepo ){
+                  baseUrl = activeAltRepo.metaServiceUrl;
+                }
+                else{
+                  baseUrl = MetacatUI.appModel.get("metaServiceUrl");
                 }
 
+                // Use MN.getSystemMetadata()
+                return baseUrl +
+                        (encodeURIComponent(this.get("id")) ||
+                         encodeURIComponent(this.get("seriesid")));
+              }
             }
           },
 
@@ -220,8 +264,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
             if ( ! options ) var options = {};
             else var options = _.clone(options);
 
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
             // Default to GET /meta
-            options.url = MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id"));
+            options.url = baseUrl + encodeURIComponent(this.get("id"));
 
             //If we are using the Solr service to retrieve info about this object, then construct a query
             if((typeof options != "undefined") && options.solrService){
@@ -579,31 +634,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
                     return xhr;
                   },
-                  success: function(model, response, xhr){
-
-                      model.set("numSaveAttempts", 0);
-                      model.set("uploadStatus", "c");
-                      model.trigger("successSaving", model);
-
-                      // Get the newest sysmeta set by the MN
-                      model.fetch({
-                        merge: true,
-                        systemMetadataOnly: true
-                      });
-
-                      // Reset the content changes status
-                      model.set("hasContentChanges", false);
-
-                      //Reset the model isNew attribute
-                      model.set("isNew", false);
-
-                      // Reset oldPid so we can replace again
-                      model.set("oldPid", null);
-
-                      //Set the last-calculated checksum as the original checksum
-                      model.set("originalChecksum", model.get("checksum"));
-                      model.set("checksum", model.defaults().checksum);
-                  },
+                  success: this.onSuccessfulSave,
                   error: function(model, response, xhr){
 
                     //Reset the identifier changes
@@ -661,6 +692,44 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
               Backbone.Model.prototype.save.call(this, null, requestSettings);
         },
 
+        /**
+        * This function is executed when the XHR that saves this DataONEObject has
+        * successfully completed. It can be called directly if a DataONEObject is saved
+        * without directly using the DataONEObject.save() function.
+        * @param {DataONEObject} [model] A reference to this DataONEObject model
+        * @param {XMLHttpRequest.response} [response] The XHR response object
+        * @param {XMLHttpRequest} [xhr] The XHR that was just completed successfully
+        */
+        onSuccessfulSave: function(model, response, xhr){
+
+          if(typeof model == "undefined"){
+            var model = this;
+          }
+
+          model.set("numSaveAttempts", 0);
+          model.set("uploadStatus", "c");
+          model.trigger("successSaving", model);
+
+          // Get the newest sysmeta set by the MN
+          model.fetch({
+            merge: true,
+            systemMetadataOnly: true
+          });
+
+          // Reset the content changes status
+          model.set("hasContentChanges", false);
+
+          //Reset the model isNew attribute
+          model.set("isNew", false);
+
+          // Reset oldPid so we can replace again
+          model.set("oldPid", null);
+
+          //Set the last-calculated checksum as the original checksum
+          model.set("originalChecksum", model.get("checksum"));
+          model.set("checksum", model.defaults().checksum);
+        },
+
           /**
             * Updates the DataONEObject System Metadata to the server
             */
@@ -686,8 +755,19 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             var model = this;
 
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
             var requestSettings = {
-                url: MetacatUI.appModel.get("metaServiceUrl") + (encodeURIComponent(this.get("id"))),
+                url: baseUrl + (encodeURIComponent(this.get("id"))),
                 cache: false,
                 contentType: false,
                 dataType: "text",
@@ -765,51 +845,107 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            */
           checkAuthority: function(action, options){
 
-            // return false - if neither PID nor SID is present to check the authority
-            if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
+            try{
+              // return false - if neither PID nor SID is present to check the authority
+              if ( (this.get("id") == null)  && (this.get("seriesId") == null) ) {
+                return false;
+              }
+
+              if( typeof options == "undefined" ){
+                var options = {};
+              }
+
+              // If PID is not present - check authority with seriesId
+              var identifier = this.get("id");
+              if ( (identifier == null) ) {
+                identifier = this.get("seriesId");
+              }
+
+              if(!action) var action = "changePermission";
+
+              //If there are alt repositories configured, find the possible authoritative
+              // Member Node for this DataONEObject.
+              if( MetacatUI.appModel.get("alternateRepositories").length ){
+
+                //Get the array of possible authoritative MNs
+                var possibleAuthMNs = this.get("possibleAuthMNs");
+
+                //If there are no possible authoritative MNs, use the auth service URL from the AppModel
+                if( !possibleAuthMNs.length ){
+                  baseUrl = MetacatUI.appModel.get("authServiceUrl");
+                }
+                else{
+                  //Use the auth service URL from the top possible auth MN
+                  baseUrl = possibleAuthMNs[0].authServiceUrl;
+                }
+
+              }
+              else{
+                //Get the auth service URL from the AppModel
+                baseUrl = MetacatUI.appModel.get("authServiceUrl");
+              }
+
+              if( !baseUrl ){
+                return false;
+              }
+
+              var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
+                    model.set("isAuthorized_" + action, true);
+                    model.set("isAuthorized", true);
+                    model.trigger("change:isAuthorized");
+                  },
+                  onError = options.onError || function(xhr, textStatus, errorThrown){
+                    if(errorThrown == 404){
+                      var possibleAuthMNs = model.get("possibleAuthMNs");
+                      if( possibleAuthMNs.length ){
+                        //Remove the first MN from the array, since it didn't contain the object, so it's not the auth MN
+                        possibleAuthMNs.shift();
+                      }
+
+                      //If there are no other possible auth MNs to check, trigger this model as Not Found.
+                      if( possibleAuthMNs.length == 0 || !possibleAuthMNs ){
+                        model.set("notFound", true);
+                        model.trigger("notFound");
+                      }
+                      //If there's more MNs to check, try again
+                      else{
+                        model.checkAuthority(action, options);
+                      }
+                    }
+                    else{
+                      model.set("isAuthorized_" + action, false);
+                      model.set("isAuthorized", false);
+                    }
+                  };
+
+              var model = this;
+              var requestSettings = {
+                url: baseUrl + encodeURIComponent(identifier) + "?action=" + action,
+                type: "GET",
+                success: onSuccess,
+                error: onError
+              }
+              $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
+            }
+            catch(e){
+              //Log an error to the console
+              console.error("Couldn't check the authority for this user: ", e);
+
+              //Send this exception to Google Analytics
+              if (MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")) {
+                  ga("send", "exception", {
+                      "exDescription": "Couldn't check the authority for the user " + MetacatUI.appModel.get("username") +
+                          " | Object Id: " + this.get("id") + " | v. " + MetacatUI.metacatUIVersion,
+                      "exFatal": true
+                  });
+              }
+
+              //Set the user as unauthorized
+              model.set("isAuthorized_" + action, false);
+              model.set("isAuthorized", false);
               return false;
+
             }
-
-            if( typeof options == "undefined" ){
-              var options = {};
-            }
-
-            // If PID is not present - check authority with seriesId
-            var identifier = this.get("id");
-            if ( (identifier == null) ) {
-              identifier = this.get("seriesId");
-            }
-
-            if(!action) var action = "changePermission";
-
-            var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
-            if(!authServiceUrl)
-              return false;
-
-            var onSuccess = options.onSuccess || function(data, textStatus, xhr) {
-                  model.set("isAuthorized_" + action, true);
-                  model.set("isAuthorized", true);
-                  model.trigger("change:isAuthorized");
-                },
-                onError = options.onError || function(xhr, textStatus, errorThrown){
-                  if(errorThrown == 404){
-                    model.set("notFound", true);
-                    model.trigger("notFound");
-                  }
-                  else{
-                    model.set("isAuthorized_" + action, false);
-                    model.set("isAuthorized", false);
-                  }
-                };
-
-            var model = this;
-            var requestSettings = {
-              url: authServiceUrl + encodeURIComponent(identifier) + "?action=" + action,
-              type: "GET",
-              success: onSuccess,
-              error: onError
-            }
-            $.ajax(_.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings()));
 
           },
 
@@ -990,7 +1126,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
                 return xmlString;
           },
 
-          /*
+          /**
            * Get the object format identifier for this object
            */
           getFormatId: function() {
@@ -1044,7 +1180,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
           },
 
-          /*
+          /**
            * Build a fresh system metadata document for this object when it is new
            * Return it as a DOM object
            */
@@ -1305,6 +1441,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           * @return {boolean}
           */
           isNew: function(){
+
+            //If the model is explicitly marked as not new, return false
+            if( this.get("isNew") === false ){
+              return false;
+            }
+
             //Check if there is an upload date that was retrieved from the server
             return ( this.get("dateUploaded") === this.defaults().dateUploaded &&
                      this.get("synced") );
@@ -1383,15 +1525,27 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
            * @param {string} [possiblyNewer] - The identifier of the object that obsoletes the latestVersion. It's "possibly" newer, because it may be private/inaccessible
            */
           findLatestVersion: function(latestVersion, possiblyNewer){
-            // Make sure we have the /meta service configured
-            if(! MetacatUI.appModel.get('metaServiceUrl')) return;
+            var baseUrl = "",
+                activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+            //Use the meta service URL from the alt repo
+            if( activeAltRepo ){
+              baseUrl = activeAltRepo.metaServiceUrl;
+            }
+            //If this MetacatUI deployment is pointing to a MN, use the meta service URL from the AppModel
+            else{
+              baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+            }
+
+            if( !baseUrl ){
+              return;
+            }
 
             //If there is no system metadata, then retrieve it first
             if(!this.get("sysMetaXML")){
               this.once("sync", this.findLatestVersion);
               this.once("systemMetadataSync", this.findLatestVersion);
               this.fetch({
-                url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id")),
+                url: baseUrl + encodeURIComponent(this.get("id")),
                 dataType: "text",
                 systemMetadataOnly: true
               });
@@ -1423,7 +1577,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
 
             //Get the system metadata for the possibly newer version
             var requestSettings = {
-              url: MetacatUI.appModel.get('metaServiceUrl') + encodeURIComponent(possiblyNewer),
+              url: baseUrl + encodeURIComponent(possiblyNewer),
               type: "GET",
               success: function(data) {
 
@@ -1959,6 +2113,56 @@ define(['jquery', 'underscore', 'backbone', 'uuid', 'he', 'collections/AccessPol
           }
 
           return false;
+        },
+
+        /**
+        * Creates an array of objects that represent Member Nodes that could possibly be this
+        * object's authoritative MN. This function updates the `possibleAuthMNs` attribute on this model.
+        */
+        setPossibleAuthMNs: function(){
+
+          //Only do this for Coordinating Node MetacatUIs.
+          if( MetacatUI.appModel.get("alternateRepositories").length ){
+            //Set the possibleAuthMNs attribute
+            var possibleAuthMNs = [];
+
+            //If a datasource is already found for this Portal, move that to the top of the list of auth MNs
+            var datasource = this.get("datasource") || "";
+            if( datasource ){
+              //Find the MN object that matches the datasource node ID
+              var datasourceMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: datasource });
+              if( datasourceMN ){
+                //Clone the MN object and add it to the array
+                var clonedDatasourceMN = Object.assign({}, datasourceMN);
+                possibleAuthMNs.push(clonedDatasourceMN);
+              }
+            }
+
+            //If there is an active alternate repo, move that to the top of the list of auth MNs
+            var activeAltRepo = MetacatUI.appModel.get("activeAlternateRepositoryId") || "";
+            if( activeAltRepo ){
+              var activeAltRepoMN = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: activeAltRepo });
+              if( activeAltRepoMN ){
+                //Clone the MN object and add it to the array
+                var clonedActiveAltRepoMN = Object.assign({}, activeAltRepoMN);
+                possibleAuthMNs.push(clonedActiveAltRepoMN);
+              }
+            }
+
+            //Add all the other alternate repositories to the list of auth MNs
+            var otherPossibleAuthMNs = _.reject(MetacatUI.appModel.get("alternateRepositories"), function(mn){
+                                         return (mn.identifier == datasource || mn.identifier == activeAltRepo);
+                                       });
+            //Clone each MN object and add to the array
+            _.each(otherPossibleAuthMNs, function(mn){
+              var clonedMN = Object.assign({}, mn);
+              possibleAuthMNs.push(clonedMN);
+            });
+
+            //Update this model
+            this.set("possibleAuthMNs", possibleAuthMNs);
+
+          }
         }
     },
     /** @lends DataONEObject.prototype */

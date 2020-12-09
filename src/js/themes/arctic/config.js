@@ -1,4 +1,6 @@
-
+if( !MetacatUI.AppConfig ){
+  MetacatUI.AppConfig = {};
+}
 // Set up App Configurations that are always used for the arctic theme.
 // Deployment-specific configurations can be set in a separate file
 MetacatUI.AppConfig = Object.assign({
@@ -22,6 +24,8 @@ MetacatUI.AppConfig = Object.assign({
   hideSummaryViewsChart: false,
   hideSummaryMetadataAssessment: false,
   enableFeverVisualizations: true,
+  portalInfoURL: "https://arcticdata.io/data-portals/",
+  portalLimit: 999,
 
   //Editor
   useNSFAwardAPI: true,

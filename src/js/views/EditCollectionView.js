@@ -5,9 +5,10 @@ define(['underscore',
         "models/CollectionModel",
         "models/Search",
         "views/DataCatalogViewWithFilters",
+        "views/queryBuilder/QueryBuilderView",
         "text!templates/editCollection.html"],
 function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilters,
-         Template){
+          QueryBuilder, Template){
 
   /**
   * @class EditCollectionView
@@ -59,10 +60,27 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     */
     collectionControlsContainer: ".applied-filters-container",
     /**
+    * A jQuery selector for the element that the QueryBuilder should be inserted into
+    * @type {string}
+    */
+    queryBuilderViewContainer: ".query-builder-view-container",
+    /**
     * A jQuery selector for the element that contains the filter help text
     * @type {string}
     */
     helpTextContainer: "#filter-help-text",
+    
+    /**    
+     * An array of hex color codes used to help distinguish between different rules
+     * @type {string[]}    
+     */     
+     ruleColorPalette: ["#44AA99", "#137733", "#c9a538", "#CC6677", "#882355", "#AA4499","#332288"],
+    
+    /**        
+     * Search index fields to exclude in the metadata field selector of each query rule        
+     * @type {string[]}
+     */         
+    queryBuilderExcludeFields: MetacatUI.appModel.get("collectionQueryExcludeFields"),
 
     /**
     * The events this view will listen to and the associated function to call.
@@ -88,8 +106,33 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     * Renders this view
     */
     render: function(){
+      
+      var title = "Change the data in your collection"
+      if(this.model.isNew()){
+        title = "Add data to your collection"
+      }
+      
+      var helpText = "",
+          email = MetacatUI.appModel.get("emailContact");
+      
+      if (email) {
+        helpText = 'Need help building your data collection? <a href="maito:' + email + '">Get in touch.</a>'
+      }
 
-      this.$el.html(this.template());
+      this.$el.html(this.template({
+        title: title,
+        description: "Your collection can include any of the datasets that are available on the network. " +
+          "Build rules based on metadata to define which datasets should be included in your collection. " +
+          "Data added to the network in the future that match these rules will also be added to your collection. " +
+          "Click the save button when you're happy with the results.",
+        helpText: helpText
+      }));
+      
+      // Remove this when the Query Builder is no longer new:
+      this.$el
+        .find(".edit-collection-title")
+        .append($('<span class="new-icon" style="margin-left:10px; font-size:1rem; line-height: 25px;"><i class="icon icon-star icon-on-right"></i> NEW </span>'));
+        // .append($('<span class="badge badge-info d1_pill d1_pill--primary" style="margin-left:10px">NEW!</span>'));
 
       // Make sure that we have a series ID before we render the Data Catalog
       // View With Filters. For new portals, we generate and reserve a series ID
@@ -103,61 +146,67 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
         this.listenToOnce(this.model, "change:seriesId",    this.renderDataCatalog);
         this.listenToOnce(this.model, "latestVersionFound", this.renderDataCatalog);
       }
-
+      
       //this.renderCollectionControls();
 
     },
-
+    
+    /**    
+     * renderQueryBuilder - Render the QueryBuilder and insert it into this view
+     */     
+    renderQueryBuilder: function(){
+      
+      var view = this;
+      
+      // If the isPartOf filter is hidden, then don't allow users to build
+      // a query rule usinig the isPartOf field. If they do, that rule will
+      // be hidden the next time they open the portal in the editor. Also,
+      // the filter they create will overwrite the isPartOf filter created by
+      // default.
+      if(MetacatUI.appModel.get("hideIsPartOfFilter") === true ? true : false){
+        this.queryBuilderExcludeFields.push("isPartOf")
+      }
+      
+      var queryBuilder = new QueryBuilder({
+        collection: this.model.get("definitionFilters"),
+        ruleColorPalette: this.ruleColorPalette,
+        excludeFields: this.queryBuilderExcludeFields,
+      });
+      
+      // Render the query builder and insert it into this view
+      this.$(this.queryBuilderViewContainer).html(queryBuilder.el);
+      queryBuilder.render();
+    },
+    
     /**
      * Render the DataCatalogViewWithFilters
      */
     renderDataCatalog: function(){
+      
+      this.renderQueryBuilder();
 
       var searchModel = this.model.get("searchModel");
 
       searchModel.set("useGeohash", false);
 
-      //Create a DataCatalog view
+      // Create a DataCatalog view
       var dataCatalogView = new DataCatalogViewWithFilters({
         searchModel: searchModel,
         searchResults: this.model.get("searchResults"),
         mapModel: this.model.get("mapModel") || new Map(),
         isSubView: true,
         mode: "map",
-        filters: false
+        filters: false,
+        // Override the function that creates filter groups on the left of the
+        // data catalog view. With the query builder view, they are not needed.
+        // Otherwise, the defaultFilterGroups will be added to the query builder
+        createFilterGroups: function(){ return },
+        addAnnotationFilter: function(){ return }
       });
 
       //Render the view and insert it into the page
       this.$(this.dataCatalogViewContainer).html(dataCatalogView.el);
       dataCatalogView.render();
-
-      //Add a filter input for the isPartOf filter
-      if( dataCatalogView.filterGroupsView &&
-          dataCatalogView.filterGroupsView.filterGroups &&
-          dataCatalogView.filterGroupsView.filterGroups.length ){
-
-        //Get the isPartOf filter in the search model
-        var isPartOfFilter = searchModel.get("filters").find(function(f){
-          return (f.get("fields").length == 1 && f.get("fields").includes("isPartOf"));
-        });
-
-        //If an isPartOf filter already exists, add it to the filter groups
-        if( isPartOfFilter ){
-          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
-        }
-        //Otherwise, create a new isPartOf filter
-        else{
-          //Create an isPartOf filter
-          isPartOfFilter = this.model.createIsPartOfFilter();
-          //Set the value as a trueValue, so it can bbe used as a Toggle
-          isPartOfFilter.set("trueValue", isPartOfFilter.get("values")[0]);
-          //Reset the values
-          isPartOfFilter.set("values", []);
-          //Add the isPartOf filter to the filter collections
-          dataCatalogView.filterGroupsView.filters.unshift(isPartOfFilter);
-          dataCatalogView.filterGroupsView.filterGroups[0].get('filters').unshift(isPartOfFilter);
-        }
-      }
 
       this.listenTo(this.model.get("searchResults"), "reset", this.toggleHelpText);
 
@@ -193,22 +242,24 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
     toggleHelpText: function() {
 
       //Get the list of filters currently applied to the collection definition
-      var currentFilters = this.model.getAllDefinitionFilters(),
+      var currentFilters = this.model.get("definitionFilters"),
           msg = "";
 
       // If there are no filters set at all, the entire repository catalog will be listed as
       // search results, so display a helpful message
       if ( currentFilters.length == 0 && this.model.get("searchResults").length ) {
         msg = "<h5>Your dataset collection hasn't been created yet.</h5>" +
-              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, search for data using the filters on the left.</p>";
+              "<p>The datasets listed here are totally unfiltered. To specify which datasets belong to your collection, " +
+              "add rules in query builder above.</p>";
       }
       //If there is only an isPartOf filter, but no datasets have been marked as part of this collection
       else if( currentFilters.length == 1 &&
-               currentFilters[0].get("fields")[0] == "isPartOf" &&
+               currentFilters.models[0].get("fields")[0] == "isPartOf" &&
                !this.model.get("searchResults").length){
 
-         msg = "<h5>Your dataset collection is empty.</h5>" +
-               "<p>To add datasets to your collection, search for data using the filters on the left.</p>";
+         msg = "<h5>Your dataset collection is empty.</h5> " +
+               "<p>To add datasets to your collection, " + 
+               "add rules in query builder above.</p>";
 
         //TODO: When the ability to add datasets to collection via the "isPartOf" relationship is added to MetacatUI
         // then update this message with details on how to add datasets to the collection
@@ -217,7 +268,7 @@ function(_, $, Backbone, Map, CollectionModel, Search, DataCatalogViewWithFilter
       //If a message string was created, display it
       if( msg ){
         //Show the message
-        MetacatUI.appView.showAlert(msg, "alert-info", this.$(this.helpTextContainer));
+        MetacatUI.appView.showAlert(msg, "alert-warning", this.$(this.helpTextContainer));
       }
       else{
         //Remove the message

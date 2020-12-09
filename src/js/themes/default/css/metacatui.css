@@ -249,15 +249,23 @@
   margin-right: 20px;
 }
 .Portal.Editor #Navbar .nav .minimal-nav > a,
-.PortalView #Navbar .nav .minimal-nav > a{
+.PortalView #Navbar .nav .minimal-nav > a,
+.Portal.Editor #Navbar a .title,
+.PortalView #Navbar a .title {
   color: #888;
   font-weight: normal;
 }
+
 .PortalView #Navbar .nav .minimal-nav > .btn{
   padding: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
   line-height: .9em;
+}
+
+.Portal.Editor .navbar-inner,
+.PortalView .navbar-inner {
+  border-radius: 0;
 }
 
 /* Portal editor

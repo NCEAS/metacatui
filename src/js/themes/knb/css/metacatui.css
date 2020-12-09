@@ -151,8 +151,7 @@
 
 	/* Offsets the anchor links by the same height as the fixed header */
 	#About a[name],
-	#Tools a[name],
-	#external .book a[name] { /*for eml parser docs */
+	#Tools a[name] { /*for eml parser docs */
 		position:relative;
 		top: -95px;
 		display: block;
@@ -240,6 +239,10 @@
 }
 .port-editor-section svg .theme-accent-fill{
 	fill: #b90004
+}
+
+.port-editor-sections .section-link-container.sortable-ghost {
+  background-color: #007DBB !important;
 }
 
 /* Editor
@@ -514,10 +517,11 @@
 
     .btn-primary {
        background-color: #007DBB;
-      border-color: #0070a8;
 	  color: #FFFFFF;
 	  background-image: none;
 	  box-shadow: none;
+    padding: 10px;
+    border-width: 0px;
     }
 
     button.btn-primary a {
@@ -994,8 +998,16 @@ img[src*="gstatic.com/"], img[src*="googleapis.com/"]  {
     	padding-right: 25px;
     }
 
-    #SignIn {
-      float: right;
+    .navbar .login-container .login.btn{
+      border: 0px;
+      background-color: transparent;
+      font-size: 1em;
+      box-shadow: none;
+      text-shadow: none;
+      font-size: 18px;
+      font-weight: 400;
+      text-transform: uppercase;
+      color: #555;
     }
 
     .dropdown-header {
@@ -2438,14 +2450,6 @@ svg .no-activity,
 
  /* MISC
  -----------------------------------------------*/
- #external > .container{
- 	width: 80%;
- }
-
- #external dt{
- 	line-height: 34px;
- 	font-size: 16px;
- }
 
  .align-center{
  	margin-left: auto;

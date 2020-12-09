@@ -58,7 +58,6 @@ define(["jquery",
 
     /**
      * The default Backbone.Model.initialize() function
-     *
     */
     initialize: function(options){
 
@@ -70,6 +69,20 @@ define(["jquery",
       //If the searchResults collection is replaced at any time, reset the listener
       this.on("change:searchResults", function(searchResults){
         this.listenToOnce(this.get("searchResults"), "sync", this.cacheSearchResults);
+      });
+      
+      // Update the search model when the definition filters are updated.
+      // Definition filters may be updated by the user in the Query Builder,
+      // or they may be updated automatically by this model (e.g. when adding
+      // an isPartOf filter).
+      this.off("change:definitionFilters");
+      this.on("change:definitionFilters", function(){
+        this.stopListening(this.get("definitionFilters"), "update change");
+        this.listenTo(
+          this.get("definitionFilters"),
+          "update change",
+          this.updateSearchModel
+        );
       });
 
       //Create a search model
@@ -84,11 +97,50 @@ define(["jquery",
         this.set("labelBlockList", this.get("labelBlockList").concat(nodeBlockList));
       }
 
-      //When this Collection has been saved, re-save the collection definition
-      this.on("successSaving", function(){
-        this.get("definitionFilters").reset(this.getAllDefinitionFilters());
-      });
-
+    },
+    
+    /**    
+     * updateSearchModel - This function is called when any changes are made to
+     * the definition filters. The function adds, removes, or updates models
+     * in the Search Model filters when models are changed in the collection
+     * Definition Filters.
+     *      
+     * @param  {Filter|Filters} model The model or collection that has been
+     * changed (filter models) or updated (filters collection). This is ignored.
+     * @param  {object} record     The data passed by backbone that indicates
+     * which models have been added, removed, or updated. If the only change was
+     * to a pre-existing model attribute, then the object will be empty.   
+     */     
+    updateSearchModel: function(model, record){
+      
+      try {
+        var model = this;
+        
+        if(typeof record == "undefined" || !record){
+          record = {}
+        }
+        
+        // Remove models from the Search Model collection if models have been
+        // removed from the Definition Filters collection.
+        if(
+          record.changes &&
+          record.changes.removed &&
+          record.changes.removed.length
+        ){
+          this.get("searchModel").get("filters").remove(
+            record.changes.removed
+          )
+        }
+        
+        // Add or merge the definition filters with the Search Model collection.
+        this.get("searchModel").get("filters").add(
+          model.get("definitionFilters").models,
+          { merge: true }
+        );
+      } catch (e) {
+        console.log("Failed to update the Search Model collection when the " +
+        "Definition Model collection changed, error message: " + e);
+      }
     },
 
     /**
@@ -128,9 +180,24 @@ define(["jquery",
       if(!options) var options = {};
       else options = _.clone(options);
 
+      //Get the active alternative repository, if one is configured
+      var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+      if( activeAltRepo ){
+        baseUrl = activeAltRepo.metaServiceUrl;
+      }
+      else{
+        baseUrl = MetacatUI.appModel.get("metaServiceUrl");
+      }
+
+      //Exit if no base URL was found
+      if( !baseUrl ){
+        return;
+      }
+
       var model = this,
         fetchOptions = _.extend({
-          url: MetacatUI.appModel.get("metaServiceUrl") + encodeURIComponent(this.get("id") || this.get("seriesId")),
+          url: baseUrl + encodeURIComponent(this.get("id") || this.get("seriesId")),
           dataType: "text",
           success: function(response){
             model.set(DataONEObject.prototype.parse.call(model, response));
@@ -268,70 +335,63 @@ define(["jquery",
     },
 
     /**
-     * Creates a FilterModel with isPartOf as the field and the seriesId as
-     * the value. Adds the filter to the searchModel and the filters model
-     * attributes.
+     * Creates a FilterModel with isPartOf as the field and this collection's
+     * seriesId as the value, then adds it to the definitionFilters collection.
+     * (which will also add it to the searchFilters collection)
      * @param {string} [seriesId] - the seriesId of the collection or portal
+     * @return {Filter} The new isPartOf filter that was created
      */
     addIsPartOfFilter: function(seriesId){
-      // If no seriesId is given
-      if(!seriesId){
-        // Use the seriesId set on the model
-        if(this.get("seriesId")){
-          seriesId = this.get("seriesId");
-        // If there's no seriesId on the model, make and reserve one
-        } else {
-          //Create and reserve a new seriesId
-          this.reserveSeriesId();
-          seriesId = this.get("seriesId");
+      
+      try {
+        // If no seriesId is given
+        if(!seriesId){
+          // Use the seriesId set on the model
+          if(this.get("seriesId")){
+            seriesId = this.get("seriesId");
+          // If there's no seriesId on the model, make and reserve one
+          } else {
+            //Create and reserve a new seriesId
+            this.reserveSeriesId();
+            seriesId = this.get("seriesId");
 
-          // Set a listener to create an isPartOf filter using the seriesId once
-          // the series Id is set. Just in case the first seriesId generated was
-          // already reserved, update the isPartOf filters on the subsequent
-          // attempts to create and resere an ID.
-          this.on("change:seriesId", function(seriesId){
-            this.addIsPartOfFilter();
-          });
+            // Set a listener to create an isPartOf filter using the seriesId once
+            // the series Id is set. Just in case the first seriesId generated was
+            // already reserved, update the isPartOf filters on the subsequent
+            // attempts to create and resere an ID.
+            this.on("change:seriesId", function(seriesId){
+              this.addIsPartOfFilter();
+            });
 
+          }
         }
+
+        // Create the new isPartOf filter attributes object
+        // NOTE: All other attributes are set in Filter.initialize();
+        var isPartOfAttributes = {
+          fields: ["isPartOf"],
+          values: [seriesId],
+          matchSubstring: false,
+          operator: "OR"
+        };
+        
+        // Remove any existing isPartOf filters, and add the new isPartOf filter
+      
+        // NOTE:
+        // 1. Changes to the definition filters will automatically update the
+        // Search Model filters becuase of the listener set in initialize().
+        // 2. Add the new Filter model by passsing a list of attributes to the
+        // Filters collection, instead of by passing a new Filter, in order
+        // to trigger 'update' and 'change' events for other models and views.
+        
+        this.get("definitionFilters").removeFiltersByField("isPartOf");
+        var filterModel = this.get("definitionFilters").add(isPartOfAttributes);
+        
+        return filterModel
+      } catch (e) {
+        console.log("Failed to create and add a new isPartOf Filter, error message: " + e);
       }
-
-      //Create an isPartOf filter
-      var filterModel = this.createIsPartOfFilter(seriesId);
-
-      //Remove any existing isPartOf filters
-      this.get("searchModel").get("filters").removeFiltersByField("isPartOf");
-      this.get("definitionFilters").removeFiltersByField("isPartOf");
-
-      //Add the new isPartOf filter
-      this.get("searchModel").get("filters").add(filterModel);
-      this.get("definitionFilters").add(filterModel);
-    },
-
-    /**
-     * Creates a FilterModel with isPartOf as the field and this collection's
-     * seriesId as the value.
-     * @param {string} [seriesId] - the seriesId of the collection or portal
-     * @return {Filter}
-     */
-    createIsPartOfFilter: function(seriesId){
-
-      // If no seriesId is given, use the one from the model
-      if(!seriesId){
-        var seriesId = this.get("seriesId");
-      }
-
-      // Create the new filterModel
-      var filterModel = new Filter({
-        fields: ["isPartOf"],
-        values: [seriesId],
-        label: "Datasets added manually",
-        matchSubstring: false,
-        operator: "OR"
-      });
-
-      return filterModel;
-
+      
     },
 
     /**
@@ -394,11 +454,11 @@ define(["jquery",
       // Create new definition element
       var definitionSerialized = objectDOM.ownerDocument.createElement("definition");
 
-      //Get the filters that are currently applied to the search.
-      var filtersToSerialize = this.getAllDefinitionFilters();
+      // Get the filters that are currently applied to the search.
+      var filtersToSerialize = this.get("definitionFilters");
 
       // Iterate through the filter models
-      _.each(filtersToSerialize, function(filterModel){
+      filtersToSerialize.each(function(filterModel){
 
         // updateDOM of portal definition filters, then append to <definition>
         var filterSerialized = filterModel.updateDOM({
@@ -411,7 +471,7 @@ define(["jquery",
         //Append the filter node to the definition node
         definitionSerialized.appendChild(filterSerialized);
 
-      }, this);
+      });
 
       //If at least one filter was serialized, add the <definition> node
       if( definitionSerialized.childNodes.length ){
@@ -481,21 +541,6 @@ define(["jquery",
     },
 
     /**
-    * Returns an array of the Filter models that have a value set
-    */
-    getAllDefinitionFilters: function(){
-
-      return this.get("searchModel").get("filters").filter(function(filterModel){
-
-        // If this filter has a value set by the user, and it's not in a query group
-        // marked to ignore, then include it
-        return( filterModel.hasChangedValues() &&
-                !this.get("ignoreQueryGroups").includes( filterModel.get("queryGroup") ));
-
-      }, this);
-    },
-
-    /**
     * This is a shortcut function that returns the query for the datasets in this portal,
     *  using the Search model for this portal. This is the full query that includes the filters not
     *  serialized to the portal XML, such as the filters used for the DataCatalogView.
@@ -548,20 +593,21 @@ define(["jquery",
         }
 
         // ---- Validate the definition filters ----
-        if( this.getAllDefinitionFilters().length == 0 ){
-          errors.definition = "Your dataset collection hasn't been created. Add at least one search " +
-                              "term below to find datasets for this " +
+        
+        if( this.get("definitionFilters").length == 0 ){
+          errors.definition = "Your dataset collection hasn't been created. Add at least one query " +
+                              "rule below to find datasets for this " +
                               this.type.toLowerCase() + ". For example, to create a " + this.type.toLowerCase() +
-                              " for datasets from a specific research project, try searching for the project name.";
+                              " for datasets from a specific research project, try using the project name field.";
         }
         else{
-          _.each( this.getAllDefinitionFilters(), function(filter){
+          this.get("definitionFilters").each(function(filter){
 
             if( !filter.isValid() ){
               errors.definition = "At least one filter is invalid.";
             }
 
-          }, this);
+          });
         }
 
         if( Object.keys(errors).length )
@@ -594,10 +640,16 @@ define(["jquery",
           var label = this.get("label");
         }
 
-        //If the label is empty
+        //If the label is not a string or is an empty string
         if( typeof label != "string" || !label.trim().length ){
-          var type = this.type.toLowerCase();
-          return "Please choose a name for this " + type + " to use in the URL.";
+          //Convert numbers to strings
+          if(typeof label == "number"){
+            label = label.toString();
+          }
+          else{
+            var type = this.type.toLowerCase();
+            return "Please choose a name for this " + type + " to use in the URL.";
+          }
         }
 
         // If the label is a restricted string

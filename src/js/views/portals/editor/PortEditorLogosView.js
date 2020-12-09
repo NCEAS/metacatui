@@ -122,7 +122,7 @@ function(_, $, Backbone, PortalImage, ImageEdit){
           parentModel: this.model,
           editorView: this.editorView,
           model: portalImage,
-          imageUploadInstructions: "Drag & drop a partner logo here or click to upload",
+          imageUploadInstructions: "Drag & drop a partner logo or click to upload",
           imageWidth: 150,
           imageHeight: 150,
           minWidth: 100,

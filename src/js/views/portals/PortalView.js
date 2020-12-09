@@ -121,6 +121,12 @@ define(["jquery",
             */
             sectionEls: ".portal-section-view",
             /**
+            * A jQuery selection for the element that will contain the Edit button.
+            * @type {string}
+            * @since 2.14.0
+            */
+            editButtonContainer: ".edit-portal-link-container",
+            /**
              * The events this view will listen to and the associated function to call.
              * @type {Object}
              */
@@ -195,7 +201,7 @@ define(["jquery",
             },
 
             /**
-             * Entery point for portal rendering
+             * Entry point for portal rendering
              */
             renderAsPortal: function(){
 
@@ -275,12 +281,6 @@ define(["jquery",
              */
             renderPortal: function() {
 
-              // only displaying the edit button for non-repository profiles
-              if (!this.nodeView){
-                // Add edit button if user is authorized
-                this.insertOwnerControls();
-              }
-
               // Getting the correct portal label and seriesID
               this.label = this.model.get("label");
               this.portalId = this.model.get("seriesId");
@@ -288,6 +288,57 @@ define(["jquery",
               // Remove the listeners that were set during the fetch() process
               this.stopListening(this.model, "notFound", this.handleNotFound);
               this.stopListening(this.model, "error", this.showError);
+
+              //If this is in DataONE Plus Preview Mode, check that the portal is
+              // a Plus portal before rendering. Member Node portals are always displayed.
+              if( MetacatUI.appModel.get("dataonePlusPreviewMode") && !this.nodeView){
+                var sourceMN = this.model.get("datasource");
+
+                //Check if the portal source node is from the active alt repo OR is
+                // configured as a Plus portal.
+                if( typeof sourceMN != "string" ||
+                    (sourceMN != MetacatUI.appModel.get("defaultAlternateRepositoryId") &&
+                    !_.findWhere(MetacatUI.appModel.get("dataonePlusPreviewPortals"),
+                                 { datasource: sourceMN, seriesId: this.model.get("seriesId") })) ){
+
+                    //Get the name of the source member node
+                    var sourceMNName = "original data repository",
+                        mnURL        = "";
+                    if( typeof sourceMN == "string" ){
+                      var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
+                      if( sourceMNObject ){
+                        sourceMNName = sourceMNObject.name;
+
+                        //If there is a baseURL string
+                        if( sourceMNObject.baseURL ){
+                          //Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
+                          mnURL = sourceMNObject.baseURL.substring(0, sourceMNObject.baseURL.lastIndexOf(".")) +
+                                  sourceMNObject.baseURL.substring(sourceMNObject.baseURL.lastIndexOf("."),
+                                                                   sourceMNObject.baseURL.indexOf("/", sourceMNObject.baseURL.lastIndexOf(".")));
+                        }
+                      }
+                    }
+
+                    //Show a message that the portal can be found on the repository website.
+                    var message = $(document.createElement("h3")).addClass("center stripe");
+                    message.text("The " + this.model.get("name") + " " + MetacatUI.appModel.get("portalTermSingular") +
+                              " can be viewed in the ");
+
+                    if(mnURL){
+                      message.append( $(document.createElement("a"))
+                                        .attr("href", mnURL)
+                                        .attr("target", "_blank")
+                                        .text(sourceMNName) );
+                    }
+                    else{
+                      message.append(sourceMNName);
+                    }
+
+                    this.$el.html(message);
+
+                    return;
+                }
+              }
 
                 // Insert the overall portal template
                 this.$el.html(this.template(this.model.toJSON()));
@@ -299,6 +350,12 @@ define(["jquery",
                 });
                 this.headerView.render();
                 this.subviews.push(this.headerView);
+
+                // only displaying the edit button for non-repository profiles
+                if (!this.nodeView){
+                  // Add edit button if user is authorized
+                  this.insertOwnerControls();
+                }
 
                 // Render the content sections
                 _.each(this.model.get("sections"), function(section){
@@ -363,10 +420,7 @@ define(["jquery",
                     this.addSectionLink( this.sectionMembersView );
                 }
 
-                //Switch to the active section
-                this.switchSection();
-
-                //Render the logos at the bottom of the portal page
+                // Render the logos at the bottom of the portal page
                 var ackLogos = this.model.get("acknowledgmentsLogos") || [];
                 if( ackLogos.length ){
                   this.logosView = new PortalLogosView();
@@ -376,11 +430,46 @@ define(["jquery",
                   this.$(".portal-view").append(this.logosView.el);
                 }
 
+                // Re-order the section tabs according the the portal editor's preference,
+                // if one has been set
+                try {
+                  var pageOrder = this.model.get("pageOrder");
+                  if(pageOrder && pageOrder.length){
+                    var linksContainer = this.el.querySelector("#portal-section-tabs"),
+                        sortableLinks = this.el.querySelectorAll("#portal-section-tabs .section-link-container"),
+                        sortableLinksArray = Array.prototype.slice.call(sortableLinks, 0);
+                    // sort the links according the pageOrder
+                    sortableLinksArray.sort(function(a,b){
+                      var aName = $(a).text();
+                      var bName = $(b).text();
+                      var aIndex = pageOrder.indexOf(aName);
+                      var bIndex = pageOrder.indexOf(bName);
+                      // If the label can't be found in the list of labels, place it at the end
+                      if(bIndex === -1){
+                        return +1
+                      }
+                      if(aIndex === -1){
+                        return -1
+                      }
+                      // Sort backwards, because we use preprend
+                      return bIndex - aIndex;
+                    })
+                    // Rearrange the links in the DOM
+                    for (i = 0; i < sortableLinksArray.length; ++i) {
+                      linksContainer.prepend(sortableLinksArray[i]);
+                    }
+                  }
+                } catch (error) {
+                  console.log("Error re-arranging tabs according to the pageOrder option. Error message: " + error)
+                }
+
+                //Switch to the active section
+                this.switchSection();
+                
                 //Scroll to an inner-page link if there is one specified
                 if( window.location.hash && this.$(window.location.hash).length ){
                   MetacatUI.appView.scrollTo(this.$(window.location.hash));
                 }
-
 
                 // Save reference to this view
                 var view = this;
@@ -423,7 +512,7 @@ define(["jquery",
             insertOwnerControls: function(){
 
               // Insert the button into the navbar
-              var container = $(".edit-portal-link-container");
+              var container = $(this.editButtonContainer);
 
               var model = this.model;
 
@@ -746,13 +835,15 @@ define(["jquery",
                     if( sizeOfQueue > 0 ){
                       //Show a warning message about the index queue
                       MetacatUI.appView.showAlert(
-                        "<p>We couldn't find a data portal named \"" + (view.label || view.portalId) +
+                        "<p>We couldn't find a data portal named \" <span id='portal-view-not-found-name'></span>" +
                           "\".</p><p><i class='icon icon-exclamation-sign'></i> If this portal was created in the last few minutes, it may still be processing, since there are currently <b>" + sizeOfQueue +
                           "</b> submissions in the queue.</p>",
                         "alert-warning",
                         view.$el
                       );
                       view.$(".loading").remove();
+
+                      view.$("#portal-view-not-found-name").text(view.label || view.portalId);
                     }
                     else{
                       //If the size of the queue is 0, then show the not-found message
@@ -783,7 +874,7 @@ define(["jquery",
              */
             showNotFound: function(){
 
-              var notFoundMessage = "The data portal \"" + (this.label || this.portalId) +
+              var notFoundMessage = "The data portal \"<span id='portal-view-not-found-name'></span>" +
                                     "\" doesn't exist.",
                   notification = this.alertTemplate({
                     classes: "alert-error",
@@ -792,6 +883,8 @@ define(["jquery",
                   });
 
               this.$el.html(notification);
+
+              this.$("#portal-view-not-found-name").text(this.label || this.portalId);
 
             },
 
@@ -852,6 +945,9 @@ define(["jquery",
 
                 //Remove all listeners
                 this.stopListening();
+
+                //Reset the active alternate repository
+                //MetacatUI.appModel.set("activeAlternateRepositoryId", null);
 
                 //Delete the metrics view from this view
                 delete this.sectionMetricsView;
