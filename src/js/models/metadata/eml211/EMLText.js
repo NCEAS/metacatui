@@ -190,7 +190,9 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     },
 
     trickleUpChange: function(){
-      MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      if( MetacatUI.rootDataPackage && MetacatUI.rootDataPackage.packageModel ){
+        MetacatUI.rootDataPackage.packageModel.set("changed", true);
+      }
     },
 
     formatXML: function(xmlString){

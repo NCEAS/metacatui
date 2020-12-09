@@ -2,18 +2,15 @@
 define(['jquery', 'underscore', 'backbone', 'clipboard',
         'collections/UserGroup',
     		'models/UserModel',
-    		'models/portals/PortalModel',
         "models/Stats",
         'views/SignInView', 'views/StatsView', 'views/DataCatalogView',
-        'views/GroupListView', 'views/portals/PortalView', 'views/portals/PortalListView',
+        'views/GroupListView',
         'text!templates/userProfile.html', 'text!templates/alert.html', 'text!templates/loading.html',
         'text!templates/userProfileMenu.html', 'text!templates/userSettings.html', 'text!templates/noResults.html'],
 	function($, _, Backbone, Clipboard,
     UserGroup,
-  	UserModel,
-  	Portal,
-    Stats,
-    SignInView, StatsView, DataCatalogView, GroupListView, PortalView, PortalListView,
+    UserModel, Stats,
+    SignInView, StatsView, DataCatalogView, GroupListView,
     userProfileTemplate, AlertTemplate, LoadingTemplate,
     ProfileMenuTemplate, SettingsTemplate, NoResultsTemplate) {
 	'use strict';
@@ -22,6 +19,7 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
 	 * @class UserView
 	 * @classdesc A major view that displays a public profile for the user and a settings page for the logged-in user
 	 * to manage their account info, groups, identities, and API tokens.
+   * @classcategory Views
 	 */
 	var UserView = Backbone.View.extend(
     /** @lends UserView.prototype */{
@@ -1265,11 +1263,31 @@ define(['jquery', 'underscore', 'backbone', 'clipboard',
         return;
       }
 
-      //Render the list of portals using the PortalListView
-      var portalListView = new PortalListView();
-      portalListView.render();
-      this.$(this.portalListContainer)
-          .html(portalListView.el);
+      var view = this;
+
+      //If Bookkeeper services are enabled, render the Portals via a PortalUsagesView,
+      // which queries Bookkeeper for portal Usages
+      if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+        require(['views/portals/PortalUsagesView'], function(PortalUsagesView){
+          var portalListView = new PortalUsagesView();
+          //Render the Portal list view and insert it in the page
+          portalListView.render();
+          view.$(view.portalListContainer)
+              .html(portalListView.el);
+        });
+      }
+      //If Bookkeeper services are disabled, render the Portals via a PortalListView,
+      // which queries Solr for portal docs
+      else{
+        require(['views/portals/PortalListView'], function(PortalListView){
+          //Create a PortalListView
+          var portalListView = new PortalListView();
+          //Render the Portal list view and insert it in the page
+          portalListView.render();
+          view.$(view.portalListContainer)
+              .html(portalListView.el);
+        });
+      }
 
     },
 

@@ -48,7 +48,7 @@ MetacatUI.AppConfig = Object.assign({
   displayRepoLogosInSearchResults: true,
 
   //Temp message
-  temporaryMessage: "The KNB will be unavailable between 11 p.m. PT on Monday, June 15 and 6:30 a.m. PT on Tuesday, June 16 due to upgrades. We apologize for the inconvenience.",
+  temporaryMessage: "",
   temporaryMessageClasses: "warning auto-height-member",
   temporaryMessageContainer: "#HeaderContainer",
   temporaryMessageEndTime: new Date("2020-06-16T13:30:00"),

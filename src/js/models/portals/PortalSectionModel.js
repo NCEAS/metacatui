@@ -8,7 +8,10 @@ define(["jquery",
     function($, _, Backbone, PortalImage, EMLText) {
 
       /**
-       * A Portal Section model represents the ContentSectionType from the portal schema
+       * @class PortalSectionModel
+       * @classdesc A Portal Section model represents the ContentSectionType from the portal schema
+       * @classcategory Models/Portals
+       * @extends Backbone.Model
        */
       var PortalSectionModel = Backbone.Model.extend(
         /** @lends PortalSectionModel.prototype */{
@@ -18,9 +21,14 @@ define(["jquery",
             image: "",
             title: "",
             introduction: "",
-            content: null,
+            content: new EMLText({
+                          type: "content",
+                          parentModel: this
+                      }),
             literatureCited: null,
-            objectDOM: null
+            objectDOM: null,
+            sectionType: "",
+            portalModel: null
           }
         },
 
@@ -47,7 +55,10 @@ define(["jquery",
           //Parse the image URL or identifier
           var image = $objectDOM.children("image");
           if( image.length ){
-            var portImageModel = new PortalImage({ objectDOM: image[0] });
+            var portImageModel = new PortalImage({
+              objectDOM: image[0],
+              portalModel: this.get("portalModel")
+            });
             portImageModel.set(portImageModel.parse());
             modelJSON.image = portImageModel;
           }

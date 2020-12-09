@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
     * @class MetricModalView
     * @classdesc A Bootstrap Modal that displays a DataONE dataset usage metric,
     * such as downloads, views, or citations.
+    * @classcategory Views
     * @extends Backbone.View
     */
     var MetricModalView = Backbone.View.extend(
@@ -21,6 +22,7 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         metricIndex: null,
         prevMetricName: null,
         nextMetricName: null,
+        subviews: [],
 
         events: {
           'hidden': 'teardown',
@@ -66,13 +68,27 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
         teardown: function() {
           this.$el.modal('hide');
           this.$el.data('modal', null);
+
+          _.invoke(this.subviews, "onClose");
+
           this.remove();
+
+
         },
 
         render: function() {
-          this.renderView();
-          this.drawMetricsChart();
-          return this;
+
+          var thisView = this;
+
+          this.$el.on('shown', function(){
+            thisView.renderView();
+            thisView.drawMetricsChart();
+          });
+
+          this.$el.modal('show');
+
+
+          return;
         },
 
         renderView: function() {
@@ -162,7 +178,6 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
             });
         },
 
-
         showNextMetricModal: function() {
             this.prevMetricName = this.metricName;
             this.metricName = this.getNextMetric(this.metricName);
@@ -210,11 +225,20 @@ define(['jquery', 'underscore', 'backbone', 'MetricsChart', 'text!templates/metr
                             metricCount: metricCount,
                             metricMonths: metricMonths,
                             metricName: metricName,
-                            width: 600,
                             height: 370
                         });
 
-            this.$('.metric-chart').html(modalMetricChart.render().el);
+            this.$('.metric-chart').html(modalMetricChart.el);
+            modalMetricChart.render();
+
+            this.subviews.push(modalMetricChart);
+        },
+
+        /**
+        * Cleans up and removes all artifacts created for view
+        */
+        onClose: function(){
+          this.teardown();
         }
 
     });

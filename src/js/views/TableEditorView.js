@@ -18,6 +18,7 @@ define([
     /**
      * @class TableEditorView
      * @classdesc A view of an HTML textarea with markdown editor UI and preview tab
+     * @classcategory Views
      * @extends Backbone.View
      * @constructor
      */
@@ -45,27 +46,27 @@ define([
          */
         template: _.template(Template),
 
-        /**    
+        /**
          * The current number of rows displayed in the spreadsheet, including the
          * header row
          * @type {number}
          */
         rowCount: 0, // No of rows
 
-        /**    
+        /**
          * The current number of columns displayed in the spreadsheet, including the
          * row number column
          * @type {number}
          */
         colCount: 0, // No of cols
 
-        /**    
+        /**
          * The same data shown in the table as a stringified JSON object.
          * @type {string}
          */
         tableData: "",
 
-        /**    
+        /**
          * Map for storing the sorting history of every column
          * @type {map}
          */
@@ -115,7 +116,7 @@ define([
 
         },
 
-        /**    
+        /**
          * render - Renders the tableEditor - add UI for creating and editing tables
          */
         render: function() {
@@ -144,7 +145,7 @@ define([
           }
         },
 
-        /**    
+        /**
          * createSpreadsheet - Creates or re-creates the table & headers with data,
          * if there is any.
          */
@@ -175,8 +176,8 @@ define([
           }
         },
 
-        /**  
-         * populateTable - Fill data in created table from saved data  
+        /**
+         * populateTable - Fill data in created table from saved data
          */
         populateTable: function() {
           try {
@@ -239,10 +240,10 @@ define([
           }
         },
 
-        /**    
+        /**
          * updateData - When the user focuses out, presume they've changed the data,
          * and updated the saved data.
-         *      
+         *
          * @param  {event} e The focus out event that triggered this function
          */
         updateData: function(e) {
@@ -271,9 +272,9 @@ define([
 
         /**
          * saveData - Save the data as a string.
-         *  
-         * @param  {type} data description 
-         * @return {type}      description 
+         *
+         * @param  {type} data description
+         * @return {type}      description
          */
         saveData: function(data) {
           try {
@@ -286,7 +287,7 @@ define([
         /**
          * resetData - Clear the saved data and reset the table to the default
          * number of rows & columns
-         *  
+         *
          * @param  {event} e - the event that triggered this function
          */
         resetData: function(e) {
@@ -345,9 +346,9 @@ define([
           }
         },
 
-        /**    
+        /**
          * createTableBodyRow - Create a row for the table
-         *      
+         *
          * @param  {number} rowNum The table row number to add to the table, where 0 is the header row
          */
         createTableBodyRow: function(rowNum) {
@@ -388,9 +389,9 @@ define([
           }
         },
 
-        /**    
-         * createTableBody - Given a table element, add table rows   
-         *      
+        /**
+         * createTableBody - Given a table element, add table rows
+         *
          * @param  {HTMLElement} tableBody A table HTML Element
          */
         createTableBody: function(tableBody) {
@@ -403,11 +404,11 @@ define([
           }
         },
 
-        /**    
+        /**
          * addRow - Utility function to add row
-         *      
-         * @param  {number} currentRow The row number at which to add a new row 
-         * @param  {string} direction  Can be "top" or "bottom", indicating whether to new row should be above or below the current row     
+         *
+         * @param  {number} currentRow The row number at which to add a new row
+         * @param  {string} direction  Can be "top" or "bottom", indicating whether to new row should be above or below the current row
          */
         addRow: function(currentRow, direction) {
           try {
@@ -427,9 +428,9 @@ define([
           }
         },
 
-        /**    
+        /**
          * deleteRow - Utility function to delete row
-         *      
+         *
          * @param  {number} currentRow The row number to delete
          */
         deleteRow: function(currentRow) {
@@ -449,10 +450,10 @@ define([
           }
         },
 
-        /**    
+        /**
          * addColumn - Utility function to add columns
-         *      
-         * @param  {number} currentCol The column number at which to add a new column     
+         *
+         * @param  {number} currentCol The column number at which to add a new column
          * @param  {string} direction  Can be "left" or "right", indicating whether to new column should be to the left or right of the current column
          */
         addColumn: function(currentCol, direction) {
@@ -473,10 +474,10 @@ define([
           }
         },
 
-        /**    
+        /**
          * deleteColumn - Utility function to delete column
-         *      
-         * @param  {number} currentCol The number of the column to delete   
+         *
+         * @param  {number} currentCol The number of the column to delete
          */
         deleteColumn: function(currentCol) {
           try {
@@ -497,9 +498,9 @@ define([
           }
         },
 
-        /**    
+        /**
          * sortColumn - Utility function to sort columns
-         *      
+         *
          * @param  {number} currentCol The column number of the column to delete
          */
         sortColumn: function(currentCol) {
@@ -532,13 +533,13 @@ define([
           }
         },
 
-        /**    
+        /**
          * ascSort - Compare Functions for sorting - ascending
-         *      
+         *
          * @param  {number} currentCol The number of the column to sort
-         * @param  {*} a              One of two items to compare     
-         * @param  {*} b              The second of two items to compare 
-         * @return {number}           A number indicating the order to place a vs b in the list. It it returns less than zero, then a will be placed before b in the list.   
+         * @param  {*} a              One of two items to compare
+         * @param  {*} b              The second of two items to compare
+         * @return {number}           A number indicating the order to place a vs b in the list. It it returns less than zero, then a will be placed before b in the list.
          */
         ascSort: function(currentCol, a, b) {
           try {
@@ -562,13 +563,13 @@ define([
           }
         },
 
-        /**    
+        /**
          * dscSort - Descending compare function
-         *      
+         *
          * @param  {number} currentCol The number of the column to sort
-         * @param  {*} a              One of two items to compare     
-         * @param  {*} b              The second of two items to compare 
-         * @return {number}           A number indicating the order to place a vs b in the list. It it returns less than zero, then a will be placed before b in the list.   
+         * @param  {*} a              One of two items to compare
+         * @param  {*} b              The second of two items to compare
+         * @return {number}           A number indicating the order to place a vs b in the list. It it returns less than zero, then a will be placed before b in the list.
          */
         dscSort: function(currentCol, a, b) {
           try {
@@ -593,10 +594,10 @@ define([
         },
 
 
-        /**    
+        /**
          * convertToMarkdown - Returns the table data as markdown
-         *      
-         * @return {string}  The markdownified table as string   
+         *
+         * @return {string}  The markdownified table as string
          */
         getMarkdown: function() {
           try {
@@ -629,10 +630,10 @@ define([
           }
         },
 
-        /**    
+        /**
          * getJSONfromMarkdown - Converts a given markdown table string to JSON.
-         *      
-         * @param  {string} markdown description     
+         *
+         * @param  {string} markdown description
          * @return {Array}          The markdown table as an array of arrays, where the header is the first array and each row is an array that follows.
          */
         getJSONfromMarkdown: function(markdown) {
@@ -647,9 +648,9 @@ define([
           }
         },
 
-        /**    
-         * hasEmptyCol1 - Checks whether the first column is empty.  
-         *      
+        /**
+         * hasEmptyCol1 - Checks whether the first column is empty.
+         *
          * @param  {Object} data The table data in the form of an array of arrays
          * @return {boolean}   returns true if the first column is empty, false if at least one cell in the first column contains a value
          */
@@ -670,9 +671,9 @@ define([
           }
         },
 
-        /**    
-         * closeDropdown - Close the dropdown menu if the user clicks outside of it 
-         *      
+        /**
+         * closeDropdown - Close the dropdown menu if the user clicks outside of it
+         *
          * @param  {type} e The event that triggered this function
          */
         closeDropdown: function(e) {
@@ -692,12 +693,12 @@ define([
           }
         },
 
-        /**    
+        /**
          * handleHeadersClick - Called when the table header is clicked. Depending
          * on what is clicked, shows or hides the dropdown menus in the header,
          * or calls one of the functions listed in the menu (e.g. delete column).
-         *      
-         * @param  {event} e The event that triggered this function   
+         *
+         * @param  {event} e The event that triggered this function
          */
         handleHeadersClick: function(e) {
           try {
@@ -734,13 +735,13 @@ define([
           }
         },
 
-        /**    
+        /**
          * handleHeadersClick - Called when the table body is clicked. Depending
          * on what is clicked, shows or hides the dropdown menus in the body,
          * or calls one of the functions listed in the menu (e.g. delete row).
-         *      
-         * @param  {type} e description     
-         * @return {type}   description     
+         *
+         * @param  {type} e description
+         * @return {type}   description
          */
         handleBodyClick: function(e) {
           try {

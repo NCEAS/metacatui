@@ -594,6 +594,12 @@
 
 	/*************** Portal Editor ***********/
 
+	/* Decrease the padding so that content has more room on narrow screens */
+	.port-editor-section.port-editor-data {
+		padding: 5px;
+		margin-right: 30px;
+	}
+
 	.port-editor-md textarea.markdown {
 		margin: 0;
 		width: 100%;
@@ -647,6 +653,20 @@
 		padding-right: 0;
 
 	}
+
+  #portal-header-container{
+    margin-bottom: 0px;
+  }
+  .PortalView #portal-header-container .row{
+    padding: 0px;
+  }
+  #editPortal.btn{
+    margin: 10px;
+  }
+  .portal-view .portal-description{
+    padding: 10px;
+    margin-right: 0px;
+  }
 
 	/************** Search page ****************/
 	#sidebar{
@@ -810,6 +830,28 @@
     #editMetadata {
         margin-right: none;
     }
+		
+		/* Query rules in the query builder */
+		.query-rule {
+			
+			grid-template-columns: 2.2rem auto 1.3rem;
+			grid-template-rows: auto;
+			gap: 0.5rem 1rem;
+			grid-template-areas:
+				"info field remove"
+				"info operator remove"
+				"info value remove";	
+		}
+		
+		.rules-container {
+			padding: 2rem 0.7rem 2rem 1rem;
+			grid-gap: 2rem;
+		}
+		
+		.query-rule .rule-info {
+			font-size: 0.7rem;
+		}
+
 }
 
 /* Smartphones (landscape) ----------- */
@@ -818,16 +860,28 @@
 	.row-fluid .span6.pagination-left {
   		width: 100%;
 	}
+
+  /** Metrics **/
+  #metric-modal .modal-body {
+    grid-template-columns: 100fr;
+    row-gap: 40px;
+    column-gap: 0px;
+  }
+  #metric-modal .empty-citation-list{
+    width: 90%;
+  }
 }
 
 /* Smartphones (portrait) ----------- */
 @media only screen and (max-width : 420px) {
 
   .modal,
-  .access-policy-view-container.modal{
+  .access-policy-view-container.modal,
+  #metric-modal{
     top: 5%;
     width: 90%;
     left: 5%;
+    margin-left: 0px;
   }
   .access-policy-view thead{
     display: none;

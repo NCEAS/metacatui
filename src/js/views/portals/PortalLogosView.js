@@ -4,35 +4,48 @@ define(["jquery",
     "text!templates/portals/portalLogo.html"],
     function($, _, Backbone, PortalLogoTemplate){
 
-    /* The PortalLogosView is the area where the the logos of the organizations
+    /**
+     * @class PortalLogosView
+     * @classdesc The PortalLogosView is the area where the the logos of the organizations
      * associated with each portal will be displayed.
+     * @classcategory Views/Portals
+     * @extends Backbone.View
+     * @screenshot views/PortalLogosView.png
      */
-    var PortalLogosView = Backbone.View.extend({
+    var PortalLogosView = Backbone.View.extend(
+      /** @lends PortalLogosView.prototype */{
 
-        /* The Portal Logos Element */
+        /**
+         * The HTML element type for this view
+         * @type {string}
+         */
         tagName: "div",
-
+        /**
+         * The HTML classes for this view
+         * @type {string}
+         */
         className: "portal-logos-view",
-
+        /**
+         * The name of this View type
+         * @type {string}
+         */
         type: "PortalLogos",
 
-        //@type Array - An array of logo URLs to display
+        /**
+        * An array of PortalImages to display in this view
+        * @type {PortalImage[]}
+        */
         logos: [],
 
-        /* Renders the compiled template into HTML */
+        /**
+        * Renders the compiled template into HTML
+        * @type {UnderscoreTemplate}
+        */
         template: _.template(PortalLogoTemplate),
 
-        /* The events that this view listens to */
-        events: {
-
-        },
-
-        /* Construct a new instance of PortalLogosView */
-        initialize: function() {
-
-        },
-
-        /* Render the view */
+        /**
+        * Renders the view
+        */
         render: function() {
             var spanX = "span";
 
@@ -70,7 +83,9 @@ define(["jquery",
 
         },
 
-        /* Close and destroy the view */
+        /**
+         * Close and destroy the view
+         */
         onClose: function() {
 
         }

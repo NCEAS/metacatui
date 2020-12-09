@@ -9,6 +9,7 @@ define(['jquery', 'underscore', 'backbone', 'rdflib', "uuid", "md5",
      @classdesc A DataPackage represents a hierarchical collection of
      packages, metadata, and data objects, modeling an OAI-ORE RDF graph.
      TODO: incorporate Backbone.UniqueModel
+     * @classcategory Collections
      @extends Backbone.Collection
      @constructor
     */

@@ -7,12 +7,20 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
         /**
          * @class Filters
          * @classdesc A collection of Filter models that represents a full search
+         * @classcategory Collections
          * @name Filters
          * @extends Backbone.Collection
         * @constructor
          */
         var Filters = Backbone.Collection.extend(
           /** @lends Filters.prototype */{
+
+            /**
+            * If the search results must always match one of the ids in the id filters,
+            * then the id filters will be added to the query with an AND operator.
+            * @type {boolean}
+            */
+            mustMatchIds: false,
 
             /**
             * Is executed when a new Filters collection is created
@@ -37,7 +45,7 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             * @returns {Filter|BooleanFilter|ChoiceFilter|DateFilter|NumericFilter|ToggleFilter}
             */
             model: function(attrs, options){
-
+              
               //If no filterType was specified, but an objectDOM exists (from parsing a Collection
               // or Portal document), get the filter type from the objectDOM node name
               if( !attrs.filterType && attrs.objectDOM ){
@@ -55,22 +63,29 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
                     return new Filter(attrs, options);
                 }
               }
+              
+              if(!attrs.filterType){
+                attrs.filterType = ""
+              }
+              
+              // Ignoring the case of the typer type allows using either the
+              // filter type (e.g. BooleanFilter) or the nodeName value
+              // (e.g. "booleanFilter")
+              switch ( attrs.filterType.toLowerCase() ) {
 
-              switch ( attrs.filterType ) {
-
-                case "BooleanFilter":
+                case "booleanfilter":
                     return new BooleanFilter(attrs, options);
 
-                case "ChoiceFilter":
+                case "choicefilter":
                     return new ChoiceFilter(attrs, options);
 
-                case "DateFilter":
+                case "datefilter":
                     return new DateFilter(attrs, options);
 
-                case "NumericFilter":
+                case "numericfilter":
                     return new NumericFilter(attrs, options);
 
-                case "ToggleFilter":
+                case "togglefilter":
                     return new ToggleFilter(attrs, options);
 
                 default:
@@ -91,9 +106,14 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
               var allGroupsQueryFragments = [],
                   //The complete query string that eventually gets returned
                   completeQuery = "",
-                  //Get the list of filters that use the 'id' field, since these are used differently
+                  // Get the list of filters that use the 'id', 'seriesId', or
+                  // 'identifier' field, since these are used differently
                   idFilters = this.filter(function(filter){
-                    return filter.get("fields").includes("id");
+                    return (
+                      filter.get("fields").includes("id") ||
+                      filter.get("fields").includes("identifier") ||
+                      filter.get("fields").includes("seriesId")
+                    );
                   }),
                   otherFilters = this.difference(idFilters),
                   //Separate the filter models in this collection by their query group.
@@ -140,7 +160,17 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
 
               //Add the grouped query for the id filters
               if( completeQuery.length && idFilterQuery.length ){
-                completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
+
+                //If the search results must always match one of the ids in the id filters,
+                // then add the id filters to the query with the AND operator. This flag
+                // is set on this Collection.
+                if( this.mustMatchIds ){
+                  completeQuery = "(" + completeQuery + ")%20AND%20" + idFilterQuery;
+                }
+                //Otherwise, use the OR operator
+                else{
+                  completeQuery = "(" + completeQuery + ")%20OR%20" + idFilterQuery;
+                }
               }
               //If the query is ONLY made of id filters, then the id filter query is the complete query
               else if( !completeQuery.length && idFilterQuery.length ){
@@ -270,6 +300,44 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
             },
 
             /**
+            * Creates and adds a Filter to this collection that filters datasets
+            * to only those that the logged-in user has permission to change permission of.
+            */
+            addOwnershipFilter: function(){
+
+              if( MetacatUI.appUserModel.get("loggedIn") ){
+                //Filter datasets by their ownership
+                this.add({
+                  fields: ["rightsHolder", "changePermission"],
+                  values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
+                  operator: "OR",
+                  matchSubstring: false,
+                  exclude: false
+                });
+              }
+
+            },
+
+            /**
+            * Creates and adds a Filter to this collection that filters datasets
+            * to only those that the logged-in user has permission to write to.
+            */
+            addWritePermissionFilter: function(){
+
+              if( MetacatUI.appUserModel.get("loggedIn") ){
+                //Filter datasets by their ownership
+                this.add({
+                  fields: ["rightsHolder", "writePermission", "changePermission"],
+                  values: MetacatUI.appUserModel.get("allIdentitiesAndGroups"),
+                  operator: "OR",
+                  matchSubstring: false,
+                  exclude: false
+                });
+              }
+
+            },
+
+            /**
             * Removes Filter models from this collection if they match the given field
             * @param {string} field - The field whose matching filters that should be removed from this collection
             */
@@ -285,7 +353,81 @@ define(["jquery", "underscore", "backbone", "models/filters/Filter", "models/fil
 
               this.remove(toRemove);
 
-            }
+            },
+            
+            /**            
+             * removeEmptyFilters - Remove filters from the collection that are
+             * lacking fields, values, and in the case of a numeric filter,
+             * a min and max value.        
+             */             
+            removeEmptyFilters: function(){
+              
+              try {
+                var toRemove = [];
+                
+                var noneEmpty = this.every(function(filter){ return !filter.isEmpty() });
+                if(noneEmpty){
+                  return
+                }
+                
+                this.each(function(filter){
+                  if(filter){
+                    if(filter.isEmpty()){
+                      toRemove.push(filter);
+                    }
+                  }
+                });
+
+                this.remove(toRemove);
+              } catch (e) {
+                console.log("Failed to remove empty Filter models from the Filters collection, error message: " + e);
+              }
+              
+            },
+            
+            /**            
+             * replaceModel - Remove a Filter from the Filters collection
+             * silently, and replace it with a new model.
+             *              
+             * @param  {Filter} model    The model to replace
+             * @param  {object} newAttrs Attributes for the replacement model. Use the filterType attribute to replace with a different type of Filter.
+             * @return {Filter}          Returns the replacement Filter model, which is already part of the Filters collection.
+             */             
+            replaceModel: function(model, newAttrs){
+              try {
+                var index = this.indexOf(model),
+                    oldModelId = model.cid;
+                var newModel = this.add(
+                  newAttrs,
+                  { at: index }
+                );
+                this.remove(oldModelId, {silent:true});
+                return newModel;
+              } catch (e) {
+                console.log("Failed to replace a Filter model in a Filters collection, error message: " + e);
+              }
+            },
+            
+            /**            
+             * visibleIndexOf - Get the index of a given model, excluding any
+             * filters that are marked as invisible.
+             *              
+             * @param  {Filter|BooleanFilter|NumericFilter|DateFilter} model The filter model for which to get the visible index
+             * @return {number} An integer representing the filter model's position in the list of visible filters.
+             */             
+            visibleIndexOf: function(model){
+              try {
+                // Don't count invisible filters in the index we display to the user
+                var visibleFilters = this.filter(function(filterModel){
+                  var isInvisible = filterModel.get("isInvisible");
+                  return typeof isInvisible == "undefined" || isInvisible === false
+                });
+                return _.indexOf(visibleFilters, model);
+              } catch (e) {
+                console.log("Failed to get the index of a Filter within the collection of visible Filters, error message: " + e);
+              }
+            },
+            
             /*
             hasGeohashFilter: function() {
 

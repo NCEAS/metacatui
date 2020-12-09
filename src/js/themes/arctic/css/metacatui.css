@@ -178,8 +178,7 @@
 
 	/* Offsets the anchor links by the same height as the fixed header */
 	#About a[name],
-	#Tools a[name],
-	#external .book a[name] { /*for eml parser docs */
+	#Tools a[name] {
 		position:relative;
 		top: -95px;
 		display: block;
@@ -538,6 +537,13 @@ footer .logos a:hover, a:focus{
 
 /* PORTALS
 ------------------------ */
+.PortalView #Content{
+  padding-bottom: 0px;
+}
+.PortalView{
+  display: grid;
+  grid-template-rows: 40px 0px 100fr 320px;
+}
 .portal-view .portal-title{
   font-weight: 100;
 }
@@ -593,6 +599,12 @@ footer .logos a:hover, a:focus{
 .Portal.Editor #Navbar #editPortal,
 .PortalView #Navbar #editPortal{
   font-family: inherit;
+}
+
+
+.port-editor-sections .section-link-container.sortable-ghost,
+.port-editor-sections .section-link-container.sortable-chosen {
+	background-color: #19B36A !important;
 }
 
 /* Portal editor
@@ -1196,7 +1208,6 @@ svg .domain{
 }
 .line-chart-label.text{
 	font-weight: bold;
-	fill: #555;
 }
 .tick line{
 	stroke-width: 1px;
@@ -2307,14 +2318,6 @@ MDQ items
 
  /* MISC
  -----------------------------------------------*/
- #external > .container{
- 	width: 80%;
- }
-
- #external dt{
- 	line-height: 34px;
- 	font-size: 16px;
- }
 
  .align-center{
  	margin-left: auto;

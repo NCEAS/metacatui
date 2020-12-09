@@ -8,10 +8,14 @@ define(['underscore', 'jquery', 'backbone',
     function(_, $, Backbone, DataONEObject, EMLAttribute, EMLMeasurementScale,
     		EMLMeasurementScaleView, EMLAttributeTemplate){
 
-        /*
-            An EMLAttributeView displays the info about one attribute in a data object
+        /**
+        * @class EMLAttributeView
+        * @classdesc An EMLAttributeView displays the info about one attribute in a data object
+        * @classcategory Views/Metadata
+        * @extends Backbone.View
         */
-        var EMLAttributeView = Backbone.View.extend({
+        var EMLAttributeView = Backbone.View.extend(
+          /** @lends EMLAttributeView.prototype */{
 
             tagName: "div",
 

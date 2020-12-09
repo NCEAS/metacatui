@@ -11,6 +11,7 @@ define(["jquery",
         "collections/SolrResults",
         "models/filters/Filter",
         "models/portals/PortalSectionModel",
+        "models/portals/PortalVizSectionModel",
         "models/portals/PortalImage",
         "models/metadata/eml211/EMLParty",
         "models/metadata/eml220/EMLText",
@@ -19,16 +20,18 @@ define(["jquery",
         "models/filters/FilterGroup",
         "models/Map"
     ],
-    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalImage,
+    function($, _, Backbone, gmaps, uuid, Filters, SolrResults, FilterModel, PortalSectionModel, PortalVizSectionModel, PortalImage,
         EMLParty, EMLText, CollectionModel, SearchModel, FilterGroup, MapModel) {
         /**
-         * A PortalModel is a specialized collection that represents a portal,
+         * @classdesc A PortalModel is a specialized collection that represents a portal,
          * including the associated data, people, portal descriptions, results and
          * visualizations.  It also includes settings for customized filtering of the
          * associated data, and properties used to customized the map display and the
          * overall branding of the portal.
          *
          * @class PortalModel
+         * @classcategory Models/Portals
+         * @extends CollectionModel
          * @module models/PortalModel
          * @name PortalModel
          * @constructor
@@ -63,6 +66,7 @@ define(["jquery",
                     acknowledgmentsLogos: [],
                     awards: [],
                     checkedNodeLabels: false,
+                    labelDoubleChecked: false,
                     literatureCited: [],
                     filterGroups: [],
                     createSeriesId: true, //If true, a seriesId will be created when this object is saved.
@@ -71,6 +75,10 @@ define(["jquery",
                     hideData: null,
                     hideMembers: null,
                     hideMap: null,
+                    // List of section labels indicating the order in which to display the sections.
+                    // Labels must exactly match the labels set on sections, or the values set on the
+                    // metricsLabel, dataLabel, and membersLabel options.
+                    pageOrder: null,
                     //Options for the custom section labels
                     //NOTE: This are not fully supported yet.
                     metricsLabel: "Metrics",
@@ -85,17 +93,17 @@ define(["jquery",
                     mapModel: gmaps ? new MapModel() : null,
                     optionNames: ["primaryColor", "secondaryColor", "accentColor",
                             "mapZoomLevel", "mapCenterLatitude", "mapCenterLongitude",
-                            "mapShapeHue", "hideData", "hideMetrics", "hideMembers"],
+                            "mapShapeHue", "hideData", "hideMetrics", "hideMembers", "pageOrder"],
                     // Portal view colors, as specified in the portal document options
-                    primaryColor: "#006699",
-                    secondaryColor: "#009299",
-                    accentColor: "#f89406",
+                    primaryColor: MetacatUI.appModel.get("portalDefaults").primaryColor || "#006699",
+                    secondaryColor: MetacatUI.appModel.get("portalDefaults").secondaryColor || "#009299",
+                    accentColor: MetacatUI.appModel.get("portalDefaults").accentColor || "#f89406",
                     primaryColorRGB: null,
                     secondaryColorRGB: null,
                     accentColorRGB: null,
-                    primaryColorTransparent: "rgba(0, 102, 153, .7)",
-                    secondaryColorTransparent: "rgba(0, 146, 153, .7)",
-                    accentColorTransparent: "rgba(248, 148, 6, .7)"
+                    primaryColorTransparent: MetacatUI.appModel.get("portalDefaults").primaryColorTransparent || "rgba(0, 102, 153, .7)",
+                    secondaryColorTransparent: MetacatUI.appModel.get("portalDefaults").secondaryColorTransparent || "rgba(0, 146, 153, .7)",
+                    accentColorTransparent: MetacatUI.appModel.get("portalDefaults").accentColorTransparent || "rgba(248, 148, 6, .7)"
                 });
             },
 
@@ -116,10 +124,49 @@ define(["jquery",
               //Call the super class initialize function
               CollectionModel.prototype.initialize.call(this, attrs);
 
+              // Generate transparent colours from the primary, secondary, and accent colors
+              // TODO
+
               if( attrs.isNew ){
                 this.set("synced", true);
                 //Create an isPartOf filter for this new Portal
                 this.addIsPartOfFilter();
+
+                var model = this;
+
+                // Insert new sections if any are set in the appModel
+
+                var portalDefaults = MetacatUI.appModel.get("portalDefaults"),
+                    defaultSections = portalDefaults ? portalDefaults.sections : [];
+
+                if(defaultSections && defaultSections.length && Array.isArray(defaultSections)){
+                  defaultSections.forEach(function(section, index){
+                    // If there is at least one section default set...
+                    if(section.title || section.label){
+                      var newDefaultSection = new PortalSectionModel({
+                        title: section.title || "",
+                        label: section.label || this.newSectionLabel,
+                        // Set a default image on new markdown sections
+                        image: model.getRandomSectionImage(),
+                        portalModel: model
+                      });
+                      model.addSection(newDefaultSection);
+                    }
+                  });
+                }
+              }
+
+              // check for info received from Bookkeeper
+              if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+                this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", function(){
+                  if(MetacatUI.appUserModel.get("dataoneSubscription").isTrialing()) {
+                    this.setRandomLabel();
+                  }
+                });
+
+                //Fetch the user subscription info
+                MetacatUI.appUserModel.fetchSubscription();
               }
 
               // Cache this model for later use
@@ -128,17 +175,111 @@ define(["jquery",
             },
 
             /**
+             * getRandomSectionImage - Using the list of image identifiers set
+             * in the app config, select an image to use for a portal section.
+             * The function will not return the same image until all the images
+             * have been returned at least once. If an image would return a 404
+             * error, it is skipped. If all images give 404s, an empty string
+             * is returned.
+             *
+             * @return {PortalImage}  A portal image model to use in a section model
+             */
+            getRandomSectionImage: function(){
+
+              // This variable will hold the section image to return, if any
+              var newSectionImage = "",
+                  // The default portal values set in the config
+                  portalDefaults = MetacatUI.appModel.get("portalDefaults"),
+                  // Check if default images are set on the model already
+                  defaultImageIds = this.get("defaultSectionImageIds"),
+                  // Keep track of where we are in the list of default images,
+                  // so there's not too much repetition
+                  runningNumber = this.get("defaultImageRunningNumber") || 0;
+
+              // If none are set, get the configured default image IDs,
+              // shuffle them, and set them on the model.
+              if(!defaultImageIds || !defaultImageIds.length){
+
+                // Get the list of default section image IDs from the appModel
+                defaultImageIds = portalDefaults ? portalDefaults.sectionImageIdentifiers : false;
+
+                // If some are configured...
+                if(defaultImageIds && defaultImageIds.length){
+                  // ...Shuffle the images...
+                  for (let i = defaultImageIds.length - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [defaultImageIds[i], defaultImageIds[j]] = [defaultImageIds[j], defaultImageIds[i]];
+                  }
+                  // ... and save the shuffled list to the portal model
+                  this.set("defaultSectionImageIds", defaultImageIds);
+                }
+              }
+
+              // Can't get a random image if none are configured
+              if(!defaultImageIds){
+                console.log("Can't set a default image on new markdown sections because there are no default image IDs set. Check portalDefaults.sectionImageIdentifiers in the config file.");
+                return
+              }
+
+              // Select one of the image IDs
+              if(defaultImageIds && defaultImageIds.length > 0){
+
+                if(runningNumber >= defaultImageIds.length){
+                  runningNumber = 0
+                }
+
+                // Go through the shuffled array of image IDs in order
+                for (i = runningNumber; i < defaultImageIds.length; i++) {
+
+                  // Skip images that have already returned 404 errors
+                  if(defaultImageIds[i] == "NOT FOUND"){
+                    continue;
+                  }
+
+                  // Section images are PortalImage models
+                  var newSectionImage = new PortalImage({
+                    identifier: defaultImageIds[i],
+                    portalModel: this.get("portalModel")
+                  });
+
+                  // Skip adding an image if it doesn't exist given the identifer and baseUrl found in the image model
+                  if(newSectionImage.imageExists()){
+                    break;
+                  // If the image doesn't exist, mark it so we don't have to
+                  // check again next time
+                  } else {
+                    defaultImageIds[i] = "NOT FOUND";
+                    newSectionImage = "";
+                  }
+                }
+              }
+
+              this.set("defaultImageRunningNumber", i + 1);
+              this.set("defaultSectionImageIds", defaultImageIds);
+
+              return newSectionImage
+            },
+
+            /**
              * Returns the portal URL
              *
              * @return {string} The portal URL
             */
             url: function() {
-              
+
+              //Start the base URL string
               // use the resolve service if there is no object service url
               // (e.g. in DataONE theme)
               var urlBase = MetacatUI.appModel.get("objectServiceUrl") ||
                 MetacatUI.appModel.get("resolveServiceUrl");
-              
+
+              //Get the active alternative repository, if one is configured
+              var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+
+              if( activeAltRepo ){
+                urlBase = activeAltRepo.objectServiceUrl;
+              }
+
               //If this object is being updated, use the old pid in the URL
               if ( !this.isNew() && this.get("oldPid") ) {
                 return urlBase +
@@ -168,7 +309,10 @@ define(["jquery",
               if( !this.get("id") && !this.get("seriesId") && this.get("label") ){
                 this.once("change:seriesId", this.fetch);
                 this.once("latestVersionFound", this.fetch);
-                this.getSeriesIdByName();
+
+                //Get the series ID of this object
+                this.getSeriesIdByLabel();
+
                 return;
               }
               //If we found the latest version in this pid version chain,
@@ -179,6 +323,19 @@ define(["jquery",
                 //Stop listening to the change of seriesId and the latest version found
                 this.stopListening("change:seriesId", this.fetch);
                 this.stopListening("latestVersionFound", this.fetch);
+              }
+
+              //If this MetacatUI instance is pointing to a CN, use the origin MN
+              // to fetch the Portal, if available as an alt repo.
+              if( MetacatUI.appModel.get("isCN") && this.get("datasource") ){
+                //Check if the origin MN (datasource) is an alt repo option
+                var altRepo = _.findWhere(MetacatUI.appModel.get("alternateRepositories"), { identifier: this.get("datasource") });
+
+                if( altRepo ){
+                  //Set the origin MN (datasource) as the active alt repo
+                  MetacatUI.appModel.set("activeAlternateRepositoryId", this.get("datasource"));
+                }
+
               }
 
               //Fetch the system metadata
@@ -214,9 +371,9 @@ define(["jquery",
             },
 
             /**
-            * Get the portal seriesId by searching for the portal by its name in Solr
+            * Get the portal seriesId by searching for the portal by its label in Solr
             */
-            getSeriesIdByName: function(){
+            getSeriesIdByLabel: function(){
 
               //Exit if there is no portal name set
               if( !this.get("label") )
@@ -224,11 +381,50 @@ define(["jquery",
 
               var model = this;
 
+              //Start the base URL for the query service
+              var baseUrl = "";
+
+              try{
+                //If this app instance is pointing to the CN, find the Portal series ID on the MN
+                if( MetacatUI.appModel.get("alternateRepositories").length ){
+
+                  //Get the array of possible authoritative MNs
+                  var possibleAuthMNs = this.get("possibleAuthMNs");
+
+                  //If there are no possible authoritative MNs, use the CN query service
+                  if( !possibleAuthMNs.length ){
+                    baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+                  }
+                  else{
+                    baseUrl = possibleAuthMNs[0].queryServiceUrl;
+                  }
+
+                }
+                else{
+                  //Get the query service URL
+                  baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+                }
+              }
+              catch(e){
+                console.error("Error in trying to determine the query service URL. Going to try to use the AppModel setting. ", e);
+              }
+              finally{
+                //Default to the query service URL configured in the AppModel, if one wasn't set earlier
+                if( !baseUrl ){
+                  baseUrl = MetacatUI.appModel.get("queryServiceUrl");
+                  //If there isn't a query service URL, trigger a "not found" error and exit
+                  if( !baseUrl ){
+                    this.trigger("notFound");
+                    return;
+                  }
+                }
+              }
+
               var requestSettings = {
-                  url: MetacatUI.appModel.get("queryServiceUrl") +
+                  url: baseUrl +
                        "q=label:\"" + this.get("label") + "\" OR " +
                        "seriesId:\"" + this.get("label") + "\"" +
-                       "&fl=seriesId,id,label" +
+                       "&fl=seriesId,id,label,datasource" +
                        "&sort=dateUploaded%20asc" +
                        "&rows=1" +
                        "&wt=json",
@@ -243,7 +439,9 @@ define(["jquery",
                   success: function(response){
                     if( response.response.numFound > 0 ){
 
+                      //Set the label and datasource
                       model.set("label", response.response.docs[0].label);
+                      model.set("datasource", response.response.docs[0].datasource);
 
                       //Save the seriesId, if one is found
                       if( response.response.docs[0].seriesId ){
@@ -265,7 +463,22 @@ define(["jquery",
 
                     }
                     else{
-                      model.trigger("notFound");
+
+                      var possibleAuthMNs = model.get("possibleAuthMNs");
+                      if( possibleAuthMNs.length ){
+                        //Remove the first MN from the array, since it didn't contain the Portal, so it's not the auth MN
+                        possibleAuthMNs.shift();
+                      }
+
+                      //If there are no other possible auth MNs to check, trigger this Portal as Not Found.
+                      if( possibleAuthMNs.length == 0 || !possibleAuthMNs ){
+                        model.trigger("notFound");
+                      }
+                      //If there's more MNs to check, try again
+                      else{
+                        model.getSeriesIdByLabel();
+                      }
+
                     }
                   }
               }
@@ -281,6 +494,13 @@ define(["jquery",
             },
 
             /**
+            * This function has been renamed `getSeriesIdByLabel` and may be removed in future releases.
+            * @deprecated This function has been renamed `getSeriesIdByLabel` and may be removed in future releases.
+            * @see PortalModel#getSeriesIdByLabel
+            */
+            getSeriesIdByName: function(){ this.getSeriesIdByLabel() },
+
+            /**
              * Overrides the default Backbone.Model.parse() function to parse the custom
              * portal XML document
              *
@@ -291,6 +511,7 @@ define(["jquery",
 
                 //Start the empty JSON object
                 var modelJSON = {},
+                    modelRef = this,
                     portalNode;
 
                 // Iterate over each root XML node to find the portal node
@@ -315,7 +536,10 @@ define(["jquery",
                 // Parse the portal logo
                 var portLogo = $(portalNode).children("logo")[0];
                 if (portLogo) {
-                  var portImageModel = new PortalImage({ objectDOM: portLogo });
+                  var portImageModel = new PortalImage({
+                    objectDOM: portLogo,
+                    portalModel: this
+                  });
                   portImageModel.set(portImageModel.parse());
                   modelJSON.logo = portImageModel
                 };
@@ -326,13 +550,16 @@ define(["jquery",
                 _.each(logos, function(logo, i) {
                     if ( !logo ) return;
 
-                    var imageModel = new PortalImage({ objectDOM: logo });
+                    var imageModel = new PortalImage({
+                      objectDOM: logo,
+                      portalModel: this
+                    });
                     imageModel.set(imageModel.parse());
 
                     if( imageModel.get("imageURL") ){
                       modelJSON.acknowledgmentsLogos.push( imageModel );
                     }
-                });
+                }, this);
 
                 // Parse the literature cited
                 // This will only work for bibtex at the moment
@@ -344,11 +571,34 @@ define(["jquery",
                 // Parse the portal content sections
                 modelJSON.sections = [];
                 $(portalNode).children("section").each(function(i, section){
-                  // Create a new PortalSectionModel
-                  modelJSON.sections.push( new PortalSectionModel({
-                    objectDOM: section,
-                    literatureCited: modelJSON.literatureCited
-                  }) );
+
+                  //Get the section type, if there is one
+                  var sectionTypeNode = $(section).find("optionName:contains(sectionType)"),
+                      sectionType = "";
+
+                  if( sectionTypeNode.length ){
+                    var optionValueNode = sectionTypeNode.first().siblings("optionValue");
+                    if( optionValueNode.length ){
+                      sectionType = optionValueNode[0].textContent;
+                    }
+                  }
+
+                  if( sectionType == "visualization" ){
+                    // Create a new PortalVizSectionModel
+                    modelJSON.sections.push( new PortalVizSectionModel({
+                      objectDOM: section,
+                      literatureCited: modelJSON.literatureCited
+                    }) );
+                  }
+                  else{
+                    // Create a new PortalSectionModel
+                    modelJSON.sections.push( new PortalSectionModel({
+                      objectDOM: section,
+                      literatureCited: modelJSON.literatureCited,
+                      portalModel: modelRef
+                    }) );
+                  }
+
                   //Parse the PortalSectionModel
                   modelJSON.sections[i].set( modelJSON.sections[i].parse(section) );
                 });
@@ -401,6 +651,11 @@ define(["jquery",
                     // custom options, we can serialize them in serialize()
                     // otherwise it's not saved in the model which attributes
                     // are <option></option>s
+
+                    // Convert the comma separated list of pages into an array
+                    if(optionName === "pageOrder" && optionValue && optionValue.length){
+                      optionValue = optionValue.split(',');
+                    }
 
                     if( !_.has(modelJSON, optionName) ){
                       modelJSON[optionName] = optionValue;
@@ -1358,7 +1613,43 @@ define(["jquery",
 
                     model.trigger("labelTaken");
                   } else {
-                    model.trigger("labelAvailable");
+                    if( MetacatUI.appModel.get("alternateRepositories").length ){
+
+                      MetacatUI.appModel.setActiveAltRepo();
+                      var activeAltRepo = MetacatUI.appModel.getActiveAltRepo();
+                      if( activeAltRepo ){
+                        var requestSettings = {
+                          url: activeAltRepo.queryServiceUrl +
+                               "q=label:\"" + label + "\"" +
+                               " AND formatId:\"" + model.get("formatId") + "\"" +
+                               "&rows=0" +
+                               "&wt=json",
+                          error: function(response) {
+                            model.trigger("errorValidatingLabel");
+                          },
+                          success: function(response){
+                            if( response.response.numFound > 0 ){
+                              //Add this label to the blockList so we don't have to query for it later
+                              var blockList = model.get("labelBlockList");
+                              if( Array.isArray(blockList) ){
+                                blockList.push(label);
+                              }
+
+                              model.trigger("labelTaken");
+                            } else {
+                              model.trigger("labelAvailable");
+                            }
+                          }
+                        }
+                        //Attach the User auth info and send the request
+                        requestSettings = _.extend(requestSettings, MetacatUI.appUserModel.createAjaxSettings());
+                        $.ajax(requestSettings);
+                      }
+
+                    }
+                    else{
+                      model.trigger("labelAvailable");
+                    }
                   }
                 }
               }
@@ -1367,73 +1658,73 @@ define(["jquery",
               $.ajax(requestSettings);
             },
 
-            
+
 
             /**
              * Queries the CN Solr to retrieve the updated BlockList
              */
             updateNodeBlockList: function(){
               var model  = this;
-              
+
               $.ajax({
-                url: MetacatUI.appModel.get('nodeServiceUrl'),  
+                url: MetacatUI.appModel.get('nodeServiceUrl'),
                 dataType: "text",
-                error:  function(data, textStatus, xhr) { 
+                error:  function(data, textStatus, xhr) {
                   // if there is an error in retrieving the node list;
                   // proceed with the existing node list to perform the checks
                   model.checkPortalLabelAvailability()
                 },
-                success: function(data, textStatus, xhr) { 
-                  
+                success: function(data, textStatus, xhr) {
+
                   var xmlResponse = $.parseXML(data) || null;
                   if(!xmlResponse) return;
-                  
+
                   // update the node block list on success
                   model.saveNodeBlockList(xmlResponse);
-                }		
+                }
               });
             },
-            
+
             /**
              * Parses the retrieved XML document and saves the node information to the BlockList
-             * 
+             *
              * @param {XMLDocument} The XMLDocument returned from the fetch() AJAX call
              */
             saveNodeBlockList: function(xml){
               var model = this,
                 children   = xml.children || xml.childNodes;
-                
+
               //Traverse the XML response to get the MN info
               _.each(children, function(d1NodeList){
-                
+
                 var d1NodeListChildren = d1NodeList.children || d1NodeList.childNodes;
-                
+
                 //The first (and only) child should be the d1NodeList
                 _.each(d1NodeListChildren, function(thisNode){
-                  
+
                   //Ignore parts of the XML that is not MN info
                   if(!thisNode.attributes) return;
-                  
+
                   //'node' will be a single node
                   var node = {},
                     nodeProperties = thisNode.children || thisNode.childNodes;
-                  
+
                   //Grab information about this node from XML nodes
                   _.each(nodeProperties, function(nodeProperty){
-                    
+
                     if(nodeProperty.nodeName == "property")
                       node[$(nodeProperty).attr("key")] = nodeProperty.textContent;
                     else
                       node[nodeProperty.nodeName] = nodeProperty.textContent;
-                    
+
                     //Check if this member node has v2 read capabilities - important for the Package service
                     if((nodeProperty.nodeName == "services") && nodeProperty.childNodes.length){
                       var v2 = $(nodeProperty).find("service[name='MNRead'][version='v2'][available='true']").length;
                       node["readv2"] = v2;
                     }
                   });
-                  
-                  //Grab information about this node from XLM attributes 
+
+                  //Grab information about this node from XLM attributes
                   _.each(thisNode.attributes, function(attribute){
                     node[attribute.nodeName] = attribute.nodeValue;
                   });
@@ -1451,13 +1742,13 @@ define(["jquery",
                       model.get("labelBlockList").push(node.name);
                     }
                   }
-        
+
                   // node short identifier
                   node.shortIdentifier = node.identifier.substring(node.identifier.lastIndexOf(":") + 1);
                   if (Array.isArray(model.get("labelBlockList")) && ((model.get("labelBlockList")).indexOf(node.shortIdentifier) < 0)) {
                     model.get("labelBlockList").push(node.shortIdentifier);
                   }
-                
+
                 });
               });
 
@@ -1486,36 +1777,76 @@ define(["jquery",
             */
             save: function(){
 
-              //Validate before we try anything else
+              var model = this;
+
+              // Ensure empty filters (rule groups) are removed
+              this.get("definitionFilters").removeEmptyFilters();
+
+              // Validate before we try anything else
               if(!this.isValid()){
+                //Trigger the invalid and cancelSave events
+                this.trigger("invalid");
+                this.trigger("cancelSave");
+                //Don't save the model since it's invalid
+                return false;
+              }
+              else{
 
-                //Check if there is a validation error on the definition filters
-                var invalidAttr = Object.keys(this.validationError || {});
-                if( invalidAttr.includes("definition") ){
-                  _.each( this.getAllDefinitionFilters(), function(filter){
+                //Double-check that the label is available, if it was changed
+                if( (this.isNew() || this.get("originalLabel") != this.get("label")) && !this.get("labelDoubleChecked") ){
+                  //If the label is taken
+                  this.once("labelTaken", function(){
 
-                    //Remove invalid filters from the Filters collection
-                    if( !filter.isValid() ){
-                      this.get("searchModel").get("filters").remove(filter);
+                    //Stop listening to the label availablity
+                    this.stopListening("labelAvailable");
+
+                    //Set that the label has been double-checked
+                    this.set("labelDoubleChecked", true);
+
+                    //If this portal is in a free trial of DataONE Plus, generate a new random label
+                    // and start the save process again
+                    if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+                      var subscription = MetacatUI.appUserModel.get("dataoneSubscription");
+                      if(subscription && subscription.isTrialing()) {
+                        this.setRandomLabel();
+
+                        this.set("labelDoubleChecked", true);
+
+                        // Start the save process again
+                        this.save();
+
+                        return;
+                      }
+
+                    }
+                    else{
+                      //If the label is taken, trigger an invalid event
+                      this.trigger("invalid");
+                      //Trigger a cancellation of the save event
+                      this.trigger("cancelSave");
                     }
 
-                  }, this);
-                }
+                  });
 
-                //Re-validate this model after possibly removing some invalid filters
-                if( !this.isValid() ){
-                  //Trigger the invalid and cancelSave events
-                  this.trigger("invalid");
-                  this.trigger("cancelSave");
-                  //Don't save the model since it's invalid
-                  return false;
+                  this.once("labelAvailable", function(){
+                    this.stopListening("labelTaken");
+                    this.set("labelDoubleChecked", true);
+                    this.save();
+                  });
+
+                  // Check label availability
+                  this.checkLabelAvailability(this.get("label"));
+
+                  // console.log("Double checking label");
+
+                  //Don't proceed with the rest of the save
+                  return;
                 }
                 else{
                   this.trigger("valid");
                 }
-              }
-              else{
-                this.trigger("valid");
+
               }
 
               //Check if the checksum has been calculated yet.
@@ -1621,17 +1952,15 @@ define(["jquery",
                       this.set("hideMembers", null);
                       break;
                     case "freeform":
-                      // Add a new, blank markdown section
-                      var sectionModels = _.clone(this.get("sections")),
-                          newSection = new PortalSectionModel();
 
-                      // Set default temp values on the new markdown section.
-                      newSection.set({
-                        content: new EMLText({
-                                      type: "content",
-                                      parentModel: newSection
-                                  })
-                      });
+                      // Add a new, blank markdown section with a default image
+                      var sectionModels = _.clone(this.get("sections")),
+                          newSection = new PortalSectionModel({
+                            portalModel: this,
+                            // Include a default image if some are configured.
+                            image: this.getRandomSectionImage()
+                          });
+
                       sectionModels.push( newSection );
                       this.set("sections", sectionModels);
                       // Trigger event manually so we can just pass newSection
@@ -1739,7 +2068,6 @@ define(["jquery",
                 operator: "OR"
               });
 
-
               // adding the filter in the node model
               this.get("definitionFilters").add(nodeFilterModel);
 
@@ -1780,6 +2108,22 @@ define(["jquery",
               textString = textString.replace(invalidCharsRegEx, "");
 
               return textString;
+
+            },
+
+            /**
+            * Generates a random portal label for free trial portals
+            * @fires PortalModel#change:label
+            * @since 2.14.0
+            */
+            setRandomLabel: function() {
+
+              if( this.isNew() ){
+                var labelLength = MetacatUI.appModel.get("randomLabelNumericLength");
+                var randomGeneratedLabel = Math.floor(Math.pow(10,labelLength - 1) + Math.random() * ( 9 * Math.pow(10,labelLength - 1)));
+                randomGeneratedLabel = randomGeneratedLabel.toString();
+                this.set("label", randomGeneratedLabel);
+              }
 
             }
 

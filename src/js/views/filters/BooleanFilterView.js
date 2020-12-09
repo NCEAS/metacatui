@@ -6,10 +6,17 @@ define(['jquery', 'underscore', 'backbone',
   function($, _, Backbone, BooleanFilter, FilterView, Template) {
   'use strict';
 
-  // Render a view of a single BooleanFilter model
-  var BooleanFilterView = FilterView.extend({
+  /**
+  * @class BooleanFilterView
+  * @classdesc Render a view of a single BooleanFilter model
+  * @classcategory Views/Filters
+  */
+  var BooleanFilterView = FilterView.extend(
+    /** @lends BooleanFilterView.prototype */{
 
-    // @type {BooleanFilter} - A BooleanFilter model to be rendered in this view
+    /**
+    * A BooleanFilter model to be rendered in this view
+    * @type {BooleanFilter} */
     model: null,
 
     className: "filter boolean",
@@ -36,7 +43,7 @@ define(['jquery', 'underscore', 'backbone',
       this.listenTo( this.model, "change:values", this.updateCheckbox );
     },
 
-    /*
+    /**
     * Gets the value of the checkbox and updates the BooleanFilter model
     */
     updateModel: function(){
@@ -49,7 +56,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Updates the checked property of the checkbox based on the model value
     */
     updateCheckbox: function(){

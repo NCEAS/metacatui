@@ -18,10 +18,10 @@ function ($, _, Backbone) {
 			'data(/mode=:mode)(/query=:query)(/page/:page)(/)' : 'renderData',    // data search page
 			'profile(/*username)(/s=:section)(/s=:subsection)(/)' : 'renderProfile',
 			'my-profile(/s=:section)(/s=:subsection)(/)' : 'renderMyProfile',
-			'external(/*url)(/)'           : 'renderExternal', // renders the content of the given url in our UI
 			'signout(/)'					: 'logout',
 			'signin(/)'					: 'renderSignIn',
 			"signinsuccess(/)"             : "renderSignInSuccess",
+      "signin-help"                       : "renderSignInHelp", //The Sign In troubleshotting page
 			'share(/*pid)(/)'              : 'renderEditor', // registry page
 			'submit(/*pid)(/)'             : 'renderEditor', // registry page
 			'quality(/s=:suiteId)(/:pid)(/)' : 'renderMdqRun', // MDQ page
@@ -449,29 +449,17 @@ function ($, _, Backbone) {
 			setTimeout(window.close, 1000);
 		},
 
-		renderExternal: function(url) {
-			// use this for rendering "external" content pulled in dynamically
-			this.routeHistory.push("external");
+    renderSignInHelp: function(){
+      this.routeHistory.push("signin-help");
+      this.renderText({ pageName: "signInHelp" });
+    },
 
-			if(!MetacatUI.appView.externalView){
-				require(['views/ExternalView'], function(ExternalView){
-					MetacatUI.appView.externalView = new ExternalView();
-					MetacatUI.appView.externalView.url = url;
-					MetacatUI.appView.showView(MetacatUI.appView.externalView);
-				});
-			}
-			else{
-				MetacatUI.appView.externalView.url = url;
-				MetacatUI.appView.showView(MetacatUI.appView.externalView);
-			}
-		},
-
-		/**		 
+		/**
 		 * renderPortal - Render the portal view based on the given name or id, as
-		 * well as optional section	 
-		 * 			
+		 * well as optional section
+		 *
 		 * @param  {string} label         The portal ID or name
-		 * @param  {string} portalSection A specific section within the portal 
+		 * @param  {string} portalSection A specific section within the portal
 		 */
      renderPortal: function(label, portalSection) {
 			 // Add the overall class immediately so the navbar is styled correctly right away
@@ -491,6 +479,17 @@ function ($, _, Backbone) {
          });
          MetacatUI.appView.showView(MetacatUI.appView.portalView);
        });
+     },
+
+     renderText: function(options){
+       if(!MetacatUI.appView.textView){
+         require(['views/TextView'], function(TextView){
+           MetacatUI.appView.textView = new TextView();
+           MetacatUI.appView.showView(MetacatUI.appView.textView, options);
+         });
+       }
+       else
+         MetacatUI.appView.showView(MetacatUI.appView.textView, options);
      },
 
 

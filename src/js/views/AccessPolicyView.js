@@ -11,6 +11,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
   /**
   * @class AccessPolicyView
   * @classdesc A view of an Access Policy of a DataONEObject
+  * @classcategory Views
   * @extends Backbone.View
   * @constructor
   */

@@ -7,10 +7,18 @@ define(['jquery', 'underscore', 'backbone',
   function($, _, Backbone, ToggleFilter, FilterView, Template, BooleanTemplate) {
   'use strict';
 
-  // Render a view of a single ToggleFilter model
-  var ToggleFilterView = FilterView.extend({
+  /**
+  * @class ToggleFilterView
+  * @classdesc Render a view of a single ToggleFilter model
+  * @classcategory Views/Filters
+  * @extends FilterView
+  */
+  var ToggleFilterView = FilterView.extend(
+    /** @lends ToggleFilterView.prototype */{
 
-    // @type {ToggleFilter} - A ToggleFilter model to be rendered in this view
+    /**
+    *  A ToggleFilter model to be rendered in this view
+    * @type {ToggleFilter} */
     model: null,
 
     className: "filter toggle",
@@ -53,7 +61,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Actions to perform after the render() function has completed and this view's
     * element is added to the webpage.
     */
@@ -78,7 +86,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Gets the width of the toggle labels and sets the various CSS attributes
     * necessary for the switch to fully display each label
     */
@@ -142,7 +150,7 @@ define(['jquery', 'underscore', 'backbone',
       styleTag.html(newCSS);
     },
 
-    /*
+    /**
     * Updates the value set on the ToggleFilter Model associated with this view.
     * The filter value is grabbed from the checkbox element in this view.
     *

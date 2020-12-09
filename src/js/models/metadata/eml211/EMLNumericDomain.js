@@ -7,6 +7,7 @@ define(["jquery", "underscore", "backbone",
          * @classdesc EMLNumericDomain represents the measurement scale of an interval
          * or ratio measurement scale attribute, and is an extension of
          * EMLMeasurementScale.
+         * @classcategory Models/Metadata/EML211
          * @see https://github.com/NCEAS/eml/blob/master/eml-attribute.xsd
          */
         var EMLNumericDomain = Backbone.Model.extend(

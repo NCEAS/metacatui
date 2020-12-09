@@ -24,6 +24,7 @@ define(['underscore',
     /**
     * @class EML211EditorView
     * @classdesc A view of a form for creating and editing EML 2.1.1 documents
+    * @classcategory Views/Metadata
     * @name EML211EditorView
     * @extends EditorView
     * @constructs
@@ -41,7 +42,7 @@ define(['underscore',
         * The text to use in the editor submit button
         * @type {string}
         */
-        submitButtonText: "Submit Dataset",
+        submitButtonText: MetacatUI.appModel.get("editorSaveButtonText"),
 
         /**
         * The events this view will listen to and the associated function to call.
@@ -858,7 +859,7 @@ define(['underscore',
           this.$(".notification.error").empty();
           this.$(".side-nav-item .icon").hide();
           this.$("#metadata-container .error").removeClass("error");
-          $(".alert-container").remove();
+          $(".alert-container:not(:has(.temporary-message))").remove();
 
 
           var errors = this.model.validationError;

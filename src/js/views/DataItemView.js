@@ -11,6 +11,7 @@ define(['underscore', 'jquery', 'backbone', 'models/DataONEObject',
             object described by the metadata (as a file).  Every metadata DataItemView has a
             resource map associated with it that describes the relationships between the
             aggregated metadata and data objects.
+        * @classcategory Views
         * @constructor
         */
         var DataItemView = Backbone.View.extend(

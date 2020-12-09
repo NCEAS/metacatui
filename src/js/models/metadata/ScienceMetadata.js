@@ -2,13 +2,17 @@
 define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
     function($, _, Backbone, DataONEObject){
 
-        /*
-         ScienceMetadata represents a generic science metadata document.
+        /**
+        @class ScienceMetadata
+         @classdesc ScienceMetadata represents a generic science metadata document.
          It's properties are limited to those shared across subclasses,
          such as the those found in the DataONE search index.
          TODO: incorporate Backbone.UniqueModel
+         * @classcategory Models/Metadata
+         * @extends DataONEObject
         */
-        var ScienceMetadata = DataONEObject.extend({
+        var ScienceMetadata = DataONEObject.extend(
+          /** @lends ScienceMetadata.prototype */{
 
             // Only add fields present in the Solr service to the defaults
         	defaults: function(){ return _.extend(DataONEObject.prototype.defaults(), {

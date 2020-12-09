@@ -320,22 +320,63 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
     if (items.length) {
         let itemsNav = '';
 
-        items.forEach(item => {
-            let displayName;
+        //Organize the items into categories based on the 'classcategory' tag.
+        var organizedItems = {},
+            categoryNames  = [];
 
-            if ( !hasOwnProp.call(item, 'longname') ) {
-                itemsNav += `<li>${linktoFn('', item.name)}</li>`;
-            }
-            else if ( !hasOwnProp.call(itemsSeen, item.longname) ) {
-                if (env.conf.templates.default.useLongnameInNav) {
-                    displayName = item.longname;
-                } else {
-                    displayName = item.name;
-                }
-                itemsNav += `<li>${linktoFn(item.longname, displayName.replace(/\b(module|event):/g, ''))}</li>`;
+        for( var i=0; i<items.length; i++){
+          var category = items[i].classcategory || "Other";
 
-                itemsSeen[item.longname] = true;
-            }
+          if( !organizedItems[category] ){
+            organizedItems[category] = [items[i]];
+          }
+          else{
+            organizedItems[category].push(items[i]);
+          }
+
+          if( !categoryNames.includes(category) && category != "Other" ){
+            categoryNames.push(category);
+          }
+
+        }
+
+        //Sort the category names alphabetically, with "other" placed last
+        categoryNames.sort();
+        //Add the Other category to the end
+        categoryNames.push("Other");
+
+        //Move the Deprecated category to the end
+        const index = categoryNames.indexOf("Deprecated");
+        if (index > -1) {
+          categoryNames.splice(index, 1);
+          categoryNames.push("Deprecated")
+        }
+
+        categoryNames.forEach(category => {
+
+          //Add a heading for the category, only if there is more than one category
+          // and there is at least one item in the category
+          if( categoryNames.length > 1 && category != "Other" ){
+            itemsNav += "<li class='category-heading' data-category='" + category + "'>" + category + "</li>";
+          }
+
+          organizedItems[category].forEach(item => {
+              let displayName;
+
+              if ( !hasOwnProp.call(item, 'longname') ) {
+                  itemsNav += `<li>${linktoFn('', item.name)}</li>`;
+              }
+              else if ( !hasOwnProp.call(itemsSeen, item.longname) ) {
+                  if (env.conf.templates.default.useLongnameInNav) {
+                      displayName = item.longname;
+                  } else {
+                      displayName = item.name;
+                  }
+                  itemsNav += `<li>${linktoFn(item.longname, displayName.replace(/\b(module|event):/g, ''))}</li>`;
+
+                  itemsSeen[item.longname] = true;
+              }
+          });
         });
 
         if (itemsNav !== '') {

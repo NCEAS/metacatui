@@ -2,3 +2,9 @@
 <img src="<%= MetacatUI.root %>/img/orcid_64x64.png"  class="icon icon-on-left" />
 <span>Sign in with ORCID</span>
 </a>
+
+<% if( MetacatUI.appModel.get("showSignInHelp") ){ %>
+<div class="notification text-center">
+  <a href="<%=MetacatUI.root%>/signin-help" class="danger" data-dismiss="modal">Having issues signing in?</a>
+</div>
+<% } %>

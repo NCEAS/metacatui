@@ -24,6 +24,7 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       * @class EML211
       * @classdesc An EML211 object represents an Ecological Metadata Language
       * document, version 2.1.1
+      * @classcategory Models/Metadata/EML211
       * @extends ScienceMetadata
       */
       var EML211 = ScienceMetadata.extend(
@@ -675,12 +676,12 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
         $(eml).attr("packageId", this.get("id"));
 
         // Set schema version
-        $(eml).attr("xmlns:eml", 
-          MetacatUI.appModel.get("editorSerializationFormat") || 
+        $(eml).attr("xmlns:eml",
+          MetacatUI.appModel.get("editorSerializationFormat") ||
           "https://eml.ecoinformatics.org/eml-2.2.0");
 
         // Set formatID
-        this.set("formatId", 
+        this.set("formatId",
           MetacatUI.appModel.get("editorSerializationFormat") ||
           "https://eml.ecoinformatics.org/eml-2.2.0");
 
@@ -1530,7 +1531,14 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
                   errors.methods = "At least one method step is required.";
               }
               else if(key == "funding"){
-                if(!this.get("project") || !this.get("project").get("funding").length)
+                // Note: Checks for either the funding or award element. award
+                // element is checked by the project's objectDOM for now until
+                // EMLProject fully supports the award element
+                if(!this.get("project") ||
+                   !(this.get("project").get("funding").length ||
+                     (this.get("project").get("objectDOM") &&
+                      this.get("project").get("objectDOM").querySelectorAll &&
+                      this.get("project").get("objectDOM").querySelectorAll("award").length > 0)))
                   errors.funding = "Provide at least one project funding number or name.";
               }
               else if(key == "abstract"){
@@ -2121,9 +2129,9 @@ define(['jquery', 'underscore', 'backbone', 'uuid',
       },
 
       /**
-       * Sets the xsi:schemaLocation attribute on the passed-in Element 
+       * Sets the xsi:schemaLocation attribute on the passed-in Element
        * depending on the application configuration.
-       * 
+       *
        * @param {Element} eml: The root eml:eml element to modify
        * @return {Element} The element, possibly modified
        */

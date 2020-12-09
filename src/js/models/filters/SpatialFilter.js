@@ -2,10 +2,11 @@ define(["underscore", "jquery", "backbone", "models/filters/Filter"],
     function(_, $, Backbone, Filter) {
 
         /**
-        * A SpatialFilter represents a spatial constraint on the query to be executed,
+        * @classdesc A SpatialFilter represents a spatial constraint on the query to be executed,
         * and stores the geohash strings for all of the geohash tiles that coincide with the
         * search bounding box at the given zoom level.
         * @class SpatialFilter
+        * @classcategory Models/Filters
         * @name SpatialFilter
         * @constructs
         * @extends Filter

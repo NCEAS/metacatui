@@ -39,15 +39,17 @@
         "views/portals/editor/PortEditorImageView",
         "text!templates/loading.html",
         "text!templates/portals/editor/portalEditor.html",
-        "text!templates/portals/editor/portalEditorSubmitMessage.html"
+        "text!templates/portals/editor/portalEditorSubmitMessage.html",
+        "text!templates/portals/editor/portalLoginPage.html"
       ],
 function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
   PortEditorSectionsView, ImageEdit, LoadingTemplate, Template,
-  portalEditorSubmitMessageTemplate){
+  portalEditorSubmitMessageTemplate, LoginTemplate){
 
   /**
   * @class PortalEditorView
   * @classdesc A view of a form for creating and editing DataONE Portal documents
+  * @classcategory Views/Portals/Editor
   * @name PortalEditorView
   * @extends EditorView
   * @constructs
@@ -83,13 +85,14 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * When a new portal is being created, this is the label of the section that will be active when the editor first renders
     * @type {string}
     */
-    newPortalDefaultSectionLabel: "Settings",
+    newPortalActiveSectionLabel: (MetacatUI.appModel.get("portalDefaults") ? MetacatUI.appModel.get("portalDefaults").newPortalActiveSectionLabel : "") || "Settings",
 
     /**
     * References to templates for this view. HTML files are converted to Underscore.js templates
     */
     template: _.template(Template),
     loadingTemplate: _.template(LoadingTemplate),
+    loginTemplate: _.template(LoginTemplate),
     // Over-ride the default editor submit message template (which is currently
     // used by the metadata editor) with the portal editor version
     editorSubmitMessageTemplate: _.template(portalEditorSubmitMessageTemplate),
@@ -154,6 +157,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * @param {Object} options - A literal object with options to pass to the view
     */
     initialize: function(options){
+
+      EditorView.prototype.initialize.call(this, options);
 
       //Reset arrays and objects set on this View, otherwise they will be shared across intances, causing errors
       this.subviews = new Array();
@@ -240,7 +245,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
             if( MetacatUI.appUserModel.get("isAuthorizedCreatePortal") ){
               // Start new portals on the settings tab
-              this.activeSectionLabel = this.newPortalDefaultSectionLabel;
+              this.activeSectionLabel = this.newPortalActiveSectionLabel;
 
               // Render the default model if the portal is new
               this.renderPortalEditor();
@@ -270,7 +275,14 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
           //If the user authentication hasn't been checked yet, then wait for it
           if ( !MetacatUI.appUserModel.get("tokenChecked") ) {
             this.listenTo(MetacatUI.appUserModel, "change:tokenChecked", function(){
-              MetacatUI.appUserModel.isAuthorizedCreatePortal();
+              if( MetacatUI.appUserModel.get("loggedIn") ){
+                //Check if this user is authorized to create a new portal
+                MetacatUI.appUserModel.isAuthorizedCreatePortal();
+              }
+              //If the user is not logged in, show the sign in buttons
+              else if( !MetacatUI.appUserModel.get("loggedIn") ){
+                this.showSignIn();
+              }
             });
             return;
           }
@@ -296,6 +308,57 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     */
     renderPortalEditor: function() {
 
+      //Check if this is a plus portal
+      if( MetacatUI.appModel.get("dataonePlusPreviewMode")){
+        var sourceMN = this.model.get("datasource");
+
+        //Check if the portal source node is from the active alt repo OR is
+        // configured as a Plus portal.
+        if( !this.model.isNew() &amp;&amp;
+            (typeof sourceMN != "string" ||
+            (sourceMN != MetacatUI.appModel.get("defaultAlternateRepositoryId") &amp;&amp;
+            !_.findWhere(MetacatUI.appModel.get("dataonePlusPreviewPortals"),
+                         { datasource: sourceMN, seriesId: this.model.get("seriesId") }))) ){
+
+            //Get the name of the source member node
+            var sourceMNName = "original data repository",
+                mnURL        = "";
+            if( typeof sourceMN == "string" ){
+              var sourceMNObject = MetacatUI.nodeModel.getMember(sourceMN);
+              if( sourceMNObject ){
+                sourceMNName = sourceMNObject.name;
+
+                //If there is a baseURL string
+                if( sourceMNObject.baseURL ){
+                  //Parse out the origin of the baseURL string. We want to crop out the /metacat/d1/mn parts.
+                  mnURL = sourceMNObject.baseURL.substring(0, sourceMNObject.baseURL.lastIndexOf(".")) +
+                          sourceMNObject.baseURL.substring(sourceMNObject.baseURL.lastIndexOf("."),
+                                                           sourceMNObject.baseURL.indexOf("/", sourceMNObject.baseURL.lastIndexOf(".")));
+                }
+              }
+            }
+
+            //Show a message that the portal can be found on the repository website.
+            var message = $(document.createElement("h3")).addClass("center stripe");
+            message.text("The " + this.model.get("name") + " " + MetacatUI.appModel.get("portalTermSingular") +
+                      " can be edited in the ");
+
+            if(mnURL){
+              message.append( $(document.createElement("a"))
+                                .attr("href", mnURL)
+                                .attr("target", "_blank")
+                                .text(sourceMNName) );
+            }
+            else{
+              message.append(sourceMNName);
+            }
+
+            this.$el.html(message);
+
+            return;
+        }
+      }
+
       // Add the template to the view and give the body the "Editor" class
       this.$el.html(this.template({
         name: this.model.get("name"),
@@ -310,6 +373,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       //Render the editor controls
       this.renderEditorControls();
+
+      //Hide the Save controls
+      this.hideControls();
 
       //Remove the rendering class from the body element
       $("body").removeClass("rendering");
@@ -353,11 +419,17 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       //Render the sections view
       this.sectionsView.render();
 
+      //If this portal is a free trial DataONE Plus portal, then display some messaging
+      this.renderSubscriptionInfo();
+
       //Show the required fields for this editor
       this.renderRequiredIcons(MetacatUI.appModel.get("portalEditorRequiredFields"));
 
       // Insert the logo editor
       this.renderLogoEditor();
+
+      //When the collection definition is changed, show the Save button
+      this.listenTo(this.model.get("definitionFilters"), "remove change", this.showControls);
 
       // On mobile, hide section tabs a moment after page loads so
       // users notice where they are
@@ -411,7 +483,10 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.model = new Portal({
           //Set the isNew attribute so the model will execute certain functions when a Portal is new
           isNew: true,
-          rightsHolder: MetacatUI.appUserModel.get("username")
+          rightsHolder: MetacatUI.appUserModel.get("username"),
+          isAuthorized_read: true,
+          isAuthorized_write: true,
+          isAuthorized_changePermission: true
         });
 
       }
@@ -458,7 +533,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
            this.listenToOnce(this.model, "notFound", this.showNotFound);
 
            //Get the seriesId or latest pid
-           this.model.getSeriesIdByName();
+           this.model.getSeriesIdByLabel();
            return;
          }
          else{
@@ -525,7 +600,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         // Add the image view (incl. uploader) for the portal logo
         this.logoEdit = new ImageEdit({
           model: this.model.get("logo"),
-          imageUploadInstructions: "Drag &amp; drop a logo here or click to upload",
+          imageUploadInstructions: "Drag &amp; drop a logo or click to upload",
           imageWidth: 100,
           imageHeight: 100,
           minWidth: 64,
@@ -540,6 +615,8 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
         this.$(this.portEditLogoContainer).append(this.logoEdit.el);
         this.logoEdit.render();
         this.logoEdit.editorView = this;
+
+        this.listenTo(this.model.get("logo"), "change", this.showControls);
 
       } catch (e) {
         console.error("Logo editor view could not be rendered. Error message: " + e);
@@ -694,7 +771,7 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
       }, this);
 
       if(errors){
-        MetacatUI.appView.showAlert("Fix the errors flagged below before submitting.",
+        MetacatUI.appView.showAlert("Provide the content flagged below before submitting.",
             "alert-error",
             this.$el,
             null,
@@ -739,18 +816,95 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
     * Show Sign In buttons
     */
     showSignIn: function(){
-      var container = $(document.createElement("div")).addClass("container center");
-      this.$el.html(container);
-      var signInButtons = new SignInView().render().el;
 
+      // Messsage if the user is trying to edit an existing portal
+      var title = "Sign in with your ORCID to edit this portal"
       // Message to create a portal if the portal is new
       if (this.model.get("isNew")) {
-        $(container).append('&lt;h1>Sign in to create a portal&lt;/h1>', signInButtons);
-      }
-      else {
-        $(container).append('&lt;h1>Sign in to edit a portal&lt;/h1>', signInButtons);
+        title = "&lt;strong>You're one step away from the portal builder&lt;/strong>&lt;br>Start by signing in with your ORCID"
       }
 
+      this.$el.html(this.loginTemplate({
+        title: title,
+        portalInfoLink: MetacatUI.appModel.get("portalInfoURL"),
+        portalImageSrc: MetacatUI.root + "/img/portals/portal-data-page-example.png",
+        altText: "Screen shot of a portal data page for a climate research lab. The page shows a search bar, customized filters, and a map of the the geographic area the data covers."
+      }));
+
+    },
+
+    /**
+    * The DataONE Plus Subscription if fetched from Bookkeeper and the status of the
+    * Subscription is rendered on the page.
+    * Subviews in this view should have their own renderSubscriptionInfo() function
+    * that inserts subscription details into the subview.
+    */
+    renderSubscriptionInfo: function(){
+      if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+        if( MetacatUI.appUserModel.get("loggedIn") &amp;&amp; MetacatUI.appUserModel.get("dataoneSubscription") ){
+          //Show the free trial message for this portal, if the subscription is in a free trial
+          var subscription = MetacatUI.appUserModel.get("dataoneSubscription"),
+              isFreeTrial  = false;
+
+          //If the Subscription is in free trial mode
+          if( subscription &amp;&amp; subscription.isTrialing() ){
+
+            if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+              //If this portal is not in the configured list of Plus portals
+              var trialExceptions = MetacatUI.appModel.get("dataonePlusPreviewPortals");
+              isFreeTrial = !_.findWhere(trialExceptions, { seriesId: this.model.get("seriesId") });
+            }
+            else{
+              isFreeTrial = true;
+            }
+
+            if( isFreeTrial ){
+              //Show a free trial message in the editor footer
+              var freeTrialMessage = "This " + MetacatUI.appModel.get("portalTermSingular") + " is a free preview of " + MetacatUI.appModel.get("dataonePlusName");
+              var messageEl = $(document.createElement("span"))
+                                .addClass("free-trial-message")
+                                .text(freeTrialMessage)
+                                .prepend( $(document.createElement("i")).addClass("dataone-plus-icon-container") );
+              this.$("#editor-footer").prepend(messageEl);
+
+              // Update the label element to randomly generated label
+              // And disable the input
+              var labelEL = $('.label-input-text');
+              labelEL.val(this.model.get("label"));
+
+              //When the Portal Model label is changed, update the input
+              this.listenTo(this.model, "change:label", function(){
+                $('.label-input-text').val(this.model.get("label"));
+              });
+
+              labelEL.attr("disabled", "disabled");
+              //Remove the "Change URL" button that toggles the label input
+              this.$(".btn.change-label").remove();
+
+              // Show edit label message if the edit button is disabled
+              var editLabelMessage = "Create a custom " + MetacatUI.appModel.get("portalTermSingular") + " name for the URL when your free preview of " +
+                                      "&lt;i class='dataone-plus-icon-container'>&lt;/i>" + MetacatUI.appModel.get("dataonePlusName") + " ends.";
+              var messageContainer = this.$(".label-container .notification").html(editLabelMessage).addClass("free-trial");
+
+              if( !messageContainer.is(":visible") ){
+                messageContainer.detach().appendTo( this.$(".change-label-container") );
+              }
+
+              //Insert the DataONE Plus icon
+              var viewRef = this;
+              require(["text!templates/dataonePlusIcon.html"], function(iconTemplate){
+                viewRef.$(".dataone-plus-icon-container").html(iconTemplate);
+              });
+
+            }
+          }
+        }
+        else{
+            this.listenTo( MetacatUI.appUserModel, "change:dataoneSubscription", this.renderSubscriptionInfo );
+        }
+
+      }
     },
 
     /**
@@ -760,8 +914,9 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 
       this.hideLoading();
 
-      var notFoundMessage = "The portal \"" + (this.model.get("label") || this.portalIdentifier) +
-                            "\" doesn't exist.";
+      var notFoundMessage = $(document.createElement("p")).text("The " + MetacatUI.appModel.get("portalTermSingular") + " ");
+      notFoundMessage.append( $(document.createElement("span")).text(this.model.get("label") || this.portalIdentifier) )
+                     .append( $(document.createElement("span")).text(" doesn't exist.") );
 
       MetacatUI.appView.showAlert(notFoundMessage, "alert-error non-fixed", this.$el, undefined, { remove: true });
     },
@@ -822,13 +977,13 @@ function(_, $, Backbone, Portal, PortalImage, Filters, EditorView, SignInView,
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li></ul><h3>Classes</h3><ul><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="AppView.html">AppView</a></li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="Citations.html">Citations</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogView_drawTiles-TextOverlay.html">TextOverlay</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="EML211.html">EML211</a></li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResultList.html">SolrResultList</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="Stats.html">Stats</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li><a href="UIRouter.html">UIRouter</a></li><li><a href="UserView.html">UserView</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Aug 10 2020 17:22:16 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Dec 07 2020 17:33:36 GMT-0600 (Central Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

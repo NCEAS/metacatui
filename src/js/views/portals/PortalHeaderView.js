@@ -3,10 +3,14 @@ define(["jquery",
     "backbone",
     "text!templates/portals/portalHeader.html"], function($, _, Backbone, PortalHeaderTemplate){
 
-    /* The PortalHeaderView is the view at the top of portal pages
+    /**
+    * @class PortalHeaderView
+    * @classdesc The PortalHeaderView is the view at the top of portal pages
      * that shows the portal's title, synopsis, and logo
+     * @classcategory Views/Portals
      */
-     var PortalHeaderView = Backbone.View.extend({
+     var PortalHeaderView = Backbone.View.extend(
+       /** @lends PortalHeaderView.prototype */{
 
         /* The Portal Header Element */
         el: "#portal-header-container",

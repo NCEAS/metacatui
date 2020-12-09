@@ -249,15 +249,23 @@
   margin-right: 20px;
 }
 .Portal.Editor #Navbar .nav .minimal-nav > a,
-.PortalView #Navbar .nav .minimal-nav > a{
+.PortalView #Navbar .nav .minimal-nav > a,
+.Portal.Editor #Navbar a .title,
+.PortalView #Navbar a .title {
   color: #888;
   font-weight: normal;
 }
+
 .PortalView #Navbar .nav .minimal-nav > .btn{
   padding: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
   line-height: .9em;
+}
+
+.Portal.Editor .navbar-inner,
+.PortalView .navbar-inner {
+  border-radius: 0;
 }
 
 /* Portal editor
@@ -1848,9 +1856,6 @@ svg .domain{
 	font-size: 14px;
 	stroke-width: 0px;
 	display: none;
-}
-.line-chart-label.text{
-		fill: #555;
 }
 .line-chart-label.bg{
 	stroke-width: 2px;

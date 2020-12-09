@@ -4,14 +4,16 @@ define(["jquery", "underscore", "backbone",
         "models/metadata/eml211/EMLDateTimeDomain"],
     function($, _, Backbone, EMLNonNumericDomain, EMLNumericDomain, EMLDateTimeDomain) {
 
-        /*
-         * EMLMeasurementScale is a measurement scale factory that returns
+        /**
+        * @class EMLMeasurementScale
+         * @classdesc EMLMeasurementScale is a measurement scale factory that returns
          * an EMLMeasurementScale subclass of either EMLNonNumericDomain,
          * EMLNumericDomain, or EMLDateTimeDomain, depending on the
          * domain name found in the given measurementScaleXML
+         * @classcategory Models/Metadata/EML211
          */
         var EMLMeasurementScale = Backbone.Model.extend({},
-
+          /** @lends EMLMeasurementScale.prototype */
         {
             /*
              * Get an instance of an EMLMeasurementScale subclass

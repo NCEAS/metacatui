@@ -21,6 +21,7 @@ define(["jquery",
          * and the Filter models for managing queries rather than the
          * Search model and the filter literal objects used in the
          * parent DataCatalogView.  This accommodates custom portal filters.
+         * @classcategory Views
          * @extends DataCatalogView
          * @constructor
          */
@@ -200,9 +201,7 @@ define(["jquery",
                     $(".auto-height-member").resize(this.setAutoHeight);
                 }
 
-                if (MetacatUI.appModel.get("bioportalAPIKey")) {
-                    this.setUpTree();
-                }
+                this.addAnnotationFilter();
 
                 return this;
             },
@@ -411,7 +410,6 @@ define(["jquery",
              * @param(Event)  the event passed by clicking the toggle-map class button
              */
             toggleMapMode: function(event) {
-                console.log(event);
 
                 // Block the event from bubbling
                 if (typeof event === "object") {

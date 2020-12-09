@@ -9,11 +9,14 @@ define(['underscore', 'jquery', 'backbone',
     function(_, $, Backbone, DataONEObject, EMLMeasurementScale,
     		EMLMeasurementScaleTemplate, CodeListRowTemplate, NonNumericDomainTemplate, TextDomainTemplate){
 
-        /*
-            An EMLMeasurementScaleView displays the info about
-            one the measurement scale or category of an eml attribute
+        /**
+        * @class EMLMeasurementScaleView
+        * @classdesc An EMLMeasurementScaleView displays the info about one the measurement scale or category of an eml attribute
+        * @classcategory Views/Metadata
+        * @extends Backbone.View
         */
-        var EMLMeasurementScaleView = Backbone.View.extend({
+        var EMLMeasurementScaleView = Backbone.View.extend(
+          /** @lends EMLMeasurementScaleView.prototype */{
 
             tagName: "div",
 

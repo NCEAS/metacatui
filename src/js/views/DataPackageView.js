@@ -14,11 +14,14 @@ define([
     		DataPackageTemplate, DataPackageStartTemplate) {
         'use strict';
 
-        /*
-         *  The main view of a Data Package in the editor.  The view is
+        /**
+         * @class DataPackageView
+         * @classdesc The main view of a Data Package in the editor.  The view is
          *  a file/folder browser
+         * @classcategory Views
          */
-        var DataPackageView = Backbone.View.extend({
+        var DataPackageView = Backbone.View.extend(
+          /** @lends DataPackageView.prototype */{
 
             tagName: "table",
 
@@ -61,7 +64,7 @@ define([
 
             },
 
-            /*
+            /**
              *  Render the DataPackage HTML
              */
             render: function() {
@@ -92,7 +95,7 @@ define([
                 return this;
             },
 
-            /*
+            /**
              * Add a single DataItemView row to the DataPackageView
              */
             addOne: function(item) {
@@ -196,7 +199,7 @@ define([
 
             },
 
-            /*
+            /**
              * Add all rows to the DataPackageView
              */
             addAll: function() {
@@ -206,7 +209,7 @@ define([
 
             },
 
-            /*
+            /**
                 Remove the subview represented by the given model item.
 
                 @param item The model representing the sub view to be removed
@@ -225,7 +228,7 @@ define([
             	this.$(".data-package-item.folder").first().data("view").handleAddFiles(e);
             },
 
-            /*
+            /**
              * Close subviews as needed
              */
             onClose: function() {
@@ -240,7 +243,9 @@ define([
                 this.__proto__.subviews = {};
             },
 
-            /* Show or hide the data rows associated with the event row science metadata */
+            /**
+             Show or hide the data rows associated with the event row science metadata
+             */
             toggleRows: function(event) {
 
                 if ( this.isOpen ) {

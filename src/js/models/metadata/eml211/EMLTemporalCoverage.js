@@ -4,6 +4,7 @@ define(['jquery', 'underscore', 'backbone', 'models/DataONEObject'],
 
   /**
   * @class EMLTemporalCoverage
+  * @classcategory Models/Metadata/EML211
   */
 	var EMLTemporalCoverage = Backbone.Model.extend(
     /** @lends EMLTemporalCoverage.prototype */{

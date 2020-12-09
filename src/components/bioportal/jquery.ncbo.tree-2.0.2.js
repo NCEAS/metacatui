@@ -355,10 +355,11 @@
         searchTextSuffix: "*",
         searchFromRoot: startingRoot,
         onSelect: function(item, searchInput) {
+          $TREE_CONTAINER.trigger("searchItemSelected");
           _this.jumpToClass(item["@id"]);
           searchInput.val("");
         },
-        minCharacters: 3,
+        minCharacters: 1,
         additionalParameters: {
           apikey: OPTIONS.apikey,
           no_context: true,

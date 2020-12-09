@@ -11,10 +11,18 @@ define(['jquery', 'underscore', 'backbone',
     DateFilterView, NumericFilterView, ToggleFilterView) {
   'use strict';
 
-  // Renders a display of a group of filters
-  var FilterGroupView = Backbone.View.extend({
+  /**
+  * @class FilterGroupView
+  * @classdesc Renders a display of a group of filters
+  * @classcategory Views/Filters
+  * @extends Backbone.View
+  */
+  var FilterGroupView = Backbone.View.extend(
+    /** @lends FilterGroupView.prototype */{
 
-    // @type {FilterGroup} - A FilterGroup model to be rendered in this view
+    /**
+    * A FilterGroup model to be rendered in this view
+    * @type {FilterGroup} */
     model: null,
 
     subviews: new Array(),
@@ -103,7 +111,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Actions to perform after the render() function has completed and this view's
     * element is added to the webpage.
     */

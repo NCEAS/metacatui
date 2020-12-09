@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/views/metadata/EMLMeasurementScaleView.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/views/metadata/EMLMeasurementScaleView.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* global define */
+define(['underscore', 'jquery', 'backbone',
+        'models/DataONEObject',
+        'models/metadata/eml211/EMLMeasurementScale',
+        'text!templates/metadata/eml-measurement-scale.html',
+        'text!templates/metadata/codelist-row.html',
+        'text!templates/metadata/nonNumericDomain.html',
+        'text!templates/metadata/textDomain.html'],
+    function(_, $, Backbone, DataONEObject, EMLMeasurementScale,
+    		EMLMeasurementScaleTemplate, CodeListRowTemplate, NonNumericDomainTemplate, TextDomainTemplate){
+
+        /**
+        * @class EMLMeasurementScaleView
+        * @classdesc An EMLMeasurementScaleView displays the info about one the measurement scale or category of an eml attribute
+        * @classcategory Views/Metadata
+        * @extends Backbone.View
+        */
+        var EMLMeasurementScaleView = Backbone.View.extend(
+          /** @lends EMLMeasurementScaleView.prototype */{
+
+            tagName: "div",
+
+            className: "eml-measurement-scale",
+
+            id: null,
+
+            /* The HTML template for a measurement scale */
+            template: _.template(EMLMeasurementScaleTemplate),
+            codeListRowTemplate: _.template(CodeListRowTemplate),
+            nonNumericDomainTemplate: _.template(NonNumericDomainTemplate),
+            textDomainTemplate: _.template(TextDomainTemplate),
+
+            /* Events this view listens to */
+            events: {
+            	"click  .category"        : "switchCategory",
+            	"change .datetime-string" : "toggleCustomDateTimeFormat",
+            	"change .possible-text"   : "toggleNonNumericDomain",
+            	"keyup  .new .codelist"   : "addNewCodeRow",
+            	"click .code-row .remove" : "removeCodeRow",
+            	"mouseover .code-row .remove" : "previewCodeRemove",
+            	"mouseout .code-row .remove"  : "previewCodeRemove",
+            	"change .units"           : "updateModel",
+            	"change .datetime" 		  : "updateModel",
+            	"change .codelist"        : "updateModel",
+            	"change .textDomain"      : "updateModel",
+            	"focusout .code-row"      : "showValidation",
+            	"focusout .units.input"   : "showValidation"
+            },
+
+            initialize: function(options){
+            	if(!options)
+            		var options = {};
+
+            	this.isNew = (options.isNew === true) ? true : this.model? false : true;
+            	this.model = options.model || EMLMeasurementScale.getInstance();
+            	this.parentView = options.parentView || null;
+            },
+
+            render: function(){
+
+            	//Render the template
+            	var viewHTML = this.template(this.model.toJSON());
+
+            	if(this.isNew)
+            		this.$el.addClass("new");
+
+            	//Insert the template HTML
+            	this.$el.html(viewHTML);
+
+            	//Render any nonNumericDomain models
+        		this.$(".non-numeric-domain").append( this.nonNumericDomainTemplate(this.model.get("nonNumericDomain")) );
+
+        		//Render the text domain choices and details
+        		this.$(".text-domain").html( this.textDomainTemplate() );
+
+        		//If this attribute is already defined as nonNumericDomain, then fill in the metadata
+        		_.each(this.model.get("nonNumericDomain"), function(domain){
+
+        			var nominalTextDomain = this.$(".nominal-options .text-domain"),
+        				ordinalTextDomain = this.$(".ordinal-options .text-domain");
+
+        			if(domain.textDomain){
+            			if(this.model.get("measurementScale") == "nominal"){
+            				nominalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
+            			}
+            			else{
+            				ordinalTextDomain.html( this.textDomainTemplate(domain.textDomain) );
+            			}
+
+            		}
+        			else if(domain.enumeratedDomain){
+        				this.renderCodeList(domain.enumeratedDomain);
+        			}
+
+        		}, this);
+
+        		//Add the new code rows in the code list table
+    			this.addNewCodeRow("nominal");
+    			this.addNewCodeRow("ordinal");
+
+            },
+
+            postRender: function(){
+            	//Determine which category to select
+            	//Interval measurement scales will be displayed as ratio
+            	var selectedCategory = this.model.get("measurementScale") == "interval" ? "ratio" : this.model.get("measurementScale");
+
+            	//Set the category
+    			this.$(".category[value='" + selectedCategory + "']").prop("checked", true);
+        		this.switchCategory();
+
+        		this.renderUnitDropdown();
+
+            	this.chooseDateTimeFormat();
+
+            	this.chooseNonNumericDomain();
+            },
+
+            /*
+             * Render the table of code definitions from the enumeratedDomain node of the EML
+             */
+            renderCodeList: function(codeList){
+
+            	var scaleType  = this.model.get("measurementScale"),
+            		$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
+
+            	_.each(codeList.codeDefinition, function(definition){
+            		var row = this.codeListRowTemplate(definition);
+
+            		//Add the row to the table
+            		$container.append(row);
+            	}, this);
+
+            },
+
+            showValidation: function(e){
+
+				//Reset the error messages and styling
+				this.$(".error").removeClass("error");
+				this.$(".notification").text("");
+
+				//If the measurement scale model is NOT valid
+				if( !this.$(".category:checked").length ){
+					this.$(".category-container")
+						.addClass("error")
+						.find(".notification")
+						.text("Choose a category")
+						.addClass("error");
+
+					//Trigger the invalid event on the attribute model
+                	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
+
+				}
+				else if( !this.model.isValid() ){
+            		//Get the errors
+            		var errors = this.model.validationError,
+            			modelType = this.model.get("measurementScale");
+
+            		//Display error messages for each type of error
+            		_.each(Object.keys(errors), function(attr){
+
+            			//If this is an enumeratedDomain error
+            			if(attr == "enumeratedDomain"){
+
+            				var view = this;
+
+            				//Give the user a few milliseconds to focus on a new element
+            				setTimeout(function(){
+
+            					//Highlight the inputs in code rows that are empty
+                				var emptyInputs = view.$("." + modelType + "-options .codelist.input")
+					                					.not(document.activeElement)
+					                					.filter(function(){
+					                						if( $(this).val() ) return false;
+					                						else return true;
+					                					});
+                				emptyInputs.addClass("error");
+
+                				if(emptyInputs.length)
+                					view.$("." + modelType + "-options [data-category='enumeratedDomain'] .notification").text(errors[attr]).addClass("error");
+
+                        	}, 200);
+
+            			}
+            			//For all other attributes, just display the errors the same way
+            			else{
+                			this.$("." + modelType + "-options [data-category='" + attr + "'] .notification").text(errors[attr]).addClass("error");
+                			this.$("." + modelType + "-options .input[data-category='" + attr + "']").addClass("error");
+            			}
+
+            			//Highlight the border of the non numeric domain container
+            			if(attr == "nonNumericDomain"){
+            				this.$("." + modelType + "-options.non-numeric-domain").addClass("error");
+            			}
+
+            		}, this);
+
+            		//Trigger the invalid event on the attribute model
+                //	this.model.get("parentModel").trigger("invalid", this.model.get("parentModel"));
+
+            	}
+            	else{
+            		//Trigger the valid event on the attribute model
+            	//	this.model.get("parentModel").trigger("valid", this.model.get("parentModel"));
+            	}
+
+            },
+
+            switchCategory: function(){
+            	//Switch the category in the view
+            	var chosenCategory = this.$("input[name='measurementScale']:checked").val();
+
+            	//Show the new category options
+            	this.$(".options").hide();
+            	this.$("." + chosenCategory + "-options.options").show();
+
+            	//Get the current category
+            	var modelCategory = this.model.get("measurementScale");
+
+            	//Get the parent attribute model
+            	var parentEMLAttrModel = this.model.get("parentModel");
+
+            	//Switch the model type, if needed
+            	if(chosenCategory &amp;&amp; (modelCategory != chosenCategory) &amp;&amp; !(modelCategory == "interval" &amp;&amp; chosenCategory == "ratio")){
+            		var newModel;
+
+            		if(typeof this.modelCache != "object"){
+            			this.modelCache = {};
+            		}
+
+            		//Get the model type from this view's cache
+            		if(this.modelCache[chosenCategory])
+            			newModel = this.modelCache[chosenCategory];
+                else if( chosenCategory == "ratio" &amp;&amp; this.modelCache["interval"] )
+                  newModel = this.modelCache["interval"];
+            		//Get a new model instance based on the type
+            		else
+            			newModel = EMLMeasurementScale.getInstance(chosenCategory);
+
+            		//Save this model for later in case the user switches back
+            		if(modelCategory)
+            			this.modelCache[modelCategory] = this.model;
+
+            		//save the new model
+            		this.model = newModel;
+
+            		//Set references to and from this model and the parent attribute model
+            		this.model.set("parentModel", parentEMLAttrModel);
+            		parentEMLAttrModel.set("measurementScale", this.model);
+
+            		//Update the codelist values, if needed
+            		if(chosenCategory == "nominal" || chosenCategory == "ordinal" &amp;&amp;
+            				this.model.get("nonNumericDomain").length &amp;&amp;
+            				this.model.get("nonNumericDomain")[0].enumeratedDomain){
+            			this.updateCodeList();
+            		}
+            	}
+
+            },
+
+            renderUnitDropdown: function(){
+            	if(this.$("select.units").length) return;
+
+            	//Create a dropdown menu
+            	var select = $(document.createElement("select"))
+            					.addClass("units full-width input")
+            					.attr("data-category", "unit");
+
+              var eml = this.model.getParentEML();
+
+            	//Get the units collection or wait until it has been fetched
+            	if(!eml.units.length){
+            		this.listenTo(eml.units, "sync", this.renderUnitDropdown);
+            		return;
+            	}
+
+            	//Create a default option
+            	var defaultOption = $(document.createElement("option"))
+										.text("Choose a standard unit");
+				select.append(defaultOption);
+
+				//Create an "Other" option to show at the top
+				var otherOption = $(document.createElement("option"))
+									.text("Other / None")
+									.attr("value", "dimensionless");
+				select.append(otherOption);
+
+            	//Create each unit option in the unit dropdown
+            	eml.units.each(function(unit){
+            		var option = $(document.createElement("option"))
+            						.val(unit.get("_name"))
+            						.text(unit.get("_name").charAt(0).toUpperCase() +
+            								unit.get("_name").slice(1) +
+            								" (" + unit.get("description") + ")")
+            						.data({ model: unit });
+            		select.append(option);
+            	}, this);
+
+            	//Add the dropdown to the page
+            	this.$(".units-container").append(select);
+
+            	//Select the unit from the EML, if there is one
+            	var currentUnit = this.model.get("unit");
+            	if(currentUnit &amp;&amp; currentUnit.standardUnit){
+
+            		//Get the dropdown for this measurement scale
+                // (We default interval to ratio in the editor)
+                var currentDropdown = this.$(".ratio-options select");
+
+            		//Select the unit from the EML
+            		currentDropdown.val(currentUnit.standardUnit);
+            	}
+              //If this unit is a custom unit
+              else if( currentUnit &amp;&amp; currentUnit.customUnit ){
+                //Create an &lt;option> for this custom unit
+                var customUnitOption = $(document.createElement("option"))
+                                        .val( currentUnit.customUnit )
+                                        .text( currentUnit.customUnit )
+                                        .addClass("custom");
+
+                //Add it to the &lt;select> and select it as the active option
+                select.append(customUnitOption)
+                      .val(currentUnit.customUnit);
+              }
+            },
+
+            /*
+             *  Chooses the date-time format from the dropdown menu
+             */
+            chooseDateTimeFormat: function(){
+            	if(this.model.type == "EMLDateTimeDomain"){
+                	var formatString = this.model.get("formatString");
+
+                	//Go back to the default option when the model isn't set yet
+                	if(!formatString){
+                		var options = this.$("select.datetime-string option");
+                		this.$("select.datetime-string").val(options.first().val());
+                		return;
+                	}
+
+                	var matchingOption = this.$("select.datetime-string [value='" + formatString + "']");
+
+                	if(matchingOption.length){
+                		this.$("select.datetime-string").val(formatString);
+                		this.$(".datetime-string-custom-container").hide();
+                	}
+                	else{
+                		this.$("select.datetime-string").val("custom");
+                		this.$(".datetime-string-custom").val(formatString);
+                		this.$(".datetime-string-custom-container").show();
+                	}
+
+            	}
+            },
+
+            toggleCustomDateTimeFormat: function(e){
+            	var choice = this.$("select.datetime-string").val();
+
+            	if(choice == "custom"){
+            		this.$(".datetime-string-custom-container").show();
+            	}
+            	else{
+            		this.$(".datetime-string-custom-container").hide();
+            	}
+
+            },
+
+            chooseNonNumericDomain: function(){
+
+            	if(this.model.get("nonNumericDomain") &amp;&amp; this.model.get("nonNumericDomain").length){
+
+            		//Hide all the details first
+            		this.$(".non-numeric-domain-type").hide();
+
+            		//Get the domain from the model
+            		var domain = this.model.get("nonNumericDomain")[0];
+
+            		//If the domain type is text, select it and show it
+            		if( domain.textDomain ){
+
+            			//If the pattern is just a wildcard, then check the "anything" radio button
+            			if(domain.textDomain.pattern &amp;&amp; domain.textDomain.pattern.length &amp;&amp; domain.textDomain.pattern[0] == "*")
+            				this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='anything']").prop("checked", true);
+            			//Otherwise, check the pattern radio button
+            			else{
+            				this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='pattern']").prop("checked", true);
+            				this.$("." + this.model.get("measurementScale") + "-options .non-numeric-domain-type.pattern").show();
+            			}
+
+            		}
+            		//If the domain type is a code list, select it and show it
+            		else if( domain.enumeratedDomain ){
+            			this.$("." + this.model.get("measurementScale") + "-options .possible-text[value='enumeratedDomain']").prop("checked", true);
+            			this.$(".non-numeric-domain-type.enumeratedDomain").show();
+            		}
+            	}
+            },
+
+            toggleNonNumericDomain: function(e){
+            	//Hide the domain type details
+        		this.$(".non-numeric-domain-type").hide();
+
+        		//Get the new value selected
+            	var value = this.$(".non-numeric-domain .possible-text:checked").val();
+
+            	var activeScale = this.$(".nominal-options").is(":visible")? "nominal" : "ordinal";
+
+            	//Show the form elements for that non numeric type
+            	this.$("." + activeScale + "-options .non-numeric-domain-type." + value).show();
+
+            	this.updateModel(e);
+
+            },
+
+            addNewCodeRow: function(e){
+            	if(typeof e == "object"){
+	            	var $row 	   = $(e.target).parents(".code-row"),
+	            		code 	   = $row.find(".code").val(),
+	            		definition = $row.find(".definition").val();
+
+	            	//Only add a row when there is a value for the code and code definition
+	            	if(!code || !definition) return false;
+
+	            	$row.removeClass("new");
+
+	            	var newRow = this.addCodeRow();
+            	}
+            	else if(typeof e == "string"){
+	            	var newRow = this.addCodeRow(e);
+            	}
+
+            	newRow.addClass("new");
+            },
+
+            addCodeRow: function(scaleType){
+            	if(!scaleType)
+            		var scaleType = this.model.get("measurementScale");
+
+        		var	$container = this.$("." + scaleType + "-options .enumeratedDomain.non-numeric-domain-type .table");
+
+            	//Create a code list row from the template
+            	var row = $(this.codeListRowTemplate({ code: "", definition: ""}));
+
+            	$container.append(row);
+
+            	return row;
+            },
+
+            removeCodeRow: function(e){
+            	var codeRow = $($(e.target).parents(".code-row")),
+            		allRows = codeRow.parents(".enumerated-domain").find(".code-row"),
+            		index   = allRows.index(codeRow);
+
+            	this.model.removeCode(index);
+
+            	codeRow.remove();
+
+            	this.showValidation();
+
+            	this.parentView.showValidation();
+
+            },
+
+            /*
+             * When the user changes the value of the form, update the model
+             */
+            updateModel: function(e){
+
+            	var updatedInput = $(e.target);
+
+              var emlModel = this.model.getParentEML();
+
+            	//Update the standard unit
+            	if(updatedInput.is(".units")){
+            		var chosenUnit = updatedInput.val(),
+                    chosenOption = updatedInput.children("[value='" + chosenUnit + "']");
+
+                if( chosenOption.is(".custom") ){
+                  this.model.set("unit", {customUnit: chosenUnit});
+                }
+                else{
+                  this.model.set("unit", {standardUnit: chosenUnit});
+                }
+
+                // Hard-code the numberType for now
+                this.model.set("numericDomain", {numberType: "real"});
+
+                //Trickle up the change to the most parent-level metadata model
+                this.model.trickleUpChange();
+            	}
+            	//Update the datetime format
+            	else if(updatedInput.is(".datetime")){
+            		var format = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
+
+            		if(format == "custom"){
+            			format = emlModel? emlModel.cleanXMLText( this.$(".datetime-string-custom").val() ) : this.$(".datetime-string-custom").val();
+            		}
+
+                //If no format string was provided, then set the default value
+                if( typeof format == "string" &amp;&amp; !format.trim().length )
+                  this.model.set("formatString", this.model.defaults().formatString);
+                else
+                  this.model.set("formatString", format);
+            	}
+            	else if(updatedInput.is(".possible-text")){
+            		var possibleText = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
+
+            		if(possibleText == "enumeratedDomain"){
+
+        				//Update the code list
+        				this.updateCodeList();
+
+            		}
+            		else if(possibleText == "pattern"){
+            			if(!this.model.get("nonNumericDomain").length || !this.model.get("nonNumericDomain")[0].textDomain){
+
+	            			var textDomain = {
+	            					definition: null,
+	            					pattern: [],
+	            					source: null
+	            			}
+
+	            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
+            			}
+            			else{
+                    //Get the value of the text input fields for the definition and pattern
+                    var definition = this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='definition']").val(),
+                        pattern = this.$("." + this.model.get("measurementScale") + "-options .textDomain[data-category='pattern']").val();
+
+                    definition = emlModel? emlModel.cleanXMLText( definition ) : definition;
+                    pattern = emlModel? emlModel.cleanXMLText( pattern ) : pattern;
+
+                    // If the pattern is an empty string, then set an empty array on the model
+                    if( typeof pattern == "string" &amp;&amp; !pattern.trim().length ){
+                      pattern = new Array();
+                    }
+                    // For all other values, put it in an array
+                    else {
+                      pattern = [pattern];
+                    }
+
+                    // If the definition is a string of space characters, then set it to an empty string
+                    if( typeof definition == "string" &amp;&amp; !definition.trim().length ){
+                      definition = "";
+                    }
+
+            				var textDomain = {
+            						definition: definition,
+            						pattern: pattern,
+            						source: null
+            				}
+            				this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
+            			}
+            		}
+            		else if(possibleText == "anything"){
+            			var textDomain = {
+            					definition: "Any text",
+            					pattern: ["*"],
+            					source: null
+            			}
+
+            			this.model.set("nonNumericDomain", [{ textDomain: textDomain }]);
+            		}
+            	}
+            	else if(updatedInput.is(".textDomain")){
+
+                // If there is no nonNumericDomain object set on the model, create a new empty one
+                if(typeof this.model.get("nonNumericDomain")[0] != "object"){
+            			this.model.get("nonNumericDomain")[0] = { textDomain: { definition: null, pattern: [], source: null } };
+                }
+
+                //Get the textDomain object
+            		var textDomain = this.model.get("nonNumericDomain")[0].textDomain;
+
+                //If the text definition was updated...
+            		if(updatedInput.attr("data-category") == "definition"){
+
+                  //Get the value that was input by the user
+                  var definition = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
+
+                  // If the definition is a string of space characters, then set it to an empty string
+                  if( typeof definition == "string" &amp;&amp; !definition.trim().length ){
+                    definition = "";
+                  }
+
+                  //Update the textDomain object
+                	textDomain.definition = definition;
+                }
+                //If the text pattern was updated...
+            		else if(updatedInput.attr("data-category") == "pattern"){
+                  //Get the value that was input by the user
+                  var pattern = emlModel? emlModel.cleanXMLText( updatedInput.val() ) : updatedInput.val();
+
+                  // If the pattern is a string of space characters, then set it to an empty string
+                  if( typeof pattern == "string" &amp;&amp; !pattern.trim().length ){
+                    textDomain.pattern = [];
+                  }
+                  //Put the value inside a new array and update the textDomain object
+                  else{
+                    textDomain.pattern = [pattern];
+                  }
+                }
+
+                //Manually trigger a change on the nonNumericDomain attribute
+                this.model.trigger("change:nonNumericDomain");
+
+            	}
+            	else if(updatedInput.is(".codelist")){
+            		var row = updatedInput.parents(".code-row"),
+            			index = this.$("." + this.model.get("measurementScale") + "-options .code-row").index(row);
+
+            		this.updateCodeList(index);
+            	}
+
+            	//Add this EMLMeasurementScale model to the EMLAttribute model when it is updated in the view
+            	var attributeModel = this.model.get("parentModel");
+
+            	if( attributeModel )
+            		attributeModel.set("measurementScale", this.model);
+            },
+
+            updateCodeList: function(rowNum){
+
+            	//If the model is not set as an enumerated domain yet
+        			if(!this.model.get("nonNumericDomain").length ||
+        					!this.model.get("nonNumericDomain")[0] ||
+        					!this.model.get("nonNumericDomain")[0].enumeratedDomain){
+
+      				var isEmpty = false;
+
+              var emlModel = this.model.getParentEML();
+
+      				//Go through each code row in this view and grab the values
+      				_.each(this.$("." + this.model.get("measurementScale") + "-options .code-row"), function(row, i, rows){
+      					var $row = $(row),
+      						code = $row.find(".code").val(),
+      						def  = $row.find(".definition").val();
+
+                code = emlModel? emlModel.cleanXMLText( code ) : code;
+                def  = emlModel? emlModel.cleanXMLText( def ) : def;
+
+      					//Update the enumerated domain with this code
+      					if(code || def){
+          					this.model.updateEnumeratedDomain(code, def, i);
+      					}
+      					//If there is only one row and it has no code or definition,
+      					//then this is an empty code list
+      					else if( rows.length == 1 &amp;&amp; i == 0){
+      						isEmpty = true;
+      					}
+
+      				}, this);
+
+      				//If there are no codes in the list, update the enumerated domain with blank values
+      				if( isEmpty ){
+      					this.model.updateEnumeratedDomain(null, null, rowNum);
+      				}
+      			}
+      			else if(rowNum > -1){
+      				var $row = $(this.$("." + this.model.get("measurementScale") + "-options .code-row")[rowNum]),
+      						code = $row.find(".code").val(),
+      						def  = $row.find(".definition").val();
+
+              code = emlModel? emlModel.cleanXMLText( code ) : code;
+              def  = emlModel? emlModel.cleanXMLText( def ) : def;
+
+    					if(code || def){
+    						this.model.updateEnumeratedDomain(code, def, rowNum);
+    					}
+      			}
+
+
+          },
+
+          previewCodeRemove: function(e){
+          	$(e.target).parents(".code-row").toggleClass("remove-preview");
+          }
+
+        });
+
+        return EMLMeasurementScaleView;
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Dec 07 2020 17:33:36 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

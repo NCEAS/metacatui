@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
         },
 
-        registerCitationTemplate:  _.template("<a class='btn register-citation' >" + 
+        registerCitationTemplate:  _.template("<a class='btn register-citation' >" +
                                                 "<i class='icon icon-plus'>" +
                                                 "</i> Register Citation</a>"),
 
@@ -36,10 +36,10 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
             else {
                 this.citationsForDataCatalogView = false;
             }
-            
+
             // Initializing the Citation collection
             this.citationsCollection = options.citations;
-            
+
         },
 
 
@@ -54,7 +54,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
         // citation found in the citations collection object.
         renderView: function() {
             var self = this;
-            
+
             // Get node display name for the message
             var nodeId = MetacatUI.appModel.get("nodeId");
             // get the node Info
@@ -62,7 +62,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                 return nodeModel.identifier.toLowerCase() == nodeId.toLowerCase();
             });
             var nodeName = "DataONE"
-            if (nodeInfo !== undefined) 
+            if (nodeInfo !== undefined)
                 var nodeName = nodeInfo.name;
 
             if (this.emptyCitations) {
@@ -80,7 +80,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
 
                     $emptyList.append(this.registerCitationTemplate());
                     $emptyList.append($emptyDataElement);
-                        
+
                 }
                 else {
                     var emptyString = "We couldn't find any citations for these datasets. " +
@@ -91,7 +91,7 @@ define(['jquery', 'underscore', 'backbone', 'collections/Citations', 'views/Cita
                         .text(emptyString)
                         .addClass("empty-citation-list-text");
 
-                    // Adding Email link 
+                    // Adding Email link
                     var $emailLink = $('<a>', {
                         href: 'mailto:' + MetacatUI.appModel.get("emailContact"),
                         text: MetacatUI.appModel.get("emailContact")

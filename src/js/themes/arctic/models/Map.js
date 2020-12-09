@@ -72,16 +72,14 @@ define(['jquery', 'underscore', 'backbone', 'gmaps'],
 
 				//The tile hue - the number of the hue that will be used to color tiles
 				//Tile lightness - percent range of lightness/brightness of this tile hue
-				tileHue: model.tileHue || "231",
+        tileHue: MetacatUI.appModel.get("searchMapTileHue") || "192",
 				tileLightnessMax: 100,
 				tileLightnessMin: 30
 			}
 		},
 
 		initialize: function(options){
-			if(typeof options == "object"){
-				if(options.tileHue) this.tileHue = options.tileHue;
-			}
+
 		},
 
 		isMaxZoom: function(map){

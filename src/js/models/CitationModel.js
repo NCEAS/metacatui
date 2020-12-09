@@ -3,12 +3,14 @@
 
 define(["jquery", "underscore", "backbone"], function($, _, Backbone) {
 
-    /*
-     * A Citation Model represents a single Citation Object returned by the metrics-service
-     * See: https://app.swaggerhub.com/apis/nenuji/data-metrics/1.0.0.3
+    /**
+     * @class Citation
+     * @classdesc A Citation Model represents a single Citation Object returned by the metrics-service
+     * @classcategory Models
+     * @see https://app.swaggerhub.com/apis/nenuji/data-metrics/1.0.0.3
      */
     var Citation = Backbone.Model.extend({
-        
+
         //The name of this type of model
         type: "CitationModel",
 

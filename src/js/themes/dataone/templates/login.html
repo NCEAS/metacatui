@@ -46,6 +46,11 @@
 			<% } %>
 		</div>
 	</div>
+  <% if( MetacatUI.appModel.get("showSignInHelp") ){ %>
+  <div class="modal-footer center">
+    <a href="<%=MetacatUI.root%>/signin-help" class="danger" data-dismiss="modal">Having issues signing in?</a>
+  </div>
+  <% } %>
 </div>
 <div id="signupPopup" class="modal hide fade">
 	<div class="modal-header center">
@@ -77,4 +82,9 @@
 			</div>
 		<% } %>
 	</div>
+  <% if( MetacatUI.appModel.get("showSignInHelp") ){ %>
+  <div class="modal-footer center">
+    <a href="<%=MetacatUI.root%>/signin-help" class="danger" data-dismiss="modal">Having issues signing in?</a>
+  </div>
+  <% } %>
 </div>

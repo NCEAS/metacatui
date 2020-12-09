@@ -7,6 +7,8 @@ define(['underscore', 'jquery', 'backbone',
         /**
         * @class EMlGeoCoverageView
         * @classdesc  The EMLGeoCoverage renders the content of an EMLGeoCoverage model
+        * @classcategory Views/Metadata
+        * @extends Backbone.View
         */
         var EMLGeoCoverageView = Backbone.View.extend(
             /** @lends EMLGeoCoverageView.prototype */{

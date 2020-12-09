@@ -5,10 +5,18 @@ define(['jquery', 'underscore', 'backbone',
   function($, _, Backbone, Filter, Template) {
   'use strict';
 
-  // Render a view of a single FilterModel
-  var FilterView = Backbone.View.extend({
+  /**
+  * @class FilterView
+  * @classdesc Render a view of a single FilterModel
+  * @classcategory Views/Filters
+  * @extends Backbone.View
+  */
+  var FilterView = Backbone.View.extend(
+    /** @lends FilterView.prototype */{
 
-    // @type {Filter} - A Filter model to be rendered in this view
+    /**
+    * A Filter model to be rendered in this view
+    * @type {Filter} */
     model: null,
 
     tagName: "div",
@@ -36,7 +44,7 @@ define(['jquery', 'underscore', 'backbone',
       this.$el.html( this.template( this.model.toJSON() ) );
     },
 
-    /*
+    /**
     * When the user presses Enter in the input element, update the view and model
     *
     * @param {Event} - The DOM Event that occured on the filter view input element
@@ -51,7 +59,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Updates the view when the filter input is updated
     *
     * @param {Event} - The DOM Event that occured on the filter view input element
@@ -65,7 +73,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Updates the value set on the Filter Model associated with this view.
     * The filter value is grabbed from the input element in this view.
     *

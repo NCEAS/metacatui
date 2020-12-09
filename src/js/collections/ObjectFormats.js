@@ -12,6 +12,7 @@ define(['jquery', 'underscore', 'backbone', 'x2js', 'models/formats/ObjectFormat
      * This collection is intended to be used as a formats cache -
      * retrieved once, and only refreshed later if an object format
      * isn't present when needed.
+     * @classcategory Collections
      * @extends Backbone.Collection
      * @constructor
      */

@@ -8,6 +8,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
   /**
   * @class EditorView
   * @classdesc A basic shell of a view, primarily meant to be extended for views that allow editing capabilities.
+  * @classcategory Views
   * @name EditorView
   * @extends Backbone.View
   * @constructs
@@ -78,6 +79,11 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
       $("body").addClass("Editor rendering");
 
       this.delegateEvents();
+
+      //If there is no active alternate repository, set one
+      if( !MetacatUI.appModel.getActiveAltRepo() && MetacatUI.appModel.get("alternateRepositories").length ){
+        MetacatUI.appModel.setActiveAltRepo();
+      }
     },
 
     /**
@@ -179,27 +185,35 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
                                                       "Share") );
         }
 
-        //When the user's changePermission authority has been checked, edit their
-        //  access to the AccessPolicyView
-        this.listenToOnce(this.model, "change:isAuthorized_changePermission", function(){
-          //If there is an AccessPolicy control, disable it
-          if( isHiddenBehindControl ){
+        //If the authorization has already been checked
+        if( this.model.get("isAuthorized_changePermission") === true ){
+          //Render the AccessPolicyView
+          this.renderAccessPolicy();
+        }
+        else{
+          //When the user's changePermission authority has been checked, edit their
+          //  access to the AccessPolicyView
+          this.listenToOnce(this.model, "change:isAuthorized_changePermission", function(){
+            //If there is an AccessPolicy control, disable it
+            if( isHiddenBehindControl ){
 
-            if( this.model.get("isAuthorized_changePermission") === false ){
-              //Disable the button for the AccessPolicyView if the user is not authorized
-              this.$(".access-policy-control").attr("disabled", "disabled")
-                                              .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
-                                              .addClass("disabled");
+              if( this.model.get("isAuthorized_changePermission") === false ){
+                //Disable the button for the AccessPolicyView if the user is not authorized
+                this.$(".access-policy-control").attr("disabled", "disabled")
+                                                .attr("title", "You do not have access to change the " + MetacatUI.appModel.get("accessPolicyName"))
+                                                .addClass("disabled");
+              }
             }
-          }
-          else{
-            //Render the AccessPolicyView
-            this.renderAccessPolicy();
-          }
-        });
+            else{
+              //Render the AccessPolicyView
+              this.renderAccessPolicy();
+            }
+          });
 
-        //Check the user's authority to change permissions on this object
-        this.model.checkAuthority("changePermission");
+          //Check the user's authority to change permissions on this object
+          this.model.checkAuthority("changePermission");
+        }
+
       }
     },
 
@@ -310,6 +324,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
       //Mark the disabled inputs so we can re-disable them later
       allInputs.filter(":disabled")
+               .not(".label-container .label-input-text")
                .addClass("disabled-saving");
 
       //Remove the latest success or error alert
@@ -325,9 +340,11 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
     */
     hideSaving: function(){
       this.$("input, textarea, select, button")
+          .not(".label-container .label-input-text")
           .prop("disabled", false);
 
       this.$(".disabled-saving, input.disabled")
+          .not(".label-container .label-input-text")
           .prop("disabled", true)
           .removeClass("disabled-saving");
 
@@ -378,7 +395,7 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
         var msg = "<h4>Nothing was found for one of the following reasons:</h4>" +
           "<ul class='indent'>" +
-              "<li>The ID '" + this.pid  + "' does not exist.</li>" +
+              "<li>The ID <span id='editor-view-not-found-pid'></span> does not exist.</li>" +
             '<li>This may be private content. (Are you <a href="<%= MetacatUI.root %>/signin">signed in?</a>)</li>' +
             "<li>The content was removed because it was invalid.</li>" +
           "</ul>";
@@ -388,6 +405,8 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
 
         //Show the not found message
         MetacatUI.appView.showAlert(msg, "alert-error", this.$("#editor-body"), null, {remove: true});
+
+        this.$("#editor-view-not-found-pid").text(this.pid);
 
     },
 
@@ -544,6 +563,9 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         window.removeEventListener("beforeunload", this.beforeunloadCallback);
         delete this.beforeunloadCallback;
       }
+
+      //Reset the active alternate repository
+      MetacatUI.appModel.set("activeAlternateRepositoryId", null);
 
       //Remove the class from the body element
       $("body").removeClass("Editor rendering");

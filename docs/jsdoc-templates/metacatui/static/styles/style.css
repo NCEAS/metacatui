@@ -1,6 +1,25 @@
+:root{
+  --deprecated: #D62828;
+  --neutral: #EEEAD2;
+  --neutral-dark: #003049;
+  --info-light: #e4edd9;
+  --info-dark: #684500;
+  --primary-brand: #FCBF49;
+  --primary-brand-on-dark: #FCBF49;
+  --primary-brand-dark: #684500;
+  --secondary-brand: #2a9989;
+}
+/**
+Color pallete:
+https://coolors.co/003049-2a9989-fcbf49-eae2b7-d62828
+*/
+
 body{
   margin: 0px;
   font-family: Helvetica, Arial, sans-serif;
+}
+a, a:visited, a:active{
+  color: var(--secondary-brand);
 }
 #main{
   float: right;
@@ -8,7 +27,7 @@ body{
 }
 nav{
   width: 20%;
-  background-color: #272727;
+  background-color: var(--neutral-dark);
   margin-top: 0px;
   padding-top: 20px;
   border: 0px;
@@ -16,13 +35,33 @@ nav{
 nav h2{
   font-size: 1em;
 }
-nav h3{
-  font-size: 1.2em;
-  font-weight: bold;
+nav h3 {
+    color: var(--neutral);
+    font-size: 1.5em;
+    margin-top: 20px;
+    margin-bottom: 0px;
 }
 nav ul a, nav ul a:visited, nav ul a:active, nav h3, nav a{
   font-family: inherit;
-  color: #FFF;
+  color: var(--neutral);
+}
+.category-heading ~ li:not(.category-heading) {
+    margin-left: 10px;
+}
+.category-heading {
+  color: var(--neutral);
+  margin-top: 20px;
+  font-weight: bold;
+}
+.category-heading[data-category='Deprecated']{
+  color: var(--deprecated);
+  font-style: italic;
+}
+.important{
+  color: var(--deprecated);
+}
+h1, h2, h3, h4{
+  color: var(--neutral-dark);
 }
 h1{
   font-family: inherit;
@@ -34,13 +73,16 @@ h1{
 h2, h3.subsection-title{
   font-weight: normal;
 }
+header{
+  padding: 0px;
+}
 .class-description{
   font-size: 1em;
   line-height: inherit;
   padding: 20px;
   margin: 20px 0px;
-  background-color: #d9e6ed;
-  border: 1px solid #bdd4e0;
+  background-color: var(--primary-brand);
+  color: var(--primary-brand-dark);
 }
 .description + h5 {
     font-weight: bold;
@@ -58,12 +100,15 @@ h2, h3.subsection-title{
   display: inline;
 }
 .name{
-  padding: 10px;
-background-color: #272727;
-border: 1px solid #dcdcdc;
+  padding: 10px 20px;
+background-color: var(--neutral-dark);
+border-bottom: 1px solid var(--neutral);
 }
 h4.name {
-    color: #dcdcdc;
+    color: var(--neutral);
+}
+.name .type-signature a{
+  color: var(--primary-brand-on-dark);
 }
 pre{
   background-color: #eee;
@@ -84,19 +129,22 @@ thead th{
 }
 .props thead th,
 .params thead th {
-    background-color: #CCC;
-    color: #333;
+    background-color: var(--neutral);
+    color: var(--neutral-dark);
     border: 0px;
     border-image-width: 0px;
-    border-bottom: 1px solid hsla(202, 18%, 65%, 1);
+    border-bottom: 1px solid var(--neutral);
 }
 table td{
   padding: .75rem;
   vertical-align: top;
-  border-top: 1px solid #dee2e6;
 }
 td.name{
-  background-color: #DDD;
+  background-color: var(--neutral);
+}
+.class-screenshot{
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 .class-screenshot h3{
   text-align: center;
@@ -105,4 +153,10 @@ td.name{
   margin: auto;
   display: flex;
   max-width: 600px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+}
+section{
+  background-color: transparent;
 }

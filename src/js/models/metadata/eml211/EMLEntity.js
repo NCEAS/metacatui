@@ -8,7 +8,7 @@ define(["jquery", "underscore", "backbone", "uuid", "models/DataONEObject",
          * with the EML EntityGroup and other elements common to all
          * entity types, including otherEntity, dataTable, spatialVector,
          * spatialRaster, and storedProcedure
-         *
+         * @classcategory Models/Metadata/EML211
          * @see https://github.com/NCEAS/eml/blob/master/eml-entity.xsd
          */
         var EMLEntity = Backbone.Model.extend(

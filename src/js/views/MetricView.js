@@ -79,7 +79,13 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
             if (MetacatUI.appModel.get("displayMetricModals") ) {
                 var modalView = new MetricModalView({metricName: this.metricName, metricsModel: this.model, pid: this.pid});
                 modalView.render();
-                modalView.show();
+
+                if( Array.isArray(this.subviews) ){
+                  this.subviews.push(modalView);
+                }
+                else{
+                  this.subviews = [modalView];
+                }
 
                 //Send this event to Google Analytics
                 if(MetacatUI.appModel.get("googleAnalyticsKey") && (typeof ga !== "undefined")){
@@ -90,11 +96,11 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
 
         renderResults: function() {
             var total = this.model.get("total"+this.metricName);
-            // Check if the metric object exists in results obtained from the service 
+            // Check if the metric object exists in results obtained from the service
             // If it does, get its total value else set the total count to 0
 
             // Replacing the metric total count with the spinning icon.
-            
+
             this.$('.metric-value').text(MetacatUI.appView.numberAbbreviator(total, 1));
             this.$('.metric-value').addClass("badge");
 
@@ -113,6 +119,14 @@ define(['jquery', 'underscore', 'backbone', 'views/MetricModalView'],
 
             this.$el.addClass("metrics-button-disabled");
             this.$el.attr("data-title", "The number of " + this.metricName + " could not be retreived at this time.");
+        },
+
+        onClose: function(){
+          _.each(this.subviews, function(view){
+            if( view.onClose ){
+              view.onClose();
+            }
+          }, this);
         }
 
     });

@@ -10,7 +10,7 @@ define(['jquery', 'underscore', 'backbone',
   /**
   * @class FilterGroupsView
   * @classdesc Creates a view of one or more FilterGroupViews
-  * @module views/filters/FilterGroupsView
+  * @classcategory Views/Filters
   * @name FilterGroupsView
   * @extends Backbone.View
   * @constructor
@@ -339,7 +339,7 @@ define(['jquery', 'underscore', 'backbone',
     * @property {boolean} options.displayWithoutChanges - If true, this filter will display even if the value hasn't been changed
     */
     updateAppliedFilters: function(filterModel, options){
-
+      
       //Create an options object if one wasn't sent
       if( typeof options != "object" ){
         var options = {};
@@ -427,7 +427,7 @@ define(['jquery', 'underscore', 'backbone',
         return;
       }
 
-      if( typeof options === "undefined" ){
+      if( typeof options === "undefined" || !options ){
         var options = {};
       }
 

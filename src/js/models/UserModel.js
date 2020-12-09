@@ -5,6 +5,7 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 
 	/**
   * @class UserModel
+  * @classcategory Models
   * @extends Backbone.Model
   * @constructor
   */
@@ -42,7 +43,9 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 				timeoutId: null,
 				rawData: null,
         portalQuota: -1,
-        isAuthorizedCreatePortal: null
+        isAuthorizedCreatePortal: null,
+        dataoneQuotas: null,
+        dataoneSubscription: null
 			}
 		},
 
@@ -62,6 +65,11 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
 			//Create a search results model for this person
 			var searchResults = new SearchResults([], { rows: 5, start: 0 });
 			this.set("searchResults", searchResults);
+
+      if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+        //When the user is logged in, see if they have a DataONE subscription
+        this.on("change:loggedIn", this.fetchSubscription);
+      }
 		},
 
 		createSearchModel: function(){
@@ -965,21 +973,48 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         return;
       }
       //If anyone is allowed to create a portal, check if they have the quota to create a portal
-      else{
-        //Listen to the response from the quota check
-        this.once("change:portalQuota", function(){
-          //If the quota is at least 1, set to true
-          if( this.get("portalQuota") > 0 ){
+      else if( MetacatUI.appModel.get("enableBookkeeperServices") ){
+
+        //Get the Quotas for this user
+        var quotas = this.get("dataoneQuotas"),
+            portalQuotas;
+
+        //If the Quotas are still being fetched,
+        if(quotas == this.defaults().dataoneQuotas && !quotas){
+          this.on("change:dataoneQuotas", this.isAuthorizedCreatePortal);
+          return;
+        }
+        else{
+          portalQuotas = quotas.where({ quotaType: "portal" });
+        }
+
+        //If this user has no portal Quota at all, they are not auth to create a portal
+        if( !portalQuotas ){
+          this.set("isAuthorizedCreatePortal", false);
+        }
+        else{
+
+          //Check that there is at least one Quota where the totalUsage < softLimit
+          var hasRemainingUsage = _.some(portalQuotas, function(quota){
+            return quota.get("totalUsage") < quota.get("softLimit");
+          });
+
+          //If there is remaining usage left in at least one Quota, then the user can create a portal
+          if( hasRemainingUsage ){
             this.set("isAuthorizedCreatePortal", true);
           }
-          //If the quota is less than or equal to zero, set to false
+          //Otherwise they cannot create a new portal
           else{
             this.set("isAuthorizedCreatePortal", false);
           }
-        });
-        //Check the quota
-        this.checkQuota("createPortal");
-        return;
+        }
+
+        //@todoGet the admin group and force admins to have at least one quota left
+
+      }
+      else{
+        //Default to letting people create portals
+        this.set("isAuthorizedCreatePortal", true);
       }
 
     },
@@ -1011,6 +1046,92 @@ define(['jquery', 'underscore', 'backbone', 'jws', 'models/Search', "collections
         return false;
       }
 
+    },
+
+    /**
+    * Retrieve all the info about this user's DataONE Subscription
+    */
+    fetchSubscription: function(){
+
+      //If Bookkeeper services are disabled, exit
+      if( !MetacatUI.appModel.get("enableBookkeeperServices") ){
+        return;
+      }
+
+      try{
+        var thisUser = this;
+        require(["collections/bookkeeper/Quotas", "models/bookkeeper/Subscription"], function(Quotas, Subscription){
+
+          //Create a Quotas collection
+          var quotas = new Quotas();
+
+          //Create a Subscription model
+          var subscription = new Subscription();
+
+          if( MetacatUI.appModel.get("dataonePlusPreviewMode") ){
+            //Create Quota models for preview mode
+            quotas.add({
+              softLimit: MetacatUI.appModel.get("portalLimit"),
+              hardLimit: MetacatUI.appModel.get("portalLimit"),
+              quotaType: "portal",
+              unit: "portal",
+              subject: thisUser.get("username"),
+              subscription: subscription
+            });
+
+            //Default to all people being in trial mode
+            subscription.set("status", "trialing");
+
+            //Save a reference to the Quotas on this UserModel
+            thisUser.set("dataoneQuotas", quotas);
+
+            //Save a reference to the Subscriptioin on this UserModel
+            thisUser.set("dataoneSubscription", subscription);
+
+          }
+          else{
+            thisUser.listenToOnce(quotas, "reset", function(){
+              //Save a reference to the Quotas on this UserModel
+              thisUser.set("dataoneQuotas", quotas);
+            });
+
+            thisUser.listenToOnce(subscription, "sync", function(){
+              //Save a reference to the Subscriptioin on this UserModel
+              thisUser.set("dataoneSubscription", subscription);
+            });
+
+            //Fetch the Quotas
+            quotas.fetch({ subscriber: thisUser.get("username") });
+
+            //Fetch the Subscriptioin
+            subscription.fetch();
+          }
+
+        });
+      }
+      catch(e){
+        console.error("Couldn't get DataONE Subscription info. Proceeding as an unsubscribed user. ", e);
+      }
+
+    },
+
+    /**
+    * Gets the already-fetched Quotas for the User, filters down to the type given, and returns them.
+    * @param {string} [type] - The Quota type to return
+    * @returns {Quota[]} The filtered array of Quota models or an empty array, if none are found
+    */
+    getQuotas: function(type){
+      var quotas = this.get("dataoneQuotas");
+
+      if( quotas && type ){
+        return quotas.where({ quotaType: type });
+      }
+      else if( quotas && !type ){
+        return quotas;
+      }
+      else{
+        return [];
+      }
     },
 
 		reset: function(){

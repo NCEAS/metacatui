@@ -6,10 +6,18 @@ define(['jquery', 'underscore', 'backbone',
   function($, _, Backbone, ChoiceFilter, FilterView, Template) {
   'use strict';
 
-  // Render a view of a single ChoiceFilter model
-  var ChoiceFilterView = FilterView.extend({
+  /**
+  * @class ChoiceFilterView
+  * @classdesc Render a view of a single ChoiceFilter model
+  * @classcategory Views/Filters
+  * @extends FilterView
+  */
+  var ChoiceFilterView = FilterView.extend(
+    /** @lends ChoiceFilterView.prototype */{
 
-    // @type {ChoiceFilter} - A ChoiceFilter model to be rendered in this view
+    /**
+    * A ChoiceFilter model to be rendered in this view 
+    * @type {ChoiceFilter} */
     model: null,
 
     className: "filter choice",
@@ -75,7 +83,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Updates the view when the filter input is updated
     *
     * @param {Event} - The DOM Event that occured on the filter view input element
@@ -89,7 +97,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Updates the value set on the ChoiceFilter Model associated with this view.
     * The filter value is grabbed from the select element in this view.
     *
@@ -128,7 +136,7 @@ define(['jquery', 'underscore', 'backbone',
       }
     },
 
-    /*
+    /**
     * Update the choices in the select dropdown menu based on which choices are
     * currently selected
     */

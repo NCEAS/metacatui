@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>MetacatUI Dev Docs: Source: src/js/collections/UserGroup.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+    <link type="text/css" rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/js/collections/UserGroup.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/*global define */
+define(['jquery', 'underscore', 'backbone', 'models/UserModel'],
+	function($, _, Backbone, UserModel) {
+	'use strict';
+
+	/**
+	 * @class UserGroup
+	 * @classdesc The collection of Users that represent a DataONE group
+   * @classcategory Collections
+	 */
+	var UserGroup = Backbone.Collection.extend(
+    /** @lends UserGroup.prototype */{
+		// Reference to this collection's model.
+		model: UserModel,
+
+		//Custom attributes of groups
+		groupId: "",
+		name: "",
+		nameAvailable: null,
+
+		url: function(){
+			return MetacatUI.appModel.get("accountsUrl") + encodeURIComponent(this.groupId);
+		},
+
+		comparator: "lastName", //Sort by last name
+
+		initialize: function(models, options) {
+			if((typeof models == "undefined") || !models)
+				var models = [];
+
+			if(typeof options !== "undefined"){
+				//Save our options
+				$.extend(this, options);
+				this.groupId = options.groupId || "";
+				this.name    = options.name    || "";
+				this.pending = (typeof options.pending === "undefined") ? false : options.pending;
+
+				//If raw data is passed, parse it to get a list of users to be added to this group
+				if(options.rawData){
+
+					//Get a list of UserModel attributes to add to this collection
+					var toAdd = this.parse(options.rawData);
+
+					//Create a UserModel for each user
+					_.each(toAdd, function(modelAttributes){
+						//Don't pass the raw data to the UserModel creation because it is redundant-
+						//We already parsed the raw data when we called add() above
+						var rawDataSave = modelAttributes.rawData;
+						modelAttributes.rawData = null;
+
+						//Create the model then add the raw data back
+						var member = new UserModel(modelAttributes);
+						member.set("rawData", rawDataSave);
+
+						models.push(member);
+					});
+				}
+			}
+
+			//Add all our models to this collection
+			this.add(models);
+		},
+
+		/*
+		 * Gets the group from the server. Options object uses the BackboneJS options API
+		 */
+		getGroup: function(options){
+			if(!this.groupId &amp;&amp; this.name){
+				this.groupId = "CN=" + this.name + ",DC=dataone,DC=org";
+			}
+
+			this.fetch(options);
+
+			return this;
+		},
+
+		/*
+		 * Fetches the group info from the server. Should not be called directly - use getGroup() instead
+		 */
+		fetch: function (options) {
+	        options = options || { silent: false, reset: false, remove: false };
+	        options.dataType = "xml";
+	        options.error = function(collection, response, options){
+	        	//If this group is not found, then the name is available
+	        	if((response.status == 404) &amp;&amp; (response.responseText.indexOf("No Such Object") > -1)){
+	        		collection.nameAvailable = true;
+	        		collection.trigger("nameChecked", collection);
+	        	}
+	        }
+	        return Backbone.Collection.prototype.fetch.call(this, options);
+	    },
+
+	    /*
+	     * Backbone.js override - parses the XML reponse from DataONE and creates a JSON representation that will
+	     * be used to create UserModels
+	     */
+		parse: function(response, options){
+			if(!response) return;
+
+			//This group name is not available/already taken
+			this.nameAvailable = false;
+			this.trigger("nameChecked", this);
+
+			var group = $(response).find("group subject:contains('" + this.groupId + "')").parent("group"),
+				people = $(response).find("person"),
+				collection = this,
+				toAdd = new Array(),
+				existing = this.pluck("username");
+
+			if(!people.length)
+				people = $(group).find("hasMember");
+
+			//Make all existing usernames lowercase for string matching
+			if(existing.length) existing = _.invoke(existing, "toLowerCase");
+
+			this.name = $(group).children("groupName").text();
+
+			_.each(people, function(person){
+
+				//The tag name is "hasMember" if we retrieved info about this group from the group nodes only
+				if(person.tagName == "hasMember"){
+					var username = $(person).text();
+
+					//If this user is already in the group, skip adding it
+					if(_.contains(existing, username.toLowerCase())) return;
+
+					var user = new UserModel({ username: username }),
+						userAttr = user.toJSON();
+
+					toAdd.push(userAttr);
+				}
+				//The tag name is "person" if we retrieved info about this group through the /accounts service, which includes all nodes about all members
+				else{
+					//If this user is not listed as a member of this group, skip it
+					if($(person).children("isMemberOf:contains('" + collection.groupId + "')").length &lt; 1)
+						return;
+
+					//Username of this person
+					var username = $(person).children("subject").text();
+
+					//If this user is already in the group, skip adding it
+					if(_.contains(existing, username.toLowerCase())) return;
+
+					//User attributes - pass the full response for the UserModel to parse
+					var userAttr = new UserModel({username: username}).parseXML(response);
+
+					//Add to collection
+					toAdd.push(userAttr);
+				}
+			});
+
+			return toAdd;
+		},
+
+		/*
+		 * An alternative to Backbone sync
+		 * - will send a POST request to DataONE CNIdentity.createGroup() to create this collection as a new DataONE group
+		 * or
+		 * - will send a PUT request to DataONE CNIdentity.updateGroup() to update this existing DataONE group
+		 *
+		 *  If this group is marked as pending, then the group is created, otherwise it's updated
+		 */
+		save: function(onSuccess, onError){
+			if(this.pending &amp;&amp; (this.nameAvailable == false)) return false;
+
+			var memberXML = "",
+				ownerXML = "",
+				collection = this;
+
+			//Create the member and owner XML
+			this.forEach(function(member){
+				//Don't list yourself as an owner or member (implied)
+				if(MetacatUI.appUserModel == member) return;
+
+				var username = member.get("username") ? member.get("username").trim() : null;
+				if(!username) return;
+
+				memberXML += "&lt;hasMember>" + username + "&lt;/hasMember>";
+
+				if(collection.isOwner(member))
+					ownerXML += "&lt;rightsHolder>" + username + "&lt;/rightsHolder>";
+			});
+
+			//Create the group XML
+			var groupXML =
+				'&lt;?xml version="1.0" encoding="UTF-8"?>'
+				+ '&lt;d1:group xmlns:d1="http://ns.dataone.org/service/types/v1">'
+					+ '&lt;subject>'   + this.groupId + '&lt;/subject>'
+					+ '&lt;groupName>' + this.name    + '&lt;/groupName>'
+					+ memberXML
+					+ ownerXML
+				+ '&lt;/d1:group>';
+
+			var xmlBlob = new Blob([groupXML], {type : 'application/xml'});
+			var formData = new FormData();
+			formData.append("group", xmlBlob, "group");
+
+			// AJAX call to update
+			$.ajax({
+				type: this.pending? "POST" : "PUT",
+				cache: false,
+			    contentType: false,
+			    processData: false,
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+			        "Authorization": "Bearer " + MetacatUI.appUserModel.get("token")
+			    },
+				url: MetacatUI.appModel.get("groupsUrl"),
+				data: formData,
+				success: function(data, textStatus, xhr) {
+					if(typeof onSuccess != "undefined")
+						onSuccess(data);
+
+					collection.pending = false;
+					collection.nameAvailable = null;
+					collection.getGroup();
+				},
+				error: function(xhr, textStatus, error) {
+					if(typeof onError != "undefined")
+						onError(xhr);
+				}
+			});
+
+			return true;
+		},
+
+		/*
+		 * For pending groups only (those in the creation stage)
+		 * Will check if the given name/id is available
+		 */
+		checkName: function(name){
+			//Only check the name for pending groups
+			if(!this.pending) return;
+
+			//Reset the name and ID
+			this.name = name || this.name;
+			this.groupId = null;
+			this.nameAvailable = null;
+
+			//Get group info/check name availablity
+			this.getGroup({ add: false });
+		},
+
+		/*
+		 * Retrieves the UserModels that are rightsHolders of this group
+		 */
+		getOwners: function(){
+			var groupId = this.groupId;
+			return _.filter(this.models, function(user){
+				return _.contains(user.get("isOwnerOf"), groupId);
+			});
+		},
+
+		/*
+		 * Shortcut function - will check if a specified User is an owner of this group
+		 */
+		isOwner: function(model){
+			if(typeof model === "undefined") return false;
+
+			if(this.pending &amp;&amp; (model == MetacatUI.appUserModel)) return true;
+
+			var usernames = [];
+			_.each(this.getOwners(), function(user){ usernames.push(user.get("username")); });
+
+			return _.contains(usernames, model.get("username"));
+		}
+
+	});
+
+	return UserGroup;
+
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="AppConfig.html">AppConfig</a></li><li><a href="MetacatUI.html">MetacatUI</a></li><li><a href="Utilities.html">Utilities</a></li></ul><h3>Classes</h3><ul><li class='category-heading' data-category='Collections'>Collections</li><li><a href="AccessPolicy.html">AccessPolicy</a></li><li><a href="Citations.html">Citations</a></li><li><a href="DataPackage.html">DataPackage</a></li><li><a href="Filters.html">Filters</a></li><li><a href="ObjectFormats.html">ObjectFormats</a></li><li><a href="QualityReport.html">QualityReport</a></li><li><a href="SolrResults.html">SolrResults</a></li><li><a href="Units.html">Units</a></li><li><a href="UserGroup.html">UserGroup</a></li><li class='category-heading' data-category='Collections/Bookkeeper'>Collections/Bookkeeper</li><li><a href="Quotas.html">Quotas</a></li><li><a href="Usages.html">Usages</a></li><li class='category-heading' data-category='Collections/QueryFields'>Collections/QueryFields</li><li><a href="QueryFields.html">QueryFields</a></li><li class='category-heading' data-category='Models'>Models</li><li><a href="AccessRule.html">AccessRule</a></li><li><a href="AppModel.html">AppModel</a></li><li><a href="Citation.html">Citation</a></li><li><a href="CollectionModel.html">CollectionModel</a></li><li><a href="DataONEObject.html">DataONEObject</a></li><li><a href="LookupModel.html">LookupModel</a></li><li><a href="Map.html">Map</a></li><li><a href="QualityCheck.html">QualityCheck</a></li><li><a href="Search.html">Search</a></li><li><a href="SolrResult.html">SolrResult</a></li><li><a href="Stats.html">Stats</a></li><li class='category-heading' data-category='Models/Bookkeeper'>Models/Bookkeeper</li><li><a href="Quota.html">Quota</a></li><li><a href="Subscription.html">Subscription</a></li><li><a href="Usage.html">Usage</a></li><li class='category-heading' data-category='Models/Filters'>Models/Filters</li><li><a href="BooleanFilter.html">BooleanFilter</a></li><li><a href="ChoiceFilter.html">ChoiceFilter</a></li><li><a href="DateFilter.html">DateFilter</a></li><li><a href="Filter.html">Filter</a></li><li><a href="FilterGroup.html">FilterGroup</a></li><li><a href="NumericFilter.html">NumericFilter</a></li><li><a href="SpatialFilter.html">SpatialFilter</a></li><li><a href="ToggleFilter.html">ToggleFilter</a></li><li class='category-heading' data-category='Models/Formats'>Models/Formats</li><li><a href="ObjectFormat.html">ObjectFormat</a></li><li class='category-heading' data-category='Models/Metadata'>Models/Metadata</li><li><a href="ScienceMetadata.html">ScienceMetadata</a></li><li class='category-heading' data-category='Models/Metadata/EML211'>Models/Metadata/EML211</li><li><a href="EML211.html">EML211</a></li><li><a href="EMLAttribute.html">EMLAttribute</a></li><li><a href="EMLDataTable.html">EMLDataTable</a></li><li><a href="EMLEntity.html">EMLEntity</a></li><li><a href="EMLGeoCoverage.html">EMLGeoCoverage</a></li><li><a href="EMLMeasurementScale.html">EMLMeasurementScale</a></li><li><a href="EMLNonNumericDomain.html">EMLNonNumericDomain</a></li><li><a href="EMLNumericDomain.html">EMLNumericDomain</a></li><li><a href="EMLOtherEntity.html">EMLOtherEntity</a></li><li><a href="EMLTemporalCoverage.html">EMLTemporalCoverage</a></li><li><a href="EMLUnit.html">EMLUnit</a></li><li class='category-heading' data-category='Models/Metadata/EML220'>Models/Metadata/EML220</li><li><a href="EMLText.html">EMLText</a></li><li class='category-heading' data-category='Models/Portals'>Models/Portals</li><li><a href="PortalImage.html">PortalImage</a></li><li><a href="PortalModel.html">PortalModel</a></li><li><a href="PortalSectionModel.html">PortalSectionModel</a></li><li class='category-heading' data-category='Models/QueryFields'>Models/QueryFields</li><li><a href="QueryField.html">QueryField</a></li><li class='category-heading' data-category='Router'>Router</li><li><a href="UIRouter.html">UIRouter</a></li><li class='category-heading' data-category='Views'>Views</li><li><a href="AccessPolicyView.html">AccessPolicyView</a></li><li><a href="AccessRuleView.html">AccessRuleView</a></li><li><a href="AppView.html">AppView</a></li><li><a href="ColorPaletteView.html">ColorPaletteView</a></li><li><a href="DataCatalogViewWithFilters.html">DataCatalogViewWithFilters</a></li><li><a href="DataItemView.html">DataItemView</a></li><li><a href="DataPackageView.html">DataPackageView</a></li><li><a href="DraftsView.html">DraftsView</a></li><li><a href="EditCollectionView.html">EditCollectionView</a></li><li><a href="EditorView.html">EditorView</a></li><li><a href="GroupListView.html">GroupListView</a></li><li><a href="ImageUploaderView.html">ImageUploaderView</a></li><li><a href="MarkdownEditorView.html">MarkdownEditorView</a></li><li><a href="MarkdownView.html">MarkdownView</a></li><li><a href="MetadataView.html">MetadataView</a></li><li><a href="MetricModalView.html">MetricModalView</a></li><li><a href="MetricsChartView.html">MetricsChartView</a></li><li><a href="NavbarView.html">NavbarView</a></li><li><a href="RegisterCitationView.html">RegisterCitationView</a></li><li><a href="TableEditorView.html">TableEditorView</a></li><li><a href="TOCView.html">TOCView</a></li><li><a href="UserView.html">UserView</a></li><li class='category-heading' data-category='Views/Filters'>Views/Filters</li><li><a href="BooleanFilterView.html">BooleanFilterView</a></li><li><a href="ChoiceFilterView.html">ChoiceFilterView</a></li><li><a href="DateFilterView.html">DateFilterView</a></li><li><a href="FilterGroupsView.html">FilterGroupsView</a></li><li><a href="FilterGroupView.html">FilterGroupView</a></li><li><a href="FilterView.html">FilterView</a></li><li><a href="NumericFilterView.html">NumericFilterView</a></li><li><a href="ToggleFilterView.html">ToggleFilterView</a></li><li class='category-heading' data-category='Views/Metadata'>Views/Metadata</li><li><a href="EML211EditorView.html">EML211EditorView</a></li><li><a href="EMLAttributeView.html">EMLAttributeView</a></li><li><a href="EMLEntityView.html">EMLEntityView</a></li><li><a href="EMlGeoCoverageView.html">EMlGeoCoverageView</a></li><li><a href="EMLMeasurementScaleView.html">EMLMeasurementScaleView</a></li><li><a href="EMLMethodsView.html">EMLMethodsView</a></li><li><a href="EMLOtherEntityView.html">EMLOtherEntityView</a></li><li><a href="EMLPartyView.html">EMLPartyView</a></li><li><a href="EMLTempCoverageView.html">EMLTempCoverageView</a></li><li><a href="EMLView.html">EMLView</a></li><li><a href="ScienceMetadataView.html">ScienceMetadataView</a></li><li class='category-heading' data-category='Views/Portals'>Views/Portals</li><li><a href="PortalDataView.html">PortalDataView</a></li><li><a href="PortalHeaderView.html">PortalHeaderView</a></li><li><a href="PortalListView.html">PortalListView</a></li><li><a href="PortalLogosView.html">PortalLogosView</a></li><li><a href="PortalMembersView.html">PortalMembersView</a></li><li><a href="PortalSectionView.html">PortalSectionView</a></li><li><a href="PortalUsagesView.html">PortalUsagesView</a></li><li><a href="PortalView.html">PortalView</a></li><li><a href="PortalVisualizationsView.html">PortalVisualizationsView</a></li><li class='category-heading' data-category='Views/Portals/Editor'>Views/Portals/Editor</li><li><a href="PortalEditorView.html">PortalEditorView</a></li><li><a href="PortEditorDataView.html">PortEditorDataView</a></li><li><a href="PortEditorImageView.html">PortEditorImageView</a></li><li><a href="PortEditorLogosView.html">PortEditorLogosView</a></li><li><a href="PortEditorMdSectionView.html">PortEditorMdSectionView</a></li><li><a href="PortEditorSectionsView.html">PortEditorSectionsView</a></li><li><a href="PortEditorSectionView.html">PortEditorSectionView</a></li><li><a href="PortEditorSettingsView.html">PortEditorSettingsView</a></li><li class='category-heading' data-category='Views/QueryBuilder'>Views/QueryBuilder</li><li><a href="QueryBuilder.html">QueryBuilder</a></li><li><a href="QueryRuleView.html">QueryRuleView</a></li><li class='category-heading' data-category='Views/SearchSelect'>Views/SearchSelect</li><li><a href="AnnotationFilter.html">AnnotationFilter</a></li><li><a href="NodeSelect.html">NodeSelect</a></li><li><a href="QueryFieldSelectView.html">QueryFieldSelectView</a></li><li><a href="SearchableSelectView.html">SearchableSelectView</a></li><li class='category-heading' data-category='Deprecated'>Deprecated</li><li><a href="ExternalView.html">ExternalView</a></li><li><a href="LogsSearch.html">LogsSearch</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appConfigPath">appConfigPath</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Dec 07 2020 17:33:36 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

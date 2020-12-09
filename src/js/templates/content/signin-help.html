@@ -1,0 +1,135 @@
+<section>
+  <h1>Is sign in not working?</h1>
+
+  <p>
+    <h3>Try one or all of the following troubleshooting tips.</h3>
+     If you're still experiencing issues after trying these,
+      please <a href="mailto:<%=MetacatUI.appModel.get('emailContact')%>">contact us</a>.
+    <ul>
+      <li><a href="#cookies">Enable third-party cookies</a></li>
+      <li><a href="#extensions">Disable privacy browser extensions</a></li>
+    </ul>
+  </p>
+
+  <section>
+    <h2 id="cookies">Enable third-party cookies</h2>
+      <p>We use <a href="https://dataone.org">DataONE</a> authentication services for sign in, which uses
+      third-party cookies created by DataONE. Your browser must have third-party cookies enabled for this
+      website in order for sign in to work. You may re-enable third-party cookies once you leave this website.
+      <p>
+
+      <p>
+        DataONE only uses a cookie for sign in to <a href="https://www.dataone.org/network/">DataONE member repositories</a>.
+        The cookie will <b>not</b> be used to track your activity on non-DataONE repository websites.
+      </p>
+
+    <p>
+      <h3>Find instructions on how to enable third-party cookies for your browser:</h3>
+        <details>
+          <summary id="safari">Safari</summary>
+          <div>
+            <h3>Safari</h3>
+            <p>
+              <ol>
+                <li>Open <b>Preferences</b> by clicking on <b>Safari</b> in the Mac OS toolbar at the top of your screen</li>
+                <li>Click the <b>Privacy</b> tab.</li>
+                <li>Uncheck <b>Prevent cross-site tracking.</b></li>
+              </ol>
+            </p>
+            <img src="<%= MetacatUI.root %>/img/help/thirdpartycookies.png" class="img-polaroid" />
+          </div>
+        </details>
+        <details>
+          <summary id="chrome">Chrome</summary>
+          <div>
+            <h3> Chrome </h3>
+            <p>
+              <ol>
+                <li>Open the Chrome <b>Settings</b> via the three-dot menu in the upper-right corner of the application.</li>
+                <li>Click the <b>Privacy and Security</b> link from the left menu.</li>
+                <li>Click <b>Cookies and other site data</b>.</li>
+                <li>Choose the <b>Allow all cookies</b> option.</li>
+              </ol>
+            </p>
+            <img src="<%=MetacatUI.root%>/img/help/thirdpartycookies-chrome.png" class="img-polaroid" />
+          </div>
+        </details>
+        <details>
+          <summary id="firefox">Firefox</summary>
+          <div>
+            <h3> Firefox </h3>
+            <p>
+              <ol>
+                <li>Click the <b>menu icon</b> in the upper-right corner of Firefox</li>
+                <li>Click <b>Preferences</b></li>
+                <li>Click <b>Privacy & Security</b></li>
+                <li>Choose the <b>Standard</b> option</li>
+              </ol>
+            </p>
+            <img src="<%=MetacatUI.root%>/img/help/thirdpartycookies-ff.png" class="img-polaroid" />
+          </div>
+        </details>
+        <details>
+          <summary id="IE">Internet Explorer</summary>
+          <div>
+            <h3>Internet Explorer</h3>
+            <p>
+              <ol>
+                <li>Select the gear in the upper-right corner of the screen, then select <b>Internet Options</b>. If you have the Menu Bar enabled, you can select <b>Tools</b> > <b>Internet Options</b>.</li>
+
+                <li>Click the <b>Privacy</b> tab.</li>
+
+                <li>Select the <b>Advanced</b> button.</li>
+
+                <li>Under <b>Third-party Cookies</b> choose <b>Accept</b>.</li>
+
+                <li>Click <b>OK</b> and you have successfully set your cookie settings in IE.</li>
+              </ol>
+            </p>
+            <img src="<%=MetacatUI.root%>/img/help/thirdpartycookies-ie.png" class="img-polaroid" />
+          </div>
+        </details>
+        <details>
+          <summary id="edge">Microsoft Edge</summary>
+          <div>
+            <h3>Microsoft Edge</h3>
+            <p>
+              <ol>
+                <li>At the top right, click the <b>Menu</b> button, then <b>Settings</b>.</li>
+
+                <li>Click <b>View Advanced Settings</b>.</li>
+
+                <li>Set Cookies to <b>Don’t block cookies</b>.</li>
+              </ol>
+            </p>
+            <img src="<%=MetacatUI.root%>/img/help/thirdpartycookies-edge.png" class="img-polaroid" />
+          </div>
+        </details>
+    </p>
+  </section>
+<section>
+
+  <h2 id="extensions">Disable privacy browser extensions</h2>
+  <p>Check if you have installed browser extensions or plugins that disable third-party cookies or "trackers",
+    and disable these extensions for this website. A few popular examples are shown below.</p>
+
+  <h3 id="privacy-badger">Privacy Badger</h3>
+  <p>
+    Privacy Badger is a popular privacy extension and it allows you to disable/enable cookies
+    for certain sites by hovering over the icon and switching the slider to the green check mark. Make sure
+    that all "dataone.org" sites are enabled.</p>
+  <img src="<%=MetacatUI.root%>/img/help/privacy-badger.png" class="img-polaroid" />
+
+  <h3 id="ublock">uBlock Origin</h3>
+  <p>
+    Click on the uBlock Origin icon in your extensions/plugin list and if "dataone.org"
+    is listed in red or as a blocked site, turn off uBlock Origin for this site by clicking the power icon and refreshing the page.
+  </p>
+  <img src="<%=MetacatUI.root%>/img/help/ublock.png" class="img-polaroid" />
+</section>
+
+<section>
+<p class="alert alert-warning">
+  Still can't sign in? <a href="mailto:<%=MetacatUI.appModel.get('emailContact')%>">Contact us</a> for help.
+</p>
+</section>

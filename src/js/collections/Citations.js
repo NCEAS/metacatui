@@ -9,11 +9,13 @@ define(['jquery', 'underscore', 'backbone','models/CitationModel'],
      * @classdesc Citations represents the Citations list
      * found at https://app.swaggerhub.com/apis/nenuji/data-metrics/1.0.0.3.
      * For details regarding a single Citation Entity, refer `models/CitationModel`
+     * @classcategory Collections
      * @name Citations
      * @extends Backbone.Collection
      * @constructor
      */
-    var Citations = Backbone.Collection.extend({
+    var Citations = Backbone.Collection.extend(
+      /** @lends Citations.prototype */{
 
         model: CitationModel,
 

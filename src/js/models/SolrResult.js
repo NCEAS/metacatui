@@ -2,8 +2,11 @@
 define(['jquery', 'underscore', 'backbone'],
 	function($, _, Backbone) {
 
-	// SolrResult Model
-	// ------------------
+	/**
+  * @class SolrResult
+  * @classdesc A single result from the Solr search service
+  * @classcategory Models
+  */
 	var SolrResult = Backbone.Model.extend(
     /** @lends SolrResult.prototype */{
 		// This model contains all of the attributes found in the SOLR 'docs' field inside of the SOLR response element

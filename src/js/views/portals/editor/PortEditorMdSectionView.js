@@ -13,6 +13,7 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
   /**
   * @class PortEditorMdSectionView
   * @classdesc A section of the Portal Editor for adding/editing a Markdown page to a Portal
+  * @classcategory Views/Portals/Editor
   * @extends PortEditorSectionView
   * @constructor
   */
@@ -117,6 +118,23 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
 
       try{
 
+        //Attach this view to the view Element
+        this.$el.data("view", this);
+
+        /**
+        * PortalVizSection models aren't editable yet, so show a message and exit.
+        * @todo Create a PortalVizSectionView for PortalVizSection models, rather than
+        * checking the section type here. */
+        if( this.model.type == "PortalVizSection" ){
+
+          MetacatUI.appView.showAlert("You're all set! A Fluid Earth Viewer data visualization will appear here.",
+                                      "alert-info",
+                                      this.$el);
+          this.$el.addClass("port-editor-viz");
+
+          return;
+        }
+
         // Insert the template into the view
         this.$el.html(this.template({
           title: this.model.get("title"),
@@ -128,18 +146,9 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
           cid: this.model.cid
         })).data("view", this);
 
-        // Get the markdown from the SectionModel
-        var markdown = "";
-        if( this.model.get("content") ){
-          markdown = this.model.get("content").get("markdown");
-          if( !markdown ){
-            markdown = this.model.get("content").get("markdownExample");
-          }
-        }
-
         // Render the Markdown Editor View
         var mdEditor = new MarkdownEditor({
-          markdown: markdown,
+          model: this.model.get("content"),
           markdownPlaceholder: "# Content\n\nAdd content here. Styling with markdown is supported.",
           previewPlaceholder: "Add some text in the Edit tab to show a preview here",
           showTOC: true
@@ -149,7 +158,8 @@ function(_, $, Backbone, PortalSectionModel, PortalImage, ImageUploader, Markdow
 
         // Attach the appropriate models to the textarea elements,
         // so that PortalEditorView.updateBasicText(e) can access them
-        mdEditor.$(mdEditor.textarea).data({ model: this.model.get("content") });
+        // Don't use the updateBasicText function on content/markdown sections,
+        // because we don't want to "cleanXMLText" for markdown
         this.$(this.titleEl).data({ model: this.model });
         this.$(this.introEl).data({ model: this.model });
 

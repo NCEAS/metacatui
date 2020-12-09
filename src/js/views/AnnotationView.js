@@ -106,7 +106,7 @@ define(['jquery',
             }
 
             // Verify token before moving on
-            if (typeof token !== "string") {
+            if (typeof token !== "string" || token.length === 0) {
                 this.valueResolved = true;
 
                 return;

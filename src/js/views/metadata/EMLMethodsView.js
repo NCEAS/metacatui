@@ -3,10 +3,14 @@ define(['underscore', 'jquery', 'backbone', 'models/metadata/eml211/EMLMethods',
         'text!templates/metadata/EMLMethods.html'],
     function(_, $, Backbone, EMLMethods, EMLText, EMLMethodsTemplate){
 
-        /*
-            The EMLMethods renders the content of an EMLMethods model
+        /**
+        * @class EMLMethodsView
+        * @classdesc The EMLMethods renders the content of an EMLMethods model
+        * @classcategory Views/Metadata
+        * @extends Backbone.View
         */
-        var EMLMethodsView = Backbone.View.extend({
+        var EMLMethodsView = Backbone.View.extend(
+          /** @lends EMLMethodsView.prototype */{
 
           type: "EMLMethodsView",
 

@@ -6,10 +6,18 @@ define(['jquery', 'underscore', 'backbone',
   function($, _, Backbone, DateFilter, FilterView, Template) {
   'use strict';
 
-  // Render a view of a single DateFilter model
-  var DateFilterView = FilterView.extend({
+  /**
+  * @class DateFilterView
+  * @classdesc Render a view of a single DateFilter model
+  * @classcategory Views/Filters
+  * @extends FilterView
+  */
+  var DateFilterView = FilterView.extend(
+    /** @lends DateFilterView.prototype */{
 
-    // @type {DateFilter} - A DateFilter model to be rendered in this view
+    /**
+    * A DateFilter model to be rendered in this view
+    * @type {DateFilter} */
     model: null,
 
     className: "filter date",
@@ -31,10 +39,23 @@ define(['jquery', 'underscore', 'backbone',
     },
 
     render: function () {
-
+      
       var templateVars = this.model.toJSON();
-      templateVars.min = this.model.get("rangeMin");
-      templateVars.max = this.model.get("rangeMax");
+      
+      if(!templateVars.min && templateVars.min !== 0){
+        templateVars.min = this.model.get("rangeMin");
+      }
+      if(!templateVars.max && templateVars.max !== 0){
+        templateVars.max = this.model.get("rangeMax");
+      }
+      
+      if(templateVars.min < this.model.get("rangeMin")){
+        templateVars.min = this.model.get("rangeMin")
+      }
+      
+      if(templateVars.max > this.model.get("rangeMax")){
+        templateVars.max = this.model.get("rangeMax")
+      }
 
       this.$el.html( this.template( templateVars ) );
 
@@ -65,7 +86,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Gets the min and max years from the number inputs and updates the DateFilter
     *  model and the year UI slider.
     * @param {Event} e - The event that triggered this callback function
@@ -91,7 +112,7 @@ define(['jquery', 'underscore', 'backbone',
 
     },
 
-    /*
+    /**
     * Resets the slider to the default values
     */
     resetSlider: function(){

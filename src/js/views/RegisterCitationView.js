@@ -7,6 +7,7 @@ define(['jquery', 'underscore', 'backbone', 'text!templates/registerCitation.htm
     * @class RegisterCitationView
     * @classdesc A simple form for a user to input a DOI that cites or uses a dataset in DataONE.
     * When the form is submitted, the citation is registered with the DataONE Metrics service.
+    * @classcategory Views
     * @screenshot RegisterCitationView.png
     * @extends Backbone.View
     */

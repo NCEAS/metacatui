@@ -8,6 +8,7 @@ function(_, $, Backbone, PortEditorSectionView, EditCollectionView, Template){
 
   /**
   * @class PortEditorDataView
+  * @classcategory Views/Portals/Editor
   */
   var PortEditorDataView = PortEditorSectionView.extend(
     /** @lends PortEditorDataView.prototype */{

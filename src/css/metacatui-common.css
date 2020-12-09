@@ -76,6 +76,7 @@ a:hover{
 }
 .tooltip{
 	font-size: 12px;
+	pointer-events: none;
 }
 [contenteditable]{
 	cursor: text;
@@ -411,11 +412,14 @@ header .citation {
 #Content > .alert-container {
     max-width: 90%;
     margin-left: 5%;
+		margin-top: 2rem;
 }
 body > .alert-container.important-app-message{
   bottom: 0px;
   top: auto;
   width: 100%;
+	/* required for IE11: */
+	z-index: 1000;
 }
 body > .alert-container.important-app-message > .alert{
   margin-bottom: 0px;
@@ -451,6 +455,9 @@ h4 > .icon{
 }
 .icon-on-left{
 	margin-right: 5px;
+}
+.icon-no-margin{
+	margin: 0 !important;
 }
 .filter-contain img.icon{
 	float: left;
@@ -494,6 +501,17 @@ svg.icon {
 }
 .icon.hidden{
   display: none;
+}
+.dataone-plus-icon{
+  height: 1em;
+  vertical-align: text-top;
+}
+.pill{
+  border-radius: 5px;
+width: auto;
+display: inline;
+padding: .25em .5em;
+text-shadow: none;
 }
 /******************************************
 ** Results and Result Rows ***
@@ -1463,6 +1481,13 @@ svg.icon {
 .sign-in.modal .close {
     font-size: 2em;
 }
+.sign-in-btns .notification,
+.login .notification{
+  margin-top: 20px;
+}
+#Navbar .sign-in-btns .notification{
+  display: none;
+}
 /** The ORCID Sign In button **/
 .orcid-btn{
 	border: 1px solid #aacf14;
@@ -1914,16 +1939,16 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 #metric-modal {
     z-index: 1050;
     top: 15%;
-    width: 930px;
+    width: 90%;
     height: 500px;
-    left: 40%;
+    left: 5%;
+    margin-left: 0px;
 }
 #metric-modal .modal-content {
     width: auto;
 }
 
 #metric-modal .modal-header {
-    width: 900px;
     height: 25px;
 }
 
@@ -1931,11 +1956,19 @@ i.icon.metric-icon.icon-spinner.icon-spin {
     width: 100%;
     height: 400px;
     max-height: 400px;
-    padding: 0px;
+    padding: 1em;
+    padding-bottom: 100px;
+    background-color: #FFFFFF;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 80fr 20fr;
+    column-gap: 40px;
+}
+#metrics-modal #metrics-chart{
+  width: 100%;
 }
 
 #metric-modal .modal-footer {
-    width: 900px;
     height: 25px;
 	padding-top: 18px;
 }
@@ -1955,56 +1988,23 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	width: 10%;
 }
 
-#metric-modal .modal-body .modal-description {
-	float: left;
-	width: 236px;
-	padding-left: 30px;
-	padding-top: 33px;
-}
 
 #metric-modal .modal-body .modal-description p {
 	margin: 0 0 25px;
 }
 
-#metric-modal .modal-body .modal-description p#slider-instructions {
-	margin-top: 109px;
-	margin-bottom: 0;
-}
 
-#metric-modal .modal-body .metric-chart {
-	float: right;
-	width: 600px;
-	padding-right: 18px;
-	padding-top: 22px;
-}
-.empty-citation-list-text {
-	font-size: 16px;
-    font-weight: 100;
-    color: #555555;
-    text-align: center;
-    margin-left: 10px;
-    position: absolute;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-}
 .empty-citation-list {
-    width: 80%;
-    top: 22%;
-    left: 10%;
-    display: flex;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 50%;
-    border-radius: 2px;
-    background-color: #f5f5f5;
-    box-shadow: 0 0 black;
-}
-
-.empty-citation-list > .register-citation {
-	top: 30%;
-    position: absolute;
+  grid-template-rows: 3em 100fr;
+  grid-template-columns: 100fr;
+  justify-items: center;
+  align-items: start;
+  justify-content: stretch;
+  padding: 1em;
+  grid-row-gap: 20px;
+  display: grid;
+  background-color: #f5f5f5;
+  width: calc(120% + 40px); /*Stretch across both columns in grid*/
 }
 
 .register-citation-modal-header{
@@ -2023,16 +2023,13 @@ i.icon.metric-icon.icon-spinner.icon-spin {
 	margin-top: 3px;
 }
 
-.register-citation-element > .register-citation {
-	position: fixed;
-    display: block;
-    margin-top: 60px;
-}
-
 .register-citation-element {
-	display: flex;
+	display: grid;
     align-items: center;
     justify-content: center;
+}
+.register-citation-element .btn{
+  justify-self: center;
 }
 
 /******************************************
@@ -2060,18 +2057,23 @@ i.catalog-metric-icon {
 #user-downloads-chart {
     width: 90%;
 }
-
 .metric-chart-loading {
-    font-size: 3em;
-    margin: 0 auto;
-    text-align: center;
+    display: flex;
+    box-sizing: border-box;
+    position: relative;
+    max-height: 390px;
+}
+.metric-chart-loading .message{
+	text-align: center;
+	padding: rem 1.2rem;
+	font-size: 1.1rem;
+	box-shadow: 0 1px 3px -1px rgba(0,0,0,0.15), 0 1px 14px -6px rgba(0,0,0,0.28);
 }
 
-#user-views-chart > .metric-chart-loading,
-#user-downloads-chart > .metric-chart-loading {
-    font-size: 1em;
-    margin: 0 auto;
-    text-align: center;
+.metric-chart-loading .message strong {
+	display: block;
+	font-weight: 600;
+	margin-top: 0.3rem;
 }
 
 /*
@@ -2335,10 +2337,10 @@ i.catalog-metric-icon {
     width: 100%;
 }
 .metric-table.table.table-striped.table-condensed td {
-    padding: 5px 15px 5px 85px;
+    padding: 1em 1em 1em 2em;
 }
 .metric-table.table.table-striped.table-condensed td > .citation {
-    margin-left: -70px;
+    margin-left: -1em;
 }
 button.modal-btn.btn.btn-default {
     all: unset;
@@ -2409,10 +2411,10 @@ section#user-citations {
 }
 .metrics-title > h3 {
 	display: inline-block;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
-.metrics-title > p{
-  margin-bottom: 30px;
+.metric-description {
+  margin-bottom: 40px;
 }
 .views-metrics .metric-chart,
 .downloads-metrics .metric-chart {
@@ -2829,6 +2831,27 @@ section#user-citations {
 #resetTree {
 	float: right;
 }
+
+/* --- multiselect annotation filter */
+.annotation-filter .searchable-select #bioportal-tree {
+	display: block;
+	margin-top: 0.5rem;
+}
+.annotation-filter .searchable-select .menu {
+	min-height: 10rem;
+}
+/* We use the input in the semantic UI input interface to search */
+/* instead of the NCBO tree interface */
+.annotation-filter .searchable-select input.ncboAutocomplete {
+	display: none;
+}
+/* The contents of the dropdown menu is replaced with the annotation tree */
+/* Hide all of the menu items that semantic UI inserets */
+.annotation-filter .searchable-select .item,
+.annotation-filter .searchable-select .message {
+	display: none !important;
+}
+
 /******************************************
 * Images, Maps, and Media
 ********************************************/
@@ -3415,9 +3438,8 @@ add font awesome close icon */
 /******************************************
 ** AccessPolicy editor view ***
 ******************************************/
-.access-rule .subject{
-  display: flex;
-  min-height: 30px;
+.access-rule .subject .orcid.icon{
+  vertical-align: top;
 }
 .access-policy-view-container.modal{
   width: 80%;
@@ -3527,6 +3549,36 @@ add font awesome close icon */
 	box-sizing: border-box;
 	overflow-y: auto;
 }
+
+/* Portal editor login page */
+.portal-login-page{
+	display: grid;
+	grid-template-columns: 100%;
+	grid-template-rows: auto;
+	justify-items: center;
+	gap: 1rem;
+}
+.portal-login-page .portal-image {
+	max-width: 900px;
+	margin: auto;
+}
+
+.portal-login-page .portal-login-title {
+	margin-top: 3rem;
+	font-weight: 300;
+	line-height: 1.4;
+}
+.portal-login-page .portal-login-title strong {
+	font-weight: 600;
+}
+.portal-login-page .portal-login-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+	justify-content: center;
+	max-width: 230px; /* for firefox */
+}
+
 /* Editor navigation (tabs) */
 .section-links-container{
   margin-bottom: 0px;
@@ -3535,9 +3587,44 @@ add font awesome close icon */
   padding-left: 40px;
   padding-right: 40px;
 }
-.port-editor-sections .section-link-container{
+.port-editor-sections .section-link-container {
   border-right: 1px solid #CCC;
 }
+
+.port-editor-sections .section-link-container .handle {
+	color: #FFF;
+	float: left;
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 1px 3px 0 10px;
+	opacity: 0.7;
+	cursor: grab;
+}
+
+.port-editor-sections .section-link-container.sortable-chosen,
+.port-editor-sections .section-link-container.sortable-chosen .handle {
+	cursor: grabbing;
+}
+
+.port-editor-sections .section-link-container.sortable-ghost,
+.port-editor-sections .section-link-container.sortable-chosen {
+	background-color: #006dcc !important;
+}
+
+.port-editor-sections .section-link-container.sortable-ghost > * {
+	opacity: 0.3 !important;
+}
+
+.port-editor-sections .section-link-container .handle + .portal-section-link {
+	padding-left: 0;
+}
+
+.port-editor-sections .section-link-container .handle i:nth-of-type(2) {
+	margin-left: -3px;
+}
+
 .port-editor-sections .section-menu-link:hover ~ .menu,
 .port-editor-sections .section-link-container .menu:hover{
   display: block;
@@ -3582,7 +3669,7 @@ add font awesome close icon */
 }
 
 /* 'Add new section' icon  */
-.port-editor-sections .icon.icon-plus {
+.portal-section-link > .icon.icon-plus {
 	margin: 0 1px 0 1px;
 }
 /* `Settings` link */
@@ -3630,7 +3717,8 @@ add font awesome close icon */
     margin-right: 20px;
 }
 .logo-editor-container .dropzone .dz-message{
-  font-size: .9em;
+  font-size: .87em;
+  line-height: 1em;
 }
 
 .logo-editor-container p.notification.error {
@@ -3937,6 +4025,11 @@ add font awesome close icon */
 	margin: 0;
 }
 
+/*** Portal Editor Data Visualization Sections **/
+.port-editor-section.port-editor-viz{
+  padding-top: 40px;
+}
+
 /* Portal editor metrics page */
 
 .editor-view.portal-editor div#Metrics svg{
@@ -4038,7 +4131,13 @@ add font awesome close icon */
 /******************************************
 * Portals & Portal Editor (styles shared between both)
 ********************************************/
-
+#editPortal.btn{
+  height: 2em;
+min-width: 180px;
+text-align: center;
+line-height: 2em;
+font-size: 1.1em;
+}
 .portal-editor #editor-header{
   border-bottom: 0px;
   padding: 20px 40px;
@@ -4159,13 +4258,9 @@ add font awesome close icon */
 .toc-view.span3.affix-bottom + .span9 {
   margin-left: 26.5%;
 }
-
 .toc-ul{
 	position: sticky;
 	position: -webkit-sticky;
-  background-color: #2c6f90; /* Back-up color for IE */
-  background-color: var(--portal-primary-color);
-
   padding: 0px;
 }
 .toc-ul > li > a {
@@ -4304,7 +4399,6 @@ i.toc-sub-item {
   display: table-cell;
 }
 .portal-view .portal-logo{
-	max-width: 100%;
 	max-height: 80px;
   display: inline-block;
   margin-right: 30px;
@@ -4331,11 +4425,12 @@ i.toc-sub-item {
   margin: 0px;
   font-size: 2em;
   display: inline-block;
+  flex: 2;
 }
 .portal-view .portal-description{
-	margin-left: -20px;
 	margin-top: 10px;
 	margin-right: 20px;
+  color: #666;
 }
 .portal-view .portal-member-since {
 	margin-left: -20px;
@@ -4377,6 +4472,9 @@ i.toc-sub-item {
 }
 .portal-view .profile .profile-title{
   font-size: 1.5em;
+}
+.profile h4 {
+	margin-top: 2rem;
 }
 .portal-view #Members .row-fluid{
   padding: 20px;
@@ -4427,9 +4525,14 @@ i.toc-sub-item {
 }
 .portal-editor #portal-section-tabs{
   display: block;
-	border-bottom: 1px solid #333;
+	border-bottom: 1px solid #CCC;
 	max-width: 100%;
 	box-sizing: border-box;
+}
+
+.portal-editor #portal-section-tabs,
+.portal-editor #portal-section-tabs li:not(.active) {
+	box-shadow: inset 0 -10px 10px -10px rgba(0,0,0,0.05);
 }
 
 /* hide black border below active tabs */
@@ -4441,10 +4544,6 @@ i.toc-sub-item {
   position: absolute;
   bottom: -1px;
   left: 0;
-}
-.portal-editor #portal-section-tabs .section-link-container.active:hover::after {
-  border-bottom: 1px solid #2c7e90; /* Back-up color for IE */
-	border-bottom: 1px solid var(--portal-secondary-color);
 }
 
 #portal-section-tabs .section-link-container{
@@ -4486,10 +4585,6 @@ i.toc-sub-item {
   background-color: #FFF;
   border-color: #CCC;
 }
-.portal-view #portal-section-tabs .section-link-container.active{
-  background-color: #2c7e90; /* Back-up color for IE */
-  background-color: var(--portal-secondary-color);
-}
 #portal-section-tabs .section-link-container.error{
   border-color: #b94a48;
   background-color: #f2dede;
@@ -4516,10 +4611,6 @@ i.toc-sub-item {
 	box-sizing: border-box;
 	max-width: 44px;
 }
-#portal-section-tabs .active .section-menu-link{
-  color: #2c6f90; /* Back-up color for IE */
-  color: var(--portal-primary-color);
-}
 #portal-section-tabs .portal-section-link[contenteditable="true"]{
   width: calc(100% - 48px);
 }
@@ -4533,28 +4624,14 @@ i.toc-sub-item {
 #portal-section-tabs .section-link-container.page-AddPage .icon{
   font-size: 1.75em;
 }
-#portal-section-tabs .section-link-container.page-AddPage .portal-section-link:hover,
-#portal-section-tabs .section-link-container.page-Settings .portal-section-link:hover{
-  background-color: transparent;
-  color: #2c7e90; /* Back-up color for IE */
-  color: var(--portal-secondary-color);
-}
 #portal-section-tabs .section-link-container.page-AddPage .portal-section-link{
   color: #FFF;
   width: 100%;
 }
-#portal-section-tabs .section-link-container.active .portal-section-link{
-  color: #2c6f90; /* Back-up color for IE */
-  color: var(--portal-primary-color);
-}
-#portal-section-tabs .section-link-container.active:hover,
-#portal-section-tabs .section-link-container:hover {
-  background-color: #2c7e90; /* Back-up color for IE */
-  background-color: var(--portal-secondary-color);
-}
 #portal-section-tabs .section-link-container:hover .portal-section-link,
 #portal-section-tabs .section-link-container.active:hover .section-menu-link,
-#portal-section-tabs .section-link-container:hover .section-menu-link {
+#portal-section-tabs .section-link-container:hover .section-menu-link,
+#portal-section-tabs .section-link-container:hover .handle {
 	border-radius: 0;
 	color: #FFF !important;
 }
@@ -4564,7 +4641,6 @@ i.toc-sub-item {
 }
 #portal-section-tabs .section-link-container.page-Settings{
   flex-grow: unset;
-  width: 100px;
 }
 #portal-section-tabs .section-link-container.page-Settings.error{
   width: 120px;
@@ -4574,7 +4650,6 @@ i.toc-sub-item {
 }
 #portal-section-tabs .section-link-container .dropdown-menu>li>a{
   color: #2c6f90; /* Back-up color for IE */
-  color: var(--portal-primary-color);
   border-bottom: 1px solid #CCC;
   line-height: 25px;
 }
@@ -4603,7 +4678,8 @@ i.toc-sub-item {
   color: #2c7e90; /* Back-up color for IE */
   color: var(--portal-secondary-color);
 }
-#portal-section-tabs .section-link-container.active .portal-section-link{
+#portal-section-tabs .section-link-container.active .portal-section-link,
+#portal-section-tabs  .section-link-container.active .handle {
   color: #2c6f90; /* Back-up color for IE */
   color: var(--portal-primary-color);
 }
@@ -4623,6 +4699,11 @@ i.toc-sub-item {
 .portal-editor .result-row .citation .title{
   color: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
+}
+.portal-view .pagination ul > li > a:hover,
+.portal-editor .pagination ul > li > a:hover{
+  background-color: var(--portal-primary-color);
+  color: #FFF;
 }
 .portal-view .applied-filter,
 .portal-editor .applied-filter{
@@ -4689,7 +4770,7 @@ i.toc-sub-item {
 	stroke: #2c6f90; /* Back-up color for IE */
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
-	stroke: var(--portal-secondary-color);
+	stroke: var(--portal-primary-color);
 }
 .portal-view svg circle.packages,
 .portal-editor svg circle.packages{
@@ -4705,6 +4786,35 @@ i.toc-sub-item {
 	color: var(--portal-secondary-color);
 	fill: var(--portal-secondary-color);
 	stroke: var(--portal-secondary-color);
+}
+.portal-view svg .data,
+.portal-view .fallback.data,
+.portal-editor svg .data,
+.portal-editor .fallback.data{
+  color: var(--portal-accent-color);
+  fill: var(--portal-accent-color);
+  stroke: var(--portal-accent-color);
+}
+.portal-view #metric-modal .metric-chart .bar,
+.portal-view .views-metrics .metric-chart .bar,
+.portal-view .downloads-metrics .metric-chart .bar,
+.portal-view #metric-modal .metric-chart .scale_button:hover rect,
+.portal-view #metric-modal .metric-chart .bar,
+.portal-view #metric-modal .metric-chart .bar_context,
+.portal-view .views-metrics .metric-chart .scale_button:hover rect,
+.portal-view .views-metrics .metric-chart .bar,
+.portal-view .views-metrics .metric-chart .bar_context,
+.portal-view .downloads-metrics .metric-chart .scale_button:hover rect,
+.portal-view .downloads-metrics .metric-chart .bar,
+.portal-view .downloads-metrics .metric-chart .bar_context {
+    stroke: var(--portal-primary-color);
+    fill: var(--portal-primary-color);
+}
+.portal-view .donut-title-count.data,
+.portal-view .donut-title-count.metadata,
+.portal-view .donut-title-text,
+.portal-view .donut-title-text{
+  fill: #555;
 }
 .portal-view .line-chart .line,
 .portal-editor .line-chart .line{
@@ -4758,10 +4868,10 @@ i.toc-sub-item {
 	width: 70px;
 	height: 70px;
 	object-fit: contain;
-	border-radius: 50%;
 }
 .portal-list-container .loading {
   height: 50px;
+  text-align: center;
 }
 
 .my-portals-container table td.title > a {
@@ -4781,6 +4891,15 @@ i.toc-sub-item {
 .create-btn-container .btn{
   float: right;
   margin-bottom: 20px;
+}
+
+/** The Portal Visualization View **/
+.portal-viz-section-view{
+  background-color: black;
+}
+.portal-viz-section-view iframe{
+  box-sizing: border-box;
+  border: 0px;
 }
 
 
@@ -5237,13 +5356,23 @@ address.email-container:before{
 /******************************************
 ** Stats ***
 ******************************************/
-.no-activity *,
+.no-activity h3,
+.no-activity h4,
+.no-activity h5,
+.no-activity h6,
+.no-activity p,
+.no-activity .summary-container p,
+.no-activity a,
+.no-activity .message,
 .no-activity svg .title,
 .no-activity svg .bar-label,
 .profile .no-activity .packages p{
     color: #CCC;
     stroke: #CCC;
     fill: #CCC;
+}
+.no-activity svg.character {
+	display: none;
 }
 
 /*Moving the circle badge at the center of the div*/
@@ -5311,6 +5440,9 @@ address.email-container:before{
 .profile .quick-stats .circle-badge .title{
 	font-size: 16px;
 }
+.profile .charts + p{
+  margin-top: 20px;
+}
 
 /**** Bar Charts ******/
 .bar-chart .bar-label.bg{
@@ -5361,6 +5493,7 @@ svg .default,
 	width: 100%;
 	max-width: 950px;
 	min-width: 600px;
+  max-height: 350px;
 	padding-top: 30px;
 	padding-left: 10px;
 	overflow-x: scroll;
@@ -5944,7 +6077,7 @@ body.mapMode{
     text-align: left;
     padding-left: 0px;
 }
-.filter-group .filter .ui-slider{
+.filter .ui-slider{
 	position: relative;
 	height: 5px;
 	margin-top: 20px;
@@ -5952,7 +6085,7 @@ body.mapMode{
 	width: 90%;
 	width: calc(100% - 20px);
 }
-.filter-group .filter .ui-slider-handle{
+.filter .ui-slider-handle{
   width: 7px;
   height: 16px;
 }
@@ -6394,14 +6527,39 @@ body.mapMode{
 
 /* Make the sidebar a bit wider since filters will be used a lot while editing a collection */
 .edit-collection #sidebar{
-  width: 250px;
+  width: 0px;
+	border-right: none;
+}
+.edit-collection .map-toggle-container {
+	background: #ededed;
+}
+.edit-collection .map-toggle-container > a {
+	color: #333;
+}
+.edit-collection #results-container{
+  width: 100%;
+	overflow-y: auto !important;
+	overflow-x: hidden !important;
+}
+.edit-collection .result-header-count {
+	font-size: 1rem;
+  font-weight: 500;
+	margin-bottom: 2rem;
 }
 .edit-collection .mapMode #results-container{
-  width: 60%;
-  width: calc((100% - 260px) / 2);
+  width: 49%;
 }
 .edit-collection .mapMode #map-container{
-  width: calc((100% - 260px) / 2);
+	width: 49%;
+}
+
+.edit-collection-description {
+	max-width: 1400px;
+	margin-left: 1rem;
+}
+.edit-collection-title {
+	margin-top: 1.5rem;
+	margin-left: 1rem;
 }
 /* The Save and Cancel buttons */
 .collection-controls{
@@ -6593,6 +6751,168 @@ input.subtle:focus
 .text-container textarea{
     width: 100%;
 }
+
+/*******************************************
+Query builder & query rule view
+******************************************/
+
+.query-builder {
+	box-shadow: 0 1px 6px rgba(0,0,0,0.16), 0 1px 8px -3px rgba(0,0,0,0.23);
+	padding: 0;
+	margin: 2rem 1rem 2.5rem;
+	width: 100%;
+	max-width: 1400px;
+	border-radius: 3px;
+	box-sizing: border-box;
+}
+
+.query-builder-title {
+	font-weight: 500;
+  font-size: 1.1rem;
+	width: 100%;
+	margin: 0 0 1.2rem 0;
+	border-bottom: 1px solid #eee;
+	padding: 1.4rem 2rem 1.2rem;
+	box-sizing: border-box;
+}
+.query-builder-title .operator {
+	padding: 0 .3rem;
+	border-bottom: 2px solid #adadad;
+}
+.btn.add-rule {
+	margin-left: 2rem;
+	padding: 0.3rem 0.9rem 0.3rem 0.5rem;
+}
+
+.rules-container {
+	display: grid;
+	grid-template-rows: auto;
+	grid-template-columns: 100%;
+	grid-gap: 1.5rem;
+	padding: 1.9rem 2rem;
+}
+
+.query-rule {
+	display: grid;
+	grid-template-columns: minmax(2.5rem, 4rem) 0.9fr 0.6fr 0.9fr 1.5rem;
+	grid-template-rows: 1fr;
+	grid-template-areas: "info field operator value remove";
+	grid-gap: 1.5rem;
+	align-items: top;
+}
+
+.query-rule .rule-info {
+	grid-area: info;
+	font-weight: 700;
+	font-size: 0.9rem;
+	color: #00689d;
+	color: var(--rule-color);
+}
+
+.query-rule .rule-info:after {
+  content:"";
+  float:right;
+  background: #00689d;
+	background: var(--rule-color);
+  width:3px;
+  height: calc(100% + 0.5rem);
+  border-radius: 1.5px;
+}
+
+.query-rule .field{
+	grid-area: field;
+}
+.query-rule .operator{
+	grid-area: operator;
+}
+.query-rule .value{
+	grid-area: value;
+}
+
+/* the button used to remove a rule */
+.query-rule .remove-rule {
+	font-size: 1.5rem;
+	grid-area: remove;
+	cursor: pointer;
+	opacity: 0.2;
+	display: grid;
+	align-content: center;
+	justify-self: flex-end;
+}
+
+.query-rule .rule-info,
+.query-rule .field,
+.query-rule .value,
+.query-rule .operator,
+.query-rule .remove-rule {
+	transition: opacity 0.2s ease-out;
+}
+.query-rule.remove-rule-preview .rule-info,
+.query-rule.remove-rule-preview .field,
+.query-rule.remove-rule-preview .value,
+.query-rule.remove-rule-preview .operator {
+	opacity: 0.5;
+}
+.query-rule.remove-rule-preview .remove-rule{
+	opacity: 1;
+}
+
+.searchable-select-label {
+  margin: 0 0 3px 2px;
+  font-size: 0.8rem;
+}
+
+/* make the number & date filter inputs match the operator and field inputs */
+
+.query-rule .filter input {
+	padding: .60em 1em;
+	border: 1px solid rgba(34,36,38,.15);
+	margin: 0;
+}
+
+.query-rule .slider-container {
+	text-align: center;
+}
+.query-rule .filter label {
+	display: none;
+}
+.query-rule .filter .ui-slider {
+	margin: 0.6rem 0 1rem;
+}
+
+.query-rule .filter.date .to {
+	width: 10%;
+	text-align: center;
+}
+.query-rule .filter.date .max {
+  margin-left: 0;
+}
+/* ---- Icons for the operator options not included in font-awesome ---- */
+.icon-equal, .icon-not-equal, .icon-less-than, .icon-greater-than,
+.icon-less-than-or-eq, .icon-greater-than-or-eq {
+	font-family: serif;
+	font-weight: 900;
+	font-size: larger;
+	line-height: 14px;
+}
+.icon-equal:before{
+	content: "="
+}
+.icon-not-equal:before{
+	content: "\2260"
+}
+.icon-less-than:before{
+	content: "<"
+}
+.icon-greater-than:before{
+	content: ">"
+}
+.icon-less-than-or-eq:before{
+	content: "≤"
+}
+.icon-greater-than-or-eq:before{
+	content: "≥"
+}
 /*******************************************
 Editor View
 ******************************************/
@@ -6718,6 +7038,17 @@ ul.side-nav-items {
   z-index: 13;
 	height: 74px;
 	box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+}
+#editor-footer .free-trial-message{
+  color: #FFF;
+  flex-grow: 2;
+}
+#editor-footer .free-trial-message .icon{
+  height: 1.1em;
+  fill: #FFF;
 }
 .metadata-view #editor-footer{
     display: none;
@@ -7027,6 +7358,7 @@ textarea.medium{
 	border-radius: 0px;
 	-moz-border-radius: 0px;
 	-webkit-border-radius: 0px;
+  z-index: 999;
 }
 .Editor #Content > .alert-container .alert .container {
 	width: auto;
@@ -7644,6 +7976,14 @@ Pager View
 	margin-top: 0px;
 }
 /*******************************************
+D3 old style charts
+*******************************************/
+.line-chart-label.text {
+    color: white;
+    stroke: white;
+    fill: white;
+}
+/*******************************************
 Documentation and Help Pages
 ******************************************/
 .documentation h5{
@@ -7860,4 +8200,9 @@ CSS library fixes
 	color: var(--portal-primary-color);
 	fill: var(--portal-primary-color);
 	font-size: xx-large;
+}
+
+/** Browser extension element fixes **/
+body > #extension-is-installed{
+  display: none;
 }
