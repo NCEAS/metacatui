@@ -1087,7 +1087,8 @@ define(['jquery', 'underscore', 'backbone'],
       */
       enableCreatePortals: true,
       /**
-      * Limits only the following people or groups to create new portals.
+      * Limits only the following people or groups to create new portals. If this is left as an empty array,
+      * then any logged-in user can create a portal.
       * @type {string[]}
       */
       limitPortalsToSubjects: [],
@@ -1307,6 +1308,8 @@ define(['jquery', 'underscore', 'backbone'],
        * Strings listed here should exactly match the 'name' for
        * each field provided by the DataONE search index API (i.e. should match
        * the Solr field).
+       * @example ["sem_annotated_by", "mediaType"]
+       * @type {string[]}
        */
       collectionQueryExcludeFields: [
         "sem_annotated_by", "sem_annotates", "sem_comment", "pubDate",
