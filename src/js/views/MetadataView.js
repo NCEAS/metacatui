@@ -69,7 +69,7 @@ define(['jquery',
         tableContainer: "#table-container",
         controlsContainer: "#metadata-controls-container",
         metricsContainer: "#metrics-controls-container",
-        ownerControlsContainer: "#owner-controls-container",
+        editorControlsContainer: "#editor-controls-container",
         breadcrumbContainer: "#breadcrumb-container",
         parentLinkContainer: "#parent-link-container",
         dataSourceContainer: "#data-source-container",
@@ -113,7 +113,6 @@ define(['jquery',
 
         },
 
-
         // Render the main metadata view
         render: function () {
 
@@ -146,12 +145,45 @@ define(['jquery',
             this.scrollToFragment();
           });
 
+          // Once the model is synced, get the resource map.
+          this.listenToOnce(this, "modelFound", function () {
+            // Get the identifier for the resource map
+            var resMapPID = this.model.get("resourceMap");
+            // Not every metadata model will have a resource map
+            if (resMapPID) {
+              // We need to wait for the resource map to sync before we render the
+              // owner control buttons, because we need to check for authorization
+              // to edit both the EML and the resource map
+              this.listenToOnce(this, "packageModelSynced", function () {
+                this.insertEditorControls();
+              });
+              this.getDataPackage();
+              // When there is no resource map, and we're just rendering the EML,
+              // We do not need to wait for the resource map to sync before inserting
+              // the owner control buttons.
+            } else {
+              this.insertEditorControls();
+            }
+
+          });
+
           this.getModel();
 
           return this;
         },
 
-        getDataPackage: function (pid) {
+        /**
+         * Retrieve the resource map given its PID, and when it's fetched,
+         * parse for provenance info, then check for private members in the package
+         * table view, if there is one.
+         */
+        getDataPackage: function () {
+
+          var pid = this.model.get("resourceMap");
+          if(pid.length){
+            pid = pid[0]
+          }
+
           // Get the metadata model that is associated with this DataPackage collection
           //var metadataModel = new ScienceMetadata({ id: this.pid });
           // Once the ScienceMetadata is populated, populate the associated package
@@ -165,12 +197,8 @@ define(['jquery',
 
           this.dataPackage.mergeModels([this.model]);
 
-          //Fetch the data package. DataPackage.parse() triggers 'complete'
-          this.dataPackage.fetch({
-            fetchModels: false
-          });
-
           this.listenToOnce(this.dataPackage, "complete", function () {
+
             // parseProv triggers "queryComplete"
             this.dataPackage.parseProv();
             this.checkForProv();
@@ -181,7 +209,17 @@ define(['jquery',
               packageTableView.checkForPrivateMembers();
             }
           });
+
+          this.listenToOnce(this.dataPackage.packageModel, "sync", function () {
+            this.trigger("packageModelSynced");
+          });
+
+          //Fetch the data package. DataPackage.parse() triggers 'complete'
+          this.dataPackage.fetch({
+            fetchModels: false
+          });
         },
+
         /*
          * Retrieves information from the index about this object, given the id (passed from the URL)
          * When the object info is retrieved from the index, we set up models depending on the type of object this is
@@ -200,6 +238,7 @@ define(['jquery',
             if (this.model.get("formatType") == "METADATA" || !this.model.get("formatType")) {
               this.model = model;
               this.renderMetadata();
+              this.trigger("modelFound");
             }
             else if (this.model.get("formatType") == "DATA") {
 
@@ -295,6 +334,7 @@ define(['jquery',
                   this.model = metadata;
                   this.pid = this.model.get("id");
                   this.renderMetadata();
+                  this.trigger("modelFound");
                   if (this.model.get("resourceMap"))
                     this.getPackageDetails(this.model.get("resourceMap"));
                 }
@@ -336,7 +376,6 @@ define(['jquery',
           // is this the latest version? (includes DOI link when needed)
           this.showLatestVersion();
 
-
           // Insert various metadata controls in the page
           this.insertControls();
 
@@ -346,9 +385,6 @@ define(['jquery',
             //Insert Metrics Stats into the dataset landing pages
             this.insertMetricsControls();
           }
-
-          // Edit button and the publish button
-          this.insertOwnerControls();
 
           //Show loading icon in metadata section
           this.$(this.metadataContainer).html(this.loadingTemplate({ msg: "Retrieving metadata ..." }));
@@ -765,7 +801,6 @@ define(['jquery',
           if (!packages.length) {
             var packageModel = new Package({
               members: [this.model],
-
             });
             packageModel.complete = true;
             this.insertPackageTable(packageModel);
@@ -773,9 +808,6 @@ define(['jquery',
 
           //Insert the data details sections
           this.insertDataDetails();
-
-          // Get DataPackge info in order to render prov extraced from the resmap.
-          if (packages.length) this.getDataPackage(packages[0].get("id"));
 
           //Initialize tooltips in the package table(s)
           this.$(".tooltip-this").tooltip();
@@ -1065,97 +1097,119 @@ define(['jquery',
         /*
          * Checks the authority for the logged in user for this dataset
          * and inserts control elements onto the page for the user to interact with the dataset - edit, publish, etc.
+         * If there is one, the data package must be fetched before this function is run.
          */
-        insertOwnerControls: function () {
+        insertEditorControls: function (string) {
 
-          //Do not show user controls for older versions of data sets
-          if (this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0))
+          if (
+            // Do not insert the editor controls twice
+            (this.$(this.editorControlsContainer).find("a").length > 0) ||
+            // Do not show editor controls for older versions of data sets
+            (this.model.get("obsoletedBy") && (this.model.get("obsoletedBy").length > 0)) ||
+            this.model.get("archived")
+          ) {
             return false;
+          }
 
-          var container = this.$(this.ownerControlsContainer);
+          var view = this,
+            authorization = [],
+            resourceMap = this.dataPackage ? this.dataPackage.packageModel : null,
+            modelsToCheck = [this.model, resourceMap];
 
-          //Save some references
-          var pid = this.model.get("id") || this.pid,
-            model = this.model,
-            viewRef = this;
-
-          this.listenToOnce(this.model, "change:isAuthorized", function () {
-            if (!model.get("isAuthorized") || model.get("archived"))
-              return false;
-
-            //Insert an Edit button if the Edit button is enabled
-            if (MetacatUI.appModel.get("displayDatasetEditButton")) {
-              //Check that this is an editable metadata format
-              if (_.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId"))) {
-                //Insert the Edit Metadata template
-                container.append(
-                  this.editMetadataTemplate({
-                    identifier: pid,
-                    supported: true
-                  }));
-              }
-              //If this format is not editable, insert an unspported Edit Metadata template
-              else {
-                container.append(this.editMetadataTemplate({
-                  supported: false
-                }));
-              }
+          modelsToCheck.forEach(function (model, index) {
+            // If there is no resource map or no EML,
+            // then the user does not need permission to edit it.
+            if (!model || model.get("notFound") == true) {
+              authorization[index] = true
+              // If we already checked, and the user is authorized,
+              // record that information in the authorzation array.
+            } else if (model.get("isAuthorized_write") === true) {
+              authorization[index] = true
+              // If we already checked, and the user is not authorized,
+              // do not insert any owner controls.
+            } else if (model.get("isAuthorized_write") === false) {
+              return
+              // If we haven't checked for authorization yet, do that now.
+              // Return to this function once we've finished checking.
+            } else {
+              view.listenToOnce(model, "change:isAuthorized_write", function () {
+                view.insertEditorControls();
+              });
+              model.checkAuthority("write");
+              return
             }
-
-            try {
-              //Determine if this metadata can be published.
-              // The Publish feature has to be enabled in the app.
-              // The model cannot already have a DOI
-              var canBePublished = MetacatUI.appModel.get("enablePublishDOI") && !model.isDOI();
-
-              //If publishing is enabled, check if only certain users and groups can publish metadata
-              if (canBePublished) {
-                //Get the list of authorized publishers from the AppModel
-                var authorizedPublishers = MetacatUI.appModel.get("enablePublishDOIForSubjects");
-                //If the logged-in user is one of the subjects in the list or is in a group that is
-                // in the list, then this metadata can be published. Otherwise, it cannot.
-                if (Array.isArray(authorizedPublishers) && authorizedPublishers.length) {
-                  if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)) {
-                    canBePublished = true;
-                  }
-                  else {
-                    canBePublished = false;
-                  }
-                }
-              }
-
-              //If this metadata can be published, then insert the Publish button template
-              if (canBePublished) {
-                //Insert a Publish button template
-                container.append(
-                  viewRef.doiTemplate({
-                    isAuthorized: true,
-                    identifier: pid
-                  }));
-              }
-            }
-            catch (e) {
-              console.error("Cannot display the publish button: ", e);
-            }
-
-            //Check the authority on the package models
-            //If there is no package, then exit now
-            if (!viewRef.packageModels || !viewRef.packageModels.length)
-              return;
-
-            //Check for authorization on the resource map
-            var packageModel = this.packageModels[0];
-
-            //if there is no package, then exit now
-            if (!packageModel.get("id")) return;
-
-            //Now get the RDF XML and check for the user's authority on this resource map
-            packageModel.fetch();
-            packageModel.checkAuthority();
           });
 
-          //Check if the current user has authority to `changePermission` on this metadata
-          this.model.checkAuthority();
+          // Check that all the models were tested for authorization.
+          // If not authorized, don't continue to render the owner controls.
+          var allTrue = _.every(authorization, function (test) { return test });
+          if (!allTrue || authorization.length !== modelsToCheck.length) {
+            return
+          }
+
+          // Save the element that will contain the owner control buttons
+          var container = this.$(this.editorControlsContainer);
+          // Do not insert the editor controls twice
+          container.empty();
+
+          // The PID for the EML model
+          var pid = this.model.get("id") || this.pid;
+
+          //Insert an Edit button if the Edit button is enabled
+          if (MetacatUI.appModel.get("displayDatasetEditButton")) {
+            //Check that this is an editable metadata format
+            if (_.contains(MetacatUI.appModel.get("editableFormats"), this.model.get("formatId"))) {
+              //Insert the Edit Metadata template
+              container.append(
+                this.editMetadataTemplate({
+                  identifier: pid,
+                  supported: true
+                }));
+            }
+            //If this format is not editable, insert an unspported Edit Metadata template
+            else {
+              container.append(this.editMetadataTemplate({
+                supported: false
+              }));
+            }
+          }
+
+          try {
+            //Determine if this metadata can be published.
+            // The Publish feature has to be enabled in the app.
+            // The model cannot already have a DOI
+            var canBePublished = MetacatUI.appModel.get("enablePublishDOI") && !view.model.isDOI();
+
+            //If publishing is enabled, check if only certain users and groups can publish metadata
+            if (canBePublished) {
+              //Get the list of authorized publishers from the AppModel
+              var authorizedPublishers = MetacatUI.appModel.get("enablePublishDOIForSubjects");
+              //If the logged-in user is one of the subjects in the list or is in a group that is
+              // in the list, then this metadata can be published. Otherwise, it cannot.
+              if (Array.isArray(authorizedPublishers) && authorizedPublishers.length) {
+                if (MetacatUI.appUserModel.hasIdentityOverlap(authorizedPublishers)) {
+                  canBePublished = true;
+                }
+                else {
+                  canBePublished = false;
+                }
+              }
+            }
+
+            //If this metadata can be published, then insert the Publish button template
+            if (canBePublished) {
+              //Insert a Publish button template
+              container.append(
+                view.doiTemplate({
+                  isAuthorized: true,
+                  identifier: pid
+                }));
+            }
+          }
+          catch (e) {
+            console.error("Cannot display the publish button: ", e);
+          }
+
         },
 
         /*
@@ -1364,32 +1418,12 @@ define(['jquery',
 
           }
 
-
-          /*        if(MetacatUI.appModel.get("displayDatasetControls")) {
-                      var controlsToolbar = $(document.createElement("div")).addClass("edit-toolbar btn-toolbar");
-                      var copyCitationToolbar = this.$(this.controlsContainer);
-      
-                      //Insert controls
-                      this.insertControls();
-                      controlsToolbar.append(copyCitationToolbar)
-      
-                      if(MetacatUI.appModel.get("displayDatasetEditButton")) {
-                          var editToolbar = this.$(this.ownerControlsContainer);
-      
-                          // Insert Owner Controls
-                          this.insertOwnerControls();
-                          controlsToolbar.append(editToolbar)
-                      }
-      
-              metrics.append(controlsToolbar);
-                  }
-      */
-
         },
 
 
         // Check if the DataPackage provenance parsing has completed.
         checkForProv: function () {
+
           // Show the provenance trace for this package
           var model = this.model;
           if (this.dataPackage.provenanceFlag == "complete") {
@@ -1692,7 +1726,6 @@ define(['jquery',
          * When the data package collection fails to save, tell the user
          */
         saveError: function (errorMsg) {
-          console.log("saveError called");
           var errorId = "error" + Math.round(Math.random() * 100),
             message = $(document.createElement("div")).append("<p>Your changes could not be saved.</p>");
 
@@ -2226,6 +2259,7 @@ define(['jquery',
 
         //When the given ID from the URL is a resource map that has no metadata, do the following...
         noMetadata: function (solrResultModel) {
+
           this.hideLoading();
           this.$el.html(this.template());
 

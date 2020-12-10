@@ -246,22 +246,27 @@ define(['jquery', 'underscore', 'backbone'],
 		},
 
 		/*
-		 * Checks if the currently-logged-in user is authorized to change permissions on this doc
+		 * Checks if the currently-logged-in user is authorized to change
+		 * permissions (or other action if set as parameter) on this doc
+		 * @param {string} [action=changePermission] - The action (read, write, or changePermission) to check
+		 * if the current user has authorization to perform. By default checks for the highest level of permission.
 		 */
-		checkAuthority: function(){
+		checkAuthority: function(action = "changePermission"){
 			var authServiceUrl = MetacatUI.appModel.get('authServiceUrl');
 			if(!authServiceUrl) return false;
 
 			var model = this;
 
 			var requestSettings = {
-				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=changePermission",
+				url: authServiceUrl + encodeURIComponent(this.get("id")) + "?action=" + action,
 				type: "GET",
 				success: function(data, textStatus, xhr) {
+					model.set("isAuthorized_" + action, true);
 					model.set("isAuthorized", true);
 					model.trigger("change:isAuthorized");
 				},
 				error: function(xhr, textStatus, errorThrown) {
+					model.set("isAuthorized_" + action, false);
 					model.set("isAuthorized", false);
 				}
 			}
