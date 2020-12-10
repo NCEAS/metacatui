@@ -1218,10 +1218,10 @@ define(['jquery', 'underscore', 'backbone'],
       * Limit users to a certain number of portals. This limit will be ignored if {@link AppConfig#enableBookkeeperServices}
       * is set to true, because the limit will be enforced by Bookkeeper Quotas instead.
       * @type {number}
-      * @default 1
+      * @default 100
       * @since 2.14.0
       */
-      portalLimit: 1,
+      portalLimit: 100,
 
       /**
       * The default values to use in portals. Default sections are applied when a portal is new.
