@@ -3,7 +3,8 @@ define(['underscore', 'jquery', 'backbone',
         'views/metadata/EMLGeoCoverageView',
         'views/metadata/EMLPartyView',
     		'views/metadata/EMLMethodsView',
-    		'views/metadata/EMLTempCoverageView',
+        'views/metadata/EMLTempCoverageView',
+        'views/metadata/EMLProjectView',
         'models/metadata/eml211/EML211',
         'models/metadata/eml211/EMLGeoCoverage',
         'models/metadata/eml211/EMLKeywordSet',
@@ -23,7 +24,7 @@ define(['underscore', 'jquery', 'backbone',
     		'text!templates/metadata/taxonomicClassificationTable.html',
     		'text!templates/metadata/taxonomicClassificationRow.html'],
 	function(_, $, Backbone,
-      ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView,
+      ScienceMetadataView, EMLGeoCoverageView, EMLPartyView, EMLMethodsView, EMLTempCoverageView, EMLProjectView,
 
       EML, EMLGeoCoverage, EMLKeywordSet, EMLParty, EMLProject, EMLText, EMLTaxonCoverage,
 
@@ -1009,14 +1010,28 @@ define(['underscore', 'jquery', 'backbone',
 			  this.$(".section.methods").html(new EMLMethodsView({
 				      model: methodsModel,
 				      edit: this.edit }).render().el);
-		  },
+			},
 
-	    /*
-         * Renders the Projcet section of the page
-         */
-	    renderProject: function(){
+      /*
+       * Renders the Projcet section of the page
+       */
+      renderProject: function() {
+        var projectModel = this.model.get("project");
 
-	    },
+        if (!projectModel) {
+          projectModel = new EMLProject({
+            edit: this.edit,
+            parentModel: this.model
+          });
+        }
+
+        this.$(".section.project").html(
+          new EMLProjectView({
+            model: projectModel,
+            edit: this.edit
+          }).render().el
+        );
+      },
 
 	    /*
          * Renders the Sharing section of the page
