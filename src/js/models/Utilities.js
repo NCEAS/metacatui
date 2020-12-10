@@ -35,6 +35,21 @@ define(['jquery', 'underscore'],
         console.error("Could not encode HTML: ", e);
         return "";
       }
+    },
+
+    /**
+    * Validates that the given string is a valid DOI
+    * @param {string} identifier
+    * @returns {boolean}
+    */
+    isValidDOI: function(identifier) {
+      // generate doi regex 
+      var doiRGEX = new RegExp(/^(http:\/\/|https:\/\/)?(doi.org\/|dx.doi.org\/)?(doi:|DOI:)?(10[.][0-9]{4,}(?:[.][0-9]+)*(?:(?!["&\'<>])\S)+)$/i)
+
+      // remove white space characters
+      identifier = identifier.replace(/\s+/g, '');
+
+      return doiRGEX.test(identifier);
     }
 
   }
