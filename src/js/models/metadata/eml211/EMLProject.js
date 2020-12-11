@@ -11,6 +11,7 @@ define([
       objectDOM: null,
       title: null,
       funding: [],
+      award: [],
       personnel: null,
       parentModel: null,
       nodeOrder: [
@@ -44,7 +45,8 @@ define([
         fundername: "funderName",
         funderidentifier: "funderIdentifier",
         awardnumber: "awardNumber",
-        awardurl: "awardUrl"
+        awardurl: "awardUrl",
+        title: "title"
       };
     },
 
@@ -73,6 +75,36 @@ define([
           if ($(fundingNode).text()) {
             modelJSON.funding.push($(fundingNode).text());
           }
+        },
+        this
+      );
+
+      //Parse the award info
+      var awardFields  = {
+        fundername: "Funder Name",
+        funderidentifier: "Funder Identifier",
+        awardnumber: "Award Number",
+        awardurl: "Award URL",
+        title: "Title"
+      }
+
+      modelJSON.award = [];
+      var awardEl = $(objectDOM).children("award"),
+        awardNodes = awardEl[0] && awardEl[0].localName  === 'award'
+          ? awardEl
+          : [];
+
+      //Iterate over each award node and put the text into the award array
+      _.each(
+        awardNodes,
+        function(node) {
+          var nodeEl = $(node)
+          var awardItem = []
+          Object.keys(awardFields).forEach(field => {
+            awardItem.push({ label: awardFields[field], value: nodeEl.children(field).text()})
+          })
+
+          modelJSON.award.push(awardItem);
         },
         this
       );

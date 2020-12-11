@@ -45,7 +45,9 @@ define([
           .attr("data-category", "project");
 
         if (this.edit) {
-          this.$el.html(this.editTemplate());
+          this.$el.html(this.editTemplate({
+            award: this.model.get('award')
+          }));
         }
 
         return this;

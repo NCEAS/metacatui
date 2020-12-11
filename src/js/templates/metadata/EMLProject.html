@@ -1,3 +1,10 @@
 <h2>Project</h2>
 
-<p>Hello World</p>
+<% _(award).each(function(awardItem) { %>
+  <div>
+    <% _(awardItem).each(function(field) { %>
+      <%=field.label%>: <%=field.value%><br>
+    <% }) %>
+  </div>
+  <hr>
+<% }) %>
