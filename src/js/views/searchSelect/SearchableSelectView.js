@@ -3,10 +3,13 @@ define([
     "underscore",
     "backbone",
     "semanticUItransition",
+    "text!" + MetacatUI.root + "/components/semanticUI/transition.min.css",
     "semanticUIdropdown",
+    "text!" + MetacatUI.root + "/components/semanticUI/dropdown.min.css",
     "text!templates/selectUI/searchableSelect.html",
+    
   ],
-  function($, _, Backbone, Transition, Dropdown, Template) {
+  function($, _, Backbone, Transition, TransitionCSS, Dropdown, DropdownCSS, Template) {
 
     /**
      * @class SearchableSelectView
@@ -108,18 +111,6 @@ define([
         imageHeight: 30,
 
         /**
-         * The path to the semanticUI transition CSS (required for this view to work)
-         * @type {string}
-         */
-        transitionCSS: MetacatUI.root + "/components/semanticUI/transition.min.css",
-
-        /**
-         * The path to the semanticUI dropdown CSS (required for this view to work)
-         * @type {string}
-         */
-        dropdownCSS: MetacatUI.root + "/components/semanticUI/dropdown.min.css",
-
-        /**
          * The list of options that a user can select from in the dropdown menu.
          * For uncategorized options, provide an array of objects, where each
          * object is a single option. To create category headings, provide an
@@ -205,30 +196,29 @@ define([
 
             var view = this;
 
-            // Given a path, check whether a CSS file was already added to the
-            // head, and add it if not. Prevents adding the CSS file multiple
+            // Given a string of CSS and an associated unique ID,
+            // check whether that CSS file was already added to the document head,
+            // and add it if not. Prevents adding the CSS file multiple
             // times if the view is loaded more than once. The first time each
-            // CSS path is added, we need to cache a record of the event. It
-            // doesn't work to just search the document head for the file to
+            // CSS path is added, we need to save a record of the event. It
+            // doesn't work to just search the document head for the style elemnt to
             // determine if the CSS has already been added, because each instance
             // of this view is initialized too quickly, before the previous
             // instance has had a chance to add the stylesheet element.
-            const addCSS = function(path){
+            const addCSS = function(css, id){
               if(!MetacatUI.loadedCSS){
                 MetacatUI.loadedCSS = []
               }
-              if(!MetacatUI.loadedCSS.includes(path)){
-                MetacatUI.loadedCSS.push(path)
-                const link = document.createElement("link");
-                link.rel = "stylesheet";
-                link.href = path;
-                document.querySelector("head").appendChild(link);
+              if(!MetacatUI.loadedCSS.includes(id)){
+                MetacatUI.loadedCSS.push(id);
+                var style = document.createElement('style');
+                style.appendChild(document.createTextNode(css));
+                document.querySelector("head").appendChild(style);
               }
             }
 
-            // Add the CSS required for semanticUI components
-            addCSS(view.transitionCSS);
-            addCSS(view.dropdownCSS);
+            addCSS(TransitionCSS, "semanticUItransition");
+            addCSS(DropdownCSS, "semanticUIdropdown");
 
             // Get all the options and apply them to this view
             if (typeof options == "object") {
@@ -253,15 +243,6 @@ define([
           try {
 
             var view = this;
-
-            // The semantic UI dropdown module requires that the transition
-            // module CSS is loaded. If a user tries to select a value before
-            // this has a chance to load, semantic will throw an error.
-            // Don't render until the required CSS is loaded.
-            if(!this.ready){
-              this.checkIfReady(this.render);
-              return
-            }
 
             // Render the template using the view attributes
             this.$el.html(this.template(this));
@@ -712,64 +693,6 @@ define([
           } catch (e) {
             console.log("Failed to change the selected values in a searchable select field, error message: " + e);
           }
-        },
-
-        /**
-         * checkIfReady - Check if the searchable select field is ready to use.
-         * If the transition UI CSS file isn't loaded in time, search fields
-         * might give error when selecting (or pre-selecting) values.
-         *
-         * @param  {function} callback The function to call when the UI is ready
-         */
-        checkIfReady: function(callback){
-
-          var view = this;
-
-          // prevent flash of unstyled content
-          view.$el.css("display", "none");
-
-          // Find the transition CSS in the head of the document.
-          var transitionCSS = _.find(
-            Array.from(document.styleSheets),
-            function(ss){
-              if(ss.href){
-                return ss.href.includes(view.transitionCSS)
-              }
-            }
-          );
-
-          // What to do when the CSS isn't loaded yet
-          const notReady = function(){
-            view.ready = false;
-            // check again in 15ms
-            setTimeout(function () {
-              view.checkIfReady(callback)
-            }, 15);
-          }
-
-          const ready = function(){
-            view.ready = true;
-            callback.call(view);
-            // prevent flash of unstyled content
-            setTimeout(function () {
-              view.$el.css("display", "block");
-            }, 10);
-          }
-
-          if(view.ready){
-            ready();
-          }
-
-          try {
-            if ( transitionCSS.cssRules.length === 0 ) {
-              notReady();
-            } else {
-              ready();
-            }
-          } catch (e) {
-            notReady();
-          }
-
         },
 
         /**

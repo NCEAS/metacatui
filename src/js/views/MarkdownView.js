@@ -183,20 +183,26 @@ define([    "jquery", "underscore", "backbone",
 
             var view = this;
 
-            // Given a path, check whether a CSS file was already added to the
-            // head, and add it if not. Prevents adding the CSS file multiple
-            // times if the view is loaded more than once.
-            var addCSS = function(path){
-              if($("head link[href='" + path + "']").length <= 0 ){
-                $('<link/>', {
-                   rel: 'stylesheet',
-                   type: 'text/css',
-                   href: path
-                }).appendTo('head');
+            // Given a string of CSS and an associated unique ID,
+            // check whether that CSS file was already added to the document head,
+            // and add it if not. Prevents adding the CSS file multiple
+            // times if the view is loaded more than once. The first time each
+            // CSS path is added, we need to save a record of the event. It
+            // doesn't work to just search the document head for the style elemnt to
+            // determine if the CSS has already been added, because each instance
+            // of this view may be initialized too quickly, before the previous
+            // instance has had a chance to add the stylesheet element.
+            const addCSS = function(css, id){
+              if(!MetacatUI.loadedCSS){
+                MetacatUI.loadedCSS = []
+              }
+              if(!MetacatUI.loadedCSS.includes(id)){
+                MetacatUI.loadedCSS.push(id);
+                var style = document.createElement('style');
+                style.appendChild(document.createTextNode(css));
+                document.querySelector("head").appendChild(style);
               }
             }
-
-            addCSS(MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css");
 
             // SDextensions lists the desired order* of all potentailly required showdown extensions (* order matters! )
             var SDextensions = ["xssfilter", "katex", "highlight", "docbook",
@@ -256,7 +262,10 @@ define([    "jquery", "underscore", "backbone",
 
             if( regexKatex.test(markdown) ){
 
-                require(["showdownKatex"], function(showdownKatex){
+                require([
+                  "showdownKatex",
+                  "text!" + MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css",
+                ], function(showdownKatex, showdownKatexCss){
                     // custom config needed for katex
                     var katex = showdownKatex({
                         delimiters: [
@@ -265,12 +274,12 @@ define([    "jquery", "underscore", "backbone",
                             { left: '~', right: '~', display: false }
                         ]
                     });
-                    // because custom config, register katex with showdown
+                    // Add CSS required to render katex math symbols correctly
+                    addCSS(showdownKatexCss, "showdownKatex");
+                    // Because custom config, register katex with showdown
                     showdown.extension("katex", katex);
                     updateExtensionList("katex", required=true);
                 });
-                // css needed for katex
-                addCSS(MetacatUI.root + "/components/showdown/extensions/showdown-katex/katex.min.css");
 
             } else {
                 updateExtensionList("katex", required=false);
@@ -280,11 +289,15 @@ define([    "jquery", "underscore", "backbone",
             // --- Test for highlight --- //
 
             if( regexHighlight.test(markdown) ){
-                require(["showdownHighlight"], function(showdownHighlight){
-                    updateExtensionList("highlight", required=true);
+                require([
+                  "showdownHighlight",
+                  "text!" + MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/atom-one-light.css"
+                ],
+                function(showdownHighlight, showdownHighlightCss){
+                  updateExtensionList("highlight", required=true);
+                  // CSS needed for highlight
+                  addCSS(showdownHighlightCss, "showdownHighlight");
                 });
-                // css needed for highlight
-                addCSS(MetacatUI.root + "/components/showdown/extensions/showdown-highlight/styles/atom-one-light.css");
             } else {
                 updateExtensionList("highlight", required=false);
             };
@@ -293,7 +306,7 @@ define([    "jquery", "underscore", "backbone",
 
             if( regexDocbook.test(markdown) ){
                 require(["showdownDocbook"], function(showdownDocbook){
-                    updateExtensionList("docbook", required=true);
+                  updateExtensionList("docbook", required=true);
                 });
             } else {
                 updateExtensionList("docbook", required=false);
