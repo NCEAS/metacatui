@@ -3441,13 +3441,12 @@ add font awesome close icon */
 .access-rule .subject .orcid.icon{
   vertical-align: top;
 }
-.access-policy-view-container.modal{
+
+.access-policy-view-container .modal {
   width: 80%;
-  max-width: 1000px;
-  left: 10%;
-  margin-left: 0px;
-  display: none;
+  margin-left: -40%;
 }
+
 .access-policy-view:not(.modal) .modal-header{
   border-bottom-width: 0px;
   padding: 0px;
