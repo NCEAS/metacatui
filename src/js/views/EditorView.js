@@ -267,9 +267,10 @@ function(_, $, Backbone, SignInView, EditorSubmitMessageTemplate){
         var thisView = this;
         require(['views/AccessPolicyView'], function(AccessPolicyView){
 
-            //If not, create a new AccessPolicyView using the AccessPolicy collection
-            var accessPolicyView = new AccessPolicyView();
-            accessPolicyView.collection = model.get("accessPolicy");
+            // Create a new AccessPolicyView using the AccessPolicy collection
+            var accessPolicyView = new AccessPolicyView({
+              collection: model.get("accessPolicy")
+            });
 
             //Store a reference to the AccessPolicyView on this view
             thisView.accessPolicyView = accessPolicyView;

@@ -52,12 +52,20 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     toggleTemplate: _.template(ToggleTemplate),
 
     /**
+     * Used to track the collection of models set on the view in order to handle
+     * undoing all changes made when we either hit Cancel or click otherwise
+     * hide the modal (such as clicking outside of it).
+     */
+    cachedModels: null,
+
+    /**
     * The events this view will listen to and the associated function to call.
     * @type {Object}
     */
     events: {
       "change .public-toggle-container input" : "togglePrivacy",
       "click .save" : "save",
+      "click .cancel": "reset",
       "click .access-rule .remove" : "handleRemove"
     },
 
@@ -65,8 +73,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
     * Creates a new AccessPolicyView
     * @param {Object} options - A literal object with options to pass to the view
     */
-    initialize: function(options){
-
+    initialize: function(options) {
+      this.cachedModels = _.clone(this.collection.models);
     },
 
     /**
@@ -619,6 +627,7 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
         setTimeout(function(){ saveBtn.empty().text("Save") }, 2000);
 
+        this.cachedModels = _.clone(this.collection.models);
       }
       //When the status is "error"
       else if( status == "e" ){
@@ -637,6 +646,19 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
       //Remove the listener for this function
       this.stopListening(dataONEObject, "change:uploadStatus", this.showSaveProgress);
+    },
+
+    /**
+    * Resets the state of the models stored in the view's collection to the
+    * latest cached copy. Triggered either when the Cancel button is hit or
+    * the modal containing this view is hidden.
+    */
+    reset: function() {
+      if (!this.collection || !this.cachedModels) {
+        return;
+      }
+
+      this.collection.set(this.cachedModels);
     },
 
     /**
