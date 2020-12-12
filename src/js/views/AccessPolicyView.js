@@ -119,7 +119,8 @@ function(_, $, Backbone, AccessRule, AccessPolicy, AccessRuleView, Template, Tog
 
         //Insert the template into this view
         this.$el.html(this.template({
-          resourceType: this.resourceType
+          resourceType: this.resourceType,
+          fileName: dataONEObject.get("fileName")
         }));
 
         //If the user is not authorized to change the permissions of this object,

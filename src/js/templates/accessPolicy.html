@@ -3,7 +3,13 @@
   <h4><i class="icon icon-group icon-on-left"></i><%=MetacatUI.appModel.get("accessPolicyName")%></h4>
 </div>
 <div class="modal-body">
-  <p class="subtle">Give others access to view, edit, and share this <%=(resourceType || "resource")%></p>
+  <p class="subtle">Give others access to view, edit, and share
+    <% if (resourceType === "data file") { %>
+      <em>just</em> <%= fileName ? fileName : "this data file" %>.
+    <% } else { %>
+      this <%=(resourceType || "resource")%>.
+    <% } %>
+  </p>
 
   <h5>Public view</h5>
   <p class="subtle">
