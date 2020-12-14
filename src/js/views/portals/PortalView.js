@@ -13,10 +13,11 @@ define(["jquery",
         "views/portals/PortalMetricsView",
         "views/portals/PortalMembersView",
         "views/portals/PortalLogosView",
-        "views/portals/PortalVisualizationsView"
+        "views/portals/PortalVisualizationsView",
+        "views/SignInView",
     ],
     function($, _, Backbone, Portal, User, AlertTemplate, LoadingTemplate, PortalTemplate, EditPortalsTemplate, PortalHeaderView,
-        PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView, PortalVisualizationsView) {
+        PortalDataView, PortalSectionView, PortalMetricsView, PortalMembersView, PortalLogosView, PortalVisualizationsView, SignInView) {
         "use_strict";
 
         /**
@@ -895,23 +896,58 @@ define(["jquery",
             */
             showError: function(model, response){
 
-              var errorMsg = "";
-              if( response && response.responseText ){
-                errorMsg = "<p>Error details: " + $(response.responseText).text() + "</p>";
-              }
-              if( typeof response == "string" ){
-                errorMsg = "<p>Error details: " + response + "</p>";
-              }
+              try {
+                var errorMsg = "",
+                  errorClass = "alert-error",
+                  icon = "frown",
+                  errorTitle = "Something went wrong displaying this " + portalTerm + ".",
+                  portalTerm = MetacatUI.appModel.get("portalTermSingular");
 
-              //Show the error message
-              MetacatUI.appView.showAlert(
-                "<h4><i class='icon icon-frown'></i>Something went wrong while displaying this portal.</h4>" + errorMsg,
-                "alert-error",
-                this.$el
-              );
+                // For errors resulting from authorization errors, use a friendlier and more
+                // helpful error message than the default message returned from fetch
+                if(response && response.status == 401){
+                  errorTitle = 'You need permission to view this ' + portalTerm + ".";
+                  errorClass = "alert-info";
+                  icon = "lock"
+                  // Make a suggestion of how to fix the error based on whether the user is logged in or not.
+                  if(!MetacatUI.appUserModel.get("loggedIn")){
+                    // If not logged in, suggest that the user signs in
+                    errorMsg = '<strong><a href="' +
+                      MetacatUI.appModel.get('signInUrlOrcid') + window.location.href +
+                      '">Sign in</a></strong> to see if you have already been given access to view this ' +
+                      portalTerm +'.';
+                  } else {
+                    // If signed in, suggest that the user contacts that portal owner
+                    errorMsg = "Contact the owner of this " + portalTerm + " to request access."
+                  }
+                // For all other types of errors
+                } else {
+                  if( response && response.responseText ){
+                    errorMsg = "Error details: " + $(response.responseText).text();
+                  }
+                  if( typeof response == "string" ){
+                    errorMsg = "Error details: " + response;
+                  }
+                }
 
-              //Remove the loading message from this view
-              this.$el.find(".loading").remove();
+                if(errorMsg){
+                  errorMsg = "<p>" + errorMsg + "</p>"
+                }
+
+                //Show the error message
+                MetacatUI.appView.showAlert(
+                  "<h4><i class='icon icon-" + icon +"'></i>" + errorTitle + "</h4>" + errorMsg,
+                  errorClass + " portal-alert-container",
+                  this.$el,
+                  0,
+                  { includeEmail: true }
+                );
+
+                //Remove the loading message from this view
+                this.$el.find(".loading").remove();
+              } catch (error) {
+                console.log("There was a problem trying to display the error message in the Portal View. Error details:" + error);
+              }
 
             },
 
