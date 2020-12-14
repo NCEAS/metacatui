@@ -1,9 +1,11 @@
 <h2>Project</h2>
 
-<% _(award).each(function(awardItem) { %>
-  <div>
+<% _(award).each(function(awardItem, i) { %>
+  <h4>Award <%= i + 1 %></h4>
+  <div class="basic-text-row">
     <% _(awardItem).each(function(field) { %>
-      <%=field.label%>: <%=field.value%><br>
+      <label><%= field.label %></label>
+      <input type="text" data-category="<%= field.label.replaceAll(' ', '') %>" value="<%= field.value %>" class="basic-text"/>
     <% }) %>
   </div>
   <hr>
