@@ -812,6 +812,7 @@ define(['jquery', 'underscore', 'backbone'],
       * If true, displays the citation registration tool on the dataset landing page
       * @type {boolean}
       * @default true
+      * @since 2.14.1
       */
       displayRegisterCitationTool: true,
       /**
