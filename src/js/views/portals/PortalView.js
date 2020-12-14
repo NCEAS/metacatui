@@ -900,8 +900,8 @@ define(["jquery",
                 var errorMsg = "",
                   errorClass = "alert-error",
                   icon = "frown",
-                  errorTitle = "Something went wrong displaying this " + portalTerm + ".",
-                  portalTerm = MetacatUI.appModel.get("portalTermSingular");
+                  portalTerm = MetacatUI.appModel.get("portalTermSingular") || "portal",
+                  errorTitle = "Something went wrong displaying this " + portalTerm + ".";
 
                 // For errors resulting from authorization errors, use a friendlier and more
                 // helpful error message than the default message returned from fetch
