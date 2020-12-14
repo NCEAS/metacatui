@@ -8,7 +8,7 @@ define(['jquery',
 		'views/SignInView',
 		'text!templates/alert.html',
 		'text!templates/appHead.html',
-    'text!templates/jsonld.txt',
+		'text!templates/jsonld.txt',
 		'text!templates/app.html',
 		'text!templates/loading.html'
 	    ],
@@ -330,7 +330,8 @@ define(['jquery',
 				msg: options.message,
 				classes: options.classes,
 				emailOptions: emailOptions,
-				remove: options.remove || false
+				remove: options.remove || false,
+				includeEmail: options.includeEmail
 			}).trim());
 
 			if(options.delay){
